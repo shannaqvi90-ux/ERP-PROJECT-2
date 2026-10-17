@@ -439,6 +439,13 @@ test('measured part (round 10): a task that saves needs a write sent by the meas
   // A caused write elsewhere does not make an uncaused declared write count.
   assert.match(measuredPartProblem(t, { steps: esc, sent: [write('/api/mark', null, 0.05), write('/api/save', null, 2.1)], gained: [], productId: 'ours' }),
     /no counted step caused the write that saves the task's end state \(POST \/api\/save: 2 s after step 1 ended\)/);
+  // A decoy: a step caused one declared write, the page sent another on its own 2 s later.
+  assert.match(measuredPartProblem(t, { steps: esc, sent: [write('/api/save', null, 0.05), write('/api/save', null, 2.1)], gained: [], productId: 'ours' }),
+    /the page sent the task's own write on its own beside the one a step caused \(POST \/api\/save: 2 s after step 1 ended\)/);
+  // A batch: the next part went out within the reaction time of the previous part's answer (an import in batches).
+  const batch = (at, answered) => ({ ...write('/api/save', null, at), timing: { at, answered } });
+  assert.equal(measuredPartProblem(t, { steps: esc, sent: [batch(0.05, 1.9), batch(2.1, 3.9), batch(4.2, 5)], gained: [], productId: 'ours' }), null);
+  assert.match(measuredPartProblem(t, { steps: esc, sent: [batch(0.05, 1.9), batch(3.1, 3.9)], gained: [], productId: 'ours' }), /on its own beside the one a step caused/);
   // A write before the first step was sent by nobody.
   assert.match(measuredPartProblem(SAVES, { steps: at([{ kind: 'click' }]).map(s => ({ ...s, at: 0.5 })), sent: [write('/api/anything', null, 0.1)], gained: [], productId: 'ours' }), /before the first step/);
   // A write with no time recorded is not taken as caused.

@@ -51,6 +51,7 @@ const approve = () => fetch('/api/approve', { method: 'POST' }).then(() => { out
 document.getElementById('approve').onclick = approve;
 ${autoApprove && mode === 'timer' ? 'setTimeout(approve, 3000);' : ''}
 ${autoApprove && mode === 'key' ? "addEventListener('keydown', () => setTimeout(approve, 2500), { once: true });" : ''}
+${autoApprove && mode === 'decoy' ? "document.body.insertAdjacentHTML('beforeend', '<button id=decoy>Approve another</button>'); document.getElementById('decoy').onclick = () => { fetch('/api/approve?id=other', { method: 'POST' }); setTimeout(approve, 2500); };" : ''}
 ${autoApprove && mode === 'poll' ? "setInterval(() => fetch('/api/approval').catch(() => {}), 100); addEventListener('keydown', () => setTimeout(approve, 2500), { once: true });" : ''}
 </script></body></html>`;
 // Honest shapes: the save is sent a few event-loop turns after the click (as a framework's scheduler
@@ -75,7 +76,7 @@ before(async () => {
     if (u.pathname === '/api/draft') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end(stash ?? ''); }
     if (u.pathname === '/api/check') return later(1300, () => json({ ok: true }));
     if (u.pathname === '/api/state') return json({ saved });
-    if (u.pathname === '/api/approve' && req.method === 'POST') { approved = true; res.writeHead(204); return res.end(); }
+    if (u.pathname === '/api/approve' && req.method === 'POST') { if (!u.searchParams.get('id')) approved = true; res.writeHead(204); return res.end(); }
     if (u.pathname === '/api/settings' && req.method === 'POST') { autoApprove = true; res.writeHead(204); return res.end(); }
     if (u.pathname === '/api/approval') return json({ approved });
     res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -210,6 +211,19 @@ test('plant R2b: the page approves 2.5 s after the first key it sees (a timer th
     assert.equal(r.status, 'invalid', `${mode}: ${r.error}`);
     assert.match(r.error, /no counted step caused/, mode);
   }
+});
+
+test('plant R2d: a step causes a decoy approval (another record); the page sends the real one on its own timer -> never verifies', async () => {
+  reset();
+  const r = await runDriver({
+    async setup() { await fetch(base + '/api/settings', { method: 'POST' }); },
+    async signIn(ctx) { await ctx.page.goto(base + '/status-decoy'); },
+    async run(op) { await op.click('#decoy'); await op.waitFor(() => document.getElementById('out').textContent === 'approved', { timeout: 9000 }); return {}; },
+    verify: verifyApproval,
+  }, SAVES);
+  never('R2d', r);
+  assert.equal(r.status, 'invalid');
+  assert.match(r.error, /the page sent the task's own write on its own beside the one a step caused \(POST \/api\/approve: [\d.]+ s after step 1 ended\)/);
 });
 
 test('plant R3 (critic r10): set-up stashes the value; the start page autosaves it on a timer; run() presses Escape -> never verifies', async () => {

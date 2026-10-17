@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "configure-sequence-20261010T015431-1bb1",
-  "instrument": 8,
+  "run_id": "configure-sequence-20261017T030055-4c68",
+  "instrument": 9,
   "task": "configure-sequence",
   "task_title": "Configure a document sequence",
   "product": "odoo",
   "status": "verified",
   "goal": "Make new purchase orders numbered with the prefix \"PO-2026-\" and 6 digits (for example PO-2026-000123).",
   "done_when": "The purchase order sequence is saved with that prefix and size; the back end confirms the next number would read like PO-2026-000123.",
-  "started_at": "2026-10-10T01:54:31.210Z",
-  "finished_at": "2026-10-10T01:54:49.687Z",
+  "started_at": "2026-10-17T03:00:55.628Z",
+  "finished_at": "2026-10-17T03:01:39.746Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 4.247,
-    "system_wait_seconds": 1.228,
+    "machine_seconds": 3.529,
+    "system_wait_seconds": 0.81,
     "human_seconds": 40.72,
-    "human_plus_wait_seconds": 41.948,
+    "human_plus_wait_seconds": 41.554,
     "klm_operator_counts": {
       "K": 34,
       "P": 10,
@@ -59,7 +59,7 @@
       "label": "apps menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.046,
+      "took": 0.04,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -68,8 +68,8 @@
       "kind": "click",
       "label": "Settings app",
       "keystrokes": 0,
-      "at": 0.048,
-      "took": 0.061,
+      "at": 0.042,
+      "took": 0.062,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -78,8 +78,8 @@
       "kind": "scroll",
       "label": "scroll to the bottom of the settings",
       "keystrokes": 0,
-      "at": 0.483,
-      "took": 0.04,
+      "at": 0.363,
+      "took": 0.035,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -88,8 +88,8 @@
       "kind": "click",
       "label": "Activate the developer mode",
       "keystrokes": 0,
-      "at": 0.523,
-      "took": 0.046,
+      "at": 0.398,
+      "took": 0.039,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -98,8 +98,8 @@
       "kind": "click",
       "label": "Technical menu",
       "keystrokes": 0,
-      "at": 0.973,
-      "took": 0.091,
+      "at": 0.747,
+      "took": 0.136,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -108,8 +108,8 @@
       "kind": "scroll",
       "label": "scroll the menu to Sequences",
       "keystrokes": 0,
-      "at": 1.232,
-      "took": 0.075,
+      "at": 0.896,
+      "took": 0.052,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -118,8 +118,8 @@
       "kind": "click",
       "label": "Sequences",
       "keystrokes": 0,
-      "at": 1.307,
-      "took": 0.042,
+      "at": 0.948,
+      "took": 0.039,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -128,8 +128,8 @@
       "kind": "type",
       "label": "search",
       "keystrokes": 16,
-      "at": 3.558,
-      "took": 0.073,
+      "at": 3.124,
+      "took": 0.034,
       "text": "Purchase Order",
       "same_field": false,
       "screen": "/odoo/action-26",
@@ -140,8 +140,8 @@
       "kind": "key",
       "label": "search",
       "keystrokes": 1,
-      "at": 3.632,
-      "took": 0.017,
+      "at": 3.158,
+      "took": 0.006,
       "chord": "Enter",
       "screen": "/odoo/action-26",
       "chain": true
@@ -151,8 +151,8 @@
       "kind": "click",
       "label": "open Purchase Order",
       "keystrokes": 0,
-      "at": 3.703,
-      "took": 0.053,
+      "at": 3.221,
+      "took": 0.04,
       "screen": "/odoo/action-26",
       "chain": false
     },
@@ -161,8 +161,8 @@
       "kind": "click",
       "label": "prefix field",
       "keystrokes": 0,
-      "at": 3.842,
-      "took": 0.038,
+      "at": 3.308,
+      "took": 0.044,
       "screen": "/odoo/action-26/3",
       "chain": false
     },
@@ -171,8 +171,8 @@
       "kind": "key",
       "label": "select the old prefix",
       "keystrokes": 2,
-      "at": 3.881,
-      "took": 0.007,
+      "at": 3.353,
+      "took": 0.002,
       "chord": "Control+a",
       "screen": "/odoo/action-26/3",
       "chain": true
@@ -182,8 +182,8 @@
       "kind": "type",
       "label": "prefix",
       "keystrokes": 10,
-      "at": 3.888,
-      "took": 0.023,
+      "at": 3.355,
+      "took": 0.011,
       "text": "PO-2026-",
       "same_field": false,
       "screen": "/odoo/action-26/3",
@@ -194,8 +194,8 @@
       "kind": "click",
       "label": "sequence size field",
       "keystrokes": 0,
-      "at": 3.911,
-      "took": 0.041,
+      "at": 3.366,
+      "took": 0.038,
       "screen": "/odoo/action-26/3",
       "chain": false
     },
@@ -204,8 +204,8 @@
       "kind": "key",
       "label": "select the old size",
       "keystrokes": 2,
-      "at": 3.952,
-      "took": 0.009,
+      "at": 3.405,
+      "took": 0.003,
       "chord": "Control+a",
       "screen": "/odoo/action-26/3",
       "chain": true
@@ -215,8 +215,8 @@
       "kind": "type",
       "label": "size",
       "keystrokes": 1,
-      "at": 3.961,
-      "took": 0.004,
+      "at": 3.408,
+      "took": 0.002,
       "text": "6",
       "same_field": false,
       "screen": "/odoo/action-26/3",
@@ -227,8 +227,8 @@
       "kind": "key",
       "label": "Save (hotkey)",
       "keystrokes": 2,
-      "at": 4.13,
-      "took": 0.02,
+      "at": 3.506,
+      "took": 0.014,
       "chord": "Alt+s",
       "screen": "/odoo/action-26/3",
       "chain": false
@@ -237,63 +237,63 @@
   "waits": [
     {
       "label": "Settings loaded",
-      "at": 0.11,
-      "seconds": 0.356
+      "at": 0.105,
+      "seconds": 0.249
     },
     {
       "label": "settings page",
-      "at": 0.467,
-      "seconds": 0.015
+      "at": 0.354,
+      "seconds": 0.009
     },
     {
       "label": "developer mode on",
-      "at": 0.57,
-      "seconds": 0.402
+      "at": 0.438,
+      "seconds": 0.308
     },
     {
       "label": "technical menu open",
-      "at": 1.064,
-      "seconds": 0.15
+      "at": 0.883,
+      "seconds": 0.003
     },
     {
       "label": "sequence list, search focused",
-      "at": 1.35,
-      "seconds": 0.207
+      "at": 0.988,
+      "seconds": 0.135
     },
     {
       "label": "search result",
-      "at": 3.65,
-      "seconds": 0.052
+      "at": 3.165,
+      "seconds": 0.055
     },
     {
       "label": "sequence form",
-      "at": 3.757,
-      "seconds": 0.085
+      "at": 3.262,
+      "seconds": 0.046
     },
     {
       "label": "saved",
-      "at": 4.15,
-      "seconds": 0.096
+      "at": 3.521,
+      "seconds": 0.029
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "6c101724cc88a399.jpg",
+      "file": "9d469184d9de139e.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/6c101724cc88a399.jpg"
+      "path": "gauntlet/reference/odoo/shots/9d469184d9de139e.jpg"
     },
     {
       "moment": "sequence edited",
-      "file": "f24ccfd1adebc579.jpg",
-      "at": 3.966,
-      "path": "gauntlet/reference/odoo/shots/f24ccfd1adebc579.jpg"
+      "file": "4cc6b49b6a6cbdef.jpg",
+      "at": 3.41,
+      "path": "gauntlet/reference/odoo/shots/4cc6b49b6a6cbdef.jpg"
     },
     {
       "moment": "done",
-      "file": "66bc39d833a03e9e.jpg",
-      "at": 4.247,
-      "path": "gauntlet/reference/odoo/shots/66bc39d833a03e9e.jpg"
+      "file": "449c068a13024bac.jpg",
+      "at": 3.551,
+      "path": "gauntlet/reference/odoo/shots/449c068a13024bac.jpg"
     }
   ],
   "verification": {
@@ -301,13 +301,13 @@
     "details": {
       "prefix": "PO-2026-",
       "padding": 6,
-      "next_number": "PO-2026-000056"
+      "next_number": "PO-2026-000070"
     }
   },
   "path_notes": "keyboard: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Alt+S | pointer: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Save",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/configure-sequence.mjs",
-    "sha256": "e7ed5c88bb317cb0cad574492f49517440193c7b16d1276f793697bd20427a2e"
+    "sha256": "e33592fa29380afb73f621fb8fd34634cec4fdb0f4b96dd3a1a0f943e9e15664"
   },
   "task_notes": "Set-up puts the sequence back to its default (prefix P, 5 digits); clean-up does the same. Odoo shows its sequences only in developer mode, which the path switches on.",
   "error": null,
@@ -324,33 +324,35 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.015,
+      "seconds": 0.011,
       "verified": true
     },
     {
       "requests": 2,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.015,
+      "seconds": 0.01,
       "verified": true,
-      "gap_seconds": 1.101
+      "gap_seconds": 1.1
     }
   ],
   "requests_after_clock": 0,
   "requests_in_flight_at_clock": {
-    "count": 0,
-    "first": []
+    "count": 1,
+    "first": [
+      "GET /bus/websocket_worker_bundle (script)"
+    ]
   },
   "screen_at_clock": {
-    "sha256": "feccf9dcef10c859",
+    "sha256": "a11344112161fd93",
     "elements": 265
   },
   "screen_after_verify": {
-    "sha256": "feccf9dcef10c859",
+    "sha256": "a11344112161fd93",
     "elements": 265,
     "unchanged": true
   },
@@ -362,7 +364,7 @@
     "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.02
+    "seconds": 0.011
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -405,13 +407,40 @@
       "POST /base_setup/data",
       "POST /web/dataset/call_kw/ir.http/lazy_session_info",
       "POST /web/dataset/call_kw/ir.sequence/web_save"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /base_setup/data",
+        "at": 0.30235803600004874,
+        "by_step": 2
+      },
+      {
+        "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+        "at": 0.302434876000043,
+        "by_step": 2
+      },
+      {
+        "write": "POST /base_setup/data",
+        "at": 0.8612852100000018,
+        "by_step": 5
+      },
+      {
+        "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+        "at": 0.8613445160000119,
+        "by_step": 5
+      },
+      {
+        "write": "POST /web/dataset/call_kw/ir.sequence/web_save",
+        "at": 3.5327299860000494,
+        "by_step": 17
+      }
     ]
   },
   "screenshots_path": "keyboard",
   "best_path_per_metric": {
     "steps": "keyboard",
     "keystrokes": "pointer",
-    "machine_seconds": "keyboard",
+    "machine_seconds": "pointer",
     "human_seconds": "keyboard",
     "human_plus_wait_seconds": "keyboard"
   },
@@ -431,10 +460,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.247,
-        "system_wait_seconds": 1.363,
+        "machine_seconds": 3.551,
+        "system_wait_seconds": 0.834,
         "human_seconds": 40.72,
-        "human_plus_wait_seconds": 42.083,
+        "human_plus_wait_seconds": 41.554,
         "klm_operator_counts": {
           "K": 34,
           "P": 10,
@@ -450,7 +479,7 @@
           "label": "apps menu",
           "keystrokes": 0,
           "at": 0.001,
-          "took": 0.046,
+          "took": 0.04,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -459,8 +488,8 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.048,
-          "took": 0.061,
+          "at": 0.042,
+          "took": 0.062,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -469,8 +498,8 @@
           "kind": "scroll",
           "label": "scroll to the bottom of the settings",
           "keystrokes": 0,
-          "at": 0.483,
-          "took": 0.04,
+          "at": 0.363,
+          "took": 0.035,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -479,8 +508,8 @@
           "kind": "click",
           "label": "Activate the developer mode",
           "keystrokes": 0,
-          "at": 0.523,
-          "took": 0.046,
+          "at": 0.398,
+          "took": 0.039,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -489,8 +518,8 @@
           "kind": "click",
           "label": "Technical menu",
           "keystrokes": 0,
-          "at": 0.973,
-          "took": 0.091,
+          "at": 0.747,
+          "took": 0.136,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -499,8 +528,8 @@
           "kind": "scroll",
           "label": "scroll the menu to Sequences",
           "keystrokes": 0,
-          "at": 1.232,
-          "took": 0.075,
+          "at": 0.896,
+          "took": 0.052,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -509,8 +538,8 @@
           "kind": "click",
           "label": "Sequences",
           "keystrokes": 0,
-          "at": 1.307,
-          "took": 0.042,
+          "at": 0.948,
+          "took": 0.039,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -519,8 +548,8 @@
           "kind": "type",
           "label": "search",
           "keystrokes": 16,
-          "at": 3.558,
-          "took": 0.073,
+          "at": 3.124,
+          "took": 0.034,
           "text": "Purchase Order",
           "same_field": false,
           "screen": "/odoo/action-26",
@@ -531,8 +560,8 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 3.632,
-          "took": 0.017,
+          "at": 3.158,
+          "took": 0.006,
           "chord": "Enter",
           "screen": "/odoo/action-26",
           "chain": true
@@ -542,8 +571,8 @@
           "kind": "click",
           "label": "open Purchase Order",
           "keystrokes": 0,
-          "at": 3.703,
-          "took": 0.053,
+          "at": 3.221,
+          "took": 0.04,
           "screen": "/odoo/action-26",
           "chain": false
         },
@@ -552,8 +581,8 @@
           "kind": "click",
           "label": "prefix field",
           "keystrokes": 0,
-          "at": 3.842,
-          "took": 0.038,
+          "at": 3.308,
+          "took": 0.044,
           "screen": "/odoo/action-26/3",
           "chain": false
         },
@@ -562,8 +591,8 @@
           "kind": "key",
           "label": "select the old prefix",
           "keystrokes": 2,
-          "at": 3.881,
-          "took": 0.007,
+          "at": 3.353,
+          "took": 0.002,
           "chord": "Control+a",
           "screen": "/odoo/action-26/3",
           "chain": true
@@ -573,8 +602,8 @@
           "kind": "type",
           "label": "prefix",
           "keystrokes": 10,
-          "at": 3.888,
-          "took": 0.023,
+          "at": 3.355,
+          "took": 0.011,
           "text": "PO-2026-",
           "same_field": false,
           "screen": "/odoo/action-26/3",
@@ -585,8 +614,8 @@
           "kind": "click",
           "label": "sequence size field",
           "keystrokes": 0,
-          "at": 3.911,
-          "took": 0.041,
+          "at": 3.366,
+          "took": 0.038,
           "screen": "/odoo/action-26/3",
           "chain": false
         },
@@ -595,8 +624,8 @@
           "kind": "key",
           "label": "select the old size",
           "keystrokes": 2,
-          "at": 3.952,
-          "took": 0.009,
+          "at": 3.405,
+          "took": 0.003,
           "chord": "Control+a",
           "screen": "/odoo/action-26/3",
           "chain": true
@@ -606,8 +635,8 @@
           "kind": "type",
           "label": "size",
           "keystrokes": 1,
-          "at": 3.961,
-          "took": 0.004,
+          "at": 3.408,
+          "took": 0.002,
           "text": "6",
           "same_field": false,
           "screen": "/odoo/action-26/3",
@@ -618,8 +647,8 @@
           "kind": "key",
           "label": "Save (hotkey)",
           "keystrokes": 2,
-          "at": 4.13,
-          "took": 0.02,
+          "at": 3.506,
+          "took": 0.014,
           "chord": "Alt+s",
           "screen": "/odoo/action-26/3",
           "chain": false
@@ -628,43 +657,43 @@
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.11,
-          "seconds": 0.356
+          "at": 0.105,
+          "seconds": 0.249
         },
         {
           "label": "settings page",
-          "at": 0.467,
-          "seconds": 0.015
+          "at": 0.354,
+          "seconds": 0.009
         },
         {
           "label": "developer mode on",
-          "at": 0.57,
-          "seconds": 0.402
+          "at": 0.438,
+          "seconds": 0.308
         },
         {
           "label": "technical menu open",
-          "at": 1.064,
-          "seconds": 0.15
+          "at": 0.883,
+          "seconds": 0.003
         },
         {
           "label": "sequence list, search focused",
-          "at": 1.35,
-          "seconds": 0.207
+          "at": 0.988,
+          "seconds": 0.135
         },
         {
           "label": "search result",
-          "at": 3.65,
-          "seconds": 0.052
+          "at": 3.165,
+          "seconds": 0.055
         },
         {
           "label": "sequence form",
-          "at": 3.757,
-          "seconds": 0.085
+          "at": 3.262,
+          "seconds": 0.046
         },
         {
           "label": "saved",
-          "at": 4.15,
-          "seconds": 0.096
+          "at": 3.521,
+          "seconds": 0.029
         }
       ],
       "verification": {
@@ -672,7 +701,7 @@
         "details": {
           "prefix": "PO-2026-",
           "padding": 6,
-          "next_number": "PO-2026-000056"
+          "next_number": "PO-2026-000070"
         }
       },
       "start_state": {
@@ -688,33 +717,35 @@
       "verify_passes": [
         {
           "requests": 2,
-          "longest_pause_seconds": 0.003,
+          "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.015,
+          "seconds": 0.011,
           "verified": true
         },
         {
           "requests": 2,
-          "longest_pause_seconds": 0.003,
+          "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.015,
+          "seconds": 0.01,
           "verified": true,
-          "gap_seconds": 1.101
+          "gap_seconds": 1.1
         }
       ],
       "requests_after_clock": 0,
       "requests_in_flight_at_clock": {
-        "count": 0,
-        "first": []
+        "count": 1,
+        "first": [
+          "GET /bus/websocket_worker_bundle (script)"
+        ]
       },
       "screen_at_clock": {
-        "sha256": "feccf9dcef10c859",
+        "sha256": "a11344112161fd93",
         "elements": 265
       },
       "screen_after_verify": {
-        "sha256": "feccf9dcef10c859",
+        "sha256": "a11344112161fd93",
         "elements": 265,
         "unchanged": true
       },
@@ -726,7 +757,7 @@
         "longest_pause_seconds": 0.002,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.02
+        "seconds": 0.011
       },
       "set_up_writes_waited": 0,
       "saved_state": {
@@ -769,6 +800,33 @@
           "POST /base_setup/data",
           "POST /web/dataset/call_kw/ir.http/lazy_session_info",
           "POST /web/dataset/call_kw/ir.sequence/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /base_setup/data",
+            "at": 0.30235803600004874,
+            "by_step": 2
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 0.302434876000043,
+            "by_step": 2
+          },
+          {
+            "write": "POST /base_setup/data",
+            "at": 0.8612852100000018,
+            "by_step": 5
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 0.8613445160000119,
+            "by_step": 5
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.sequence/web_save",
+            "at": 3.5327299860000494,
+            "by_step": 17
+          }
         ]
       },
       "median_counts": {
@@ -781,10 +839,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.247,
-        "system_wait_seconds": 1.228,
+        "machine_seconds": 3.551,
+        "system_wait_seconds": 0.834,
         "human_seconds": 40.72,
-        "human_plus_wait_seconds": 41.948,
+        "human_plus_wait_seconds": 41.554,
         "klm_operator_counts": {
           "K": 34,
           "P": 10,
@@ -809,10 +867,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.291,
-        "system_wait_seconds": 1.252,
+        "machine_seconds": 3.529,
+        "system_wait_seconds": 0.81,
         "human_seconds": 41.86,
-        "human_plus_wait_seconds": 43.112,
+        "human_plus_wait_seconds": 42.67,
         "klm_operator_counts": {
           "K": 32,
           "P": 11,
@@ -828,7 +886,7 @@
           "label": "apps menu",
           "keystrokes": 0,
           "at": 0.001,
-          "took": 0.053,
+          "took": 0.033,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -837,8 +895,8 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.055,
-          "took": 0.058,
+          "at": 0.035,
+          "took": 0.063,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -847,8 +905,8 @@
           "kind": "scroll",
           "label": "scroll to the bottom of the settings",
           "keystrokes": 0,
-          "at": 0.5,
-          "took": 0.049,
+          "at": 0.352,
+          "took": 0.04,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -857,8 +915,8 @@
           "kind": "click",
           "label": "Activate the developer mode",
           "keystrokes": 0,
-          "at": 0.55,
-          "took": 0.045,
+          "at": 0.393,
+          "took": 0.038,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -867,8 +925,8 @@
           "kind": "click",
           "label": "Technical menu",
           "keystrokes": 0,
-          "at": 0.993,
-          "took": 0.086,
+          "at": 0.721,
+          "took": 0.137,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -877,8 +935,8 @@
           "kind": "scroll",
           "label": "scroll the menu to Sequences",
           "keystrokes": 0,
-          "at": 1.225,
-          "took": 0.075,
+          "at": 0.871,
+          "took": 0.054,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -887,8 +945,8 @@
           "kind": "click",
           "label": "Sequences",
           "keystrokes": 0,
-          "at": 1.3,
-          "took": 0.045,
+          "at": 0.926,
+          "took": 0.039,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -897,8 +955,8 @@
           "kind": "type",
           "label": "search",
           "keystrokes": 16,
-          "at": 3.544,
-          "took": 0.086,
+          "at": 3.103,
+          "took": 0.033,
           "text": "Purchase Order",
           "same_field": false,
           "screen": "/odoo/action-26",
@@ -909,8 +967,8 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 3.63,
-          "took": 0.014,
+          "at": 3.137,
+          "took": 0.006,
           "chord": "Enter",
           "screen": "/odoo/action-26",
           "chain": true
@@ -920,8 +978,8 @@
           "kind": "click",
           "label": "open Purchase Order",
           "keystrokes": 0,
-          "at": 3.699,
-          "took": 0.059,
+          "at": 3.201,
+          "took": 0.036,
           "screen": "/odoo/action-26",
           "chain": false
         },
@@ -930,8 +988,8 @@
           "kind": "click",
           "label": "prefix field",
           "keystrokes": 0,
-          "at": 3.838,
-          "took": 0.042,
+          "at": 3.282,
+          "took": 0.031,
           "screen": "/odoo/action-26/3",
           "chain": false
         },
@@ -940,8 +998,8 @@
           "kind": "key",
           "label": "select the old prefix",
           "keystrokes": 2,
-          "at": 3.881,
-          "took": 0.005,
+          "at": 3.313,
+          "took": 0.003,
           "chord": "Control+a",
           "screen": "/odoo/action-26/3",
           "chain": true
@@ -951,8 +1009,8 @@
           "kind": "type",
           "label": "prefix",
           "keystrokes": 10,
-          "at": 3.887,
-          "took": 0.043,
+          "at": 3.317,
+          "took": 0.011,
           "text": "PO-2026-",
           "same_field": false,
           "screen": "/odoo/action-26/3",
@@ -963,8 +1021,8 @@
           "kind": "click",
           "label": "sequence size field",
           "keystrokes": 0,
-          "at": 3.932,
-          "took": 0.065,
+          "at": 3.328,
+          "took": 0.038,
           "screen": "/odoo/action-26/3",
           "chain": false
         },
@@ -973,8 +1031,8 @@
           "kind": "key",
           "label": "select the old size",
           "keystrokes": 2,
-          "at": 3.998,
-          "took": 0.009,
+          "at": 3.366,
+          "took": 0.003,
           "chord": "Control+a",
           "screen": "/odoo/action-26/3",
           "chain": true
@@ -984,8 +1042,8 @@
           "kind": "type",
           "label": "size",
           "keystrokes": 1,
-          "at": 4.008,
-          "took": 0.005,
+          "at": 3.369,
+          "took": 0.002,
           "text": "6",
           "same_field": false,
           "screen": "/odoo/action-26/3",
@@ -996,8 +1054,8 @@
           "kind": "click",
           "label": "Save",
           "keystrokes": 0,
-          "at": 4.208,
-          "took": 0.065,
+          "at": 3.472,
+          "took": 0.029,
           "screen": "/odoo/action-26/3",
           "chain": false
         }
@@ -1005,43 +1063,43 @@
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.114,
-          "seconds": 0.367
+          "at": 0.098,
+          "seconds": 0.246
         },
         {
           "label": "settings page",
-          "at": 0.482,
-          "seconds": 0.018
+          "at": 0.344,
+          "seconds": 0.008
         },
         {
           "label": "developer mode on",
-          "at": 0.596,
-          "seconds": 0.396
+          "at": 0.431,
+          "seconds": 0.29
         },
         {
           "label": "technical menu open",
-          "at": 1.079,
-          "seconds": 0.127
+          "at": 0.859,
+          "seconds": 0.003
         },
         {
           "label": "sequence list, search focused",
-          "at": 1.346,
-          "seconds": 0.196
+          "at": 0.966,
+          "seconds": 0.136
         },
         {
           "label": "search result",
-          "at": 3.645,
-          "seconds": 0.054
+          "at": 3.144,
+          "seconds": 0.056
         },
         {
           "label": "sequence form",
-          "at": 3.758,
-          "seconds": 0.078
+          "at": 3.237,
+          "seconds": 0.044
         },
         {
           "label": "saved",
-          "at": 4.274,
-          "seconds": 0.016
+          "at": 3.501,
+          "seconds": 0.027
         }
       ],
       "verification": {
@@ -1049,7 +1107,7 @@
         "details": {
           "prefix": "PO-2026-",
           "padding": 6,
-          "next_number": "PO-2026-000056"
+          "next_number": "PO-2026-000070"
         }
       },
       "start_state": {
@@ -1065,33 +1123,35 @@
       "verify_passes": [
         {
           "requests": 2,
-          "longest_pause_seconds": 0.004,
+          "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.018,
+          "seconds": 0.01,
           "verified": true
         },
         {
           "requests": 2,
-          "longest_pause_seconds": 0.003,
+          "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.016,
+          "seconds": 0.011,
           "verified": true,
-          "gap_seconds": 1.101
+          "gap_seconds": 1.1
         }
       ],
       "requests_after_clock": 0,
       "requests_in_flight_at_clock": {
-        "count": 0,
-        "first": []
+        "count": 1,
+        "first": [
+          "GET /bus/websocket_worker_bundle (script)"
+        ]
       },
       "screen_at_clock": {
-        "sha256": "19efa6069101a793",
+        "sha256": "dd70babe603602e1",
         "elements": 265
       },
       "screen_after_verify": {
-        "sha256": "19efa6069101a793",
+        "sha256": "dd70babe603602e1",
         "elements": 265,
         "unchanged": true
       },
@@ -1100,10 +1160,10 @@
         "error": null,
         "back_end_reads": 1,
         "requests": 2,
-        "longest_pause_seconds": 0.004,
+        "longest_pause_seconds": 0.002,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.016
+        "seconds": 0.01
       },
       "set_up_writes_waited": 0,
       "saved_state": {
@@ -1146,6 +1206,33 @@
           "POST /base_setup/data",
           "POST /web/dataset/call_kw/ir.http/lazy_session_info",
           "POST /web/dataset/call_kw/ir.sequence/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /base_setup/data",
+            "at": 0.29104087600001366,
+            "by_step": 2
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 0.2912459169999929,
+            "by_step": 2
+          },
+          {
+            "write": "POST /base_setup/data",
+            "at": 0.8383660549999913,
+            "by_step": 5
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 0.838427846000006,
+            "by_step": 5
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.sequence/web_save",
+            "at": 3.499969366000034,
+            "by_step": 17
+          }
         ]
       },
       "median_counts": {
@@ -1158,10 +1245,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.395,
-        "system_wait_seconds": 1.19,
+        "machine_seconds": 3.559,
+        "system_wait_seconds": 0.818,
         "human_seconds": 41.86,
-        "human_plus_wait_seconds": 43.05,
+        "human_plus_wait_seconds": 42.678,
         "klm_operator_counts": {
           "K": 32,
           "P": 11,
@@ -1175,8 +1262,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/configure-sequence.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/configure-sequence-20261010T015431-1bb1.json",
-    "gauntlet/reference/odoo/results/configure-sequence-20261010T015449-48d2.json",
-    "gauntlet/reference/odoo/results/configure-sequence-20261010T015508-abc7.json"
+    "gauntlet/reference/odoo/results/configure-sequence-20261017T025924-1d5c.json",
+    "gauntlet/reference/odoo/results/configure-sequence-20261017T030011-3175.json",
+    "gauntlet/reference/odoo/results/configure-sequence-20261017T030055-4c68.json"
   ]
 }

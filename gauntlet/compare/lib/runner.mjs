@@ -474,17 +474,19 @@ function trackRequests(context, clock = () => 0) {
     if (timeline.size < MAX_TIMELINE) { timeline.set(r, entry); tracker.timeline.push(entry); }
     if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: body, navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) {
       inflight.add(r);
-      if (isWrite(r.method(), r.url(), r.resourceType(), body) && sent.length < MAX_SENT) sent.push({ method: r.method(), url: r.url(), at, body: body && body.length > MAX_SENT_BODY ? body.slice(0, MAX_SENT_BODY) : body });
+      if (isWrite(r.method(), r.url(), r.resourceType(), body) && sent.length < MAX_SENT) sent.push({ method: r.method(), url: r.url(), at, timing: entry, body: body && body.length > MAX_SENT_BODY ? body.slice(0, MAX_SENT_BODY) : body });
     } else loading.add(r);
   };
   const answered = r => { const e = timeline.get(r); if (e && e.answered === null) e.answered = clock(); };
   const onResponse = res => { try { answered(res.request()); } catch { /* gone */ } };
-  const off = r => { answered(r); loading.delete(r); if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
+  const drop = r => { loading.delete(r); if (inflight.delete(r)) tracker.lastEnded = performance.now(); };
+  // An answer (or a failure the page's script hears of) can lead the page to its next request.
+  const off = r => { answered(r); drop(r); };
   // A document that is replaced (a reload, a link) abandons its requests: their answers can no
   // longer reach the screen, and the browser reports no end for some of them. Round 11: an address
   // change of the same document (pushState) replaces nothing: a save still under way stays on the
   // clock (it was dropped, and the clock stopped before the product answered it).
-  const navigated = f => { if (!docs.isNewDocument(f)) return; for (const r of [...inflight, ...loading]) if (frameOf(r) === f && !r.isNavigationRequest()) off(r); };
+  const navigated = f => { if (!docs.isNewDocument(f)) return; for (const r of [...inflight, ...loading]) if (frameOf(r) === f && !r.isNavigationRequest()) drop(r); };
   const pages = new Set();
   const watch = p => { if (!pages.has(p)) { pages.add(p); p.on('framenavigated', navigated); } };
   context.pages().forEach(watch);
@@ -535,6 +537,32 @@ export function causedWrites(sent, steps, timeline = []) {
     const last = [...windows].reverse().find(x => x.from <= w.at);
     return { write: w, caused: false, why: last ? `${round(w.at - last.to)} s after step ${last.n} ended` : 'before the first step' };
   });
+}
+
+/**
+ * Round 11: the task's own writes (`declared`) the page sent during the measured part are each the
+ * person's doing: caused by a step, or the next part of one that was (a write of the same kind that
+ * went out within REACTION_SECONDS of the previous one's answer: an import the product sends in
+ * batches). One that is neither was sent by the page on its own; a step-caused write beside it (a
+ * decoy) does not make it the person's. Marks `continues` on the continuing ones; returns the strays.
+ */
+export function strayDeclaredWrites(causes, declared) {
+  const EPS = 0.002;
+  const kinds = new Map();
+  const stray = [];
+  for (const c of [...causes].filter(x => declared(x.write)).sort((a, b) => (a.write.at ?? 0) - (b.write.at ?? 0))) {
+    const kind = `${c.write.method} ${describePath(c.write.url)}`.replace(/\/[^/]*\d[^/]*/g, '/*');
+    const done = kinds.get(kind) || [];
+    if (!c.caused) {
+      const prev = done.find(o => typeof o.write.timing?.answered === 'number' && typeof c.write.at === 'number'
+        && c.write.at >= o.write.timing.answered - EPS && c.write.at <= o.write.timing.answered + REACTION_SECONDS + EPS);
+      if (!prev) { stray.push(c); continue; }
+      c.continues = kind;
+    }
+    done.push(c);
+    kinds.set(kind, done);
+  }
+  return stray;
 }
 
 /**
@@ -874,8 +902,10 @@ export async function execute(task, driver, product, productId, needles, out, op
           ...op.steps.filter(x => x.kind === 'request' && x.writes).map(x => x.text.split(' ').slice(0, 2).join(' '))].slice(0, 20);
         // Round 11: which of them a counted step caused, recorded for the reader.
         const causes = causedWrites(sent, op.steps, tracker?.timeline || []);
+        const declaredWrites = endStateOf(task, productId)?.writes;
+        if (declaredWrites) strayDeclaredWrites(causes, w => declaredWrites.some(x => matchesRequest(x, w.method, w.url)));
         run.saved_state.writes_caused = causes.slice(0, 20).map(c => ({ write: `${c.write.method} ${describePath(c.write.url)}`, at: c.write.at,
-          ...(c.caused ? { by_step: c.step, ...(c.after ? { after_answer_to: c.after } : {}) } : { not_caused: c.why }) }));
+          ...(c.caused ? { by_step: c.step, ...(c.after ? { after_answer_to: c.after } : {}) } : c.continues ? { continues: c.continues, not_caused: c.why } : { not_caused: c.why }) }));
         const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [] });
         if (measured) throw new ActionOutsideClock(measured, 'set-up');
       }
@@ -1194,6 +1224,8 @@ export function measuredPartProblem(task, { steps = [], sent = [], gained = [], 
       const what = [...caused.map(label), ...apiWrites.map(s => typed(s).join(' ').split('?')[0])];
       return `the measured part sent none of the writes that save the task's end state (${writes.join(', ')}); it sent ${what.slice(0, 4).join(', ')}: the end state was saved off the clock, not by what the person did`;
     }
+    const stray = strayDeclaredWrites(causes, declared);
+    if (stray.length) return `the page sent the task's own write on its own beside the one a step caused (${stray.slice(0, 2).map(c => `${label(c.write)}: ${c.why}`).join('; ')}): what saved the end state may be that write, not what the person did`;
   }
   if (!gained.length) return null;
   const typed = steps.filter(s => s.kind === 'type').map(s => String(s.text ?? ''));

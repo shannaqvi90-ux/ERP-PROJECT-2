@@ -94,6 +94,7 @@ export const MUTATIONS = [
   ['M56', 'no end to the time a step may take to cause a write', 'lib/runner.mjs', 'export const REACTION_SECONDS = 1;', 'export const REACTION_SECONDS = 60;', 'test/measured-part.test.mjs', 'plant R2 |plant R3 '],
   ['M57', 'any answered request links a write to a step (a poll chains on)', 'lib/runner.mjs', '  const links = timeline.filter(q => typeof q.at === \'number\' && typeof q.answered === \'number\' && during(q.at)).map(q => ({ q, step: during(q.at) }));',
     '  const links = timeline.filter(q => typeof q.at === \'number\' && typeof q.answered === \'number\').map(q => ({ q, step: during(q.at) || windows[0] }));', 'test/measured-part.test.mjs', 'plant R2b'],
+  ['M62', "a declared write the page sent on its own accepted beside a decoy a step caused", 'lib/runner.mjs', '    if (stray.length) return', '    if (false) return', 'test/measured-part.test.mjs', 'plant R2d'],
   // Round 11: set-up's own writes (critic X1; routed from p00 r10 and p02 r10).
   ['M58', "a write set-up's page aborted not seen as abandoned (critic X1)", 'lib/runner.mjs', " context.on('requestfinished', finished); context.on('requestfailed', failed);", " context.on('requestfinished', finished);", 'test/measured-part.test.mjs', 'critic X1'],
   ['M59', "an address change of set-up's page taken for a new document", 'lib/runner.mjs', "      p.on('framenavigated', f => { if (!docs.isNewDocument(f)) return; for (const r of [...inflight.keys()])", "      p.on('framenavigated', f => { for (const r of [...inflight.keys()])",
