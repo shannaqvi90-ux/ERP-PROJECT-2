@@ -63,6 +63,10 @@ public static class ListVolume
     /// <summary>Text filters: letters in many rows, in few rows, and an Arabic letter.</summary>
     private static readonly string[] FilterLetters = ["a", "q", "م"];
 
+    /// <summary>Every letter the check searches or filters by: the volume fixture's canary holds none
+    /// of them, so the true counts do not depend on it.</summary>
+    public static IReadOnlyList<string> CheckedLetters { get; } = [.. Letters.Concat(FilterLetters).Distinct(StringComparer.Ordinal)];
+
     private sealed record Query(string Text, string Kind, Func<JsonElement, bool> Matches, bool DefaultOrder, string? Search, string? GroupBy);
 
     /// <summary>One tenant's whole list: every row in the list's default order, and the cursor after each walked page.</summary>

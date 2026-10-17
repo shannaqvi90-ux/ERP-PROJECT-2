@@ -19,10 +19,20 @@ public sealed class G1VolumeFixture : IAsyncLifetime
 
     public ErpTestEnvironment Env { get; private set; } = null!;
 
+    /// <summary>
+    /// A fresh canary of "CNRY" and twelve decimal digits. The usual canary's hexadecimal digits
+    /// bring the letters a to f into every text value of tenant B, so which of B's rows hold an 'a'
+    /// (a text filter and a search of <see cref="ListVolume"/>) changed from run to run, and the
+    /// gate's tallies with it. The letters c, n, r and y are none of the letters the check filters
+    /// or searches by (<see cref="ListVolume.CheckedLetters"/>), so every count is the same on every run.
+    /// </summary>
+    public static string NewCanary() =>
+        "CNRY" + System.Security.Cryptography.RandomNumberGenerator.GetString("0123456789", 12);
+
     public async ValueTask InitializeAsync()
     {
         SqlTrace.EnsureStarted();
-        Env = await ErpTestEnvironment.StartAsync(SeedPlan.GateAtVolume(ErpTestEnvironment.NewCanary(), ErpTestEnvironment.Password, VolumeA, VolumeB));
+        Env = await ErpTestEnvironment.StartAsync(SeedPlan.GateAtVolume(NewCanary(), ErpTestEnvironment.Password, VolumeA, VolumeB));
         await using var admin = await Env.OpenAdminAsync();
         await DbCatalog.ExecuteAsync(admin, "ANALYZE");
     }
@@ -111,5 +121,31 @@ public sealed class G1ListVolumeTests(G1VolumeFixture fixture) : IClassFixture<G
         var reads = SqlTrace.WholeTableReadsFor(planted);
         Assert.Contains(reads, r => r.Contains("pg_class", StringComparison.Ordinal));
         Assert.Contains(reads, r => r.Contains("EXPLAIN", StringComparison.Ordinal));
+    }
+}
+
+/// <summary>
+/// The volume gate's tallies (ranked and unranked searches, discriminating queries, deep answers)
+/// must be the same on every run, or a ratchet minimum set from one run fails another (integration
+/// of p05 round 11). The canary is the run's only random input to tenant B's rows: it may hold none
+/// of the letters the check searches or filters by, and tenant B's generated people do not depend on it.
+/// </summary>
+public sealed class G1ListVolumeDeterminismTests
+{
+    [Fact]
+    public void The_volume_fixture_canary_holds_none_of_the_checked_letters_and_leaves_B_people_alone()
+    {
+        var canaries = Enumerable.Range(0, 200).Select(_ => G1VolumeFixture.NewCanary()).ToList();
+        Assert.Equal(canaries.Count, canaries.Distinct(StringComparer.Ordinal).Count());
+        foreach (var canary in canaries)
+        {
+            var plan = SeedPlan.GateAtVolume(canary, ErpTestEnvironment.Password, G1VolumeFixture.VolumeA, G1VolumeFixture.VolumeB);
+            var b = plan.Tenants[1];
+            // The canary marks B's names and its e-mail domain; the rest of those texts is fixed.
+            var held = ListVolume.CheckedLetters.Where(l => canary.Contains(l, StringComparison.OrdinalIgnoreCase)).ToList();
+            Assert.True(held.Count == 0, $"canary {canary} holds checked letters {string.Join(", ", held)}");
+            Assert.Equal(canary, b.Canary);
+            Assert.Equal(SeedPlan.GateVolumeSeedB, b.VolumeRowsSeed);
+        }
     }
 }
