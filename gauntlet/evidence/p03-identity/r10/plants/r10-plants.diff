@@ -1,0 +1,140 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+index 8f846966..fe3ef553 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+@@ -281,7 +281,7 @@ internal static class PasskeyEndpoints
+     private static async Task<Results<Ok<PasskeysRemovedResponse>, ProblemHttpResult>> RemoveOfUser(
+         Guid id, Guid? passkeyId, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await UserEndpoints.TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (passkeyId is null && await UserEndpoints.TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
+index 2671e290..43d973b6 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
+@@ -63,6 +63,8 @@ internal sealed class SignInService(
+ {
+     private sealed record Match(string Challenge, Guid TenantId);
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTimeOffset> PauseMemo = new(StringComparer.OrdinalIgnoreCase);
++
+     public async Task<SignInOutcome> SignInAsync(string email, string password, string? newPassword, string? workspace, HttpContext http, CancellationToken cancellationToken)
+     {
+         // A request that arrived with another (valid) session is already bound to that tenant.
+@@ -107,8 +109,13 @@ internal sealed class SignInService(
+         }
+         if (matches.Count == 0)
+         {
++            if (pausedUntil is { } p) PauseMemo[email.Trim()] = p;
+             return pausedUntil is { } until ? new SignInOutcome.Paused(until) : new SignInOutcome.Failed();
+         }
++        if (PauseMemo.TryGetValue(email.Trim(), out var memo) && memo > time.GetUtcNow())
++        {
++            return new SignInOutcome.Paused(memo);
++        }
+ 
+         var chosen = matches[0];
+         if (matches.Count > 1)
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs b/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
+index e6767535..7aae14e1 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
+@@ -442,6 +442,7 @@ internal static class IdentitySql
+             v_nth timestamptz;
+             v_until timestamptz;
+             v_decoy text;
++            v_first uuid;
+             r record;
+         BEGIN
+             IF coalesce(current_setting('app.tenant_id', true), '') <> '' THEN
+@@ -495,6 +496,7 @@ internal static class IdentitySql
+                  LIMIT 10
+             LOOP
+                 v_found := true;
++                v_first := coalesce(v_first, r.t);
+                 PERFORM set_config('app.tenant_id', r.t::text, true), set_config('app.tenant_tx', v_epoch, true);
+                 SELECT max(a.occurred_at) INTO v_success
+                   FROM identity.sign_in_attempts a
+@@ -527,7 +529,7 @@ internal static class IdentitySql
+                 IF v_outcome = 'matched' THEN
+                     v_matched := true;
+                     challenge := r.ch;
+-                    tenant_id := r.t;
++                    tenant_id := v_first;
+                     paused_until := NULL;
+                     RETURN NEXT;
+                 END IF;
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 6ab70f11..1679a13e 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -449,10 +449,6 @@ internal static class UserEndpoints
+     private static async Task<Results<NoContent, ProblemHttpResult>> Unblock(
+         Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+-        {
+-            return problem;
+-        }
+         // A concurrent request may have removed the user since the target check.
+         if (await db.Users.SingleOrDefaultAsync(u => u.Id == id, cancellationToken) is not { } user)
+         {
+@@ -495,7 +491,7 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<SessionsEndedResponse>, ProblemHttpResult>> RevokeSessions(
+         Guid id, bool? removePasskeys, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (removePasskeys != true && await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }
+@@ -569,7 +565,7 @@ internal static class UserEndpoints
+             return validator.ToResult();
+         }
+         // Who it is for comes first: a refusal never depends on the company asked for.
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (id == caller.UserId && await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }
+diff --git a/web/src/modules/identity/RolesPage.tsx b/web/src/modules/identity/RolesPage.tsx
+index 6e6951d4..33a2280c 100644
+--- a/web/src/modules/identity/RolesPage.tsx
++++ b/web/src/modules/identity/RolesPage.tsx
+@@ -234,7 +234,7 @@ function RoleEditor({
+     id: "identity.roles.delete",
+     labelKey: "identity.roles.delete",
+     groupKey: "identity.shortcuts.group",
+-    enabled: Boolean(role && actions.delete && !confirmDelete),
++    enabled: Boolean(role && !confirmDelete),
+     run: () => setConfirmDelete(true),
+   });
+ 
+diff --git a/web/src/modules/identity/UserPanel.tsx b/web/src/modules/identity/UserPanel.tsx
+index 2a6b8a79..a79ded17 100644
+--- a/web/src/modules/identity/UserPanel.tsx
++++ b/web/src/modules/identity/UserPanel.tsx
+@@ -629,7 +629,7 @@ function AccountActions({
+     id: "identity.users.signOutEverywhere",
+     labelKey: passkeyCount > 0 ? "identity.sessions.revokeAsk" : "identity.sessions.revoke",
+     groupKey: "identity.shortcuts.group",
+-    enabled: allowed.signOutEverywhere && !busy,
++    enabled: !busy,
+     run: startSignOutEverywhere,
+   });
+   useCommand({
+diff --git a/web/src/modules/identity/extensions.ts b/web/src/modules/identity/extensions.ts
+index 0452244f..438fb628 100644
+--- a/web/src/modules/identity/extensions.ts
++++ b/web/src/modules/identity/extensions.ts
+@@ -40,7 +40,6 @@ export const extensions: ModuleExtensions = {
+       labelKey: "identity.action.unblock",
+       keywordsKey: "identity.action.unblockKeywords",
+       permission: "identity.users.update",
+-      requires: ["identity.signIns.read"],
+       path: "/identity/users",
+       command: "forms.tab.history",
+       then: "identity.users.unblock",

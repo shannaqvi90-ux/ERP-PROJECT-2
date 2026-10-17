@@ -1,0 +1,172 @@
+ current_user | bypass 
+--------------+--------
+ erp_app      | f
+(1 row)
+
+     ?column?     | count 
+------------------+-------
+ no tenant: users |     0
+(1 row)
+
+ERROR:  permission denied for table sign_in_failures
+ERROR:  permission denied for table sign_in_secret
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+   ?column?    | count | count 
+---------------+-------+-------
+ A bound users |     0 |     0
+(1 row)
+
+   ?column?    | count | count 
+---------------+-------+-------
+ A bound roles |     0 |     0
+(1 row)
+
+     ?column?     | count | count 
+------------------+-------+-------
+ A bound attempts |     0 |     0
+(1 row)
+
+     ?column?     | count | count 
+------------------+-------+-------
+ A bound passkeys |     0 |     0
+(1 row)
+
+          ?column?          | count | count 
+----------------------------+-------+-------
+ A bound user_company_roles |     0 |     0
+(1 row)
+
+UPDATE 0
+DELETE 0
+ERROR:  new row violates row-level security policy for table "sign_in_attempts"
+ROLLBACK
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ERROR:  permission denied for table sign_in_failures
+ROLLBACK
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ERROR:  permission denied for table sign_in_failures
+ROLLBACK
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ERROR:  permission denied for table sign_in_failures
+ROLLBACK
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ challenge | tenant_id | paused_until 
+-----------+-----------+--------------
+(0 rows)
+
+ROLLBACK
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ challenge | tenant_id | paused_until 
+-----------+-----------+--------------
+(0 rows)
+
+ROLLBACK
+                   challenge                   | tenant_id | paused_until 
+-----------------------------------------------+-----------+--------------
+ pbkdf2-sha512$210000$wBX7B69//Dn8nVHmc/s8NQ== |           | 
+(1 row)
+
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "erp_auth"
+ERROR:  must be owner of table users
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity 
+----------+-------------------------+----------------+---------------------
+ identity | __ef_migrations_history | f              | f
+ identity | passkeys                | t              | t
+ identity | roles                   | t              | t
+ identity | sessions                | t              | t
+ identity | sign_in_attempts        | t              | t
+ identity | sign_in_failures        | f              | f
+ identity | sign_in_secret          | f              | f
+ identity | user_company_roles      | t              | t
+ identity | user_credentials        | t              | t
+ identity | user_roles              | t              | t
+ identity | users                   | t              | t
+(11 rows)
+
+     tablename      |      policyname      |  cmd   |   roles    
+--------------------+----------------------+--------+------------
+ passkeys           | tenant_isolation     | ALL    | {public}
+ roles              | tenant_isolation     | ALL    | {public}
+ sessions           | auth_resolver_read   | SELECT | {erp_auth}
+ sessions           | tenant_isolation     | ALL    | {public}
+ sign_in_attempts   | tenant_isolation     | ALL    | {public}
+ user_company_roles | company_scope        | ALL    | {public}
+ user_company_roles | company_scope_delete | DELETE | {public}
+ user_company_roles | company_scope_update | UPDATE | {public}
+ user_company_roles | tenant_isolation     | ALL    | {public}
+ user_credentials   | auth_resolver_read   | SELECT | {erp_auth}
+ user_credentials   | tenant_isolation     | ALL    | {public}
+ user_roles         | tenant_isolation     | ALL    | {public}
+ users              | auth_resolver_read   | SELECT | {erp_auth}
+ users              | tenant_isolation     | ALL    | {public}
+(14 rows)
+
+  rolname  | rolbypassrls | rolsuper 
+-----------+--------------+----------
+ erp_owner | f            | f
+ erp_app   | f            | f
+ erp_auth  | f            | f
+(3 rows)
+
+                 qual                  
+---------------------------------------
+ (tenant_id = erp.current_tenant_id())
+(1 row)
+
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1792227698.896294
+(1 row)
+
+   ?column?    | count  | count 
+---------------+--------+-------
+ A bound users | 100004 |     0
+(1 row)
+
+     ?column?     | count | count 
+------------------+-------+-------
+ A bound attempts |     4 |     0
+(1 row)
+
+     ?column?     | count | count 
+------------------+-------+-------
+ A bound passkeys |     0 |     0
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "user_roles"
+ROLLBACK

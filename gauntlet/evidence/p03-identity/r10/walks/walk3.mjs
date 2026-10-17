@@ -1,0 +1,31 @@
+import {open,signIn,page,shot} from './lib.mjs';
+import fs from 'node:fs';
+const log=[]; const L=s=>{log.push(s);console.log(s)};
+const {b,p}=await open('en'); await signIn(p,'admin@alnoor.example');
+const stamp=Date.now().toString(36).slice(-4);
+await p.keyboard.press('g'); await p.keyboard.press('r'); await p.waitForTimeout(1500);
+await p.keyboard.press('Alt+n'); await p.waitForTimeout(800);
+L('focus: '+await p.evaluate(()=>document.activeElement?.getAttribute('aria-label')||document.activeElement?.name));
+await p.keyboard.type('Sales clerk '+stamp); await p.keyboard.press('Tab'); await p.keyboard.type('موظف مبيعات '+stamp);
+await p.getByRole('searchbox',{name:'Search permissions'}).focus(); await p.keyboard.type('view');
+await p.waitForTimeout(500);
+L('rows shown after "view": '+(await p.getByRole('checkbox').filter({visible:true}).count()));
+await p.getByRole('button',{name:'Select all shown'}).focus(); await p.keyboard.press('Enter'); await p.waitForTimeout(300);
+L('selected text: '+await p.getByText(/permissions? selected/).textContent());
+await shot(p,'06-new-role-matrix-search-select-all-en.jpg');
+await p.keyboard.press('Control+Enter'); await p.waitForTimeout(2000);
+const after=await page(p); L('after save: '+after.slice(after.indexOf('region "Details"'),after.indexOf('region "Details"')+500));
+// copy via palette (new this round)
+await p.keyboard.press('Control+k'); await p.waitForTimeout(400); await p.keyboard.type('copy'); await p.waitForTimeout(800);
+const opts=await p.getByRole('option').allTextContents(); L('palette "copy": '+opts.join(' | '));
+await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
+const cp=await page(p); L('after copy: '+cp.slice(cp.indexOf('region "Details"'),cp.indexOf('region "Details"')+700));
+await shot(p,'tmp-copy.jpg');
+await p.keyboard.press('Control+Enter'); await p.waitForTimeout(1500);
+// delete the copy via palette
+await p.keyboard.press('Control+k'); await p.waitForTimeout(400); await p.keyboard.type('delete role'); await p.waitForTimeout(800);
+L('palette "delete role": '+(await p.getByRole('option').allTextContents()).join(' | '));
+await p.keyboard.press('Enter'); await p.waitForTimeout(800);
+const dl=await page(p); L('delete ask: '+(dl.match(/(dialog|alertdialog)[^\n]*\n(.*\n){0,8}/)||[''])[0]);
+await shot(p,'tmp-delete.jpg');
+fs.writeFileSync('walk3.txt',log.join('\n')); await b.close();

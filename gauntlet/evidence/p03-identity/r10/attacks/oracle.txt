@@ -1,0 +1,26 @@
+B user  PUT /api/identity/users/{id}                 {"displayName":"x","   400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"isActive":[{"code":"
+B user  PUT /api/identity/users/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"displayName":[{"code
+B user  PUT /api/identity/roles/{id}                 {"nameEn":"x","nameA   404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound",}
+B user  PUT /api/identity/roles/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"nameEn":[{"code":"re
+B user  PUT /api/identity/users/{id}/default-company {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"version":[{"code":"r
+B user  DELETE /api/identity/users/{id}                 undefined 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound",}
+B role  PUT /api/identity/users/{id}                 {"displayName":"x","   400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"isActive":[{"code":"
+B role  PUT /api/identity/users/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"displayName":[{"code
+B role  PUT /api/identity/roles/{id}                 {"nameEn":"x","nameA   404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound",}
+B role  PUT /api/identity/roles/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"nameEn":[{"code":"re
+B role  PUT /api/identity/users/{id}/default-company {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"version":[{"code":"r
+B role  DELETE /api/identity/users/{id}                 undefined 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound",}
+random  PUT /api/identity/users/{id}                 {"displayName":"x","   400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"isActive":[{"code":"
+random  PUT /api/identity/users/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"displayName":[{"code
+random  PUT /api/identity/roles/{id}                 {"nameEn":"x","nameA   404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound",}
+random  PUT /api/identity/roles/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"nameEn":[{"code":"re
+random  PUT /api/identity/users/{id}/default-company {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"version":[{"code":"r
+random  DELETE /api/identity/users/{id}                 undefined 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound",}
+A user  PUT /api/identity/users/{id}                 {"displayName":"x","   400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"isActive":[{"code":"
+A user  PUT /api/identity/users/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"displayName":[{"code
+A user  PUT /api/identity/roles/{id}                 {"nameEn":"x","nameA   404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound",}
+A user  PUT /api/identity/roles/{id}                 {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"nameEn":[{"code":"re
+A user  PUT /api/identity/users/{id}/default-company {}                     400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation",,"errors":{"version":[{"code":"r
+A user  DELETE /api/identity/users/{id}                 undefined 204 
+matching/active search B email 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-084d4113954003459dcc5010511918b0-52dda28194ceb6af-00","errors":{"expectedCount
+matching/active filter B email 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-00e2d6d81c9db3f0dbb13d40874b97b7-a17876a48f0bbc93-00","errors":{"expectedCount

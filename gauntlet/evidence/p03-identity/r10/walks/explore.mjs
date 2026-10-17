@@ -1,0 +1,16 @@
+import { chromium } from 'playwright-core';
+const BASE='http://localhost:20350';
+const b=await chromium.launch({executablePath:process.env.HOME+'/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome'});
+const p=await b.newPage({viewport:{width:1600,height:900}});
+await p.goto(BASE+'/');
+console.log((await p.locator('body').ariaSnapshot()).slice(0,1500));
+await p.getByRole('textbox',{name:'E-mail'}).fill('admin@alnoor.example');
+await p.getByRole('textbox',{name:'Password'}).fill('Demo-Pass-2026');
+await p.keyboard.press('Enter');
+await p.waitForTimeout(2500);
+await p.keyboard.press('g'); await p.keyboard.press('u');
+await p.waitForTimeout(2500);
+console.log('URL',p.url());
+console.log((await p.locator('body').ariaSnapshot()).slice(0,5000));
+await p.screenshot({path:'explore.png'});
+await b.close();

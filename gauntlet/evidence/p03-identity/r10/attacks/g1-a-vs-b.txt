@@ -1,0 +1,77 @@
+B create role 201 {"id":"01a14916-8be4-733e-9198-4550491eb190","nameEn":"Canary role zzcanarybmvc60wql","nameAr":"دور zzcanarybmvc60wql","permissions":["identity.users.read"],"isSystem":false,"userCount":0,"version":33
+B create user 201 {"id":"01a14916-8c02-7445-be52-86764af3b248","email":"zzcanarybmvc60wql@gulfsteel.example","displayName":"Canary zzcanarybmvc60wql","language":"en","isActive":true,"roleIds":["01a14916-8be4-733e-9198-
+B create view 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-985cc5942b7bdb2768cb874f0244ece1-7db24
+B create shared view 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-441b96c45fe4462da9d6fbb56538a5e1-d58e8
+B ids collected: 30
+calls judged: 1049
+B state hash before 61c95dc1c2807680eb720c2a5bab85226ed1dcb372b2606c009d5144a36f1f1c
+B state hash after  61c95dc1c2807680eb720c2a5bab85226ed1dcb372b2606c009d5144a36f1f1c
+same: true
+leaks: 0
+
+status tally:
+  GET /api/auth/session 200 x4
+  GET /api/identity/users 200 x4
+  POST /api/identity/users 400 x1
+  GET /api/identity/users/{id} 404 x30
+  PUT /api/identity/users/{id} 400 x29
+  PUT /api/identity/users/{id} 404 x1
+  DELETE /api/identity/users/{id} 404 x30
+  POST /api/identity/users/{id}/password 404 x30
+  POST /api/identity/users/{id}/unblock 404 x30
+  POST /api/identity/users/{id}/sessions/revoke 404 x30
+  GET /api/identity/users/{id}/access 404 x30
+  GET /api/identity/users/{id}/default-company 404 x30
+  PUT /api/identity/users/{id}/default-company 400 x29
+  PUT /api/identity/users/{id}/default-company 404 x1
+  GET /api/identity/companies 200 x4
+  GET /api/identity/users/{id}/sign-ins 404 x30
+  POST /api/identity/users/matching/active 400 x1
+  GET /api/identity/roles 200 x3
+  GET /api/identity/roles 400 x1
+  POST /api/identity/roles 409 x1
+  GET /api/identity/roles/{id} 404 x30
+  PUT /api/identity/roles/{id} 400 x29
+  PUT /api/identity/roles/{id} 404 x1
+  DELETE /api/identity/roles/{id} 404 x30
+  POST /api/identity/roles/{id}/copy 404 x30
+  GET /api/identity/permissions 200 x4
+  PUT /api/identity/me/preferences 200 x1
+  GET /api/identity/me/passkeys 200 x4
+  POST /api/identity/me/passkeys 400 x1
+  POST /api/identity/me/passkeys/options 200 x1
+  GET /api/identity/me/passkeys/{id} 404 x30
+  PUT /api/identity/me/passkeys/{id} 400 x29
+  PUT /api/identity/me/passkeys/{id} 404 x1
+  DELETE /api/identity/me/passkeys/{id} 404 x30
+  GET /api/identity/users/{id}/passkeys 404 x30
+  DELETE /api/identity/users/{id}/passkeys 404 x30
+  GET /api/lists/identity.users/definition 200 x4
+  GET /api/lists/identity.users/views 200 x4
+  POST /api/lists/identity.users/views 400 x1
+  GET /api/lists/identity.users/views/{id} 404 x30
+  PUT /api/lists/identity.users/views/{id} 400 x29
+  PUT /api/lists/identity.users/views/{id} 404 x1
+  DELETE /api/lists/identity.users/views/{id} 404 x30
+  GET /api/lists/identity.users/shared-views/{id} 404 x30
+  PUT /api/lists/identity.users/shared-views/{id} 400 x29
+  PUT /api/lists/identity.users/shared-views/{id} 404 x1
+  DELETE /api/lists/identity.users/shared-views/{id} 404 x30
+  POST /api/lists/identity.users/shared-views 400 x1
+  GET /api/lists/identity.roles/definition 200 x4
+  GET /api/lists/identity.roles/views 200 x4
+  POST /api/lists/identity.roles/views 400 x1
+  GET /api/lists/identity.roles/views/{id} 404 x30
+  PUT /api/lists/identity.roles/views/{id} 400 x29
+  PUT /api/lists/identity.roles/views/{id} 404 x1
+  DELETE /api/lists/identity.roles/views/{id} 404 x30
+  GET /api/lists/identity.roles/shared-views/{id} 404 x30
+  PUT /api/lists/identity.roles/shared-views/{id} 400 x29
+  PUT /api/lists/identity.roles/shared-views/{id} 404 x1
+  DELETE /api/lists/identity.roles/shared-views/{id} 404 x30
+  POST /api/lists/identity.roles/shared-views 400 x1
+  GET /api/reports/run/identity.usersByRole 200 x4
+  GET /api/reports/run/identity.roleSummary 200 x4
+  GET /api/reports/lists/identity.users 200 x4
+  GET /api/reports/lists/identity.roles 200 x3
+  GET /api/reports/lists/identity.roles 400 x1

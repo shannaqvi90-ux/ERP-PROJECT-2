@@ -1,0 +1,35 @@
+focus: nameEn
+rows shown after "view": 15
+selected text: 9 permissions selected
+after save: region "Details":
+      - form "Sales clerk i3rv":
+        - heading "Sales clerk i3rv" [level=2]
+        - toolbar "Record actions":
+          - button "Previous record"
+          - text: 4 of 6
+          - button "Next record"
+          - button "Copy role"
+          - button "Delete role"
+          - button "Save"
+          - button "Close"
+        - group:
+          - text: Name in English
+          - textbox "Name in English": Sales clerk i3rv
+          - text: Name in Arabic
+          - te
+palette "copy": Copy role
+after copy: region "Details":
+      - form "Copy Sales clerk i3rv":
+        - heading "Copy Sales clerk i3rv" [level=2]
+        - toolbar "Record actions":
+          - button "Copy role"
+          - button "Close"
+        - group:
+          - text: Name in English
+          - textbox "Name in English": Sales clerk i3rv (copy)
+          - text: Name in Arabic
+          - textbox "Name in Arabic": موظف مبيعات i3rv (2)
+    - text: ↑ ↓ move · Enter open · Space select · / search · Esc back
+- contentinfo: Signed in as Mariam Al Mansoori · workspace alnoor Session valid until 18 Oct 2026, 1:12 AM
+palette "delete role": Delete role
+delete ask: 

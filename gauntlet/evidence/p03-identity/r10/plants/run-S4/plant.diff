@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+index 8f846966..fe3ef553 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/Passkeys/PasskeyEndpoints.cs
+@@ -281,7 +281,7 @@ internal static class PasskeyEndpoints
+     private static async Task<Results<Ok<PasskeysRemovedResponse>, ProblemHttpResult>> RemoveOfUser(
+         Guid id, Guid? passkeyId, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await UserEndpoints.TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (passkeyId is null && await UserEndpoints.TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }
