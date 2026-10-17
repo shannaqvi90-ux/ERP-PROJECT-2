@@ -447,6 +447,20 @@ describe("the commands of the screen on show", () => {
     expect(document.activeElement?.getAttribute("name")).toBe("email");
   });
 
+  it("are found by the words of the module action they stand for: \"print compan\" on the companies screen (critic p02 round 10)", async () => {
+    await open("/tenancy/companies", every);
+    await openPalette("print compan");
+    expect(offered()[0]).toMatchObject({ group: en("shell.palette.group.here"), title: en("lists.shortcut.print") });
+    // Still offered once: the module's own entry is not listed again under Actions.
+    expect(offered().filter((o) => o.title === en("tenancy.action.printCompanies"))).toHaveLength(0);
+    press({ code: "Escape", key: "Escape" });
+    await settle();
+    // And on another screen the module's entry itself is found by the same words.
+    await open("/identity/users", every);
+    await openPalette("print compan");
+    expect(offered()[0]?.title).toBe(en("tenancy.action.printCompanies"));
+  });
+
   it("follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again", async () => {
     await open("/identity/roles?open=r-clerk", every);
     await openPalette("copy");
