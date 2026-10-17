@@ -53,6 +53,14 @@ layer after p00's fix lands.
     way none of the rules can judge (uneven steps, changing text), is a finding unless reviewed as
     random by design.
   Both directions.
+- **Pacing on a busy machine.** Y's turns start as long before X's fourth as X's own turns took
+  (three turns plus short pauses), so they end a moment before it whatever the load; if any of X's
+  turns starts late against its schedule, the lateness is added to the tolerance of a time's
+  distance (it moves "X's previous turn" by as much).
+- **Deterministic counts.** The gate seed's markers (random per test process, any letter case) are
+  replaced by a placeholder and the digits of identifiers are written as letters before a value is
+  split, so the counts the ratchet holds do not depend on random digits; identifiers stay in the
+  text and are compared whole.
 - **Self-test.** `ShellPlantModule` wraps the real endpoints on a second host over the same
   database and keeps every tenant's activity in a temp file (outside the process, so the process
   state gate cannot see it): L4 (switch count in cookie `erp.tip`), L6 (previous switch time,

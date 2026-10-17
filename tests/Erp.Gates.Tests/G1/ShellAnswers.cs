@@ -70,11 +70,12 @@ public static partial class ShellAnswers
         "Date", "Content-Length", "Transfer-Encoding", "Connection", "Keep-Alive", "Server",
     };
 
-    /// <summary>The pace of one tenant's own turns, and how long before X's fourth turn Y's turns
-    /// start (they end a moment before it). Four seconds keep a time sent as an HTTP date (a second's
+    /// <summary>The pace of one tenant's own turns; Y's turns end a moment before X's fourth (see
+    /// <see cref="JudgeAsync"/>). Four seconds keep a time sent as an HTTP date (a second's
     /// resolution) of Y's last turn apart from one of X's previous turn.</summary>
     public static readonly TimeSpan Pace = TimeSpan.FromSeconds(4);
-    private static readonly TimeSpan OtherLead = TimeSpan.FromSeconds(1.1);
+    private static readonly TimeSpan MinimumLead = TimeSpan.FromMilliseconds(300);
+    private static readonly TimeSpan OtherPause = TimeSpan.FromMilliseconds(80);
     private const int OtherTurns = 3;
 
     /// <summary>The preferences write's documented values, every combination; the last is Arabic
@@ -93,6 +94,10 @@ public static partial class ShellAnswers
         public int NumbersJudged { get; set; }
         public int TimesJudged { get; set; }
         public HashSet<string> EndpointsJudged { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>The tenants' seed markers (random per test process, in any letter case): replaced
+        /// by a placeholder before a value is split, so the counts of numbers judged do not depend on their digits.</summary>
+        internal List<string> Canaries { get; } = [];
     }
 
     /// <summary>One answer: its slots (compared) and the session token it set (sent on, never compared).</summary>
@@ -115,6 +120,7 @@ public static partial class ShellAnswers
     public static async Task<Result> RunAsync(ErpTestEnvironment env, IReadOnlyList<(string Language, string Numerals)>? variants = null)
     {
         var result = new Result();
+        result.Canaries.AddRange(env.Plan.Tenants.Select(t => t.Canary).OfType<string>().Where(c => c.Length > 0));
         using var client = env.Factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
         var a = new Actor("tenant A", env.TenantA, env.Email(env.TenantA, "admin"));
         var b = new Actor("tenant B", env.TenantB, env.Email(env.TenantB, "admin"));
@@ -160,31 +166,42 @@ public static partial class ShellAnswers
         await turn.Run(client, x);
         var start = DateTimeOffset.UtcNow + Pace;
         var alone = new List<List<Answer>>();
+        // How late a turn started against its schedule (a busy machine): added to the tolerance of
+        // a time's distance, as it moves "X's previous turn" by as much.
+        var late = TimeSpan.Zero;
         for (var i = 0; i < 3; i++)
         {
             await WaitUntilAsync(start + Pace * i);
             alone.Add(await turn.Run(client, x));
+            late = Max(late, alone[^1][0].Start - (start + Pace * i));
         }
+        // Y's turns end just before X's fourth: they start as long before it as X's own turns took,
+        // so a time of Y's last request is a moment back, far from X's previous turn.
+        var turnTaken = alone.Max(t => t[^1].End - t[0].Start);
+        var lead = Max(MinimumLead, (turnTaken + OtherPause) * OtherTurns + OtherPause);
         var fourth = start + Pace * 3;
-        await WaitUntilAsync(fourth - OtherLead);
+        await WaitUntilAsync(fourth - lead);
         for (var i = 0; i < OtherTurns; i++)
         {
             await turn.Run(client, y);
-            await Task.Delay(TimeSpan.FromMilliseconds(80));
+            await Task.Delay(OtherPause);
         }
         await WaitUntilAsync(fourth);
         var after = await turn.Run(client, x);
+        late = Max(late, after[0].Start - fourth);
 
         for (var index = 0; index < after.Count; index++)
         {
             var label = $"{x.Label} {turn.Name}: {after[index].Request}";
             result.EndpointsJudged.Add(after[index].Request.Split(' ', 3) is [var method, var path, ..] ? $"{method} {path.Split('?')[0]}" : after[index].Request);
             var history = alone.Select(t => t[index]).ToList();
-            JudgeAnswer(label, history, after[index], x, y, result);
+            JudgeAnswer(label, history, after[index], x, y, late, result);
         }
     }
 
-    private static void JudgeAnswer(string label, List<Answer> alone, Answer after, Actor x, Actor y, Result result)
+    private static TimeSpan Max(TimeSpan a, TimeSpan b) => a > b ? a : b;
+
+    private static void JudgeAnswer(string label, List<Answer> alone, Answer after, Actor x, Actor y, TimeSpan late, Result result)
     {
         var keys = alone.SelectMany(a => a.Slots.Keys).Concat(after.Slots.Keys).Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal);
         foreach (var key in keys)
@@ -217,8 +234,8 @@ public static partial class ShellAnswers
                 continue;
             }
             var history = alone.Where(a => a.Slots.ContainsKey(key)).ToList();
-            var parts = history.Select(a => Split(a.Slots[key])).ToList();
-            var current = Split(now);
+            var parts = history.Select(a => Split(Unmark(a.Slots[key], result.Canaries))).ToList();
+            var current = Split(Unmark(now, result.Canaries));
             var random = RandomByDesign.ContainsKey(key);
             if (parts.Select(p => p.Text).Distinct(StringComparer.Ordinal).Count() > 1 || parts.Any(p => p.Numbers.Count != current.Numbers.Count || p.Times.Count != current.Times.Count))
             {
@@ -273,7 +290,7 @@ public static partial class ShellAnswers
                 var offsets = history.Select((h, i) => (times[i] - h.Start).TotalMilliseconds).ToList();
                 var offset = (at - after.Start).TotalMilliseconds;
                 var longest = history.Append(after).Max(h => (h.End - h.Start).TotalMilliseconds);
-                var tolerance = 250 + Math.Max(resolution.TotalMilliseconds, offsets.Max() - offsets.Min()) + longest;
+                var tolerance = 250 + Math.Max(resolution.TotalMilliseconds, offsets.Max() - offsets.Min()) + longest + late.TotalMilliseconds;
                 if (offset < offsets.Min() - tolerance || offset > offsets.Max() + tolerance)
                 {
                     result.Findings.Add($"{label} {key}: time {t + 1} is {Ms(offsets.Min())} to {Ms(offsets.Max())} from {x.Label}'s request alone, {Ms(offset)} after {y.Label}'s turns ({at:O})");
@@ -286,6 +303,9 @@ public static partial class ShellAnswers
             }
         }
     }
+
+    private static string Unmark(string value, List<string> canaries) =>
+        canaries.Aggregate(value, (text, canary) => text.Replace(canary, "<canary>", StringComparison.OrdinalIgnoreCase));
 
     private static bool Inside(DateTimeOffset at, List<(DateTimeOffset Start, DateTimeOffset End)> windows) =>
         windows.Any(w => at >= w.Start.AddMilliseconds(-2) && at <= w.End.AddMilliseconds(2));
@@ -398,9 +418,10 @@ public static partial class ShellAnswers
         return slots;
     }
 
-    /// <summary>A credential's shape: its length and which kinds of characters it holds.</summary>
+    /// <summary>A credential's shape: its length and its alphabet (a random token's characters are
+    /// any of its alphabet's, so which ones occur is not compared).</summary>
     private static string Shape(string value) =>
-        value.Length == 0 ? "<empty>" : $"<{value.Length} characters{(value.Any(char.IsDigit) ? ", digits" : "")}{(value.Any(char.IsLetter) ? ", letters" : "")}>";
+        value.Length == 0 ? "<empty>" : $"<{value.Length} characters of {(value.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_') ? "base64url" : value.All(c => char.IsAsciiLetterOrDigit(c) || c is '+' or '/' or '=' or '.' or '-' or '_') ? "base64 and dots" : "other characters")}>";
 
     private static void Leaves(JsonElement element, string path, Dictionary<string, string> slots)
     {
@@ -460,6 +481,9 @@ public static partial class ShellAnswers
             times.Add((at, TimeSpan.FromSeconds(1)));
             return "<time>";
         });
+        // Identifiers stay in the text, compared whole, with their digits written as letters so no
+        // count of numbers judged depends on the digits of a random id.
+        text = GuidRegex().Replace(text, m => "<id:" + new string(m.Value.Select(c => char.IsAsciiDigit(c) ? (char)('g' + (c - '0')) : c).ToArray()) + ">");
         var numbers = new List<long>();
         text = NumberRegex().Replace(text, m =>
         {
@@ -479,6 +503,9 @@ public static partial class ShellAnswers
 
     [GeneratedRegex(@"(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT")]
     private static partial Regex HttpDateRegex();
+
+    [GeneratedRegex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")]
+    private static partial Regex GuidRegex();
 
     /// <summary>A run of digits that fits a long (a longer run stays in the text).</summary>
     [GeneratedRegex(@"(?<![0-9٠-٩۰-۹])[0-9٠-٩۰-۹]{1,18}(?![0-9٠-٩۰-۹])")]
