@@ -46,8 +46,11 @@ Measured on the real drivers in this round (`saved_state.writes_caused` of the r
 - Our product: every save went out before the click or key had finished (lag after the step's end
   from -0.008 s to +0.007 s); the second write of create-restricted-user (the access grant, sent once
   the user exists) went out 0.23-0.36 s after the step, on a machine at load 80.
-- The reference: its declared writes went out within the step too (see the baselines'
-  `writes_caused`); its form saves once a pending onchange is answered, which is the one link.
+- The reference (the baselines of this round, `saved_state.writes_caused`): every declared write
+  went out during its step or within 0.06 s of its end, bar add-rate's save of the rate line, 0.31-
+  0.32 s after the key or click that saves it; other writes up to 0.35 s after a step (a
+  dashboard's call 0.63 s after a menu click), at load 15-55. Its form saves once a pending onchange is
+  answered, which is the one link; the import's later batches continue the first (below).
 
 A page answers a key or a click at once; its framework may take a few event-loop turns (a scheduler
 task, a microtask chain) or wait for one answer it asked for first. One second leaves a wide margin
@@ -127,14 +130,36 @@ reviewed code.
 
 ## Tests and mutations
 
-- `test/measured-part.test.mjs` (12 tests): controls C1-C4 (a save sent at once; a few event-loop
+- `test/measured-part.test.mjs` (13 tests): controls C1-C4 (a save sent at once; a few event-loop
   turns later; after a slow check's answer; while the page changes its address), plants R1, R2, R2b
-  with R2c, R3, and set-up's watch (X1, address change against a new document, a channel-like
-  address, `ctx.settleWrites()` refused inside the clock). `compare.measuredPartPlants`: 12.
+  with R2c, R2d, R3, and set-up's watch (X1, address change against a new document, a channel-like
+  address, `ctx.settleWrites()` refused inside the clock). `compare.measuredPartPlants`: 13.
 - `test/before-clock.test.mjs`: the measured-part unit test is stricter (a value only in a page's
   request body is refused, a write needs a step-caused time) and a unit test of `causedWrites`.
-- Mutations M54-M61 (8 new, 61 in all), each caught by `test/measured-part.test.mjs`.
+- Mutations M54-M62 (9 new, 62 in all), each caught by `test/measured-part.test.mjs`; M47 and M50
+  follow the lines they mutate, which this round rewrote.
+
+### A decoy beside the page's own write
+
+One step-caused declared write is not enough on its own: a step could cause a decoy (an approval of
+another record) while the page sends the real one from a timer. So every declared write the page
+sent during the measured part must be the person's: caused by a step, or the next part of one that
+was (a write of the same kind that went out within the reaction time of the previous one's answer:
+Odoo's import sends its rows in batches, each once the last is answered). Plant R2d, mutation M62.
+On the real drivers, every declared write of both products in this round was caused by its step,
+bar the import's later batches, which continue the first.
 
 ## Cost
 
-See the end of this record (filled in from the measured runs of this round).
+Measured on this machine (user plus system time of the process and its children, `/usr/bin/time`),
+with other agents' verifies running beside it:
+
+- `test/measured-part.test.mjs` (13 tests, 12 with a browser): 19 s (13.2 user, 6.0 system).
+- The nine new instrument mutations (M54-M62, each running only the self-tests named for it, one
+  control for the file): 30 s (21.4 user, 8.5 system).
+- The two new ours drivers in the verify health check: a few seconds each.
+- The whole comparison suite: 286 s (390 tests; 230 s for 374 in round 10); all 62 mutations:
+  156 s.
+
+So the round adds about one minute of processor time to `./erp verify`, inside the owner's 10,500 s
+maximum (`verify.cpuSeconds`, needs-human #12, unchanged; this round changes no maximum).
