@@ -109,6 +109,18 @@ const plants = [
       { file: "src/modules/tenancy/extensions.tsx", find: "import { loadAll, worksInEveryCompany, type ListPage } from", replace: "import { loadAll, type ListPage } from" },
     ],
   },
+  {
+    id: "PA11",
+    what: "Allow sign-in again offered without the sign-in history permission its record's command needs (critic p03 round 10, plant U1)",
+    tests: "runs to its end",
+    edits: [{ file: "src/modules/identity/extensions.ts", find: '      requires: ["identity.signIns.read"],\n', replace: "" }],
+  },
+  {
+    id: "PA12",
+    what: "Reset password offered from a user's other tabs to someone who may not reset passwords (the record's commands follow it to every tab, critic p03 round 10)",
+    tests: "on every tab",
+    edits: [{ file: "src/modules/identity/UserPanel.tsx", find: "    enabled: elsewhere && allowed.resetPassword,", replace: "    enabled: elsewhere," }],
+  },
 ];
 
 function copyWeb() {

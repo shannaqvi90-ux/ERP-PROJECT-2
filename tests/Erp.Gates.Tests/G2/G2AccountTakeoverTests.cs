@@ -92,7 +92,8 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
     /// <c>?removePasskeys=true</c> skips its target check (<see cref="RevokeBypassModule"/>), over
     /// this environment's database. The takeover check, run on that endpoint alone, must report
     /// the query value aimed at the Administrator; the request built from path and body alone (all
-    /// the check sent before round 10) is refused there as everywhere.
+    /// the check sent before round 10) is refused there as everywhere. The plant ends the
+    /// Administrator's sessions too, and the check names that as well rather than failing on a 401.
     /// </summary>
     [Fact]
     public async Task The_takeover_check_catches_a_target_check_skipped_for_a_documented_query_value()
@@ -106,6 +107,9 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         Assert.Contains(result.Problems, p => p.StartsWith(revoke + ": the Administrator's passkeys changed", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => p.StartsWith(revoke + ": aimed at", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => p.StartsWith(revoke + "?removePasskeys=false", StringComparison.Ordinal));
+        // The plant also ends the Administrator's sessions, as the critic's S1 did: the check says
+        // so by endpoint instead of stopping on the next read's 401 (critic p03 round 10).
+        Assert.Contains(result.Problems, p => p.StartsWith(revoke + ": the Administrator's session ended", StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -284,6 +288,20 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             }
             var callerLabel = $"a user holding only [{string.Join(", ", permissions)}]";
             await AimQueriesAsync(caller, callerLabel, endpoint, adminId, administratorText, "the Administrator", tag);
+            // First whether the Administrator is still signed in: a request above that ended their
+            // session would make every read below answer 401, and the gate would stop on that
+            // instead of naming the endpoint and the query value (critic p03 round 10, plant S1).
+            if (!(await admin.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("authenticated").GetBoolean())
+            {
+                problems.Add($"{endpoint}: the Administrator's session ended (aimed at them by {callerLabel}, as built or with a documented query value)");
+                // What else it did to them, read in a session of their own.
+                using var again = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+                if (await again.GetStringAsync($"/api/identity/users/{adminId}/passkeys") is var passkeysNow && passkeysNow != passkeysBefore)
+                {
+                    problems.Add($"{endpoint}: the Administrator's passkeys changed: before {Short(passkeysBefore)}; after {Short(passkeysNow)}");
+                }
+                break;
+            }
             var after = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{adminId}");
             if (before.GetProperty("version").GetUInt32() != after.GetProperty("version").GetUInt32())
             {

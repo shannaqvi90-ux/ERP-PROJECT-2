@@ -113,11 +113,18 @@ const workplace = {
 
 /** The app at `path` for a user with `permissions`; writes are answered as a server would answer
  * them when allowed (the gate judges what is sent, not what the server would refuse). */
-async function open(path: string, permissions: string[], options: { language?: "en" | "ar"; companies?: (typeof company)[]; neverSignedIn?: boolean; slowLists?: boolean } = {}) {
+async function open(
+  path: string,
+  permissions: string[],
+  options: { language?: "en" | "ar"; companies?: (typeof company)[]; neverSignedIn?: boolean; slowLists?: boolean; bare?: boolean } = {},
+) {
   view?.unmount();
   window.history.replaceState(null, "", path);
   const companies = options.companies ?? [company];
-  const shown = options.neverSignedIn ? { ...user, lastSignInAt: null } : user;
+  // bare: the user holds no role and the role grants nothing, so no record is beyond anyone.
+  const base = options.bare ? { ...user, roleIds: [] } : user;
+  const shown = options.neverSignedIn ? { ...base, lastSignInAt: null } : base;
+  const role = options.bare ? { ...clerk, permissions: [] } : clerk;
   calls = mockFetch((method, url, body) => {
     const p = new URL(url, "http://localhost").pathname;
     if (url === "/api/auth/session") return { status: 200, body: session(permissions, options.language) };
@@ -133,8 +140,8 @@ async function open(path: string, permissions: string[], options: { language?: "
     if (p === "/api/identity/users/u1/sign-ins") return { status: 200, body: signIns };
     if (p === "/api/identity/users/u1/passkeys") return { status: 200, body: [] };
     if (p === "/api/identity/users/u1/access") return { status: 200, body: { userId: "u1", roles: [], permissions: [] } };
-    if (p === "/api/identity/roles") return { status: 200, body: { items: [clerk], total: 1, next: null } };
-    if (p === "/api/identity/roles/r-clerk") return { status: 200, body: clerk };
+    if (p === "/api/identity/roles") return { status: 200, body: { items: [role], total: 1, next: null } };
+    if (p === "/api/identity/roles/r-clerk") return { status: 200, body: role };
     if (p === "/api/identity/permissions") return { status: 200, body: [] };
     if (p === "/api/identity/companies") return { status: 200, body: [] };
     if (p === "/api/tenancy/companies") return { status: 200, body: { items: companies, total: companies.length, next: null } };
@@ -282,6 +289,42 @@ describe("module actions in the command palette", () => {
       expect(recordInAddress(), action.key).toBeNull();
     }
   });
+
+  // Critic p03 round 10 (plant U1): without its requires, Allow sign-in again was offered to a user
+  // who may change users but not see the sign-in history, and opened a tab they do not have; no
+  // test noticed. An action that asks for a record runs a command of that record (and maybe a
+  // second one), which the record offers only under its own conditions: for each permission of the
+  // action's module, a user holding everything but it is either not offered the action, or the
+  // action runs to its end for them (the record chosen offers every command it runs). The record is
+  // one no permission check of its own refuses (a user holding no role, a role granting nothing).
+  it("an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need", async () => {
+    const problems: string[] = [];
+    let runs = 0;
+    for (const action of extensions.actions.filter((a) => a.pick)) {
+      const module = action.permission.split(".")[0]!;
+      const screen = matchRoute(action.path)!.permission!;
+      for (const missing of every.filter((p) => p.startsWith(`${module}.`) && p !== action.permission && p !== screen)) {
+        const permissions = every.filter((p) => p !== missing);
+        // Not offered by the filter: nothing to run.
+        if (offeredActions([action], (p) => permissions.includes(p)).length === 0) continue;
+        await open("/", permissions, { bare: true });
+        await openPalette(en(action.labelKey));
+        const entry = offered().find((o) => o.title === en(action.labelKey) && o.group === en("shell.palette.group.actions"));
+        if (!entry) continue;
+        act(() => entry.option.click());
+        await settleUntilQuiet(() => calls, done);
+        if (document.querySelector("[data-pick-prompt]")) {
+          await chooseFirstRow();
+          await settleUntilQuiet(() => calls, done);
+        }
+        runs++;
+        if (!done()) problems.push(`${action.key} without ${missing}: offered, but the record chosen does not offer ${[action.command, action.then].filter(Boolean).join(" then ")}`);
+      }
+    }
+    expect(problems).toEqual([]);
+    console.log(`record actions run without one permission of their module: ${runs}`);
+    expect(runs).toBeGreaterThanOrEqual(ratchetMinimum("g2.paletteRequiresRuns"));
+  }, 60_000);
 
   it("Copy a role from home: the roles list asks for the role, and the role chosen opens its copy", async () => {
     await open("/", every);
@@ -444,6 +487,56 @@ describe("a record's commands and its buttons", () => {
     }
     // Not blind: each action was shown, and offered, to someone.
     for (const title of account) expect(seen.has(title), title).toBe(true);
+  });
+});
+
+describe("a record's commands on every tab", () => {
+  // Critic p03 round 10: with a user open on "What they can do" the palette offered no Reset
+  // password (the commands followed the Details tab, where their buttons are).
+  const account = [en("identity.reset.open"), en("identity.sessions.revoke"), en("identity.users.delete")];
+  const showTab = async (key: string) => {
+    const tab = [...document.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find((b) => b.textContent === en(key));
+    expect(tab, key).toBeDefined();
+    act(() => tab!.click());
+    await settleUntilQuiet(() => calls);
+  };
+  const here = () => offered().filter((o) => o.group === en("shell.palette.group.here"));
+
+  it("offers a user's account actions from every tab, exactly as on Details, and to a reader none", async () => {
+    for (const tab of ["identity.tab.access", "identity.tab.history"]) {
+      for (const [permissions, expected] of [[every, true], [reader, false]] as const) {
+        await open("/identity/users?open=u1", permissions, { neverSignedIn: true });
+        await showTab(tab);
+        await openPalette();
+        const titles = here().map((o) => o.title);
+        for (const title of account) expect(titles.includes(title), `${en(tab)}, ${permissions.length} permissions: "${title}"`).toBe(expected);
+        press({ code: "Escape", key: "Escape" });
+        await settle();
+      }
+    }
+  });
+
+  it("Reset password from \"What they can do\" opens Details with the reset's first choice focused; Delete user from the history asks first", async () => {
+    await open("/identity/users?open=u1", every, { neverSignedIn: true });
+    await showTab("identity.tab.access");
+    await openPalette(en("identity.reset.open"));
+    const reset = here().find((o) => o.title === en("identity.reset.open"));
+    expect(reset).toBeDefined();
+    act(() => reset!.option.click());
+    await settleUntilQuiet(() => calls);
+    expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe(en("identity.tab.details"));
+    expect(document.querySelector("fieldset.id-method")).not.toBeNull();
+    expect(document.activeElement).toBe(document.querySelector("fieldset.id-method input"));
+
+    await open("/identity/users?open=u1", every, { neverSignedIn: true });
+    await showTab("identity.tab.history");
+    const before = calls.length;
+    await openPalette(en("identity.users.delete"));
+    act(() => here().find((o) => o.title === en("identity.users.delete"))!.option.click());
+    await settleUntilQuiet(() => calls);
+    expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe(en("identity.tab.details"));
+    expect(document.querySelector(".id-confirm"), "Delete asks first").not.toBeNull();
+    expect(calls.slice(before).filter((c) => c.method !== "GET"), "nothing deleted before the answer").toEqual([]);
   });
 });
 

@@ -47,6 +47,68 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByRole("alert")).toHaveText("تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور ثم حاول مرة أخرى.");
   });
 
+  // Routed by p00's critics (rounds 7 to 10): after repeated failures the right password got only
+  // "Sign-in failed…", with no word that sign-in was paused or for how long. Its own account, so
+  // no other test meets the pause; its own browser, never signed in to the account, so the
+  // failures count against this client.
+  test("after repeated failures the right password is told sign-in is paused and until when, in English and Arabic, until an administrator allows it again", async ({ page, browser }) => {
+    const tag = Math.random().toString(36).slice(2, 8);
+    const email = `e2e.paused.${tag}@alnoor.example`;
+    const own = "Paused-Pass-2026";
+    const headers = { "X-Erp-Request": "1" };
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    const created = await page.request.post("/api/identity/users", {
+      headers,
+      data: { email, displayName: `Paused ${tag}`, language: "en", password: own, mustChangePassword: false, roleIds: [] },
+    });
+    expect(created.status()).toBe(201);
+    const { id } = (await created.json()) as { id: string };
+
+    const context = await browser.newContext({ baseURL: test.info().project.use.baseURL, locale: "en-US" });
+    const other = await context.newPage();
+    await freshStart(other, "en");
+    const alert = other.getByRole("alert");
+    const passwordField = other.locator('input[name="password"]');
+    await paceSignIn(other);
+    await other.keyboard.type(email);
+    await other.keyboard.press("Tab");
+    await other.keyboard.type("not-the-password");
+    await other.keyboard.press("Enter");
+    await expect(alert).toContainText("Sign-in failed");
+    let failures = 1;
+    while (!(await alert.textContent())?.includes("paused") && failures < 8) {
+      await passwordField.focus();
+      await paceSignIn(other);
+      await other.keyboard.type(`wrong-${failures}`);
+      await other.keyboard.press("Enter");
+      failures++;
+      await expect(passwordField).toHaveValue("");
+    }
+    // The right password now: paused, until when, and what to do, not "check your password".
+    await passwordField.focus();
+    await paceSignIn(other);
+    await other.keyboard.type(own);
+    await other.keyboard.press("Enter");
+    await expect(alert).toContainText("Sign-in with it from here is paused until");
+    await expect(alert).toContainText("ask your administrator to allow sign-in again");
+    await expect(alert).not.toContainText("Sign-in failed");
+    await expect(other.getByRole("button", { name: "Sign out" })).toHaveCount(0);
+    await other.getByRole("button", { name: "العربية" }).click();
+    await expect(other.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(alert).toContainText("توقف تسجيل الدخول به من هنا حتى");
+
+    // The administrator allows sign-in again: the right password signs in from that browser.
+    expect((await page.request.post(`/api/identity/users/${id}/unblock`, { headers })).status()).toBe(204);
+    await passwordField.focus();
+    await paceSignIn(other);
+    await other.keyboard.type(own);
+    await other.keyboard.press("Enter");
+    await expect(other.getByRole("button", { name: /^(Sign out|تسجيل الخروج)$/ })).toBeVisible();
+    await context.close();
+  });
+
   test("empty fields are explained without a round trip", async ({ page }) => {
     await freshStart(page, "en");
     await page.keyboard.press("Enter");

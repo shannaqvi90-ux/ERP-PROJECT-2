@@ -1,10 +1,15 @@
-import { useId, useMemo, useState, type KeyboardEvent } from "react";
+import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useI18n } from "../../kernel/i18n";
+import { useShortcut } from "../../kernel/shortcuts";
 import { roleName, type Role } from "./model";
 
+/** The key that moves to the role filter (O, by its position, for the rOles). */
+export const findRoleChord = "Alt+KeyO";
+
 /**
- * Roles as a filterable checklist. Keyboard: type in the filter, Enter toggles the first role
- * shown, Tab moves into the list where Space toggles. Roles that grant something the signed-in
+ * Roles as a filterable checklist. Keyboard: Alt+O comes to the filter from anywhere in the form
+ * (past the suggested name and the language), type in it, Enter toggles the first role shown, Tab
+ * moves into the list where Space toggles. Roles that grant something the signed-in
  * user does not hold are shown but cannot be given (the server refuses them anyway).
  */
 export function RolePicker({
@@ -23,6 +28,18 @@ export function RolePicker({
   const { t, language, formatNumber } = useI18n();
   const [filter, setFilter] = useState("");
   const id = useId();
+  const filterRef = useRef<HTMLInputElement>(null);
+  useShortcut({
+    id: "identity.roles.find",
+    chord: findRoleChord,
+    labelKey: "identity.form.findRole",
+    groupKey: "identity.shortcuts.group",
+    enabled: !disabled,
+    run: () => {
+      filterRef.current?.focus();
+      filterRef.current?.select();
+    },
+  });
   const shown = useMemo(() => {
     const words = filter.toLocaleLowerCase().split(/\s+/).filter(Boolean);
     return roles.filter((r) => words.every((w) => `${r.nameEn} ${r.nameAr}`.toLocaleLowerCase().includes(w)));
@@ -45,6 +62,7 @@ export function RolePicker({
     <fieldset className="id-roles" disabled={disabled}>
       <legend className="field-label">{t("identity.form.roles")}</legend>
       <input
+        ref={filterRef}
         type="search"
         className="id-roles-filter"
         value={filter}

@@ -32,6 +32,23 @@ import {
   type User,
 } from "./model";
 
+/** An account action the palette starts from a tab other than Details (which then opens). */
+type AccountCommand = "reset" | "signOut" | "delete";
+
+/** The fields the user form edits are the same in both copies of the record (only the version,
+ * or something the form does not show, differs). */
+function sameFields(a: User, b: User): boolean {
+  return (
+    a.email === b.email &&
+    a.displayName === b.displayName &&
+    (a.displayNameAr ?? "") === (b.displayNameAr ?? "") &&
+    a.language === b.language &&
+    a.isActive === b.isActive &&
+    JSON.stringify([...a.roleIds].sort()) === JSON.stringify([...b.roleIds].sort()) &&
+    sameCompanyRoles(a.companyRoles ?? [], b.companyRoles ?? [])
+  );
+}
+
 /** A one-time notice in a user's panel; <c>warning</c>: what could not be saved after the account was created. */
 type Notice = ({ kind: "code"; code: string; expiresAt?: string; email: string; removed?: string } | { kind: "info"; text: string }) & { warning?: string };
 
@@ -410,8 +427,11 @@ export function UserDetail({
     },
   }, userId);
   const user = form.record;
+  const formRef = useRef(form);
+  formRef.current = form;
 
   useEffect(() => setNotice(initialNotice), [initialNotice, userId]);
+
 
   // The user's passkeys (names and dates): shown with the record, offered for removal with a
   // password reset and Sign out everywhere (critic p03 round 8: a lost device kept signing in).
@@ -442,6 +462,56 @@ export function UserDetail({
       live = false;
     };
   }, []);
+
+  // An account action (allow sign-in again, a reset, sign out everywhere) may touch the user's row
+  // and so its version, though no field of the form changed: the form takes the new version and
+  // keeps what is being typed, so the next save is not refused as changed by someone else (critic
+  // p03 round 10: unblock, then untick Active, was refused). A change to a field the form shows is
+  // someone else's: the form keeps the version it read and the save says so, as before.
+  const refreshVersion = useCallback(async () => {
+    try {
+      const fresh = await api<User>("GET", `/api/identity/users/${userId}`);
+      const held = formRef.current.record;
+      if (!held || held.id !== fresh.id || !sameFields(held, fresh)) return;
+      formRef.current.adopt({ ...fresh, defaultCompany: held.defaultCompany });
+      setLoaded(fresh);
+    } catch {
+      // Not needed to go on: a save then meets the conflict and offers a reload.
+    }
+  }, [userId]);
+
+  // The record's commands follow the record, not the tab on show (critic p03 round 10: on "What
+  // they can do" the palette offered no Reset password): from another tab each opens Details and
+  // does what its button there does.
+  const [tab, setTab] = useState("details");
+  const [pending, setPending] = useState<AccountCommand | null>(null);
+  const elsewhere = tab !== "details" && Boolean(user) && !pending;
+  const startFromAnyTab = (command: AccountCommand) => () => {
+    setTab("details");
+    setPending(command);
+  };
+  useCommand({
+    id: "identity.users.reset",
+    labelKey: "identity.reset.open",
+    keywordsKey: "identity.action.resetKeywords",
+    groupKey: "identity.shortcuts.group",
+    enabled: elsewhere && allowed.resetPassword,
+    run: startFromAnyTab("reset"),
+  });
+  useCommand({
+    id: "identity.users.signOutEverywhere",
+    labelKey: (passkeys?.length ?? 0) > 0 ? "identity.sessions.revokeAsk" : "identity.sessions.revoke",
+    groupKey: "identity.shortcuts.group",
+    enabled: elsewhere && allowed.signOutEverywhere,
+    run: startFromAnyTab("signOut"),
+  });
+  useCommand({
+    id: "identity.users.delete",
+    labelKey: "identity.users.delete",
+    groupKey: "identity.shortcuts.group",
+    enabled: elsewhere && allowed.delete,
+    run: startFromAnyTab("delete"),
+  });
 
   if (!user) {
     return <RecordForm form={form} title="" onClose={onClose}>{null}</RecordForm>;
@@ -500,8 +570,11 @@ export function UserDetail({
           user={user}
           allowed={allowed}
           passkeyCount={passkeys?.length ?? 0}
+          pending={pending}
+          onPendingTaken={() => setPending(null)}
           onNotice={setNotice}
           onPasskeysChanged={() => void loadPasskeys()}
+          onAccountChanged={() => void refreshVersion()}
           onDeleted={() => onDeleted?.(user)}
         />
       )}
@@ -512,7 +585,10 @@ export function UserDetail({
           self={self}
           canRemove={allowed.signOutEverywhere}
           onNotice={setNotice}
-          onChanged={() => void loadPasskeys()}
+          onChanged={() => {
+            void loadPasskeys();
+            void refreshVersion();
+          }}
         />
       )}
     </>
@@ -553,10 +629,12 @@ export function UserDetail({
         )}
         <FormTabs
           label={t("identity.users.sections")}
+          current={tab}
+          onSelect={setTab}
           tabs={[
             { key: "details", label: t("identity.tab.details"), content: details },
             { key: "access", label: t("identity.tab.access"), content: <AccessTab userId={user.id} roles={roles} language={language} /> },
-            { key: "history", label: t("identity.tab.history"), content: <HistoryTab userId={user.id} canUnblock={allowed.unblock} />, hidden: !can("identity.signIns.read") },
+            { key: "history", label: t("identity.tab.history"), content: <HistoryTab userId={user.id} canUnblock={allowed.unblock} onUnblocked={() => void refreshVersion()} />, hidden: !can("identity.signIns.read") },
           ]}
         />
       </RecordForm>
@@ -573,15 +651,23 @@ function AccountActions({
   user,
   allowed,
   passkeyCount,
+  pending,
+  onPendingTaken,
   onNotice,
   onPasskeysChanged,
+  onAccountChanged,
   onDeleted,
 }: {
   user: User;
   allowed: ReturnType<typeof userActions>;
   passkeyCount: number;
+  /** A command started from another tab, to do now that Details is on show. */
+  pending: AccountCommand | null;
+  onPendingTaken: () => void;
   onNotice: (notice: Notice) => void;
   onPasskeysChanged: () => void;
+  /** After an action that may have touched the account's row (its version). */
+  onAccountChanged: () => void;
   onDeleted: () => void;
 }) {
   const { t, language } = useI18n();
@@ -614,16 +700,26 @@ function AccountActions({
       setConfirmSignOut(true);
     } else void signOutEverywhere(false);
   };
+  const startReset = () => {
+    focusMethod.current = true;
+    setMode("code");
+  };
+  // A command started from another tab: done as its button here would do it.
+  useEffect(() => {
+    if (!pending) return;
+    onPendingTaken();
+    if (pending === "reset" && allowed.resetPassword) startReset();
+    else if (pending === "signOut" && allowed.signOutEverywhere) startSignOutEverywhere();
+    else if (pending === "delete" && allowed.delete) setConfirmDelete(true);
+    // Once per command started.
+  }, [pending]);
   useCommand({
     id: "identity.users.reset",
     labelKey: "identity.reset.open",
     keywordsKey: "identity.action.resetKeywords",
     groupKey: "identity.shortcuts.group",
     enabled: allowed.resetPassword && mode === "closed",
-    run: () => {
-      focusMethod.current = true;
-      setMode("code");
-    },
+    run: startReset,
   });
   useCommand({
     id: "identity.users.signOutEverywhere",
@@ -677,6 +773,7 @@ function AccountActions({
           : { kind: "info", text: withPasskeys(t("identity.reset.done", { count: result.sessionsEnded }), removed) },
       );
       if (removed > 0) onPasskeysChanged();
+      onAccountChanged();
       setMode("closed");
       setPassword("");
       setResetPasskeys(false);
@@ -695,6 +792,7 @@ function AccountActions({
       const removed = result.passkeysRemoved ?? 0;
       onNotice({ kind: "info", text: withPasskeys(t("identity.sessions.ended", { count: result.sessionsEnded }), removed) });
       if (removed > 0) onPasskeysChanged();
+      onAccountChanged();
       setConfirmSignOut(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -980,7 +1078,7 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
 }
 
 /** Sign-in history, newest first, and the clients paused now (with Unblock). */
-function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolean }) {
+function HistoryTab({ userId, canUnblock, onUnblocked }: { userId: string; canUnblock: boolean; onUnblocked: () => void }) {
   const { t, formatDateTime } = useI18n();
   const [history, setHistory] = useState<SignInHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1002,6 +1100,7 @@ function HistoryTab({ userId, canUnblock }: { userId: string; canUnblock: boolea
     try {
       await api<void>("POST", `/api/identity/users/${userId}/unblock`);
       setReload((n) => n + 1);
+      onUnblocked();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }

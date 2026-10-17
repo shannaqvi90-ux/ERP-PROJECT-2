@@ -371,10 +371,28 @@ export function FormSection({ title, children, columns = true }: { title?: strin
  * the first and last. Only the open tab is drawn (a tab that reads more, such as a history, reads it
  * when opened); the draft keeps every field, so saving sends them all.
  */
-export function FormTabs({ tabs, label }: { tabs: { key: string; label: string; content: ReactNode; hidden?: boolean }[]; label: string }) {
+export function FormTabs({
+  tabs,
+  label,
+  current: chosen,
+  onSelect,
+}: {
+  tabs: { key: string; label: string; content: ReactNode; hidden?: boolean }[];
+  label: string;
+  /** The tab on show, when the screen keeps it (to open a tab from one of its own commands);
+   * left out, the tabs keep it themselves. */
+  current?: string;
+  /** Told of every tab chosen (by click, arrow key or command). */
+  onSelect?: (key: string) => void;
+}) {
   const { dir, t } = useI18n();
   const shown = tabs.filter((tab) => !tab.hidden);
-  const [current, setCurrent] = useState(shown[0]?.key ?? "");
+  const [own, setOwn] = useState(shown[0]?.key ?? "");
+  const current = chosen ?? own;
+  const setCurrent = (key: string) => {
+    setOwn(key);
+    onSelect?.(key);
+  };
   const id = useId();
   const listRef = useRef<HTMLDivElement>(null);
   const select = (index: number) => {
