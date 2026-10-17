@@ -1,0 +1,12 @@
+dir rtl lang ar
+phone input dir [ 'ltr', 'ltr', 'tel', 'tel', '_r_j_-hint' ]
+arabic-indic digits typed -> shown "+971 50 555 0199" stored "+971 50 555 0199" notice "تم الحفظ: اكتمل الإدخال.تراجع"
+after Alt+Z stored "+971 4 221 5500"
+country field html <label class="field-label" for="_r_h_">الدولة</label><select id="_r_h_" aria-invalid="false" name="country"><option value="AE">الإمارات العربية المتحدة</option><option value="SA">المملكة العربية السعودية</option><option value="OM">عُمان</option><option value="QA">قطر</option><option value="BH">البحرين</option><option value="KW">الكويت</option><option value="IS">آيسلندا</option><option value="ET">إثيوبيا</option><option value="AZ">أذربيجان</option><option value="AM">أرمينيا</option><option value="AW">أروبا</option><option value="ER">إريتريا</option><option value="ES">إسبانيا</option><option val
+fields legalNameAr:INPUT:text legalNameEn:INPUT:text code:INPUT:text isActive:INPUT:checkbox arabicLegalNameRequired:INPUT:checkbox tradeLicenceNumber:INPUT:text tradeLicenceAuthority:INPUT:text taxRegistrationNumber:INPUT:text baseCurrency:INPUT:text fiscalYearStartMonth:SELECT: fiscalYearStartDay:INPUT:text addressLine1:INPUT:text addressLine2:INPUT:text city:INPUT:text emirate:SELECT: poBox:INPUT:text country:SELECT: addressAr:TEXTAREA: phone:INPUT:tel email:INPUT:email website:INPUT:url
+header dirty "ALN-DXB · شركة النور للتجارة ذ.م.م ●تغييرات غير محفوظة‹2 من 4›طباعةتجاهل التغييراتحفظإغلاق"
+dialog after Escape 1 "تغييرات غير محفوظةفي هذا السجل تغييرات لم تُحفظ بعد.حفظ وإغلاقتجاهل التغييراتمتابعة التحرير"
+server error "البريد الإلكترونيأدخل عنوان بريد إلكتروني صحيحًا." focused email
+after discard header "ALN-DXB · شركة النور للتجارة ذ.م.م‹2 من 4›طباعةحفظإغلاق"
+Alt+PageDown moved true http://localhost:20650/tenancy/companies/018dca08-f085-7066-a8bb-ac5fa5ae9e2a
+Alt+PageUp back true

