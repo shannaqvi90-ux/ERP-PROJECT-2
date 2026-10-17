@@ -1,0 +1,21 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+create-company-branch    odoo  invalid   steps undefined  keys undefined  machine undefineds  human undefineds  human+wait undefineds  (keyboard: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.)  -> ../../evidence-staging/p02-tenancy/r10/compare/results/create-company-branch-20261017T012114-e56d.json
+    keyboard: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+    pointer: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+    page: {}
+create-company-branch    odoo  verified  steps 12  keys 72  machine 3.92s  human 48.53s  human+wait 51.269s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/create-company-branch-20261017T012121-effd.json
+create-company-branch    odoo  verified  steps 12  keys 72  machine 2.46s  human 48.53s  human+wait 50.226s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/create-company-branch-20261017T012139-b9a5.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.809s  human 22.17s  human+wait 22.655s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/create-company-branch-20261017T012155-5f84.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.468s  human 22.17s  human+wait 22.345s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/create-company-branch-20261017T012204-0394.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.49s  human 22.17s  human+wait 22.341s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/create-company-branch-20261017T012211-d799.json
+create-company-branch    verdict win (ours judged on its whole path 'keyboard')
+switch-company           ours  verified  steps 1  keys 0  machine 0.098s  human 2.65s  human+wait 2.702s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/switch-company-20261017T012218-10ce.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.091s  human 2.65s  human+wait 2.702s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/switch-company-20261017T012222-1071.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.098s  human 2.65s  human+wait 2.702s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/switch-company-20261017T012227-b78e.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.352s  human 5.3s  human+wait 5.536s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/switch-company-20261017T012231-c2fe.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.403s  human 5.3s  human+wait 5.591s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/switch-company-20261017T012234-0c2e.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.35s  human 5.3s  human+wait 5.541s  -> ../../evidence-staging/p02-tenancy/r10/compare/results/switch-company-20261017T012238-869a.json
+switch-company           verdict win (ours judged on its whole path 'pointer')
+switch-company           left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+blind review page: ../../../../evidence-staging/p02-tenancy/r10/compare/blind/review.html
+output: ../../../../evidence-staging/p02-tenancy/r10/compare

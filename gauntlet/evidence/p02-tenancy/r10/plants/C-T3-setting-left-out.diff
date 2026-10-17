@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 60321c7..8ede202 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -299,7 +299,7 @@ internal static class CompanyEndpoints
+             return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
+         }
+         // The company's own setting, as this change leaves it, may require the Arabic legal name.
+-        validator.ArabicLegalNameWhenRequired(request.ArabicLegalNameRequired ?? company.ArabicLegalNameRequired, request.LegalNameAr);
++        validator.ArabicLegalNameWhenRequired(request.ArabicLegalNameRequired ?? false, request.LegalNameAr);
+         if (!validator.IsValid)
+         {
+             return validator.ToResult();

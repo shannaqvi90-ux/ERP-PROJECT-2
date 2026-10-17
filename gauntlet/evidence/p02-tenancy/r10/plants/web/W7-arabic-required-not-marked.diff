@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index ab8a43c..dd31331 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -153,7 +153,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null;
+   const arabicEmpty = form.draft.legalNameAr.trim() === "";
+   const legalNameAr = (
+     <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
+-      required={form.draft.arabicLegalNameRequired} autoFocus={id === null && language === "ar"}
++      autoFocus={id === null && language === "ar"}
+       hint={arabicEmpty ? t(form.draft.arabicLegalNameRequired ? "tenancy.company.legalNameArRequiredHint" : "tenancy.company.legalNameArMissing") : undefined} />
+   );
+ 

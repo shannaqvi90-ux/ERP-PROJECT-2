@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "run_id": "create-company-branch-20261017T012114-e56d",
+  "instrument": 8,
+  "task": "create-company-branch",
+  "task_title": "Create a company with a branch",
+  "product": "odoo",
+  "status": "invalid",
+  "goal": "Create the company \"Falcon Logistics LLC\" with one branch, \"Falcon Logistics LLC - Jebel Ali Branch\".",
+  "done_when": "Both are saved; the back end holds the company and the branch under it.",
+  "started_at": "2026-10-17T01:21:14.085Z",
+  "finished_at": "2026-10-17T01:21:21.686Z",
+  "environment": {
+    "base_url": "http://localhost:20290",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {},
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [],
+  "verification": null,
+  "path_notes": "keyboard: Apps menu > Settings > Users & Companies > Companies > Alt+C > name > Branches tab > Add a line > click name > branch name > Save & Close > Alt+S | pointer: Apps menu > Settings > Users & Companies > Companies > New > name > Branches tab > Add a line > click name > branch name > Save & Close > Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/create-company-branch.mjs",
+    "sha256": "9ac07519743ac8aefee93304b73fd1a1157b7182ec3ad88bbbce06c4b40e1426"
+  },
+  "task_notes": "Set-up removes any earlier copy; clean-up deletes both.",
+  "error": "keyboard: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.\npointer: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": null,
+  "verify_passes": null,
+  "requests_after_clock": null,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": null,
+  "set_up_writes_waited": 0,
+  "screenshots_path": "keyboard",
+  "error_page": {},
+  "best_path_per_metric": {},
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Settings > Users & Companies > Companies > Alt+C > name > Branches tab > Add a line > click name > branch name > Save & Close > Alt+S",
+      "status": "invalid",
+      "error": "action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": 0
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > Users & Companies > Companies > New > name > Branches tab > Add a line > click name > branch name > Save & Close > Save",
+      "status": "invalid",
+      "error": "action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": 0
+    }
+  ]
+}

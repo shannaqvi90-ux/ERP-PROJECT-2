@@ -1,0 +1,56 @@
+== roles (rolname|super|bypassrls|inherit)
+erp_app|f|f|f
+erp_auth|f|f|f
+erp_owner|f|f|t
+== tables with tenant_id lacking RLS enabled+forced (should be empty)
+== tenancy policies
+branches|company_scope|RESTRICTIVE|ALL|erp.company_allowed(company_id)
+branches|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+companies|company_scope|RESTRICTIVE|ALL|erp.company_allowed(company_id)
+companies|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+tenants|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_branch_access|company_scope|RESTRICTIVE|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+user_branch_access|company_scope_delete|RESTRICTIVE|DELETE|erp.company_allowed(company_id)
+user_branch_access|company_scope_update|RESTRICTIVE|UPDATE|erp.company_allowed(company_id)
+user_branch_access|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_company_access|company_scope|RESTRICTIVE|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+user_company_access|company_scope_delete|RESTRICTIVE|DELETE|erp.company_allowed(company_id)
+user_company_access|company_scope_update|RESTRICTIVE|UPDATE|erp.company_allowed(company_id)
+user_company_access|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_company_totals|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+user_workplaces|company_scope|RESTRICTIVE|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+user_workplaces|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+== tenancy companies new columns and constraints
+ck_companies_base_currency|CHECK (((base_currency)::text ~ '^[A-Z]{3}$'::text))
+ck_companies_code|CHECK (((code)::text ~ '^[A-Z0-9][A-Z0-9-]{1,19}$'::text))
+ck_companies_company_is_self|CHECK ((company_id = id))
+ck_companies_country|CHECK (((country)::text ~ '^[A-Z]{2}$'::text))
+ck_companies_fiscal_year_start|CHECK ((((fiscal_year_start_month >= 1) AND (fiscal_year_start_month <= 12)) AND ((fiscal_year_start_day >= 1) AND (fiscal_year_start_day <= 31))))
+ck_companies_legal_name|CHECK ((btrim((legal_name_en)::text) <> ''::text))
+ck_companies_legal_name_ar_required|CHECK (((NOT arabic_legal_name_required) OR (btrim((legal_name_ar)::text) <> ''::text)))
+ck_companies_logo|CHECK ((((logo IS NULL) = (logo_content_type IS NULL)) AND ((logo IS NULL) = (logo_hash IS NULL))))
+ck_companies_tax_registration_number|CHECK (((tax_registration_number)::text ~ '^[0-9]{15}$'::text))
+ck_user_workplaces_recent_company_ids|CHECK ((cardinality(recent_company_ids) <= 6))
+== erp_app, no tenant bound: counts companies|branches|tenants|workplaces
+0|0|0|0
+A=0190a000-0000-7000-8000-000000000001 B=0190a000-0000-7000-8000-000000000002
+== erp_app bound to alnoor (tenant setting only), tries gulfsteel rows
+BEGIN
+0190a000-0000-7000-8000-000000000001
+companies seen of B|0
+workplaces seen of B|0
+UPDATE 0
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "branches"
+ROLLBACK
+== erp_app escalation
+ERROR:  permission denied to set role "postgres"
+ERROR:  must be owner of table companies
+ERROR:  must be owner of table companies
+== recent ids pointing outside tenant (should be 0)
+ERROR:  invalid reference to FROM-clause entry for table "w"
+LINE 1: ...n tenancy.companies c on c.id=rid and c.tenant_id=w.tenant_i...
+                                                             ^
+DETAIL:  There is an entry for table "w", but it cannot be referenced from this part of the query.
+== stored TRNs not 15 digits (should be 0) | legacy count
+0|0

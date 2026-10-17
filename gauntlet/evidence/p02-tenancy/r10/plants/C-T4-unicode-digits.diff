@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyValidation.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyValidation.cs
+index 3117d08..6f46c70 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyValidation.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyValidation.cs
+@@ -233,7 +233,7 @@ internal static partial class TenancyValidation
+     {
+         if (Clean(number) is { } value)
+         {
+-            validator.Must(value.Length <= TaxNumberTypedMaxLength && NormalizeTaxNumber(value) is { } digits && StoredTaxNumberRegex().IsMatch(digits),
++            validator.Must(value.Length <= TaxNumberTypedMaxLength && NormalizeTaxNumber(value) is { } digits && digits.Length == 15 && digits.All(char.IsDigit),
+                 "taxRegistrationNumber", "tenancyTaxNumber");
+         }
+         return validator;

@@ -1,0 +1,8 @@
+role 201 01a1477a-e7c8-7ece-a1d6-451a92c5732a
+user 201 01a1477a-e815-7bc1-a462-53da3d45a83b
+access to every company 200 
+switch-only user permissions: ["tenancy.workplace.read","tenancy.workplace.switch"]
+company ALN-SHJ arabicLegalNameRequired before: false
+switch-only PUT /companies/{id} (the proper endpoint): 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":4
+switch-only PUT /workplace with arabicLegalNameRequired=true: 200  -> arabicLegalNameRequired after: true
+2026-10-17 01:30:00.246319+00|user|01a1477a-e815-7bc1-a462-53da3d45a83b|{"arabic_legal_name_required": {"new": true, "old": false}}

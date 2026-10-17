@@ -1,0 +1,43 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index b99df5f..f7faf3b 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -23,7 +23,7 @@ public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList
+ 
+ /// <summary>Switch to a company (and one of its branches; empty picks the first the user may
+ /// work in).</summary>
+-public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId);
++public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId, bool? ArabicLegalNameRequired = null);
+ 
+ internal static class WorkplaceEndpoints
+ {
+@@ -45,14 +45,15 @@ internal static class WorkplaceEndpoints
+     {
+         // The caller's own row, wherever it is kept (it is visible to its user outside the company
+         // scope); the ids are shown only for companies the caller may switch to now.
+-        var recent = await db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName]).AsNoTracking()
++        string[] ownRow = [ModuleDbContext.CompanyFilterName, ModuleDbContext.TenantFilterName];
++        var recent = await db.Workplaces.IgnoreQueryFilters(ownRow).AsNoTracking()
+             .Where(w => w.UserId == caller.UserId).Select(w => w.RecentCompanyIds).SingleOrDefaultAsync(cancellationToken);
+         var options = await BuildAsync(db, scope, scope.ActiveCompanyId, scope.ActiveBranchId, cancellationToken);
+         return TypedResults.Ok(options with { RecentCompanyIds = Visible(recent ?? [], options) });
+     }
+ 
+     private static async Task<Results<Ok<WorkplaceDto>, ProblemHttpResult>> Switch(
+-        SwitchWorkplaceRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
++        SwitchWorkplaceRequest request, TenancyDbContext db, ErpDbSession session, ICurrentUser caller, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+     {
+         var validator = new Validator(http).Required("companyId", request.CompanyId);
+         if (!validator.IsValid)
+@@ -78,6 +79,11 @@ internal static class WorkplaceEndpoints
+         {
+             return validator.ToResult();
+         }
++        if (request.ArabicLegalNameRequired is { } arabicRequired && branchScope.HoldsEveryBranch(company!.Id))
++        {
++            var target = await db.Companies.SingleAsync(c => c.Id == company!.Id, cancellationToken);
++            target.ArabicLegalNameRequired = arabicRequired && target.LegalNameAr.Trim() != "";
++        }
+         var row = await db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])
+             .SingleOrDefaultAsync(w => w.UserId == caller.UserId, cancellationToken);
+         List<Guid> earlier = row?.RecentCompanyIds ?? [];

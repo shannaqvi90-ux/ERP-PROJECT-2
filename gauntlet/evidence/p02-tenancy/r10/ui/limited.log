@@ -1,0 +1,21 @@
+CL G C -> /tenancy/companies
+CL list {"newButtons":0,"codeDisabled":null,"settingDisabled":null,"formOpen":false}
+CL after Alt+N {"newButtons":0,"codeDisabled":null,"settingDisabled":null,"formOpen":false}
+CL palette "new compan": []
+CL palette "new branch": ["New branch"]
+CL palette "print compan": []
+CL record {"newButtons":0,"codeDisabled":true,"settingDisabled":false,"formOpen":true}
+BL G C -> /tenancy/companies
+BL list {"newButtons":0,"codeDisabled":null,"settingDisabled":null,"formOpen":false}
+BL after Alt+N {"newButtons":0,"codeDisabled":null,"settingDisabled":null,"formOpen":false}
+BL palette "new compan": []
+BL palette "new branch": []
+BL palette "print compan": []
+BL record {"newButtons":0,"codeDisabled":true,"settingDisabled":true,"formOpen":true}
+ADMIN G C -> /tenancy/companies
+ADMIN list {"newButtons":1,"codeDisabled":null,"settingDisabled":null,"formOpen":false}
+ADMIN after Alt+N {"newButtons":1,"codeDisabled":false,"settingDisabled":false,"formOpen":true}
+ADMIN palette "new compan": ["New companyAltN"]
+ADMIN palette "new branch": ["New branch"]
+ADMIN palette "print compan": []
+ADMIN palette Enter on "new company" -> /tenancy/companies/new focus legalNameEn

@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index ab8a43c..03b8721 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -186,7 +186,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null;
+           hint={id !== null && !everyCompany ? t("tenancy.company.codeNeedsEveryCompany") : t("tenancy.company.codeHint")} />
+         <BooleanField field={bind("isActive")} label={t("tenancy.common.active")} />
+         {/* After the code, so the names-then-code keyboard path is unchanged. */}
+-        <BooleanField field={bind("arabicLegalNameRequired")} label={t("tenancy.company.arabicLegalNameRequired")} />
++        <BooleanField field={{ ...bind("arabicLegalNameRequired"), readOnly: false }} label={t("tenancy.company.arabicLegalNameRequired")} />
+       </FormSection>
+       <FormSection title={t("tenancy.company.registration")}>
+         <TextField field={bind("tradeLicenceNumber")} label={t("tenancy.company.tradeLicenceNumber")} dir="ltr" maxLength={50} />

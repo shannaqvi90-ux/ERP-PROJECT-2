@@ -1,0 +1,132 @@
+{
+  "piece": "p02-tenancy",
+  "round": 10,
+  "commit": "322d0ef59ed3a985ce61dc60bc776356dc2d81c6",
+  "judged_at": "2026-10-17T01:42:41Z",
+  "critic": "fresh critic, p02-tenancy round 10",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation: hand attack on the running product (API, reports, list prints, headers, workplace including the new recent companies)",
+      "status": "pass",
+      "evidence": "attack/tenant-attack.log, run against ./erp up of a fresh clone. Signed in as admin@alnoor.example, I sent 1883 requests at gulfsteel. They covered all 112 operations in the API description with B's ids in every path parameter and in the write bodies. I added 7 query injections and 5 tenant or company headers on every parameterless GET. I also ran the tenancy reports and the list prints as json, csv, xlsx and pdf, and a PUT /workplace that carries B's company ids as recentCompanyIds. There were 0 marker hits and B's versions did not change. The only B answers that changed were report printedAt stamps (b-twice.log). PUT /workplace gives the same 400 tenancyNotYourCompany for a hidden same-tenant company, another tenant's company and a random id, so it is not an oracle (switch-oracle.log)."
+    },
+    {
+      "gate": "G1 database layer (role the app uses)",
+      "status": "pass",
+      "evidence": "db-inspection.txt. erp_app is not a superuser, has no BYPASSRLS and has NOINHERIT. Every table with tenant_id has RLS enabled and forced. user_workplaces keeps tenant_isolation plus the RESTRICTIVE company_scope. With no tenant bound, erp_app sees 0 companies, branches, tenants and workplaces. Bound to alnoor, it sees 0 of B's companies and workplaces, its UPDATEs of B rows change 0 rows, and its INSERT into B is refused. SET ROLE postgres, DISABLE RLS and NO FORCE RLS are all refused. The new CHECK constraints are present: TRN ^[0-9]{15}$, Arabic name required under the setting, and recent ids at most 6."
+    },
+    {
+      "gate": "G1/G2 company and branch layer on the real build",
+      "status": "pass",
+      "evidence": "attack/scope-attack.log, scope-followup.log. CL administers only ALN-SHJ. Every write CL tried against T2 and T3 (users who also work in DXB) was refused 403, while the control T1 was accepted. A bulk deactivate gave refusedBeyondOwn 3, and only T1 changed. Company create with a valid body and a code change both got 403 companyNeedsEveryCompany, and the workspace change got 403. CL's switch to DXB was refused, and recentCompanyIds stayed []. BL (one branch) sees only AQZ-WH. A no-company Administrator is offered no New, Alt+N does nothing and the palette shows no New company (ui/no-company-admin.log; round 9's gap is closed)."
+    },
+    {
+      "gate": "G1 planted tenant leak in this piece (L1: the recent-companies migration adds a PERMISSIVE SELECT policy on tenancy.user_workplaces)",
+      "status": "pass",
+      "evidence": "plants/batchA-L1-L2b-P1.diff, batchA-gates.log. G1DatabaseIsolation.Tenant_tables_enforce_row_level_security_with_the_standard_policy caught it: 'unreviewed policy recent_lookup ... extra policy may only grant SELECT to erp_auth'. A second-layer plant (L2b, the workplace GET reading with the tenant filter off) was missed, and its scanner is p00's; it is reported under other findings."
+    },
+    {
+      "gate": "G2 planted action without its permission (P1b: PUT /api/tenancy/workplace, which declares only tenancy.workplace.switch, also changes the company's arabicLegalNameRequired)",
+      "status": "fail",
+      "evidence": "plants/batchA2-L2b-P1b.diff, batchA2-gates.log. All 142 product gate tests passed (rc=0, 15.0 min, self-tests excluded). Live check (plants/P1b-live2.log): a user whose only role grants tenancy.workplace.read and .switch gets 403 from PUT /companies/{id}. The same user sends PUT /workplace {companyId: ALN-SHJ, arabicLegalNameRequired: true} and gets 200; the setting goes false -> true and the audit row names that user. The first form of this plant (P1) failed G1HttpIsolation only by accident: the kernel's every-branch guard answered 403 to the gate's branch-limited writer."
+    },
+    {
+      "gate": "G2 screens hide what the user cannot do (tenancy screens and palette), planted W1-W8",
+      "status": "pass",
+      "evidence": "plants/web/summary.txt, with each plant run alone against the whole web suite of 477 tests. Caught: W1 (palette New company without its every-company check), W2 (round 9's U5b rewrite, now caught by 4 tests), W3 (palette New branch), W4 (setting not sent), W5 (legacy TRN hint hidden), W6 (switcher ignores the server's recent companies) and W7 (Arabic name not marked required). W8 (the setting's box forced editable for a read-only user) has no effect, because the record form's <fieldset disabled> still disables it."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command serves the seeded demo",
+      "status": "pass",
+      "evidence": "verify-critic-p02-tenancy-r10.log, verify.rc rc=0. ./erp verify passed in 3266 s from 'slot 2 of 2 taken at 2026-10-17T00:08:24Z after waiting 0 s'. Processor time was 8691 s of the 10500 s maximum. Wall time was not judged on a busy machine (highest load 41.48). The ratchet check passed. ./erp up served the seeded demo (101,010 users, 6 companies, 15 branches) in 63 s, and again in 47 s (up.log, up2.log). The ports and the compose project were overridden with ERP_PROJECT, ERP_HTTP_PORT, ERP_DB_PORT and ERP_VERIFY_*."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string twins, audit rows) and the owner-signed rules",
+      "status": "pass",
+      "evidence": "These ran inside verify and passed. On the demo, every company and branch write I made left an audit.entries row naming the actor, including the setting toggle {arabic_legal_name_required: false->true}. The TRN rule (docs/compliance/vat-trn-format.md) holds: exactly 15 ASCII digits, spaces and dashes removed ('100-1234 5670-0003' is stored as 100123456700003), and 12345, 16 digits and Arabic-Indic digits are refused with English and Arabic messages. The database CHECK holds the same rule. Legacy numbers are kept and hinted in English and Arabic, and never printed. The Arabic legal name rule holds: off by default, a blank Arabic name is refused while the setting is on, the database CHECK enforces it, and an English legal name is never empty. Plants T3 and T4 were caught by CompanyTests."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p02-tenancy-r10 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 ERP_VERIFY_LOG=/home/shan/evidence-staging/p02-tenancy/r10/verify-critic-p02-tenancy-r10.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1570,
+    "passed": 1570,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3266
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 3266,
+    "evidence": "I cloned 322d0ef fresh into /home/shan/critic/p02-tenancy-r10. ./erp verify exited 0 in 3266 s, timed from the slot taken at 00:08:24Z. The suites were .NET 612 (minimum 608), web unit 477 (470), end to end 102 (102), comparison harness 373 (373) and build 6 (6); none failed or skipped. Processor time was 8691 s against a maximum of 10500 s. ./erp up served the seeded demo in 63 s."
+  },
+  "odoo": [
+    {
+      "task": "create-company-branch (create a company with a branch)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 49,
+        "seconds": 0.49,
+        "klm_seconds": 22.17
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 3.19,
+        "klm_seconds": 48.53
+      },
+      "notes": "The shared rig on :8069 was refused by run.mjs: job_runs (ir.cron.progress) is below 100,000 again, because Odoo vacuums them a week after the 10-10 top-up (compare.log, first attempt). I did not touch the shared rig. I measured against a private rig on :20290 (project c-p02-tenancy-r10-odoo), which up.sh built and verified at 100k+ in every list in 105 s (private-rig-up.log, compare/private-rig-volume.json), and purged afterwards. Command: COMPARE_OURS_URL=http://localhost:20250 COMPARE_ODOO_URL=http://localhost:20290 node run.mjs --task create-company-branch,switch-company --product both --repeat 3. The harness verdict is WIN on every metric (medians, ours on its keyboard path). One of the three Odoo runs was invalid in the harness's own set-up (an abandoned iap_enrich_auto request), so the reference figures come from its two valid runs. Shots 10 (ours) and 11 (reference)."
+    },
+    {
+      "task": "switch-company (switch the active company)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.098,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.352,
+        "klm_seconds": 5.3
+      },
+      "notes": "The harness verdict is WIN. Keystrokes are left out because both products score exactly 0 on a count metric (needs-human #11). Ours wins on steps 1 vs 2, machine time 0.10 s vs 0.35 s and human time 2.65 s vs 5.3 s. Sensitivity check (compare-9companies.log): with 9 active companies and the user's server-kept recent list emptied, the target company has no one-click button, so the pointer path errors. The keyboard path then takes 3 steps vs Odoo's 2, though human time is still 3.99 s vs 5.3 s. This now only affects the first switch to a company: after one switch on any device, a fresh device shows the chips (ui/walk2.log, shots 07 and 08)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p02-tenancy/r10/01-trn-refused-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/02-arabic-name-required-refused-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/03-trn-refused-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/04-company-branch-keyboard-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/05-legacy-trn-hint-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/06-legacy-trn-hint-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/07-top-bar-eight-companies-first-device-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/08-top-bar-eight-companies-second-device-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/09-no-company-admin-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/10-compare-create-company-branch-ours.jpg",
+    "gauntlet/evidence/p02-tenancy/r10/11-compare-create-company-branch-reference.jpg"
+  ],
+  "biggest_gap": {
+    "title": "G2 checks which permission an endpoint declares, never what the endpoint writes: a company setting changed through PUT /api/tenancy/workplace (tenancy.workplace.switch only) passes every gate",
+    "detail": "Every tenancy endpoint declares a reviewed permission, and the gates attack that declaration thoroughly. No gate checks that a request authorised by permission P writes only the records P covers. I planted P1b in WorkplaceEndpoints.Switch: SwitchWorkplaceRequest gains `bool? ArabicLegalNameRequired`, and the handler sets it on the target company when the caller works in every branch of it. With that plant, any user who may switch company can switch on the company's Arabic-legal-name requirement, a legal setting that otherwise needs tenancy.companies.update. All 142 product gates passed, and the live product took the change. This is the 'every action is denied unless a role grants it' bar, broken inside an endpoint this piece owns. A UAE group gives every clerk the switch permission, so any such side door is open to the whole staff. Fix: give each permission a reviewed write set, for example tenancy.workplace.switch -> tenancy.user_workplaces only, and tenancy.companies.update -> tenancy.companies minus the logo columns. During G2's 'granting exactly one permission' run, read audit.entries by correlation id and fail any request under P that writes a table or column outside P's set. Add P1b to the gate self-tests.",
+    "evidence": "plants/batchA2-L2b-P1b.diff applied at 322d0ef (the planted file is kept as plants/A2-WorkplaceEndpoints-planted.cs.txt). Run `dotnet test tests/Erp.Gates.Tests -c Release --filter \"FullyQualifiedName!~Erp.Gates.Tests.SelfTests\"`: 142/142 pass (plants/batchA2-gates.log). Live: ERP_PROJECT=c-p02-tenancy-r10-plant ERP_HTTP_PORT=20270 ERP_DB_PORT=20271 ERP_SEED_VOLUME=2000 ./erp up, then node plants/P1b-live2.mjs http://localhost:20270. The script creates a role with only tenancy.workplace.read and .switch and a user with access to every company. PUT /api/tenancy/companies/{ALN-SHJ} answers 403. PUT /api/tenancy/workplace {companyId: ALN-SHJ, arabicLegalNameRequired: true} answers 200, and arabicLegalNameRequired goes false -> true, with an audit row by that user (plants/P1b-live2.log)."
+  },
+  "other_findings": [
+    "[route: p00-foundation] The G1 source gate (G1TenantSourceTests, ignore-tenant-filter rule) misses the tenant query filter switched off when the filter names are passed in a variable. Plant L2b: `string[] ownRow = [ModuleDbContext.CompanyFilterName, ModuleDbContext.TenantFilterName]; db.Workplaces.IgnoreQueryFilters(ownRow)` in WorkplaceEndpoints.Get. The rule's regex matches only `IgnoreQueryFilters()` or a call that names TenantFilterName or \"tenant\" inside its parentheses. Both full gate runs passed with it (batchA-gates.log, batchA2-gates.log). RLS still held, so nothing leaked, but CLAUDE.md rule 1's second layer was gone unnoticed. Suggested fix: flag any IgnoreQueryFilters whose argument is not a literal list of reviewed non-tenant filter names, or check the filters EF actually applies at run time.",
+    "[route: p01-odoo-rig] The shared rig on :8069 is below the bar again: run.mjs refused it because job_runs (ir.cron.progress) holds fewer than 100,000 rows, since Odoo vacuums them a week after the 2026-10-10 top-up (compare.log). Topping it up is for the lead or owner (needs-human #13). Separately, on a fresh private rig the first Odoo create-company-branch run was marked invalid because the driver's set-up browser abandoned POST res.company/iap_enrich_auto; the next two runs were valid.",
+    "Round 9 gaps closed: a no-company Administrator is offered nothing (U5b-style plant W2 now caught by 4 tests). The Arabic screen starts a new company on the Arabic legal name (field order legalNameAr > legalNameEn). Recent companies are kept on the server, so a second device shows the one-click chips after a switch on the first.",
+    "Arabic keyboard path: a branch typed only in Arabic ('فرع المصفح') is saved with code BR-1 and an empty English name. The English list and CSV show a blank 'Name (English)'. The English branch directory prints the Arabic name instead (attack/br-en.log, walk-readback.log). Nothing prompts the user for an English branch name.",
+    "TRN rule matches docs/compliance/vat-trn-format.md. An Arabic user who types Arabic-Indic digits (١٠٠…) is refused with 'exactly 15 digits' instead of having the digits converted. The rule allows this ('0 to 9'), but it is friction on an Arabic keyboard. The TIN (the first 10 digits) is not shown anywhere; it is not required.",
+    "Arabic legal-name setting: on the English screen, with the setting on and the Arabic name blank, the refusal message sits under the Arabic field. The English field is bottom-aligned in the taller row, which leaves a gap at the top-left of the form (shot 02). The companies list still clips the Arabic legal-name column at its edge, in English as well as Arabic (shot 02).",
+    "Command palette: 'print compan' finds nothing, while 'print', 'export compan' and 'companies list' find 'Print or export the companies list' (ui/palette-print.log).",
+    "Counts rose from round 9: .NET 553 -> 612, web 402 -> 477, end to end 91 -> 102; compare stayed at 373 and build at 6. Processor time was 8691 s, under the 10500 s maximum, on this run.",
+    "Platform-operator CLI works: tenant create, a duplicate code refused, suspend and list (provisioning.log; I redacted the one-time password). The Arabic company profile PDF embeds NotoSansArabic Regular and Bold and prints the 15-digit TRN, never the legacy number (attack/profile.log, company-profile-critic-ar.pdf).",
+    "Housekeeping: I removed the demo stack, its volume and its image (c-p02-tenancy-r10), the planted live stack and its image (c-p02-tenancy-r10-plant), and the private Odoo rig with its volumes (c-p02-tenancy-r10-odoo, via down.sh --purge). Batch A's two leftover test containers (testcontainers session 4b8aecdc, created at my run's start) are removed too. I stopped batch A by its own PIDs once only the gate self-tests were left. All three critic clones are deleted. The shared odoo-reference rig was not touched."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p02-tenancy/r10",
+  "evidence_dir": "gauntlet/evidence/p02-tenancy/r10"
+}

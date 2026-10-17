@@ -1,0 +1,29 @@
+Critic p02 round 10 plants (integration commit 322d0ef). Gates: dotnet test tests/Erp.Gates.Tests -c Release (local SDK, Testcontainers);
+web: npx vitest run (whole suite, one plant at a time); rules: dotnet test tests/Erp.Modules.Tenancy.Tests.
+
+Server, batch A (batchA-L1-L2b-P1.diff, batchA-gates.log; stopped by PID once only the 15 gate self-tests were left)
+  L1   recent-companies migration adds a PERMISSIVE SELECT policy on tenancy.user_workplaces (cross-tenant read)   CAUGHT  G1DatabaseIsolation.Tenant_tables_enforce_row_level_security_with_the_standard_policy ("unreviewed policy recent_lookup")
+  P1   PUT /api/tenancy/workplace also sets the company's arabicLegalNameRequired (needs only tenancy.workplace.switch)  INCIDENTAL  G1HttpIsolation failed only because the kernel's every-branch guard answered 403 to the gate's branch-limited writer ("own writes must succeed"); no gate judged the write itself
+  L2b  GET /api/tenancy/workplace reads the caller's row with the tenant AND company query filters off, names passed in a variable (IgnoreQueryFilters(ownRow))  MISSED  G1TenantSource passed (regex matches only IgnoreQueryFilters() or a call naming TenantFilterName/"tenant" in its parentheses)
+
+Server, batch A2 (batchA2-L2b-P1b.diff, batchA2-gates.log: product gates only, SelfTests excluded; 142 of 142 passed, rc=0, 15.0 min)
+  P1b  as P1, done only where the caller works in every branch of the company (so no kernel guard fires)   MISSED  every G1 and G2 gate passed
+       Live (P1b-live2.log, stack c-p02-tenancy-r10-plant, seed 2000): a user whose only role grants tenancy.workplace.read and
+       tenancy.workplace.switch gets 403 from PUT /api/tenancy/companies/{id}, yet PUT /api/tenancy/workplace
+       {companyId: ALN-SHJ, arabicLegalNameRequired: true} answers 200 and the company's setting changes false -> true
+       (audit row: actor = that user, {"arabic_legal_name_required": {"new": true, "old": false}}).
+  L2b  (still planted)                                                                                         MISSED  again
+
+Rules (tenancy module tests)
+  T4   TRN validator accepts any Unicode digits (char.IsDigit): Arabic-Indic digits pass the API, the DB refuses   CAUGHT  CompanyTests.A_tax_registration_number_is_exactly_fifteen_digits... (C-T4-*)
+  T3   on change, a left-out arabicLegalNameRequired is read as off (?? false)                                       CAUGHT  CompanyTests.A_company_setting_off_by_default_makes_the_arabic_legal_name_required (C-T3-*)
+
+Web (web/summary.txt; each plant alone against the whole web suite, 477 tests)
+  W1 palette New company without its every-company check          CAUGHT (2 tests)
+  W2 worksInEveryCompany as page.items[0]?.everyCompany !== false  CAUGHT (4 tests; round 9's U5b miss is now caught)
+  W3 palette New branch without its company check                  CAUGHT
+  W4 the Arabic-name setting never sent on save                    CAUGHT
+  W5 the legacy TRN hint never shown                               CAUGHT
+  W6 the switcher ignores the server's recent companies            CAUGHT
+  W7 the Arabic legal name not marked required under the setting   CAUGHT
+  W8 the setting's box forced editable for a read-only user        NO EFFECT (the form's <fieldset disabled> still disables it)

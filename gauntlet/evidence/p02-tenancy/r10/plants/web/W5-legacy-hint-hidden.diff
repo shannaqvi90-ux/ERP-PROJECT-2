@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index ab8a43c..5511f4b 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -192,7 +192,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null;
+         <TextField field={bind("tradeLicenceNumber")} label={t("tenancy.company.tradeLicenceNumber")} dir="ltr" maxLength={50} />
+         <TextField field={bind("tradeLicenceAuthority")} label={t("tenancy.company.tradeLicenceAuthority")} maxLength={100} />
+         <TextField field={bind("taxRegistrationNumber")} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={40}
+-          hint={company?.legacyTaxRegistrationNumber && form.draft.taxRegistrationNumber.trim() === ""
++          hint={false && company?.legacyTaxRegistrationNumber && form.draft.taxRegistrationNumber.trim() === ""
+             ? t("tenancy.company.legacyTaxRegistrationNumber", { number: company.legacyTaxRegistrationNumber })
+             : t("tenancy.company.taxRegistrationNumberHint")} />
+       </FormSection>

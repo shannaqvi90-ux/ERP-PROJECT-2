@@ -1,0 +1,12 @@
+diff --git a/web/src/modules/tenancy/CompanyForm.tsx b/web/src/modules/tenancy/CompanyForm.tsx
+index ab8a43c..8ad8647 100644
+--- a/web/src/modules/tenancy/CompanyForm.tsx
++++ b/web/src/modules/tenancy/CompanyForm.tsx
+@@ -117,7 +117,6 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null;
+         code: draft.code.trim(),
+         legalNameEn: draft.legalNameEn,
+         legalNameAr: draft.legalNameAr,
+-        arabicLegalNameRequired: draft.arabicLegalNameRequired,
+         tradeLicenceNumber: optional(draft.tradeLicenceNumber),
+         tradeLicenceAuthority: optional(draft.tradeLicenceAuthority),
+         taxRegistrationNumber: optional(draft.taxRegistrationNumber),

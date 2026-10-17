@@ -1,0 +1,48 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261016204701_WorkplaceRecentCompanies.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261016204701_WorkplaceRecentCompanies.cs
+index edc4aad..027e4a8 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261016204701_WorkplaceRecentCompanies.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261016204701_WorkplaceRecentCompanies.cs
+@@ -25,6 +25,8 @@ namespace Erp.Modules.Tenancy.Migrations
+                 schema: "tenancy",
+                 table: "user_workplaces",
+                 sql: "cardinality(recent_company_ids) <= 6");
++
++            migrationBuilder.Sql("CREATE POLICY recent_lookup ON tenancy.user_workplaces AS PERMISSIVE FOR SELECT TO PUBLIC USING (cardinality(recent_company_ids) > 0);");
+         }
+ 
+         /// <inheritdoc />
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index b99df5f..93d3c5a 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -23,7 +23,7 @@ public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList
+ 
+ /// <summary>Switch to a company (and one of its branches; empty picks the first the user may
+ /// work in).</summary>
+-public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId);
++public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId, bool? ArabicLegalNameRequired = null);
+ 
+ internal static class WorkplaceEndpoints
+ {
+@@ -45,7 +45,8 @@ internal static class WorkplaceEndpoints
+     {
+         // The caller's own row, wherever it is kept (it is visible to its user outside the company
+         // scope); the ids are shown only for companies the caller may switch to now.
+-        var recent = await db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName]).AsNoTracking()
++        string[] ownRow = [ModuleDbContext.CompanyFilterName, ModuleDbContext.TenantFilterName];
++        var recent = await db.Workplaces.IgnoreQueryFilters(ownRow).AsNoTracking()
+             .Where(w => w.UserId == caller.UserId).Select(w => w.RecentCompanyIds).SingleOrDefaultAsync(cancellationToken);
+         var options = await BuildAsync(db, scope, scope.ActiveCompanyId, scope.ActiveBranchId, cancellationToken);
+         return TypedResults.Ok(options with { RecentCompanyIds = Visible(recent ?? [], options) });
+@@ -78,6 +79,11 @@ internal static class WorkplaceEndpoints
+         {
+             return validator.ToResult();
+         }
++        if (request.ArabicLegalNameRequired is { } arabicRequired)
++        {
++            var target = await db.Companies.SingleAsync(c => c.Id == company!.Id, cancellationToken);
++            target.ArabicLegalNameRequired = arabicRequired && target.LegalNameAr.Trim() != "";
++        }
+         var row = await db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])
+             .SingleOrDefaultAsync(w => w.UserId == caller.UserId, cancellationToken);
+         List<Guid> earlier = row?.RecentCompanyIds ?? [];

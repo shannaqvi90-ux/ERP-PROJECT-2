@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/WorkplaceSwitcher.tsx b/web/src/modules/tenancy/WorkplaceSwitcher.tsx
+index 682ace9..f238890 100644
+--- a/web/src/modules/tenancy/WorkplaceSwitcher.tsx
++++ b/web/src/modules/tenancy/WorkplaceSwitcher.tsx
+@@ -170,7 +170,7 @@ export function WorkplaceSwitcher() {
+   const others =
+     workplace.companies.length <= quickCompanies
+       ? workplace.companies.filter((c) => c.id !== workplace.companyId)
+-      : [...new Set([...(workplace.recentCompanyIds ?? []), ...recent])]
++      : [...new Set([...recent])]
+           .filter((id) => id !== workplace.companyId)
+           .map((id) => workplace.companies.find((c) => c.id === id))
+           .filter((c): c is Workplace["companies"][number] => c !== undefined)

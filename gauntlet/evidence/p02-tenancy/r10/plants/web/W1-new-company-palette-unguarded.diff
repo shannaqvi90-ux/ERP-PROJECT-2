@@ -1,0 +1,12 @@
+diff --git a/web/src/modules/tenancy/extensions.tsx b/web/src/modules/tenancy/extensions.tsx
+index 0f92cdd..7669cda 100644
+--- a/web/src/modules/tenancy/extensions.tsx
++++ b/web/src/modules/tenancy/extensions.tsx
+@@ -25,7 +25,6 @@ export const extensions: ModuleExtensions = {
+       path: "/tenancy/companies",
+       command: "tenancy.screen.new",
+       // As on the screen: only for someone who works in every company of the workspace.
+-      available: () => worksInEveryCompany(),
+     },
+     {
+       key: "tenancy.branches.new",

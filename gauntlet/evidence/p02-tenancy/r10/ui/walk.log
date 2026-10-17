@@ -1,0 +1,21 @@
+EN field order: legalNameEn > legalNameAr > code > isActive > arabicLegalNameRequired > tradeLicenceNumber
+EN TRN hint before save: {"label":"Tax registration number (TRN)","hint":"15 digits. Spaces and dashes are removed.","error":null,"required":false,"value":"12345"}
+EN TRN 12345 after Ctrl+S: {"label":"Tax registration number (TRN)","hint":"15 digits. Spaces and dashes are removed.","error":"A tax registration number (TRN) is exactly 15 digits. Spaces and dashes are ignored.","required":false,"value":"12345"} focus on taxRegistrationNumber
+EN TRN Arabic-Indic digits after Ctrl+S: {"label":"Tax registration number (TRN)","hint":"15 digits. Spaces and dashes are removed.","error":"A tax registration number (TRN) is exactly 15 digits. Spaces and dashes are ignored.","required":false,"value":"١٠٠١٢٣٤٥٦٧٠٠٠٠٣"}
+EN TRN 16 digits after Ctrl+S: {"label":"Tax registration number (TRN)","hint":"15 digits. Spaces and dashes are removed.","error":"A tax registration number (TRN) is exactly 15 digits. Spaces and dashes are ignored.","required":false,"value":"1001234567000039"}
+EN saved company: 404 trn undefined arabicRequired undefined
+EN branches: ["JEBELCritic R10 9DNA Trading LLC -  Jebel Ali"]
+EN setting on, Arabic blank, before save: {"label":"Legal name (Arabic)","hint":"This company's setting requires the legal name in Arabic.","error":null,"required":true,"value":""}
+EN setting on, Arabic blank, after Ctrl+S: {"label":"Legal name (Arabic)","hint":"This company's setting requires the legal name in Arabic.","error":"Enter the legal name in Arabic: this company's setting requires it.","required":true,"value":""} setting {"hint":null,"error":null,"required":false,"value":true}
+EN stored after refusal: legalNameAr undefined arabicRequired undefined
+EN stored after fill+save: legalNameAr undefined arabicRequired undefined
+CREATED_EN null
+AR new company first field: legalNameAr | order: legalNameAr > legalNameEn > code > isActive > arabicLegalNameRequired > tradeLicenceNumber
+AR Tab from Arabic name lands on: legalNameEn
+AR TRN 123 refusal: {"label":"رقم التسجيل الضريبي","hint":"15 رقماً. تُحذف المسافات والشَّرطات.","error":"رقم التسجيل الضريبي 15 رقماً بالضبط، وتُتجاهل المسافات والشَّرطات.","required":false,"value":"123"}
+AR setting label: {"hint":null,"error":null,"required":false,"value":false}
+AR after save, focus on branchNameAr "شركة الناقد 9DNA للتصنيع ذ.م.م - "
+AR branches under company: ["BR-1فرع المصفح"]
+AR branch records: undefined
+CREATED_AR null
+AR list overflow: false dir rtl

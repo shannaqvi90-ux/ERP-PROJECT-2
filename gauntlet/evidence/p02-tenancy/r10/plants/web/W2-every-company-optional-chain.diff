@@ -1,0 +1,12 @@
+diff --git a/web/src/modules/tenancy/records.ts b/web/src/modules/tenancy/records.ts
+index d9d6281..c9ca3e1 100644
+--- a/web/src/modules/tenancy/records.ts
++++ b/web/src/modules/tenancy/records.ts
+@@ -44,6 +44,5 @@ export const listSearch = {
+  */
+ export async function worksInEveryCompany(signal?: AbortSignal): Promise<boolean> {
+   const page = await api<ListPage<CompanyRow>>("GET", "/api/tenancy/companies?take=1", undefined, { signal });
+-  const first = page.items[0];
+-  return first !== undefined && first.everyCompany === true;
++  return page.items[0]?.everyCompany !== false;
+ }

@@ -1,0 +1,10 @@
+CL sees users matching tag: 5
+bulk deactivate as CL 200 {"matched":5,"changed":1,"unchanged":0,"refusedSelf":1,"refusedBeyondOwn":3}
+create company valid body as CL 403 {"type":"urn:erp:problem:tenancy.companyNeedsEveryCompany","title":"Only someone who works in every company of the workspace may create a company or change a company code.","status":403,"code":"tenancy.companyNeedsEveryCompany","traceId":"00-27c9c616
+CL switch to DXB 400
+CL workplace companies ALN-SHJ recent [] contains DXB: false
+CL turns on arabicLegalNameRequired with blank Arabic 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-2f3cb77ed5a67cc453e2f442c0cc2aa0-b0e528f4ac2fe514-00","errors":{"legalNameAr":[{"code":"tenancyLeg
+T1 active false
+T2 active true
+T3 active true
+BL active true

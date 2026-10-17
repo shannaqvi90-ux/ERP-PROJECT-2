@@ -1,0 +1,40 @@
+companies ALN-AUH ALN-DXB ALN-FZE ALN-SHJ
+DXB branches AQZ-WH DEIRA-HQ DIP-SR | roles Administrator, Company manager, Read-only, Staff
+created CL, BL, T1 (SHJ only), T2 (DXB+SHJ, workspace role), T3 (DXB+SHJ, company roles)
+CL T1 control default-company: PUT /api/identity/users/01a14734-4ee0-79f1-bf66-8a70baf90141/default-company -> 200 
+CL T1 control edit name: PUT /api/identity/users/01a14734-4ee0-79f1-bf66-8a70baf90141 -> 200 
+CL T1 control access read: GET /api/tenancy/access/01a14734-4ee0-79f1-bf66-8a70baf90141 -> 200 
+CL T1 control access narrow: PUT /api/tenancy/access/01a14734-4ee0-79f1-bf66-8a70baf90141 -> 200 
+CL T1 control password: POST /api/identity/users/01a14734-4ee0-79f1-bf66-8a70baf90141/password -> 200 
+CL T1 control revoke sessions: POST /api/identity/users/01a14734-4ee0-79f1-bf66-8a70baf90141/sessions/revoke -> 200 
+CL T2 default-company: PUT /api/identity/users/01a14734-4fab-74d4-bec5-1eed3cf87bcb/default-company -> 403 This user also works in companies you do not work in. Only someone who works in all of them may change their account.
+CL T2 edit name: PUT /api/identity/users/01a14734-4fab-74d4-bec5-1eed3cf87bcb -> 403 This user also works in companies you do not work in. Only someone who works in all of them may change their account.
+CL T2 access read: GET /api/tenancy/access/01a14734-4fab-74d4-bec5-1eed3cf87bcb -> 200 
+CL T2 access narrow: PUT /api/tenancy/access/01a14734-4fab-74d4-bec5-1eed3cf87bcb -> 403 This user also works in companies you do not work in. Only someone who works in all of them may change their company access.
+CL T2 password: POST /api/identity/users/01a14734-4fab-74d4-bec5-1eed3cf87bcb/password -> 403 This user also works in companies you do not work in. Only someone who works in all of them may change their account.
+CL T2 revoke sessions: POST /api/identity/users/01a14734-4fab-74d4-bec5-1eed3cf87bcb/sessions/revoke -> 403 This user also works in companies you do not work in. Only someone who works in all of them may change their account.
+CL T3 default-company: PUT /api/identity/users/01a14734-5091-720d-819c-8816de613a0f/default-company -> 403 This user also holds roles in companies you do not work in. Only someone who works in all of them may change their account.
+CL T3 edit name: PUT /api/identity/users/01a14734-5091-720d-819c-8816de613a0f -> 403 This user also holds roles in companies you do not work in. Only someone who works in all of them may change their account.
+CL T3 access read: GET /api/tenancy/access/01a14734-5091-720d-819c-8816de613a0f -> 200 
+CL T3 access narrow: PUT /api/tenancy/access/01a14734-5091-720d-819c-8816de613a0f -> 403 This user also works in companies you do not work in. Only someone who works in all of them may change their company access.
+CL T3 password: POST /api/identity/users/01a14734-5091-720d-819c-8816de613a0f/password -> 403 This user also holds roles in companies you do not work in. Only someone who works in all of them may change their account.
+CL T3 revoke sessions: POST /api/identity/users/01a14734-5091-720d-819c-8816de613a0f/sessions/revoke -> 403 This user also holds roles in companies you do not work in. Only someone who works in all of them may change their account.
+CL bulk deactivate matching critic.r10.t: POST /api/identity/users/matching/active -> 400 Some fields need attention.
+T1 after: active=true name='Critic R10 t1-shj-only x' default=none companies=0
+T2 after: active=true name='Critic R10 t2-dxb-shj-ws' default=none companies=2
+T3 after: active=true name='Critic R10 t3-dxb-shj-cr' default=none companies=2
+CL create company: POST /api/tenancy/companies -> 400 Some fields need attention.
+CL company record SHJ everyCompany=false everyBranch=true
+CL change SHJ code: PUT /api/tenancy/companies/018dca08-f088-7fcc-83c4-0e6b29fd686e -> 403 Only someone who works in every company of the workspace may create a company or change a company code.
+CL read DXB: GET /api/tenancy/companies/018dca08-f081-7fbc-a98c-fc7a08981500 -> 404 The record was not found.
+CL read DXB branch: GET /api/tenancy/branches/018dca08-f083-7337-b9f0-cef5443e68e1 -> 404 The record was not found.
+CL workspace change: PUT /api/tenancy/tenant -> 403 Only someone who works in every company of the workspace, and in every branch of each, may change the workspace's name or settings.
+CL companies list: ALN-SHJ everyCompany=false
+BL companies list: ALN-DXB everyCompany=false everyBranch=false
+BL branches list: AQZ-WH
+BL read other DXB branch DEIRA-HQ: GET /api/tenancy/branches/018dca08-f082-726c-8785-e295a2dd46d1 -> 404 The record was not found.
+BL read other DXB branch DIP-SR: GET /api/tenancy/branches/018dca08-f084-7ff3-aeaa-c44adfa23024 -> 404 The record was not found.
+BL switch to other branch: PUT /api/tenancy/workplace -> 400 Some fields need attention.
+BL report tenancy.branchDirectory: 200, other branch codes present: none
+BL report tenancy.companyProfile: 200, other branch codes present: none
+{"CL":{"id":"01a14734-4c33-7c64-bee9-127d365ea3c2","email":"critic.r10.cl.mvbn7ifn@alnoor.example"},"BL":{"id":"01a14734-4de8-7554-a2e7-0b5d941206f1","email":"critic.r10.bl.mvbn7ifn@alnoor.example"},"T1":{"id":"01a14734-4ee0-79f1-bf66-8a70baf90141","email":"critic.r10.t1-shj-only.mvbn7ifn@alnoor.example"},"T2":{"id":"01a14734-4fab-74d4-bec5-1eed3cf87bcb","email":"critic.r10.t2-dxb-shj-ws.mvbn7ifn@alnoor.example"},"T3":{"id":"01a14734-5091-720d-819c-8816de613a0f","email":"critic.r10.t3-dxb-shj-cr.mvbn7ifn@alnoor.example"},"tag":"mvbn7ifn"}

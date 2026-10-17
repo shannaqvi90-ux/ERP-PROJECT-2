@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blind review</title>
+<style>
+  :root { --bg: #fafafa; --fg: #1b1b1b; --muted: #666; --line: #ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161616; --fg: #eee; --muted: #aaa; --line: #333; } }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; } h2 { font-size: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
+  figure { margin: 0 0 12px; } img { width: 100%; border: 1px solid var(--line); }
+  figcaption, .empty { color: var(--muted); }
+</style></head><body>
+<h1>Blind review: two products, same tasks</h1>
+<p>Products are shown as A and B, assigned at random per task. The key is kept outside this folder; do not open it until the verdict is written.</p>
+<section><h2>create-company-branch</h2><div class="cols"><div class="col"><h3>A</h3><figure><img loading="lazy" src="shots/c1dce168fd14e8a2.jpg" alt="A: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/499a6dab8246f0fa.jpg" alt="A: moment 1"><figcaption>moment 1</figcaption></figure><figure><img loading="lazy" src="shots/1f9e08bd295bb3e6.jpg" alt="A: done"><figcaption>done</figcaption></figure></div><div class="col"><h3>B</h3><figure><img loading="lazy" src="shots/a915b057cfc65e02.jpg" alt="B: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/fae4d70519da3ba9.jpg" alt="B: moment 1"><figcaption>moment 1</figcaption></figure><figure><img loading="lazy" src="shots/53491b30bd4ee51f.jpg" alt="B: done"><figcaption>done</figcaption></figure></div></div></section>
+<section><h2>switch-company</h2><div class="cols"><div class="col"><h3>A</h3><figure><img loading="lazy" src="shots/8af0bf6aef18258c.jpg" alt="A: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/eb2732969e6d7472.jpg" alt="A: done"><figcaption>done</figcaption></figure></div><div class="col"><h3>B</h3><figure><img loading="lazy" src="shots/15b0f33bbbbe704e.jpg" alt="B: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/d3a85ce67767e8c3.jpg" alt="B: done"><figcaption>done</figcaption></figure></div></div></section>
+</body></html>
