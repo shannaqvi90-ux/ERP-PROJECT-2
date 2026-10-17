@@ -312,9 +312,23 @@
 
 .id-cell {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
   margin-inline-end: 8px;
+}
+
+/* The box keeps its full size whatever the label beside it does (a long "Other" permission wraps
+   under itself, never into the box). */
+.id-cell input[type="checkbox"] {
+  flex: none;
+}
+
+.id-other .id-cell input[type="checkbox"] {
+  margin-block-start: 2px;
+}
+
+.id-cell span {
+  min-width: 0;
 }
 
 .id-other {

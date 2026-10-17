@@ -47,10 +47,10 @@ function pathRun(keyboardRole) {
     await op.waitFor('input[name="email"]:focus', { label: 'new user form, e-mail focused' });
     await op.type(login, { label: 'e-mail' });
     if (keyboardRole) {
-      // Tab passes the suggested name and the language to the role finder; Enter ticks the first role shown.
-      await op.press('Tab', { label: 'next field (name)' });
-      await op.press('Tab', { label: 'next field (language)' });
-      await op.press('Tab', { label: 'next field (find a role)' });
+      // Alt+O moves past the suggested name and the language to the role finder (the form's own
+      // key, listed in the shortcut sheet); Enter ticks the first role shown.
+      await op.press('Alt+o', { label: 'find a role (Alt+O)' });
+      await op.waitFor('aside .id-roles-filter:focus', { label: 'role finder focused' });
       await op.type(ctx.state.role.filter, { label: 'find the role' });
       await op.press('Enter', { label: 'tick the first role shown' });
     } else {
@@ -69,7 +69,7 @@ export default {
   run: pathRun(false),
   variants: {
     pointer: { path: 'Users > Alt+N (e-mail focused) > type the e-mail > click the role > Ctrl+Enter', run: pathRun(false) },
-    keyboard: { path: 'Users > Alt+N > type the e-mail > Tab Tab Tab > part of the role name > Enter > Ctrl+Enter', run: pathRun(true) },
+    keyboard: { path: 'Users > Alt+N > type the e-mail > Alt+O (find a role) > part of the role name > Enter > Ctrl+Enter', run: pathRun(true) },
   },
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');

@@ -560,6 +560,23 @@ describe("roles screen", () => {
     expect(buttons).not.toContain("حفظ");
     expect(buttons).not.toContain("حذف الدور");
     expect(view.container.querySelector<HTMLInputElement>('aside input[name="nameEn"]')!.disabled).toBe(true);
+
+    // A copy is named in each language in that language, on an Arabic screen too (critic p03
+    // round 10: the Arabic name was "X (2)" while the English one said "X (copy)").
+    const copy = [...view.container.querySelectorAll<HTMLButtonElement>("aside button")].find((b) => b.textContent === "نسخ الدور")!;
+    await act(async () => copy.click());
+    await settle();
+    expect(view.container.querySelector<HTMLInputElement>('aside input[name="nameEn"]')!.value).toBe("Administrator (copy)");
+    expect(view.container.querySelector<HTMLInputElement>('aside input[name="nameAr"]')!.value).toBe("مدير النظام (نسخة)");
+  });
+
+  it("names a copy in English and in Arabic, each in its own language, on an English screen", async () => {
+    await openRole(all);
+    const copy = [...view!.container.querySelectorAll<HTMLButtonElement>("aside button")].find((b) => b.textContent === "Copy role")!;
+    await act(async () => copy.click());
+    await settle();
+    expect(view!.container.querySelector<HTMLInputElement>('aside input[name="nameEn"]')!.value).toBe("Contacts clerk (copy)");
+    expect(view!.container.querySelector<HTMLInputElement>('aside input[name="nameAr"]')!.value).toBe("كاتب جهات الاتصال (نسخة)");
   });
 });
 
@@ -1301,5 +1318,91 @@ describe("a user's passkeys, for a lost or stolen device", () => {
     expect(aside().querySelector("section.id-user-passkeys")!.textContent).toContain("مفاتيح المرور");
     await click(button(aside(), "سجل الدخول"));
     expect(aside().querySelector(".id-history-table tbody tr")!.textContent).toContain("مفتاح مرور");
+  });
+});
+
+describe("account actions keep the open record saveable", () => {
+  // Critic p03 round 10: Allow sign-in again bumped the user's version, the form kept the old one,
+  // and the next save (unticking Active) was refused as changed by someone else.
+  const paused = { id: "u-paused", email: "paused@demo-trading.example", displayName: "Paused User", language: "en", isActive: true, roleIds: ["r-clerk"], lastSignInAt: "2026-10-09T08:00:00Z", createdAt: "2026-10-03T00:00:00Z", version: 4, pendingSetup: false, companyRoles: [] };
+
+  async function openPaused(renamedElsewhere: boolean) {
+    let current = { ...paused };
+    let blocked = true;
+    window.history.replaceState(null, "", `/identity/users?open=${paused.id}`);
+    const calls = mockFetch((m, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(all) };
+      const list = listReply(m, url);
+      if (list) return list;
+      if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (m === "GET" && url === `/api/identity/users/${paused.id}`) return { status: 200, body: current };
+      if (m === "GET" && url === `/api/identity/users/${paused.id}/passkeys`) return { status: 200, body: [] };
+      if (m === "POST" && url === `/api/identity/users/${paused.id}/unblock`) {
+        blocked = false;
+        // The row changes (its version) and, in the control, someone else renamed the user meanwhile.
+        current = { ...current, version: current.version + 1, ...(renamedElsewhere ? { displayName: "Renamed Elsewhere" } : {}) };
+        return { status: 204, body: null };
+      }
+      if (m === "PUT" && url === `/api/identity/users/${paused.id}`) {
+        const sent = body as { version: number; isActive: boolean };
+        if (sent.version !== current.version) return { status: 409, body: { code: "concurrency", title: "Someone else changed this record after you opened it." } };
+        current = { ...current, isActive: sent.isActive, version: current.version + 1 };
+        return { status: 200, body: current };
+      }
+      if (url === `/api/identity/users/${paused.id}/sign-ins?take=100`)
+        return {
+          status: 200,
+          body: { items: [], total: 0, paused: blocked ? [{ source: "10.0.0.9", until: "2026-10-09T09:00:00Z", failures: 5 }] : [] },
+        };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    await settle();
+    return calls;
+  }
+
+  const click = async (target: HTMLElement | undefined) => {
+    expect(target).toBeDefined();
+    await act(async () => {
+      target!.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await settle();
+    await settle();
+  };
+  const tab = (name: string) => [...view!.container.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find((b) => b.textContent === name);
+  const buttonNamed = (name: string) => [...view!.container.querySelectorAll<HTMLButtonElement>("aside button")].find((b) => b.textContent === name);
+
+  async function unblockThenDeactivate() {
+    await click(tab("Sign-in history"));
+    await click(buttonNamed("Allow sign-in again"));
+    await click(tab("Details"));
+    const active = view!.container.querySelector<HTMLInputElement>('aside input[name="isActive"]')!;
+    expect(active.checked).toBe(true);
+    await click(active);
+    key(active, { key: "Enter", code: "Enter", ctrlKey: true });
+    await settle();
+    await settle();
+  }
+
+  it("Allow sign-in again, then untick Active and save: saved, with the version the unblock left", async () => {
+    const calls = await openPaused(false);
+    await unblockThenDeactivate();
+    const puts = calls.filter((c) => c.method === "PUT" && c.url === `/api/identity/users/${paused.id}`);
+    expect(puts).toHaveLength(1);
+    expect((puts[0]!.body as { version: number; isActive: boolean })).toMatchObject({ version: 5, isActive: false });
+    expect(view!.container.textContent).not.toContain("Someone else changed this record");
+  });
+
+  it("the control: when someone else changed a field meanwhile, the save is still refused as changed elsewhere", async () => {
+    const calls = await openPaused(true);
+    await unblockThenDeactivate();
+    const puts = calls.filter((c) => c.method === "PUT" && c.url === `/api/identity/users/${paused.id}`);
+    expect(puts).toHaveLength(1);
+    expect((puts[0]!.body as { version: number }).version).toBe(4);
+    expect(view!.container.textContent).toContain("Someone else changed this record");
   });
 });

@@ -22,7 +22,10 @@ test.describe("users, roles and permissions", () => {
     await page.keyboard.press("Tab");
     await expect(page.locator('input[name="email"]')).toHaveValue(email);
     await expect(page.locator('input[name="displayName"]')).toHaveValue(/^E2e Clerk /);
-    await page.getByRole("searchbox", { name: "Find a role" }).fill("read-only");
+    // Alt+O moves past the suggested name and the language to the role finder.
+    await page.keyboard.press("Alt+o");
+    await expect(page.getByRole("searchbox", { name: "Find a role" })).toBeFocused();
+    await page.keyboard.type("read-only");
     await page.keyboard.press("Enter");
     await expect(page.getByRole("checkbox", { name: /Read-only/ })).toBeChecked();
     await page.keyboard.press("Control+Enter");
@@ -254,6 +257,65 @@ test.describe("users, roles and permissions", () => {
         return found;
       });
       expect(broken).toEqual([]);
+    });
+  }
+
+  // Critic p03 round 10: in the matrix's "Other" column (Reset other users' passwords, Share list
+  // views with everyone: the riskiest grants) each box shrank to a 5 to 12 px dot beside its
+  // wrapping label, against 13 px for every other box. Every box of the matrix (a new role, and the
+  // Administrator's ticked read-only one) and of a new user's roles is full size, at the widths
+  // people use, in both languages.
+  for (const language of ["en", "ar"] as const) {
+    test(`every box of the permission matrix and the role picker is full size at 1280, 1600 and 1920 px (${language})`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await freshStart(page, language);
+      await signIn(page, language === "en" ? users.admin : users.adminArabic);
+      await expect(page.locator("nav").first()).toBeVisible();
+      const boxes = () =>
+        page.evaluate(() =>
+          [...document.querySelectorAll<HTMLInputElement>(".id-matrix input[type=checkbox], .id-roles input[type=checkbox]")]
+            .filter((e) => e.offsetParent !== null)
+            .map((e) => {
+              const r = e.getBoundingClientRect();
+              return { name: e.getAttribute("aria-label") ?? e.closest("label")?.textContent?.trim() ?? "", other: e.closest(".id-other") !== null, width: r.width, height: r.height };
+            }),
+        );
+      const screens: [string, () => Promise<void>][] = [
+        ["a new role", async () => {
+          await page.goto("/identity/roles/new");
+          await expect(page.locator('input[name="nameEn"]')).toBeVisible();
+        }],
+        ["the Administrator role", async () => {
+          await page.goto("/identity/roles");
+          await page.locator("table tbody tr", { hasText: language === "en" ? "Administrator" : "مدير النظام" }).first().click();
+          await expect(page.locator(".id-matrix input[type=checkbox]").first()).toBeDisabled();
+        }],
+        ["a new user", async () => {
+          await page.goto("/identity/users/new");
+          await expect(page.locator('input[name="email"]')).toBeVisible();
+        }],
+      ];
+      const problems: string[] = [];
+      let others = 0;
+      for (const [screen, show] of screens) {
+        await show();
+        for (const width of [1280, 1600, 1920]) {
+          await page.setViewportSize({ width, height: 900 });
+          await expect(page.locator(".id-matrix input[type=checkbox], .id-roles input[type=checkbox]").first()).toBeVisible();
+          const found = await boxes();
+          if (found.length === 0) problems.push(`${screen} at ${width} px: no boxes`);
+          others += found.filter((b) => b.other).length;
+          for (const box of found) {
+            if (box.width < 12.5 || box.height < 12.5 || Math.abs(box.width - box.height) > 0.5)
+              problems.push(`${screen} at ${width} px: "${box.name}" is ${box.width.toFixed(2)} x ${box.height.toFixed(2)} px`);
+          }
+          const widths = new Set(found.map((b) => b.width.toFixed(1)));
+          if (widths.size > 1) problems.push(`${screen} at ${width} px: boxes of ${[...widths].join(", ")} px wide`);
+        }
+      }
+      expect(problems).toEqual([]);
+      // Not blind: the "Other" column's boxes were among those measured.
+      expect(others).toBeGreaterThan(0);
     });
   }
 

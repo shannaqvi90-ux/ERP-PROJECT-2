@@ -176,11 +176,15 @@ input {
 }
 
 /* Boxes and buttons are their own size: the field height above made a checkbox 30 px tall, taller
-   than a list row. */
+   than a list row. Beside a label in a flex row they never shrink either: the min-width: 0 above
+   let a wrapping label squeeze a box to a 5 px dot (critic p03 round 10, the permission matrix's
+   "Other" column). */
 input[type="checkbox"],
 input[type="radio"] {
   height: auto;
   padding: 0;
+  flex: none;
+  min-width: auto;
 }
 
 input[aria-invalid="true"] {

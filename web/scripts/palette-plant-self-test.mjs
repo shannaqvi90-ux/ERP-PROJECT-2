@@ -109,6 +109,12 @@ const plants = [
       { file: "src/modules/tenancy/extensions.tsx", find: "import { loadAll, worksInEveryCompany, type ListPage } from", replace: "import { loadAll, type ListPage } from" },
     ],
   },
+  {
+    id: "PA11",
+    what: "Allow sign-in again offered without the sign-in history permission its record's command needs (critic p03 round 10, plant U1)",
+    tests: "runs to its end",
+    edits: [{ file: "src/modules/identity/extensions.ts", find: '      requires: ["identity.signIns.read"],\n', replace: "" }],
+  },
 ];
 
 function copyWeb() {
