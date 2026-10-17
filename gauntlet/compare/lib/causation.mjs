@@ -15,9 +15,10 @@
 // animation frames each task armed (with their delays), and the requests each task sent. A write is
 // the person's only when the chain of tasks that sent it leads back to a counted step:
 //
-//   input     a task that delivered an input event (the browser's input queue: never page script)
-//             while a step was being performed (from the moment the operator began it, the pointer
-//             moving to its target included, until its input was dispatched) is that step's;
+//   input     a task that delivered an input event (dispatched by the browser, outside any script:
+//             never the page's doing) is the step's that last began before it: only the harness's
+//             steps put input in the page (from the moment the operator began a step, the pointer
+//             moving to its target included);
 //   command   a DevTools command task inside a step (a file chosen, the device's answer) likewise;
 //             outside every step it is the harness reading the page, and causes nothing;
 //   timer     a timer's task is caused when the task that armed the timer was, the timer fires once
@@ -51,7 +52,7 @@ export const LINK_SECONDS = 2;
 /** A page task that caused nothing and ended this close before a step's task could have posted what follows it. */
 export const GUARD_SECONDS = 0.1;
 /** Input events a step delivers (the outermost event of an input task). */
-const INPUT_EVENTS = /^(pointer|mouse|click|dblclick|auxclick|contextmenu|key|wheel|touch|focus|blur|DOMFocus|input|beforeinput|change|textInput|compositi|select|submit|formdata|DOMActivate|drag|drop|paste|copy|cut)/;
+const INPUT_EVENTS = /^(pointer(down|up|move|over|out|enter|leave|cancel|rawupdate)|mouse(down|up|move|over|out|enter|leave)|click|dblclick|auxclick|contextmenu|key(down|up|press)|wheel|touch(start|end|move|cancel)|beforeinput|input|textInput|change|composition(start|update|end)|submit|formdata|paste|copy|cut|drag\w*|drop|DOMActivate|focus|blur|focusin|focusout|DOMFocusIn|DOMFocusOut)$/;
 
 const hrUs = () => Number(process.hrtime.bigint() / 1000n);
 
@@ -137,7 +138,6 @@ export function analyseTrace(events) {
   const installs = new Map(); // `${frame}:${timerId}` -> { event, task }
   const frames = new Map(); // `${frame}:${id}` -> { event, task } (RequestAnimationFrame)
   const sends = new Map(); // requestId -> { event, task }
-  const navigations = new Map(); // navigationId -> { event, task }
   for (const [k, list] of byThread) {
     list.sort((a, b) => a.ts - b.ts || (b.dur || 0) - (a.dur || 0));
     const name = names.get(k) || '';
@@ -160,13 +160,14 @@ export function analyseTrace(events) {
         if (e.name === 'TimerInstall') installs.set(`${d.frame}:${d.timerId}`, { event: e, task: t });
         else if (e.name === 'RequestAnimationFrame') frames.set(`${d.frame}:${d.id}`, { event: e, task: t });
         else if (e.name === 'ResourceSendRequest' && d.requestId && !sends.has(d.requestId)) sends.set(d.requestId, { event: e, task: t });
-        else if (e.name === 'navigationStart' && d.navigationId) navigations.set(d.navigationId, { event: e, task: t });
       }
     }
   }
   // Every ResourceSendRequest (renderer and browser side) by request id, for writes that are navigations.
   const sendEvents = events.filter(e => e.name === 'ResourceSendRequest' && e.args?.data?.requestId);
-  return { tasks, threads, installs, frames, sends, navigations, sendEvents };
+  // Where the page's frames started navigations (a form posted, an address set), with the address.
+  const navigationStarts = events.filter(e => e.name === 'FrameLoader::StartNavigation' && e.args?.url);
+  return { tasks, threads, installs, frames, sends, sendEvents, navigationStarts };
 }
 
 const spanHolds = (s, ts) => ts >= s.ts && ts <= s.ts + (s.dur || 0);
@@ -182,9 +183,9 @@ function describeTask(t) {
   const scripts = t.events.filter(e => e.ph === 'X' && /^(FunctionCall|EvaluateScript|TimerFire|FireAnimationFrame|DevToolsSession::DispatchProtocolCommand)$/.test(e.name));
   // Events dispatched by the browser, not by script: those not inside any script span of the task.
   t.topDispatches = t.events.filter(e => e.ph === 'X' && e.name === 'EventDispatch' && !scripts.some(s => s !== e && spanHolds(s, e.ts) && s.ts <= e.ts));
-  const fromInputQueue = t.src ? /main_thread_event_queue/.test(t.src) : null;
-  t.input = !t.protocol && (fromInputQueue ?? t.topDispatches.some(e => INPUT_EVENTS.test(e.args?.data?.type || '')))
-    && t.topDispatches.some(e => INPUT_EVENTS.test(e.args?.data?.type || ''));
+  // An input event the browser delivered: dispatched outside any script of the task. Usually a task of
+  // the input queue; continuous input (and some key events) arrive inside a frame's task instead.
+  t.input = !t.protocol && t.topDispatches.some(e => INPUT_EVENTS.test(e.args?.data?.type || ''));
   // Whether the page's own code (or the page's network answers) ran in it.
   t.activity = !t.protocol && (t.timerFires.length > 0 || t.frameFires.length > 0 || t.answers.length > 0
     || t.events.some(e => (e.ph === 'X' && /^(FunctionCall|ParseHTML)$/.test(e.name)) || (e.name === 'EvaluateScript' && e.args?.data)
@@ -223,6 +224,11 @@ function stepHolding(ctx, ts) {
   return null;
 }
 
+function stepBefore(ctx, ts) {
+  for (let i = ctx.steps.length - 1; i >= 0; i--) if (ctx.steps[i].from - ctx.slack <= ts) return ctx.steps[i];
+  return null;
+}
+
 const no = (why, chain = []) => ({ caused: false, step: null, why, chain });
 /** The first reason of a chain that caused nothing (a loop of frames or timers names its origin once). */
 const rootOf = c => c.root || c.why;
@@ -246,8 +252,10 @@ function pointCause(ctx, point, depth) {
   const frame = task.frameFires.find(f => spanHolds(f, point.ts)) || null;
   if (frame) return frameCause(ctx, frame, depth);
   if (task.input) {
-    const s = stepHolding(ctx, task.ts);
-    return s ? yes(s.n, [`input of step ${s.n}`]) : no('an input event outside any counted step');
+    // Only the harness's steps put input in the page: an input task is the latest step's that began
+    // before it (the renderer may handle a key a few milliseconds after the step's call returned).
+    const s = stepBefore(ctx, task.ts);
+    return s ? yes(s.n, [`input of step ${s.n}`]) : no('an input event before the first counted step');
   }
   const answers = task.answers.filter(a => a.ts <= point.ts);
   if (answers.length) return answerCause(ctx, task, answers, depth);
@@ -351,23 +359,34 @@ export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 
     n: s.n, from: clockToTrace(typeof s.began === 'number' ? s.began : s.at, clock, originMs), to: clockToTrace(s.at + (s.took || 0), clock, originMs),
   }));
   const taken = new Set();
+  const starts = model.navigationStarts;
   return writes.map(w => {
+    // A navigation (a form posted): judged by the task that started it (the browser sends the request).
+    if (w.navigation) {
+      const near = starts.filter(e => !taken.has(e) && bare(e.args.url) === bare(w.url))
+        .map(e => ({ e, d: Math.abs(traceToClock(e.ts, clock, originMs) - (w.at ?? 0)) })).sort((a, b) => a.d - b.d)[0];
+      if (!near || near.d > 5) return { caused: false, step: null, why: 'a navigation no task of the page started (the browser\'s own)', chain: [], answered: [] };
+      taken.add(near.e);
+      const c = causeOf(model, near.e, windows, { reaction, link, guard, slackUs });
+      return { ...c, request_id: null, answered: [], at_trace: round3(traceToClock(near.e.ts, clock, originMs)) };
+    }
     const candidates = model.sendEvents.filter(e => !taken.has(e) && (e.args.data.requestMethod || '').toUpperCase() === String(w.method).toUpperCase() && bare(e.args.data.url) === bare(w.url));
     const near = candidates.map(e => ({ e, d: Math.abs(traceToClock(e.ts, clock, originMs) - (w.at ?? 0)) })).sort((a, b) => a.d - b.d)[0];
-    if (!near || near.d > 5) return { caused: false, step: null, why: 'the browser\'s record of the page holds no such request (another page sent it, or the record was cut short)', chain: [] };
-    // A navigation's request: the renderer records it when the answer commits; it is judged by the task that started it.
+    if (!near || near.d > 5) return { caused: false, step: null, why: 'the browser\'s record of the page holds no such request (another page sent it, or the record was cut short)', chain: [], answered: [] };
     const requestId = near.e.args.data.requestId;
     for (const e of model.sendEvents) if (e.args.data.requestId === requestId) taken.add(e);
-    const nav = model.navigations.get(requestId);
-    let point = model.sends.get(requestId)?.event || near.e;
-    if (String(near.e.args.data.resourceType || '').toLowerCase() === 'document') {
-      if (!nav) return { caused: false, step: null, why: 'a navigation no task of the page started (the browser\'s own)', chain: [], request_id: requestId };
-      point = nav.event;
-    }
+    const point = model.sends.get(requestId)?.event || near.e;
     const c = causeOf(model, point, windows, { reaction, link, guard, slackUs });
     // The requests whose answers the task that sent it delivered first (a batch's next part follows its last one's answer).
-    const task = taskAt(model, keyOf(point), point.ts);
-    const answered = [...new Set((task?.answers || []).filter(a => a.ts <= point.ts).map(a => a.args.data.requestId))];
+    // When it was sent by a task of no traceable origin (the page read the answer's body first), the
+    // answers of the page task just before it.
+    let task = taskAt(model, keyOf(point), point.ts);
+    let upTo = point.ts;
+    if (task && !task.protocol && !task.input && !task.timerFires.length && !task.frameFires.length && !task.answers.some(a => a.ts <= point.ts)) {
+      const prev = model.threads.get(task.thread).tasks.slice(0, task.index).reverse().find(t => t.activity);
+      if (prev && (task.ts - prev.end) / 1e6 <= reaction) { task = prev; upTo = prev.end; }
+    }
+    const answered = [...new Set((task?.answers || []).filter(a => a.ts <= upTo).map(a => a.args.data.requestId))];
     return { ...c, request_id: requestId, answered, at_trace: round3(traceToClock(point.ts, clock, originMs)) };
   });
 }

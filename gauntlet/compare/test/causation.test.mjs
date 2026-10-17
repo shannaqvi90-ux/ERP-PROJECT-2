@@ -36,6 +36,9 @@ import http from 'node:http';
 import { execute, layout, compareRuns, measuredPartProblem } from '../lib/runner.mjs';
 import { analyseTrace, causeOf, clockFrom, clockToTrace, GUARD_SECONDS, LINK_SECONDS, traceToClock, writeCauses } from '../lib/causation.mjs';
 import { loadNeedles } from '../data/generate.mjs';
+import { launch, newContext } from '../lib/browser.mjs';
+import { Operator } from '../lib/operator.mjs';
+import { brandingFor } from '../lib/blind.mjs';
 import { sandboxed } from './helpers/driver-module.mjs';
 
 // -- the rules on synthetic traces ----------------------------------------------------------------
@@ -79,13 +82,16 @@ function verdict(tasks, rid, windows = [[100, 110]]) {
   return causeOf(model, point, windows.map(([from, to], i) => ({ n: i + 1, from: from * MS, to: to * MS })), { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
 }
 
-test('causation (round 12): an input task inside a step is that step\'s; one outside every step causes nothing', () => {
+test('causation (round 12): an input task is the step\'s that began last before it; one before every step causes nothing', () => {
   const inside = verdict([task(101, INPUT, [...click(), send(3, 'w')])], 'w');
   assert.equal(inside.caused, true);
   assert.equal(inside.step, 1);
-  const outside = verdict([task(140, INPUT, [...click(), send(3, 'w')])], 'w');
-  assert.equal(outside.caused, false);
-  assert.match(outside.why, /input event outside any counted step/);
+  // Handled a little after the step's call returned: still that step's input.
+  assert.equal(verdict([task(140, INPUT, [...click(), send(3, 'w')])], 'w').step, 1);
+  assert.equal(verdict([task(140, INPUT, [...click(), send(3, 'w')])], 'w', [[100, 110], [150, 160]]).step, 1);
+  const before = verdict([task(90, INPUT, [...click(), send(3, 'w')])], 'w');
+  assert.equal(before.caused, false);
+  assert.match(before.why, /input event before the first counted step/);
   // The page dispatching a click itself (inside its own script) is no input task.
   const synthetic = verdict([task(101, IPC, [X('FunctionCall', 1, 3, { url: 'http://p/' }), X('EventDispatch', 2, 1, { type: 'click' }), send(2.5, 'w')])], 'w', [[200, 210]]);
   assert.equal(synthetic.caused, false);
@@ -128,6 +134,11 @@ test('causation (round 12): an animation frame counts when a caused task asked f
   assert.equal(verdict(asked, 'w').caused, true);
   const loop = [task(101, INPUT, click()), task(112, FRAME, [X('FireAnimationFrame', 1, 2, { frame: 'F', id: 8 }), send(2, 'w')])];
   assert.match(verdict(loop, 'w').why, /animation frame asked for before the clock/);
+  // Asked for by the page's own timer (armed before the clock), just before the step.
+  const byTimer = [task(80, TIMER, [fire(1, 7), I('RequestAnimationFrame', 2, { frame: 'F', id: 3 })]), task(101, INPUT, click()), task(112, FRAME, [X('FireAnimationFrame', 1, 2, { frame: 'F', id: 3 }), send(2, 'w')])];
+  const own = verdict(byTimer, 'w');
+  assert.equal(own.caused, false);
+  assert.match(own.why, /an animation frame asked for by a task no step caused: a timer armed before the clock started/);
 });
 
 test('causation (round 12): an answer links a write to the step that sent the request, if it came within LINK_SECONDS; a poll\'s answer links nothing', () => {
@@ -183,15 +194,15 @@ test('causation (round 12): a navigation is judged by the task that started it; 
   const origin = 1500;
   const at = s => clockToTrace(s, clock, origin) / MS; // ms on the trace for a clock time
   const steps = [{ n: 1, kind: 'key', at: 0.5, took: 0.01 }];
-  const doc = (rid, startTask) => [startTask, task(at(0.9), IPC, [I('ResourceSendRequest', 1, { requestId: rid, url: 'http://p/login', requestMethod: 'POST', resourceType: 'Document' })])];
-  const started = (src, inner) => task(at(0.52), src, [...inner, I('navigationStart', 3, { navigationId: 'n1' })]);
-  const enter = [task(at(0.5) + 1, INPUT, [X('EventDispatch', 1, 1, { type: 'keydown' }), X('EventDispatch', 2, 1, { type: 'submit' })]), ...doc('n1', started('form_submission.cc:Schedule', [X('FunctionCall', 1, 1)]))];
-  const w = { method: 'POST', url: 'http://p/login', at: 0.6 };
+  const start = { ph: 'X', name: 'FrameLoader::StartNavigation', at: 3, dur: 0.5, args: { url: 'http://p/login' } };
+  const enter = [task(at(0.5) + 1, INPUT, [X('EventDispatch', 1, 1, { type: 'keydown' }), X('EventDispatch', 2, 1, { type: 'submit' })]), task(at(0.52), 'form_submission.cc:Schedule', [X('FunctionCall', 1, 1), start])];
+  const w = { method: 'POST', url: 'http://p/login', at: 0.6, navigation: true };
   const ok = writeCauses({ events: [...META, ...enter.flat()] }, [w], steps, { clock, originMs: origin })[0];
   assert.equal(ok.caused, true, ok.why);
-  const timed = [task(at(0.4), TIMER, [install(1, 3, 100)]), task(at(0.5) + 1, INPUT, [X('EventDispatch', 1, 1, { type: 'keydown' })]), ...doc('n1', started(TIMER, [fire(1, 3)]))];
+  const timed = [task(at(0.4), TIMER, [install(1, 3, 100)]), task(at(0.5) + 1, INPUT, [X('EventDispatch', 1, 1, { type: 'keydown' })]), task(at(0.52), TIMER, [fire(1, 3), start])];
   assert.equal(writeCauses({ events: [...META, ...timed.flat()] }, [w], steps, { clock, originMs: origin })[0].caused, false, 'S9: the page submitted itself on a timer');
-  const none = writeCauses({ events: [...META] }, [w], steps, { clock, originMs: origin })[0];
+  assert.match(writeCauses({ events: [...META] }, [w], steps, { clock, originMs: origin })[0].why, /navigation no task of the page started/);
+  const none = writeCauses({ events: [...META] }, [{ ...w, navigation: false }], steps, { clock, originMs: origin })[0];
   assert.equal(none.caused, false);
   assert.match(none.why, /holds no such request/);
 });
@@ -208,6 +219,8 @@ let server, base, tmp, needles;
 let approved = false;
 let autoApprove = false;
 let armedAt = null;
+let reads = []; // when verify() read the end state
+let approvedAt = null;
 const timers = new Set();
 const later = (ms, fn) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); };
 
@@ -243,11 +256,12 @@ before(async () => {
     const json = (v, status = 200) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(v)); };
     if ((u.pathname === '/api/approve' || u.pathname === '/approve-form') && req.method === 'POST') {
       approved = true;
+      approvedAt ??= Date.now();
       if (u.pathname === '/approve-form') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<!doctype html><div id="out">approved</div>'); }
       res.writeHead(204); return res.end();
     }
     if (u.pathname === '/api/settings' && req.method === 'POST') { autoApprove = true; res.writeHead(204); return res.end(); }
-    if (u.pathname === '/api/approval') { if (autoApprove && armedAt === null) armedAt = Date.now(); return json({ approved }); }
+    if (u.pathname === '/api/approval') { reads.push(Date.now()); if (autoApprove && armedAt === null) armedAt = Date.now(); return json({ approved }); }
     if (u.pathname === '/api/go') return json({ go: armedAt !== null && Date.now() - armedAt >= 600 });
     if (u.pathname === '/api/check') return later(150, () => json({ ok: true, pad: 'x'.repeat(200000) }));
     if (u.pathname === '/api/tick') return later(2500, () => json({ ok: true }));
@@ -272,7 +286,7 @@ const SAVES = { ...TASK, saves: true, endState: { ours: { reads: [{ read: 'GET /
 const standIn = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'admin', password: 'x' } }, brandWords: [], readyKind: 'default' });
 const out = () => layout(path.join(tmp, String(Math.random()).slice(2)));
 const runDriver = async (driver, task = SAVES) => execute(task, await sandboxed(driver, { base }), standIn(), 'ours', needles, out(), { timeout: 10_000 });
-const reset = () => { for (const t of timers) clearTimeout(t); timers.clear(); approved = false; autoApprove = false; armedAt = null; };
+const reset = () => { for (const t of timers) clearTimeout(t); timers.clear(); approved = false; autoApprove = false; armedAt = null; reads = []; approvedAt = null; };
 // Odoo's recorded follow-approval baseline (gauntlet/reference/odoo/tasks/follow-approval.json, round 11).
 const ODOO_FOLLOW_APPROVAL = { steps: 4, keystrokes: 0, machine_seconds: 3.521, human_seconds: 10.6, human_plus_wait_seconds: 10.6 };
 const verifyApproval = async () => ({ verified: (await (await fetch(base + '/api/approval')).json()).approved === true });
@@ -393,4 +407,30 @@ test('plant S10: a key arms a 2.5 s delay before the approval (R2b); the record 
   never('S10', r);
   const w = r.saved_state?.writes_caused?.find(x => x.write === 'POST /api/approve');
   assert.match(w?.browser_record?.why || '', /a timer of 2\.5 s/, JSON.stringify(w));
+});
+
+test('the clock (round 12, critic plant S3): for a task that saves it starts 1.1-2.1 s after verify()\'s read before it; a click is timed from its input, not from the wait for its target', async () => {
+  reset();
+  const r = await runDriver({
+    async signIn(ctx) { await ctx.page.goto(base + '/status-plain'); },
+    async run(op) { await op.click('#approve'); await op.waitFor(() => document.getElementById('out').textContent === 'approved'); return {}; },
+    verify: verifyApproval,
+  });
+  assert.equal(r.status, 'verified', r.error);
+  const gap = (approvedAt - reads[0]) / 1000;
+  assert.ok(gap >= 1.1, `the approval went out ${gap} s after verify()'s read before the clock`);
+  // A click waits for a target that appears 0.5 s in; the wait is no part of the step's window.
+  const browser = await launch();
+  try {
+    const page = await (await newContext(browser)).newPage();
+    await page.setContent('<div id="slot"></div><script>setTimeout(() => { document.getElementById("slot").innerHTML = "<button id=late>Late</button>"; }, 500);</script>');
+    const op = new Operator(page, { shotsDir: path.join(tmp, 'shots'), branding: brandingFor('ours'), shotFormat: 'png' });
+    op.start();
+    const step = await op.click('#late');
+    op.finish();
+    assert.ok(step.at >= 0.4, `the click is timed from ${step.at} s, before its target appeared`);
+    assert.ok(step.began < 0.1 && step.took < 0.3, JSON.stringify(step));
+  } finally {
+    await browser.close();
+  }
 });

@@ -492,7 +492,7 @@ function trackRequests(context, clock = () => 0) {
     if (timeline.size < MAX_TIMELINE) { timeline.set(r, entry); tracker.timeline.push(entry); }
     if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: body, navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) {
       inflight.add(r);
-      if (isWrite(r.method(), r.url(), r.resourceType(), body) && sent.length < MAX_SENT) sent.push({ method: r.method(), url: r.url(), at, timing: entry, body: body && body.length > MAX_SENT_BODY ? body.slice(0, MAX_SENT_BODY) : body });
+      if (isWrite(r.method(), r.url(), r.resourceType(), body) && sent.length < MAX_SENT) sent.push({ method: r.method(), url: r.url(), at, timing: entry, navigation: r.isNavigationRequest(), body: body && body.length > MAX_SENT_BODY ? body.slice(0, MAX_SENT_BODY) : body });
     } else loading.add(r);
   };
   const answered = r => { const e = timeline.get(r); if (e && e.answered === null) e.answered = clock(); };
@@ -908,6 +908,8 @@ export async function execute(task, driver, product, productId, needles, out, op
     if (pageTrace) {
       traced = await pageTrace.stop();
       pageTrace = null;
+      // For reading a run's record by hand (never part of a measurement): COMPARE_TRACE_DIR=<dir>.
+      if (process.env.COMPARE_TRACE_DIR) writeJson(path.join(process.env.COMPARE_TRACE_DIR, `${task.id}-${driver.variant ?? 'path'}-${crypto.randomBytes(3).toString('hex')}.json`), { origin: op.origin, clock: traced.clock, steps: op.steps, sent: (tracker?.sent || []).map(({ body, timing, ...w }) => w), events: traced.events });
       run.page_record = { events: traced.events.length, cut_short: traced.dataLoss, clock: traced.clock ? { offset_us: Math.round(traced.clock.offset_us), error_us: Math.round(traced.clock.error_us) } : null };
     }
     // Anything the read world refused on its own since the driver's last page function (nothing
