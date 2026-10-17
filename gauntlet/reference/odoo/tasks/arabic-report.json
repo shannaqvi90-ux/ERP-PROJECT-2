@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "arabic-report-20261010T015359-bbcf",
-  "instrument": 8,
+  "run_id": "arabic-report-20261017T025731-343c",
+  "instrument": 9,
   "task": "arabic-report",
   "task_title": "Print a document in Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
   "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
-  "started_at": "2026-10-10T01:53:59.688Z",
-  "finished_at": "2026-10-10T01:54:09.886Z",
+  "started_at": "2026-10-17T02:57:31.226Z",
+  "finished_at": "2026-10-17T02:57:56.726Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 4.048,
-    "system_wait_seconds": 3.702,
+    "machine_seconds": 4.368,
+    "system_wait_seconds": 3.964,
     "human_seconds": 15.9,
-    "human_plus_wait_seconds": 19.602,
+    "human_plus_wait_seconds": 19.864,
     "klm_operator_counts": {
       "K": 0,
       "P": 6,
@@ -59,8 +59,8 @@
       "label": "user menu",
       "keystrokes": 0,
       "at": 0.001,
-      "took": 0.044,
-      "screen": "/odoo/purchase/100055",
+      "took": 0.056,
+      "screen": "/odoo/purchase/100068",
       "chain": false
     },
     {
@@ -68,9 +68,9 @@
       "kind": "click",
       "label": "My Preferences",
       "keystrokes": 0,
-      "at": 0.045,
-      "took": 0.035,
-      "screen": "/odoo/purchase/100055",
+      "at": 0.058,
+      "took": 0.05,
+      "screen": "/odoo/purchase/100068",
       "chain": false
     },
     {
@@ -78,9 +78,9 @@
       "kind": "click",
       "label": "language",
       "keystrokes": 0,
-      "at": 0.309,
-      "took": 0.051,
-      "screen": "/odoo/purchase/100055",
+      "at": 0.314,
+      "took": 0.065,
+      "screen": "/odoo/purchase/100068",
       "chain": false
     },
     {
@@ -88,9 +88,9 @@
       "kind": "click",
       "label": "Arabic",
       "keystrokes": 0,
-      "at": 0.361,
-      "took": 0.101,
-      "screen": "/odoo/purchase/100055",
+      "at": 0.381,
+      "took": 0.11,
+      "screen": "/odoo/purchase/100068",
       "chain": false
     },
     {
@@ -98,9 +98,9 @@
       "kind": "click",
       "label": "Update Preferences",
       "keystrokes": 0,
-      "at": 0.463,
-      "took": 0.058,
-      "screen": "/odoo/purchase/100055",
+      "at": 0.491,
+      "took": 0.066,
+      "screen": "/odoo/purchase/100068",
       "chain": false
     },
     {
@@ -108,53 +108,53 @@
       "kind": "click",
       "label": "Print",
       "keystrokes": 0,
-      "at": 1.719,
-      "took": 0.045,
-      "screen": "/odoo/purchase/100055",
+      "at": 1.997,
+      "took": 0.046,
+      "screen": "/odoo/purchase/100068",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "preferences dialog",
-      "at": 0.081,
-      "seconds": 0.227
+      "at": 0.109,
+      "seconds": 0.205
     },
     {
       "label": "interface in Arabic",
-      "at": 0.522,
-      "seconds": 0.784
+      "at": 0.559,
+      "seconds": 0.574
     },
     {
       "label": "order form in Arabic",
-      "at": 1.307,
-      "seconds": 0.412
+      "at": 1.134,
+      "seconds": 0.862
     },
     {
       "label": "file received",
-      "at": 1.764,
-      "seconds": 2.279
+      "at": 2.043,
+      "seconds": 2.323
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "8611e27da26e1595.jpg",
+      "file": "9c64948d7f488ae4.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/8611e27da26e1595.jpg"
+      "path": "gauntlet/reference/odoo/shots/9c64948d7f488ae4.jpg"
     },
     {
       "moment": "done",
-      "file": "a9c57680ab42ad50.jpg",
-      "at": 4.048,
-      "path": "gauntlet/reference/odoo/shots/a9c57680ab42ad50.jpg"
+      "file": "5d0f2ac482bddbd4.jpg",
+      "at": 4.368,
+      "path": "gauntlet/reference/odoo/shots/5d0f2ac482bddbd4.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "file": "أمر شراء - P00055.pdf",
-      "bytes": 47311,
+      "file": "أمر شراء - P00068.pdf",
+      "bytes": 47320,
       "print_language": "ar_001",
       "arabic_words_in_document": 25,
       "right_to_left": true
@@ -163,14 +163,14 @@
   "path_notes": "User menu > My Preferences > Language: Arabic > Update Preferences > Print. Printing straight away gives Arabic text in a left-to-right layout (Odoo lays the page out in the user's language and translates it into the vendor's), so the user switches to Arabic first.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/arabic-report.mjs",
-    "sha256": "57935f195706fdcf0ee927926212573072f08035a312e0fab57a91eeaa3dfed4"
+    "sha256": "5b17ff3f40d201cb70ef88a594d7b5f740e61b2d1bca09745fd020853b52b758"
   },
   "task_notes": "Odoo has no generic printable record in its core; its nearest printed document is the purchase order, which follows the vendor's language. Set-up creates the order and sets the vendor's language; clean-up restores both.",
   "error": null,
   "start_state": {
     "kind": "record",
-    "opened_by_sign_in": "/odoo/purchase/100055",
-    "path": "/odoo/purchase/100055",
+    "opened_by_sign_in": "/odoo/purchase/100068",
+    "path": "/odoo/purchase/100068",
     "query": "",
     "fragment": "",
     "fields": 3,
@@ -181,10 +181,10 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.002,
+      "longest_pause_seconds": 0.003,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.041,
+      "seconds": 0.053,
       "verified": true
     },
     {
@@ -192,24 +192,25 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.041,
+      "seconds": 0.049,
       "verified": true,
-      "gap_seconds": 0.093
+      "gap_seconds": 0.114
     }
   ],
   "requests_after_clock": 0,
   "requests_in_flight_at_clock": {
-    "count": 1,
+    "count": 2,
     "first": [
+      "GET /bus/websocket_worker_bundle (script)",
       "POST /web/dataset/call_kw/purchase.order/web_read (xhr)"
     ]
   },
   "screen_at_clock": {
-    "sha256": "1898b102afbd26b6",
+    "sha256": "8a62fae9e90eb1f8",
     "elements": 468
   },
   "screen_after_verify": {
-    "sha256": "1898b102afbd26b6",
+    "sha256": "8a62fae9e90eb1f8",
     "elements": 468,
     "unchanged": true
   },
@@ -227,8 +228,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/arabic-report.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/arabic-report-20261010T015340-5aba.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261010T015350-87c5.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261010T015359-bbcf.json"
+    "gauntlet/reference/odoo/results/arabic-report-20261017T025704-cab1.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261017T025731-343c.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261017T025756-ac72.json"
   ]
 }

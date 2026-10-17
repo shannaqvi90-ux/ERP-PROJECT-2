@@ -285,6 +285,8 @@ export class DriverSession {
     this.page = null; // the guarded page reads default to
     this.signIns = signIns;
     this.reads = reads;
+    // Round 11: the runner's watch on set-up's browser writes (watchSetUpBrowser), for ctx.settleWrites().
+    this.setUpWrites = null;
     host.session = this;
   }
 
@@ -466,6 +468,7 @@ export class DriverSession {
       case 'op': return this.#op(m);
       case 'fetch': return this.#fetch(m);
       case 'useApi': return this.#useApi(m);
+      case 'settleWrites': return this.#settleWrites(m);
       default: throw new Error(`unknown request ${m.kind}`);
     }
   }
@@ -619,6 +622,22 @@ export class DriverSession {
     }
     this.apiSession = s;
     return true;
+  }
+
+  /**
+   * Round 11 (routed from p00 r10 and p02 r10): set-up waits, off the clock, until no write its
+   * browser sent is still under way (a sign-out, a call the product's client makes on its own as it
+   * loads), before it moves its page on. Set-up and sign-in only: the runner waits for them again
+   * before the start and still refuses a run whose set-up abandoned one; this only lets a driver
+   * avoid abandoning it. Returns how many were under way and how many still are.
+   */
+  async #settleWrites({ timeout }) {
+    if (currentPhase() !== 'free') throw new ActionOutsideClock('ctx.settleWrites() outside set-up and sign-in: only set-up waits for its own writes', currentPhase());
+    const w = this.setUpWrites;
+    if (!w) return { waited: 0, pending: 0 };
+    const before = w.pending;
+    await w.settle(Math.min(Number(timeout) > 0 ? Number(timeout) : this.timeout, this.timeout));
+    return { waited: before, pending: w.pending };
   }
 
   /** Clamp a read in verify() (round 5): it may not wait for the end state either. */

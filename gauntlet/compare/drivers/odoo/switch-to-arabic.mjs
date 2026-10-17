@@ -28,7 +28,7 @@ export default {
     // Arabic in a throwaway browser context, then switch back to English for the measured run.
     const rpc = await adminRpc(ctx);
     await rpc.write('res.users', ctx.state.userIds, { lang: 'ar_001' });
-    const warm = { context: await ctx.browser.newContext(), product: ctx.product, state: {}, until: ctx.until };
+    const warm = { context: await ctx.browser.newContext(), product: ctx.product, state: {}, until: ctx.until, settleWrites: ctx.settleWrites };
     warm.page = await warm.context.newPage();
     try {
       await signInAs(warm, TESTER);

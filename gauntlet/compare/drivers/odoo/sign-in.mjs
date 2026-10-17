@@ -1,4 +1,4 @@
-import { adminRpc } from './_common.mjs';
+import { adminRpc, settle } from './_common.mjs';
 import { OdooRpc } from '../../lib/odoo-rpc.mjs';
 
 /** The task's user: an ordinary internal user who works in Contacts, with an e-mail sign-in. */
@@ -48,12 +48,16 @@ function variant(returning) {
         const form = ctx.page.locator('input[name="login"]');
         const menu = ctx.page.locator('.o_main_navbar button.o_user_menu');
         await form.or(menu).first().waitFor();
-        if (await menu.isVisible()) { await signOut(ctx.page); await ctx.page.goto(LOGIN_URL(ctx)); }
+        if (await menu.isVisible()) { await settle(ctx, ctx.page); await signOut(ctx.page); await ctx.settleWrites(); await ctx.page.goto(LOGIN_URL(ctx)); }
         await ctx.page.locator('input[name="login"]').fill(user);
         await ctx.page.locator('input[name="password"]').fill(password);
         await ctx.page.locator('input[name="password"]').press('Enter');
         await ctx.page.locator('.o_main_navbar button.o_user_menu').waitFor();
+        // Round 11 (p00 r9, r10): the landing screen finishes loading, and the sign-out is answered,
+        // before set-up moves on (its address changes as the action loads).
+        await settle(ctx, ctx.page);
         await signOut(ctx.page);
+        await ctx.settleWrites();
       }
       // The runner opens the start (the bookmarked sign-in address) in a fresh browser that keeps
       // this browser's cookies and local storage.
@@ -105,7 +109,9 @@ const passkey = {
     await page.locator('.modal button:has-text("Create")').first().click();
     await page.locator('.modal').waitFor({ state: 'detached' });
     await page.keyboard.press('Escape');
+    await settle(ctx, page);
     await signOut(page);
+    await ctx.settleWrites();
   },
   ready: 'input[name="login"]:focus, input[name="password"]:focus',
   async run(op) {

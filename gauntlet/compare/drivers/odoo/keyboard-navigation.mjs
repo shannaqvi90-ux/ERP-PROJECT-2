@@ -1,4 +1,4 @@
-import { signInAs } from './_common.mjs';
+import { signInAs, emojiSettled } from './_common.mjs';
 
 export default {
   built: true,
@@ -17,6 +17,7 @@ export default {
     await op.waitFor(() => document.activeElement?.closest('.o_data_row') === document.querySelectorAll('.o_list_view .o_data_row')[2], { label: 'third row selected' });
     await op.press('Enter', { label: 'open' });
     await op.waitFor('.o_form_view .o_field_widget[name="name"]', { label: 'contact form' });
+    await op.waitFor(emojiSettled, { label: 'the chatter\'s emoji data in' });
     return {};
   },
   // Keyboard only: the task says so (keyboardOnly) and the harness fails a run with a pointer step.

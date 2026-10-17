@@ -80,13 +80,28 @@ export const MUTATIONS = [
   ['M44', 'an entered value need not arrive in the end state', 'lib/runner.mjs', '  else if (values.length && !gainedValues.length) problem =', '  else if (false) problem =', 'test/before-clock.test.mjs', 'saved state \\(round 10\\)'],
   ['M45', 'a measured part that writes nothing accepted (critic Q2)', 'lib/runner.mjs', '  if (!sent.length && !apiWrites.length) {', '  if (false) {', 'test/before-clock.test.mjs', 'measured part \\(round 10\\)'],
   ['M46', "the task's declared writes not required", 'lib/runner.mjs', '  if (writes) {', '  if (false) {', 'test/before-clock.test.mjs', 'measured part \\(round 10\\)'],
-  ['M47', 'an entered value the measured part never entered accepted', 'lib/runner.mjs', '  if (missing.length) return', '  if (false) return', 'test/before-clock.test.mjs', 'measured part \\(round 10\\)'],
+  ['M47', 'an entered value the measured part never entered accepted', 'lib/runner.mjs', '  if (missing.length) {', '  if (false) {', 'test/before-clock.test.mjs', 'measured part \\(round 10\\)'],
   ['M48', "set-up's browser writes not waited for before the start", 'lib/runner.mjs', '  if (setUpWrites) await setUpWrites.settle(timeout);', '', 'test/set-up-off-clock.test.mjs', "control: set-up's own save"],
   ['M49', "a write set-up's browser abandoned accepted", 'lib/runner.mjs', '      if (abandoned.length) return', '      if (false) return', 'test/set-up-off-clock.test.mjs', 'plant Q2b'],
-  ['M50', "a write abandoned by set-up's page moving on not seen", 'lib/runner.mjs', "      p.on('framenavigated', f => { for (const r of [...inflight.keys()]) if (frameOf(r) === f && !r.isNavigationRequest()) abandon(r, 'its page moved on'); });", '', 'test/set-up-off-clock.test.mjs', 'plant Q2 \\('],
+  ['M50', "a write abandoned by set-up's page moving on not seen", 'lib/runner.mjs', "      p.on('framenavigated', f => { if (!docs.isNewDocument(f)) return; for (const r of [...inflight.keys()]) if (frameOf(r) === f && !r.isNavigationRequest()) abandon(r, 'its page moved on'); });", '', 'test/set-up-off-clock.test.mjs', 'plant Q2 \\('],
   ['M51', 'a browser context the driver opened in set-up not watched', 'lib/runner.mjs', '    attach(c);\n    return c;', '    return c;', 'test/set-up-off-clock.test.mjs', 'plant Q2c'],
   ['M52', "set-up's local storage carried into a signed-in start (critic X12)", 'lib/runner.mjs', "  const storageState = kind === 'sign-in' ? saved : { cookies: saved.cookies, origins: [] };", '  const storageState = saved;', 'test/set-up-off-clock.test.mjs', 'X12'],
   ['M53', 'the clipboard not emptied at the start (critic X16)', 'lib/runner.mjs', '    await resetClipboard(scratch);', '', 'test/set-up-off-clock.test.mjs', 'X16'],
+  // Round 11 (critic p01 r10, biggest gap): the page's own requests are not the person's doing.
+  ['M54', 'a value in a request the page composed counts as entered (critic R1)', 'lib/runner.mjs', "    ...steps.filter(s => s.kind === 'request').map(s => String(s.text ?? ''))];",
+    "    ...steps.filter(s => s.kind === 'request').map(s => String(s.text ?? '')), ...sent.map(r => `${r.url ?? ''}\\n${r.body ?? ''}`)];", 'test/measured-part.test.mjs', 'plant R1 '],
+  ['M55', 'a write the page sent on its own counts as the measured part\'s (critic R2)', 'lib/runner.mjs', '  const caused = causes.filter(c => c.caused).map(c => c.write);', '  const caused = causes.map(c => c.write);', 'test/measured-part.test.mjs', 'plant R2 '],
+  ['M56', 'no end to the time a step may take to cause a write', 'lib/runner.mjs', 'export const REACTION_SECONDS = 1;', 'export const REACTION_SECONDS = 60;', 'test/measured-part.test.mjs', 'plant R2 |plant R3 '],
+  ['M57', 'any answered request links a write to a step (a poll chains on)', 'lib/runner.mjs', '  const links = timeline.filter(q => typeof q.at === \'number\' && typeof q.answered === \'number\' && during(q.at)).map(q => ({ q, step: during(q.at) }));',
+    '  const links = timeline.filter(q => typeof q.at === \'number\' && typeof q.answered === \'number\').map(q => ({ q, step: during(q.at) || windows[0] }));', 'test/measured-part.test.mjs', 'plant R2b'],
+  ['M62', "a declared write the page sent on its own accepted beside a decoy a step caused", 'lib/runner.mjs', '    if (stray.length) return', '    if (false) return', 'test/measured-part.test.mjs', 'plant R2d'],
+  // Round 11: set-up's own writes (critic X1; routed from p00 r10 and p02 r10).
+  ['M58', "a write set-up's page aborted not seen as abandoned (critic X1)", 'lib/runner.mjs', " context.on('requestfinished', finished); context.on('requestfailed', failed);", " context.on('requestfinished', finished);", 'test/measured-part.test.mjs', 'critic X1'],
+  ['M59', "an address change of set-up's page taken for a new document", 'lib/runner.mjs', "      p.on('framenavigated', f => { if (!docs.isNewDocument(f)) return; for (const r of [...inflight.keys()])", "      p.on('framenavigated', f => { for (const r of [...inflight.keys()])",
+    'test/measured-part.test.mjs', 'only changes its address'],
+  ['M60', 'an address change inside the clock drops a save still under way', 'lib/runner.mjs', '  const navigated = f => { if (!docs.isNewDocument(f)) return; for (const r of [...inflight, ...loading])', '  const navigated = f => { for (const r of [...inflight, ...loading])', 'test/measured-part.test.mjs', 'control C4'],
+  ['M61', 'a request taken for a long-lived channel by its address (critic r10)', 'lib/runner.mjs', "  try { return ['websocket', 'eventsource'].includes(r.resourceType()); } catch { return false; }",
+    "  try { return ['websocket', 'eventsource'].includes(r.resourceType()) || /websocket|longpolling|\\/bus\\//i.test(r.url()); } catch { return false; }", 'test/measured-part.test.mjs', 'names a long-lived channel'],
 ];
 
 function copyHarness() {
