@@ -113,3 +113,40 @@ through the verify slot (slot taken 05:18:30Z, load up to 78.6 from other agents
 3,845 s wall and **9,638 processor seconds** (dotnet 7,632, web 1,704, e2e 266, timing 38;
 maximum 10,500). Tests: .NET 615, web unit 477, end-to-end 102, comparison 373, build 6, each
 equal to its ratchet minimum.
+
+## Round 12: the volume gate's tallies made deterministic
+
+The round 11 branch merged onto the integration branch and its integrator's verify failed one
+gate: `g1.listVolumeRankedSearches: 5; ratchet minimum 6`, with no wrong answer, no blind list and
+no whole-table read. The cause: tenant B's code is `bravo` plus the run's fresh canary, and the
+identity seeder drew B's generated people from that code, so B's matches per search letter changed
+from run to run. A search counts as ranked only when its true counts differ between the tenants
+and both lie between 1 and `ListSearch.MaxRankedRows`; 'g' could tie A's count exactly, 'w' sat
+either side of 10,000. The minimum 6 had been set from a single run.
+
+Decision:
+
+1. `SeedTenant` gains an optional `VolumeSeed` (`VolumeRowsSeed` falls back to the code, so every
+   existing plan and the demo are unchanged). `SeedPlan.GateAtVolume` sets tenant B's to the fixed
+   `SeedPlan.GateVolumeSeedB` ("bravo"); the identity seeder draws generated people from
+   `VolumeRowsSeed`. The canary still marks every text value of B (names, Arabic names, e-mail
+   domain, code), so a leak stays visible. `SeedPlan.Gate` (25 rows) keeps drawing B's people from
+   its code: the other gates' figures were set on it and this round does not move them.
+   The canary's own letters (`CNRY` and hexadecimal digits) meet the gate's search letters only in
+   'a', which every row of both tenants holds through the e-mail domain anyway, so the counts per
+   letter are now the same on every run.
+2. The volume summary prints each one-letter search's true counts in A and B, so a later change of
+   the seed or of the letters shows its effect in the log.
+3. Identity tests: the volume plan's B seed is the same whatever the canary, carries no canary, and
+   generates the same people; plans without a volume seed use the code.
+4. Ratchet minimums raised to the now fixed figures (measured with the gate run alone, and the same
+   figures came from a simulation of the generator): ranked searches 6 to 7 (users: g 5,168/5,208,
+   j 6,472/6,454, q 9,480/9,636, ق 1,951/2,003; access: g, j, q), unranked searches 15 to 16,
+   discriminating queries 80 to 86, answers 2,900 to 2,944, deep answers 800 to 852.
+   Every ranked search's two counts differ by at least 18 rows.
+
+Rejected: choosing other search letters while B's people still came from the canary (counts near
+a boundary would still move between runs), and lowering the minimum (CLAUDE.md rule 9).
+
+Cost: no new environment, run or request; the seeding is the same bulk copy. The volume gate run
+alone took 2 min 9 s for the test (2.9 min with build and start).
