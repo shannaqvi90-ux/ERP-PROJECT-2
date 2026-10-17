@@ -72,5 +72,10 @@ configuration); that factory now resolves `IConfiguration` from the container in
 
 The machinery added here costs little processor time: a binary search per time in a compared
 answer, one more root per product factory, a regular expression change. The paced re-runs wait
-rather than compute. The measured verify processor time of this round is stated in the round's
-notes for the integrator.
+rather than compute. Measured: this round's verify (slot taken 2026-10-17T19:45:22Z, load up to
+62 from other agents' verifies) passed in 3,707 s with processor time 9,770 s (dotnet 7,523, web
+1,926, e2e 287, timing 35) against the 10,500 s maximum, inside the 9,218 to 10,181 s range of recent
+verifies. The .NET stage's 7,523 s is level with round 10's critic run (7,516 s), so the round adds
+no measurable processor time. The product's non-interference test attributed 3,540 times with none
+ambiguous and no paced re-run (8 min 24 s alone); the self-test with plants 69 to 71 took 14 min 7 s
+alone (16 min 52 s in round 10's critic verify).
