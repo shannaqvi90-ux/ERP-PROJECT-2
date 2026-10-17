@@ -115,6 +115,12 @@ const plants = [
     tests: "runs to its end",
     edits: [{ file: "src/modules/identity/extensions.ts", find: '      requires: ["identity.signIns.read"],\n', replace: "" }],
   },
+  {
+    id: "PA12",
+    what: "Reset password offered from a user's other tabs to someone who may not reset passwords (the record's commands follow it to every tab, critic p03 round 10)",
+    tests: "on every tab",
+    edits: [{ file: "src/modules/identity/UserPanel.tsx", find: "    enabled: elsewhere && allowed.resetPassword,", replace: "    enabled: elsewhere," }],
+  },
 ];
 
 function copyWeb() {
