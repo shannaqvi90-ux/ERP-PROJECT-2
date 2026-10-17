@@ -1,0 +1,26 @@
+diff --git a/web/src/kernel/forms/RecordForm.tsx b/web/src/kernel/forms/RecordForm.tsx
+index 2816aeac..722a72c3 100644
+--- a/web/src/kernel/forms/RecordForm.tsx
++++ b/web/src/kernel/forms/RecordForm.tsx
+@@ -354,7 +354,7 @@ export function RecordForm<R, D>({
+ export function FormSection({ title, children, columns = true }: { title?: string; children: ReactNode; columns?: boolean }) {
+   const readOnly = useFormReadOnly();
+   return (
+-    <fieldset className="form-section" disabled={readOnly}>
++    <fieldset className="form-section" disabled={false && readOnly}>
+       {title && <legend>{title}</legend>}
+       {columns ? <div className="form-grid">{children}</div> : children}
+     </fieldset>
+diff --git a/web/src/kernel/forms/useRecordForm.ts b/web/src/kernel/forms/useRecordForm.ts
+index 9551fa23..a608c493 100644
+--- a/web/src/kernel/forms/useRecordForm.ts
++++ b/web/src/kernel/forms/useRecordForm.ts
+@@ -215,7 +215,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
+       value: draft[field],
+       onChange: set(field),
+       errors: errors[field] ?? [],
+-      readOnly,
++      readOnly: false,
+     }),
+     [draft, errors, readOnly, set],
+   );

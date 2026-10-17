@@ -1,0 +1,14 @@
+import { signIn } from './api.mjs';
+import { writeFileSync } from 'node:fs';
+const base = process.argv[2]; const out = process.argv[3];
+const a = await signIn(base, 'admin.ar@alnoor.example');
+const comps = (await a.get('/api/tenancy/companies?take=50')).json().items;
+const auh = comps.find(c => c.code === 'ALN-AUH');
+const get = async (p, f) => { const r = await a.get(p); console.log(r.status, p, r.headers.get('content-type'), r.buf.length); if (r.status === 200) writeFileSync(`${out}/${f}`, r.buf); return r; };
+await get(`/api/reports/run/tenancy.companyProfile?company=${auh.id}&format=pdf&language=ar`, 'company-profile-ar.pdf');
+await get(`/api/reports/run/identity.roleSummary?format=pdf&language=ar&numerals=arab`, 'role-summary-ar-arabdigits.pdf');
+await get(`/api/reports/run/tenancy.branchDirectory?format=pdf&language=ar`, 'branch-directory-ar.pdf');
+await get(`/api/reports/lists/identity.users?search=${encodeURIComponent('Hassan')}&sort=-createdAt&format=pdf&language=ar&groupBy=language`, 'users-list-ar.pdf');
+const x = await get(`/api/reports/run/identity.roleSummary?format=xlsx&language=ar`, 'role-summary-ar.xlsx');
+const c = await get(`/api/reports/run/identity.roleSummary?format=csv&language=ar`, 'role-summary-ar.csv');
+console.log(c.text.slice(0, 600));
