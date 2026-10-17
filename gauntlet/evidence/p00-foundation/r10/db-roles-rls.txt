@@ -1,0 +1,46 @@
+  rolname  | rolsuper | rolbypassrls | rolcreaterole | rolcreatedb | rolinherit 
+-----------+----------+--------------+---------------+-------------+------------
+ erp_owner | f        | f            | f             | f           | t
+ erp_app   | f        | f            | f             | f           | f
+ erp_auth  | f        | f            | f             | f           | f
+(3 rows)
+
+ rolname  |  member   
+----------+-----------
+ erp_auth | erp_owner
+(1 row)
+
+ nspname  |       relname       | relrowsecurity | relforcerowsecurity |   owner   
+----------+---------------------+----------------+---------------------+-----------
+ audit    | entries             | t              | t                   | erp_owner
+ identity | passkeys            | t              | t                   | erp_owner
+ identity | roles               | t              | t                   | erp_owner
+ identity | sessions            | t              | t                   | erp_owner
+ identity | sign_in_attempts    | t              | t                   | erp_owner
+ identity | user_company_roles  | t              | t                   | erp_owner
+ identity | user_credentials    | t              | t                   | erp_owner
+ identity | user_roles          | t              | t                   | erp_owner
+ identity | users               | t              | t                   | erp_owner
+ lists    | saved_views         | t              | t                   | erp_owner
+ tenancy  | branches            | t              | t                   | erp_owner
+ tenancy  | companies           | t              | t                   | erp_owner
+ tenancy  | tenants             | t              | t                   | erp_owner
+ tenancy  | user_branch_access  | t              | t                   | erp_owner
+ tenancy  | user_company_access | t              | t                   | erp_owner
+ tenancy  | user_company_totals | t              | t                   | erp_owner
+ tenancy  | user_workplaces     | t              | t                   | erp_owner
+(17 rows)
+
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+
+ nspname  |         relname         
+----------+-------------------------
+ audit    | __ef_migrations_history
+ identity | __ef_migrations_history
+ identity | sign_in_secret
+ lists    | __ef_migrations_history
+ tenancy  | __ef_migrations_history
+(5 rows)
+

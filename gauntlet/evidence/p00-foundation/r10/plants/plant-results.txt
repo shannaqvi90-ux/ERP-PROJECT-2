@@ -1,0 +1,12 @@
+Critic p00 r10 plants (plants.diff, inert unless CRITIC_PLANT names them), run in the toolbox through the verify slot
+(slot taken 2026-10-16T22:54:31Z). The first attempt failed to build because the runner left out web/ (run-plants-attempt1-buildfail.log); fixed and rerun.
+P5  kernel: session token also read from ?access_token= on GET, and PermissionAuthorizationHandler passes any GET carrying it.
+    Proof live: CriticR10Proof fails with the plant (no-roles user GET /api/identity/users -> 200), passes without (plant-P5PROOF.log, plant-P5NONE.log).
+    CAUGHT by G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client:
+    "A session token sent as query access_token was honoured: signed in as noaccess@alpha.example" (plant-P5.log).
+P4  kernel: SessionAuthenticationHandler keeps each session's scoped permissions for 60 s in a static dictionary.
+    CAUGHT statically by G1ProcessStateTests and live by G2CompanyRoleTests (2 tests) and G2ReportDataTests (2 tests) (plant-P4.log).
+L5  kernel: ListBinding.QueryAsync takes list totals from a 120 s spill file under the temp folder, keyed by list, search and filter, no tenant.
+    CAUGHT live by G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint: 5708 list answers not the asking tenant's own,
+    e.g. GET /api/tenancy/companies?take=50 answered total 49 but the walk returns 26 rows (plant-L5.log).
+    (The G1ProcessStateTests failure in plant-L5.log is P4's static field, present in that build; not an L5 catch.)

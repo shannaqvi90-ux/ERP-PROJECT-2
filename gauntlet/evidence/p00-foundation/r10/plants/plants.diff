@@ -1,0 +1,102 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 56aa9b2..5465334 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -255,7 +255,28 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        int total;
++        // CRITIC PLANT L5: a "warm totals" spill file shared by the process, keyed by list, search and filter (no tenant).
++        if (database && System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L5" && request.After is null)
++        {
++            var spill = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-list-totals",
++                Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(Definition.Key + "|" + request.Search + "|" + request.Filter))));
++            if (System.IO.File.Exists(spill) && System.IO.File.GetLastWriteTimeUtc(spill) > DateTime.UtcNow.AddSeconds(-120)
++                && int.TryParse(System.IO.File.ReadAllText(spill), out var warm))
++            {
++                total = warm;
++            }
++            else
++            {
++                total = await filtered.CountAsync(cancellationToken);
++                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(spill)!);
++                System.IO.File.WriteAllText(spill, total.ToString(System.Globalization.CultureInfo.InvariantCulture));
++            }
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17..23f0a08 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -73,6 +73,12 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        // CRITIC PLANT P5: a download link was authorised when it was handed out; reads through it pass.
++        else if (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P5" && context.User.Identity?.IsAuthenticated == true
++            && context.Resource is HttpContext http && HttpMethods.IsGet(http.Request.Method) && http.Request.Query.ContainsKey("access_token"))
++        {
++            context.Succeed(requirement);
++        }
+         return Task.CompletedTask;
+     }
+ }
+diff --git a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+index 599e1e3..dd3e6f7 100644
+--- a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
++++ b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+@@ -183,9 +183,22 @@ internal sealed class SessionAuthenticationHandler(
+         }
+ 
+         var permissions = session.Permissions;
+-        foreach (var scope in Context.RequestServices.GetServices<ISessionPermissionScope>())
++        // CRITIC PLANT P4: the scoped permissions are kept per session for 60 s (saves the role query per request).
++        if (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P4"
++            && CriticScopedPermissions.TryGetValue(session.SessionId, out var kept) && kept.At > DateTime.UtcNow.AddSeconds(-60))
+         {
+-            permissions = await scope.ScopeAsync(session, permissions, Context.RequestAborted);
++            permissions = kept.Permissions;
++        }
++        else
++        {
++            foreach (var scope in Context.RequestServices.GetServices<ISessionPermissionScope>())
++            {
++                permissions = await scope.ScopeAsync(session, permissions, Context.RequestAborted);
++            }
++            if (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P4")
++            {
++                CriticScopedPermissions[session.SessionId] = (DateTime.UtcNow, permissions);
++            }
+         }
+ 
+         var claims = new List<Claim>
+@@ -206,6 +219,8 @@ internal sealed class SessionAuthenticationHandler(
+ 
+     /// <summary>The token of the first carrier in <see cref="SessionTokenCarriers.All"/> that
+     /// carries one (the Bearer header wins over the cookie). Nothing else is read.</summary>
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (DateTime At, IReadOnlyCollection<string> Permissions)> CriticScopedPermissions = new();
++
+     internal static string? ReadToken(HttpRequest request)
+     {
+         foreach (var carrier in SessionTokenCarriers.All)
+@@ -215,6 +230,12 @@ internal sealed class SessionAuthenticationHandler(
+                 return token;
+             }
+         }
++        // CRITIC PLANT P5: download links (opened in a new tab, no header) carry the token in the query.
++        if (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P5" && HttpMethods.IsGet(request.Method)
++            && request.Query.TryGetValue("access_token", out var link) && link.Count == 1)
++        {
++            return link[0];
++        }
+         return null;
+     }
+ 

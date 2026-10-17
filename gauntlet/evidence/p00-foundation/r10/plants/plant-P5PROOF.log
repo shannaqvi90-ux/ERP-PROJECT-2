@@ -1,0 +1,23 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.15]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.54]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:10.88]     Erp.Gates.Tests.Critic.CriticR10Proof.No_roles_user_with_token_in_query_is_denied [FAIL]
+[xUnit.net 00:00:10.88]       no-roles user, token in ?access_token=: GET /api/identity/users -> 200 {"items":[{"id":"01a146ec-f1b7-7dff-a000-ab80c2ec329c","email":"accountant@alpha.example","displayName":"Hessa Al Suwaidi","language":"en","isActive":true,"roleIds":["01a146ec-f143-78b8-b3d3-a57594c4ac5b"],"lastSignInAt":null,"createdAt":"2026-10-16T22:54:55.927234+00:00","version":2848182403,"pendi
+[xUnit.net 00:00:10.88]       Stack Trace:
+[xUnit.net 00:00:10.88]         /work/tests/Erp.Gates.Tests/Critic/CriticR10Proof.cs(24,0): at Erp.Gates.Tests.Critic.CriticR10Proof.No_roles_user_with_token_in_query_is_denied()
+[xUnit.net 00:00:10.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:11.13]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR10Proof.No_roles_user_with_token_in_query_is_denied [419 ms]
+  Error Message:
+   no-roles user, token in ?access_token=: GET /api/identity/users -> 200 {"items":[{"id":"01a146ec-f1b7-7dff-a000-ab80c2ec329c","email":"accountant@alpha.example","displayName":"Hessa Al Suwaidi","language":"en","isActive":true,"roleIds":["01a146ec-f143-78b8-b3d3-a57594c4ac5b"],"lastSignInAt":null,"createdAt":"2026-10-16T22:54:55.927234+00:00","version":2848182403,"pendi
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR10Proof.No_roles_user_with_token_in_query_is_denied() in /work/tests/Erp.Gates.Tests/Critic/CriticR10Proof.cs:line 24
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 11.4121 Seconds

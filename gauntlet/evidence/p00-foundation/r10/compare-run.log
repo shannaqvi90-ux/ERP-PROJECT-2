@@ -1,0 +1,13 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+sign-in                  odoo  invalid   steps 2  keys 0  machine 1.314s  human 4.68s  human+wait 5.937s  (returning: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/session/logout (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.)  -> ../../evidence-staging/p00-foundation/r10/compare/results/sign-in-20261016T215135-7a5b.json
+    returning: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/session/logout (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+    page: {}
+sign-in                  odoo  verified  steps 2  keys 0  machine 1.362s  human 4.68s  human+wait 5.979s  -> ../../evidence-staging/p00-foundation/r10/compare/results/sign-in-20261016T215226-0816.json
+sign-in                  odoo  verified  steps 2  keys 0  machine 1.849s  human 4.68s  human+wait 6.462s  -> ../../evidence-staging/p00-foundation/r10/compare/results/sign-in-20261016T215313-8e60.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.111s  human 2.03s  human+wait 2.132s  -> ../../evidence-staging/p00-foundation/r10/compare/results/sign-in-20261016T215405-eb56.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.076s  human 2.03s  human+wait 2.101s  -> ../../evidence-staging/p00-foundation/r10/compare/results/sign-in-20261016T215427-8ca3.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.102s  human 2.03s  human+wait 2.125s  -> ../../evidence-staging/p00-foundation/r10/compare/results/sign-in-20261016T215444-22e6.json
+sign-in                  verdict win (ours judged on its whole path 'passkey')
+sign-in                  left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+blind review page: ../../../../evidence-staging/p00-foundation/r10/compare/blind/review.html
+output: ../../../../evidence-staging/p00-foundation/r10/compare

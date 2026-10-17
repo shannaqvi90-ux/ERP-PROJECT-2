@@ -1,0 +1,109 @@
+{
+  "piece": "p00-foundation",
+  "round": 10,
+  "commit": "c4cfacb59392c0b536df17215b0498d9554cf1cc",
+  "judged_at": "2026-10-16T23:29:56Z",
+  "critic": "fresh critic, p00-foundation round 10",
+  "verdict": "WIN",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, every test)",
+      "status": "pass",
+      "evidence": "Fresh clone of c4cfacb at /home/shan/critic/p00-foundation-r10. Command: ERP_PROJECT=c-p00-foundation-r10 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 verify-slot.sh ./erp verify. It took slot 1 at 2026-10-16T20:44:29Z after waiting 0 s and ended 'verify passed in 3983 s'. Stages: dotnet 3396 s, web 2038 s, e2e 3926 s, timing 54 s. 'Ratchet check passed.' Processor time was 9,512 s against the 10,500 s maximum (dotnet 7516, web 1713, e2e 247, timing 37). Wall time was not judged because the machine was busy (load up to 95). Log: verify-critic-p00-foundation-r10.log."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p00-foundation-r10 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up served http://localhost:20050 in 77 s (78 s wall) while a verify ran beside it. It seeded alnoor with 100,005 users in 44.6 s, plus gulfsteel (1,005 users), and printed the demo sign-ins. The port and project overrides were honoured (erp-up.log). ./erp tenant create made the empty Arabic workspace emptyco in 7.6 s (tenant-create.txt)."
+    },
+    {
+      "gate": "G1 tenant isolation: critic's live attack (API, documented query parameters, Bearer, exports, files, side channels, DB role)",
+      "status": "pass",
+      "evidence": "attack/attack.mjs (the r9 critic's script, logic unchanged) ran as the alnoor admin (A) against gulfsteel (B). B first made a canary user, 10 saved views, a company logo, 5 roles and 5 users. A then sent 109 operations with B's ids, 686 documented query-parameter requests, 465 tenant-switch requests, 100 export requests and 35 filter requests. Result: LEAKS 0. No id appeared in both tenants' answers. B's per-table md5 checksums were unchanged. A's list totals did not move when B wrote. Probing other carriers (attack/carriers.txt) with ?access_token, ?token, ?erp_session, X-Api-Key, X-Erp-Session, 'Authorization: Token' and 'Authorization: Basic' all answered 401. DB role (db-roles-rls.txt, db-app-role-attack.txt): erp_app is not superuser, has no BYPASSRLS and is a member of nothing. All 17 tenant tables have RLS enabled and forced, owned by erp_owner. With no tenant bound, erp_app sees 0 rows. It is refused on sign_in_secret and the migration history, on ALTER TABLE ... DISABLE ROW LEVEL SECURITY, and on pg_class, pg_stat_user_tables and pg_stats. That closes round 9's reltuples finding."
+    },
+    {
+      "gate": "G1 tenant isolation: the gate catches a leak planted in p00's kernel",
+      "status": "pass",
+      "evidence": "Plant L5 (plants/plants.diff) puts list totals in kernel ListBinding.QueryAsync into a 120 s spill file under the temp folder. The file is keyed by list, search and filter, with no tenant. This is new storage outside process memory. CAUGHT live by G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint: '5708 list answers that are not the asking tenant's own ... GET /api/tenancy/companies?take=50 answered total 49, but walking the same query returns 26 rows' (plants/plant-L5.log, G1 suite 28.5 min)."
+    },
+    {
+      "gate": "G2 permissions: deny by default, and the gate catches unchecked actions planted in p00's kernel",
+      "status": "pass",
+      "evidence": "P5 adds a new carrier and a bypass: the kernel also reads the session token from ?access_token= on GET, and PermissionAuthorizationHandler passes any GET that carries it. The plant is live: CriticR10Proof saw a no-roles user's GET /api/identity/users answer 200, and the test passes without the plant (plant-P5PROOF.log, plant-P5NONE.log). It was CAUGHT by G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client: 'A session token sent as query access_token was honoured' (plant-P5.log). P4 keeps each session's scoped permissions for 60 s in a static dictionary in SessionAuthenticationHandler. It was CAUGHT statically by G1ProcessStateTests and live by G2CompanyRoleTests (2 tests) and G2ReportDataTests (2 tests) (plant-P4.log). Round 9's gap is closed: the carrier matrices now run per carrier, and The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers passes. Live product: the no-roles user sees no menu and gets 403 from the API."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR parity, audit coverage) and the ratchet",
+      "status": "pass",
+      "evidence": "These run inside ./erp verify, which passed with 'Ratchet check passed.'. Against r9's 99e596b, gauntlet/ratchet.json removed no key and lowered no value: dotnetTests 583 to 602, webUnitTests 438 to 450, e2eTests 95 to 100, and 4 keys were added (g2.credentialCarriers 2, g2.takeoverQuery*). The database has no real, double precision or money columns. OpenAPI lists 112 operations, the same as rounds 8 and 9."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p00-foundation-r10 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r10.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1531,
+    "passed": 1531,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3983
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 3983,
+    "evidence": "./erp verify passed in 3983 s, timed from 'slot taken' at 20:44:29Z. It ran 1,531 tests (dotnet 602, web unit 450, e2e 100, compare 373, build 6) with processor time 9,512 s against the 10,500 s maximum. ./erp up served the 100,005-user demo in 77 s with the overridden ports and project."
+  },
+  "odoo": [
+    {
+      "task": "sign-in (sign in to an empty workspace)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.102,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 1.606,
+        "klm_seconds": 4.68
+      },
+      "notes": "The shared rig on :8069 refused: run.mjs exited 2 with 'job_runs (ir.cron.progress) hold fewer than 100,000 rows'. So, as its README directs, I ran on a private rig: ODOO_REF_PROJECT=c-p00-foundation-r10-odoo ODOO_REF_PORT=20052 tools/odoo-reference/up.sh (246 s, all 7 lists at 100,000 or more, verified live). Command: COMPARE_OURS_URL=http://localhost:20050 COMPARE_ODOO_URL=http://localhost:20052 node run.mjs --task sign-in --product both --repeat 3. Ours was judged on its whole 'passkey' path: on a device that has a passkey, the screen asks for it as it opens and the person confirms once. Odoo's best path is 'Use a Passkey' then confirm. Results: steps 1 < 2, machine 0.102 < 1.606 s, KLM 2.03 < 4.68 s, human+wait 2.125 < 6.22 s. Keystrokes were 0 in both and are left out (needs-human #11). Ours' password paths against Odoo's password path: new device 4 steps/35 keys vs 4/57; whole e-mail 3/56 vs 4/57; returning 2/21 vs 4/57; machine 0.32-0.50 s vs 2.07-2.10 s. 1 of 3 Odoo runs was invalid because its driver's set-up left a logout request in flight (see other findings), so run.mjs exited 1, but each product has at least 2 verified runs. Blind shots: compare/blind/shots."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r10/01-sign-in-en.jpg",
+    "gauntlet/evidence/p00-foundation/r10/03-sign-in-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r10/04-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r10/05-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r10/06-no-roles-user.jpg",
+    "gauntlet/evidence/p00-foundation/r10/08-passkey-signed-in.jpg",
+    "gauntlet/evidence/p00-foundation/r10/09-empty-workspace-first-sign-in.jpg",
+    "gauntlet/evidence/p00-foundation/r10/compare/blind/shots/6c2a19fe496b7079.jpg",
+    "gauntlet/evidence/p00-foundation/r10/compare/blind/shots/bb6dfa1e30c11c8f.jpg",
+    "gauntlet/evidence/p00-foundation/r10/compare/blind/shots/98c765136aa30102.jpg",
+    "gauntlet/evidence/p00-foundation/r10/compare/blind/shots/656987c152ff390a.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Kernel Money adds base amounts that were already rounded, against the owner-signed rounding rule, so foreign-currency documents can be off by fils",
+    "detail": "Every module that posts foreign-currency amounts (purchases in USD or EUR, the everyday case for a UAE trading company) will build on the kernel Money type. docs/compliance/vat-rounding-and-currency.md rule 2, signed off by the owner, says: 'Rounding happens once, on the figure that is stated. Lines and tax-category subtotals keep their full precision; the invoice total is rounded to 2 decimals.' The kernel breaks this in two ways. (a) Money.Create rounds each base amount to the fils, and Money.Add sums those rounded amounts (BaseAmount + other.BaseAmount). Example: three lines of USD 1.00 at 3.6725 give 3.67 + 3.67 + 3.67 = AED 11.01, but the rule gives 11.0175, rounded to 11.02. (b) Money.Create throws on any amount with more decimals than the currency's minor units, so a line cannot keep full precision at all. Round 9 reported this and it is still open (round 10 only factored out RoundToMinorUnits). Fix in the kernel before p08 and the ledger build on it: keep line and subtotal base amounts at full precision (or carry the unrounded product), round only the stated total, and have the type report the rounding difference that e-invoices put in 'Rounding Amount'. This is a rule already signed off, so implementing it needs no new human gate.",
+    "evidence": "git show c4cfacb:src/Kernel/Erp.Kernel/Money/Money.cs: line 93 throws when an amount has more decimals than the currency's minor units, line 96 rounds the base amount on creation, line 117 'BaseAmount + other.BaseAmount'. Compare with git show c4cfacb:docs/compliance/vat-rounding-and-currency.md, Rule 2. To reproduce in any test: var l = Money.Create(1.00m, USD, 3.6725m, AED); l.Add(l).Add(l).BaseAmount == 11.01m, while rule 2 gives 11.02m."
+  },
+  "other_findings": [
+    "[route: lead] The shared Odoo rig on :8069 is short of the bar again: run.mjs exits 2 with 'job_runs (ir.cron.progress) hold fewer than 100,000 rows'. The last top-up was on 2026-10-10 and Odoo vacuums job runs after a week. Every critic comparing against :8069 will be refused until the lead or the owner runs tools/odoo-reference/up.sh on the shared rig (needs-human #13). This critic used a private rig on port 20052 and then purged it.",
+    "[route: p01-odoo-rig] In 1 of 3 Odoo sign-in runs, the Odoo driver's 'returning' variant was marked invalid. Its set-up's browser left 'POST /web/session/logout' unanswered when the page moved on (compare/results/sign-in-20261016T215135-7a5b.json). Because of that run, run.mjs exited 1. Round 9 saw a similar set-up fault in the same variant.",
+    "[route: p03-identity] Sign-in lockout is still open from rounds 7, 8 and 9. After 8 failures, the right password still gets only 'Sign-in failed. Check your e-mail and password and try again.', with no hint that the account is paused or for how long (browser-notes.txt).",
+    "Every critic plant was caught. L5, a cross-tenant list total kept in a temp-folder file, was caught live by G1HttpIsolationTests. P5, a ?access_token carrier plus a GET bypass, was caught by the undocumented-carrier probe in G2. P4, permissions cached per session for 60 s, was caught by G1ProcessStateTests, G2CompanyRoleTests and G2ReportDataTests. The planted G1 suite took 28.5 min.",
+    "Round 8's and round 9's keyboard finding is fixed: in the English shell, 40 Tab presses never stop on the document body (browser-notes.txt).",
+    "Processor time: verify used 9,512 s against the 10,500 s maximum, a 9.4% margin, with load up to 95 while other agents' verifies ran. That is better than round 9 (10,313 s).",
+    "English and Arabic: the sign-in screen and the shell switch to rtl/ar. In the Arabic shell, the only Latin text is the company codes, 'Ctrl', the 'English' switch and the workspace code. An empty workspace provisioned in Arabic signs in by keyboard in 1.44 s to an RTL home. Minor: on the Arabic sign-in screen, the password's show button sits at the right-hand (start) edge of the field (03-sign-in-ar.jpg).",
+    "The empty workspace's first administrator signs in with the one-time initial password and lands in the shell with no prompt to choose their own password (the CLI says 'ask them to change it').",
+    "A passkey added on My account signs in on a fresh visit to the plain address with no key typed, in 278 ms."
+  ],
+  "human_gates": [
+    {
+      "gate": "Any new paid service, real credential, deployment, or action outside this repository (shared machine resource)",
+      "what": "Topping up the shared Odoo reference rig (tools/odoo-reference/up.sh on project odoo-reference, needs-human #13). Its job-run list has fallen below 100,000 and run.mjs refuses to run against :8069. Only the lead or the owner may do this; this critic did not."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p00-foundation/r10",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r10"
+}

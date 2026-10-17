@@ -1,0 +1,36 @@
+verify-slot: slot 1 of 2 taken at 2026-10-16T22:54:31Z after waiting 0 s; time the run from here
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:13.15
+=== P5PROOF (CRITIC_PLANT=P5) filter FullyQualifiedName~CriticR10Proof start 22:54:47
+=== P5PROOF exit 1 end 22:54:59
+  Failed Erp.Gates.Tests.Critic.CriticR10Proof.No_roles_user_with_token_in_query_is_denied [419 ms]
+Total tests: 1
+ Total time: 11.4121 Seconds
+=== P5NONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR10Proof start 22:54:59
+=== P5NONE exit 0 end 22:55:11
+Total tests: 1
+ Total time: 11.2689 Seconds
+=== P5 (CRITIC_PLANT=P5) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules start 22:55:11
+=== P5 exit 1 end 22:57:26
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [413 ms]
+Total tests: 81
+ Total time: 2.2445 Minutes
+=== P4 (CRITIC_PLANT=P4) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.G1.G1ProcessStateTests start 22:57:26
+=== P4 exit 1 end 23:01:01
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [718 ms]
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [23 s]
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [3 s]
+  Failed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [1 s]
+  Failed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [42 s]
+Total tests: 43
+ Total time: 3.5643 Minutes
+=== L5 (CRITIC_PLANT=L5) filter FullyQualifiedName~Erp.Gates.Tests.G1 start 23:01:01
+=== L5 exit 1 end 23:29:33
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [865 ms]
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [28 m 7 s]
+Total tests: 60
+ Total time: 28.5079 Minutes

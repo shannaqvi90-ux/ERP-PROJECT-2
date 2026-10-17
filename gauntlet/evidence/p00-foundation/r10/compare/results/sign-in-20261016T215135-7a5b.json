@@ -1,0 +1,654 @@
+{
+  "schema": 1,
+  "run_id": "sign-in-20261016T215135-7a5b",
+  "instrument": 8,
+  "task": "sign-in",
+  "task_title": "Sign in",
+  "product": "odoo",
+  "status": "invalid",
+  "goal": "Sign in as signin.tester@demo-trading.example with the password Sign-In-Pass-2026.",
+  "done_when": "The screen the product shows right after sign-in is ready to work in, and the back end holds a session for that user.",
+  "started_at": "2026-10-16T21:51:35.728Z",
+  "finished_at": "2026-10-16T21:52:26.082Z",
+  "environment": {
+    "base_url": "http://localhost:20052",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 1,
+    "machine_seconds": 1.314,
+    "system_wait_seconds": 1.257,
+    "human_seconds": 4.68,
+    "human_plus_wait_seconds": 5.937,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Use a Passkey",
+      "keystrokes": 0,
+      "at": 0.002,
+      "took": 0.039,
+      "screen": "/web/login",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "device",
+      "label": "confirm on the device",
+      "keystrokes": 0,
+      "at": 0.042,
+      "took": 0.008,
+      "ceremony": "get",
+      "screen": "/web/login",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "the product asks the device",
+      "at": 0.042,
+      "seconds": 0.008
+    },
+    {
+      "label": "signed in",
+      "at": 0.054,
+      "seconds": 0.658
+    },
+    {
+      "label": "working screen ready",
+      "at": 0.712,
+      "seconds": 0.591
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ed495df27a58e4aa.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p00-foundation/r10/compare/blind/shots/ed495df27a58e4aa.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "845eb89f1c3a6097.jpg",
+      "at": 1.314,
+      "path": "../../evidence-staging/p00-foundation/r10/compare/blind/shots/845eb89f1c3a6097.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "uid": 100008,
+      "expected_uid": 100008,
+      "login": "signin.tester@demo-trading.example"
+    }
+  },
+  "path_notes": "new-device: The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter. | returning: A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter. | passkey: The sign-in screen: click \"Use a Passkey\" > confirm on the device.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/sign-in.mjs",
+    "sha256": "f45babe370546832788f13631f0052f5e5d9fe45e7ca599f6e3a75c762131a33"
+  },
+  "task_notes": "Set-up creates the same user, with the same e-mail sign-in and password, in each product, so the keys typed are identical.",
+  "error": "returning: invalid action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/session/logout (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": {
+    "kind": "sign-in",
+    "path": "/web/login",
+    "query": "?db=reference",
+    "fragment": "",
+    "fields": 2,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "login",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.038,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.037,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 1,
+  "requests_in_flight_at_clock": {
+    "count": 38,
+    "first": [
+      "GET /web/image/res.partner/194687/avatar_128 (image)",
+      "GET /web/image/res.partner/181159/avatar_128 (image)",
+      "GET /web/image/res.partner/101215/avatar_128 (image)",
+      "GET /web/image/res.partner/50112/avatar_128 (image)",
+      "GET /web/image/res.partner/196180/avatar_128 (image)",
+      "GET /web/image/res.partner/160216/avatar_128 (image)",
+      "GET /web/image/res.partner/102140/avatar_128 (image)",
+      "GET /web/image/res.partner/177142/avatar_128 (image)",
+      "GET /web/image/res.partner/13812/avatar_128 (image)",
+      "GET /web/image/res.partner/94176/avatar_128 (image)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "628961f83b8f2278",
+    "elements": 2175
+  },
+  "screen_after_verify": {
+    "sha256": "628961f83b8f2278",
+    "elements": 2175,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.015
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/session/get_session_info"
+    ],
+    "read_after": [
+      "POST /web/session/get_session_info"
+    ],
+    "changed": [
+      "POST /web/session/get_session_info"
+    ],
+    "changed_parts": {
+      "POST /web/session/get_session_info": [
+        "result.uid",
+        "result.device_salt",
+        "result.is_system",
+        "result.is_admin",
+        "result.is_public",
+        "result.is_internal_user",
+        "result.is_regular_user",
+        "result.user_context.lang"
+      ]
+    },
+    "end_state": [
+      "POST /web/session/get_session_info [result.uid]"
+    ],
+    "end_state_changed": {
+      "POST /web/session/get_session_info": [
+        "result.uid"
+      ]
+    },
+    "writes_sent": [
+      "POST /auth/passkey/start-auth",
+      "POST /web/login"
+    ]
+  },
+  "screenshots_path": "passkey",
+  "error_page": {},
+  "best_path_per_metric": {
+    "steps": "passkey",
+    "keystrokes": "passkey",
+    "machine_seconds": "passkey",
+    "human_seconds": "passkey",
+    "human_plus_wait_seconds": "passkey"
+  },
+  "variants": [
+    {
+      "id": "new-device",
+      "path": "The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 57,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 7.852,
+        "system_wait_seconds": 7.636,
+        "human_seconds": 19.06,
+        "human_plus_wait_seconds": 26.696,
+        "klm_operator_counts": {
+          "K": 57,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 35,
+          "at": 0.011,
+          "took": 0.11,
+          "text": "signin.tester@demo-trading.example",
+          "same_field": false,
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "next field (password)",
+          "keystrokes": 1,
+          "at": 0.122,
+          "took": 0.004,
+          "chord": "Tab",
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "at": 0.127,
+          "took": 0.074,
+          "text": "Sign-In-Pass-2026",
+          "same_field": false,
+          "screen": "/web/login",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "at": 0.201,
+          "took": 0.004,
+          "chord": "Enter",
+          "screen": "/web/login",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "signed in",
+          "at": 0.206,
+          "seconds": 7.298
+        },
+        {
+          "label": "working screen ready",
+          "at": 7.505,
+          "seconds": 0.338
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100008,
+          "expected_uid": 100008,
+          "login": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/web/login",
+        "query": "?db=reference",
+        "fragment": "",
+        "fields": 2,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "login",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.059,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.045,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 1,
+      "requests_in_flight_at_clock": {
+        "count": 49,
+        "first": [
+          "GET /web/image/res.partner/171959/avatar_128 (image)",
+          "GET /web/image/res.partner/149073/avatar_128 (image)",
+          "GET /web/image/res.partner/101218/avatar_128 (image)",
+          "GET /web/image/res.partner/113478/avatar_128 (image)",
+          "GET /web/image/res.partner/134985/avatar_128 (image)",
+          "GET /web/image/res.partner/96687/avatar_128 (image)",
+          "GET /web/image/res.partner/101687/avatar_128 (image)",
+          "GET /web/image/res.partner/36646/avatar_128 (image)",
+          "GET /web/image/res.partner/5701/avatar_128 (image)",
+          "GET /web/image/res.partner/133660/avatar_128 (image)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "248f073cf4a900e8",
+        "elements": 2175
+      },
+      "screen_after_verify": {
+        "sha256": "248f073cf4a900e8",
+        "elements": 2175,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.043
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/session/get_session_info"
+        ],
+        "read_after": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed_parts": {
+          "POST /web/session/get_session_info": [
+            "result.uid",
+            "result.device_salt",
+            "result.is_system",
+            "result.is_admin",
+            "result.is_public",
+            "result.is_internal_user",
+            "result.is_regular_user",
+            "result.user_context.lang"
+          ]
+        },
+        "end_state": [
+          "POST /web/session/get_session_info [result.uid]"
+        ],
+        "end_state_changed": {
+          "POST /web/session/get_session_info": [
+            "result.uid"
+          ]
+        },
+        "writes_sent": [
+          "POST /web/login"
+        ]
+      }
+    },
+    {
+      "id": "returning",
+      "path": "A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter.",
+      "status": "invalid",
+      "error": "action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/session/logout (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": 0
+    },
+    {
+      "id": "passkey",
+      "path": "The sign-in screen: click \"Use a Passkey\" > confirm on the device.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 1,
+        "machine_seconds": 1.314,
+        "system_wait_seconds": 1.257,
+        "human_seconds": 4.68,
+        "human_plus_wait_seconds": 5.937,
+        "klm_operator_counts": {
+          "K": 1,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Use a Passkey",
+          "keystrokes": 0,
+          "at": 0.002,
+          "took": 0.039,
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "device",
+          "label": "confirm on the device",
+          "keystrokes": 0,
+          "at": 0.042,
+          "took": 0.008,
+          "ceremony": "get",
+          "screen": "/web/login",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "the product asks the device",
+          "at": 0.042,
+          "seconds": 0.008
+        },
+        {
+          "label": "signed in",
+          "at": 0.054,
+          "seconds": 0.658
+        },
+        {
+          "label": "working screen ready",
+          "at": 0.712,
+          "seconds": 0.591
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100008,
+          "expected_uid": 100008,
+          "login": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/web/login",
+        "query": "?db=reference",
+        "fragment": "",
+        "fields": 2,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "login",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.038,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.005,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.037,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 1,
+      "requests_in_flight_at_clock": {
+        "count": 38,
+        "first": [
+          "GET /web/image/res.partner/194687/avatar_128 (image)",
+          "GET /web/image/res.partner/181159/avatar_128 (image)",
+          "GET /web/image/res.partner/101215/avatar_128 (image)",
+          "GET /web/image/res.partner/50112/avatar_128 (image)",
+          "GET /web/image/res.partner/196180/avatar_128 (image)",
+          "GET /web/image/res.partner/160216/avatar_128 (image)",
+          "GET /web/image/res.partner/102140/avatar_128 (image)",
+          "GET /web/image/res.partner/177142/avatar_128 (image)",
+          "GET /web/image/res.partner/13812/avatar_128 (image)",
+          "GET /web/image/res.partner/94176/avatar_128 (image)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "628961f83b8f2278",
+        "elements": 2175
+      },
+      "screen_after_verify": {
+        "sha256": "628961f83b8f2278",
+        "elements": 2175,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.015
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/session/get_session_info"
+        ],
+        "read_after": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed_parts": {
+          "POST /web/session/get_session_info": [
+            "result.uid",
+            "result.device_salt",
+            "result.is_system",
+            "result.is_admin",
+            "result.is_public",
+            "result.is_internal_user",
+            "result.is_regular_user",
+            "result.user_context.lang"
+          ]
+        },
+        "end_state": [
+          "POST /web/session/get_session_info [result.uid]"
+        ],
+        "end_state_changed": {
+          "POST /web/session/get_session_info": [
+            "result.uid"
+          ]
+        },
+        "writes_sent": [
+          "POST /auth/passkey/start-auth",
+          "POST /web/login"
+        ]
+      }
+    }
+  ]
+}

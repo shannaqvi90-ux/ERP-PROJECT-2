@@ -1,0 +1,55 @@
+SET
+-- no tenant set: counts
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+-- non-tenant tables
+ERROR:  permission denied for table sign_in_secret
+ERROR:  permission denied for table __ef_migrations_history
+-- forged tenant setting outside a bound transaction (tenant_tx check)
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-000000000000
+(1 row)
+
+BEGIN
+              set_config              
+--------------------------------------
+ d0000000-0000-0000-0000-000000000001
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ROLLBACK
+-- statistics side channels
+ERROR:  permission denied for table pg_class
+ERROR:  permission denied for view pg_stat_user_tables
+ERROR:  permission denied for view pg_stats
+-- can app role disable RLS or create things
+ERROR:  must be owner of table users
+ERROR:  permission denied for schema public
+LINE 1: create table public.x(a int);
+                     ^
+CREATE TABLE
+-- security definer functions callable
+                                 oid                                 | has_function_privilege 
+---------------------------------------------------------------------+------------------------
+ identity.resolve_session(bytea)                                     | t
+ identity.verify_sign_in(text,text[],text,text,text,integer,integer) | t
+(2 rows)
+
