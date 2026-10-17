@@ -132,18 +132,24 @@ Decision:
    `VolumeRowsSeed`. The canary still marks every text value of B (names, Arabic names, e-mail
    domain, code), so a leak stays visible. `SeedPlan.Gate` (25 rows) keeps drawing B's people from
    its code: the other gates' figures were set on it and this round does not move them.
-   The canary's own letters (`CNRY` and hexadecimal digits) meet the gate's search letters only in
-   'a', which every row of both tenants holds through the e-mail domain anyway, so the counts per
-   letter are now the same on every run.
+   The run's canary was the other random input: its hexadecimal digits put a to f into every
+   name and the e-mail domain of B, so 'contains a' filters and the 'a' searches changed between
+   runs (this round's first verify gave 82 discriminating queries, 2,916 answers and 840 deep
+   answers where a run alone had given 86, 2,944 and 852). The volume fixture's canary is now
+   `CNRY` and twelve random decimal digits (`G1VolumeFixture.NewCanary`, still fresh per run);
+   c, n, r and y are none of the letters the check filters or searches by
+   (`ListVolume.CheckedLetters`). The other gates keep `ErpTestEnvironment.NewCanary`.
 2. The volume summary prints each one-letter search's true counts in A and B, so a later change of
    the seed or of the letters shows its effect in the log.
-3. Identity tests: the volume plan's B seed is the same whatever the canary, carries no canary, and
-   generates the same people; plans without a volume seed use the code.
-4. Ratchet minimums raised to the now fixed figures (measured with the gate run alone, and the same
-   figures came from a simulation of the generator): ranked searches 6 to 7 (users: g 5,168/5,208,
-   j 6,472/6,454, q 9,480/9,636, ق 1,951/2,003; access: g, j, q), unranked searches 15 to 16,
-   discriminating queries 80 to 86, answers 2,900 to 2,944, deep answers 800 to 852.
-   Every ranked search's two counts differ by at least 18 rows.
+3. Self-tests: the identity tests check that the volume plan's B seed is the same whatever the
+   canary, carries no canary and generates the same people, and that plans without a volume seed
+   use the code; `G1ListVolumeDeterminismTests` draws 200 fixture canaries and checks each is
+   unique, holds none of the checked letters and leaves B's people seed fixed.
+4. Ratchet minimums set to the fixed figures (two runs of the gate alone with the decimal canary
+   gave the same figures; the same per-letter counts came from a simulation of the generator):
+   ranked searches 6 to 7 (users: g 5,168/5,208, j 6,472/6,454, q 9,480/9,636, ق 1,951/2,003;
+   access: g, j, q), unranked searches 15 to 16, discriminating queries 80 to 82, answers 2,900 to
+   2,916, deep answers 800 to 840. Every ranked search's two counts differ by at least 18 rows.
 
 Rejected: choosing other search letters while B's people still came from the canary (counts near
 a boundary would still move between runs), and lowering the minimum (CLAUDE.md rule 9).
