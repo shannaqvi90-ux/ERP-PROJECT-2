@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Globalization;
 
@@ -20,11 +19,22 @@ namespace Erp.Kernel.Reports;
 /// </remarks>
 public static class PlaceNames
 {
-    private static readonly ConcurrentDictionary<(string Code, string Language), string?> Countries = new();
+    /// <summary>Every region ICU knows, by its code, with its English and Arabic names: built once,
+    /// when the type is first used, and never changed (no process-wide state that grows).</summary>
+    private static readonly FrozenDictionary<string, LocalText> Countries = BuildCountries();
 
-    /// <summary>For each region code, one specific culture of that region (any language).</summary>
-    private static readonly Lazy<FrozenDictionary<string, string>> CultureByRegion = new(() =>
-        CultureInfo.GetCultures(CultureTypes.SpecificCultures)
+    /// <summary>A country's name in English and Arabic; the code itself when it is not a known
+    /// region (both sides).</summary>
+    public static LocalText Country(string code)
+    {
+        var upper = code.Trim().ToUpperInvariant();
+        return Countries.TryGetValue(upper, out var name) ? name : new LocalText(upper, upper);
+    }
+
+    private static FrozenDictionary<string, LocalText> BuildCountries()
+    {
+        // One specific culture of each region (any language; Arabic, then English, preferred).
+        var cultureByRegion = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
             .Select(c =>
             {
                 try
@@ -36,50 +46,34 @@ public static class PlaceNames
                     return (Region: "", Culture: c.Name);
                 }
             })
-            .Where(x => x.Region.Length == 2)
+            .Where(x => x.Region.Length == 2 && x.Region.All(char.IsAsciiLetterUpper))
             .GroupBy(x => x.Region, StringComparer.Ordinal)
-            .ToFrozenDictionary(g => g.Key, g => g.OrderBy(x => x.Culture.StartsWith("ar-", StringComparison.Ordinal) ? 0 : x.Culture.StartsWith("en-", StringComparison.Ordinal) ? 1 : 2)
-                .ThenBy(x => x.Culture, StringComparer.Ordinal).First().Culture, StringComparer.Ordinal));
-
-    /// <summary>A country's name in English and Arabic; the code itself when it is not a known
-    /// region (both sides).</summary>
-    public static LocalText Country(string code)
-    {
-        var upper = code.Trim().ToUpperInvariant();
-        return new LocalText(CountryName(upper, "en") ?? upper, CountryName(upper, "ar") ?? upper);
-    }
-
-    private static string? CountryName(string code, string language) => Countries.GetOrAdd((code, language), key =>
-    {
-        if (key.Code.Length != 2 || !CultureByRegion.Value.TryGetValue(key.Code, out var cultureName))
-        {
-            return null;
-        }
-        if (key.Language == "en")
-        {
-            return new RegionInfo(cultureName).EnglishName;
-        }
-        // The display name is localised by the current UI culture: set it for this one read only.
+            .Select(g => (Region: g.Key, Culture: g.OrderBy(x => x.Culture.StartsWith("ar-", StringComparison.Ordinal) ? 0 : x.Culture.StartsWith("en-", StringComparison.Ordinal) ? 1 : 2)
+                .ThenBy(x => x.Culture, StringComparer.Ordinal).First().Culture))
+            .ToList();
+        var names = new Dictionary<string, LocalText>(StringComparer.Ordinal);
+        // The display name is localised by the current UI culture: set it for these reads only.
         var before = CultureInfo.CurrentUICulture;
         try
         {
-            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(key.Language);
-            var display = new CultureInfo(cultureName, useUserOverride: false).DisplayName;
-            var open = display.IndexOf('(', StringComparison.Ordinal);
-            var close = display.LastIndexOf(')');
-            var name = open >= 0 && close > open + 1 ? display[(open + 1)..close].Trim() : null;
-            // ICU without that language's names answers in English: no Arabic name then.
-            return name is null || (key.Language == "ar" && !name.Any(c => c is >= '؀' and <= 'ۿ')) ? null : name;
-        }
-        catch (CultureNotFoundException)
-        {
-            return null;
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("ar");
+            foreach (var (region, culture) in cultureByRegion)
+            {
+                var english = new RegionInfo(culture).EnglishName;
+                var display = new CultureInfo(culture, useUserOverride: false).DisplayName;
+                var open = display.IndexOf('(', StringComparison.Ordinal);
+                var close = display.LastIndexOf(')');
+                var arabic = open >= 0 && close > open + 1 ? display[(open + 1)..close].Trim() : null;
+                // ICU without Arabic names answers in English: the English name then.
+                names[region] = new LocalText(english, arabic is not null && arabic.Any(c => c is >= '\u0600' and <= '\u06FF') ? arabic : english);
+            }
         }
         finally
         {
             CultureInfo.CurrentUICulture = before;
         }
-    });
+        return names.ToFrozenDictionary(StringComparer.Ordinal);
+    }
 
     /// <summary>The cities and towns of the United Arab Emirates a branch or company is usually in,
     /// by their common English spellings, with their Arabic names.</summary>

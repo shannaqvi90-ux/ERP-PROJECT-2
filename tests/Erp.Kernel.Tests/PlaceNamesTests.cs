@@ -24,6 +24,7 @@ public sealed class PlaceNamesTests
     {
         var before = System.Globalization.CultureInfo.CurrentUICulture;
         Assert.Equal(new LocalText("ZZ", "ZZ"), PlaceNames.Country("ZZ"));
+        Assert.Equal(new LocalText("A1", "A1"), PlaceNames.Country("a1"));
         _ = PlaceNames.Country("OM");
         Assert.Same(before, System.Globalization.CultureInfo.CurrentUICulture);
     }
