@@ -93,7 +93,8 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
                 ["address"] = english.Length == 0 && string.IsNullOrWhiteSpace(company.AddressAr) ? null : new LocalText(english, company.AddressAr),
                 ["emirate"] = company.Emirate,
                 ["poBox"] = company.PoBox,
-                ["country"] = company.Country,
+                // The country's name in the document's language, not its code (critic p06 round 4).
+                ["country"] = PlaceNames.Country(company.Country),
                 ["phone"] = company.Phone,
                 ["email"] = company.Email,
                 ["website"] = company.Website,
@@ -103,7 +104,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
             {
                 ["code"] = b.Code,
                 ["name"] = new LocalText(b.NameEn, b.NameAr),
-                ["city"] = b.City,
+                ["city"] = PlaceNames.City(b.City),
                 ["emirate"] = b.Emirate,
                 ["phone"] = b.Phone,
                 ["active"] = b.IsActive,
@@ -173,7 +174,7 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
                 ["company"] = CompanyText(run, r.CompanyCode, r.LegalNameEn, r.LegalNameAr),
                 ["code"] = r.Code,
                 ["name"] = new LocalText(r.NameEn, r.NameAr),
-                ["city"] = r.City,
+                ["city"] = PlaceNames.City(r.City),
                 ["emirate"] = r.Emirate,
                 ["phone"] = r.Phone,
                 ["active"] = r.IsActive,

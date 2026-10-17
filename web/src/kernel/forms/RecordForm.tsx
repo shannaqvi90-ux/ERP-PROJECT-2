@@ -442,11 +442,16 @@ export function documentUrl(document: RecordDocument, language: string, numerals
 /** Print the record as a document: a PDF in English or in Arabic (laid out right to left), or the
  * document on screen. Alt+R opens it; arrow keys and Enter choose. */
 function PrintMenu({ document, open, setOpen }: { document: RecordDocument; open: boolean; setOpen: (open: boolean) => void }) {
-  const { t, numerals } = useI18n();
+  const { t, numerals, language } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (open) menuRef.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus();
   }, [open]);
+  // The PDF in the screen's language first, so Alt+R then Enter prints in the language the user reads.
+  const pdfs = [
+    { language: "en", key: "forms.print.pdfEnglish", digits: "latn" },
+    { language: "ar", key: "forms.print.pdfArabic", digits: numerals },
+  ].sort((a, b) => Number(b.language === language) - Number(a.language === language));
   const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
     const items = [...(menuRef.current?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? [])];
     const index = items.indexOf(window.document.activeElement as HTMLElement);
@@ -476,12 +481,11 @@ function PrintMenu({ document, open, setOpen }: { document: RecordDocument; open
       </button>
       {open && (
         <div className="menu" role="menu" ref={menuRef} onKeyDown={onKey} aria-label={t("forms.print.open")}>
-          <a role="menuitem" className="menu-item" href={documentUrl(document, "en", "latn", "pdf")} download onClick={() => setOpen(false)}>
-            {t("forms.print.pdfEnglish")}
-          </a>
-          <a role="menuitem" className="menu-item" href={documentUrl(document, "ar", numerals, "pdf")} download onClick={() => setOpen(false)}>
-            {t("forms.print.pdfArabic")}
-          </a>
+          {pdfs.map((pdf) => (
+            <a key={pdf.language} role="menuitem" className="menu-item" href={documentUrl(document, pdf.language, pdf.digits, "pdf")} download onClick={() => setOpen(false)}>
+              {t(pdf.key)}
+            </a>
+          ))}
           <button type="button" role="menuitem" className="menu-item" onClick={showOnScreen}>
             {t("forms.print.screen")}
           </button>

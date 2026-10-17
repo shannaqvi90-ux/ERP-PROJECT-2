@@ -284,9 +284,23 @@ describe("the record form", () => {
     press({ altKey: true, key: "r", code: "KeyR" });
     await settle();
     const links = [...view!.container.querySelectorAll<HTMLAnchorElement>('[role="menu"] a[role="menuitem"]')];
-    expect(links.map((a) => a.textContent)).toEqual(["PDF بالإنجليزية", "PDF بالعربية"]);
-    expect(links[1]!.getAttribute("href")).toBe("/api/reports/run/test.thing?thing=t1&format=pdf&language=ar&numerals=latn&disposition=attachment");
+    // The screen's language first and focused (critic p06 round 5: an Arabic clerk pressing Alt+R,
+    // Enter got an English PDF).
+    expect(links.map((a) => a.textContent)).toEqual(["PDF بالعربية", "PDF بالإنجليزية"]);
+    expect(links[0]!.getAttribute("href")).toBe("/api/reports/run/test.thing?thing=t1&format=pdf&language=ar&numerals=latn&disposition=attachment");
+    expect(links[1]!.getAttribute("href")).toBe("/api/reports/run/test.thing?thing=t1&format=pdf&language=en&numerals=latn&disposition=attachment");
     expect(links[0]!.hasAttribute("download")).toBe(true);
+    expect(document.activeElement).toBe(links[0]);
+  });
+
+  it("puts the English PDF first and focused on an English screen", async () => {
+    mockFetch((method, url) => (method === "GET" && url === "/api/things/t1" ? { status: 200, body: thing } : { status: 404, body: {} }));
+    await show(<ThingForm />, "en");
+    press({ altKey: true, key: "r", code: "KeyR" });
+    await settle();
+    const links = [...view!.container.querySelectorAll<HTMLAnchorElement>('[role="menu"] a[role="menuitem"]')];
+    expect(links.map((a) => a.textContent)).toEqual(["PDF in English", "PDF in Arabic"]);
+    expect(links[0]!.getAttribute("href")).toContain("language=en");
     expect(document.activeElement).toBe(links[0]);
   });
 

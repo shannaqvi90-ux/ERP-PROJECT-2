@@ -71,6 +71,8 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
             Assert.Contains("الرمز", facts.Keys);
             Assert.True(document.GetProperty("rowCount").GetInt32() >= 1);
             Assert.Contains(document.GetProperty("columns").EnumerateArray(), c => c.GetProperty("label").GetString() == "المدينة");
+            // The country by its Arabic name, not its code (critic p06 rounds 4 and 5).
+            Assert.Equal("الإمارات العربية المتحدة", facts["الدولة"]);
 
             using var pdf = await admin.GetAsync($"/api/reports/run/tenancy.companyProfile?company={companyId}&language=ar&format=pdf");
             Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);
@@ -577,6 +579,108 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         Assert.Contains(result.Observed, o => o.StartsWith("body:application/json;base64,", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Observed, o => o.StartsWith("body:application/pdf", StringComparison.Ordinal));
         Assert.True(result.Attempts > result.Failures.Count);
+    }
+
+    /// <summary>Critic p06 round 5, plant L7b: a record PDF kept for the inline viewer by the record,
+    /// the language and the digits, with no tenant, reached tenant A only when tenant A sent tenant
+    /// B's record id together with disposition=inline, and the probe sent B's ids only with a format
+    /// and a language. Here a planted surface keeps two such stores (L7b's, and L7c's: a list print
+    /// kept by its columns and its sort together): the probe must fill each from tenant B and then
+    /// hand tenant A's answer, holding tenant B's document, to the gate.</summary>
+    [Fact]
+    public async Task The_reports_isolation_probe_sends_tenant_Bs_own_records_with_every_print_option_together()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<Erp.Kernel.Modules.ModuleCatalog>();
+        var store = new System.Collections.Concurrent.ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+        using var victim = new HttpClient(new KeptPrints(store, victim: true)) { BaseAddress = new Uri("http://probe.test") };
+        using var attacker = new HttpClient(new KeptPrints(store, victim: false)) { BaseAddress = new Uri("http://probe.test") };
+        var result = await new ReportsIsolationProbe(catalog).RunAsync(
+            new Erp.Kernel.Security.IsolationProbeContext(attacker, Env.TenantA.Id, Env.TenantB.Id, [Guid.NewGuid()], ["victim text"], victim), CancellationToken.None);
+        Assert.Empty(result.Failures);
+        var seen = result.Observed.Where(o => o.StartsWith("body:", StringComparison.Ordinal))
+            .Select(o => Encoding.UTF8.GetString(Convert.FromBase64String(o[(o.IndexOf(";base64,", StringComparison.Ordinal) + 8)..]))).ToList();
+        Assert.Contains(seen, body => body.Contains(KeptPrints.InlineMarker, StringComparison.Ordinal));
+        Assert.Contains(seen, body => body.Contains(KeptPrints.ColumnsSortMarker, StringComparison.Ordinal));
+        // Tenant B's record went as an inline PDF for every report that names a record.
+        foreach (var report in catalog.Reports.Select(r => r.Definition).Where(d => d.Parameters.Any(p => p.Type == Erp.Kernel.Reports.ReportParameterType.Reference)))
+        {
+            Assert.Contains(store.Keys, k => k.StartsWith($"L7b|/api/reports/run/{report.Key}|", StringComparison.Ordinal));
+        }
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Covering_rows_hold_every_combination_of_the_values_of_any_options_of_that_many(int strength)
+    {
+        int[] sizes = [4, 2, 2, 2, 2, 5, 3, 4, 1];
+        var rows = ReportsIsolationProbe.Covering(sizes, strength);
+        var every = sizes.Aggregate(1, (n, s) => n * s);
+        IEnumerable<int[]> Subsets(int start, int k) => k == 0 ? [[]] :
+            Enumerable.Range(start, sizes.Length - start).SelectMany(i => Subsets(i + 1, k - 1).Select(rest => (int[])[i, .. rest]));
+        foreach (var columns in Subsets(0, strength))
+        {
+            var count = columns.Aggregate(1, (n, c) => n * sizes[c]);
+            for (var k = 0; k < count; k++)
+            {
+                var values = new int[columns.Length];
+                var rest = k;
+                for (var c = columns.Length - 1; c >= 0; c--)
+                {
+                    values[c] = rest % sizes[columns[c]];
+                    rest /= sizes[columns[c]];
+                }
+                Assert.Contains(rows, r => columns.Select((column, i) => r[column] == values[i]).All(x => x));
+            }
+        }
+        // Far fewer than every combination (3,840): near the product of the largest sizes.
+        Assert.InRange(rows.Count, strength == 2 ? 20 : 80, strength == 2 ? 40 : 200);
+        Assert.True(rows.Count < every / 10);
+    }
+
+    /// <summary>A planted print surface: tenant B's own records are one id; a record PDF asked for
+    /// inline is kept by the report, the record, the language and the digits (L7b), and a list print
+    /// by its columns and sort together (L7c), whoever asks, with no tenant.</summary>
+    private sealed class KeptPrints(System.Collections.Concurrent.ConcurrentDictionary<string, string> store, bool victim) : HttpMessageHandler
+    {
+        public const string InlineMarker = "TENANT-B-INLINE-RECORD-PDF";
+        public const string ColumnsSortMarker = "TENANT-B-COLUMNS-AND-SORT";
+        private static readonly string OwnRecord = Guid.Parse("0190aaaa-bbbb-7ccc-8ddd-eeeeffff0001").ToString();
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var uri = request.RequestUri!;
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            string? key = null;
+            string? marker = null;
+            if (uri.AbsolutePath.StartsWith("/api/reports/run/", StringComparison.Ordinal) && query["format"] == "pdf" && query["disposition"] == "inline" &&
+                uri.Query.Contains(OwnRecord, StringComparison.Ordinal))
+            {
+                key = $"L7b|{uri.AbsolutePath}|{OwnRecord}|{query["language"]}|{query["numerals"]}";
+                marker = InlineMarker;
+            }
+            else if (uri.AbsolutePath.StartsWith("/api/reports/lists/", StringComparison.Ordinal) && query["columns"] is { } columns && query["sort"] is { } sort)
+            {
+                key = $"L7c|{uri.AbsolutePath}|{columns}|{sort}";
+                marker = ColumnsSortMarker;
+            }
+            string body;
+            if (!uri.AbsolutePath.StartsWith("/api/reports/", StringComparison.Ordinal))
+            {
+                // A lookup list: tenant B's own record.
+                body = victim ? $"{{\"items\":[{{\"id\":\"{OwnRecord}\"}}]}}" : "{\"items\":[]}";
+            }
+            else if (key is not null && victim)
+            {
+                store[key] = marker!;
+                body = "{}";
+            }
+            else
+            {
+                body = key is not null && store.TryGetValue(key, out var kept) ? $"{{\"kept\":\"{kept}\"}}" : "{}";
+            }
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+        }
     }
 
     /// <summary>Answers every request with an empty JSON object, except PDFs, which time out.</summary>
