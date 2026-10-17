@@ -1,0 +1,4 @@
+# Endpoints that change data which the write-set gate (tests/Erp.Gates.Tests/G2/WriteSets.cs)
+# cannot get an accepted answer from, with the reason. The gate fails on an endpoint it cannot
+# reach that is not listed here, and on a listed endpoint it reached or that does not exist.
+# Format: METHOD /route/pattern  # reason

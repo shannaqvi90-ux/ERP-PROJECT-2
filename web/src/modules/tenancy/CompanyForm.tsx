@@ -6,6 +6,7 @@ import { useRecordForm, type RecordFormState } from "../../kernel/forms/useRecor
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { loadAll } from "./records";
+import { tinOf, trnDigits } from "./trn";
 import { companiesChanged, type BranchRow, type Company } from "./types";
 import { emirates, problemOf, useMonths, useLocalName, type Emirate, type FieldErrors } from "./ui";
 
@@ -150,11 +151,15 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   }, id);
   const company = form.record;
   const bind = form.bind;
+  const trn = bind("taxRegistrationNumber");
   const arabicEmpty = form.draft.legalNameAr.trim() === "";
+  const legalNameArField = bind("legalNameAr");
+  // The hint is left out while the server's refusal says the same under the field (critic p02
+  // round 10: both at once made the row tall and left a gap beside the English name).
   const legalNameAr = (
-    <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
+    <TextField field={legalNameArField} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
       required={form.draft.arabicLegalNameRequired} autoFocus={id === null && language === "ar"}
-      hint={arabicEmpty ? t(form.draft.arabicLegalNameRequired ? "tenancy.company.legalNameArRequiredHint" : "tenancy.company.legalNameArMissing") : undefined} />
+      hint={arabicEmpty && legalNameArField.errors.length === 0 ? t(form.draft.arabicLegalNameRequired ? "tenancy.company.legalNameArRequiredHint" : "tenancy.company.legalNameArMissing") : undefined} />
   );
 
   return (
@@ -191,10 +196,13 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       <FormSection title={t("tenancy.company.registration")}>
         <TextField field={bind("tradeLicenceNumber")} label={t("tenancy.company.tradeLicenceNumber")} dir="ltr" maxLength={50} />
         <TextField field={bind("tradeLicenceAuthority")} label={t("tenancy.company.tradeLicenceAuthority")} maxLength={100} />
-        <TextField field={bind("taxRegistrationNumber")} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={40}
+        {/* Arabic-Indic digits typed on an Arabic keyboard show as 0 to 9 at once (owner 2026-10-17). */}
+        <TextField field={{ ...trn, onChange: (value: string) => trn.onChange(trnDigits(value)) }} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={40}
           hint={company?.legacyTaxRegistrationNumber && form.draft.taxRegistrationNumber.trim() === ""
             ? t("tenancy.company.legacyTaxRegistrationNumber", { number: company.legacyTaxRegistrationNumber })
-            : t("tenancy.company.taxRegistrationNumberHint")} />
+            : tinOf(form.draft.taxRegistrationNumber) !== null
+              ? `${t("tenancy.company.taxRegistrationNumberHint")} ${t("tenancy.company.tinHint", { tin: tinOf(form.draft.taxRegistrationNumber)! })}`
+              : t("tenancy.company.taxRegistrationNumberHint")} />
       </FormSection>
       <FormSection title={t("tenancy.company.accounting")}>
         <TextField field={bind("baseCurrency")} label={t("tenancy.company.baseCurrency")} dir="ltr" maxLength={3} upper list="tenancy-currencies" hint={t("tenancy.company.baseCurrencyHint")} />
@@ -360,6 +368,9 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
   const [draft, setDraft] = useState<QuickBranch>(fresh);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
+  // Said after a branch is added with its Arabic name only (critic p02 round 10: nothing asked
+  // for the English name, and English lists and documents showed it blank or in Arabic).
+  const [notice, setNotice] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
 
   // Only the latest read fills the table: a read started earlier (when the form opened) that
@@ -400,11 +411,13 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
   const add = async (event: FormEvent | KeyboardEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
+    setNotice(null);
+    const nameEn = englishNameOf(draft, companyName, companyNameAr);
     try {
-      await api("POST", "/api/tenancy/branches", {
+      const created = await api<{ code?: string } | undefined>("POST", "/api/tenancy/branches", {
         companyId,
         code: draft.code.trim(),
-        nameEn: englishNameOf(draft, companyName, companyNameAr),
+        nameEn,
         nameAr: branchNameOf(draft.nameAr),
         city: optional(draft.city),
         emirate: draft.emirate === "" ? null : draft.emirate,
@@ -413,6 +426,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
       });
       setDraft(fresh());
       setErrors({});
+      if (nameEn.trim() === "") setNotice(t("tenancy.branch.addedWithoutEnglish", { code: created?.code ?? "" }));
       window.dispatchEvent(new Event(companiesChanged));
       await load();
       focusName();
@@ -458,7 +472,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
           {branches.map((b) => (
             <tr key={b.id} className={b.isActive ? undefined : "inactive"}>
               <td dir="ltr">{b.code}</td>
-              <td dir="ltr">{b.nameEn}</td>
+              <td dir="ltr">{(b.nameEn ?? "").trim() === "" ? <span className="muted">{t("tenancy.branch.noEnglishName")}</span> : b.nameEn}</td>
               <td dir="rtl">{b.nameAr}</td>
               <td>{b.city}</td>
               <td>{b.emirate ? t(`tenancy.emirate.${b.emirate}`) : ""}</td>
@@ -486,6 +500,11 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
             {t("tenancy.branch.add")}
           </button>
         </form>
+      )}
+      {notice && (
+        <p className="notice" role="status" data-notice="no-english-name">
+          {notice}
+        </p>
       )}
       {message && (
         <div className="alert" role="alert">

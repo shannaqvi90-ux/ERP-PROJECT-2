@@ -150,6 +150,10 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
             ["T-TRN2"] = " 100 1234 5678 9003 ",
             // No prefix rule: a number that does not start with 100 is accepted, and no check digit.
             ["T-TRN3"] = "987654321012345",
+            // Arabic-Indic digits typed on an Arabic keyboard are turned into 0 to 9 (owner decision
+            // 2026-10-17, needs-human #18), alone or mixed with 0 to 9, spaces and dashes.
+            ["T-TRN4"] = "١٠٠١٢٣٤٥٦٧٨٩٠٠٣",
+            ["T-TRN5"] = "١٠٠-1234 ٥٦٧٨-9004",
         };
         Guid first = default;
         foreach (var (code, number) in typed)
@@ -159,13 +163,40 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
             var created = await admin.PostAsJsonAsync("/api/tenancy/companies", body);
             Assert.Equal(HttpStatusCode.Created, created.StatusCode);
             var company = await Json(created);
-            Assert.Equal(new string(number.Where(char.IsAsciiDigit).ToArray()), company.GetProperty("taxRegistrationNumber").GetString());
-            if (first == default) first = company.GetProperty("id").GetGuid();
+            var expected = new string(number.Where(c => c is >= '0' and <= '9' or >= '\u0660' and <= '\u0669')
+                .Select(c => c >= '\u0660' ? (char)('0' + (c - '\u0660')) : c).ToArray());
+            Assert.Matches("^[0-9]{15}$", expected);
+            Assert.Equal(expected, company.GetProperty("taxRegistrationNumber").GetString());
+            // Kept and shown in 0 to 9 only: the record read back, and the company profile printed
+            // in Arabic with Arabic-Indic digits chosen for the document.
+            var id = company.GetProperty("id").GetGuid();
+            Assert.Equal(expected, (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{id}")).GetProperty("taxRegistrationNumber").GetString());
+            if (code == "T-TRN4")
+            {
+                var printed = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={id}&format=json&language=ar&numerals=arab");
+                var texts = new List<string>();
+                void Walk(JsonElement e)
+                {
+                    switch (e.ValueKind)
+                    {
+                        case JsonValueKind.Object: foreach (var p in e.EnumerateObject()) Walk(p.Value); break;
+                        case JsonValueKind.Array: foreach (var x in e.EnumerateArray()) Walk(x); break;
+                        case JsonValueKind.String: texts.Add(e.GetString()!); break;
+                    }
+                }
+                Walk(printed);
+                Assert.Contains(expected, texts);
+                Assert.DoesNotContain(texts, t => t.Contains("١٠٠١٢٣٤٥٦٧٨٩٠٠٣", StringComparison.Ordinal) || t.Contains("١٠٠١٢٣", StringComparison.Ordinal));
+            }
+            if (first == default) first = id;
         }
         foreach (var number in new[]
                  {
                      "12345", "10012345678900", "1001234567890031", "10012345678900A", "100.1234.5678.9003", "+100123456789003",
-                     "100/1234/5678/9003", "TRN100123456789003", "١٠٠١٢٣٤٥٦٧٨٩٠٠٣", "100_123_456_789_003",
+                     "100/1234/5678/9003", "TRN100123456789003", "100_123_456_789_003",
+                     // Other digit sets stay refused: Persian (Eastern Arabic-Indic), full-width, Devanagari,
+                     // and 14 Arabic-Indic digits are still too few.
+                     "۱۰۰۱۲۳۴۵۶۷۸۹۰۰۳", "１００１２３４５６７８９００３", "१००१२३४५६७८९००३", "١٠٠١٢٣٤٥٦٧٨٩٠٠", "١٠٠١٢٣٤٥٦٧٨٩٠۰٣",
                  })
         {
             var body = JsonSerializer.SerializeToNode(Company("T-TRNX"))!.AsObject();

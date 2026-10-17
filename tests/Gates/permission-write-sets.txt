@@ -1,0 +1,43 @@
+# What each permission lets a request write (G2, critic p02 round 10, plant P1b). The write-set
+# gate (tests/Erp.Gates.Tests/G2/WriteSets.cs) sends every endpoint that changes data requests that
+# pass validation, as a user holding exactly the endpoint's permission, and reads from the audit
+# trail every row each request changed. A change this file does not cover for the endpoint's
+# permission fails the gate; so does a line no request used (a set lists only what its requests
+# write). Permission * covers writes any signed-in request may make.
+# Format: <permission> <schema.table> <actions> <columns>  # reason
+#   actions: insert, update, delete (comma separated); columns: * or a comma separated list of the
+#   columns the request may change (an insert or delete changes every column of its row).
+
+# Tenancy: the workspace, companies, branches, who works where, the caller's own working company.
+tenancy.tenant.update tenancy.tenants update name_en,name_ar,default_language,time_zone,week_start  # the workspace's names and settings; never its code or status (the platform operator's, tools/tenant)
+tenancy.companies.create tenancy.companies insert *  # the new legal entity
+tenancy.companies.create tenancy.user_company_access insert *  # the creator works in the company they made
+tenancy.companies.create tenancy.user_company_totals update *  # the creator's count of companies (kept with their access)
+tenancy.companies.update tenancy.companies update *  # the company's legal details, settings (the Arabic-legal-name requirement), active flag and logo
+tenancy.branches.create tenancy.branches insert *  # the new branch
+tenancy.branches.update tenancy.branches update *  # the branch's details and active flag
+tenancy.access.update tenancy.user_company_access insert,update,delete *  # giving or taking a user's companies is the grant this permission makes
+tenancy.access.update tenancy.user_company_totals insert,update *  # the user's count of companies, kept with their access
+tenancy.workplace.switch tenancy.user_workplaces insert,update,delete *  # the caller's own starting place: made on the first switch, moved on the next, removed when left in a company they lost (tests/Gates/own-row-writes.txt); never any company's record
+
+# Identity: users, roles, the caller's own profile.
+identity.users.create identity.users insert *  # the new account
+identity.users.create identity.user_credentials insert *  # its first password
+identity.users.update identity.users update display_name,display_name_ar,email,email_normalized,language,is_active,sign_in_unblocked_at  # the account's names, e-mail, language, active flag (one or all that match) and unblocking its sign-in; never its password
+identity.users.update tenancy.user_workplaces insert,update *  # the company a user starts in (PUT /api/identity/users/{id}/default-company, through the tenancy module's contract)
+identity.users.delete identity.users delete *  # the account removed
+identity.users.delete identity.user_credentials delete *  # with its password
+identity.users.resetPassword identity.user_credentials update *  # the new password and whether it must be changed
+identity.roles.create identity.roles insert *  # the new role (or a copy)
+identity.roles.update identity.roles update *  # the role's names and permissions
+identity.roles.delete identity.roles delete *  # the role removed
+identity.profile.update identity.users update language,numerals  # the caller's own language and digits; never their name, e-mail, active flag or anyone else's row
+identity.profile.update identity.passkeys insert,update,delete *  # the caller's own passkeys
+
+# Lists: a reader's own saved views (tests/Gates/read-permission-writes.txt), shared views.
+identity.roles.read lists.saved_views insert,update,delete *  # the reader's own views of the roles list
+identity.users.read lists.saved_views insert,update,delete *  # the reader's own views of the users list
+tenancy.companies.read lists.saved_views insert,update,delete *  # the reader's own views of the companies list
+tenancy.branches.read lists.saved_views insert,update,delete *  # the reader's own views of the branches list
+tenancy.access.read lists.saved_views insert,update,delete *  # the reader's own views of the access list
+lists.views.share lists.saved_views insert,update,delete *  # views shared with everyone who may read the list

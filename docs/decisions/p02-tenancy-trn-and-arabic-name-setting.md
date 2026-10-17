@@ -23,11 +23,11 @@ without losing them, and that the column and the API stay in step.
 **TRN.**
 - The API takes the number as typed. It removes every space and dash, then requires exactly 15
   digits (`tenancyTaxNumber`, in English and Arabic). Letters, dots, slashes, a plus sign,
-  Arabic-Indic digits (٠ to ٩), 14 or 16 digits are all refused. The request is bounded at 100
+  digit sets other than 0 to 9 and the Arabic-Indic ٠ to ٩ (below), 14 or 16 digits are all refused. The request is bounded at 100
   characters, so that an endless run of spaces is not taken in. That bound is not part of the rule.
 - What is stored and answered is the 15 digits alone. The column is `varchar(15)` with check
   constraint `ck_companies_tax_registration_number` (`^[0-9]{15}$`). The OpenAPI document gives the
-  request pattern `^[ -]*(?:[0-9][ -]*){15}$` and the answer pattern `^[0-9]{15}$`. The database,
+  request pattern `^[ -]*(?:[0-9\u0660-\u0669][ -]*){15}$` (round 11) and the answer pattern `^[0-9]{15}$`. The database,
   the validator and the documented contract all hold the same rule.
 - Stored numbers that do not meet the rule are not lost. Migration
   `CompanyTaxNumberFifteenDigitsAndArabicNameSetting` keeps a number that is 15 digits once its
@@ -43,9 +43,21 @@ without losing them, and that the column and the API stay in step.
   worse than none.
 - The Tax Identification Number (the first 10 digits) is derived from the TRN and never entered,
   so the product has no field for it. No module uses it yet.
-- Arabic-Indic digits are refused, because the rule says "0 to 9, nothing else". Whether they
-  should be turned into 0 to 9 when typed on an Arabic keyboard is a question for the owner. It is
-  listed as a human gate and not decided here.
+- Arabic-Indic digits (round 11, owner decision 2026-10-17, needs-human #18, recorded in
+  docs/compliance/vat-trn-format.md): the digits ٠ to ٩ (U+0660 to U+0669) typed on an Arabic keyboard
+  are turned into 0 to 9 before the 15-digit check (`TenancyValidation.NormalizeTaxNumber`), alone or
+  mixed with 0 to 9, spaces and dashes. The TRN is stored, answered, listed and printed in 0 to 9
+  only: the column's check constraint is unchanged, and the report formatter never turns a text value
+  into Arabic-Indic digits, so the company profile printed in Arabic with Arabic-Indic digits chosen
+  still prints `100123456789003` (`CompanyTests`, which reads the printed document back). Other digit
+  sets were not part of the owner's question and stay refused: the Persian ۰ to ۹, full-width and
+  Devanagari digits (`CompanyTests`). Until round 10 the rule refused ٠ to ٩ ("0 to 9, nothing
+  else"); that refusal was moved from the refused list of the test to the accepted list because the
+  signed-off rule changed, not to get a pass.
+- The company form turns ٠ to ٩ into 0 to 9 as they are typed (`web/src/modules/tenancy/trn.ts`), so
+  the field already shows the TRN in 0 to 9 on an Arabic screen before it is saved; it leaves every
+  other digit set as typed for the server to refuse, so the screen never accepts what the API
+  refuses. The hint says so in both languages ("15 digits, kept as 0 to 9").
 
 **Arabic legal name setting.**
 - Each company has `arabic_legal_name_required` (boolean, default false). It is part of the company
