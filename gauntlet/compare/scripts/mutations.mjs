@@ -123,6 +123,9 @@ export const MUTATIONS = [
   ['M80', "the clock starts right after verify()'s read before it (critic S3)", 'lib/runner.mjs', '    if (task.saves) await new Promise(r => setTimeout(r, startGapMs()));', '', 'test/causation.test.mjs', 'the clock \\(round 12'],
   ['M81', "a step's label counted as typed text (critic r11, C3)", 'lib/runner.mjs', "  const texts = [typed.join(''), typed.join('\\n'),", "  const texts = [typed.join(''), typed.join('\\n'), steps.map(s => String(s.label ?? '')).join(' '),", 'test/causation.test.mjs', "a step's label never counts"],
   ['M82', 'a pointer boundary event the browser sent on its own taken for input (plant S11)', 'lib/causation.mjs', '(fromInputQueue ? INPUT_EVENTS : DISCRETE_INPUT).test(', 'INPUT_EVENTS.test(', 'test/causation.test.mjs', 'an input task is the step'],
+  ['M83', 'no guard before a frame (which jumps ahead of a message the page posted)', 'lib/causation.mjs', '        : frame ? before.slice(prevIdx + 1).find(t => t.activity) : null;', '        : null;', 'test/causation.test.mjs', 'no traceable origin'],
+  ['M84', "a form's submission not paired with the task that submitted it", 'lib/causation.mjs', '  if (task.formSubmission && task.submittedBy &&', '  if (false && task.submittedBy &&', 'test/causation.test.mjs', 'no traceable origin'],
+  ['M85', "an answer's end recorded after the code that read it not counted", 'lib/causation.mjs', '  if (task.answers.length) return answerCause(ctx, task, task.answers, depth);', '  if (task.answers.some(a => a.ts <= point.ts)) return answerCause(ctx, task, task.answers.filter(a => a.ts <= point.ts), depth);', 'test/causation.test.mjs', 'an answer links'],
 ];
 
 function copyHarness() {

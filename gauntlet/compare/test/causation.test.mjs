@@ -80,7 +80,7 @@ function verdict(tasks, rid, windows = [[100, 110]]) {
   const model = analyseTrace([...META, ...tasks.flat()]);
   const point = model.sends.get(rid)?.event;
   assert.ok(point, `no send ${rid}`);
-  return causeOf(model, point, windows.map(([from, to], i) => ({ n: i + 1, from: from * MS, to: to * MS })), { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
+  return causeOf(model, point, windows.map(([from, to], i) => ({ n: i + 1, from: from * MS, at: from * MS, to: to * MS })), { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
 }
 
 test('causation (round 12): an input task is the step\'s that began last before it; one before every step causes nothing', () => {
@@ -152,6 +152,8 @@ test('causation (round 12): an animation frame counts when a caused task asked f
 
 test('causation (round 12): an answer links a write to the step that sent the request, if it came within LINK_SECONDS; a poll\'s answer links nothing', () => {
   const linked = held => [task(101, INPUT, [...click(), send(3, 'q', 'http://p/api/check', 'GET')]), task(104 + held * 1000, NET, [answer(1, 'q'), send(2, 'w')])];
+  // The body's end recorded after the code that read it sent the write (Odoo's form reads its onchange's answer so).
+  assert.equal(verdict([task(101, INPUT, [...click(), send(3, 'q', 'http://p/api/check', 'GET')]), task(300, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w'), I('ResourceFinish', 3.5, { requestId: 'q' })]), task(250, TIMER, [fire(1, 9)])], 'w').caused, true);
   const quick = verdict(linked(1.3), 'w');
   assert.equal(quick.caused, true);
   assert.match(quick.chain.join(' | '), /the answer to GET \/api\/check after 1\.3/);
@@ -183,6 +185,14 @@ test('causation (round 12): a task of no traceable origin counts only right afte
   const behind = verdict([task(95, TIMER, [fire(1, 4)], { dur: 5 }), task(101, INPUT, click()), task(108, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w');
   assert.equal(behind.caused, false);
   assert.match(behind.why, /ran just before the step's/);
+  // A short task of the page's own (its clock ticking) that happened to end as the step began made no input wait.
+  assert.equal(verdict([task(99.95, TIMER, [X('TimerFire', 0.01, 0.05, { frame: 'F', timerId: 4 })], { dur: 0.1 }), task(101, INPUT, click()), task(108, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w').caused, true);
+  // Before a frame (which jumps ahead of a message too), any uncaused page task just before it is suspect.
+  const framed = [task(101, INPUT, [...click(), I('RequestAnimationFrame', 3, { frame: 'F', id: 5 })]), task(150, TIMER, [fire(1, 4)]), task(160, FRAME, [X('FireAnimationFrame', 1, 2, { frame: 'F', id: 5 })]), task(167, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])];
+  assert.equal(verdict(framed, 'w').caused, false);
+  // A form's submission is the task's that dispatched its submit event (Enter in a field), not a timer's.
+  const submitted = [task(101, INPUT, [X('EventDispatch', 1, 2, { type: 'keydown' }), X('EventDispatch', 1.5, 1, { type: 'submit' })]), task(107, TIMER, [fire(1, 4)]), task(114, 'frame.cc:ScheduleFormSubmission', [X('FunctionCall', 1, 1, { url: 'http://p/' }), send(2, 'w')])];
+  assert.equal(verdict(submitted, 'w').step, 1);
   // ... but not when it ended longer ago than GUARD_SECONDS.
   assert.equal(verdict([task(95 - GUARD_SECONDS * 1000 - 10, TIMER, [fire(1, 4)]), task(101, INPUT, click()), task(108, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w').caused, true);
   // A worker of the page ran meanwhile (S8).

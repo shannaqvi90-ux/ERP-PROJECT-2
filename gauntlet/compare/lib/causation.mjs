@@ -25,8 +25,9 @@
 //             and its delay is at most REACTION_SECONDS (a scheduler's setTimeout 0, a short
 //             debounce); a repeating timer (a poll) or one armed before the clock causes nothing;
 //   frame     an animation frame callback is caused when the task that asked for it was;
-//   answer    a task that delivered the answer to a request (the page's code waiting on it runs
-//             there) is caused when that request was sent by a caused task and was answered within
+//   answer    a task that delivered (part of) the answer to a request (the page's code waiting on
+//             it runs there, before or after the browser records the delivery) is caused when that
+//             request was sent by a caused task and was answered within
 //             LINK_SECONDS (round 12, plant S2: a click that "approves" 2.5 s later behind a slow
 //             answer it asked for is a delay, as R2b's timer was); a task delivering several answers
 //             is caused only when every one of them is;
@@ -51,6 +52,8 @@ export const TRACE_CATEGORIES = Object.freeze([
 export const LINK_SECONDS = 2;
 /** A page task that caused nothing and ended this close before a step's task could have posted what follows it. */
 export const GUARD_SECONDS = 0.1;
+/** A page task busy this long when a step's input was dispatched made the input wait behind it. */
+export const BUSY_SECONDS = 0.002;
 /** Input events a step delivers (the outermost event of an input task). */
 const INPUT_EVENTS = /^(pointer(down|up|move|over|out|enter|leave|cancel|rawupdate)|mouse(down|up|move|over|out|enter|leave)|click|dblclick|auxclick|contextmenu|key(down|up|press)|wheel|touch(start|end|move|cancel)|beforeinput|input|textInput|change|composition(start|update|end)|submit|formdata|paste|copy|cut|drag\w*|drop|DOMActivate|focus|blur|focusin|focusout|DOMFocusIn|DOMFocusOut)$/;
 /**
@@ -159,8 +162,15 @@ export function analyseTrace(events) {
       if (current && e.ts >= current.ts && e.ts <= current.end) current.events.push(e);
     }
     threads.set(k, { name, tasks: own, main: name === 'CrRendererMain', worker: /Worker/i.test(name) });
+    let submitted = null; // the last task that dispatched a form's submit event, not yet paired
     for (const t of own) {
       describeTask(t);
+      // A form submission runs in a task of its own, scheduled by the task that submitted the form: it
+      // is paired with the last task before it that dispatched the form's submit event (none for a
+      // form.submit() call, which dispatches no event: then it has no traceable origin).
+      if (t.formSubmission) { t.submittedBy = submitted; submitted = null; }
+      const submit = t.events.find(e => e.name === 'EventDispatch' && e.args?.data?.type === 'submit');
+      if (submit) submitted = { task: t, event: submit };
       tasks.push(t);
       for (const e of t.events) {
         const d = e.args?.data || {};
@@ -184,6 +194,7 @@ function describeTask(t) {
   const src = t.events.find(e => e.name === 'ThreadControllerImpl::RunTask')?.args || {};
   t.src = src.src_file ? `${String(src.src_file).split('/').pop()}:${src.src_func || ''}` : null;
   t.protocol = t.events.some(e => e.name === 'DevToolsSession::DispatchProtocolCommand');
+  t.formSubmission = !!t.src && /ScheduleFormSubmission/.test(t.src);
   t.timerFires = t.events.filter(e => e.ph === 'X' && e.name === 'TimerFire');
   t.frameFires = t.events.filter(e => e.ph === 'X' && e.name === 'FireAnimationFrame');
   t.answers = t.events.filter(e => /^Resource(ReceiveResponse|ReceivedData|Finish)$/.test(e.name) && e.args?.data?.requestId);
@@ -270,8 +281,14 @@ function pointCause(ctx, point, depth) {
     const s = stepBefore(ctx, task.ts);
     return s ? yes(s.n, [`input of step ${s.n}`]) : no('an input event before the first counted step');
   }
-  const answers = task.answers.filter(a => a.ts <= point.ts);
-  if (answers.length) return answerCause(ctx, task, answers, depth);
+  // A task that delivered (part of) an answer: the page's code in it ran on that delivery, whether the
+  // browser records the delivery before the code (headers) or after it (the body's end, which the
+  // code reading the body waited for).
+  if (task.answers.length) return answerCause(ctx, task, task.answers, depth);
+  if (task.formSubmission && task.submittedBy && (task.ts - task.submittedBy.task.end) / 1e6 <= ctx.reaction) {
+    const c = pointCause(ctx, { ...task.submittedBy.event, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) }, depth + 1);
+    return c.caused ? yes(c.step, [...c.chain, 'the form it submitted']) : noFrom('a form submitted by a task no step caused', c);
+  }
   return otherCause(ctx, task, depth);
 }
 
@@ -328,8 +345,19 @@ function otherCause(ctx, task, depth) {
     if (!pc.caused) result = noFrom('a task of no traceable origin (a message, an observer) after a page task no step caused', pc);
     else if ((task.ts - prev.end) / 1e6 > ctx.reaction) result = no(`a task of no traceable origin ${fmt((task.ts - prev.end) / 1e6)} after the last task a step caused`);
     else {
-      const earlier = before.slice(prevIdx + 1).find(t => t.activity);
-      const ec = earlier && (prev.ts - earlier.end) / 1e6 < ctx.guard ? taskCause(ctx, earlier, depth + 1) : null;
+      // A message an uncaused task posted is delivered in the order tasks were queued, unless a task of
+      // a higher priority jumps ahead: input and DevTools commands do (one that ran just before them
+      // could have posted it), and so does a frame. For a step's own input or command, the guard is an
+      // uncaused task that was busy (BUSY_SECONDS or more) when the step's input was dispatched, so the
+      // input waited behind it; before a frame, an uncaused page task within GUARD_SECONDS before it. Tasks
+      // of the same priority (answers, messages) run in the order they were queued.
+      const head = prev.input || prev.protocol;
+      const frame = !head && (prev.frameFires.length > 0 || /BeginMainFrame/.test(prev.src || ''));
+      const dispatched = head ? ctx.steps.find(x => x.n === pc.step)?.at : null;
+      const earlier = head
+        ? before.slice(prevIdx + 1).find(t => t.activity && t.end >= (dispatched ?? prev.ts) - ctx.slack && (t.end - t.ts) / 1e6 >= BUSY_SECONDS)
+        : frame ? before.slice(prevIdx + 1).find(t => t.activity) : null;
+      const ec = earlier && (head || (prev.ts - earlier.end) / 1e6 < ctx.guard) ? taskCause(ctx, earlier, depth + 1) : null;
       const worker = [...ctx.model.threads.values()].filter(t => t.worker).flatMap(t => t.tasks)
         .find(t => t.activity && t.end >= prev.ts - ctx.guard * 1e6 && t.ts <= task.ts);
       if (ec && !ec.caused) result = noFrom(`a task of no traceable origin: a page task no step caused ran just before the step's (${fmt((prev.ts - earlier.end) / 1e6)} before it) and could have sent it`, ec);
@@ -369,7 +397,7 @@ export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 
   const model = trace.model || analyseTrace(trace.events);
   const slackUs = 2000 + (clock?.error_us || 0);
   const windows = steps.filter(s => typeof s.at === 'number').map(s => ({
-    n: s.n, from: clockToTrace(typeof s.began === 'number' ? s.began : s.at, clock, originMs), to: clockToTrace(s.at + (s.took || 0), clock, originMs),
+    n: s.n, from: clockToTrace(typeof s.began === 'number' ? s.began : s.at, clock, originMs), at: clockToTrace(s.at, clock, originMs), to: clockToTrace(s.at + (s.took || 0), clock, originMs),
   }));
   const taken = new Set();
   const starts = model.navigationStarts;
@@ -395,11 +423,11 @@ export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 
     // answers of the page task just before it.
     let task = taskAt(model, keyOf(point), point.ts);
     let upTo = point.ts;
-    if (task && !task.protocol && !task.input && !task.timerFires.length && !task.frameFires.length && !task.answers.some(a => a.ts <= point.ts)) {
+    if (task && !task.protocol && !task.input && !task.timerFires.length && !task.frameFires.length && !task.answers.length) {
       const prev = model.threads.get(task.thread).tasks.slice(0, task.index).reverse().find(t => t.activity);
       if (prev && (task.ts - prev.end) / 1e6 <= reaction) { task = prev; upTo = prev.end; }
     }
-    const answered = [...new Set((task?.answers || []).filter(a => a.ts <= upTo).map(a => a.args.data.requestId))];
+    const answered = [...new Set((task?.answers || []).filter(a => a.ts <= upTo || task === taskAt(model, keyOf(point), point.ts)).map(a => a.args.data.requestId))];
     return { ...c, request_id: requestId, answered, at_trace: round3(traceToClock(point.ts, clock, originMs)) };
   });
 }
