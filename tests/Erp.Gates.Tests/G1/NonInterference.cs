@@ -26,8 +26,9 @@ namespace Erp.Gates.Tests.G1;
 /// <item>in a fresh app process that only the judged tenant has ever used (its own singletons,
 /// caches and endpoint closures, untouched by the other tenant).</item>
 /// </list>
-/// Both answers (status, body and response headers, with times, trace ids, cookie values and the
-/// transport's own headers normalised) must be identical. A difference is confirmed once more
+/// Both answers (status, body and response headers, with trace ids, the credential cookies' values
+/// and the transport's own headers left out, and every time replaced by whose request it falls in:
+/// <see cref="RequestClock"/>) must be identical. A difference is confirmed once more
 /// before it is reported. A request whose answer changes from one call to the next in the fresh
 /// process (a counter, a stamp) is judged by how it changes instead: in the shared process, the
 /// change from one answer to the next when the judged tenant sends it on its own must equal the
@@ -762,8 +763,10 @@ public static partial class NonInterference
         return result.DistinctBy(r => r.Item2, StringComparer.Ordinal).ToList();
     }
 
-    /// <summary>The body with trace ids removed and every date-time replaced, so two answers that
-    /// differ only by when they were made compare equal.</summary>
+    /// <summary>The body with trace ids removed and every date-time replaced by whose request it
+    /// falls in (<see cref="RequestClock.Token"/>), so two answers that differ only by when they
+    /// were made compare equal, and an answer carrying the time of the other tenant's request does
+    /// not. Without a request context every time is <c>&lt;time&gt;</c>.</summary>
     internal static string Normalize(string text, AnswerContext? context = null)
     {
         try
@@ -926,9 +929,11 @@ public static partial class NonInterference
     /// <summary>
     /// Response headers (<c>Name: value</c> lines, as <see cref="ResponseHeaders.Text"/> gives them)
     /// as compared: names in lower case, sorted; transport and tracing headers left out; the value
-    /// of each cookie set replaced (its name and attributes kept), dates replaced, and a declared
-    /// print stamp (<see cref="ResponseText.PrintedAtHeader"/>) replaced. Every other header is
-    /// compared as sent: a count, a version or a tag the product sends is part of the answer.
+    /// of each credential cookie (<see cref="CredentialCookies"/>) replaced, every other cookie's
+    /// value kept (critic p04 round 9); every time replaced by whose request it falls in
+    /// (<see cref="RequestClock.Token"/>; <c>&lt;time&gt;</c> without a request context); and a
+    /// declared print stamp (<see cref="ResponseText.PrintedAtHeader"/>) replaced. Every other header
+    /// is compared as sent: a count, a version or a tag the product sends is part of the answer.
     /// </summary>
     internal static string NormalizeHeaders(string headers, AnswerContext? context = null)
     {
