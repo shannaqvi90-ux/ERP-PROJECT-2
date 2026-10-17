@@ -24,6 +24,9 @@ public sealed record SeedAdministrator(string Email, string DisplayName, string 
 /// <param name="Canary">Unique marker woven into every text field of this tenant's seed data so a
 /// leak is detectable anywhere (null for ordinary tenants).</param>
 /// <param name="Volume">Rows per main list when the profile carries volume.</param>
+/// <param name="VolumeSeed">What the generated volume rows (people's names) are drawn from; the
+/// tenant's <paramref name="Code"/> when null. Set where the code carries a fresh canary but the
+/// rows must be the same every run (the list volume gate counts matches per search letter).</param>
 public sealed record SeedTenant(
     Guid Id,
     string Code,
@@ -32,7 +35,12 @@ public sealed record SeedTenant(
     string EmailDomain,
     string? Canary,
     int Volume,
-    SeedAdministrator? Administrator = null);
+    SeedAdministrator? Administrator = null,
+    string? VolumeSeed = null)
+{
+    /// <summary>The seed of this tenant's generated volume rows.</summary>
+    public string VolumeRowsSeed => VolumeSeed ?? Code;
+}
 
 public sealed record SeedPlan(SeedProfile Profile, IReadOnlyList<SeedTenant> Tenants, string DemoPassword)
 {
@@ -57,15 +65,26 @@ public sealed record SeedPlan(SeedProfile Profile, IReadOnlyList<SeedTenant> Ten
     ], password);
 
     /// <summary>The isolation gate fixture: tenant A attacks, tenant B carries canaries.</summary>
-    public static SeedPlan Gate(string canary, string password) => GateAtVolume(canary, password, 25, 25);
+    public static SeedPlan Gate(string canary, string password) => GatePlan(canary, password, 25, 25, null);
+
+    /// <summary>What tenant B's generated rows are drawn from in <see cref="GateAtVolume"/>: fixed,
+    /// never the canary-bearing code, so B holds the same people (and the same matches per search
+    /// letter) on every run.</summary>
+    public const string GateVolumeSeedB = "bravo";
 
     /// <summary>The isolation gate fixture with <paramref name="volumeA"/> and <paramref name="volumeB"/>
     /// rows in each tenant's main lists: the list gates' large-list profile, where code that only runs
-    /// for a big list (an estimated total, a deep page, a broad search left unranked) is judged too.</summary>
-    public static SeedPlan GateAtVolume(string canary, string password, int volumeA, int volumeB) => new(SeedProfile.Gate,
+    /// for a big list (an estimated total, a deep page, a broad search left unranked) is judged too.
+    /// Both tenants' generated rows come from fixed seeds (<see cref="GateVolumeSeedB"/> for tenant B),
+    /// so the volume gate's tallies (searches ranked or too big to rank in both tenants, with different
+    /// counts) are the same on every run; the canary still marks every text value of tenant B.</summary>
+    public static SeedPlan GateAtVolume(string canary, string password, int volumeA, int volumeB) => GatePlan(canary, password, volumeA, volumeB, GateVolumeSeedB);
+
+    private static SeedPlan GatePlan(string canary, string password, int volumeA, int volumeB, string? volumeSeedB) => new(SeedProfile.Gate,
     [
         new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-00000000000a"), "alpha", "Alpha Trading LLC", "ألفا للتجارة ذ.م.م", "alpha.example", null, volumeA),
-        new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-00000000000b"), $"bravo{canary.ToLowerInvariant()}", $"Bravo {canary} LLC", $"برافو {canary} ذ.م.م", $"bravo-{canary.ToLowerInvariant()}.example", canary, volumeB),
+        new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-00000000000b"), $"bravo{canary.ToLowerInvariant()}", $"Bravo {canary} LLC", $"برافو {canary} ذ.م.م", $"bravo-{canary.ToLowerInvariant()}.example", canary, volumeB,
+            VolumeSeed: volumeSeedB),
     ], password);
 }
 

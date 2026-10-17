@@ -170,7 +170,8 @@ public static class ListVolume
                 }
             }
             tally.Summary.Add($"list '{list.Key}': walked A {walkA.Rows.Count} and B {walkB.Rows.Count} rows{(atVolume ? " (at volume)" : "")}; {queries.Count} queries, " +
-                              $"{listTally.Discriminating} with different true answers, {listTally.Deep} deep answers, {listTally.Unranked} unranked and {listTally.Ranked} ranked searches");
+                              $"{listTally.Discriminating} with different true answers, {listTally.Deep} deep answers, {listTally.Unranked} unranked and {listTally.Ranked} ranked searches" +
+                              (listTally.SearchCounts.IsEmpty ? "" : "; searches (A/B rows): " + string.Join(", ", listTally.SearchCounts.OrderBy(c => c.Key, StringComparer.Ordinal).Select(c => c.Value))));
         }
         return new Result(tally.Wrong.ToList(), tally.Blind.ToList(), tally.Answers, tally.Queries, tally.Discriminating, tally.RowsWalked, tally.ListsAtVolume,
             tally.DeepAnswers, tally.UnrankedSearches, tally.RankedSearches, tally.CursorsFollowed, tally.Summary);
@@ -182,6 +183,9 @@ public static class ListVolume
         public int Deep;
         public int Unranked;
         public int Ranked;
+
+        /// <summary>Each one-letter search with its true counts in A and B, for the summary.</summary>
+        public ConcurrentDictionary<string, string> SearchCounts { get; } = new(StringComparer.Ordinal);
     }
 
     private static string? NextOf(JsonElement page) =>
@@ -330,6 +334,10 @@ public static class ListVolume
         {
             Interlocked.Increment(ref tally.Discriminating);
             Interlocked.Increment(ref listTally.Discriminating);
+        }
+        if (query.Kind == "search" && query.Search is not null)
+        {
+            listTally.SearchCounts[query.Search] = $"{query.Search} {countA}/{countB}";
         }
         if (query.Search is not null && query.GroupBy is null && query.Kind == "search" && countA != countB)
         {

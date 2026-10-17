@@ -145,7 +145,7 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
         var shared = !string.IsNullOrWhiteSpace(csv) && context.Plan.Profile == SeedProfile.Demo && context.Tenant.Id == context.Plan.Tenants[0].Id;
         var people = shared
             ? SharedDatasetUsers.Read(csv!, context.Tenant.Volume)
-            : DemoPeople.Generate(context.Tenant.Code, context.Tenant.Volume).Select((p, i) => p with { EmailLocal = $"{p.EmailLocal}.{i + 1}@{context.Tenant.EmailDomain}" });
+            : DemoPeople.Generate(context.Tenant.VolumeRowsSeed, context.Tenant.Volume).Select((p, i) => p with { EmailLocal = $"{p.EmailLocal}.{i + 1}@{context.Tenant.EmailDomain}" });
         var rows = people.Select((p, i) =>
         {
             var email = p.EmailLocal;
