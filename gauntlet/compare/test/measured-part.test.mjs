@@ -190,7 +190,9 @@ test('plant R2 (critic r10): set-up turns on a setting; the start page sends the
   }, SAVES);
   never('R2', r);
   assert.equal(r.status, 'invalid');
-  assert.match(r.error, /no counted step caused any of the writes the page sent \(POST \/api\/approve: [\d.]+ s after step 1 ended\)/);
+  // Round 12: the clock starts a while after the page loaded, so the timer may fire just after the key;
+  // timing then credits the key and the browser's record refuses it (lib/causation.mjs).
+  assert.match(r.error, /no counted step caused any of the writes the page sent \(POST \/api\/approve: ([\d.]+ s after step 1 ended|the browser's record shows a timer armed before the clock started)\)/);
 });
 
 test('plant R2b: the page approves 2.5 s after the first key it sees (a timer the key armed); R2c: the same while the page polls the back end -> never verifies', async () => {

@@ -108,6 +108,24 @@ export class Device {
     return true;
   }
 
+  /**
+   * Resolves once the authenticator of `page` has signed with a passkey or made one (the browser
+   * then has the device's answer), or after `timeout` ms: the end of the person's confirmation as a
+   * step (round 12, lib/causation.mjs reads what the page did within it). Call before confirm().
+   */
+  answered(page, timeout) {
+    const entry = this.#pages.get(page);
+    if (!entry) return Promise.resolve(false);
+    return new Promise(resolve => {
+      const events = ['WebAuthn.credentialAsserted', 'WebAuthn.credentialAdded'];
+      let timer = null;
+      const on = () => done(true);
+      const done = value => { clearTimeout(timer); for (const e of events) entry.cdp.off(e, on); resolve(value); };
+      for (const e of events) entry.cdp.on(e, on);
+      timer = setTimeout(() => done(false), timeout);
+    });
+  }
+
   /** The person confirms the oldest request on `page`: the authenticator answers it. */
   confirm(page) {
     const at = this.#waiting.findIndex(w => w.page === page);
