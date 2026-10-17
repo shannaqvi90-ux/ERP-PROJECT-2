@@ -102,5 +102,9 @@ Measured on its own outside the verify (`dotnet test --filter G1ShellAnswersTest
 about 30 s of user processor time for the whole test process (build excluded), most of it the
 test process start, the PostgreSQL template and two app hosts, against 3 m 47 s of wall time (the
 real-host test 2 m 41 s and the self-test 1 m 6 s, nearly all paced waits). Inside the verify the
-PostgreSQL server and template are already there, so the added processor time is lower. The palette's new test adds about 2 s to the web unit stage and
+PostgreSQL server and template are already there, so the added processor time is lower.
+
+Whole verify of this round (builder, slot taken 2026-10-17T19:56:58Z, load 26 to 60 on 16 CPUs):
+passed in 3,402 s, processor time 9,426 s (dotnet 7,179, web 1,867, e2e 321, timing 58) against
+the 10,500 s maximum; .NET 634 tests, web unit 496, e2e 106, compare 415, build 6, all passed. The palette's new test adds about 2 s to the web unit stage and
 PA13 one more planted run of two tests in the palette self-test (about 10 s).
