@@ -87,13 +87,15 @@ export const MUTATIONS = [
   ['M51', 'a browser context the driver opened in set-up not watched', 'lib/runner.mjs', '    attach(c);\n    return c;', '    return c;', 'test/set-up-off-clock.test.mjs', 'plant Q2c'],
   ['M52', "set-up's local storage carried into a signed-in start (critic X12)", 'lib/runner.mjs', "  const storageState = kind === 'sign-in' ? saved : { cookies: saved.cookies, origins: [] };", '  const storageState = saved;', 'test/set-up-off-clock.test.mjs', 'X12'],
   ['M53', 'the clipboard not emptied at the start (critic X16)', 'lib/runner.mjs', '    await resetClipboard(scratch);', '', 'test/set-up-off-clock.test.mjs', 'X16'],
-  // Round 11 (critic p01 r10, biggest gap): the page's own requests are not the person's doing.
+  // Round 11 (critic p01 r10, biggest gap): the page's own requests are not the person's doing. Round 12:
+  // the plants are refused by the browser's record as well, so the timing layer's own mutations (M56,
+  // M57) are judged by its unit test.
   ['M54', 'a value in a request the page composed counts as entered (critic R1)', 'lib/runner.mjs', "    ...steps.filter(s => s.kind === 'request').map(s => String(s.text ?? ''))];",
     "    ...steps.filter(s => s.kind === 'request').map(s => String(s.text ?? '')), ...sent.map(r => `${r.url ?? ''}\\n${r.body ?? ''}`)];", 'test/measured-part.test.mjs', 'plant R1 '],
   ['M55', 'a write the page sent on its own counts as the measured part\'s (critic R2)', 'lib/runner.mjs', '  const caused = causes.filter(c => c.caused).map(c => c.write);', '  const caused = causes.map(c => c.write);', 'test/measured-part.test.mjs', 'plant R2 '],
-  ['M56', 'no end to the time a step may take to cause a write', 'lib/runner.mjs', 'export const REACTION_SECONDS = 1;', 'export const REACTION_SECONDS = 60;', 'test/measured-part.test.mjs', 'plant R2 |plant R3 '],
+  ['M56', 'no end to the time a step may take to cause a write', 'lib/runner.mjs', 'export const REACTION_SECONDS = 1;', 'export const REACTION_SECONDS = 60;', 'test/before-clock.test.mjs', 'caused by a step \\(round 11\\)'],
   ['M57', 'any answered request links a write to a step (a poll chains on)', 'lib/runner.mjs', '  const links = timeline.filter(q => typeof q.at === \'number\' && typeof q.answered === \'number\' && during(q.at)).map(q => ({ q, step: during(q.at) }));',
-    '  const links = timeline.filter(q => typeof q.at === \'number\' && typeof q.answered === \'number\').map(q => ({ q, step: during(q.at) || windows[0] }));', 'test/measured-part.test.mjs', 'plant R2b'],
+    '  const links = timeline.filter(q => typeof q.at === \'number\' && typeof q.answered === \'number\').map(q => ({ q, step: during(q.at) || windows[0] }));', 'test/before-clock.test.mjs', 'caused by a step \\(round 11\\)'],
   ['M62', "a declared write the page sent on its own accepted beside a decoy a step caused", 'lib/runner.mjs', '    if (stray.length) return', '    if (false) return', 'test/measured-part.test.mjs', 'plant R2d'],
   // Round 11: set-up's own writes (critic X1; routed from p00 r10 and p02 r10).
   ['M58', "a write set-up's page aborted not seen as abandoned (critic X1)", 'lib/runner.mjs', " context.on('requestfinished', finished); context.on('requestfailed', failed);", " context.on('requestfinished', finished);", 'test/measured-part.test.mjs', 'critic X1'],
