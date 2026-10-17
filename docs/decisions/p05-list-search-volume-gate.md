@@ -156,3 +156,12 @@ a boundary would still move between runs), and lowering the minimum (CLAUDE.md r
 
 Cost: no new environment, run or request; the seeding is the same bulk copy. The volume gate run
 alone took 2 min 9 s for the test (2.9 min with build and start).
+
+Full `./erp verify` of 626452d (the integration branch merged in, 37fd25b) through the verify
+slot: slot taken 20:53:57Z after waiting 3,315 s, passed in 3,668 s wall, **9,901 processor
+seconds** (dotnet 7,574, web 1,942, e2e 326, timing 59; maximum 10,500), with load up to 78.9 from
+other agents. Tests: .NET 641 (the ratchet minimum raised from 635), web unit 503, end-to-end 106,
+comparison 415, build 6. This round's own processor cost is the 201 one-line identity and
+self-test checks (well under a second); the volume gate runs the same requests as before. The
+first verify of this round (262d8a3, hexadecimal canary) failed only on the minimums this round
+had raised from a single run alone, which is how the canary's letters were found.
