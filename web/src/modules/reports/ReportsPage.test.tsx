@@ -121,7 +121,10 @@ describe("reports screen", () => {
     expect(doc.getAttribute("dir")).toBe("rtl");
     expect(doc.getAttribute("lang")).toBe("ar");
     expect(doc.querySelector(".report-group")!.textContent).toContain("مدير النظام");
-    expect(doc.querySelector(".report-table td")!.textContent).toBe("مدير النظام");
+    // The role heads its group and is not repeated in each of its rows (critic p06 round 6).
+    expect([...doc.querySelectorAll(".report-table thead th")].map((th) => th.textContent)).toEqual(["البريد الإلكتروني"]);
+    expect(doc.querySelector(".report-table td")!.textContent).toBe("a@x.example");
+    expect([...doc.querySelectorAll(".report-table tbody td")].map((td) => td.textContent)).not.toContain("مدير النظام");
   });
 
   it("shows the server's parameter errors on their fields and opens a linked report at once", async () => {

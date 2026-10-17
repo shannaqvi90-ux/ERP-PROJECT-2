@@ -73,6 +73,16 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
             Assert.Contains(document.GetProperty("columns").EnumerateArray(), c => c.GetProperty("label").GetString() == "المدينة");
             // The country by its Arabic name, not its code (critic p06 rounds 4 and 5).
             Assert.Equal("الإمارات العربية المتحدة", facts["الدولة"]);
+            // The TRN and the phone number print as stored, in the digits 0 to 9, even on a document
+            // printed with Arabic-Indic digits (docs/compliance/vat-trn-format.md, owner 2026-10-17).
+            var record = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{companyId}");
+            foreach (var (label, key) in new[] { ("رقم التسجيل الضريبي", "taxRegistrationNumber"), ("الهاتف", "phone") })
+            {
+                var stored = record.GetProperty(key).GetString();
+                Assert.False(string.IsNullOrEmpty(stored), $"the seeded company has no {key}");
+                Assert.Equal(stored, facts[label]);
+                Assert.DoesNotMatch("[\u0660-\u0669]", facts[label]!);
+            }
 
             using var pdf = await admin.GetAsync($"/api/reports/run/tenancy.companyProfile?company={companyId}&language=ar&format=pdf");
             Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);

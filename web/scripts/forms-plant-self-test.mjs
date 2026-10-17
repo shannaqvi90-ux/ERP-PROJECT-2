@@ -74,6 +74,15 @@ const plants = [
     edits: [keyOn("discard")],
   },
   {
+    id: "W-complete",
+    what: "a completed phone number saves a read-only record: the phone field editable for a read-only user, the completed entry and save() not checking the permission",
+    edits: [
+      { file: "src/kernel/forms/fields.tsx", find: "const editable = !(p.disabled || field.readOnly);", replace: "const editable = true;" },
+      { file: U, find: "if (record === null || readOnly || busy) return;", replace: "if (record === null || busy) return;" },
+      saveUnchecked,
+    ],
+  },
+  {
     id: "W-leave",
     what: "Escape on a read-only record asks to save it, and 'Save and close' saves it",
     edits: [{ file: F, find: "    if (form.dirty) setAsking(true);", replace: "    if (form.dirty || form.readOnly) setAsking(true);" }, saveUnchecked],

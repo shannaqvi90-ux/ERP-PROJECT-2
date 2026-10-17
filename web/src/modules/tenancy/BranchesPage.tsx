@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../kernel/api";
-import { BooleanField, SelectField, TextField } from "../../kernel/forms/fields";
+import { BooleanField, PhoneField, SelectField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
@@ -218,7 +218,7 @@ function BranchForm({
       </FormSection>
       <AddressFields form={form} />
       <FormSection title={t("tenancy.company.contact")}>
-        <TextField field={bind("phone")} label={t("tenancy.address.phone")} dir="ltr" type="tel" maxLength={30} />
+        <PhoneField field={bind("phone")} label={t("tenancy.address.phone")} />
         <TextField field={bind("email")} label={t("tenancy.address.email")} dir="ltr" type="email" maxLength={254} />
       </FormSection>
     </RecordForm>

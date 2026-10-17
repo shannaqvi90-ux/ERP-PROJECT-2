@@ -29,6 +29,9 @@ export type FieldBinding<V> = {
   onChange: (value: V) => void;
   errors: string[];
   readOnly: boolean;
+  /** The user typed the last character of a value whose length is fixed (a whole UAE phone
+   * number): the form saves it when it is the record's only change (see completeEntry). */
+  onComplete?: (value: V) => void;
 };
 
 export type RecordFormState<R, D> = {
@@ -54,6 +57,16 @@ export type RecordFormState<R, D> = {
   save: () => Promise<R | null>;
   /** Back to what was loaded or last saved. */
   discard: () => void;
+  /**
+   * A field's entry is complete (its last character typed): on a saved record whose only change
+   * is that field, the form saves at once, with no key to press; the save can be undone. With
+   * other changes pending, or on a new record, nothing happens: the user saves when done.
+   */
+  completeEntry: <K extends keyof D & string>(key: K, value: D[K]) => void;
+  /** The field whose completed entry the form saved on its own (null after any other change or save). */
+  autoSaved: string | null;
+  /** Puts back what the record held before the form saved a completed entry on its own, and saves that. */
+  undo: () => Promise<R | null>;
   reload: () => void;
   /** Take a newer copy of the record saved by another action (a logo upload), keeping the draft. */
   adopt: (record: R) => void;
@@ -85,6 +98,8 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   const [message, setMessage] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
   const [loads, setLoads] = useState(0);
+  // What the record held before the form saved a completed entry on its own, for undo.
+  const [undoable, setUndoable] = useState<{ field: string; draft: D } | null>(null);
 
   // A record this form has just created: the screen then points the form at the new record's id
   // (the key changes in the same render as the save). The save's answer is that record, so the
@@ -113,6 +128,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
         setErrors({});
         setConflict(false);
         setMessage(null);
+        setUndoable(null);
         setStatus("ready");
       })
       .catch((error: unknown) => {
@@ -149,6 +165,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   const update = useCallback((change: (draft: D) => D) => {
     setDraft((d) => change(d));
     setSaved(false);
+    setUndoable(null);
   }, []);
 
   const set = useCallback(<K extends keyof D>(field: K) => (value: D[K]) => {
@@ -156,9 +173,12 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
     setErrors((e) => (e[field as string] ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== field)) : e));
   }, [update]);
 
-  const save = useCallback(async (): Promise<R | null> => {
+  const send = useCallback(async (draft: D, auto: { field: string; before: D } | null): Promise<R | null> => {
     const current = specRef.current;
     if (!current.canEdit || busy) return null;
+    // Enter or Ctrl+S right after the form saved a completed entry on its own (the habit of
+    // finishing an entry with Enter) sends nothing more: no new version, no audit entry of nothing.
+    if (record !== null && undoable !== null && same(draft, baseline)) return record;
     const local = current.validate?.(draft) ?? {};
     if (Object.keys(local).length > 0) {
       setErrors(local);
@@ -176,6 +196,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       setErrors({});
       setConflict(false);
       setSaved(true);
+      setUndoable(auto ? { field: auto.field, draft: auto.before } : null);
       justCreated.current = record === null;
       current.onSaved?.(result, record === null);
       return result;
@@ -193,17 +214,38 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       }
       setErrors(mapped);
       setMessage([error instanceof Error ? error.message : String(error), ...elsewhere].join(" "));
+      setUndoable(null);
       return null;
     } finally {
       setBusy(false);
     }
-  }, [busy, draft, record]);
+  }, [busy, baseline, record, undoable]);
+
+  const save = useCallback(() => send(draft, null), [send, draft]);
+
+  const completeEntry = useCallback(<K extends keyof D & string>(field: K, value: D[K]) => {
+    if (record === null || readOnly || busy) return;
+    const next = { ...draft, [field]: value } as D;
+    const onlyThis = (Object.keys(next as object) as (keyof D)[]).every((k) => k === field || same(next[k], baseline[k]));
+    if (!onlyThis || same(value, baseline[field])) return;
+    setDraft(next);
+    void send(next, { field, before: baseline });
+  }, [record, readOnly, busy, draft, baseline, send]);
+
+  const undo = useCallback(async (): Promise<R | null> => {
+    if (!undoable || !same(draft, baseline)) return null;
+    const previous = undoable.draft;
+    setUndoable(null);
+    setDraft(previous);
+    return send(previous, null);
+  }, [undoable, draft, baseline, send]);
 
   const discard = useCallback(() => {
     setDraft(baseline);
     setErrors({});
     setMessage(null);
     setSaved(false);
+    setUndoable(null);
   }, [baseline]);
 
   const reload = useCallback(() => setLoads((n) => n + 1), []);
@@ -216,12 +258,13 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       onChange: set(field),
       errors: errors[field] ?? [],
       readOnly,
+      onComplete: (value: D[K]) => completeEntry(field, value),
     }),
-    [draft, errors, readOnly, set],
+    [draft, errors, readOnly, set, completeEntry],
   );
 
   return useMemo(
-    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt, leaveAsker }),
-    [status, record, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, reload, adopt],
+    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, completeEntry, autoSaved: undoable?.field ?? null, undo, reload, adopt, leaveAsker }),
+    [status, record, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, completeEntry, undoable, undo, reload, adopt],
   );
 }
