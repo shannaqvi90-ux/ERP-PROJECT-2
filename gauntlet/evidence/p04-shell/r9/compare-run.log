@@ -1,0 +1,18 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.618s  human 15.28s  human+wait 16.878s  -> ../../evidence-staging/p04-shell/r9/compare/results/switch-to-arabic-20261016T230536-5e92.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.598s  human 15.28s  human+wait 16.878s  -> ../../evidence-staging/p04-shell/r9/compare/results/switch-to-arabic-20261016T230607-9ba4.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.661s  human 15.28s  human+wait 16.986s  -> ../../evidence-staging/p04-shell/r9/compare/results/switch-to-arabic-20261016T230627-df42.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.123s  human 2.65s  human+wait 2.652s  -> ../../evidence-staging/p04-shell/r9/compare/results/switch-to-arabic-20261016T230647-09a2.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.112s  human 2.65s  human+wait 2.651s  -> ../../evidence-staging/p04-shell/r9/compare/results/switch-to-arabic-20261016T230652-d54b.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.107s  human 2.65s  human+wait 2.652s  -> ../../evidence-staging/p04-shell/r9/compare/results/switch-to-arabic-20261016T230657-485e.json
+switch-to-arabic         verdict win
+reach-screen-keyboard    odoo  invalid    (action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.)  -> ../../evidence-staging/p04-shell/r9/compare/results/reach-screen-keyboard-20261016T230701-4bdb.json
+    action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /web/dataset/call_kw/res.company/iap_enrich_auto (its page moved on)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 0.949s  human 3.99s  human+wait 4.85s  -> ../../evidence-staging/p04-shell/r9/compare/results/reach-screen-keyboard-20261016T230703-105d.json
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 0.896s  human 3.99s  human+wait 4.795s  -> ../../evidence-staging/p04-shell/r9/compare/results/reach-screen-keyboard-20261016T230709-ea63.json
+reach-screen-keyboard    ours  verified  steps 2  keys 2  machine 0.108s  human 3.66s  human+wait 3.728s  -> ../../evidence-staging/p04-shell/r9/compare/results/reach-screen-keyboard-20261016T230714-aa72.json
+reach-screen-keyboard    ours  verified  steps 3  keys 5  machine 0.15s  human 3.15s  human+wait 3.223s  -> ../../evidence-staging/p04-shell/r9/compare/results/reach-screen-keyboard-20261016T230724-78d8.json
+reach-screen-keyboard    ours  verified  steps 2  keys 2  machine 0.128s  human 3.66s  human+wait 3.732s  -> ../../evidence-staging/p04-shell/r9/compare/results/reach-screen-keyboard-20261016T230733-3378.json
+reach-screen-keyboard    verdict win (ours judged on its whole path 'goTo')
+blind review page: ../../../../evidence-staging/p04-shell/r9/compare/blind/review.html
+output: ../../../../evidence-staging/p04-shell/r9/compare

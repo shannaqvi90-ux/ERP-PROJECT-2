@@ -1,0 +1,68 @@
+A users search 'viewer@gulfsteel.example' -> 200
+A GET users/01a146f0-d272-7c2f-bfb5-72259e438795 -> 404
+A GET users/01a146f0-d272-7c2f-bfb5-72259e438795/access -> 404
+A GET users/01a146f0-d272-7c2f-bfb5-72259e438795/default-company -> 404
+A GET users/01a146f0-d272-7c2f-bfb5-72259e438795/sign-ins -> 404
+A GET users/01a146f0-d272-7c2f-bfb5-72259e438795/passkeys -> 404
+A PUT users/01a146f0-d272-7c2f-bfb5-72259e438795 language ar -> 400
+A users search 'accountant@gulfsteel.example' -> 200
+A GET users/01a146f0-d272-777a-bc55-d7b19e765572 -> 404
+A GET users/01a146f0-d272-777a-bc55-d7b19e765572/access -> 404
+A GET users/01a146f0-d272-777a-bc55-d7b19e765572/default-company -> 404
+A GET users/01a146f0-d272-777a-bc55-d7b19e765572/sign-ins -> 404
+A GET users/01a146f0-d272-777a-bc55-d7b19e765572/passkeys -> 404
+A PUT users/01a146f0-d272-777a-bc55-d7b19e765572 language ar -> 400
+A users search 'admin.ar@gulfsteel.example' -> 200
+A GET users/01a146f0-d272-753a-b92b-ee8eaecd0425 -> 404
+A GET users/01a146f0-d272-753a-b92b-ee8eaecd0425/access -> 404
+A GET users/01a146f0-d272-753a-b92b-ee8eaecd0425/default-company -> 404
+A GET users/01a146f0-d272-753a-b92b-ee8eaecd0425/sign-ins -> 404
+A GET users/01a146f0-d272-753a-b92b-ee8eaecd0425/passkeys -> 404
+A PUT users/01a146f0-d272-753a-b92b-ee8eaecd0425 language ar -> 400
+A users search 'noaccess@gulfsteel.example' -> 200
+A GET users/01a146f0-d272-739f-93d9-afb4506157a2 -> 404
+A GET users/01a146f0-d272-739f-93d9-afb4506157a2/access -> 404
+A GET users/01a146f0-d272-739f-93d9-afb4506157a2/default-company -> 404
+A GET users/01a146f0-d272-739f-93d9-afb4506157a2/sign-ins -> 404
+A GET users/01a146f0-d272-739f-93d9-afb4506157a2/passkeys -> 404
+A PUT users/01a146f0-d272-739f-93d9-afb4506157a2 language ar -> 400
+A users search 'admin@gulfsteel.example' -> 200
+A GET users/01a146f0-d271-7ceb-8ce1-08b40e6519cf -> 404
+A GET users/01a146f0-d271-7ceb-8ce1-08b40e6519cf/access -> 404
+A GET users/01a146f0-d271-7ceb-8ce1-08b40e6519cf/default-company -> 404
+A GET users/01a146f0-d271-7ceb-8ce1-08b40e6519cf/sign-ins -> 404
+A GET users/01a146f0-d271-7ceb-8ce1-08b40e6519cf/passkeys -> 404
+A PUT users/01a146f0-d271-7ceb-8ce1-08b40e6519cf language ar -> 400
+A companies search 'GSF-RAK' -> 200
+A GET company 018f6605-b084-7b69-ba7f-eb5ee8ba5e35 -> 404
+A GET company logo 018f6605-b084-7b69-ba7f-eb5ee8ba5e35 (file) -> 404
+A report companyProfile company=018f6605-b084-7b69-ba7f-eb5ee8ba5e35 ar -> 404
+A PUT workplace to B company -> 400
+A companies search 'GSF-SHJ' -> 200
+A GET company 018f6605-b081-761d-83e2-b159691cfd11 -> 404
+A GET company logo 018f6605-b081-761d-83e2-b159691cfd11 (file) -> 404
+A report companyProfile company=018f6605-b081-761d-83e2-b159691cfd11 ar -> 404
+A PUT workplace to B company -> 400
+A GET branch 018f6605-b085-703b-a185-82e8f08d47f1 -> 404
+A GET branch 018f6605-b083-7e2e-b7ca-d4492ca1d32d -> 404
+A GET branch 018f6605-b082-718c-8378-61c2b8a10915 -> 404
+A GET role 01a146f0-d1dd-733c-8b62-9b00fdef3e67 -> 404
+A copy role 01a146f0-d1dd-733c-8b62-9b00fdef3e67 -> 400
+A GET role 01a146f0-d3fb-7419-bcb6-be790465aecd -> 404
+A copy role 01a146f0-d3fb-7419-bcb6-be790465aecd -> 400
+A GET role 01a146f0-d1dd-78f7-9279-cf227e742955 -> 404
+A copy role 01a146f0-d1dd-78f7-9279-cf227e742955 -> 400
+A PUT preferences ar/arab with B's ids in body and tenant headers -> 200
+A PUT preferences ar/latn with B's ids in body and tenant headers -> 200
+A PUT preferences en/arab with B's ids in body and tenant headers -> 200
+A PUT preferences en/latn with B's ids in body and tenant headers -> 200
+A session with ?tenant=gulfsteel -> 200
+A users list with X-Tenant header -> 200
+A print users list csv ar search=gulfsteel -> 200
+A print users list xlsx ar search=gulfsteel -> 200
+A print users list pdf ar search=gulfsteel -> 200
+A report usersByRole ar -> 200
+A catalog -> 200
+non-marker: A's preference answers identical alone true, identical after B's 5 switches true
+B's language before en, after restore en; B users still viewer@gulfsteel.example,accountant@gulfsteel.example,admin.ar@gulfsteel.example,noaccess@gulfsteel.example,admin@gulfsteel.example
+B tenant id 0190a000-0000-7000-8000-000000000002; A tenant 0190a000-0000-7000-8000-000000000001; markers 26; requests judged 65; leaks 0

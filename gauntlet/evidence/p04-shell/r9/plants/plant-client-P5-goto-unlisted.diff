@@ -1,0 +1,15 @@
+diff --git a/web/src/modules/shell/goTo.tsx b/web/src/modules/shell/goTo.tsx
+index bd33d27..f4adb2f 100644
+--- a/web/src/modules/shell/goTo.tsx
++++ b/web/src/modules/shell/goTo.tsx
+@@ -24,7 +24,9 @@ export function goToTargets(menu: MenuItem[], keys: readonly GoToKey[]): GoToTar
+     const key = keys.find((k) => k.menu === item.key);
+     return key ? [{ code: key.code, path: item.path, labelKey: item.labelKey, menu: item.key }] : [];
+   });
+-  return [home, ...entries];
++  // PLANT P5: every module's go-to key is offered, listed in the user's navigation or not
++  const extra = keys.filter((k) => !entries.some((e) => e.menu === k.menu)).map((k): GoToTarget => ({ code: k.code, path: "/" + k.menu.replace(".", "/"), labelKey: k.menu.split(".")[0] + ".menu." + k.menu.split(".")[1], menu: k.menu }));
++  return [home, ...entries, ...extra];
+ }
+ 
+ /** The letter printed for a go-to key ("U" for KeyU). */

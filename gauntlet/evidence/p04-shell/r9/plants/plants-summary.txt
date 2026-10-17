@@ -1,0 +1,29 @@
+Critic p04-shell r9 - planted faults on the piece's own surface (scratch copies of a2c3400 only; diffs in this folder)
+
+L4+L6 server, tenant leak WITHOUT a marker (plant-server-B1-L4-L6.diff), PUT /api/identity/me/preferences:
+    a process-wide note of Arabic switches kept in a temp file shared by every tenant.
+    L4: the running count of every tenant's switches, sent back as a cookie value (Set-Cookie erp.tip=<n>).
+    L6: the time of the previous switch by anyone (any tenant), sent back in header X-Arabic-Previous-Switch.
+    -> MISSED: all 169 gate tests passed (every Erp.Gates.Tests test except Timing and the three planted-module
+       self-test processes), including G1NonInterference (9 m 57 s), G1HttpIsolation (31 m 8 s), G1ProcessState.
+       plants-B1-gates.log. Cause: NonInterference.NormalizeHeaders replaces every Set-Cookie value with <value>
+       and every time in any header with <time> before comparing, and the change probe compares the same
+       normalised answers.
+    Live on the planted build (plant-B1-live-demo.txt): tenant A's cookie goes 2 -> 8 while tenant B switches five
+       times, and A's header gives the exact time of B's last switch.
+L5  server, same count in a plain response header (plant-server-B2b-L5-only.diff)
+    -> CAUGHT by G1NonInterference (8 findings, both directions, English and Arabic sessions) plants-B2b-L5-gates.log.
+       Round 8's header gap stays fixed, also for state kept outside IConfiguration (a file).
+P3  server, permission: preferences endpoint declares identity.profile.update as metadata but enforces only sign-in
+    (plant-server-B2-L5-P3.diff) -> CAUGHT: the host refuses to start ("declares 'identity.profile.update' but no
+       authorization policy on it requires that permission"); every gate fixture fails. plants-B2-L5-P3-gates.log.
+P4  client, permission (G2 "screens hide what the user cannot do"): the palette ignores an action's further
+    permissions (`requires`, new in r9), so "Allow sign-in again" is offered to a user without identity.signIns.read
+    (plant-client-P4-requires-ignored.diff)
+    -> MISSED: web unit suite 470/470 passed (plant-client-P4.log); no e2e or .NET gate covers it.
+       Demonstration (plant-client-P4-demo.log): users.read+users.update -> real build offers only
+       identity.users.print; planted build also offers identity.users.unblock.
+P5  client, permission: go-to keys offered for screens the user's navigation does not list
+    (plant-client-P5-goto-unlisted.diff) -> CAUGHT by goTo.test.tsx (3 tests) plant-client-P5.log.
+C3  client, tenant leak: recent screens kept under one device-wide key that survives sign-out
+    (plant-client-C3-recent-device-wide.diff) -> CAUGHT by clientIsolation.test.tsx (2 tests, EN and AR) plant-client-C3.log.

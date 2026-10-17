@@ -1,0 +1,26 @@
+diff --git a/web/src/kernel/deviceState.ts b/web/src/kernel/deviceState.ts
+index ae53830..a8732cd 100644
+--- a/web/src/kernel/deviceState.ts
++++ b/web/src/kernel/deviceState.ts
+@@ -29,7 +29,7 @@
+  * soon as it opens (kernel/passkeys.ts); it names nobody. `erp.signInDomains`: salted hashes of
+  * the e-mail domains this device signed in with, so a whole address moves on to the password from
+  * the plain address too (kernel/signInAddress.ts); no e-mail and no readable domain. */
+-export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.passkeyOffer", "erp.signInDomains"];
++export const deviceKeys: readonly string[] = ["erp.recent", "erp.language", "erp.numerals", "erp.navOpen", "erp.passkeyOffer", "erp.signInDomains"];
+ 
+ /**
+  * The e-mail of the last sign-in on this device, so a returning person types only the password.
+diff --git a/web/src/modules/shell/AppShell.tsx b/web/src/modules/shell/AppShell.tsx
+index f504619..27e149b 100644
+--- a/web/src/modules/shell/AppShell.tsx
++++ b/web/src/modules/shell/AppShell.tsx
+@@ -31,7 +31,7 @@ export const shellChords = {
+ const navKey = "erp.navOpen";
+ /** How long a module action waits for its screen to offer the command it runs. */
+ const commandWaitMs = 5000;
+-const recentKey = (userId: string) => `erp.recent.${userId}`;
++const recentKey = (_userId: string) => `erp.recent`; // PLANT C3: one key for the device, kept across sign-outs
+ const maxRecent = 5;
+ 
+ /** Phone-width windows: the navigation pane lies over the screen instead of beside it. */

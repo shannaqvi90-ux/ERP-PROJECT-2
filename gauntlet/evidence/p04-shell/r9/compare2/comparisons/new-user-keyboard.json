@@ -1,0 +1,38 @@
+{
+  "task": "new-user-keyboard",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 3,
+      "odoo": 4,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 4,
+      "odoo": 10,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.168,
+      "odoo": 1.34,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 5.57,
+      "odoo": 5.9,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 5.648,
+      "odoo": 7.1,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "runs": {
+    "ours": "../../evidence-staging/p04-shell/r9/compare2/results/new-user-keyboard-20261016T230845-afea.json",
+    "odoo": "../../evidence-staging/p04-shell/r9/compare2/results/new-user-keyboard-20261016T230859-1b09.json"
+  }
+}

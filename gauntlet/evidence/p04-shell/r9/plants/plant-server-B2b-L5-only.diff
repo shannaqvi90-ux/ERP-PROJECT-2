@@ -1,0 +1,18 @@
+--- p04-shell-r9-plants/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs	2026-10-17 02:57:54.540786129 +0400
++++ p04-shell-r9-B2/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs	2026-10-17 03:49:44.199281696 +0400
+@@ -49,6 +49,15 @@
+         user.Language = request.Language ?? user.Language;
+         user.Numerals = request.Numerals ?? user.Numerals;
+         await db.SaveChangesAsync(cancellationToken);
++        if (request.Language == Languages.Arabic || request.Numerals == NumeralSystems.ArabicIndic)
++        {
++            // PLANT L5 (critic p04 r9): a process-wide count of Arabic switches kept in a temp file shared by
++            // every tenant, sent back in a response header. No marker of the other tenant's: a count.
++            var file = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-arabic-switches-b2.txt");
++            var seen = (System.IO.File.Exists(file) && int.TryParse(System.IO.File.ReadAllText(file), out var n) ? n : 0) + 1;
++            System.IO.File.WriteAllText(file, seen.ToString(System.Globalization.CultureInfo.InvariantCulture));
++            http.Response.Headers["X-Arabic-Switches"] = seen.ToString(System.Globalization.CultureInfo.InvariantCulture);
++        }
+         return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, user.DisplayNameAr));
+     }
+ }

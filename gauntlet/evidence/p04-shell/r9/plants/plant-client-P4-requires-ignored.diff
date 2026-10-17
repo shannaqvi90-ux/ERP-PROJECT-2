@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/shell/paletteActions.ts b/web/src/modules/shell/paletteActions.ts
+index 288bc8a..8eb75ff 100644
+--- a/web/src/modules/shell/paletteActions.ts
++++ b/web/src/modules/shell/paletteActions.ts
+@@ -54,7 +54,7 @@ export function commandEntries(commands: CommandDef[], t: Translate, language: L
+ export function offeredActions(actions: ModuleAction[], can: (permission: string) => boolean, routes: RouteDef[] = allRoutes): ModuleAction[] {
+   return actions.filter((action) => {
+     if (!action.permission || !can(action.permission)) return false;
+-    if (action.requires?.some((permission) => !can(permission))) return false;
++    // PLANT P4: further permissions ignored
+     const route = matchRoute(action.path, routes);
+     return Boolean(route) && (!route!.permission || can(route!.permission));
+   });

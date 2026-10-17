@@ -1,0 +1,64 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.21
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.65]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.85]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [532 ms]
+[xUnit.net 00:05:42.36]     Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [FAIL]
+[xUnit.net 00:05:42.36]       8 answers depend on the other tenant's activity:
+[xUnit.net 00:05:42.36]       tenant A: PUT /api/identity/me/preferences (language="ar") changes by #25 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #25 (after "rrer x-arabic-switches: ") +2 when tenant B made the same write in between
+[xUnit.net 00:05:42.36]       tenant B: PUT /api/identity/me/preferences (language="ar") changes by #28 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #28 (after "rrer x-arabic-switches: ") +2 when tenant A made the same write in between
+[xUnit.net 00:05:42.36]       tenant A: PUT /api/identity/me/preferences (numerals="arab") changes by #25 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #25 (after "rrer x-arabic-switches: ") +2 when tenant B made the same write in between
+[xUnit.net 00:05:42.36]       tenant B: PUT /api/identity/me/preferences (numerals="arab") changes by #28 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #28 (after "rrer x-arabic-switches: ") +2 when tenant A made the same write in between
+[xUnit.net 00:05:42.36]       tenant A: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #25 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #25 (after "rrer x-arabic-switches: ") +2 when tenant B made the same write in between
+[xUnit.net 00:05:42.36]       tenant B: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #28 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #28 (after "rrer x-arabic-switches: ") +2 when tenant A made the same write in between
+[xUnit.net 00:05:42.36]       tenant A in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #23 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #23 (after "rrer x-arabic-switches: ") +2 when tenant B in Arabic made the same write in between
+[xUnit.net 00:05:42.36]       tenant B in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #29 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #29 (after "rrer x-arabic-switches: ") +2 when tenant A in Arabic made the same write in between
+[xUnit.net 00:05:42.36]       Stack Trace:
+[xUnit.net 00:05:42.36]         /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(45,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
+[xUnit.net 00:05:42.36]         --- End of stack trace from previous location ---
+[xUnit.net 00:05:42.36]       Output:
+[xUnit.net 00:05:42.36]         5092 comparisons over 45 endpoints (318 with different answers per tenant), 442 write comparisons over 25 endpoints and 170 body variants, 22948 requests, 4 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 52 write comparisons (2 between the workspace-wide Arabic administrators); 44280 response header lines compared, 12 changing answers judged by how they change, 216 configuration keys watched
+[xUnit.net 00:05:42.36]         unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-c9f7-7d9e-a0d3-b496f287eb37","nameEn":"Activity alpha 96","nameAr":"\u0646\u0634\u0627\u0637 alpha 96","permissions":["identity.profile.upda… / 201 {"id":"01a14721-ca0e-790b-844f-f4ee8b4a47d6","nameEn":"Activity alpha 98","nameAr":"\u0646\u0634\u0627\u0637 alpha 98","permissions":["identity.profile.upda…)
+[xUnit.net 00:05:42.36]         unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-ca4b-7429-9210-a9ddee25f1d3","nameEn":"Activity CNRYF4CE2088DC 98","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 98","permissions":["ide… / 201 {"id":"01a14721-ca66-7dc8-ab57-2f6db7239f77","nameEn":"Activity CNRYF4CE2088DC 100","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 100","permissions":["i…)
+[xUnit.net 00:05:42.36]         unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-ca99-7486-9c6e-0d25629f1372","nameEn":"Activity alpha 106","nameAr":"\u0646\u0634\u0627\u0637 alpha 106","permissions":["identity.users.read… / 201 {"id":"01a14721-cab3-7e38-9227-414ed521b3a0","nameEn":"Activity alpha 108","nameAr":"\u0646\u0634\u0627\u0637 alpha 108","permissions":["identity.users.read…)
+[xUnit.net 00:05:42.36]         unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-caea-794b-a376-879184dc1d26","nameEn":"Activity CNRYF4CE2088DC 108","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 108","permissions":["i… / 201 {"id":"01a14721-caff-73fc-afc2-80dee5296080","nameEn":"Activity CNRYF4CE2088DC 110","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 110","permissions":["i…)
+[xUnit.net 00:05:42.54]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [5 m 28 s]
+  Error Message:
+   8 answers depend on the other tenant's activity:
+tenant A: PUT /api/identity/me/preferences (language="ar") changes by #25 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #25 (after "rrer x-arabic-switches: ") +2 when tenant B made the same write in between
+tenant B: PUT /api/identity/me/preferences (language="ar") changes by #28 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #28 (after "rrer x-arabic-switches: ") +2 when tenant A made the same write in between
+tenant A: PUT /api/identity/me/preferences (numerals="arab") changes by #25 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #25 (after "rrer x-arabic-switches: ") +2 when tenant B made the same write in between
+tenant B: PUT /api/identity/me/preferences (numerals="arab") changes by #28 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #28 (after "rrer x-arabic-switches: ") +2 when tenant A made the same write in between
+tenant A: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #25 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #25 (after "rrer x-arabic-switches: ") +2 when tenant B made the same write in between
+tenant B: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #28 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #28 (after "rrer x-arabic-switches: ") +2 when tenant A made the same write in between
+tenant A in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #23 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #23 (after "rrer x-arabic-switches: ") +2 when tenant B in Arabic made the same write in between
+tenant B in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #29 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #29 (after "rrer x-arabic-switches: ") +2 when tenant A in Arabic made the same write in between
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did() in /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 45
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5092 comparisons over 45 endpoints (318 with different answers per tenant), 442 write comparisons over 25 endpoints and 170 body variants, 22948 requests, 4 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 52 write comparisons (2 between the workspace-wide Arabic administrators); 44280 response header lines compared, 12 changing answers judged by how they change, 216 configuration keys watched
+ unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-c9f7-7d9e-a0d3-b496f287eb37","nameEn":"Activity alpha 96","nameAr":"\u0646\u0634\u0627\u0637 alpha 96","permissions":["identity.profile.upda… / 201 {"id":"01a14721-ca0e-790b-844f-f4ee8b4a47d6","nameEn":"Activity alpha 98","nameAr":"\u0646\u0634\u0627\u0637 alpha 98","permissions":["identity.profile.upda…)
+ unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-ca4b-7429-9210-a9ddee25f1d3","nameEn":"Activity CNRYF4CE2088DC 98","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 98","permissions":["ide… / 201 {"id":"01a14721-ca66-7dc8-ab57-2f6db7239f77","nameEn":"Activity CNRYF4CE2088DC 100","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 100","permissions":["i…)
+ unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-ca99-7486-9c6e-0d25629f1372","nameEn":"Activity alpha 106","nameAr":"\u0646\u0634\u0627\u0637 alpha 106","permissions":["identity.users.read… / 201 {"id":"01a14721-cab3-7e38-9227-414ed521b3a0","nameEn":"Activity alpha 108","nameAr":"\u0646\u0634\u0627\u0637 alpha 108","permissions":["identity.users.read…)
+ unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14721-caea-794b-a376-879184dc1d26","nameEn":"Activity CNRYF4CE2088DC 108","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 108","permissions":["i… / 201 {"id":"01a14721-caff-73fc-afc2-80dee5296080","nameEn":"Activity CNRYF4CE2088DC 110","nameAr":"\u0646\u0634\u0627\u0637 CNRYF4CE2088DC 110","permissions":["i…)
+
+
+
+Test Run Failed.
+Total tests: 2
+     Passed: 1
+     Failed: 1
+ Total time: 5.7174 Minutes
+WARNING: Overwriting results file: /out/B2.trx
+Results File: /out/B2.trx
+exit 1
