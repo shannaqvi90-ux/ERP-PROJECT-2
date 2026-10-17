@@ -735,11 +735,50 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     [Fact]
     public async Task Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing()
     {
+        var result = await ListViewChecksAsync(Env, "");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.Lists} lists, {result.Refusals} refusals checked on list endpoints, {result.AllowedWrites} own-view writes " +
+            $"({result.FieldVariants} with one more field of the view schemas), {result.VisibilityChecks} view listings judged");
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        Assert.True(result.Refusals >= Ratchet.Min("g2.listEndpointRefusals"), $"g2.listEndpointRefusals: {result.Refusals}; ratchet minimum {Ratchet.Min("g2.listEndpointRefusals")}");
+        Assert.True(result.AllowedWrites >= Ratchet.Min("g2.listOwnViewWrites"), $"g2.listOwnViewWrites: {result.AllowedWrites}; ratchet minimum {Ratchet.Min("g2.listOwnViewWrites")}");
+        Assert.True(result.VisibilityChecks >= Ratchet.Min("g2.listViewListingsJudged"), $"g2.listViewListingsJudged: {result.VisibilityChecks}; ratchet minimum {Ratchet.Min("g2.listViewListingsJudged")}");
+        Assert.True(result.FieldVariants >= Ratchet.Min("g2.listViewFieldVariants"), $"g2.listViewFieldVariants: {result.FieldVariants}; ratchet minimum {Ratchet.Min("g2.listViewFieldVariants")}");
+    }
+
+    /// <summary>
+    /// Self-test (critic p05 round 9, plant P8): a host over this environment's database where a
+    /// personal view saved with <c>isShared: true</c> becomes the workspace's shared view (and its
+    /// shared default when <c>isDefault</c> is true), although the personal route declares only the
+    /// list's read permission (<see cref="SharedViewBypassModule"/>). The field is in the view the API
+    /// answers, so the check sends it to the personal routes, and the reader's write must show as a
+    /// change to the workspace's views.
+    /// </summary>
+    [Fact]
+    public async Task The_list_view_check_catches_a_personal_route_that_shares_a_view()
+    {
+        await using var planted = Env.OverHost(SharedViewBypassModule.Settings(Env));
+        var result = await ListViewChecksAsync(planted, "-p8", l => l.Key == "identity.users");
+        Assert.Contains(result.Problems, p => p.StartsWith("identity.users: a reader's writes to its own personal views changed the administrator's or the workspace's views", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.Contains("[isShared", StringComparison.Ordinal));
+    }
+
+    /// <summary>What <see cref="ListViewChecksAsync"/> found and how much it sent.</summary>
+    internal sealed record ListViewResult(List<string> Problems, int Lists, int Refusals, int AllowedWrites, int VisibilityChecks, int FieldVariants);
+
+    /// <summary>The list endpoint checks of <see cref="Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing"/>
+    /// on <paramref name="Env"/>'s host (the lists <paramref name="only"/> keeps); <paramref name="tag"/>
+    /// keeps the roles and users it creates apart from another run's over the same database.</summary>
+    internal static async Task<ListViewResult> ListViewChecksAsync(ErpTestEnvironment Env, string tag, Func<Erp.Kernel.Lists.ListDefinition, bool>? only = null)
+    {
         var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        var Endpoints = EndpointInventory.From(Env.Factory.Services);
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        using var anonymous = Env.CreateClient();
+        var openApi = await OpenApiDocument.LoadAsync(anonymous);
 
         async Task<HttpClient> UserWith(string label, params string[] permissions)
         {
+            label += tag;
             var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Views {label}", nameAr = $"عروض {label}", permissions });
             Assert.Equal(HttpStatusCode.Created, role.StatusCode);
             var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
@@ -754,8 +793,11 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var refusals = 0;
         var allowedWrites = 0;
         var visibilityChecks = 0;
-        foreach (var list in catalog.Lists)
+        var fieldVariants = 0;
+        var lists = 0;
+        foreach (var list in catalog.Lists.Where(l => only?.Invoke(l) ?? true))
         {
+            lists++;
             using var reader = await UserWith($"reader-{list.Key.Replace('.', '-')}", list.Permission);
             var columns = list.Columns.Take(1).Select(c => c.Key).ToArray();
             // Both of the administrator's views are defaults (critic p05 round 7, plant P6: a reader's
@@ -872,10 +914,59 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                         own = await changed.Content.ReadFromJsonAsync<JsonElement>();
                     }
                 }
+                // Every field a view can carry, one at a time on top of the full body (critic p05
+                // round 9, plant P8: an isShared field honoured by POST /views made a reader's view the
+                // workspace's shared default): the properties of every view endpoint's request schema
+                // and of the view the API answers, each with every value of its type, sent to both
+                // personal routes. A personal route keeps the view the caller's own and personal.
+                var variantsSent = new List<string>();
+                foreach (var (field, value) in ViewFieldVariants(openApi, list, shared, personal))
+                {
+                    var label = $"[{field}={value?.ToJsonString() ?? "null"}]";
+                    var body = PersonalBody(list, columns, $"{who} {field} {Guid.NewGuid():N}", false, null);
+                    body[field] = value;
+                    using var created = await client.PostAsJsonAsync($"/api/lists/{list.Key}/views", body);
+                    fieldVariants++;
+                    variantsSent.Add("POST " + label);
+                    if ((int)created.StatusCode >= 500)
+                    {
+                        problems.Add($"POST /api/lists/{list.Key}/views {label} answered {(int)created.StatusCode} to {who}");
+                    }
+                    if (created.StatusCode != HttpStatusCode.Created)
+                    {
+                        continue;
+                    }
+                    var own = await created.Content.ReadFromJsonAsync<JsonElement>();
+                    if (own.GetProperty("isShared").GetBoolean() || !own.GetProperty("isMine").GetBoolean())
+                    {
+                        problems.Add($"POST /api/lists/{list.Key}/views {label} saved for {who} a view that is not its own personal view");
+                    }
+                    var change = PersonalBody(list, columns, own.GetProperty("name").GetString()!, false, own.GetProperty("version").GetUInt32());
+                    change[field] = field.Equals("version", StringComparison.OrdinalIgnoreCase) ? change[field] : value;
+                    using var changed = await client.PutAsJsonAsync($"/api/lists/{list.Key}/views/{own.GetProperty("id").GetString()}", change);
+                    fieldVariants++;
+                    variantsSent.Add("PUT " + label);
+                    if ((int)changed.StatusCode >= 500)
+                    {
+                        problems.Add($"PUT /api/lists/{list.Key}/views/{{id}} {label} answered {(int)changed.StatusCode} to {who}");
+                    }
+                    if (changed.IsSuccessStatusCode && await changed.Content.ReadFromJsonAsync<JsonElement>() is var saved &&
+                        (saved.GetProperty("isShared").GetBoolean() || !saved.GetProperty("isMine").GetBoolean()))
+                    {
+                        problems.Add($"PUT /api/lists/{list.Key}/views/{{id}} {label} left {who}'s view no longer its own personal view");
+                    }
+                }
                 var mine = await ViewsTextAsync(admin, list.Key);
                 if (mine != before)
                 {
-                    problems.Add($"{list.Key}: {who}'s writes to its own personal views changed the administrator's or the workspace's views:\nbefore {before}\nafter  {mine}");
+                    problems.Add($"{list.Key}: {who}'s writes to its own personal views changed the administrator's or the workspace's views:\nbefore {before}\nafter  {mine}" +
+                                 $"\n(field variants sent: {string.Join(" ", variantsSent)})");
+                }
+                var listedToCaller = await client.GetFromJsonAsync<JsonElement>($"/api/lists/{list.Key}/views");
+                foreach (var item in listedToCaller.GetProperty("items").EnumerateArray()
+                             .Where(v => v.GetProperty("isShared").GetBoolean() && !before.Contains(v.GetProperty("id").GetString()!, StringComparison.Ordinal)))
+                {
+                    problems.Add($"{list.Key}: after {who}'s writes to its own personal views, GET /views lists a shared view the workspace did not have ({item.GetProperty("name").GetString()})");
                 }
             }
 
@@ -937,11 +1028,66 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 }
             }
         }
-        TestContext.Current.TestOutputHelper?.WriteLine($"{catalog.Lists.Count()} lists, {refusals} refusals checked on list endpoints, {allowedWrites} own-view writes, {visibilityChecks} view listings judged");
-        Assert.True(problems.Count == 0, string.Join("\n", problems));
-        Assert.True(refusals >= Ratchet.Min("g2.listEndpointRefusals"), $"g2.listEndpointRefusals: {refusals}; ratchet minimum {Ratchet.Min("g2.listEndpointRefusals")}");
-        Assert.True(allowedWrites >= Ratchet.Min("g2.listOwnViewWrites"), $"g2.listOwnViewWrites: {allowedWrites}; ratchet minimum {Ratchet.Min("g2.listOwnViewWrites")}");
-        Assert.True(visibilityChecks >= Ratchet.Min("g2.listViewListingsJudged"), $"g2.listViewListingsJudged: {visibilityChecks}; ratchet minimum {Ratchet.Min("g2.listViewListingsJudged")}");
+        return new ListViewResult(problems, lists, refusals, allowedWrites, visibilityChecks, fieldVariants);
+    }
+
+    /// <summary>
+    /// Every field a saved view can carry, each with every value of its type: the properties of the
+    /// request schemas of the list's view endpoints (personal and shared) and of the view GET answers.
+    /// Booleans both ways; ids those of the workspace's shared view and the administrator's personal
+    /// view; text the shared view's own; column lists every column; the concurrency token is copied.
+    /// A property the check cannot give a value is a blind spot, reported by the caller as a field
+    /// sent as null.
+    /// </summary>
+    private static IEnumerable<(string Field, System.Text.Json.Nodes.JsonNode? Value)> ViewFieldVariants(OpenApiDocument openApi, Erp.Kernel.Lists.ListDefinition list,
+        JsonElement shared, JsonElement personal)
+    {
+        var properties = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        var prefix = $"/api/lists/{list.Key}";
+        foreach (var (method, pattern) in new[] { ("POST", "/views"), ("PUT", "/views/{id}"), ("POST", "/shared-views"), ("PUT", "/shared-views/{id}") })
+        {
+            if (openApi.RequestSchema(method, prefix + pattern) is { } schema && schema.TryGetProperty("properties", out var props))
+            {
+                foreach (var property in props.EnumerateObject())
+                {
+                    properties.TryAdd(property.Name, property.Value);
+                }
+            }
+        }
+        if (openApi.TryGetOperation("GET", prefix + "/views/{id}", out var get) && get.TryGetProperty("responses", out var responses) &&
+            responses.TryGetProperty("200", out var ok) && ok.TryGetProperty("content", out var content) &&
+            content.TryGetProperty("application/json", out var json) && json.TryGetProperty("schema", out var answered) &&
+            openApi.Resolve(answered).TryGetProperty("properties", out var answeredProps))
+        {
+            foreach (var property in answeredProps.EnumerateObject())
+            {
+                properties.TryAdd(property.Name, property.Value);
+            }
+        }
+        Assert.True(properties.ContainsKey("isShared"), $"{list.Key}: the view schemas name no isShared: the field variants are blind");
+        foreach (var (name, schema) in properties.OrderBy(p => p.Key, StringComparer.Ordinal))
+        {
+            if (FieldVariants.ConcurrencyTokens.Contains(name, StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+            var resolved = openApi.Resolve(schema);
+            var format = resolved.TryGetProperty("format", out var f) ? f.GetString() : null;
+            var values = (openApi.TypeOfSchema(resolved), format) switch
+            {
+                ("boolean", _) => new System.Text.Json.Nodes.JsonNode?[] { true, false },
+                ("string", "uuid") => [shared.GetProperty("id").GetString(), personal.GetProperty("id").GetString()],
+                ("string", "date-time") => [DateTimeOffset.UtcNow.AddDays(-1).ToString("O")],
+                ("array", _) => [new System.Text.Json.Nodes.JsonArray(list.Columns.Select(c => (System.Text.Json.Nodes.JsonNode?)c.Key).ToArray())],
+                ("integer", _) or ("number", _) => [1],
+                ("string", _) => [shared.TryGetProperty(name, out var own) && own.ValueKind == JsonValueKind.String ? own.GetString() : $"Field {name}"],
+                _ => [null],
+            };
+            foreach (var value in values)
+            {
+                yield return (name, value);
+            }
+        }
     }
 
     private static HttpRequestMessage ViewRequest(ApiEndpoint endpoint, JsonElement view, string[] columns, string? name = null)

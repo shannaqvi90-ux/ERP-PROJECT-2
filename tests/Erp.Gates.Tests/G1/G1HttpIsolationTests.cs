@@ -101,6 +101,10 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         Check(report.InputEnumerations.Count == 0, "Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):\n" +
                                                          string.Join("\n", report.InputEnumerations.Take(30)));
         Check(report.EnvironmentChanges.Count == 0, "Process-wide environment variables changed during the attack:\n" + string.Join("\n", report.EnvironmentChanges));
+        // No request reads figures that describe whole tables, every tenant's rows together
+        // (statistics, pg_class estimates, EXPLAIN): critic p05 round 9, plant L12.
+        var wholeTableReads = SqlTrace.WholeTableReadsFor(Env);
+        Check(wholeTableReads.Count == 0, "Requests read figures that describe whole tables (every tenant's rows):\n" + string.Join("\n", wholeTableReads.Take(20)));
         CheckAtLeast(report.TenantValuesJudged, "g1.tenantValuesJudged");
         CheckAtLeast(report.StatementsObserved, "g1.statementsObserved");
         CheckAtLeast(report.BindsJudged, "g1.tenantBindsJudged");

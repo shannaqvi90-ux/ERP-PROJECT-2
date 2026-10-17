@@ -1,0 +1,115 @@
+using Erp.Gates.Tests.Infrastructure;
+using Erp.Gates.Tests.SelfTests;
+using Erp.Kernel.Seeding;
+using Erp.Testing;
+
+namespace Erp.Gates.Tests.G1;
+
+/// <summary>
+/// The list gates' large-list profile: both tenants hold a demo volume of users (tenant B a little
+/// more, so every whole-list answer differs between them), so the lists over users (the users list
+/// and the access list) are judged where code for big lists runs. The planner statistics are fresh
+/// (ANALYZE), as on a database that has been running a while: an estimate taken from them is close to
+/// the whole table's row count, never to one tenant's.
+/// </summary>
+public sealed class G1VolumeFixture : IAsyncLifetime
+{
+    public const int VolumeA = SeedPlan.DemoVolume;
+    public const int VolumeB = SeedPlan.DemoVolume + SeedPlan.DemoVolume / 40;
+
+    public ErpTestEnvironment Env { get; private set; } = null!;
+
+    public async ValueTask InitializeAsync()
+    {
+        SqlTrace.EnsureStarted();
+        Env = await ErpTestEnvironment.StartAsync(SeedPlan.GateAtVolume(ErpTestEnvironment.NewCanary(), ErpTestEnvironment.Password, VolumeA, VolumeB));
+        await using var admin = await Env.OpenAdminAsync();
+        await DbCatalog.ExecuteAsync(admin, "ANALYZE");
+    }
+
+    public async ValueTask DisposeAsync() => await Env.DisposeAsync();
+}
+
+/// <summary>
+/// G1 for list answers at demo volume (critic p05 round 9, plant L12: past 10,000 rows the users
+/// list's total became pg_class.reltuples, every tenant's users, and all 56 G1 tests passed because
+/// every gate environment holds 25 users per tenant). See <see cref="ListVolume"/>. Also, no request
+/// may read figures that describe whole tables (statistics, pg_class estimates, EXPLAIN): the SQL
+/// trace sees every statement the requests send.
+/// </summary>
+public sealed class G1ListVolumeTests(G1VolumeFixture fixture) : IClassFixture<G1VolumeFixture>
+{
+    private ErpTestEnvironment Env => fixture.Env;
+
+    [Fact]
+    public async Task Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume()
+    {
+        using var a = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        using var b = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var result = await ListVolume.RunAsync(Env, a, b, G1VolumeFixture.VolumeA);
+        foreach (var line in result.Summary)
+        {
+            TestContext.Current.TestOutputHelper?.WriteLine(line);
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine(
+            $"{result.Queries} queries ({result.Discriminating} with different true answers), {result.Answers} answers judged, {result.RowsWalked} rows walked, " +
+            $"{result.ListsAtVolume} lists at volume, {result.DeepAnswers} deep answers, {result.UnrankedSearches} unranked and {result.RankedSearches} ranked searches, {result.CursorsFollowed} cursors followed");
+
+        var failures = new List<string>();
+        void CheckAtLeast(int value, string key)
+        {
+            if (value < Ratchet.Min(key))
+            {
+                failures.Add($"{key}: {value}; ratchet minimum {Ratchet.Min(key)}");
+            }
+        }
+        if (result.Wrong.Count > 0)
+        {
+            failures.Add($"{result.Wrong.Count} list answers at volume that are not the asking tenant's own:\n" + string.Join("\n", result.Wrong.Take(40)));
+        }
+        if (result.Blind.Count > 0)
+        {
+            failures.Add("The list check at volume may be blind:\n" + string.Join("\n", result.Blind));
+        }
+        var reads = SqlTrace.WholeTableReadsFor(Env);
+        if (reads.Count > 0)
+        {
+            failures.Add("Requests read figures that describe whole tables (every tenant's rows):\n" + string.Join("\n", reads.Take(20)));
+        }
+        CheckAtLeast(result.ListsAtVolume, "g1.listsAtVolume");
+        CheckAtLeast(result.Queries, "g1.listVolumeQueries");
+        CheckAtLeast(result.Answers, "g1.listVolumeAnswers");
+        CheckAtLeast(result.Discriminating, "g1.listVolumeDiscriminating");
+        CheckAtLeast(result.DeepAnswers, "g1.listVolumeDeepAnswers");
+        CheckAtLeast(result.UnrankedSearches, "g1.listVolumeUnrankedSearches");
+        CheckAtLeast(result.RankedSearches, "g1.listVolumeRankedSearches");
+        CheckAtLeast(result.CursorsFollowed, "g1.listVolumeCursors");
+        Assert.True(failures.Count == 0, string.Join("\n\n", failures));
+    }
+
+    /// <summary>
+    /// Self-test: on a host over the same database where the users list's total past 10,000 rows is
+    /// taken from whole-table figures or kept for the next tenant (<see cref="VolumePlantModule"/>:
+    /// L12's reltuples, a total memo for big filtered queries, an EXPLAIN estimate for searches), the
+    /// volume check reports each, and the trace reports the catalog reads and the EXPLAIN.
+    /// </summary>
+    [Fact]
+    public async Task The_volume_check_catches_totals_taken_from_whole_table_figures_or_kept_for_big_lists()
+    {
+        await using var planted = Env.OverHost(VolumePlantModule.Settings(Env));
+        using var a = await planted.SignInAsync(planted.Email(planted.TenantA, "admin"));
+        using var b = await planted.SignInAsync(planted.Email(planted.TenantB, "admin"));
+        var result = await ListVolume.RunAsync(planted, a, b, G1VolumeFixture.VolumeA, l => l.Key == "identity.users");
+        var wrong = string.Join("\n", result.Wrong.Take(60));
+        bool Found(Func<string, bool> uri) => result.Wrong.Any(w => w.Contains("answered total", StringComparison.Ordinal) && uri(w.Split(' ', 4)[3]));
+        // V1 (L12): a whole-list query's total is every tenant's users.
+        Assert.True(Found(u => !u.Contains("filter=", StringComparison.Ordinal) && !u.Contains("search=", StringComparison.Ordinal)), "V1 (reltuples) not caught:\n" + wrong);
+        // V2: a big filtered query's total is the first asker's.
+        Assert.True(Found(u => u.Contains("filter=", StringComparison.Ordinal)), "V2 (total memo) not caught:\n" + wrong);
+        // V3: a broad search's total is the planner's estimate.
+        Assert.True(Found(u => u.Contains("search=", StringComparison.Ordinal)), "V3 (EXPLAIN estimate) not caught:\n" + wrong);
+        var reads = SqlTrace.WholeTableReadsFor(planted);
+        Assert.Contains(reads, r => r.Contains("pg_class", StringComparison.Ordinal));
+        Assert.Contains(reads, r => r.Contains("EXPLAIN", StringComparison.Ordinal));
+    }
+}

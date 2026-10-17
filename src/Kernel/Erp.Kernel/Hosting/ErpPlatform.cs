@@ -417,7 +417,7 @@ public static class ErpPlatform
     public static SeedPlan PlanFor(string profile, IConfiguration configuration)
     {
         var password = configuration["Erp:Seed:DemoPassword"] ?? "Demo-Pass-2026";
-        var volume = configuration.GetValue("Erp:Seed:Volume", 100_000);
+        var volume = configuration.GetValue("Erp:Seed:Volume", SeedPlan.DemoVolume);
         return profile.ToLower(CultureInfo.InvariantCulture) switch
         {
             "demo" => SeedPlan.Demo(volume, password),

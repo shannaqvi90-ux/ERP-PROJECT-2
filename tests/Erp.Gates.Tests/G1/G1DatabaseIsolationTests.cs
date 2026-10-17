@@ -233,12 +233,14 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
     /// estimates, which every role can read (the catalog is needed by every client library). A
     /// list total, an "activity" counter or a grouping count taken from them would count every
     /// tenant (critic p00 round 8). Only the bootstrap that takes them from PUBLIC may name them.
+    /// Nor may it run EXPLAIN, whose row estimates come from the same whole-table statistics
+    /// (critic p05 round 9; the SQL trace of the list volume gate also refuses any EXPLAIN a request sends).
     /// </summary>
     [Fact]
     public void Product_code_never_reads_statistics_that_count_every_tenant()
     {
         var banned = new System.Text.RegularExpressions.Regex(
-            @"\bpg_stat|\bpg_statio|\bn_live_tup\b|\bn_dead_tup\b|\bn_tup_(ins|upd|del|hot_upd)\b|\breltuples\b|\brelpages\b|\brelallvisible\b|\bpg_(total_)?relation_size\b|\bpg_table_size\b|\bpg_indexes_size\b|\bpg_database_size\b|\bpg_tablespace_size\b|\bpg_class_size\b",
+            @"(?-i:\bEXPLAIN\b)|""\s*explain\s|\bpg_stat|\bpg_statio|\bn_live_tup\b|\bn_dead_tup\b|\bn_tup_(ins|upd|del|hot_upd)\b|\breltuples\b|\brelpages\b|\brelallvisible\b|\bpg_(total_)?relation_size\b|\bpg_table_size\b|\bpg_indexes_size\b|\bpg_database_size\b|\bpg_tablespace_size\b|\bpg_class_size\b",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         // The one place allowed to name them: the bootstrap SQL that takes them from PUBLIC.
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "src/Kernel/Erp.Kernel/Data/KernelSql.cs" };
@@ -264,6 +266,11 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         // Self-check: the pattern finds the round-8 plant.
         Assert.Matches(banned, "SELECT n_live_tup FROM pg_stat_user_tables WHERE relname = 'users'");
         Assert.Matches(banned, "SELECT reltuples::bigint FROM pg_class WHERE oid = 'identity.users'::regclass");
+        // And the planner's estimate (critic p05 round 9): EXPLAIN's row counts come from the whole
+        // table's statistics, which row-level security does not narrow.
+        Assert.Matches(banned, "\"EXPLAIN (FORMAT JSON) SELECT 1 FROM identity.users\"");
+        Assert.Matches(banned, "new NpgsqlCommand(\"explain select count(*) from identity.users\")");
+        Assert.DoesNotMatch(banned, "/// The reason is explained here, to explain the rule.");
     }
 
     [Fact]

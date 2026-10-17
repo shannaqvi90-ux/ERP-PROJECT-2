@@ -429,7 +429,7 @@ public static class ListAnswers
         return Uri.UnescapeDataString(end < 0 ? value : value[..end]);
     }
 
-    private static IEnumerable<string> JudgeGroups(ListDefinition list, string column, JsonElement groups, IReadOnlyList<JsonElement> rows, int total)
+    internal static IEnumerable<string> JudgeGroups(ListDefinition list, string column, JsonElement groups, IReadOnlyList<JsonElement> rows, int total)
     {
         var counted = groups.EnumerateArray().Sum(g => g.GetProperty("count").GetInt32());
         if (counted != total)
@@ -514,7 +514,7 @@ public static class ListAnswers
         _ => 0m,
     };
 
-    private static async Task<JsonElement?> GetAsync(HttpClient client, string uri)
+    internal static async Task<JsonElement?> GetAsync(HttpClient client, string uri)
     {
         using var response = await client.GetAsync(uri);
         if (!response.IsSuccessStatusCode)
@@ -525,7 +525,7 @@ public static class ListAnswers
     }
 
     /// <summary>One tenant's keyset walk: every row, and every page as answered.</summary>
-    private sealed record Walk(List<JsonElement> Rows, List<JsonElement> Pages)
+    internal sealed record Walk(List<JsonElement> Rows, List<JsonElement> Pages)
     {
         public string? Next { get; set; }
 
@@ -536,12 +536,13 @@ public static class ListAnswers
     /// with <paramref name="offset"/>, by skipping the rows already returned), in lock step: tenant
     /// <paramref name="a"/>'s page n, then tenant <paramref name="b"/>'s page n. Null for a walk
     /// that was refused or did not finish.</summary>
-    private static async Task<(Walk? A, Walk? B)> WalkTogetherAsync(HttpClient a, HttpClient b, string endpoint, string query, int take, bool offset = false)
+    internal static async Task<(Walk? A, Walk? B)> WalkTogetherAsync(HttpClient a, HttpClient b, string endpoint, string query, int take, bool offset = false,
+        int maxPages = MaxPages)
     {
         var walks = new[] { new Walk([], []), new Walk([], []) };
         var clients = new[] { a, b };
         var failed = new bool[2];
-        for (var page = 0; page < MaxPages && walks.Any(w => !w.Done); page++)
+        for (var page = 0; page < maxPages && walks.Any(w => !w.Done); page++)
         {
             for (var i = 0; i < 2; i++)
             {

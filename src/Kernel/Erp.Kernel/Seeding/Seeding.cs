@@ -36,6 +36,10 @@ public sealed record SeedTenant(
 
 public sealed record SeedPlan(SeedProfile Profile, IReadOnlyList<SeedTenant> Tenants, string DemoPassword)
 {
+    /// <summary>Rows in the demo's main list (the owner's bar: find one record among 100,000), unless
+    /// configured otherwise (<c>Erp:Seed:Volume</c>).</summary>
+    public const int DemoVolume = 100_000;
+
     /// <summary>The demo: one large trading company and one smaller second tenant.</summary>
     public static SeedPlan Demo(int volume, string password) => new(SeedProfile.Demo,
     [
@@ -53,10 +57,15 @@ public sealed record SeedPlan(SeedProfile Profile, IReadOnlyList<SeedTenant> Ten
     ], password);
 
     /// <summary>The isolation gate fixture: tenant A attacks, tenant B carries canaries.</summary>
-    public static SeedPlan Gate(string canary, string password) => new(SeedProfile.Gate,
+    public static SeedPlan Gate(string canary, string password) => GateAtVolume(canary, password, 25, 25);
+
+    /// <summary>The isolation gate fixture with <paramref name="volumeA"/> and <paramref name="volumeB"/>
+    /// rows in each tenant's main lists: the list gates' large-list profile, where code that only runs
+    /// for a big list (an estimated total, a deep page, a broad search left unranked) is judged too.</summary>
+    public static SeedPlan GateAtVolume(string canary, string password, int volumeA, int volumeB) => new(SeedProfile.Gate,
     [
-        new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-00000000000a"), "alpha", "Alpha Trading LLC", "ألفا للتجارة ذ.م.م", "alpha.example", null, 25),
-        new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-00000000000b"), $"bravo{canary.ToLowerInvariant()}", $"Bravo {canary} LLC", $"برافو {canary} ذ.م.م", $"bravo-{canary.ToLowerInvariant()}.example", canary, 25),
+        new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-00000000000a"), "alpha", "Alpha Trading LLC", "ألفا للتجارة ذ.م.م", "alpha.example", null, volumeA),
+        new SeedTenant(Guid.Parse("0190a000-0000-7000-8000-00000000000b"), $"bravo{canary.ToLowerInvariant()}", $"Bravo {canary} LLC", $"برافو {canary} ذ.م.م", $"bravo-{canary.ToLowerInvariant()}.example", canary, volumeB),
     ], password);
 }
 

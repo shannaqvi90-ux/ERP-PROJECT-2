@@ -88,6 +88,7 @@ public static class SqlTrace
     private static readonly ConcurrentQueue<(string Request, long Sequence, object? App)> ReadOnlys = new();
     private static readonly ConcurrentQueue<TracedSettingChange> Changes = new();
     private static readonly ConcurrentQueue<(string Where, string Statement, object? App)> Unobserved = new();
+    private static readonly ConcurrentQueue<(string Where, string Statement, object? App)> StatisticsReads = new();
     private static readonly ConcurrentDictionary<object, int> ObservedByApp = new(ReferenceEqualityComparer.Instance);
     private static readonly ConcurrentDictionary<(object App, string Request), string> Principals = new();
     private static int _requestStatements;
@@ -197,6 +198,32 @@ public static class SqlTrace
 
     public static bool ChangesSettings(string statement) => StatementCapture.ChangesSettings(statement);
 
+    private static readonly Regex WholeTableFigures = new(
+        @"\bpg_stat|\bpg_class\b|\breltuples\b|\brelpages\b|\brelallvisible\b|\bn_live_tup\b|\bn_dead_tup\b|\bpg_(total_)?relation_size\b|\bpg_table_size\b|(^|;)\s*explain\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    /// <summary>
+    /// A statement that reads figures describing a whole table, every tenant's rows together: the
+    /// statistics views and functions, pg_class's row and page estimates, the size functions, or
+    /// the planner's row estimates (<c>EXPLAIN</c>, which row-level security does not narrow: the
+    /// estimate comes from the whole table's statistics). A list total, a group count or a page
+    /// count taken from any of them counts every tenant (critic p05 round 9, plant L12). Checked on
+    /// the text of every statement sent inside a request; the substring tests come first so the
+    /// expression runs on almost none of them.
+    /// </summary>
+    public static bool ReadsWholeTableFigures(string statement) =>
+        (statement.Contains("pg_", StringComparison.OrdinalIgnoreCase) || statement.Contains("rel", StringComparison.OrdinalIgnoreCase) ||
+         statement.Contains("_tup", StringComparison.OrdinalIgnoreCase) || statement.Contains("explain", StringComparison.OrdinalIgnoreCase)) &&
+        WholeTableFigures.IsMatch(statement);
+
+    /// <summary>Statements sent inside <paramref name="env"/>'s requests that read whole-table
+    /// figures (<see cref="ReadsWholeTableFigures"/>), with the request that sent them.</summary>
+    public static IReadOnlyList<string> WholeTableReadsFor(ErpTestEnvironment env)
+    {
+        var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
+        return StatisticsReads.Where(s => ReferenceEquals(s.App, app)).Select(s => $"{s.Where}: {s.Statement}").Distinct().ToList();
+    }
+
     private static void Capture(Activity activity)
     {
         var http = Accessor.HttpContext;
@@ -296,6 +323,10 @@ public static class SqlTrace
             else
             {
                 Unobserved.Enqueue(($"{inRequest.Method} {inRequest.Path}", text.Length <= 160 ? text : text[..160] + "…", inRequest.App));
+            }
+            if (ReadsWholeTableFigures(text))
+            {
+                StatisticsReads.Enqueue(($"{inRequest.Method} {inRequest.Path}", text.Length <= 240 ? text : text[..240] + "…", inRequest.App));
             }
         }
         // No lower-case copy of every statement (millions over an attack): the names are ASCII.
