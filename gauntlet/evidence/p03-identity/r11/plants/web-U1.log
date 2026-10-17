@@ -1,0 +1,60 @@
+[31m+ false[39m
+
+[36m [2m❯[22m ratchetMinimum src/modules/shell/paletteActions.test.tsx:[2m205:52[22m[39m
+    [90m203| [39m[35mfunction[39m [34mratchetMinimum[39m(key[33m:[39m string)[33m:[39m number {
+    [90m204| [39m  const file = process.env.ERP_RATCHET ?? resolve(import.meta.dirname,…
+    [90m205| [39m  [34mexpect[39m([34mexistsSync[39m(file)[33m,[39m [32m`ratchet file [39m[36m${[39mfile[36m}[39m[32m`[39m)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   | [39m                                                   [31m^[39m
+    [90m206| [39m  const value = (JSON.parse(readFileSync(file, "utf8")) as { minimums:…
+    [90m207| [39m  [34mexpect[39m(value[33m,[39m [32m`ratchet minimum [39m[36m${[39mkey[36m}[39m[32m`[39m)[33m.[39m[34mtoBeTypeOf[39m([32m"number"[39m)[33m;[39m
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m214:51[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22man action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need
+[31m[1mAssertionError[22m: ratchet file /work/gauntlet/ratchet.json: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m ratchetMinimum src/modules/shell/paletteActions.test.tsx:[2m205:52[22m[39m
+    [90m203| [39m[35mfunction[39m [34mratchetMinimum[39m(key[33m:[39m string)[33m:[39m number {
+    [90m204| [39m  const file = process.env.ERP_RATCHET ?? resolve(import.meta.dirname,…
+    [90m205| [39m  [34mexpect[39m([34mexistsSync[39m(file)[33m,[39m [32m`ratchet file [39m[36m${[39mfile[36m}[39m[32m`[39m)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   | [39m                                                   [31m^[39m
+    [90m206| [39m  const value = (JSON.parse(readFileSync(file, "utf8")) as { minimums:…
+    [90m207| [39m  [34mexpect[39m(value[33m,[39m [32m`ratchet minimum [39m[36m${[39mkey[36m}[39m[32m`[39m)[33m.[39m[34mtoBeTypeOf[39m([32m"number"[39m)[33m;[39m
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m326:41[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mevery palette entry, run by a user who may only read[2m > [22msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[31m[1mAssertionError[22m: expected [ Array(1) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "/identity/roles?open=r-clerk: \"Delete role\" (On this screen) sent DELETE /api/identity/roles/r-clerk",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m659:22[22m[39m
+    [90m657| [39m      }
+    [90m658| [39m    }
+    [90m659| [39m    [34mexpect[39m(problems)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                     [31m^[39m
+    [90m660| [39m    console[33m.[39m[34mlog[39m([32m`palette entries swept for a reader: [39m[36m${[39mswept[36m}[39m[32m`[39m)[33m;[39m
+    [90m661| [39m    expect(swept).toBeGreaterThanOrEqual(ratchetMinimum("g2.paletteEnt…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m35 passed[39m[22m[90m (38)[39m
+[2m      Tests [22m [1m[31m13 failed[39m[22m[2m | [22m[1m[32m482 passed[39m[22m[90m (495)[39m
+[2m   Start at [22m 15:56:27
+[2m   Duration [22m 79.58s[2m (transform 33.12s, setup 2.93s, import 60.49s, tests 308.58s, environment 36.81s)[22m
+

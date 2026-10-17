@@ -1,0 +1,9 @@
+signed-in user reads users: 200
+admin removes identity.users.read from the role: 200
+same session reads users right after: 403
+same session /api/auth/session permissions: ["identity.profile.update","identity.roles.read"]
+admin removes the role from the user: 200
+same session reads roles right after: 403
+admin deactivates the user: 200
+same session after deactivation, GET session authenticated: false; PUT own preferences: 401
+sign-in with password after deactivation: 401

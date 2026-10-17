@@ -1,0 +1,80 @@
+     [33m[2m✓[22m[39m names a copy in English and in Arabic, each in its own language, on an English screen [33m 386[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.update there is no "Save", and the other role actions remain [33m 303[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants tenancy.tenant.read is read-only to a user holding every identity permission [33m 386[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting tenancy.tenant.read is read-only to a user holding every identity permission [33m 426[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants tenancy.tenant.update is read-only to a user holding every identity permission [33m 467[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting tenancy.tenant.update is read-only to a user holding every identity permission [33m 344[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants tenancy.access.update is read-only to a user holding every identity permission [33m 309[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting tenancy.access.update is read-only to a user holding every identity permission [33m 398[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants ledger.entries.post is read-only to a user holding every identity permission [33m 340[2mms[22m[39m
+     [33m[2m✓[22m[39m Sign out everywhere can keep the passkeys when the box is cleared, and asks nothing when there are none [33m 317[2mms[22m[39m
+     [33m[2m✓[22m[39m the sign-in history says which sign-ins used a passkey, in English and Arabic [33m 348[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2man action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need
+[22m[39mrecord actions run without one permission of their module: 26
+
+ [32m✓[39m src/modules/identity/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 41159[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 17003[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles?open=r-clerk: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 7763[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 6377[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 5503[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: every row chosen shows the selection bar, and an editor's sweep finds the bulk deactivation [33m 4511[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 41603[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 13972[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 6419[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3488[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 1055[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4857[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4354[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 4797[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 2659[2mms[22m[39m
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 43147[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 22670[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 18994[2mms[22m[39m
+     [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 385[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 469[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 355[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mevery palette entry, run by a user who may only read[2m > [22m[2msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[22m[39mpalette entries swept for a reader: 42
+
+ [32m✓[39m src/modules/shell/paletteActions.test.tsx [2m([22m[2m39 tests[22m[2m)[22m[33m 72260[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen [33m 1482[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 1667[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen [33m 1335[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 1899[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen [33m 1561[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen [33m 1552[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen [33m 1461[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen [33m 1106[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen [33m 934[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen [33m 984[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen [33m 895[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: started from home, it opens /identity/users and runs the screen's own command there [33m 609[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: started from home, it opens /identity/roles and runs the screen's own command there [33m 618[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: started from home, it opens /identity/users and runs the screen's own command there [33m 424[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: started from home, it opens /identity/roles and runs the screen's own command there [33m 385[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: started from home, it opens /tenancy/companies and runs the screen's own command there [33m 513[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: started from home, it opens /tenancy/branches and runs the screen's own command there [33m 549[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: started from home, it opens /tenancy/companies and runs the screen's own command there [33m 360[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: started from home, it opens /tenancy/branches and runs the screen's own command there [33m 344[2mms[22m[39m
+     [33m[2m✓[22m[39m every action that asks for a record says what to choose, in English and Arabic, and runs no command before [33m 1165[2mms[22m[39m
+     [33m[2m✓[22m[39m an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need [33m 12577[2mms[22m[39m
+     [33m[2m✓[22m[39m Copy a role from home: the roles list asks for the role, and the role chosen opens its copy [33m 355[2mms[22m[39m
+     [33m[2m✓[22m[39m Show the sign-in history from home, in Arabic: the user chosen opens on the history tab [33m 398[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow a user to sign in again from home: the history opens and the user chosen is allowed again [33m 386[2mms[22m[39m
+     [33m[2m✓[22m[39m New user from home keeps its new record open when the list arrives after the command ran [33m 700[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may add a branch but to no company (only some branches of it) is not offered New branch [33m 476[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9) [33m 730[2mms[22m[39m
+     [33m[2m✓[22m[39m is found by its words in either language, on an Arabic screen too [33m 680[2mms[22m[39m
+     [33m[2m✓[22m[39m come first, once each: on the users screen New user, the list's own controls and Print or export [33m 647[2mms[22m[39m
+     [33m[2m✓[22m[39m follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again [33m 1146[2mms[22m[39m
+     [33m[2m✓[22m[39m the palette offers a user's account actions exactly when the record shows their buttons [33m 1319[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user's account actions from every tab, exactly as on Details, and to a reader none [33m 1622[2mms[22m[39m
+     [33m[2m✓[22m[39m Reset password from "What they can do" opens Details with the reset's first choice focused; Delete user from the history asks first [33m 949[2mms[22m[39m
+     [33m[2m✓[22m[39m sends nothing but reads (and the user's own settings), and opens no new record, on every screen [33m 15146[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change everything finds the writes the entries make [33m 14925[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m38 passed[39m[22m[90m (38)[39m
+[2m      Tests [22m [1m[32m495 passed[39m[22m[90m (495)[39m
+[2m   Start at [22m 15:59:34
+[2m   Duration [22m 77.62s[2m (transform 29.56s, setup 2.13s, import 55.02s, tests 309.39s, environment 38.72s)[22m
+

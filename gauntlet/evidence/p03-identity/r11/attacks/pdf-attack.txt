@@ -1,0 +1,7 @@
+control (B exports its own canary): contains canary = True
+control (A full users pdf has alnoor): True
+not pdf 400 /api/reports/run/tenancy.companyProfile?format=pdf&role=01a14a5d-2875-7177-ad17-8674d2851c87
+not pdf 404 /api/reports/run/tenancy.companyProfile?format=pdf&company=018f6605-b084-7bca-b02c-c1dae541ea1e&companyId=018f6605-b084-7bca-b02c-c1dae541ea1e
+not pdf 404 /api/reports/run/tenancy.companyProfile?format=pdf&company=018f6605-b081-7eaf-9dfd-52202b38a7bb&companyId=018f6605-b081-7eaf-9dfd-52202b38a7bb
+not pdf 400 /api/reports/run/tenancy.companyProfile?format=pdf
+pdfs checked 36 leaks 0

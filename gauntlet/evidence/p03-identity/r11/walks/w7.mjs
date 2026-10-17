@@ -1,0 +1,15 @@
+import { open, signIn, focused, EV, BASE } from './h.mjs';
+import fs from 'node:fs';
+const log = []; const L = (s) => { log.push(s); console.log(s); };
+const email = 'clerk.mvcj2p07@alnoor.example';
+const { browser, page, errors } = await open({ width: 1600 });
+await signIn(page, 'admin@alnoor.example');
+await page.goto(BASE + '/identity/users'); await page.waitForTimeout(2000);
+await page.keyboard.type('clerk.mvcj2p07'); await page.waitForTimeout(2000);
+await page.locator('main [role=row]').filter({ hasText: email }).first().click(); await page.waitForTimeout(1500);
+const details = await page.locator('aside [role=tabpanel]').innerText();
+L('details text: ' + details.slice(0, 1500).replace(/\n/g, ' | '));
+L('selects: ' + JSON.stringify(await page.locator('aside select').evaluateAll((s) => s.map((x) => ({ name: x.name, label: x.getAttribute('aria-label'), options: [...x.options].map((o) => o.text) })))));
+await page.screenshot({ path: '/tmp/c-p03-r11-w7.png', fullPage: false });
+fs.writeFileSync(`${EV}/walks/w7-explore.txt`, log.join('\n'));
+await browser.close();

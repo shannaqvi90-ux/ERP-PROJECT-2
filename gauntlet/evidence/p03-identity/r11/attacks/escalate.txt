@@ -1,0 +1,25 @@
+admin grants helpdesk access to ALN-DXB: 200
+403  assign myself the Administrator role {"type":"urn:erp:problem:identity.cannotChangeOwnAccess","title":"You cannot change your o
+403  give myself Administrator in one company {"type":"urn:erp:problem:identity.cannotChangeOwnAccess","title":"You cannot change your o
+403  add identity.users.resetPassword to my own role {"type":"urn:erp:problem:identity.grantBeyondOwn","title":"You cannot grant or remove perm
+403  add tenancy.tenant.update to my own role {"type":"urn:erp:problem:identity.grantBeyondOwn","title":"You cannot grant or remove perm
+403  create a role granting a permission I lack {"type":"urn:erp:problem:identity.grantBeyondOwn","title":"You cannot grant or remove perm
+403  copy the Administrator role {"type":"urn:erp:problem:identity.roleBeyondOwn","title":"This role grants permissions you
+403  give another user the Administrator role {"type":"urn:erp:problem:identity.grantBeyondOwn","title":"You cannot grant or remove perm
+403  give another user Administrator in our shared company {"type":"urn:erp:problem:identity.grantBeyondOwn","title":"You cannot grant or remove perm
+403  create a user with the Administrator role {"type":"urn:erp:problem:identity.grantBeyondOwn","title":"You cannot grant or remove perm
+403  change the Administrator's e-mail to mine {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also wor
+403  deactivate the Administrator {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also wor
+403  reset the Administrator's password {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.",
+403  sign the Administrator out everywhere {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also wor
+403  sign the Administrator out everywhere ?removePasskeys=true {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also wor
+403  change the Administrator's default company {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also wor
+200  deactivate all matching "admin" <-- ALLOWED {"matched":1,"changed":0,"unchanged":0,"refusedSelf":0,"refusedBeyondOwn":1}
+403  delete the Administrator role {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.",
+403  change the Administrator role {"type":"urn:erp:problem:identity.systemRole","title":"System roles are maintained by the 
+403  unblock the Administrator {"type":"urn:erp:problem:identity.userWorksBeyondOwnCompanies","title":"This user also wor
+403  delete the Administrator {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.",
+403  delete the victim (no identity.users.delete) {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.",
+admin still signs in: 200
+admin role permissions count after: 25
+bulk deactivate with expectedCount, full answer: {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (100,008 then, 100,018 now). Nothing was changed: look 

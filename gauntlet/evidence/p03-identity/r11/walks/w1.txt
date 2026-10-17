@@ -1,0 +1,8 @@
+after sign in url http://localhost:20350/
+users url http://localhost:20350/identity/users
+body text head: Home | Settings | Users | Users | Every word must match | 100,005 users | View: Standard | Columns | Print or export | New user | Name | ▾ | E-mail | ▾ | Language | ▾ | Status | ▾ | Last sign-in | ▾ | Roles | Fatima Al Zaabi | admin.ar@alnoor.example | Arabic | Active | Never | Administrator | Hessa Al Suwaidi | accountant@alnoor.example | English | Active | Never | Staff, Company manager (ALN-DXB), Read-only (ALN-FZE) | Omar Haddad | viewer@alnoor.example | English | Active | Never | Read-only | Layla Nasser | noaccess@alnoor.example | English | Active | Never | Mariam Al Mansoori | admin@alnoor.example | English | Active | 17 Oct 2026, 7:04 PM | Administrator | Rahul Reyes | rahul.reyes.1000
+after Alt+N focus: input[name=email] ""
+after Alt+O focus: input[aria-label=Find a role] ""
+checked roles: ["Read-only\n9 permissions"]
+after save aside: Clerk Mvcj2p07 | clerk.mvcj2p07@alnoor.example | Active | Invited | Last sign-in: Never | ‹ | 1 of 100,006 | › | Save | Close |  | Give this set-up code to the user. It is shown only now. |  | QKCG-HEBX-RMA6 |  | Works once, until 24 Oct 2026, 7:04 PM. |  | Copy sign-in details | Details | What they can do | Sign-in history | E-mail | Name | Name in Arabic | Language | English | Arabic | Active (can sign in) | Roles | Alt+O comes here from any field; Enter ticks the first role shown. | Administrator | 25 permissions | Company manager | 9 permissions | Read-only | 9 permissions | Staff | 3 permissions | x | 1 permission | 1 role chosen of 5 | Roles in one company |  | A role here counts only while the person works in that company. |  | No roles in one company. |  | Company | ALN-AUH · A
+errors: []

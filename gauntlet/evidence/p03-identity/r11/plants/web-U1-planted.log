@@ -1,0 +1,80 @@
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mroles screen, per company and from the keyboard[2m > [22ma role whose grants the user holds only through a role in the working company is shown read-only (critic p03 round 7)
+[31m[1mAssertionError[22m: expected [ '‹', '›', 'Delete role', 'Close' ] to not include 'Delete role'[39m
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m604:25[22m[39m
+    [90m602| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Save"[39m)[33m;[39m
+    [90m603| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Copy role"[39m)[33m;[39m
+    [90m604| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Delete role"[39m)[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m605| [39m    expect(view.container.querySelector<HTMLInputElement>('aside input…
+    [90m606| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: without identity.roles.delete there is no "Delete role", and the other role actions remain
+[31m[1mAssertionError[22m: expected [ '‹', '›', 'Copy role', …(17) ] to not include 'Delete role'[39m
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m659:27[22m[39m
+    [90m657| [39m    it(`roles: without ${permission} there is no "${button}", and the …
+    [90m658| [39m      const buttons = await openRole(all.filter((x) => x !== permissio…
+    [90m659| [39m      [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m(button)[33m;[39m
+    [90m   | [39m                          [31m^[39m
+    [90m660| [39m      for (const [other, otherButton] of roleCases) if (other !== perm…
+    [90m661| [39m      view[33m?.[39m[34munmount[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting a permission the user lacks is shown read-only, with no copy or delete
+[31m[1mAssertionError[22m: expected [ '‹', '›', 'Delete role', 'Close' ] to not include 'Delete role'[39m
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m672:25[22m[39m
+    [90m670| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Save"[39m)[33m;[39m
+    [90m671| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Copy role"[39m)[33m;[39m
+    [90m672| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Delete role"[39m)[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m673| [39m    expect(view!.container.textContent).toContain("only someone who ho…
+    [90m674| [39m    expect(view!.container.querySelector<HTMLInputElement>('aside inpu…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting tenancy.tenant.read is read-only to a user holding every identity permission
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting tenancy.tenant.update is read-only to a user holding every identity permission
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting tenancy.access.update is read-only to a user holding every identity permission
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting lists.views.share is read-only to a user holding every identity permission
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting ledger.entries.post is read-only to a user holding every identity permission
+[31m[1mAssertionError[22m: expected [ '‹', '›', 'Delete role', 'Close' ] to not include 'Delete role'[39m
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m779:88[22m[39m
+    [90m777| [39m      for (const grants of [[permission], ["identity.users.read", perm…
+    [90m778| [39m        const buttons = await openRole(all, { ...clerk, id: "r-elsewhe…
+    [90m779| [39m        for (const hidden of ["Save", "Copy role", "Delete role"]) exp…
+    [90m   | [39m                                                                                       [31m^[39m
+    [90m780| [39m        expect(view!.container.textContent).toContain("only someone wh…
+    [90m781| [39m        view[33m?.[39m[34munmount[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mevery palette entry, run by a user who may only read[2m > [22msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[31m[1mAssertionError[22m: expected [ Array(1) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "/identity/roles?open=r-clerk: \"Delete role\" (On this screen) sent DELETE /api/identity/roles/r-clerk",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m659:22[22m[39m
+    [90m657| [39m      }
+    [90m658| [39m    }
+    [90m659| [39m    [34mexpect[39m(problems)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                     [31m^[39m
+    [90m660| [39m    console[33m.[39m[34mlog[39m([32m`palette entries swept for a reader: [39m[36m${[39mswept[36m}[39m[32m`[39m)[33m;[39m
+    [90m661| [39m    expect(swept).toBeGreaterThanOrEqual(ratchetMinimum("g2.paletteEnt…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m35 passed[39m[22m[90m (38)[39m
+[2m      Tests [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m484 passed[39m[22m[90m (495)[39m
+[2m   Start at [22m 15:58:08
+[2m   Duration [22m 77.65s[2m (transform 27.33s, setup 2.63s, import 51.89s, tests 305.41s, environment 36.13s)[22m
+

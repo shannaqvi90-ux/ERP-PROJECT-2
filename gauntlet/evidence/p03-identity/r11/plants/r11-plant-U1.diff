@@ -1,0 +1,22 @@
+diff --git a/web/src/modules/identity/RolesPage.tsx b/web/src/modules/identity/RolesPage.tsx
+index 1b1565a3..80ccef1c 100644
+--- a/web/src/modules/identity/RolesPage.tsx
++++ b/web/src/modules/identity/RolesPage.tsx
+@@ -234,7 +234,7 @@ function RoleEditor({
+     id: "identity.roles.delete",
+     labelKey: "identity.roles.delete",
+     groupKey: "identity.shortcuts.group",
+-    enabled: Boolean(role && actions.delete && !confirmDelete),
++    enabled: Boolean(role && !confirmDelete),
+     run: () => setConfirmDelete(true),
+   });
+ 
+@@ -269,7 +269,7 @@ function RoleEditor({
+                 {t("identity.roles.copy")}
+               </button>
+             )}
+-            {role && actions.delete && !confirmDelete && (
++            {role && !confirmDelete && (
+               <button type="button" className="button danger" ref={deleteRef} onClick={() => setConfirmDelete(true)}>
+                 {t("identity.roles.delete")}
+               </button>
