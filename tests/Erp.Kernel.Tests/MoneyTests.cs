@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Money;
+using Microsoft.EntityFrameworkCore;
 
 namespace Erp.Kernel.Tests;
 
@@ -110,5 +111,187 @@ public sealed class MoneyTests
         var back = JsonSerializer.Deserialize<decimal>("\"0.1\"", options);
         Assert.Equal(0.1m, back);
         Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<decimal>("\"1e3\"", options));
+    }
+
+    // docs/compliance/vat-rounding-and-currency.md, rule 2 (owner-signed 2026-10-10): rounding
+    // happens once, on the figure that is stated; lines and tax-category subtotals keep their full
+    // precision; the invoice total is rounded to 2 decimals and any difference may be stated as
+    // the e-invoice "Rounding Amount".
+
+    /// <summary>The critic's case (p00 rounds 9 and 10): three lines of USD 1.00 at 3.6725. The
+    /// exact base total is AED 11.0175, stated once as 11.02; adding the lines' rounded base
+    /// amounts (3.67 + 3.67 + 3.67) would give 11.01.</summary>
+    [Fact]
+    public void Lines_add_at_full_precision_and_the_total_rounds_once()
+    {
+        var line = Money.Money.Create(1.00m, Usd, 3.6725m, CurrencyCode.Aed);
+        Assert.Equal(3.67m, line.BaseAmount); // the line on its own, for display
+        var total = line.Add(line).Add(line);
+        Assert.Equal(3.00m, total.Amount);
+        Assert.Equal(11.0175m, total.ExactBaseAmount());
+        Assert.Equal(11.02m, total.BaseAmount);
+        Assert.NotEqual(line.BaseAmount * 3, total.BaseAmount);
+        var stated = total.State();
+        Assert.True(stated.IsStated);
+        Assert.Equal(3.00m, stated.Amount);
+        Assert.Equal(11.02m, stated.BaseAmount);
+        Assert.Equal(0.0025m, total.BaseRoundingAmount());
+        Assert.Equal(0m, stated.BaseRoundingAmount());
+    }
+
+    /// <summary>A line keeps every decimal of quantity × unit price, in its own currency too:
+    /// 3 × USD 0.3333 is 0.9999, and only the stated total becomes 1.00, with a rounding amount of
+    /// 0.0001 for the e-invoice.</summary>
+    [Fact]
+    public void A_line_keeps_more_decimals_than_its_currency_until_the_total_is_stated()
+    {
+        var line = Money.Money.Unrounded(0.3333m, Usd, 3.6725m, CurrencyCode.Aed);
+        Assert.False(line.IsStated);
+        Assert.Equal(0.3333m, line.Amount);
+        Assert.Equal(1.22404425m, line.ExactBaseAmount());
+        var total = line.Add(line).Add(line);
+        Assert.Equal(0.9999m, total.Amount);
+        Assert.Equal(3.67213275m, total.ExactBaseAmount());
+        Assert.Equal(0.0001m, total.RoundingAmount());
+        var stated = total.State();
+        Assert.Equal(1.00m, stated.Amount);
+        Assert.Equal(3.67m, stated.BaseAmount); // round(3.67213275)
+        Assert.Equal(-0.00213275m, total.BaseRoundingAmount());
+        Assert.Equal(0m, stated.RoundingAmount());
+        // Rounding the lines first would state 3 × 0.33 = 0.99.
+        Assert.NotEqual(Money.Money.RoundToMinorUnits(line.Amount, Usd) * 3, stated.Amount);
+    }
+
+    /// <summary>The stated base amount comes from the exact figure, not from the stated amount
+    /// in the document currency: rounding the dollar total first and converting it would round
+    /// twice.</summary>
+    [Fact]
+    public void The_stated_base_amount_rounds_the_exact_base_not_the_rounded_amount()
+    {
+        // 1.0049 USD at 10: exact base 10.049 -> 10.05; the dollar total states 1.00, and 1.00 × 10
+        // would give 10.00.
+        var total = Money.Money.Unrounded(1.0049m, Usd, 10m, CurrencyCode.Aed).State();
+        Assert.Equal(1.00m, total.Amount);
+        Assert.Equal(10.05m, total.BaseAmount);
+    }
+
+    /// <summary>Subtotals (a tax category, a group of lines) keep full precision as well; the
+    /// total of subtotals equals the total of all the lines, in any order.</summary>
+    [Fact]
+    public void Subtotals_keep_full_precision_and_any_grouping_gives_the_same_total()
+    {
+        var amounts = new[] { 0.0001m, 1.0049m, 2.3333333333m, 7.15m, 0.005m, 12.3456789m, 0.0049m };
+        var lines = amounts.Select(a => Money.Money.Unrounded(a, Usd, 3.6725m, CurrencyCode.Aed)).ToArray();
+        var all = lines.Aggregate((a, b) => a.Add(b));
+        var first = lines.Take(3).Aggregate((a, b) => a.Add(b));
+        var second = lines.Skip(3).Aggregate((a, b) => a.Add(b));
+        var reversed = lines.Reverse().Aggregate((a, b) => a.Add(b));
+        Assert.Equal(all, first.Add(second));
+        Assert.Equal(all, reversed);
+        Assert.Equal(amounts.Sum() * 3.6725m, all.ExactBaseAmount());
+        Assert.Equal(Money.Money.RoundToMinorUnits(amounts.Sum() * 3.6725m, CurrencyCode.Aed), all.State().BaseAmount);
+        Assert.Equal(Money.Money.RoundToMinorUnits(amounts.Sum(), Usd), all.State().Amount);
+    }
+
+    /// <summary>The single rounding is rule 1's: half away from zero at the fils, and a credit note
+    /// (the negated total) mirrors its invoice.</summary>
+    [Fact]
+    public void The_one_rounding_is_half_away_from_zero_and_a_credit_note_mirrors_it()
+    {
+        // Two lines of USD 0.01 at 0.25: exact base 0.005 -> 0.01 (each line alone, 0.0025, would
+        // round to 0.00 and add to 0.00).
+        var line = Money.Money.Create(0.01m, Usd, 0.25m, CurrencyCode.Aed);
+        Assert.Equal(0.00m, line.BaseAmount);
+        var total = line.Add(line);
+        Assert.Equal(0.01m, total.State().BaseAmount);
+        Assert.Equal(-0.01m, total.Negate().State().BaseAmount);
+        Assert.Equal(-0.01m, total.State().Negate().BaseAmount);
+        Assert.Equal(total.Negate().State(), total.State().Negate());
+        // 0.025 dirhams in a KWD total rounds to 0.03, not banker's 0.02.
+        var kwd = Money.Money.Unrounded(0.0025m, Kwd, 5m, CurrencyCode.Aed);
+        Assert.Equal(0.03m, kwd.Add(kwd).State().BaseAmount); // 0.025
+        Assert.Equal(0.005m, kwd.Add(kwd).State().Amount); // KWD keeps three decimals
+    }
+
+    /// <summary>Stated figures add as stated: a statement of two invoices that each stated AED
+    /// 3.67 shows 7.34. Adding a stated figure to an unrounded line would round part of a total
+    /// twice, so it is refused.</summary>
+    [Fact]
+    public void Stated_figures_add_as_stated_and_never_mix_with_lines()
+    {
+        var invoice = Money.Money.Create(1.00m, Usd, 3.6725m, CurrencyCode.Aed).State();
+        var statement = invoice.Add(invoice);
+        Assert.True(statement.IsStated);
+        Assert.Equal(2.00m, statement.Amount);
+        Assert.Equal(7.34m, statement.BaseAmount);
+        var line = Money.Money.Create(1.00m, Usd, 3.6725m, CurrencyCode.Aed);
+        Assert.Equal(7.35m, line.Add(line).State().BaseAmount); // one document: 7.345 stated once
+        Assert.Throws<InvalidOperationException>(() => invoice.Add(line));
+        Assert.Throws<InvalidOperationException>(() => line.Add(invoice));
+        Assert.Equal(invoice, invoice.State());
+    }
+
+    /// <summary>A line is never rounded silently: more than ten decimals, or more than the
+    /// columns hold, is refused. An amount as entered (Create) still fits its currency.</summary>
+    [Fact]
+    public void Full_precision_is_bounded_by_the_columns_and_never_rounded_silently()
+    {
+        Assert.Equal(1.0000000001m, Money.Money.Unrounded(1.0000000001m, Usd, 3.6725m, CurrencyCode.Aed).Amount);
+        Assert.Throws<ArgumentException>(() => Money.Money.Unrounded(1.00000000001m, Usd, 3.6725m, CurrencyCode.Aed));
+        Assert.Throws<ArgumentException>(() => Money.Money.Create(0.3333m, Usd, 3.6725m, CurrencyCode.Aed));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Money.Money.Unrounded(1e18m, Usd, 1m, Usd));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Money.Money.Unrounded(1e15m, Usd, 3.6725m, CurrencyCode.Aed));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Money.Money.Unrounded(1e17m, Usd, 99_999_999_999m, CurrencyCode.Aed));
+        var largest = Money.Money.Unrounded(-999_999_999_999_999m, Usd, 1m, Usd);
+        Assert.Throws<ArgumentOutOfRangeException>(() => largest.Add(Money.Money.Unrounded(-1m, Usd, 1m, Usd)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => largest.State().Add(Money.Money.Create(-1m, Usd, 1m, Usd).State()));
+        Assert.Throws<ArgumentException>(() => Money.Money.Unrounded(1m, CurrencyCode.Aed, 2m, CurrencyCode.Aed));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Money.Money.Unrounded(1m, Usd, -1m, CurrencyCode.Aed));
+    }
+
+    /// <summary>The columns hold what the type holds: the amount at ten decimals (a line is not
+    /// rounded on the way to the database), the base amount at four, and the stated flag, so a
+    /// stated total read back still adds as stated.</summary>
+    [Fact]
+    public void The_money_columns_hold_full_precision_and_the_stated_flag()
+    {
+        var options = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<MoneyColumnsContext>()
+            .UseNpgsql("Host=unused").Options;
+        using var db = new MoneyColumnsContext(options);
+        var entity = db.Model.FindEntityType(typeof(MoneyRow))!;
+        var columns = entity.GetComplexProperties().Single().ComplexType.GetProperties()
+            .ToDictionary(p => p.GetColumnName(), p => p.GetColumnType());
+        Assert.Equal("numeric(28,10)", columns["total_amount"]);
+        Assert.Equal("char(3)", columns["total_currency"]);
+        Assert.Equal("numeric(19,8)", columns["total_exchange_rate"]);
+        Assert.Equal("numeric(19,4)", columns["total_base_amount"]);
+        Assert.Equal("char(3)", columns["total_base_currency"]);
+        Assert.Equal("boolean", columns["total_stated"]);
+        Assert.Equal(6, columns.Count);
+    }
+
+    /// <summary>The JSON shape is unchanged by the stated flag and the exact base amount: answers
+    /// carry the five figures.</summary>
+    [Fact]
+    public void A_stated_total_travels_with_the_same_five_json_fields()
+    {
+        var options = new JsonSerializerOptions();
+        ErpPlatform.ConfigureJson(options);
+        var line = Money.Money.Unrounded(0.3333m, Usd, 3.6725m, CurrencyCode.Aed);
+        var json = JsonSerializer.Serialize(line.Add(line).Add(line).State(), options);
+        Assert.Equal("""{"amount":"1.00","currency":"USD","exchangeRate":"3.6725","baseAmount":"3.67","baseCurrency":"AED"}""", json);
+    }
+
+    public sealed class MoneyRow
+    {
+        public int Id { get; set; }
+        public Money.Money Total { get; set; }
+    }
+
+    public sealed class MoneyColumnsContext(Microsoft.EntityFrameworkCore.DbContextOptions<MoneyColumnsContext> options)
+        : Microsoft.EntityFrameworkCore.DbContext(options)
+    {
+        protected override void OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder modelBuilder) =>
+            modelBuilder.Entity<MoneyRow>().MoneyProperty(r => r.Total, "total");
     }
 }

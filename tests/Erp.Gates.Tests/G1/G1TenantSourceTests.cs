@@ -110,6 +110,52 @@ public sealed class G1TenantSourceTests
 
         // Named filters other than the tenant's (a company filter) are not a tenant bypass.
         Assert.Empty(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", "db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName])")], []).Problems);
+        Assert.Empty(TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs",
+            "db.Users.IgnoreQueryFilters([Erp.Kernel.Data.ModuleDbContext.CompanyFilterName, TenancyDbContext.BranchFilterName])\n" +
+            "db.Users.IgnoreQueryFilters( [ global::Erp.Modules.Tenancy.TenancyDbContext.BranchFilterName ] )")], []).Problems);
+    }
+
+    /// <summary>Critic p02 round 10, plant L2b: the tenant filter's name reached IgnoreQueryFilters
+    /// through a variable, and the rule only knew the empty call and calls naming the tenant
+    /// filter. Any argument the scanner cannot prove leaves the tenant filter on is a use now, and
+    /// the names it trusts cannot be redeclared, shadowed or aliased.</summary>
+    [Fact]
+    public void Query_filters_switched_off_by_any_unproved_name_are_caught()
+    {
+        var planted = new (string Rule, string Code)[]
+        {
+            ("ignore-tenant-filter", "string[] ownRow = [ModuleDbContext.CompanyFilterName, ModuleDbContext.TenantFilterName];\nvar row = await db.Workplaces.IgnoreQueryFilters(ownRow).FirstAsync();"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters(Names())"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName, ModuleDbContext.TenantFilterName])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName, name])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([..names])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([\"company\", \"tenant\"])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([\"company\"])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters(new[] { ModuleDbContext.CompanyFilterName })"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters(filterKeys: names)"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([Other.CompanyFilterName])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([CompanyFilterName])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters([ModuleDbContext.CompanyFilterName]).IgnoreQueryFilters()"),
+            ("ignore-tenant-filter", "Func<IQueryable<User>, IQueryable<User>> open = EntityFrameworkQueryableExtensions.IgnoreQueryFilters;"),
+            ("ignore-tenant-filter", "typeof(EntityFrameworkQueryableExtensions).GetMethod(\"IgnoreQueryFilters\", [typeof(IQueryable<User>)])"),
+            ("ignore-tenant-filter", "db.Workplaces.IgnoreQueryFilters\n    (ownRow)"),
+            ("filter-name", "public const string CompanyFilterName = ModuleDbContext.TenantFilterName;"),
+            ("filter-name", "static readonly string BranchFilterName = \"tenant\";"),
+            ("filter-name", "public static string CompanyFilterName => \"tenant\";"),
+            ("filter-name", "internal sealed class ModuleDbContext { public const string CompanyFilterName = \"tenant\"; }"),
+            ("filter-name", "file static class TenancyDbContext { }"),
+            ("filter-name", "using ModuleDbContext = Erp.Modules.Planted.Shadow;"),
+        };
+        foreach (var (rule, code) in planted)
+        {
+            var result = TenantBypassScanner.Check([("src/Modules/Planted/Planted.cs", code)], []);
+            Assert.True(result.Problems.Any(p => p.Contains($"[{rule}]", StringComparison.Ordinal)),
+                $"rule {rule} missed: {code}\n" + string.Join("\n", result.Problems));
+        }
+
+        // The names the scanner trusts are what they say: neither is the tenant filter's.
+        Assert.NotEqual(Erp.Kernel.Data.ModuleDbContext.TenantFilterName, Erp.Kernel.Data.ModuleDbContext.CompanyFilterName);
+        Assert.NotEqual(Erp.Kernel.Data.ModuleDbContext.TenantFilterName, Erp.Modules.Tenancy.TenancyDbContext.BranchFilterName);
     }
 }
 
@@ -122,14 +168,26 @@ public static class TenantBypassScanner
 
     private const RegexOptions Options = RegexOptions.CultureInvariant | RegexOptions.Compiled;
 
+    /// <summary>A filter name proved not to be the tenant's: the kernel's company filter or the
+    /// tenancy module's branch filter, named through its declaring type.</summary>
+    private const string SafeFilterName =
+        @"(?:(?:(?:global::)?Erp\.Kernel\.Data\.)?ModuleDbContext\.CompanyFilterName|(?:(?:global::)?Erp\.Modules\.Tenancy\.)?TenancyDbContext\.BranchFilterName)";
+
     public static readonly IReadOnlyList<Rule> Rules =
     [
         new("tenant-setting", "names the tenant settings app.tenant_id / app.tenant_tx", new(@"app\.tenant_(?:id|tx)\b", Options)),
         new("set-config", "calls set_config (changes a session setting)", new(@"\bset_config\s*\(", Options | RegexOptions.IgnoreCase)),
         new("sql-set", "sends SET, RESET or DISCARD (changes a session setting or role)",
             new(@"(?:""|^)\s*(?:SET|RESET|DISCARD)\s+(?:LOCAL\b|SESSION\b|ROLE\b|ALL\b|TRANSACTION\b|row_security\b|search_path\b|app\.|""|;)", Options | RegexOptions.IgnoreCase | RegexOptions.Multiline)),
-        new("ignore-tenant-filter", "switches off the tenant query filter",
-            new(@"IgnoreQueryFilters\s*\(\s*\)|IgnoreQueryFilters\s*\([^)]*(?:TenantFilterName|""tenant"")", Options)),
+        // Critic p02 round 10, plant L2b: IgnoreQueryFilters(ownRow) with the tenant filter's name
+        // held in a variable. Every mention of IgnoreQueryFilters is a use unless its argument is a
+        // collection expression of nothing but the kernel's company filter name and the tenancy
+        // module's branch filter name, the only form proved to leave the tenant filter on (the
+        // filter-name rule keeps those names from being redeclared or aliased elsewhere).
+        new("ignore-tenant-filter", "switches off the tenant query filter, or query filters it cannot be proved to leave the tenant's on",
+            new(@"\bIgnoreQueryFilters\b(?!\s*\(\s*\[\s*" + SafeFilterName + @"(?:\s*,\s*" + SafeFilterName + @")*\s*\]\s*\))", Options)),
+        new("filter-name", "declares a query filter name, or a type or alias named like the kernel's filter-name holders",
+            new(@"\b(?:const|readonly)\s+string\s+\w*FilterName\b|\b\w*FilterName\s*(?:=>|\{\s*get)|\b(?:class|struct|record|interface|enum)\s+(?:ModuleDbContext|TenancyDbContext)\b|\busing\s+(?:static\s+)?(?:ModuleDbContext|TenancyDbContext)\s*=", Options)),
         new("raw-ef-sql", "runs raw SQL through EF Core", new(@"\b(?:FromSql|FromSqlRaw|FromSqlInterpolated|SqlQuery|SqlQueryRaw|ExecuteSql|ExecuteSqlRaw|ExecuteSqlInterpolated)(?:Async)?\s*[<(]", Options)),
         new("new-session", "builds a unit of work outside dependency injection", new(@"\bnew\s+ErpDbSession\s*\(", Options)),
         new("bind", "binds a unit of work to a tenant", new(@"\.BeginAsync\s*\(", Options)),

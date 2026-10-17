@@ -37,7 +37,8 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
             $"in Arabic: {result.ArabicComparisons} comparisons ({result.ArabicAnswers} answered in Arabic), {result.ArabicWriteComparisons} write comparisons " +
             $"({result.ArabicWorkspaceWriteComparisons} between the workspace-wide Arabic administrators); " +
             $"{result.HeadersCompared} response header lines compared, {result.ChangeProbes} changing answers judged by how they change, " +
-            $"{result.ConfigurationKeysWatched} configuration keys watched");
+            $"{result.ConfigurationKeysWatched} configuration keys watched; " +
+            $"{result.TimesAttributed} times attributed to a request ({result.TimesAmbiguous} ambiguous, {result.PacedRuns} paced re-runs), {result.CookieValuesCompared} cookie values compared");
         foreach (var unstable in result.Unstable)
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unstable: {unstable}");
@@ -62,6 +63,9 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         // kept in the configuration and sent in a header only).
         AssertAtLeast(result.HeadersCompared, "g1.nonInterferenceHeadersCompared");
         AssertAtLeast(result.ConfigurationKeysWatched, "g1.nonInterferenceConfigurationKeysWatched");
+        // Times are attributed to the request they fall in, not blanked (critic p04 round 9): a
+        // check that attributes none would be blind to the time of the other tenant's activity.
+        AssertAtLeast(result.TimesAttributed, "g1.nonInterferenceTimesAttributed");
     }
 
     private static void AssertAtLeast(int value, string key) =>

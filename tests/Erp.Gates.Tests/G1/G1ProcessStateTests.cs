@@ -277,7 +277,35 @@ public static class ProcessState
     {
         var context = ContextOf(factory);
         var types = context.Assemblies.SelectMany(LoadableTypes).Where(t => !Instrument(t));
-        return (Roots(factory, context.Descriptors, context.Singletons, types).Concat(HolderRoots(context)).ToList(), context.Assemblies);
+        return (Roots(factory, context.Descriptors, context.Singletons, types).Concat(HolderRoots(context)).Concat(FactoryRoots(context)).ToList(), context.Assemblies);
+    }
+
+    /// <summary>
+    /// Every service registration's factory delegate that the product wrote, whatever the
+    /// service's lifetime: the delegate is held by the container for the life of the process, so
+    /// whatever its closure captured is shared by every request of every tenant, even when each
+    /// scope gets a new service object (critic p03 round 11, plant L2:
+    /// <c>AddScoped&lt;AccessMemo&gt;(_ =&gt; new AccessMemo(shared))</c> over one dictionary). The
+    /// walk reaches the closure and judges its captured variables like an endpoint's.
+    /// </summary>
+    private static IEnumerable<(string Name, object? Value)> FactoryRoots(ProductContext context)
+    {
+        foreach (var descriptor in context.Descriptors)
+        {
+            Delegate? made = descriptor.IsKeyedService ? descriptor.KeyedImplementationFactory : descriptor.ImplementationFactory;
+            if (made is null)
+            {
+                continue;
+            }
+            var declaring = made.Method.DeclaringType;
+            var target = made.Target?.GetType();
+            var byProduct = (declaring is not null && IsProduct(declaring, context.Assemblies) && !Instrument(declaring)) ||
+                            (target is not null && IsProduct(target, context.Assemblies) && !Instrument(target));
+            if (byProduct)
+            {
+                yield return ($"service factory {Readable(descriptor.ServiceType)} ({descriptor.Lifetime.ToString().ToLowerInvariant()})", made);
+            }
+        }
     }
 
     /// <summary>The framework singletons that can hold the product's objects, as roots whose own
@@ -308,7 +336,7 @@ public static class ProcessState
         // are not walked as roots. The SQL trace holds every call of every test in the process, so
         // in a full run it could fill the walk's object budget before the app's last roots (the
         // statics of generic instantiations) were reached, and a planted memo went unjudged.
-        var reachable = ReachableState.Inspect(Roots(factory, descriptors, singletons, productTypes.Where(t => !Instrument(t))).Concat(HolderRoots(context)),
+        var reachable = ReachableState.Inspect(Roots(factory, descriptors, singletons, productTypes.Where(t => !Instrument(t))).Concat(HolderRoots(context)).Concat(FactoryRoots(context)),
             assemblies, serviceTypes, singletons.ToHashSet());
         // A framework singleton that can hold the product's objects is process-wide state like a
         // product singleton: it needs a reviewed reason (and what it holds is judged by the walk).
