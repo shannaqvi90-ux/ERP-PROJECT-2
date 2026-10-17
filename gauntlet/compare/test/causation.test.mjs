@@ -93,6 +93,8 @@ test('causation (round 12): an input task is the step\'s that began last before 
   // A key handled inside a frame's task is input; a pointer boundary event the browser sends because the
   // page moved content under a still pointer (in a frame's task) is not.
   assert.equal(verdict([task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'keyup' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w').caused, true);
+  // ... but an observer the page set off, run by the same frame after the key's dispatch, is not the key's.
+  assert.equal(verdict([task(30, TIMER, [fire(1, 2)]), task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'keyup' }), X('FunctionCall', 3, 0.5, { url: 'http://p/' }), send(3.2, 'w')])], 'w').caused, false);
   const moved = verdict([task(30, TIMER, [fire(1, 2)]), task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'mouseover' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w');
   assert.equal(moved.caused, false);
   assert.equal(verdict([task(103, IPC, [X('EventDispatch', 1, 1, { type: 'blur' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w', [[200, 210]]).caused, false, 'a window\'s blur');

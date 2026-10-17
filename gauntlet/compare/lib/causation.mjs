@@ -194,7 +194,9 @@ function describeTask(t) {
   // the input queue; some key events arrive inside a frame's task instead (then only discrete input
   // counts: a frame also delivers the boundary events of a pointer the page moved content under).
   const fromInputQueue = !!t.src && /main_thread_event_queue/.test(t.src);
-  t.input = !t.protocol && t.topDispatches.some(e => (fromInputQueue ? INPUT_EVENTS : DISCRETE_INPUT).test(e.args?.data?.type || ''));
+  t.inputQueue = fromInputQueue;
+  t.inputs = t.topDispatches.filter(e => (fromInputQueue ? INPUT_EVENTS : DISCRETE_INPUT).test(e.args?.data?.type || ''));
+  t.input = !t.protocol && t.inputs.length > 0;
   // Whether the page's own code (or the page's network answers) ran in it.
   t.activity = !t.protocol && (t.timerFires.length > 0 || t.frameFires.length > 0 || t.answers.length > 0
     || t.events.some(e => (e.ph === 'X' && /^(FunctionCall|ParseHTML)$/.test(e.name)) || (e.name === 'EvaluateScript' && e.args?.data)
@@ -260,7 +262,9 @@ function pointCause(ctx, point, depth) {
   if (timer) return timerCause(ctx, timer, depth);
   const frame = task.frameFires.find(f => spanHolds(f, point.ts)) || null;
   if (frame) return frameCause(ctx, frame, depth);
-  if (task.input) {
+  // In a task of the input queue the whole task is the input's; in another (a frame's) only what ran
+  // inside the input event's dispatch is (the frame may also run an observer the page set off).
+  if (task.input && (task.inputQueue || task.inputs.some(e => spanHolds(e, point.ts)))) {
     // Only the harness's steps put input in the page: an input task is the latest step's that began
     // before it (the renderer may handle a key a few milliseconds after the step's call returned).
     const s = stepBefore(ctx, task.ts);
