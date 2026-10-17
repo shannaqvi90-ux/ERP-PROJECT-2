@@ -53,8 +53,13 @@ Tests (`tests/Erp.Modules.Reports.Tests/ReportApiTests.cs`):
   3): every combination is present, and the number of rows stays near the product of the largest
   sizes, far below every combination.
 
-The critic's real L7b patch was applied to a copy of this branch and the G1 HTTP isolation test was
-run against it; the result is in the round's notes for the integrator.
+The critic's real L7b patch (`plant-L7b-inline-viewer-copy-by-record.patch`) applied to a copy of
+this branch fails `G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint` with
+20 leaks and nothing else: the reports probe's combined phase ("probe reports and list printing:
+observed tenant B marker") and p00's generic replay ("tenant B's own request for an answer shape,
+sent by tenant A … response contains tenant B marker") each find it on their own. That run took
+38 min of wall time under a load average of about 80 (the machine ran another workflow's verify and
+this round's verify alongside); round 5's critic measured 22 min on a quieter machine.
 
 ### G2: report data prints documented values together
 
