@@ -1,0 +1,6 @@
+noaccess GET /api/identity/users 403 | admin 200
+noaccess GET /api/identity/roles 403 | admin 200
+noaccess GET /api/tenancy/companies 403 | admin 200
+noaccess GET /api/tenancy/branches 403 | admin 200
+noaccess POST /api/identity/users 403
+anonymous GET /api/identity/users 401

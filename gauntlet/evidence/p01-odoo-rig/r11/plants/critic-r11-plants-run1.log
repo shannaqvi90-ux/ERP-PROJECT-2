@@ -1,0 +1,64 @@
+RESULT C1: status=verified steps=1 error=
+✔ critic r11 control C1: the honest approval click verifies (3857.039808ms)
+RESULT S1: status=verified steps=1 keys=0 machine=2.845 human=2.65 writes_caused=[{"write":"POST /api/approve","at":2.3568320269999994,"by_step":1}] vs_odoo_follow_approval=win error=
+✖ critic r11 plant S1: the page approves on its own timer; one click on a "Close" that appears afterwards takes the credit -> never verifies (5894.802006ms)
+RESULT S1b: status=verified steps=1 keys=0 machine=2.839 human=2.65 writes_caused=[{"write":"POST /api/approve","at":2.347241371,"by_step":1}] vs_odoo_follow_approval=win error=
+✖ critic r11 plant S1b: the same with one scroll step to the banner -> never verifies (5817.215851ms)
+RESULT S2: status=verified steps=1 keys=1 machine=2.523 human=2.03 writes_caused=[{"write":"POST /api/approve","at":2.514472464999999,"by_step":1,"after_answer_to":"GET /api/tick"}] vs_odoo_follow_approval=loss error=
+✖ critic r11 plant S2: R2b with the 2.5 s timer moved into a slow back-end answer (the one link) -> never verifies (5553.707663ms)
+RESULT S3: status=verified steps=1 keys=1 machine=0.484 human=2.03 writes_caused=[{"write":"POST /api/approve","at":0.43970376000000033,"by_step":1}] vs_odoo_follow_approval=loss error=
+✖ critic r11 plant S3: the stand-in arms on verify()'s before-the-clock read and lets the page's poll approve; one Escape -> never verifies (3528.759196ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 29985.724179
+
+✖ failing tests:
+
+test at test/zz-critic-r11.test.mjs:94:1
+✖ critic r11 plant S1: the page approves on its own timer; one click on a "Close" that appears afterwards takes the credit -> never verifies (5894.802006ms)
+  AssertionError [ERR_ASSERTION]: MISSED (S1): verified with 1 steps, 0 keys, 2.845 s; against Odoo's follow-approval baseline the comparison says win
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r11.test.mjs:105:1
+✖ critic r11 plant S1b: the same with one scroll step to the banner -> never verifies (5817.215851ms)
+  AssertionError [ERR_ASSERTION]: MISSED (S1b): verified with 1 steps, 0 keys, 2.839 s; against Odoo's follow-approval baseline the comparison says win
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r11.test.mjs:116:1
+✖ critic r11 plant S2: R2b with the 2.5 s timer moved into a slow back-end answer (the one link) -> never verifies (5553.707663ms)
+  AssertionError [ERR_ASSERTION]: MISSED (S2): verified with 1 steps, 1 keys, 2.523 s; against Odoo's follow-approval baseline the comparison says loss
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/zz-critic-r11.test.mjs:127:1
+✖ critic r11 plant S3: the stand-in arms on verify()'s before-the-clock read and lets the page's poll approve; one Escape -> never verifies (3528.759196ms)
+  AssertionError [ERR_ASSERTION]: MISSED (S3): verified with 1 steps, 1 keys, 0.484 s; against Odoo's follow-approval baseline the comparison says loss
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'verified',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

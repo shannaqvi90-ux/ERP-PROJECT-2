@@ -1,0 +1,22 @@
+SET
+no context users|0
+BEGIN
+A ctx users|100005|0
+A ctx companies of B|0
+ERROR:  column "name_en" does not exist
+LINE 1: update tenancy.companies set name_en=name_en where tenant_id...
+                                             ^
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+ERROR:  new row violates row-level security policy for table "saved_views"
+ROLLBACK
+BEGIN
+tenant id set without tx stamp|0
+ROLLBACK
+SET
+BEGIN
+UPDATE 0
+ERROR:  permission denied for table entries
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
