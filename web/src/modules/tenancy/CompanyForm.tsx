@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { api } from "../../kernel/api";
-import { BooleanField, PhoneField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
+import { BooleanField, CountryField, PhoneField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm, type RecordFormState } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
@@ -234,7 +234,7 @@ export function AddressFields<R, D extends AddressDraft>({ form }: { form: Recor
         options={emirates.map((e) => ({ value: e, label: t(`tenancy.emirate.${e}`) }))}
       />
       <TextField field={bind("poBox")} label={t("tenancy.address.poBox")} dir="ltr" maxLength={20} />
-      <TextField field={bind("country")} label={t("tenancy.address.country")} dir="ltr" maxLength={2} upper hint={t("tenancy.address.countryHint")} />
+      <CountryField field={bind("country")} label={t("tenancy.address.country")} />
       <TextAreaField field={bind("addressAr")} label={t("tenancy.address.arabic")} dir="rtl" maxLength={400} />
     </FormSection>
   );

@@ -5,7 +5,7 @@ import { I18nProvider } from "../i18n";
 import { navigate } from "../router";
 import { ShortcutProvider } from "../shortcuts";
 import { mockFetch, render, settle, setInput, type Rendered } from "../../test/render";
-import { DecimalField, decimalInput, MoneyField, multiplyDecimal, PhoneField, TextAreaField, TextField } from "./fields";
+import { CountryField, DecimalField, decimalInput, MoneyField, multiplyDecimal, PhoneField, TextAreaField, TextField } from "./fields";
 import { useState } from "react";
 import { clearLeaveGuards, nothingUnsaved } from "./leave";
 import { FormSection, RecordForm } from "./RecordForm";
@@ -634,5 +634,34 @@ describe("the phone field and a completed entry", () => {
     await settle();
     expect(phone.value).toBe("+44 20 7946 0958");
     expect(calls.filter((c) => c.method === "PUT")).toHaveLength(0);
+  });
+});
+
+describe("the country field", () => {
+  function Country({ initial }: { initial: string }) {
+    const [value, setValue] = useState(initial);
+    return <CountryField field={{ name: "country", value, onChange: setValue, errors: [], readOnly: false }} label="Country" />;
+  }
+
+  it("offers countries by name in the screen's language, the UAE and the Gulf first, and keeps the code", async () => {
+    await show(<Country initial="AE" />, "ar");
+    const select = view!.container.querySelector<HTMLSelectElement>('[data-field="country"] select')!;
+    expect(select.value).toBe("AE");
+    const options = [...select.options];
+    expect(options[0]!.textContent).toBe("الإمارات العربية المتحدة");
+    expect(options.slice(0, 6).map((o) => o.value)).toEqual(["AE", "SA", "OM", "QA", "BH", "KW"]);
+    expect(options.length).toBeGreaterThan(240);
+    act(() => {
+      select.value = "IN";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(select.value).toBe("IN");
+    view!.unmount();
+    view = undefined;
+    // A code stored before the list existed stays choosable rather than lost.
+    await show(<Country initial="ZZ" />, "en");
+    const kept = view!.container.querySelector<HTMLSelectElement>('[data-field="country"] select')!;
+    expect(kept.value).toBe("ZZ");
+    expect([...kept.options][0]!.textContent).toBe("United Arab Emirates");
   });
 });

@@ -1,7 +1,8 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { api } from "../api";
 import { useI18n } from "../i18n";
 import { minorUnitsOf } from "../format";
+import { countryChoices } from "./countries";
 import { caretAfter, HOME_PREFIX, isCompletePhone, nationalDigits, phoneValue } from "./phone";
 import type { FieldBinding } from "./useRecordForm";
 
@@ -393,6 +394,14 @@ export function SelectField<V extends string>({ field, options, empty, ...p }: C
       )}
     </Field>
   );
+}
+
+/** A country, chosen by its name in the screen's language (kept as its ISO 3166-1 alpha-2 code):
+ * the UAE and the Gulf first; typing a name's first letters picks it, as in any list of choices. */
+export function CountryField({ field, ...p }: Common & { field: FieldBinding<string> }) {
+  const { language } = useI18n();
+  const options = useMemo(() => countryChoices(language, field.value || undefined), [language, field.value]);
+  return <SelectField field={field} options={options} {...p} />;
 }
 
 export type LookupRow = { id: string } & Record<string, unknown>;

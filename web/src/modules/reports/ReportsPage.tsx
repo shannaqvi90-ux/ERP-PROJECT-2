@@ -281,6 +281,12 @@ const cellClass = (align: string, text: string) =>
 export function ReportView({ document: doc }: { document: ReportDocument }) {
   const grouped = doc.groupBy !== null;
   const totals = doc.columns.some((c) => c.total);
+  // A grouped document leaves out the grouping column: its value heads each group already (critic
+  // p06 round 6), unless the column carries a total or is the only one. The PDF does the same.
+  const all = doc.columns.map((_, i) => i);
+  const kept = grouped ? all.filter((i) => doc.columns[i]!.key !== doc.groupBy || doc.columns[i]!.total) : all;
+  const shown = kept.length > 0 ? kept : all;
+  const first = shown[0];
   return (
     <div className="report-view" data-testid="report-document">
       <PrintDocument language={doc.language} numerals={doc.numerals} title={doc.subject ? `${doc.title} · ${doc.subject}` : doc.title} issuer={doc.issuer}>
@@ -318,7 +324,7 @@ export function ReportView({ document: doc }: { document: ReportDocument }) {
           <table className="report-table">
             <thead>
               <tr>
-                {doc.columns.map((c) => (
+                {shown.map((i) => doc.columns[i]!).map((c) => (
                   <th key={c.key} scope="col" className={c.align === "end" ? "num" : undefined}>
                     {c.label}
                   </th>
@@ -329,25 +335,25 @@ export function ReportView({ document: doc }: { document: ReportDocument }) {
               <tbody key={g}>
                 {grouped && (
                   <tr className="report-group">
-                    <th scope="rowgroup" colSpan={doc.columns.length}>
+                    <th scope="rowgroup" colSpan={shown.length}>
                       <span dir="auto">{group.label}</span> · {group.countText}
                     </th>
                   </tr>
                 )}
                 {group.rows.map((row, r) => (
                   <tr key={r}>
-                    {row.cells.map((cell, c) => (
-                      <td key={c} className={cellClass(doc.columns[c]!.align, cell.text)} dir={doc.columns[c]!.align === "end" ? undefined : "auto"}>
-                        {cell.text}
+                    {shown.map((c) => (
+                      <td key={c} className={cellClass(doc.columns[c]!.align, row.cells[c]!.text)} dir={doc.columns[c]!.align === "end" ? undefined : "auto"}>
+                        {row.cells[c]!.text}
                       </td>
                     ))}
                   </tr>
                 ))}
                 {grouped && totals && (
                   <tr className="report-subtotal">
-                    {group.totals.map((cell, c) => (
+                    {shown.map((c) => (
                       <td key={c} className={doc.columns[c]!.align === "end" ? "num" : undefined}>
-                        {cell?.text ?? (c === 0 ? `${doc.texts.total} · ${group.label ?? ""}` : "")}
+                        {group.totals[c]?.text ?? (c === first ? `${doc.texts.total} · ${group.label ?? ""}` : "")}
                       </td>
                     ))}
                   </tr>
@@ -357,9 +363,9 @@ export function ReportView({ document: doc }: { document: ReportDocument }) {
             {totals && (
               <tfoot>
                 <tr className="report-total">
-                  {doc.totals.map((cell, c) => (
+                  {shown.map((c) => (
                     <td key={c} className={doc.columns[c]!.align === "end" ? "num" : undefined}>
-                      {cell?.text ?? (c === 0 ? doc.texts.total : "")}
+                      {doc.totals[c]?.text ?? (c === first ? doc.texts.total : "")}
                     </td>
                   ))}
                 </tr>
