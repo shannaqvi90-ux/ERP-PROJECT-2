@@ -805,8 +805,8 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             // reaches past the caller's own views shows in the administrator's snapshot. The personal
             // default is saved first: a shared default replaces shared defaults only, and both must
             // be defaults in the snapshot the later writes are judged against.
-            var personal = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Mine {list.Key}", columns, isDefault = true })).Content.ReadFromJsonAsync<JsonElement>();
-            var shared = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = $"Team {list.Key}", columns, isDefault = true })).Content.ReadFromJsonAsync<JsonElement>();
+            var personal = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Mine {list.Key}{tag}", columns, isDefault = true })).Content.ReadFromJsonAsync<JsonElement>();
+            var shared = await (await admin.PostAsJsonAsync($"/api/lists/{list.Key}/shared-views", new { name = $"Team {list.Key}{tag}", columns, isDefault = true })).Content.ReadFromJsonAsync<JsonElement>();
             var before = await ViewsTextAsync(admin, list.Key);
             foreach (var (what, view) in new[] { ("personal", personal), ("shared", shared) })
             {
@@ -858,7 +858,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             // personal views only, and a shared route for shared views only: every route with an id
             // is sent the other kind of view, by a reader and by a sharer, and none of it exists there.
             using var sharer = await UserWith($"sharer-{list.Key.Replace('.', '-')}", "lists.views.share", list.Permission);
-            var sharersOwn = await (await sharer.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Sharer's own {list.Key}", columns })).Content.ReadFromJsonAsync<JsonElement>();
+            var sharersOwn = await (await sharer.PostAsJsonAsync($"/api/lists/{list.Key}/views", new { name = $"Sharer's own {list.Key}{tag}", columns })).Content.ReadFromJsonAsync<JsonElement>();
             foreach (var endpoint in listEndpoints.Where(e => e.RouteParameters.Count > 0))
             {
                 var sharedRoute = endpoint.Pattern.Contains("/shared-views", StringComparison.Ordinal);
@@ -1020,7 +1020,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                     }
                     view = await current.Content.ReadFromJsonAsync<JsonElement>();
                 }
-                using var request = ViewRequest(endpoint, view, columns, endpoint.Method == "POST" ? $"Again {list.Key}" : null);
+                using var request = ViewRequest(endpoint, view, columns, endpoint.Method == "POST" ? $"Again {list.Key}{tag}" : null);
                 using var response = await admin.SendAsync(request);
                 if (!response.IsSuccessStatusCode)
                 {

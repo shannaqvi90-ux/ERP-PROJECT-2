@@ -36,6 +36,12 @@ type Tenant = {
   roleName: string;
   /** What the tenant's person types in the users list's search box. */
   searchWord: string;
+  /**
+   * Users in the tenant's list: a demo volume, B's a little more, so that what the client does
+   * only for a big list (a jump to the end loads a chunk by offset deep in the list, a count of
+   * six digits) runs for both tenants and B's count is a marker of its own (critic p05 round 9).
+   */
+  volume: number;
 };
 
 const bravo: Tenant = {
@@ -51,6 +57,7 @@ const bravo: Tenant = {
   ],
   roleName: "Bravocanary Steel Clerk",
   searchWord: "Bravocanary Salem",
+  volume: 102_505,
 };
 
 const alpha: Tenant = {
@@ -66,7 +73,11 @@ const alpha: Tenant = {
   ],
   roleName: "Trading Clerk",
   searchWord: "Mansoori",
+  volume: 100_005,
 };
+
+/** How B's user count is written on screen, in English and in Arabic with Arabic-Indic digits. */
+const bravoCounts = [new Intl.NumberFormat("en").format(bravo.volume), new Intl.NumberFormat("ar-u-nu-arab").format(bravo.volume)];
 
 /** Everything that identifies tenant B: none of it may ever appear in tenant A's tab. */
 const bravoMarkers = [
@@ -77,6 +88,7 @@ const bravoMarkers = [
   "Zx81",
   bravo.id,
   ...bravo.users.map((u) => u.id),
+  ...bravoCounts,
 ];
 
 /**
@@ -131,8 +143,20 @@ function userDetail(tenant: Tenant, id: string) {
     : undefined;
 }
 
+/** The user at a position of a tenant's whole list: its named users, then generated ones. */
+function userAt(tenant: Tenant, index: number) {
+  const named = tenant.users[index];
+  if (named) return named;
+  const domain = tenant.admin.email.split("@")[1]!;
+  return { id: `${tenant.id}-g${index}`, email: `person.${index}@${domain}`, displayName: `${tenant === bravo ? "Bravocanary" : "Alnoor"} Person ${index}` };
+}
+
+/** The offsets each tenant's users list was asked for (a jump loads its chunk by offset). */
+const usersSkips = new Map<string, number[]>();
+
 /** A fake server holding one session cookie: who is signed in decides every answer. */
 function serveTwoTenants() {
+  usersSkips.clear();
   let current: Tenant | null = null;
   const byEmail = (email: string) => [alpha, bravo].find((t) => t.admin.email === email) ?? null;
   return mockFetch((method, url, body) => {
@@ -159,6 +183,15 @@ function serveTwoTenants() {
       if (detail[2] === "/access") return { status: 200, body: { roles: [], permissions: [] } };
       if (detail[2] === "/sign-ins") return { status: 200, body: { items: [], blocked: false } };
       return { status: 200, body: user };
+    }
+    if (path === "/api/identity/users" && !query.get("search") && !query.get("filter")) {
+      // The whole list, a page at a time: the named users first, then generated ones up to the volume.
+      const skip = Number(query.get("skip") ?? "0");
+      const take = Number(query.get("take") ?? "50");
+      usersSkips.set(tenant.id, [...(usersSkips.get(tenant.id) ?? []), skip]);
+      const items = Array.from({ length: Math.max(0, Math.min(take, tenant.volume - skip)) }, (_, i) => userAt(tenant, skip + i))
+        .map((u) => ({ ...u, language: "en", isActive: true, roleIds: [], lastSignInAt: null, createdAt: "2026-10-01T08:00:00Z" }));
+      return { status: 200, body: { items, total: tenant.volume, next: null } };
     }
     if (path === "/api/identity/users") {
       const search = (query.get("search") ?? "").toLowerCase();
@@ -305,6 +338,22 @@ async function journey(tenant: Tenant, judge: (step: string) => void): Promise<n
     await wait(300);
     step(`screen ${item.path}`);
     if (item.path === "/identity/users") {
+      // A big list: the person clears the search the palette left, and jumps to the last row of
+      // the whole list, which the list loads by offset.
+      const box = document.querySelector<HTMLInputElement>('main input[type="search"]');
+      expect(box, "the users list has a search box").not.toBeNull();
+      setInput(box!, "");
+      await wait(600);
+      const grid = document.querySelector<HTMLElement>('main [role="grid"]');
+      const scroller = document.querySelector<HTMLElement>("main .list-scroll");
+      expect(grid, "the users list has a grid").not.toBeNull();
+      // The test DOM has no layout: the scroll box keeps the position the list scrolls to, as a
+      // browser's does, so the rows at the end come into view and are loaded.
+      let top = 0;
+      Object.defineProperty(scroller!, "scrollTop", { configurable: true, get: () => top, set: (value: number) => (top = value) });
+      press({ code: "End", key: "End" }, grid!);
+      await wait(300);
+      step("users list at its last row");
       const search = document.querySelector<HTMLInputElement>('main input[type="search"]');
       expect(search, "the users list has a search box").not.toBeNull();
       setInput(search!, tenant.searchWord);
@@ -359,6 +408,9 @@ async function bThenAInOneTab() {
   });
   expect(seenByB.has("Zx81") || seenByB.has(shapedDigits("Zx81"))).toBe(true);
   expect(seenByB.has("Bravocanary")).toBe(true);
+  // B's list count was on screen, and B's last rows were loaded by offset from deep in the list.
+  expect(bravoCounts.some((c) => seenByB.has(c) || seenByB.has(shapedDigits(c))), `B's count ${bravoCounts.join(" / ")} on screen`).toBe(true);
+  expect(Math.max(...(usersSkips.get(bravo.id) ?? [0])), "B's jump loaded a chunk deep in the list").toBeGreaterThan(bravo.volume - 200);
   expect(seenByB.has(sessionLanguage.language === "ar" ? "الخليج لتصنيع" : "Gulf Steel")).toBe(true);
   // B's own addresses carry B's search text and record ids: the history test below has teeth.
   const bAddresses = [...bEntries.keys()].join("\n");
@@ -377,6 +429,7 @@ async function bThenAInOneTab() {
   });
   expect(aSteps).toBe(bSteps);
   expect(found).toEqual([]);
+  expect(Math.max(...(usersSkips.get(alpha.id) ?? [0])), "A's jump loaded a chunk deep in the list").toBeGreaterThan(alpha.volume - 200);
 
   // A presses Back (or Forward, or reloads) into each of B's entries, which the tab still holds.
   for (const [url, state] of bEntries) {
