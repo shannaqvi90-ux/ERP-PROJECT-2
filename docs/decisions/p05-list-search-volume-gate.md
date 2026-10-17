@@ -102,3 +102,14 @@ mechanism, do not add a second; make the list gates exercise volume paths cheapl
 - Running the volume check in the timing stage's 100,000-user fixture: that fixture lives in the
   identity test assembly and is measured alone for the timing budgets; gate checks there would
   disturb the measurement and live outside the gate project.
+
+## Round 11
+
+The round 10 branch (ede7b07) could not be integrated because the integrator's verify never got
+a slot, so it never ran. This round merged the integration branch (16d55bd: only
+`gauntlet/needs-human.md` and `gauntlet/runlog.md` changed) and re-ran the full verify. No product
+or gate code changed, so this round adds no processor time. Full `./erp verify` of 8aeed05
+through the verify slot (slot taken 05:18:30Z, load up to 78.6 from other agents) passed in
+3,845 s wall and **9,638 processor seconds** (dotnet 7,632, web 1,704, e2e 266, timing 38;
+maximum 10,500). Tests: .NET 615, web unit 477, end-to-end 102, comparison 373, build 6, each
+equal to its ratchet minimum.
