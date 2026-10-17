@@ -87,7 +87,12 @@ mechanism, do not add a second; make the list gates exercise volume paths cheapl
   time is in the shared test server's container, outside the verify's processor count.
 - The client isolation test: about 6 s more wall time (waits), negligible processor time.
 - G2 field variants: under a second.
-- Full verify of this branch: see the round 10 numbers below.
+- Full verify of this branch at 7dc7dbb (slot taken 03:12:49Z, load up to 83 from other agents):
+  passed in 3,918 s wall, **9,682 processor seconds** (dotnet 7,689, web 1,709, e2e 249, timing 36;
+  maximum 10,500). The integration branch's last verify before this round (p02 round 10's
+  integrator) used 9,808 s (dotnet 7,793): this round's added gate work is inside the run-to-run
+  noise, about 70 processor seconds by the standalone measurement above. Tests: .NET 615, web unit
+  477, end-to-end 102, comparison 373, build 6.
 
 ## Rejected
 
