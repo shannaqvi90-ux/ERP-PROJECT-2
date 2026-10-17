@@ -77,6 +77,23 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
         Assert.Contains(result.Findings, f => f.StartsWith("tenant A", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/directory-change is answered", StringComparison.Ordinal) &&
                                               f.Contains("x-directory-change", StringComparison.Ordinal));
         Assert.Contains(result.Findings, f => f.StartsWith("tenant B", StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/directory-change is answered", StringComparison.Ordinal));
+        // Leaks the comparison used to blank (critic p04 round 9, plants L4 and L6). Bug 69: every
+        // caller's visits in a cookie value; the answer changes by one alone and by two after the
+        // other tenant's visit. Bug 70: the previous caller's visit time in a header, which reads
+        // as the other tenant's request where a fresh process reads the judged tenant's own.
+        // Bug 71: the same to the whole second, in the body, told apart by the paced re-run.
+        foreach (var tenant in new[] { "tenant A", "tenant B" })
+        {
+            Assert.Contains(result.Findings, f => f.StartsWith(tenant, StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/tip changes by", StringComparison.Ordinal) &&
+                                                  f.Contains("erp_tip=", StringComparison.Ordinal));
+            Assert.Contains(result.Findings, f => f.StartsWith(tenant, StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/previous-visit is answered", StringComparison.Ordinal) &&
+                                                  f.Contains("time:other", StringComparison.Ordinal));
+            Assert.Contains(result.Findings, f => f.StartsWith(tenant, StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/previous-visit-second is answered", StringComparison.Ordinal) &&
+                                                  f.Contains("time:other", StringComparison.Ordinal));
+        }
+        Assert.True(result.CookieValuesCompared > 0, "no cookie value was compared");
+        Assert.True(result.TimesAttributed > 0, "no time was attributed to a request");
+        Assert.True(result.PacedRuns > 0, "no comparison was paced for a time to the whole second");
         Assert.True(result.HeadersCompared > 0, "no response header was compared");
         Assert.True(result.ChangeProbes > 0, "no answer was judged by how it changes");
         // Nothing outside the planted module interferes, and the check was not blind.
@@ -142,5 +159,62 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
             NonInterference.Normalize("""{"at":"2026-10-04T07:00:00+04:00","traceId":"00-cd","n":1}"""));
         Assert.NotEqual(NonInterference.Normalize("""{"total":25}"""), NonInterference.Normalize("""{"total":26}"""));
         Assert.NotEqual(NonInterference.Normalize("""{"name":"a"}"""), NonInterference.Normalize("""{"name":"b"}"""));
+    }
+
+    /// <summary>Times are attributed, not blanked (critic p04 round 9): a time inside the request
+    /// answered, inside an earlier request of the same tenant and inside the other tenant's request
+    /// read differently; a time inside no request still compares equal whatever its value.</summary>
+    [Fact]
+    public void Times_are_told_apart_by_whose_request_they_fall_in()
+    {
+        var clock = new NonInterference.RequestClock();
+        var t0 = new DateTimeOffset(2026, 10, 17, 9, 0, 0, TimeSpan.Zero);
+        var ownEarlier = clock.Add(t0, t0.AddMilliseconds(5), 'A');
+        var other = clock.Add(t0.AddMilliseconds(10), t0.AddMilliseconds(15), 'B');
+        var current = clock.Add(t0.AddMilliseconds(20), t0.AddMilliseconds(25), 'A');
+        var context = new NonInterference.AnswerContext(clock, current);
+        string At(DateTimeOffset at) => at.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        // The body as compared is JSON, which escapes '<' and '>'.
+        static string Body(string token) => NonInterference.Normalize($$"""{"at":"{{token}}"}""");
+        Assert.Equal(Body("<time:this>"), NonInterference.Normalize($$"""{"at":"{{At(t0.AddMilliseconds(22))}}"}""", context));
+        Assert.Equal(Body("<time:own>"), NonInterference.Normalize($$"""{"at":"{{At(t0.AddMilliseconds(2))}}"}""", context));
+        Assert.Equal(Body("<time:other>"), NonInterference.Normalize($$"""{"at":"{{At(t0.AddMilliseconds(12))}}"}""", context));
+        Assert.Equal(Body("<time>"), NonInterference.Normalize($$"""{"at":"{{At(t0.AddHours(-3))}}"}""", context));
+        // Headers too, in the Gulf's offset, in Arabic-Indic digits, and without an offset.
+        Assert.Equal("x-previous: <time:other>", NonInterference.NormalizeHeaders($"X-Previous: {t0.AddMilliseconds(12).ToOffset(TimeSpan.FromHours(4)):yyyy-MM-ddTHH:mm:ss.fffzzz}", context));
+        Assert.Equal("x-previous: <time:other>", NonInterference.NormalizeHeaders(
+            "X-Previous: " + new string($"{t0.AddMilliseconds(12):yyyy-MM-ddTHH:mm:ss.fff}Z".Select(c => c is >= '0' and <= '9' ? (char)('\u0660' + (c - '0')) : c).ToArray()), context));
+        Assert.Equal("x-previous: <time:own>", NonInterference.NormalizeHeaders($"X-Previous: {t0.AddMilliseconds(3):yyyy-MM-ddTHH:mm:ss.fff}", context));
+        // To the whole second, every one of the three requests is possible: ambiguous, never
+        // equal to an attributed time, and counted so the comparison is paced.
+        Assert.Equal(Body("<time:ambiguous>"), NonInterference.Normalize("""{"at":"2026-10-17T09:00:00Z"}""", context));
+        Assert.Equal("x-at: <time:ambiguous>", NonInterference.NormalizeHeaders("X-At: Sat, 17 Oct 2026 09:00:00 GMT", context));
+        Assert.Equal(2, clock.TimesAmbiguous);
+        Assert.True(clock.WidestAmbiguous >= TimeSpan.FromSeconds(2));
+        // Coarser than a second is not attributed.
+        Assert.Equal(Body("<time>"), NonInterference.Normalize("""{"at":"2026-10-17T09:00Z"}""", context));
+        // A window of an unknown caller attributes nothing.
+        var unknown = new NonInterference.RequestClock();
+        var only = unknown.Add(t0, t0.AddMilliseconds(5), '?');
+        Assert.Equal(Body("<time>"), NonInterference.Normalize($$"""{"at":"{{At(t0.AddMilliseconds(2))}}"}""", new NonInterference.AnswerContext(unknown, unknown.Add(t0.AddSeconds(1), t0.AddSeconds(2), 'A'))));
+        Assert.NotNull(only);
+    }
+
+    /// <summary>Cookie values are compared as sent (critic p04 round 9), except the product's two
+    /// credential cookies, which are new on every sign-in.</summary>
+    [Fact]
+    public void Only_the_credential_cookies_values_are_left_out()
+    {
+        Assert.Equal(["erp_device", "erp_session"], NonInterference.CredentialCookies.Order(StringComparer.Ordinal));
+        Assert.NotEqual(NonInterference.NormalizeHeaders("Set-Cookie: erp_tip=2; path=/"), NonInterference.NormalizeHeaders("Set-Cookie: erp_tip=8; path=/"));
+        Assert.NotEqual(NonInterference.NormalizeHeaders("Set-Cookie: erp_session=a; path=/, erp_tip=2; path=/"),
+            NonInterference.NormalizeHeaders("Set-Cookie: erp_session=b; path=/, erp_tip=8; path=/"));
+        Assert.Equal(NonInterference.NormalizeHeaders("Set-Cookie: erp_device=a.b; path=/; expires=Sat, 18 Oct 2026 09:00:00 GMT"),
+            NonInterference.NormalizeHeaders("Set-Cookie: erp_device=c.d; path=/; expires=Sun, 19 Oct 2026 09:00:00 GMT"));
+        var clock = new NonInterference.RequestClock();
+        var now = DateTimeOffset.UtcNow;
+        var context = new NonInterference.AnswerContext(clock, clock.Add(now, now.AddMilliseconds(1), 'A'));
+        NonInterference.NormalizeHeaders("Set-Cookie: erp_session=a; path=/, erp_tip=2; path=/", context);
+        Assert.Equal(1, clock.CookieValuesCompared);
     }
 }

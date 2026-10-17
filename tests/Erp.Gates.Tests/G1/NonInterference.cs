@@ -70,6 +70,22 @@ public static partial class NonInterference
 
         /// <summary>Configuration keys watched for writes in the hosts compared.</summary>
         public int ConfigurationKeysWatched { get; init; }
+
+        /// <summary>Times in compared answers attributed to the request answered, to an earlier
+        /// request of the same tenant or to the other tenant's (critic p04 round 9: times used to
+        /// be blanked).</summary>
+        public int TimesAttributed { get; init; }
+
+        /// <summary>Times whose interval touched windows of more than one kind; each made its
+        /// comparison run again with the requests paced apart.</summary>
+        public int TimesAmbiguous { get; init; }
+
+        /// <summary>Comparisons run again, paced, for an ambiguous time.</summary>
+        public int PacedRuns { get; init; }
+
+        /// <summary>Values of cookies other than the credential cookies, compared as sent (critic
+        /// p04 round 9: every cookie value used to be blanked).</summary>
+        public int CookieValuesCompared { get; init; }
     }
 
     private static readonly string[] SharedTexts = ["a", "al", "e", "1", "co", "ad"];
@@ -90,6 +106,7 @@ public static partial class NonInterference
         // cache filled on save) is there when the other tenant reads.
         var allEndpoints = EndpointInventory.From(env.Factory.Services);
         var state = new State();
+        state.Clock.Tolerance = await DatabaseClockToleranceAsync(env);
         state.Configuration.Watch("the shared process", env.Factory.Services);
         var writes = 0;
         foreach (var tenant in new[] { b, a })
@@ -97,6 +114,7 @@ public static partial class NonInterference
             var writer = await TenantActivity.StartAsync(env, tenant, allEndpoints, openApi);
             writer.Written = (endpoint, variant) => state.Configuration.Check(state,
                 $"{endpoint.Method} {endpoint.Pattern}{(variant is null ? "" : $" ({variant})")} (each tenant's own writes before the comparison)");
+            var started = DateTimeOffset.UtcNow;
             try
             {
                 await writer.WriteAsync(await TenantSnapshot.TakeAsync(env, tenant.Id, tenant.Canary, tenant.Code));
@@ -105,6 +123,8 @@ public static partial class NonInterference
             finally
             {
                 writer.Dispose();
+                // Times the tenant's own writing stamped are its own, whenever they show up.
+                state.Clock.Add(started, DateTimeOffset.UtcNow, tenant == a ? 'A' : 'B');
             }
         }
         state.Configuration.Check(state, "both tenants' writes before the comparison (between writes)");
@@ -217,13 +237,17 @@ public static partial class NonInterference
         {
             blind.Add("no configuration key was watched");
         }
-        return new Result(state.Findings, state.Unstable, blind, state.Requests, state.Comparisons, state.Discriminating, state.Endpoints.Count,
+        return new Result(state.Findings.Distinct(StringComparer.Ordinal).ToList(), state.Unstable, blind, state.Requests, state.Comparisons, state.Discriminating, state.Endpoints.Count,
             state.WriteComparisons, state.WriteEndpoints.Count, state.WriteVariants.Count, state.ArabicComparisons, state.ArabicAnswers, state.ArabicWriteComparisons,
             state.ArabicWorkspaceWriteComparisons)
         {
             HeadersCompared = state.HeadersCompared,
             ChangeProbes = state.ChangeProbes,
             ConfigurationKeysWatched = state.Configuration.KeysWatched,
+            TimesAttributed = state.Clock.TimesAttributed,
+            TimesAmbiguous = state.Clock.TimesAmbiguous,
+            PacedRuns = state.Clock.PacedRuns,
+            CookieValuesCompared = state.Clock.CookieValuesCompared,
         };
     }
 
@@ -381,9 +405,11 @@ public static partial class NonInterference
         async Task<string> WriteAsync(WriteSide side, bool fresh)
         {
             state.Requests++;
+            var started = await state.Clock.StartAsync();
             var (status, text, headers) = await side.Activity.WriteThroughWithHeadersAsync(fresh ? side.Fresh : side.Shared, $"{side.Name} ({(fresh ? "fresh process" : "shared process")})",
                 endpoint, side.Own, $"write comparison, {label}", variant, side.Owner);
-            return Answer(status, NormalizeWrite(text), NormalizeHeaders(headers));
+            var context = state.Clock.End(started, TenantOf(side.Name));
+            return Answer(status, NormalizeWrite(text, context), NormalizeHeaders(headers, context));
         }
 
         // Whatever changed the configuration since the last check was sent between judged requests
@@ -391,7 +417,7 @@ public static partial class NonInterference
         state.Configuration.Check(state, $"a request sent between the judged ones (before {label})");
         try
         {
-            return await JudgeWriteCoreAsync(state, label, judged, other, WriteAsync);
+            return await PacedWhenAmbiguousAsync(state, () => JudgeWriteCoreAsync(state, label, judged, other, WriteAsync));
         }
         finally
         {
@@ -439,15 +465,52 @@ public static partial class NonInterference
 
     /// <summary><see cref="Normalize"/>, and every <c>version</c> field (a row's concurrency
     /// token, which each save changes) left out.</summary>
-    internal static string NormalizeWrite(string text)
+    internal static string NormalizeWrite(string text, AnswerContext? context = null)
     {
         try
         {
-            return Scrub(DropVersions(JsonNode.Parse(text)))?.ToJsonString() ?? "";
+            return Scrub(DropVersions(JsonNode.Parse(text)), context)?.ToJsonString() ?? "";
         }
         catch (JsonException)
         {
-            return TimeRegex().Replace(text, "<time>");
+            return TimeRegex().Replace(text, m => TimeToken(m, context));
+        }
+    }
+
+    /// <summary>Whose request a side or a judged label is ('A', 'B', or '?' when unknown).</summary>
+    internal static char TenantOf(string label) =>
+        label.StartsWith("tenant A", StringComparison.Ordinal) ? 'A' : label.StartsWith("tenant B", StringComparison.Ordinal) ? 'B' : '?';
+
+    /// <summary>
+    /// Runs one comparison; when a time in any of its answers was ambiguous (its interval touched
+    /// windows of more than one kind, as a time to the whole second does among requests a few
+    /// milliseconds apart), what that run found is set aside and the comparison runs once more
+    /// with every request paced apart by more than the interval, so the time is attributed.
+    /// </summary>
+    private static async Task<T> PacedWhenAmbiguousAsync<T>(State state, Func<Task<T>> compare)
+    {
+        var ambiguous = state.Clock.TimesAmbiguous;
+        var findings = state.Findings.Count;
+        var unstable = state.Unstable.Count;
+        var unstableWrites = state.UnstableWrites;
+        state.Clock.WidestAmbiguous = TimeSpan.Zero;
+        var result = await compare();
+        if (state.Clock.TimesAmbiguous == ambiguous || state.Clock.Pace > TimeSpan.Zero)
+        {
+            return result;
+        }
+        state.Findings.RemoveRange(findings, state.Findings.Count - findings);
+        state.Unstable.RemoveRange(unstable, state.Unstable.Count - unstable);
+        state.UnstableWrites = unstableWrites;
+        state.Clock.Pace = state.Clock.WidestAmbiguous + TimeSpan.FromMilliseconds(2);
+        state.Clock.PacedRuns++;
+        try
+        {
+            return await compare();
+        }
+        finally
+        {
+            state.Clock.Pace = TimeSpan.Zero;
         }
     }
 
@@ -495,6 +558,7 @@ public static partial class NonInterference
         public int ChangeProbes;
         public List<string> WorkspaceWideFailures { get; } = [];
         public ConfigurationWatch Configuration { get; } = new();
+        public RequestClock Clock { get; } = new();
     }
 
     /// <summary>One comparison. Returns the judged tenant's true (fresh-process) answer when it is
@@ -504,7 +568,7 @@ public static partial class NonInterference
         state.Configuration.Check(state, $"a request sent between the judged ones (before GET {uri})");
         try
         {
-            return await JudgeCoreAsync(state, uri, judged, shared, fresh, other, otherShared);
+            return await PacedWhenAmbiguousAsync(state, () => JudgeCoreAsync(state, uri, judged, shared, fresh, other, otherShared));
         }
         finally
         {
@@ -514,35 +578,37 @@ public static partial class NonInterference
 
     private static async Task<string?> JudgeCoreAsync(State state, string uri, string judged, HttpClient shared, HttpClient fresh, string other, HttpClient otherShared)
     {
+        var judgedTenant = TenantOf(judged);
+        var otherTenant = TenantOf(other);
         // An offset page (skip) is a jump into a list the other tenant has just opened: the other
         // tenant sends the same query's first page, then the offset page (critic p05 round 5, plant
         // L10: offset pages reused the total the last first page counted, whatever its tenant).
         var firstPage = FirstPageOf(uri);
-        await GetAsync(state, fresh, uri); // warms whatever the fresh process keeps, with the judged tenant's own answer
-        var truth = await GetAsync(state, fresh, uri);
+        await GetAsync(state, fresh, uri, judgedTenant); // warms whatever the fresh process keeps, with the judged tenant's own answer
+        var truth = await GetAsync(state, fresh, uri, judgedTenant);
         if (firstPage is not null)
         {
-            await GetAsync(state, otherShared, firstPage);
+            await GetAsync(state, otherShared, firstPage, otherTenant);
         }
-        await GetAsync(state, otherShared, uri);
-        var answer = await GetAsync(state, shared, uri);
+        await GetAsync(state, otherShared, uri, otherTenant);
+        var answer = await GetAsync(state, shared, uri, judgedTenant);
         state.Comparisons++;
         state.HeadersCompared += HeaderLines(truth);
         if (answer == truth)
         {
             return truth;
         }
-        var truthAgain = await GetAsync(state, fresh, uri);
+        var truthAgain = await GetAsync(state, fresh, uri, judgedTenant);
         if (truthAgain != truth)
         {
             state.ChangeProbes++;
-            if (await ChangeDependsOnOtherAsync(() => GetAsync(state, shared, uri), async () =>
+            if (await ChangeDependsOnOtherAsync(() => GetAsync(state, shared, uri, judgedTenant), async () =>
                 {
                     if (firstPage is not null)
                     {
-                        await GetAsync(state, otherShared, firstPage);
+                        await GetAsync(state, otherShared, firstPage, otherTenant);
                     }
-                    await GetAsync(state, otherShared, uri);
+                    await GetAsync(state, otherShared, uri, otherTenant);
                 }) is { } change)
             {
                 state.Findings.Add($"{judged}: GET {uri} {change} {other} sent the same request in between");
@@ -553,10 +619,10 @@ public static partial class NonInterference
         }
         if (firstPage is not null)
         {
-            await GetAsync(state, otherShared, firstPage);
+            await GetAsync(state, otherShared, firstPage, otherTenant);
         }
-        await GetAsync(state, otherShared, uri);
-        var answerAgain = await GetAsync(state, shared, uri);
+        await GetAsync(state, otherShared, uri, otherTenant);
+        var answerAgain = await GetAsync(state, shared, uri, judgedTenant);
         if (answerAgain == truth)
         {
             state.Unstable.Add($"{judged}: GET {uri} differed once in the shared process ({Short(answer)}), then matched");
@@ -584,12 +650,14 @@ public static partial class NonInterference
         return uri[..at] + "?" + string.Join("&", parts.Where(p => !p.StartsWith("skip=", StringComparison.OrdinalIgnoreCase)));
     }
 
-    private static async Task<string> GetAsync(State state, HttpClient client, string uri)
+    private static async Task<string> GetAsync(State state, HttpClient client, string uri, char tenant)
     {
         state.Requests++;
+        var started = await state.Clock.StartAsync();
         using var response = await client.GetAsync(uri);
         var body = await response.Content.ReadAsStringAsync();
-        return Answer((int)response.StatusCode, Normalize(body), NormalizeHeaders(response));
+        var context = state.Clock.End(started, tenant);
+        return Answer((int)response.StatusCode, Normalize(body, context), NormalizeHeaders(response, context));
     }
 
     private static HttpClient FreshClient(ErpAppFactory process, HttpClient signedIn)
@@ -696,19 +764,19 @@ public static partial class NonInterference
 
     /// <summary>The body with trace ids removed and every date-time replaced, so two answers that
     /// differ only by when they were made compare equal.</summary>
-    internal static string Normalize(string text)
+    internal static string Normalize(string text, AnswerContext? context = null)
     {
         try
         {
-            return Scrub(JsonNode.Parse(text))?.ToJsonString() ?? "";
+            return Scrub(JsonNode.Parse(text), context)?.ToJsonString() ?? "";
         }
         catch (JsonException)
         {
-            return TimeRegex().Replace(text, "<time>");
+            return TimeRegex().Replace(text, m => TimeToken(m, context));
         }
     }
 
-    private static JsonNode? Scrub(JsonNode? node)
+    private static JsonNode? Scrub(JsonNode? node, AnswerContext? context)
     {
         switch (node)
         {
@@ -716,17 +784,17 @@ public static partial class NonInterference
                 obj.Remove("traceId");
                 foreach (var (key, child) in obj.ToList())
                 {
-                    obj[key] = Scrub(child?.DeepClone());
+                    obj[key] = Scrub(child?.DeepClone(), context);
                 }
                 return obj;
             case JsonArray array:
                 for (var i = 0; i < array.Count; i++)
                 {
-                    array[i] = Scrub(array[i]?.DeepClone());
+                    array[i] = Scrub(array[i]?.DeepClone(), context);
                 }
                 return array;
             case JsonValue leaf when leaf.GetValueKind() == JsonValueKind.String:
-                return JsonValue.Create(TimeRegex().Replace(leaf.GetValue<string>(), "<time>"));
+                return JsonValue.Create(TimeRegex().Replace(leaf.GetValue<string>(), m => TimeToken(m, context)));
             default:
                 return node?.DeepClone();
         }
@@ -852,8 +920,8 @@ public static partial class NonInterference
         "traceparent", "tracestate", "Request-Id", "X-Request-Id", "X-Correlation-Id", "X-Trace-Id",
     };
 
-    /// <summary>The response's headers, normalised (<see cref="NormalizeHeaders(string)"/>).</summary>
-    internal static string NormalizeHeaders(HttpResponseMessage response) => NormalizeHeaders(ResponseHeaders.Text(response));
+    /// <summary>The response's headers, normalised (<see cref="NormalizeHeaders(string, AnswerContext)"/>).</summary>
+    internal static string NormalizeHeaders(HttpResponseMessage response, AnswerContext? context = null) => NormalizeHeaders(ResponseHeaders.Text(response), context);
 
     /// <summary>
     /// Response headers (<c>Name: value</c> lines, as <see cref="ResponseHeaders.Text"/> gives them)
@@ -862,7 +930,7 @@ public static partial class NonInterference
     /// print stamp (<see cref="ResponseText.PrintedAtHeader"/>) replaced. Every other header is
     /// compared as sent: a count, a version or a tag the product sends is part of the answer.
     /// </summary>
-    internal static string NormalizeHeaders(string headers)
+    internal static string NormalizeHeaders(string headers, AnswerContext? context = null)
     {
         var lines = new List<string>();
         foreach (var line in headers.Split('\n', StringSplitOptions.RemoveEmptyEntries))
@@ -880,7 +948,7 @@ public static partial class NonInterference
             }
             if (string.Equals(name, "Set-Cookie", StringComparison.OrdinalIgnoreCase))
             {
-                value = CookieValueRegex().Replace(value, m => $"{m.Groups[1].Value}=<value>");
+                value = CookieValues(value, context);
             }
             else if (string.Equals(name, ResponseText.PrintedAtHeader, StringComparison.OrdinalIgnoreCase) &&
                      DateTimeOffset.TryParse(value.Split(';', 2)[0].Trim(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var at) &&
@@ -888,7 +956,7 @@ public static partial class NonInterference
             {
                 value = "<printed-at>";
             }
-            value = HttpDateRegex().Replace(TimeRegex().Replace(value, "<time>"), "<time>");
+            value = HttpDateRegex().Replace(TimeRegex().Replace(value, m => TimeToken(m, context)), m => TimeToken(m, context));
             lines.Add($"{name.ToLowerInvariant()}: {value}");
         }
         lines.Sort(StringComparer.Ordinal);

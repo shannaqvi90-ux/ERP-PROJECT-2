@@ -716,6 +716,33 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { visited = true });
             }).WithName("leaky.visits").WithSummary("Planted bug: answers every caller's visits in a header.").RequirePermission("leaky.data.read");
 
+            // Bugs 69 to 71 (critic p04 round 9, plants L4 and L6): leaks with no marker that the
+            // non-interference check used to blank. Bug 69: every caller's visits counted outside
+            // the process and told in a cookie value only.
+            group.MapGet("/me/tip", async (HttpContext http) =>
+            {
+                var seen = (long.TryParse(File.Exists(TipNote) ? await File.ReadAllTextAsync(TipNote) : "", out var n) ? n : 0) + 1;
+                var text = seen.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                await File.WriteAllTextAsync(TipNote, text);
+                http.Response.Cookies.Append("erp_tip", text, new CookieOptions { Path = "/", HttpOnly = true, SameSite = SameSiteMode.Strict });
+                return Results.Ok(new { tip = true });
+            }).WithName("leaky.tip").WithSummary("Planted bug: a cookie value counts every caller's visits.").RequirePermission("leaky.data.read");
+            // Bug 70: the time of the previous caller's visit, whatever its tenant, in a header (to
+            // the tenth of a microsecond, as DateTimeOffset writes it).
+            group.MapGet("/me/previous-visit", async (HttpContext http) =>
+            {
+                var previous = await SwapNoteAsync(PreviousVisitNote, DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+                http.Response.Headers["X-Previous-Visit"] = previous.Length == 0 ? "none" : previous;
+                return Results.Ok(new { visited = true });
+            }).WithName("leaky.previousVisit").WithSummary("Planted bug: a header tells the time of the previous caller's visit.").RequirePermission("leaky.data.read");
+            // Bug 71: the same in the body, to the whole second, so it can be told from the
+            // judged tenant's own visit only when the requests are seconds apart.
+            group.MapGet("/me/previous-visit-second", async () =>
+            {
+                var previous = await SwapNoteAsync(PreviousSecondNote, DateTimeOffset.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture));
+                return Results.Ok(new { previous = previous.Length == 0 ? "none" : previous });
+            }).WithName("leaky.previousVisitSecond").WithSummary("Planted bug: the body tells the second of the previous caller's visit.").RequirePermission("leaky.data.read");
+
             // Bug 68 (bug 41 in a header): a captured variable answers the change since the
             // previous caller's directory size in a response header; the body is the same for
             // everyone. The fresh process answers the same each time, so the comparison of headers
@@ -1739,6 +1766,9 @@ public sealed class LeakyModule : ErpModule
         File.Delete(GreetingNote);
         File.Delete(GreetingCountNote);
         File.Delete(VisitsNote);
+        File.Delete(TipNote);
+        File.Delete(PreviousVisitNote);
+        File.Delete(PreviousSecondNote);
         if (Directory.Exists(PrintedDirectory))
         {
             Directory.Delete(PrintedDirectory, recursive: true);
@@ -1758,6 +1788,13 @@ public sealed class LeakyModule : ErpModule
 
     /// <summary>Planted state outside the process (bug 67).</summary>
     private static readonly string VisitsNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-visits-{Environment.ProcessId}.txt");
+
+    /// <summary>Planted state outside the process (bugs 69, 70 and 71).</summary>
+    private static readonly string TipNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-tip-{Environment.ProcessId}.txt");
+
+    private static readonly string PreviousVisitNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-previous-visit-{Environment.ProcessId}.txt");
+
+    private static readonly string PreviousSecondNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-previous-second-{Environment.ProcessId}.txt");
 
     /// <summary>Where bug 66 keeps its count in the configuration.</summary>
     internal const string ArabicSwitchesKey = "Erp:Leaky:ArabicSwitches";
