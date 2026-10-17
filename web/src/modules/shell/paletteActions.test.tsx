@@ -232,6 +232,33 @@ describe("module actions in the command palette", () => {
       expect(offeredActions([action], (p) => every.includes(p)).map((a) => a.key), action.key).toEqual([action.key]);
       expect(offeredActions([action], without(action.permission)), `${action.key} without ${action.permission}`).toEqual([]);
       expect(offeredActions([action], without(screen)), `${action.key} without ${screen}`).toEqual([]);
+      // Each further permission the action's record commands need (critic p04 round 9, plant P4:
+      // with the filter's check of requires removed, every test still passed).
+      for (const further of action.requires ?? []) {
+        expect(offeredActions([action], without(further)), `${action.key} without ${further}`).toEqual([]);
+      }
+    }
+    // The filter is judged on actions that name further permissions.
+    expect(extensions.actions.filter((a) => (a.requires?.length ?? 0) > 0).length).toBeGreaterThanOrEqual(ratchetMinimum("g2.paletteActionsWithRequires"));
+  });
+
+  it("Allow sign-in again is not offered to a user who may change users but not see the sign-in history, in English or Arabic (critic p04 round 9, plant P4)", async () => {
+    const unblock = extensions.actions.find((a) => a.key === "identity.users.unblock")!;
+    expect(unblock.requires).toContain("identity.signIns.read");
+    const changer = ["identity.profile.update", "identity.users.read", "identity.users.update"];
+    expect(offeredActions(extensions.actions, (p) => changer.includes(p)).map((a) => a.key)).toEqual(["identity.users.print"]);
+    expect(offeredActions(extensions.actions, (p) => [...changer, "identity.signIns.read"].includes(p)).map((a) => a.key).sort()).toEqual(
+      ["identity.users.history", "identity.users.print", "identity.users.unblock"],
+    );
+    for (const language of ["en", "ar"] as const) {
+      const title = translate(language, unblock.labelKey);
+      await open("/", changer, { language });
+      await openPalette(title);
+      expect(offered().filter((o) => o.title === title).map((o) => o.title), language).toEqual([]);
+      // The control: the same user with the sign-in history is offered it.
+      await open("/", [...changer, "identity.signIns.read"], { language });
+      await openPalette(title);
+      expect(offered().filter((o) => o.title === title).length, `${language} with identity.signIns.read`).toBe(1);
     }
   });
 
