@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { trnDigits } from "./trn";
+import { tinOf, trnDigits } from "./trn";
 
 describe("the TRN as typed", () => {
   it("turns the Arabic-Indic digits of an Arabic keyboard into 0 to 9", () => {
@@ -13,5 +13,18 @@ describe("the TRN as typed", () => {
   it("leaves every other digit set as typed, for the server to refuse", () => {
     expect(trnDigits("۱۰۰۱۲۳۴۵۶۷۸۹۰۰۳")).toBe("۱۰۰۱۲۳۴۵۶۷۸۹۰۰۳");
     expect(trnDigits("１００")).toBe("１００");
+  });
+});
+
+describe("the TIN of a TRN", () => {
+  it("is the first 10 digits of a 15-digit TRN, however it was typed", () => {
+    expect(tinOf("100-1234-5678-9003")).toBe("1001234567");
+    expect(tinOf("١٠٠١٢٣٤٥٦٧٨٩٠٠٣")).toBe("1001234567");
+  });
+
+  it("is not shown for a TRN that is not 15 digits", () => {
+    expect(tinOf("12345")).toBeNull();
+    expect(tinOf("1001234567890031")).toBeNull();
+    expect(tinOf("۱۰۰۱۲۳۴۵۶۷۸۹۰۰۳")).toBeNull();
   });
 });

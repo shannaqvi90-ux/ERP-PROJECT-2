@@ -518,6 +518,8 @@ describe("companies screen", () => {
     setInput(trn, "۱۰۰");
     expect(trn.value).toBe("۱۰۰");
     setInput(trn, "١٠٠١٢٣٤٥٦٧٨٩٠٠٣");
+    // The TIN (the TRN's first 10 digits) is shown, derived, never entered.
+    expect(view.container.querySelector('[data-field="taxRegistrationNumber"] .field-hint')!.textContent).toContain("1001234567");
     // The country is chosen from a list in the screen's language (no two-letter code to know), the
     // UAE first; it is a native list, so typing a name's first letters chooses it from the keyboard.
     const country = view.container.querySelector<HTMLSelectElement>('[data-field="country"] select')!;

@@ -8,3 +8,13 @@
 export function trnDigits(typed: string): string {
   return typed.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660));
 }
+
+/**
+ * The Tax Identification Number of a TRN as typed: its first 10 digits (UAE Ministry of Finance,
+ * Electronic Invoicing Guidelines v1.1; docs/compliance/vat-trn-format.md), once the TRN is 15
+ * digits with its spaces and dashes removed; null otherwise. Derived only, never entered.
+ */
+export function tinOf(typed: string): string | null {
+  const digits = trnDigits(typed).replace(/[ -]/g, "");
+  return /^[0-9]{15}$/.test(digits) ? digits.slice(0, 10) : null;
+}

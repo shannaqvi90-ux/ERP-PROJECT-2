@@ -6,7 +6,7 @@ import { useRecordForm, type RecordFormState } from "../../kernel/forms/useRecor
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { loadAll } from "./records";
-import { trnDigits } from "./trn";
+import { tinOf, trnDigits } from "./trn";
 import { companiesChanged, type BranchRow, type Company } from "./types";
 import { emirates, problemOf, useMonths, useLocalName, type Emirate, type FieldErrors } from "./ui";
 
@@ -200,7 +200,9 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
         <TextField field={{ ...trn, onChange: (value: string) => trn.onChange(trnDigits(value)) }} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={40}
           hint={company?.legacyTaxRegistrationNumber && form.draft.taxRegistrationNumber.trim() === ""
             ? t("tenancy.company.legacyTaxRegistrationNumber", { number: company.legacyTaxRegistrationNumber })
-            : t("tenancy.company.taxRegistrationNumberHint")} />
+            : tinOf(form.draft.taxRegistrationNumber) !== null
+              ? `${t("tenancy.company.taxRegistrationNumberHint")} ${t("tenancy.company.tinHint", { tin: tinOf(form.draft.taxRegistrationNumber)! })}`
+              : t("tenancy.company.taxRegistrationNumberHint")} />
       </FormSection>
       <FormSection title={t("tenancy.company.accounting")}>
         <TextField field={bind("baseCurrency")} label={t("tenancy.company.baseCurrency")} dir="ltr" maxLength={3} upper list="tenancy-currencies" hint={t("tenancy.company.baseCurrencyHint")} />
