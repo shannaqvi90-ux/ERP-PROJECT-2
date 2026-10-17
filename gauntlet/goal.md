@@ -29,6 +29,15 @@ THE BAR
    products score exactly 0 is left out of that task's comparison, neither a tie nor a win.
    Every other metric must still be strictly better for ours; any other tie is still a loss;
    if every metric ties, the task is a loss; the verdict names the metrics left out.
+   Second exception (owner, 2026-10-17, needs-human #21): where ours ties Odoo on a task and a
+   win cannot be reached, the tie counts as a win, but only after a real try to win. A tie is
+   accepted (recorded as `tie-accepted`) only when all of these hold: (a) ours is worse on no
+   metric of that path; (b) the same task already tied in an earlier judged round of the same
+   piece, so the builder got the tie back as feedback and tried to win; (c) the builder's
+   decision record names that task, the paths it tried and why ours cannot be made shorter;
+   (d) the critic tries ours' paths itself and finds none that wins. Otherwise a tie is still a
+   loss. The verdict names every accepted tie. Recorded verdicts are not changed; the rule
+   applies from the first workflow launched after 2026-10-17 16:30 UTC.
 
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not

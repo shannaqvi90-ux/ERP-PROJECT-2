@@ -368,6 +368,13 @@ ties, or nothing is left to compare, the task is a loss. The comparison names th
 (`left_out`, `left_out_note`, and each one's outcome reads `left out (both exactly 0)`), and
 `run.mjs` prints them.
 
+**A tie accepted after a try to win (owner decision, 2026-10-17, needs-human #21; gauntlet/goal.md
+bar item 2).** The harness still reports a tie as a tie and never accepts one itself. The critic may
+record a task as `tie-accepted` (counted as a win in the verdict) only when ours is worse on no
+metric of that path, the same task already tied in an earlier judged round of the same piece, the
+builder's decision record names the task, the paths it tried and why ours cannot be shorter, and
+the critic's own tries of ours' paths find none that wins. Otherwise a tie is a loss.
+
 **Whole paths for ours (round 8, p00 critic).** When ours has several expert paths, each is judged
 whole, every metric from that one path; ours wins when one of its paths wins on its own. The
 comparison shows that path (`ours_path`; when none wins, the path that wins the most metrics) and

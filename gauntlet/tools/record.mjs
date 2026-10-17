@@ -174,7 +174,7 @@ main{max-width:1180px;margin:0 auto;padding:24px 16px 64px}h1{font-size:22px;mar
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
 .card header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pid{font:12px ui-monospace,monospace;color:var(--muted)}
 .badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
-.badge.win,.chip.win,.win.ours{color:var(--win)}.badge.loss,.chip.loss,.win.odoo,.win.tie{color:var(--loss)}.badge.blocked,.chip.blocked{color:var(--blocked)}.badge.none{color:var(--none)}
+.badge.win,.chip.win,.win.ours,.win.tie-accepted{color:var(--win)}.badge.loss,.chip.loss,.win.odoo,.win.tie{color:var(--loss)}.badge.blocked,.chip.blocked{color:var(--blocked)}.badge.none{color:var(--none)}
 .history{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.chip{font-size:11px;border:1px solid currentColor;border-radius:4px;padding:0 5px}
 .label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:12px 0 4px}
 .gap{border-inline-start:3px solid var(--loss);padding:4px 10px;margin:10px 0;background:var(--bg);border-radius:4px}.gap p{margin:4px 0 0}
