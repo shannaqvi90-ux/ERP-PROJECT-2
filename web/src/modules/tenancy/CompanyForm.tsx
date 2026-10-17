@@ -153,10 +153,13 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   const bind = form.bind;
   const trn = bind("taxRegistrationNumber");
   const arabicEmpty = form.draft.legalNameAr.trim() === "";
+  const legalNameArField = bind("legalNameAr");
+  // The hint is left out while the server's refusal says the same under the field (critic p02
+  // round 10: both at once made the row tall and left a gap beside the English name).
   const legalNameAr = (
-    <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
+    <TextField field={legalNameArField} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
       required={form.draft.arabicLegalNameRequired} autoFocus={id === null && language === "ar"}
-      hint={arabicEmpty ? t(form.draft.arabicLegalNameRequired ? "tenancy.company.legalNameArRequiredHint" : "tenancy.company.legalNameArMissing") : undefined} />
+      hint={arabicEmpty && legalNameArField.errors.length === 0 ? t(form.draft.arabicLegalNameRequired ? "tenancy.company.legalNameArRequiredHint" : "tenancy.company.legalNameArMissing") : undefined} />
   );
 
   return (
@@ -363,6 +366,9 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
   const [draft, setDraft] = useState<QuickBranch>(fresh);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
+  // Said after a branch is added with its Arabic name only (critic p02 round 10: nothing asked
+  // for the English name, and English lists and documents showed it blank or in Arabic).
+  const [notice, setNotice] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
 
   // Only the latest read fills the table: a read started earlier (when the form opened) that
@@ -403,11 +409,13 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
   const add = async (event: FormEvent | KeyboardEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
+    setNotice(null);
+    const nameEn = englishNameOf(draft, companyName, companyNameAr);
     try {
-      await api("POST", "/api/tenancy/branches", {
+      const created = await api<{ code?: string } | undefined>("POST", "/api/tenancy/branches", {
         companyId,
         code: draft.code.trim(),
-        nameEn: englishNameOf(draft, companyName, companyNameAr),
+        nameEn,
         nameAr: branchNameOf(draft.nameAr),
         city: optional(draft.city),
         emirate: draft.emirate === "" ? null : draft.emirate,
@@ -416,6 +424,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
       });
       setDraft(fresh());
       setErrors({});
+      if (nameEn.trim() === "") setNotice(t("tenancy.branch.addedWithoutEnglish", { code: created?.code ?? "" }));
       window.dispatchEvent(new Event(companiesChanged));
       await load();
       focusName();
@@ -461,7 +470,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
           {branches.map((b) => (
             <tr key={b.id} className={b.isActive ? undefined : "inactive"}>
               <td dir="ltr">{b.code}</td>
-              <td dir="ltr">{b.nameEn}</td>
+              <td dir="ltr">{(b.nameEn ?? "").trim() === "" ? <span className="muted">{t("tenancy.branch.noEnglishName")}</span> : b.nameEn}</td>
               <td dir="rtl">{b.nameAr}</td>
               <td>{b.city}</td>
               <td>{b.emirate ? t(`tenancy.emirate.${b.emirate}`) : ""}</td>
@@ -489,6 +498,11 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
             {t("tenancy.branch.add")}
           </button>
         </form>
+      )}
+      {notice && (
+        <p className="notice" role="status" data-notice="no-english-name">
+          {notice}
+        </p>
       )}
       {message && (
         <div className="alert" role="alert">

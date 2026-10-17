@@ -167,6 +167,10 @@ describe("companies screen", () => {
     // English name is not known, so none is saved (critic p02 round 9: it was saved as the
     // company's English name, and so took the head office's code HQ).
     expect(branch.body).toMatchObject({ nameAr: "النور عجمان ذ.م.م - فرع العين", nameEn: "" });
+    // The user is told the branch has no English name yet, and where to add it (critic p02 round 10).
+    const notice = view.container.querySelector('[data-notice="no-english-name"]');
+    expect(notice?.getAttribute("role")).toBe("status");
+    expect(notice?.textContent).toContain("دون اسم بالإنجليزية");
   });
 
   it("names a branch from its typed names: the head office keeps the company's name, a branch typed in Arabic only has no English name", () => {
@@ -528,6 +532,27 @@ describe("companies screen", () => {
     await settle();
     const put = calls.find((c) => c.method === "PUT" && c.url === "/api/tenancy/companies/c9")!;
     expect(put.body).toMatchObject({ taxRegistrationNumber: "100123456789003", country: "OM" });
+  });
+
+  it("marks a branch saved with its Arabic name only as having no English name on an English screen (critic p02 round 10)", async () => {
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    const company = { ...saved, everyBranch: true, everyCompany: true };
+    const arabicOnly = { id: "b1", companyId: "c9", code: "BR-1", nameEn: "", nameAr: "فرع المصفح", city: null, emirate: null, isActive: true };
+    mockFetch((_method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [{ ...company }], total: 1, next: null } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: company };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [arabicOnly], total: 1, next: null } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const row = [...view.container.querySelectorAll<HTMLTableRowElement>('section[aria-label="Branches"] tbody tr')].find((r) => r.textContent!.includes("BR-1"))!;
+    expect(row.cells[1]!.textContent).toBe("No English name");
+    expect(row.cells[2]!.textContent).toBe("فرع المصفح");
   });
 
   it("offers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule", async () => {
