@@ -81,6 +81,12 @@ database). Its processor time is a small share of that (the requests are sequent
 verify's 10,500 s maximum it adds well under 1 %. The other round 11 changes add web unit tests of
 a few seconds and one .NET test assertion block.
 
+Measured: this branch's whole `./erp verify` (slot taken 2026-10-17T18:58:36Z) passed in 3,485 s
+wall time on a busy machine (load up to 60) with 9,627 s of processor time (dotnet 7,240, web 1,913,
+e2e 417, timing 58) against the 10,500 s maximum; the integration branch's recent runs used 9,218 to
+10,181 s. Suites: .NET 635, web unit 503, end to end 106, comparison 415, build 6, none failed or
+skipped; the suite minimums are raised to 635 and 503.
+
 ## Other round 10 findings handled in round 11
 
 - TRN typed in Arabic-Indic digits: converted (owner decision 2026-10-17), see
