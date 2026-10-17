@@ -8,8 +8,10 @@ Date: 2026-10-02. Piece: p00-foundation. Status: accepted.
   `ExchangeRate` (base units per unit of currency) and `BaseAmount` — the four facts CLAUDE.md
   rule 2 requires. `Money.Create` refuses amounts with more decimals than the currency allows,
   non-positive rates and a base-currency amount at a rate other than 1, and rounds the base amount
-  half away from zero to the base currency's minor units.
-- Columns: `numeric(19,4)` amounts, `numeric(19,8)` rate, `char(3)` currency, mapped by
+  half away from zero to the base currency's minor units. (Round 11: rounding follows rule 2 of
+  the compliance record; see below.)
+- Columns: `numeric(19,4)` amounts (since round 11: `numeric(28,10)` amount, `numeric(19,4)` base
+  amount, plus a `boolean` stated flag), `numeric(19,8)` rate, `char(3)` currency, mapped by
   `MoneyMapping.MoneyProperty(...)` as an EF complex property.
 - JSON: every `decimal` is serialised as a string (`"1234.50"`) and the OpenAPI document declares
   it as `type: string, format: decimal`, so no JavaScript client parses money into a float.
@@ -38,11 +40,39 @@ Electronic Invoicing Guidelines v1.1:
   `Base_amounts_at_a_fils_midpoint_round_away_from_zero_and_mirror` pin it, including the
   midpoints where banker's rounding would differ (0.025 to 0.03).
 - Rule 2 (round once, on the stated figure; lines and tax-category subtotals keep full precision)
-  governs *when* to round. `Money` is the type of a stated figure: it refuses an amount with more
-  decimals than its currency, and `Add` sums base amounts already rounded. Line and subtotal
-  arithmetic that must keep full precision is therefore done on `decimal`, and the stated total is
-  turned into `Money` once. p08 (multi-currency) and the VAT/invoicing modules own that arithmetic
-  and must follow rule 2 there; nothing uses `Money` for line totals yet (critic p00 round 9).
+  is now in the type itself (round 11, closing the critic's gap of rounds 9 and 10). Until round
+  10 `Money.Create` refused any amount with more decimals than its currency and `Add` summed base
+  amounts already rounded, so three lines of USD 1.00 at 3.6725 totalled AED 11.01 instead of
+  11.02. Now:
+  - A `Money` is *unrounded* (a line or a subtotal, the default) or *stated* (`IsStated`, made by
+    `State()`). An unrounded money keeps its exact amount; its exact base amount is always
+    `Amount × ExchangeRate` (`ExactBaseAmount()`), because `Add` only adds figures at the same
+    rate. `BaseAmount` is that exact figure rounded once (what the figure states on its own, for
+    display), and is never what a total adds.
+  - `Add` of two unrounded figures sums the exact amounts and rounds the base of the sum once:
+    the three lines above give 11.0175, stated 11.02. `Add` of two stated figures sums what each
+    stated (a statement of two invoices that each stated AED 3.67 shows 7.34). Adding a stated
+    figure to an unrounded one is refused, since part of the total would be rounded twice.
+  - `State()` is the single rounding: the amount to its currency's minor units and the base
+    amount from the *exact* base (not from the rounded amount × rate), both half away from zero.
+    `RoundingAmount()` and `BaseRoundingAmount()` give the difference stating adds, the value an
+    e-invoice may put in its optional "Rounding Amount" field.
+  - `Money.Unrounded(...)` takes a line amount with up to 10 decimals (quantity × unit price) and
+    never rounds it; more decimals, or a figure larger than the columns hold, is refused rather
+    than rounded silently. `Money.Create(...)` is unchanged for an amount as entered: it must fit
+    the currency's minor units.
+  - Columns: `{prefix}_amount` is now `numeric(28,10)` so a line is not rounded on its way to the
+    database; `{prefix}_base_amount` stays `numeric(19,4)` (always rounded to at most 3 decimals);
+    a sixth column `{prefix}_stated boolean` keeps whether the figure was stated, so a stated total
+    read back still adds as stated. No table used `MoneyProperty` yet, so no migration changes.
+  - JSON keeps the same five fields (`IsStated` and the exact base are not in answers; clients do
+    no money arithmetic). Money is not read from request bodies.
+  - Tests in `MoneyTests` pin the critic's case, full-precision lines, subtotals in any grouping,
+    the stated base coming from the exact base, the one rounding at a midpoint and its credit-note
+    mirror, stated figures adding as stated, the refusal to mix, the bounds, the column types and
+    the JSON shape. Every earlier Money test is unchanged and passes.
+  - Behaviour otherwise unchanged: a single `Money.Create` still reports the same rounded
+    `BaseAmount` (100.05 USD at 3.6725 is AED 367.43).
 - Rule 3 (Central Bank rate on the date of supply) belongs to p08's rate table.
 
 The minor-unit table in `CurrencyCode.MinorUnits` is an engineering table for currencies other
