@@ -97,7 +97,9 @@ test.describe("record forms and printed documents", () => {
     await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
     expect(puts).toEqual([number, original]);
 
-    // The number after +971 alone, with its trunk 0, is the same number.
+    // The number after +971 alone, with its trunk 0, is the same number (the field entered afresh:
+    // a click into a field already being edited places the caret, as in any field).
+    await page.locator(".record-header h2").click();
     await phone.click();
     await page.keyboard.type("0" + number.slice(5).replace(/\s/g, ""));
     await expect(phone).toHaveValue(number);
@@ -195,11 +197,18 @@ test.describe("record forms and printed documents", () => {
 
     // The figures the screen must add up: the same report as data.
     const data = (await (await page.request.get("/api/reports/run/identity.roleSummary?groupBy=kind&format=json&language=en&numerals=latn")).json()) as {
-      columns: { key: string }[];
+      groupBy: string | null;
+      columns: { key: string; total: boolean }[];
       groups: { rows: { cells: { value: unknown }[] }[] }[];
     };
-    const at = (key: string) => data.columns.findIndex((c) => c.key === key);
-    const sum = (key: string, rows: { cells: { value: unknown }[] }[]) => rows.reduce((total, row) => total + Number(row.cells[at(key)]!.value), 0);
+    // The screen leaves out the grouping column (its value heads each group); a cell's place on
+    // screen is its place among the columns shown.
+    const shown = data.columns.filter((c) => c.key !== data.groupBy || c.total);
+    expect(shown.length).toBe(data.columns.length - 1);
+    await expect(doc.locator("thead th")).toHaveCount(shown.length);
+    const at = (key: string) => shown.findIndex((c) => c.key === key);
+    const sum = (key: string, rows: { cells: { value: unknown }[] }[]) =>
+      rows.reduce((total, row) => total + Number(row.cells[data.columns.findIndex((c) => c.key === key)]!.value), 0);
     const allRows = data.groups.flatMap((g) => g.rows);
     expect(allRows.length).toBeGreaterThan(0);
 
