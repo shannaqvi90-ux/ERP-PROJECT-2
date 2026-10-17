@@ -497,11 +497,11 @@ describe("the phone field and a completed entry", () => {
   type ContactDraft = { name: string; phone: string };
   const contact: Contact = { id: "c1", name: "Gulf Steel", phone: "+971 4 555 0100", version: 3 };
 
-  function ContactForm({ isNew = false }: { isNew?: boolean }) {
+  function ContactForm({ isNew = false, canEdit = true }: { isNew?: boolean; canEdit?: boolean }) {
     const form = useRecordForm<Contact, ContactDraft>({
       load: isNew ? undefined : (signal) => api<Contact>("GET", "/api/contacts/c1", undefined, { signal }),
       initial: (c) => ({ name: c?.name ?? "", phone: c?.phone ?? "" }),
-      canEdit: true,
+      canEdit,
       save: (draft, c) => api<Contact>(c ? "PUT" : "POST", c ? "/api/contacts/c1" : "/api/contacts", { ...draft, version: c?.version }),
     }, "c1");
     return (
@@ -623,6 +623,21 @@ describe("the phone field and a completed entry", () => {
     await settle();
     expect(newPhone.value).toBe("+971 50 555 0199");
     expect(fresh.filter((c) => c.method !== "GET")).toHaveLength(0);
+  });
+
+  // G2 on the completed entry's write path: a user who may not change the record never saves it by
+  // completing a number (plant W-complete in scripts/forms-plant-self-test.mjs).
+  it("a user who may only read the record cannot save it by completing a number", async () => {
+    const calls = serve();
+    await show(<ContactForm canEdit={false} />);
+    const phone = input("phone");
+    expect(phone.disabled).toBe(true);
+    expect(view!.container.querySelector('[data-field="phone"] .field-hint')).toBeNull();
+    act(() => phone.setSelectionRange(5, phone.value.length));
+    for (const ch of "505550199") typeChar(phone, ch);
+    await settle();
+    expect(calls.filter((c) => c.method !== "GET")).toEqual([]);
+    expect(view!.container.querySelector('.notice[role="status"]')).toBeNull();
   });
 
   it("takes another country's number after +, and does not call it complete", async () => {
