@@ -163,3 +163,12 @@ with other agents' verifies running beside it:
 
 So the round adds about one minute of processor time to `./erp verify`, inside the owner's 10,500 s
 maximum (`verify.cpuSeconds`, needs-human #12, unchanged; this round changes no maximum).
+
+`./erp verify` of this round, through the verify slots on the owner's PC (head 918a75b; slot taken
+04:21:10Z): passed in 3,619 s. Processor time 9,370 s (dotnet 7,263, web 1,783, e2e 266, timing
+57) against the 10,500 s maximum. The wall time was over the 3,600 s quiet maximum but not judged:
+the machine was busy (load 25 at the start, 33 at the end, up to 84 over 243 readings). Counts:
+dotnet 612, web unit 477, end-to-end 102, compare 390 (373 before), build 6; all 62 instrument
+mutations caught; all 13 built ours drivers verified in the health check, the two new ones
+included. The suite minimums were raised to these counts afterwards (`suite.compareTests` 390,
+`suite.dotnetTests` 612, `suite.webUnitTests` 477).
