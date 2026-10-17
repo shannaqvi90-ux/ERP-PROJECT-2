@@ -140,4 +140,10 @@ Measured on this machine:
   same size as round 5's 1,197 single-value runs, so roughly 100 to 150 processor-seconds.
 - The new print self-test: about 8 s in the existing print plant environment.
 - The probe's combined phase adds tenant B's and tenant A's combined requests to the G1 HTTP
-  isolation test (see the integrator notes for the measured run).
+  isolation test and to its leaky-module self-test (both load the reports module).
+- Whole verify on this branch (`./erp verify` through the verify slot, slot taken 03:14:30Z): passed
+  in 3,987 s of wall time on a busy machine (load up to 82.8 on 16 CPUs), processor time 9,725 s
+  (dotnet 7,722, web 1,696, e2e 252, timing 55) against the 10,500 s maximum; the last integration
+  and critic verifies before this round used 9,512 to 9,809 s, so this round adds at most about
+  100 to 200 processor-seconds. Counts: 628 .NET, 478 web unit, 102 end-to-end, 373 comparison
+  and 6 build tests; `suite.dotnetTests` and `suite.webUnitTests` minimums raised to 628 and 478.
