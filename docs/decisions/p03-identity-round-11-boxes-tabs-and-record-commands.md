@@ -77,9 +77,18 @@ the record's palette commands followed the Details tab; a copied role was "X (co
 
 ## Processor time
 
-Measured on this branch's verify (see the integrator notes for the run): web unit tests add about
-14 s (the requires sweep 10 s, the any-tab and copy and unblock tests 4 s), the palette plant
-self-test about 25 s (its control run repeats the sweep; PA11 and PA12 stop at the first failure),
-the identity plant self-test's control about 1 s, end-to-end about 6 s of browser time (the
-paused-sign-in test waits on the sign-in budget, which is wall time, not processor time), .NET
-under 1 s. About 45 s in all.
+This branch's verify (slot taken 2026-10-17T11:59:19Z) passed in 3,468 s wall time, under load (up
+to 45 on 16 CPUs). Processor time was 9,272 s against the maximum of 10,500: dotnet 7,180, web
+1,657, e2e 385, timing 50. Counts: .NET 629, web unit 485, e2e 105, compare 390, build 6.
+
+What this round adds, measured locally:
+- Web unit tests: about 14 s (the requires sweep 10 s; the any-tab, copy and unblock tests 4 s).
+- Palette plant self-test: about 25 s. Its control run repeats the sweep; PA11 and PA12 stop at
+  the first failure.
+- Identity plant self-test control: about 1 s.
+- End-to-end: about 6 s of browser time. The paused sign-in test also waits on the sign-in budget,
+  which is wall time, not processor time.
+- .NET: under 1 s.
+
+That is about 45 s in all. The run as a whole stayed below the round-10 figures (9,943 s)
+because other agents' load varies.
