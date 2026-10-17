@@ -115,3 +115,11 @@ the owner's maximum of 10,500 s, and 3,612 s wall while the machine was busy (lo
 not judged). The last integration and critic verifies used 9,512 to 9,727 s, so what the round adds
 is within run-to-run noise. Counts: .NET 613, web unit 478, end-to-end 102, compare 373; the
 .NET and web unit minimums in gauntlet/ratchet.json are raised to them.
+
+`./erp verify` of the integration merge of this round (a870d282, piece/p03-identity 4ff32a8f into
+the integration branch at 7308c906), through the verify slots on the owner's PC (slot taken
+07:41:42Z): passed in 4,296 s. Processor time 10,009 s (dotnet 7,873, web 1,844, e2e 256, timing
+36) against the 10,500 s maximum. The wall time was over the 3,600 s quiet maximum but not judged:
+the machine was busy (load 1.83 at the start, 7.24 at the end, up to 82.29 over 289 readings).
+Counts: dotnet 629, web unit 479, end-to-end 102, compare 390, build 6. The suite minimums were
+raised to these counts afterwards (`suite.dotnetTests` 629, `suite.webUnitTests` 479).
