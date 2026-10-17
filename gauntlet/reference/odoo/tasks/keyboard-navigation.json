@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "keyboard-navigation-20261010T020536-7ef0",
-  "instrument": 8,
+  "run_id": "keyboard-navigation-20261017T115426-d457",
+  "instrument": 10,
   "task": "keyboard-navigation",
   "task_title": "Navigate by keyboard",
   "product": "odoo",
   "status": "verified",
   "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
   "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
-  "started_at": "2026-10-10T02:05:36.305Z",
-  "finished_at": "2026-10-10T02:05:40.724Z",
+  "started_at": "2026-10-17T11:54:26.543Z",
+  "finished_at": "2026-10-17T11:54:45.840Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 0.876,
-    "system_wait_seconds": 0.77,
+    "machine_seconds": 1.001,
+    "system_wait_seconds": 0.853,
     "human_seconds": 7.25,
-    "human_plus_wait_seconds": 8.02,
+    "human_plus_wait_seconds": 8.103,
     "klm_operator_counts": {
       "K": 10,
       "P": 0,
@@ -59,7 +59,7 @@
       "label": "apps menu",
       "keystrokes": 2,
       "at": 0.001,
-      "took": 0.022,
+      "took": 0.025,
       "chord": "Alt+h",
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,8 +69,8 @@
       "kind": "key",
       "label": "first app",
       "keystrokes": 1,
-      "at": 0.054,
-      "took": 0.004,
+      "at": 0.042,
+      "took": 0.005,
       "chord": "ArrowDown",
       "screen": "/odoo/discuss",
       "chain": false
@@ -80,7 +80,7 @@
       "kind": "key",
       "label": "Contacts",
       "keystrokes": 1,
-      "at": 0.059,
+      "at": 0.048,
       "took": 0.004,
       "chord": "ArrowDown",
       "screen": "/odoo/discuss",
@@ -91,8 +91,8 @@
       "kind": "key",
       "label": "open Contacts",
       "keystrokes": 1,
-      "at": 0.066,
-      "took": 0.005,
+      "at": 0.054,
+      "took": 0.006,
       "chord": "Enter",
       "screen": "/odoo/discuss",
       "chain": true
@@ -102,8 +102,8 @@
       "kind": "key",
       "label": "header row",
       "keystrokes": 1,
-      "at": 0.474,
-      "took": 0.018,
+      "at": 0.483,
+      "took": 0.021,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": false
@@ -113,8 +113,8 @@
       "kind": "key",
       "label": "row 1",
       "keystrokes": 1,
-      "at": 0.492,
-      "took": 0.01,
+      "at": 0.505,
+      "took": 0.021,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": true
@@ -124,8 +124,8 @@
       "kind": "key",
       "label": "row 2",
       "keystrokes": 1,
-      "at": 0.503,
-      "took": 0.005,
+      "at": 0.526,
+      "took": 0.014,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": true
@@ -135,8 +135,8 @@
       "kind": "key",
       "label": "row 3",
       "keystrokes": 1,
-      "at": 0.509,
-      "took": 0.005,
+      "at": 0.542,
+      "took": 0.01,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": true
@@ -146,8 +146,8 @@
       "kind": "key",
       "label": "open",
       "keystrokes": 1,
-      "at": 0.529,
-      "took": 0.019,
+      "at": 0.555,
+      "took": 0.028,
       "chord": "Enter",
       "screen": "/odoo/contacts",
       "chain": true
@@ -156,42 +156,47 @@
   "waits": [
     {
       "label": "apps menu open",
-      "at": 0.024,
-      "seconds": 0.029
+      "at": 0.027,
+      "seconds": 0.015
     },
     {
       "label": "Contacts highlighted",
-      "at": 0.064,
-      "seconds": 0.002
+      "at": 0.053,
+      "seconds": 0.001
     },
     {
       "label": "contact list",
-      "at": 0.071,
-      "seconds": 0.402
+      "at": 0.061,
+      "seconds": 0.421
     },
     {
       "label": "third row selected",
-      "at": 0.515,
-      "seconds": 0.013
+      "at": 0.553,
+      "seconds": 0.002
     },
     {
       "label": "contact form",
-      "at": 0.548,
-      "seconds": 0.324
+      "at": 0.583,
+      "seconds": 0.408
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 0.992,
+      "seconds": 0.006
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "578f9b0e0a0ce7c8.jpg",
+      "file": "8cdde5eb02de5e81.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/578f9b0e0a0ce7c8.jpg"
+      "path": "gauntlet/reference/odoo/shots/8cdde5eb02de5e81.jpg"
     },
     {
       "moment": "done",
-      "file": "34daa585e46a4a8d.jpg",
-      "at": 0.876,
-      "path": "gauntlet/reference/odoo/shots/34daa585e46a4a8d.jpg"
+      "file": "478000229fc83b18.jpg",
+      "at": 1.001,
+      "path": "gauntlet/reference/odoo/shots/478000229fc83b18.jpg"
     }
   ],
   "verification": {
@@ -205,7 +210,7 @@
   "path_notes": "Alt+H (apps menu) > Down > Down (Contacts) > Enter > Down (header row), Down, Down, Down (third row) > Enter.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/keyboard-navigation.mjs",
-    "sha256": "ceac3dab2381b5ce054495dbb764d7b1e5e6e5496a27593ff643169caeb89f37"
+    "sha256": "e5469eff686a059fa36d559c0c79072bcc1d6e9dfa98253d8f92be09a7cb8123"
   },
   "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
   "error": null,
@@ -225,17 +230,17 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.003,
+      "seconds": 0.004,
       "verified": true
     },
     {
       "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "longest_pause_seconds": 0,
       "repeated_reads": [],
       "paced_seconds": 0,
       "seconds": 0.003,
       "verified": true,
-      "gap_seconds": 0.067
+      "gap_seconds": 0.071
     }
   ],
   "requests_after_clock": 0,
@@ -246,11 +251,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "14190ef2ea074135",
+    "sha256": "9a4ebd004ba32b63",
     "elements": 323
   },
   "screen_after_verify": {
-    "sha256": "14190ef2ea074135",
+    "sha256": "9a4ebd004ba32b63",
     "elements": 323,
     "unchanged": true
   },
@@ -259,17 +264,17 @@
     "error": null,
     "back_end_reads": 0,
     "requests": 1,
-    "longest_pause_seconds": 0,
+    "longest_pause_seconds": 0.001,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.036
+    "seconds": 0.038
   },
   "set_up_writes_waited": 0,
   "result_file": "gauntlet/reference/odoo/tasks/keyboard-navigation.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261010T020536-7ef0.json",
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261010T020540-09b3.json",
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261010T020545-6e23.json"
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T115407-2614.json",
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T115426-d457.json",
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T115445-6916.json"
   ]
 }

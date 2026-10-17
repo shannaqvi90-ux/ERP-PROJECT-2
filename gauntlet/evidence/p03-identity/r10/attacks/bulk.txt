@@ -1,0 +1,12 @@
+B canaries [
+  'zzcanarybmvc60wql@gulfsteel.example active=true',
+  'zzcanarybmvc5zged@gulfsteel.example active=true'
+]
+{"search":"zzcanarybmvc60wql@gulfsteel.example","active":false,"expectedCount":1} 409 {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (1 then, 0 now). Nothing was changed: look at the list again and retry.","status":409,"code":"list.matchingChanged"
+{"filter":"email eq 'zzcanarybmvc60wql@gulfsteel.example'","active":false,"expectedCount": 409 {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (1 then, 0 now). Nothing was changed: look at the list again and retry.","status":409,"code":"list.matchingChanged"
+{"search":"zzcanaryb","active":false,"expectedCount":2} 409 {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (2 then, 0 now). Nothing was changed: look at the list again and retry.","status":409,"code":"list.matchingChanged"
+{"search":"","filter":"","active":false,"expectedCount":0} 409 {"type":"urn:erp:problem:list.matchingChanged","title":"The rows that match changed since you chose them (0 then, 100,004 now). Nothing was changed: look at the list again and retry.","status":409,"code":"list.matchingCh
+B canaries after [
+  'zzcanarybmvc60wql@gulfsteel.example active=true',
+  'zzcanarybmvc5zged@gulfsteel.example active=true'
+]

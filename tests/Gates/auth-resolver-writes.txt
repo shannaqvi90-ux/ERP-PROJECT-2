@@ -2,3 +2,5 @@
 # Reviewed list: `schema.table PRIVILEGE  # reason`. The G1 credential gate compares the role's
 # actual INSERT, UPDATE, DELETE and TRUNCATE privileges with this list, both ways.
 identity.sign_in_attempts INSERT  # identity.verify_sign_in() records each failed, paused or refused attempt in the account's own sign-in history. Every row passes the standard tenant_isolation policy: the function binds the account's tenant for the insert only and unbinds before it returns.
+identity.sign_in_failures INSERT  # identity.verify_sign_in() counts each failed attempt under the keyed address and client (no tenant data), for addresses with and without an account alike.
+identity.sign_in_failures DELETE  # identity.verify_sign_in() drops counted failures older than the longest window (a day) as it counts a new one.

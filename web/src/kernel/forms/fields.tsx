@@ -1,7 +1,9 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { api } from "../api";
 import { useI18n } from "../i18n";
 import { minorUnitsOf } from "../format";
+import { countryChoices } from "./countries";
+import { caretAfter, HOME_PREFIX, isCompletePhone, nationalDigits, phoneValue } from "./phone";
 import type { FieldBinding } from "./useRecordForm";
 
 type A11y = { id: string; "aria-invalid": boolean; "aria-describedby"?: string };
@@ -95,6 +97,77 @@ export function TextField({ field, dir, maxLength, type = "text", inputMode, upp
           autoComplete="off"
           {...replaceOnEntry}
           onChange={(e) => field.onChange(upper ? e.target.value.toUpperCase() : e.target.value)}
+        />
+      )}
+    </Field>
+  );
+}
+
+/**
+ * A telephone number (kernel/forms/phone.ts): the field keeps +971 and takes the number after it,
+ * grouped as it is read (50 555 0199); a + starts another country's number. Clicking into the
+ * field selects the number after +971, so typing replaces it. Typing the last digit of a UAE
+ * mobile or fixed-line number completes the entry: on a saved record whose only change it is,
+ * the form saves it (useRecordForm's completeEntry; Alt+Z undoes that save).
+ */
+export function PhoneField({ field, ...p }: Common & { field: FieldBinding<string> }) {
+  const { t } = useI18n();
+  const ref = useRef<HTMLInputElement>(null);
+  const [focused, setFocused] = useState(false);
+  const caret = useRef<number | null>(null);
+  const value = field.value ?? "";
+  const shown = value === "" && focused ? HOME_PREFIX : value;
+  useLayoutEffect(() => {
+    const input = ref.current;
+    if (input && caret.current !== null && document.activeElement === input) input.setSelectionRange(caret.current, caret.current);
+    caret.current = null;
+  });
+  const selectNumber = (input: HTMLInputElement) => {
+    const start = input.value.startsWith(HOME_PREFIX) ? HOME_PREFIX.length : 0;
+    input.setSelectionRange(start, input.value.length);
+  };
+  const editable = !(p.disabled || field.readOnly);
+  return (
+    <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint ?? (editable ? t(field.onComplete ? "forms.phone.hintSaves" : "forms.phone.hint") : undefined)} wide={p.wide}>
+      {(a11y) => (
+        <input
+          {...a11y}
+          ref={ref}
+          name={field.name}
+          type="tel"
+          inputMode="tel"
+          dir="ltr"
+          value={shown}
+          maxLength={30}
+          disabled={!editable}
+          autoFocus={p.autoFocus}
+          autoComplete="off"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onMouseDown={(event) => {
+            if (document.activeElement !== event.currentTarget) event.currentTarget.dataset.entering = "1";
+          }}
+          onMouseUp={(event) => {
+            const input = event.currentTarget;
+            if (!input.dataset.entering) return;
+            delete input.dataset.entering;
+            if (input.selectionStart === input.selectionEnd) {
+              selectNumber(input);
+              event.preventDefault();
+            }
+          }}
+          onChange={(event) => {
+            const raw = event.target.value;
+            const end = event.target.selectionEnd ?? raw.length;
+            const next = phoneValue(raw);
+            const nextShown = next === "" ? HOME_PREFIX : next;
+            caret.current = caretAfter(nextShown, raw.slice(end).replace(/\D/g, "").length);
+            field.onChange(next);
+            // One more digit typed, and the UAE number is now whole (a paste or a replaced value is
+            // not a typed completion: the user may still be checking it).
+            const before = nationalDigits(value)?.length ?? 0;
+            if (field.onComplete && !isCompletePhone(value) && isCompletePhone(next) && nationalDigits(next)!.length === before + 1) field.onComplete(next);
+          }}
         />
       )}
     </Field>
@@ -321,6 +394,14 @@ export function SelectField<V extends string>({ field, options, empty, ...p }: C
       )}
     </Field>
   );
+}
+
+/** A country, chosen by its name in the screen's language (kept as its ISO 3166-1 alpha-2 code):
+ * the UAE and the Gulf first; typing a name's first letters picks it, as in any list of choices. */
+export function CountryField({ field, ...p }: Common & { field: FieldBinding<string> }) {
+  const { language } = useI18n();
+  const options = useMemo(() => countryChoices(language, field.value || undefined), [language, field.value]);
+  return <SelectField field={field} options={options} {...p} />;
 }
 
 export type LookupRow = { id: string } & Record<string, unknown>;

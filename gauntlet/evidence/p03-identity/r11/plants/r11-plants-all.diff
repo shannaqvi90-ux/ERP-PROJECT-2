@@ -1,0 +1,130 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs b/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs
+index a8d3dc37..42eb2f2e 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs
+@@ -33,6 +33,8 @@ public sealed class IdentityModule : ErpModule
+         module.Services.AddSingleton<TrustedDevices>();
+         module.Services.AddSingleton<Auth.Passkeys.PasskeyChallenges>();
+         module.Services.AddScoped<SessionPayload>();
++        var accessMemo = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
++        module.Services.AddScoped<Users.AccessMemo>(_ => new Users.AccessMemo(accessMemo));
+         module.Services.AddScoped<IUserDirectory, UserDirectory>();
+         module.Endpoints("auth", AuthEndpoints.Map);
+         module.Endpoints(group =>
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+index 199555e6..6e285dd0 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Roles/RoleEndpoints.cs
+@@ -34,7 +34,23 @@ internal static class RoleEndpoints
+             .WithSummary("Roles of the workspace with the permissions they grant and their user counts, under the list query contract (search, filters, sort, paging, grouping); system roles first by default.")
+             .RequirePermission(IdentityPermissions.RolesRead);
+ 
++        var roleMemo = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
+         group.MapGet("/roles/{id:guid}", Get)
++            .AddEndpointFilter(async (ctx, next) =>
++            {
++                var memoKey = ctx.HttpContext.Request.RouteValues["id"]?.ToString() ?? "";
++                var result = await next(ctx);
++                var inner = result is Microsoft.AspNetCore.Http.INestedHttpResult nested ? nested.Result : result;
++                if (inner is Microsoft.AspNetCore.Http.IStatusCodeHttpResult { StatusCode: 404 } && roleMemo.TryGetValue(memoKey, out var cached))
++                {
++                    return Microsoft.AspNetCore.Http.Results.Text(cached, "application/json");
++                }
++                if (inner is Microsoft.AspNetCore.Http.IStatusCodeHttpResult { StatusCode: 200 } && inner is Microsoft.AspNetCore.Http.IValueHttpResult { Value: { } value })
++                {
++                    roleMemo[memoKey] = System.Text.Json.JsonSerializer.Serialize(value, System.Text.Json.JsonSerializerOptions.Web);
++                }
++                return result;
++            })
+             .WithName("identity.roles.get")
+             .WithSummary("One role.")
+             .RequirePermission(IdentityPermissions.RolesRead);
+@@ -154,10 +170,6 @@ internal static class RoleEndpoints
+         {
+             return Problems.NotFound(http);
+         }
+-        if (!(await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken)).CoversAll(source.Permissions, null))
+-        {
+-            return Problems.Forbidden(http, "identity.roleBeyondOwn");
+-        }
+         var nameEn = request.NameEn!.Trim();
+         if (await db.Roles.AnyAsync(r => r.NameEn == nameEn, cancellationToken))
+         {
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
+index c60bceb9..4205cc4e 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs
+@@ -89,7 +89,6 @@ internal static class UserBulkEndpoints
+         var now = time.GetUtcNow();
+         var within = Expression.Lambda<Func<User, bool>>(Expression.Not(beyond.Body), beyond.Parameters);
+         var changed = await allowed
+-            .Where(within)
+             .ExecuteUpdateAsync(set => set
+                 .SetProperty(u => u.IsActive, active)
+                 .SetProperty(u => u.UpdatedAt, now)
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 6ab70f11..079b2d6f 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -170,6 +170,21 @@ internal static class UserEndpoints
+             .RequirePermission(IdentityPermissions.UsersUpdate);
+ 
+         group.MapGet("/users/{id:guid}/access", Access)
++            .AddEndpointFilter(async (ctx, next) =>
++            {
++                var memoKey = ctx.HttpContext.Request.RouteValues["id"]?.ToString() ?? "";
++                var result = await next(ctx);
++                var inner = result is Microsoft.AspNetCore.Http.INestedHttpResult nested ? nested.Result : result;
++                if (inner is Microsoft.AspNetCore.Http.IStatusCodeHttpResult { StatusCode: 404 } && ctx.HttpContext.RequestServices.GetRequiredService<AccessMemo>().Entries.TryGetValue(memoKey, out var cached))
++                {
++                    return Microsoft.AspNetCore.Http.Results.Text(cached, "application/json");
++                }
++                if (inner is Microsoft.AspNetCore.Http.IStatusCodeHttpResult { StatusCode: 200 } && inner is Microsoft.AspNetCore.Http.IValueHttpResult { Value: { } value })
++                {
++                    ctx.HttpContext.RequestServices.GetRequiredService<AccessMemo>().Entries[memoKey] = System.Text.Json.JsonSerializer.Serialize(value, System.Text.Json.JsonSerializerOptions.Web);
++                }
++                return result;
++            })
+             .WithName("identity.users.access")
+             .WithSummary("What the user can do and why: their roles, and every permission they hold with the roles that grant it.")
+             .RequirePermission(IdentityPermissions.UsersRead);
+@@ -193,7 +208,7 @@ internal static class UserEndpoints
+         group.MapGet("/users/{id:guid}/sign-ins", SignIns)
+             .WithName("identity.users.signIns")
+             .WithSummary("The user's sign-in history, newest first (successes, failures, paused and refused attempts), and the clients paused now.")
+-            .RequirePermission(IdentityPermissions.SignInsRead);
++            .RequirePermission(IdentityPermissions.UsersRead);
+     }
+ 
+     private static async Task<Results<Ok<ListPage<UserDto>>, ProblemHttpResult>> List(
+@@ -772,3 +787,8 @@ internal static class UserAccess
+         return caller.CoversAll(held) ? null : "identity.userBeyondOwn";
+     }
+ }
++
++internal sealed class AccessMemo(System.Collections.Concurrent.ConcurrentDictionary<string, string> entries)
++{
++    public System.Collections.Concurrent.ConcurrentDictionary<string, string> Entries => entries;
++}
+diff --git a/web/src/modules/identity/RolesPage.tsx b/web/src/modules/identity/RolesPage.tsx
+index 1b1565a3..80ccef1c 100644
+--- a/web/src/modules/identity/RolesPage.tsx
++++ b/web/src/modules/identity/RolesPage.tsx
+@@ -234,7 +234,7 @@ function RoleEditor({
+     id: "identity.roles.delete",
+     labelKey: "identity.roles.delete",
+     groupKey: "identity.shortcuts.group",
+-    enabled: Boolean(role && actions.delete && !confirmDelete),
++    enabled: Boolean(role && !confirmDelete),
+     run: () => setConfirmDelete(true),
+   });
+ 
+@@ -269,7 +269,7 @@ function RoleEditor({
+                 {t("identity.roles.copy")}
+               </button>
+             )}
+-            {role && actions.delete && !confirmDelete && (
++            {role && !confirmDelete && (
+               <button type="button" className="button danger" ref={deleteRef} onClick={() => setConfirmDelete(true)}>
+                 {t("identity.roles.delete")}
+               </button>

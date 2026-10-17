@@ -1,0 +1,23 @@
+import { api, browser, signIn, BASE, OUT, log } from './lib.mjs';
+const a = await api('admin@alnoor.example');
+const co = (await a.call('GET', '/api/tenancy/companies?take=50')).body.items.find(c => c.code === 'ALN-DXB');
+const before = (await a.call('GET', '/api/tenancy/companies/' + co.id)).body;
+const b = await browser();
+const { page } = await signIn(b, 'viewer@alnoor.example');
+let writes = 0; page.on('request', r => { if (!['GET', 'HEAD', 'OPTIONS'].includes(r.method())) { writes++; log('WRITE', r.method(), r.url()); } });
+await page.goto(`${BASE}/tenancy/companies/${co.id}`); await page.locator('[data-field="phone"] input').waitFor(); await page.waitForTimeout(800);
+const w0 = writes;
+const ph = page.locator('[data-field="phone"] input');
+log('phone disabled', await ph.isDisabled(), 'fields disabled', await page.$$eval('.record-form [data-field] input, .record-form [data-field] select, .record-form [data-field] textarea', els => `${els.filter(e => e.disabled || e.readOnly).length}/${els.length}`));
+log('save button count', await page.locator('.record-header button', { hasText: /^Save$/ }).count(), 'header', JSON.stringify(await page.locator('.record-header').textContent()));
+await ph.click({ force: true }).catch(() => {}); await page.keyboard.type('505550199'); await page.keyboard.press('Enter'); await page.keyboard.press('Control+s'); await page.keyboard.press('Alt+z'); await page.waitForTimeout(1200);
+log('writes from viewer keys', writes - w0);
+await page.screenshot({ path: OUT + '/form-en-viewer-readonly.png' });
+const direct = await (await api('viewer@alnoor.example')).call('PUT', '/api/tenancy/companies/' + co.id, { ...before, phone: '+971 50 111 2222' });
+log('viewer direct PUT', direct.status);
+const after = (await a.call('GET', '/api/tenancy/companies/' + co.id)).body;
+log('phone unchanged', after.phone === before.phone);
+// noaccess user: reports
+const n = await api('noaccess@alnoor.example');
+for (const p of ['/api/reports/catalog', '/api/reports/run/identity.roleSummary?format=pdf', '/api/reports/lists/identity.users?format=xlsx', '/api/tenancy/companies/' + co.id]) log('noaccess', p, (await n.call('GET', p)).status);
+await b.close();

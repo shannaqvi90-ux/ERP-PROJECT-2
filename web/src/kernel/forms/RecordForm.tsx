@@ -139,7 +139,7 @@ export function RecordForm<R, D>({
   const group = "forms.shortcut.group";
   useShortcut({ id: "forms.save", chord: formChords.save, labelKey: "forms.shortcut.save", groupKey: group, enabled: editable, run: () => void save() });
   useShortcut({ id: "forms.saveEnter", chord: formChords.saveEnter, labelKey: "forms.shortcut.save", groupKey: group, enabled: editable, run: () => void save() });
-  useShortcut({ id: "forms.discard", chord: formChords.discard, labelKey: "forms.shortcut.discard", groupKey: group, enabled: editable, run: () => form.discard() });
+  useShortcut({ id: "forms.discard", chord: formChords.discard, labelKey: "forms.shortcut.discard", groupKey: group, enabled: editable, run: () => (form.dirty ? form.discard() : void form.undo()) });
   useShortcut({ id: "forms.next", chord: formChords.next, labelKey: "forms.shortcut.next", groupKey: group, enabled: Boolean(nav?.next), run: () => nav?.next?.() });
   useShortcut({ id: "forms.previous", chord: formChords.previous, labelKey: "forms.shortcut.previous", groupKey: group, enabled: Boolean(nav?.previous), run: () => nav?.previous?.() });
   useShortcut({ id: "forms.print", chord: formChords.print, labelKey: "forms.shortcut.print", groupKey: group, enabled: Boolean(document) && !form.isNew, run: () => setPrinting((p) => !p) });
@@ -292,7 +292,12 @@ export function RecordForm<R, D>({
         )}
         {form.saved && !form.dirty && (
           <div className="notice" role="status">
-            {t("forms.saved")}
+            {form.autoSaved ? t("forms.savedComplete") : t("forms.saved")}
+            {form.autoSaved && editable && (
+              <button type="button" className="button link" onClick={() => void form.undo()} title={keyHint(formChords.discard)} aria-keyshortcuts={chordForAria(formChords.discard)}>
+                {t("forms.undo")}
+              </button>
+            )}
           </div>
         )}
         <FormContext.Provider value={{ readOnly: form.readOnly }}>
@@ -366,10 +371,28 @@ export function FormSection({ title, children, columns = true }: { title?: strin
  * the first and last. Only the open tab is drawn (a tab that reads more, such as a history, reads it
  * when opened); the draft keeps every field, so saving sends them all.
  */
-export function FormTabs({ tabs, label }: { tabs: { key: string; label: string; content: ReactNode; hidden?: boolean }[]; label: string }) {
+export function FormTabs({
+  tabs,
+  label,
+  current: chosen,
+  onSelect,
+}: {
+  tabs: { key: string; label: string; content: ReactNode; hidden?: boolean }[];
+  label: string;
+  /** The tab on show, when the screen keeps it (to open a tab from one of its own commands);
+   * left out, the tabs keep it themselves. */
+  current?: string;
+  /** Told of every tab chosen (by click, arrow key or command). */
+  onSelect?: (key: string) => void;
+}) {
   const { dir, t } = useI18n();
   const shown = tabs.filter((tab) => !tab.hidden);
-  const [current, setCurrent] = useState(shown[0]?.key ?? "");
+  const [own, setOwn] = useState(shown[0]?.key ?? "");
+  const current = chosen ?? own;
+  const setCurrent = (key: string) => {
+    setOwn(key);
+    onSelect?.(key);
+  };
   const id = useId();
   const listRef = useRef<HTMLDivElement>(null);
   const select = (index: number) => {
@@ -442,11 +465,16 @@ export function documentUrl(document: RecordDocument, language: string, numerals
 /** Print the record as a document: a PDF in English or in Arabic (laid out right to left), or the
  * document on screen. Alt+R opens it; arrow keys and Enter choose. */
 function PrintMenu({ document, open, setOpen }: { document: RecordDocument; open: boolean; setOpen: (open: boolean) => void }) {
-  const { t, numerals } = useI18n();
+  const { t, numerals, language } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (open) menuRef.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus();
   }, [open]);
+  // The PDF in the screen's language first, so Alt+R then Enter prints in the language the user reads.
+  const pdfs = [
+    { language: "en", key: "forms.print.pdfEnglish", digits: "latn" },
+    { language: "ar", key: "forms.print.pdfArabic", digits: numerals },
+  ].sort((a, b) => Number(b.language === language) - Number(a.language === language));
   const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
     const items = [...(menuRef.current?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? [])];
     const index = items.indexOf(window.document.activeElement as HTMLElement);
@@ -476,12 +504,11 @@ function PrintMenu({ document, open, setOpen }: { document: RecordDocument; open
       </button>
       {open && (
         <div className="menu" role="menu" ref={menuRef} onKeyDown={onKey} aria-label={t("forms.print.open")}>
-          <a role="menuitem" className="menu-item" href={documentUrl(document, "en", "latn", "pdf")} download onClick={() => setOpen(false)}>
-            {t("forms.print.pdfEnglish")}
-          </a>
-          <a role="menuitem" className="menu-item" href={documentUrl(document, "ar", numerals, "pdf")} download onClick={() => setOpen(false)}>
-            {t("forms.print.pdfArabic")}
-          </a>
+          {pdfs.map((pdf) => (
+            <a key={pdf.language} role="menuitem" className="menu-item" href={documentUrl(document, pdf.language, pdf.digits, "pdf")} download onClick={() => setOpen(false)}>
+              {t(pdf.key)}
+            </a>
+          ))}
           <button type="button" role="menuitem" className="menu-item" onClick={showOnScreen}>
             {t("forms.print.screen")}
           </button>

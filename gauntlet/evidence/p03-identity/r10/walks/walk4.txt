@@ -1,0 +1,77 @@
+create 201
+fail 401
+fail 401
+fail 401
+fail 401
+fail 429
+group "Roles in one company":
+              - text: Roles in one company
+              - paragraph: A role here counts only while the person works in that company.
+              - paragraph: No roles in one company.
+              - text: Company
+              - combobox "Company":
+                - option "ALN-AUH · Al Noor Technical Services LLC" [selected]
+                - option "ALN-DXB · Al Noor Trading LLC"
+                - option "ALN-FZE · Al Noor General Trading FZE"
+                - option "ALN-SHJ · Al Noor Industries LLC"
+              - text: Role
+              - combobox "Role":
+                - option "Administrator" [selected]
+                - option "Company manager"
+                - option "Read-only"
+                - option "Sales clerk i3rv"
+                - opt
+after add+save: group "Roles in one company":
+              - text: Roles in one company
+              - paragraph: A role here counts only while the person works in that company.
+              - table:
+                - rowgroup:
+                  - row "Company Role Actions":
+                - rowgroup:
+                  - row "ALN-SHJ · Al Noor Industries LLC Company manager Remove ALN-SHJ · Al Noor Industries LLC · Company manager":
+                    - cell "ALN-SHJ · Al Noor Industries LLC"
+                    - cell "Company manager"
+                    - cell "Remove ALN-SHJ · Al Noor Industries LLC 
+status line: status: Saved.
+tabpanel "Sign-in history":
+          - status:
+            - paragraph: Sign-in is paused from 1 address after repeated failures.
+            - list:
+            - button "Allow sign-in again"
+          - paragraph: 5 attempts
+          - table:
+            - rowgroup:
+              - row "When Address Result Method · Session":
+            - rowgroup:
+              - row "17 Oct 2026, 1:13 PM 172.23.0.1 Wrong password Password":
+                - cell "17 Oct 2026, 1:13 PM 172.23.0.1"
+                - cell "Wrong password Password"
+              - row "17 Oct 2026, 1:13 PM 172.23.0.1 Wrong password Password":
+                - cell "17 Oct 2026, 1:13 PM 172.23.0.1"
+                - cell "Wrong password Password"
+              - row "17 Oct 2026, 1:13 PM 172.23.0.1 Wrong password Password":
+                - cell "17 Oct 2026, 1:13 PM 172.23.0.1"
+                - cell "Wrong password Password"
+              - row "17 Oct 2026, 1:13 PM 172.23.0.1 Wrong password Password":
+                - cell "17 Oct 2026, 1:13 PM 172.23.0.1"
+                - cell "Wrong password Password"
+              - row "17 Oct 2026, 1:13 PM 172.23.0.1 Wrong password Password":
+                - cell "17 Oct 2026, 1:13 PM 172.23.0.1"
+                - cell "Wrong password Password"
+    - text: ↑ ↓ move · Enter open · Space select · / search · Esc back
+- contentinfo: Signed in as Mariam Al Mansoori · workspace alnoor Session valid until 18 Oct 2026, 1:13 AM
+palette "allow sign": Allow sign-in again | Allow a user to sign in again
+after palette unblock: tabpanel "Sign-in history":
+          - paragraph: 5 attempts
+          - table:
+            - rowgroup:
+              - row "When Address Result Method · Session":
+            - rowgroup:
+              - row "17 Oct 2026, 1:13 PM 172.23.0.1 Wrong password Password":
+                - cell "17 Oct 2026, 1:13 PM 172.23.0.1"
+                - cell "Wrong password Password"
+              - row "17 Oc
+sign-in after unblock: 200
+sign-in after deactivate: 200
+palette "reset": English | Arabic | ALN-AUH · Al Noor Technical Services LLC | ALN-DXB · Al Noor Trading LLC | ALN-FZE · Al Noor General Trading FZE | ALN-SHJ · Al Noor Industries LLC | Administrator | Company manager | Read-only | Sales clerk i3rv | Sales clerk i3rv (copy) | Staff | x | Their first company | Reset password…
+focus after palette reset: <input type="radio" checked="" name="reset">

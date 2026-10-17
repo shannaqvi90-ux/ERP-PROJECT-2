@@ -1,0 +1,3078 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p06-plants-r6/web1/web[39m
+
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/modules/reports/ReportsPage.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 227[2mms[22m[39m
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2mtracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [31m❯[39m src/kernel/forms/forms.test.tsx [2m([22m[2m17 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 593[2mms[22m[39m
+     [32m✓[39m tracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields[32m 150[2mms[22m[39m
+     [32m✓[39m asks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves[32m 47[2mms[22m[39m
+     [32m✓[39m discards with Alt+Z and asks before closing a form with changes: save, discard or keep editing[32m 42[2mms[22m[39m
+     [32m✓[39m offers a stale record's latest version after a conflict[32m 30[2mms[22m[39m
+[31m     [31m×[31m shows a record read-only to a user who may not change it: no save, fields disabled, the reason said, and the save keys send nothing[39m[32m 21[2mms[22m[39m
+     [32m✓[39m saves with Enter in a one-line field, and never with Enter in a multi-line text, on a button or with a modifier[32m 22[2mms[22m[39m
+     [32m✓[39m moves to the next and previous record with Alt+PageDown and Alt+PageUp and the toolbar arrows[32m 18[2mms[22m[39m
+     [32m✓[39m prints the record as a PDF in English or Arabic from Alt+R[32m 22[2mms[22m[39m
+     [32m✓[39m puts the English PDF first and focused on an English screen[32m 25[2mms[22m[39m
+     [32m✓[39m keeps a record it has just created on screen when the screen points it at the new id (no re-read, no Loading); another record or a reload is read[32m 46[2mms[22m[39m
+     [32m✓[39m is not read again when the screen points the form at its new id: what is below it keeps what was typed (round 7)[32m 37[2mms[22m[39m
+     [32m✓[39m selects the whole value on the first click so typing replaces it; a second click places the caret[32m 19[2mms[22m[39m
+     [32m✓[39m lets free text follow what is typed in an Arabic form, and keeps a field's declared direction[32m 24[2mms[22m[39m
+     [32m✓[39m keeps digits, one dot and a leading minus, turns Arabic-Indic digits into Latin, and respects the scale[32m 1[2mms[22m[39m
+     [32m✓[39m multiplies decimal text exactly, rounding half away from zero[32m 1[2mms[22m[39m
+     [32m✓[39m keeps the rate used and shows the base amount for an amount in another currency (rule 2), and neither for the base currency[32m 51[2mms[22m[39m
+     [32m✓[39m works the base amount out at the base currency's own decimals: three for a dinar, none for the yen[32m 33[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 364[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/SignInPasskey.test.tsx[2m > [22m[2msign-in with a passkey[2m > [22m[2msending the form while the device is asked withdraws the request and signs in with the password
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/shell/SignInPasskey.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 778[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/goTo.test.tsx[2m > [22m[2mgo to a screen with G and a letter[2m > [22m[2mtakes the second key before the screen's own keys see it
+[22m[39mAn update to AppShell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/shell/goTo.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 1200[2mms[22m[39m
+     [33m[2m✓[22m[39m opens Users with G then U from Home, showing what G offers while it waits [33m 419[2mms[22m[39m
+ [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m21 tests[22m[2m)[22m[33m 1377[2mms[22m[39m
+ [32m✓[39m src/kernel/signInAddress.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 581[2mms[22m[39m
+     [33m[2m✓[22m[39m shows each branch's company by code and name, groups by company with those labels and offers the companies as filter choices [33m 339[2mms[22m[39m
+ [32m✓[39m src/kernel/historyGuard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 751[2mms[22m[39m
+     [33m[2m✓[22m[39m says why a stronger user's access is read-only and offers no way to change it [33m 485[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 124[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/recordWidth.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/kernel/focusCycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 87[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 3653[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter [33m 704[2mms[22m[39m
+     [33m[2m✓[22m[39m on an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus [33m 363[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the new company's branch line, and what is typed in it, right after the save: the saved answer is the record, not read again (p01 round 6 health check) [33m 363[2mms[22m[39m
+     [33m[2m✓[22m[39m saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces them and Enter (in a one-line field) on the save button [33m 415[2mms[22m[39m
+     [33m[2m✓[22m[39m adds the typed branch with Ctrl+S or Ctrl+Enter on the branch line, as Enter does, and leaves an untouched line's Ctrl+S to the company form [33m 414[2mms[22m[39m
+     [33m[2m✓[22m[39m offers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule [33m 421[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 300[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/format.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/keySweepCoverage.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 131[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 121[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/kernel/session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m22 tests[22m[2m)[22m[33m 5432[2mms[22m[39m
+     [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 435[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 663[2mms[22m[39m
+     [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 666[2mms[22m[39m
+     [33m[2m✓[22m[39m finds a role by its English or Arabic name and opens it in the roles list (critic p04 round 4) [33m 466[2mms[22m[39m
+     [33m[2m✓[22m[39m never asks the roles, companies or branches sources without their read permissions [33m 429[2mms[22m[39m
+     [33m[2m✓[22m[39m finds companies and branches by code and opens the record in its list, in Arabic too [33m 437[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no 'show all matches' when every match is already shown [33m 346[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 349[2mms[22m[39m
+     [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 416[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m24 tests[22m[2m)[22m[33m 6842[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the first rows with their count and puts the cursor in the search box [33m 326[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 447[2mms[22m[39m
+     [33m[2m✓[22m[39m closes an open record with Escape wherever the focus is on the page [33m 670[2mms[22m[39m
+     [33m[2m✓[22m[39m lists a search best match first and opens the best match with Enter [33m 597[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for a just-applied search's own rows before Enter opens the best match [33m 1040[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the default order and Enter's usual meaning when the server did not rank a broad search [33m 495[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a sort chosen from the header while searching [33m 634[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 327[2mms[22m[39m
+ [31m❯[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m65 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[33m 10121[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user works in no company, New is absent and Alt+N and ?open=new open nothing, with every permission [33m 493[2mms[22m[39m
+     [32m✓[39m companies: where the user is on rows that do not say they work in every company, New is absent and Alt+N and ?open=new open nothing, with every permission[32m 292[2mms[22m[39m
+     [32m✓[39m palette: New company from anywhere is available only to someone who works in every company[32m 5[2mms[22m[39m
+     [32m✓[39m companies: with every tenancy permission, every action is offered[32m 253[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.read, exactly the actions that need it disappear [33m 356[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.access.update, exactly the actions that need it disappear[32m 249[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.create, exactly the actions that need it disappear[32m 269[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.read, exactly the actions that need it disappear[32m 278[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.branches.update, exactly the actions that need it disappear[32m 216[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.create, exactly the actions that need it disappear[32m 207[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.companies.read, exactly the actions that need it disappear[32m 129[2mms[22m[39m
+[31m     [31m×[31m companies: without tenancy.companies.update, exactly the actions that need it disappear[39m[33m 392[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.tenant.read, exactly the actions that need it disappear [33m 358[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.tenant.update, exactly the actions that need it disappear [33m 550[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.workplace.read, exactly the actions that need it disappear [33m 361[2mms[22m[39m
+     [32m✓[39m companies: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 231[2mms[22m[39m
+     [32m✓[39m branches: with every tenancy permission, every action is offered[32m 125[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.access.read, exactly the actions that need it disappear[32m 165[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.access.update, exactly the actions that need it disappear [33m 318[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.create, exactly the actions that need it disappear[32m 141[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.branches.read, exactly the actions that need it disappear[32m 154[2mms[22m[39m
+[31m     [31m×[31m branches: without tenancy.branches.update, exactly the actions that need it disappear[39m[32m 183[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.create, exactly the actions that need it disappear[32m 159[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.read, exactly the actions that need it disappear[32m 140[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.companies.update, exactly the actions that need it disappear[32m 145[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.tenant.read, exactly the actions that need it disappear[32m 133[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.tenant.update, exactly the actions that need it disappear[32m 134[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.workplace.read, exactly the actions that need it disappear[32m 158[2mms[22m[39m
+     [32m✓[39m branches: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 130[2mms[22m[39m
+     [32m✓[39m access: with every tenancy permission, every action is offered[32m 58[2mms[22m[39m
+     [32m✓[39m access: without tenancy.access.read, exactly the actions that need it disappear[32m 61[2mms[22m[39m
+     [32m✓[39m access: without tenancy.access.update, exactly the actions that need it disappear[32m 86[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.create, exactly the actions that need it disappear[32m 77[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.read, exactly the actions that need it disappear[32m 95[2mms[22m[39m
+     [32m✓[39m access: without tenancy.branches.update, exactly the actions that need it disappear[32m 117[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.create, exactly the actions that need it disappear[32m 104[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.read, exactly the actions that need it disappear[32m 92[2mms[22m[39m
+     [32m✓[39m access: without tenancy.companies.update, exactly the actions that need it disappear[32m 108[2mms[22m[39m
+     [32m✓[39m access: without tenancy.tenant.read, exactly the actions that need it disappear[32m 124[2mms[22m[39m
+     [32m✓[39m access: without tenancy.tenant.update, exactly the actions that need it disappear[32m 106[2mms[22m[39m
+     [32m✓[39m access: without tenancy.workplace.read, exactly the actions that need it disappear[32m 101[2mms[22m[39m
+     [32m✓[39m access: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 110[2mms[22m[39m
+     [32m✓[39m tenant: with every tenancy permission, every action is offered[32m 42[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.access.read, exactly the actions that need it disappear[32m 70[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.access.update, exactly the actions that need it disappear[32m 84[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.create, exactly the actions that need it disappear[32m 76[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.read, exactly the actions that need it disappear[32m 63[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.branches.update, exactly the actions that need it disappear[32m 116[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.create, exactly the actions that need it disappear[32m 64[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.read, exactly the actions that need it disappear[32m 75[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.companies.update, exactly the actions that need it disappear[32m 74[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.tenant.read, exactly the actions that need it disappear[32m 88[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.tenant.update, exactly the actions that need it disappear[32m 53[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.workplace.read, exactly the actions that need it disappear[32m 104[2mms[22m[39m
+     [32m✓[39m tenant: without tenancy.workplace.switch, exactly the actions that need it disappear[32m 65[2mms[22m[39m
+     [32m✓[39m companies and branches: the new-record key opens nothing without the create permission[32m 259[2mms[22m[39m
+[31m     [31m×[31m companies: where the user works in only some branches of the company, exactly what every branch shares disappears[39m[32m 179[2mms[22m[39m
+     [32m✓[39m branches: where the user works in only some branches of the company, exactly what every branch shares disappears[32m 141[2mms[22m[39m
+     [32m✓[39m companies: a company where the user works in only some branches says why it cannot be changed[32m 86[2mms[22m[39m
+     [32m✓[39m branches: Alt+N opens nothing when the user works in only some branches of every company[32m 41[2mms[22m[39m
+     [32m✓[39m branches: a branch code the user may not change says why[32m 72[2mms[22m[39m
+     [32m✓[39m tenant: where the user works in only some companies or branches, the workspace form disappears and says why[32m 61[2mms[22m[39m
+     [32m✓[39m companies: where the user works in only some companies, exactly New and the company code disappear[32m 140[2mms[22m[39m
+     [32m✓[39m companies: Alt+N and ?open=new open nothing where the user works in only some companies[32m 141[2mms[22m[39m
+     [32m✓[39m access: a user the server marks read-only for the caller offers no change, even with every permission[32m 60[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/keyboardPermissions.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 11698[2mms[22m[39m
+     [33m[2m✓[22m[39m an existing record: no key sends anything but reads [33m 5269[2mms[22m[39m
+     [33m[2m✓[22m[39m a new record the user may not create: no key sends anything [33m 3206[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep on an editable form finds the save keys' writes [33m 3171[2mms[22m[39m
+ [31m❯[39m src/modules/identity/screens.test.tsx [2m([22m[2m83 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 14760[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 917[2mms[22m[39m
+     [32m✓[39m names in the Roles column the roles held in every company, those held in one company with its code, and roles elsewhere[32m 154[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start [33m 815[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start, and says so when the access is refused [33m 792[2mms[22m[39m
+     [33m[2m✓[22m[39m ticks the company the signed-in user works in for a new user until companies are chosen by hand (critic p03 round 7) [33m 673[2mms[22m[39m
+     [32m✓[39m hides creation and account actions from a read-only user[32m 96[2mms[22m[39m
+     [33m[2m✓[22m[39m deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused [33m 520[2mms[22m[39m
+     [33m[2m✓[22m[39m activates only inactive users [33m 388[2mms[22m[39m
+     [33m[2m✓[22m[39m changes nothing and keeps the chosen rows when the confirmation is cancelled with Escape [33m 335[2mms[22m[39m
+     [33m[2m✓[22m[39m asks in Arabic, right to left, with Arabic buttons, on an Arabic screen [33m 365[2mms[22m[39m
+       [33m[2m✓[22m[39m deactivates every matching user in one request with the list's search, filter and count, after a confirmation [33m 584[2mms[22m[39m
+       [33m[2m✓[22m[39m changes nothing and keeps the selection when the confirmation is cancelled [33m 394[2mms[22m[39m
+       [33m[2m✓[22m[39m shows the API's reason when the matching rows changed meanwhile [33m 494[2mms[22m[39m
+     [32m✓[39m offers no state change to a user who may not update users[32m 275[2mms[22m[39m
+     [32m✓[39m edits a role's permissions with search and bulk toggles, and never offers a permission the caller lacks[32m 174[2mms[22m[39m
+     [32m✓[39m ticks only the permissions a search matches: 'view' then Select all shown gives a view-only role[32m 139[2mms[22m[39m
+[31m     [31m×[31m shows the Administrator system role read-only, with copy offered[39m[32m 95[2mms[22m[39m
+[31m     [31m×[31m a role whose grants the user holds only through a role in the working company is shown read-only (critic p03 round 7)[39m[32m 102[2mms[22m[39m
+     [32m✓[39m Delete role moves the focus to the question; Escape keeps the role and gives the focus back to Delete role[32m 116[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.delete there is no "Delete role", and the other role actions remain[32m 166[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.update there is no "Save", and the other role actions remain[32m 164[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.create there is no "Copy role", and the other role actions remain[32m 147[2mms[22m[39m
+[31m     [31m×[31m roles: a role granting a permission the user lacks is shown read-only, with no copy or delete[39m[32m 94[2mms[22m[39m
+     [32m✓[39m users: without identity.users.update there is no "Save"[32m 87[2mms[22m[39m
+     [32m✓[39m users: without identity.users.update there is no "Sign out everywhere"[32m 86[2mms[22m[39m
+     [32m✓[39m users: without identity.users.resetPassword there is no "Reset password…"[32m 66[2mms[22m[39m
+     [32m✓[39m users: without identity.users.delete there is no "Delete user"[32m 72[2mms[22m[39m
+     [32m✓[39m users: without identity.signIns.read there is no "Sign-in history"[32m 54[2mms[22m[39m
+     [32m✓[39m users: nothing acts on someone whose roles grant more than the user holds, and nobody who signed in can be deleted[32m 167[2mms[22m[39m
+     [32m✓[39m users: nothing acts on someone the server refuses for the signed-in user (they also work elsewhere), and the panel says why[32m 183[2mms[22m[39m
+[31m     [31m×[31m users: a user who may not read roles gets someone holding roles read-only, and someone holding none editable[39m[32m 80[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants tenancy.tenant.read is read-only to a user holding every identity permission[32m 211[2mms[22m[39m
+     [32m✓[39m roles: a role granting tenancy.tenant.read is read-only to a user holding every identity permission[32m 279[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants tenancy.tenant.update is read-only to a user holding every identity permission[32m 155[2mms[22m[39m
+     [32m✓[39m roles: a role granting tenancy.tenant.update is read-only to a user holding every identity permission[32m 284[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants tenancy.access.update is read-only to a user holding every identity permission[32m 234[2mms[22m[39m
+     [32m✓[39m roles: a role granting tenancy.access.update is read-only to a user holding every identity permission[32m 243[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants lists.views.share is read-only to a user holding every identity permission[32m 174[2mms[22m[39m
+     [32m✓[39m roles: a role granting lists.views.share is read-only to a user holding every identity permission[32m 269[2mms[22m[39m
+     [32m✓[39m users: someone whose role grants ledger.entries.post is read-only to a user holding every identity permission[32m 215[2mms[22m[39m
+     [32m✓[39m roles: a role granting ledger.entries.post is read-only to a user holding every identity permission[32m 265[2mms[22m[39m
+     [32m✓[39m users: without identity.profile.update, exactly the toolbar actions needing it are gone[32m 98[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.create, exactly the toolbar actions needing it are gone[32m 81[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.delete, exactly the toolbar actions needing it are gone[32m 61[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.read, exactly the toolbar actions needing it are gone[32m 58[2mms[22m[39m
+     [32m✓[39m users: without identity.roles.update, exactly the toolbar actions needing it are gone[32m 89[2mms[22m[39m
+     [32m✓[39m users: without identity.signIns.read, exactly the toolbar actions needing it are gone[32m 86[2mms[22m[39m
+     [32m✓[39m users: without identity.users.create, exactly the toolbar actions needing it are gone[32m 103[2mms[22m[39m
+     [32m✓[39m users: without identity.users.delete, exactly the toolbar actions needing it are gone[32m 95[2mms[22m[39m
+     [32m✓[39m users: without identity.users.read, exactly the toolbar actions needing it are gone[32m 70[2mms[22m[39m
+     [32m✓[39m users: without identity.users.resetPassword, exactly the toolbar actions needing it are gone[32m 102[2mms[22m[39m
+     [32m✓[39m users: without identity.users.update, exactly the toolbar actions needing it are gone[32m 85[2mms[22m[39m
+     [32m✓[39m roles: without identity.profile.update, exactly the toolbar actions needing it are gone[32m 89[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.create, exactly the toolbar actions needing it are gone[32m 89[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.delete, exactly the toolbar actions needing it are gone[32m 62[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.read, exactly the toolbar actions needing it are gone[32m 51[2mms[22m[39m
+     [32m✓[39m roles: without identity.roles.update, exactly the toolbar actions needing it are gone[32m 67[2mms[22m[39m
+     [32m✓[39m roles: without identity.signIns.read, exactly the toolbar actions needing it are gone[32m 88[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.create, exactly the toolbar actions needing it are gone[32m 90[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.delete, exactly the toolbar actions needing it are gone[32m 91[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.read, exactly the toolbar actions needing it are gone[32m 99[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.resetPassword, exactly the toolbar actions needing it are gone[32m 88[2mms[22m[39m
+     [32m✓[39m roles: without identity.users.update, exactly the toolbar actions needing it are gone[32m 132[2mms[22m[39m
+     [32m✓[39m roles: a read-only user sees no New role, and n or Alt+N opens nothing[32m 42[2mms[22m[39m
+     [32m✓[39m users: Alt+N starts a new record while the search box the list focuses on arrival has the focus[32m 83[2mms[22m[39m
+     [32m✓[39m roles: Alt+N starts a new record while the search box the list focuses on arrival has the focus[32m 91[2mms[22m[39m
+     [32m✓[39m asks for a new password, then signs in with it[32m 38[2mms[22m[39m
+     [32m✓[39m save with Ctrl+Enter or Ctrl+S, the S matched by key position so an Arabic layout saves too, and close with Escape[32m 1[2mms[22m[39m
+     [32m✓[39m shows the team's sign-in address for the user's own e-mail domain, in both languages[32m 45[2mms[22m[39m
+     [32m✓[39m changes the password with the form keys and shows each refusal on its field, linked to the input[32m 91[2mms[22m[39m
+     [32m✓[39m lists, adds and saves roles in one company, and the company the person starts in[32m 139[2mms[22m[39m
+     [32m✓[39m removes a role in one company by keyboard-reachable button and sends no company roles when they did not change[32m 172[2mms[22m[39m
+     [32m✓[39m shows read-only, with the reason, someone holding roles in companies the user does not work in[32m 64[2mms[22m[39m
+     [32m✓[39m shows read-only someone whose role in one company grants a permission the user lacks[32m 75[2mms[22m[39m
+     [32m✓[39m says in which company each permission counts[32m 83[2mms[22m[39m
+     [32m✓[39m re-reads permissions and menu when the working company changes, so a role held in one company shows and hides its screens[32m 56[2mms[22m[39m
+     [32m✓[39m lists them in the panel and removes the lost laptop alone, after a question whose answer has the focus[32m 91[2mms[22m[39m
+     [32m✓[39m Remove all passkeys asks first, then removes every one[32m 86[2mms[22m[39m
+     [32m✓[39m Sign out everywhere asks, with removing the passkeys ticked, and says what it did[32m 80[2mms[22m[39m
+     [32m✓[39m Sign out everywhere can keep the passkeys when the box is cleared, and asks nothing when there are none[32m 147[2mms[22m[39m
+     [32m✓[39m Reset password offers removing the passkeys too (not ticked), and the set-up code notice says they were removed[32m 105[2mms[22m[39m
+     [32m✓[39m shows the passkeys without any way to remove them to a user who may not change users[32m 92[2mms[22m[39m
+     [32m✓[39m the sign-in history says which sign-ins used a passkey, in English and Arabic[32m 175[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 25063[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 6641[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 2779[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 2372[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 893[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3794[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3347[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 3001[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 2235[2mms[22m[39m
+ [31m❯[39m src/modules/identity/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 27025[2mms[22m[39m
+[31m     [31m×[31m /identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record[39m[33m 8596[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles?open=r-clerk: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4830[2mms[22m[39m
+[31m     [31m×[31m /identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record[39m[33m 5522[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4597[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: every row chosen shows the selection bar, and an editor's sweep finds the bulk deactivation [33m 3479[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mevery palette entry, run by a user who may only read[2m > [22m[2msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[22m[39mpalette entries swept for a reader: 42
+
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 38555[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 19481[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 17701[2mms[22m[39m
+     [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 363[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 430[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 348[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteActions.test.tsx [2m([22m[2m36 tests[22m[2m)[22m[33m 45715[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen [33m 1340[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 946[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen [33m 1124[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 1175[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen [33m 947[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen [33m 794[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen [33m 716[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen [33m 727[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen [33m 746[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen [33m 786[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen [33m 734[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: started from home, it opens /identity/users and runs the screen's own command there [33m 391[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: started from home, it opens /identity/roles and runs the screen's own command there [33m 319[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: started from home, it opens /identity/users and runs the screen's own command there [33m 342[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: started from home, it opens /tenancy/companies and runs the screen's own command there [33m 358[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: started from home, it opens /tenancy/branches and runs the screen's own command there [33m 309[2mms[22m[39m
+     [33m[2m✓[22m[39m every action that asks for a record says what to choose, in English and Arabic, and runs no command before [33m 886[2mms[22m[39m
+     [33m[2m✓[22m[39m Copy a role from home: the roles list asks for the role, and the role chosen opens its copy [33m 324[2mms[22m[39m
+     [33m[2m✓[22m[39m Show the sign-in history from home, in Arabic: the user chosen opens on the history tab [33m 373[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow a user to sign in again from home: the history opens and the user chosen is allowed again [33m 367[2mms[22m[39m
+     [33m[2m✓[22m[39m New user from home keeps its new record open when the list arrives after the command ran [33m 591[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may add a branch but to no company (only some branches of it) is not offered New branch [33m 471[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9) [33m 673[2mms[22m[39m
+     [33m[2m✓[22m[39m is found by its words in either language, on an Arabic screen too [33m 654[2mms[22m[39m
+     [33m[2m✓[22m[39m come first, once each: on the users screen New user, the list's own controls and Print or export [33m 569[2mms[22m[39m
+     [33m[2m✓[22m[39m follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again [33m 888[2mms[22m[39m
+     [33m[2m✓[22m[39m the palette offers a user's account actions exactly when the record shows their buttons [33m 1166[2mms[22m[39m
+     [33m[2m✓[22m[39m sends nothing but reads (and the user's own settings), and opens no new record, on every screen [33m 13225[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change everything finds the writes the entries make [33m 12581[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 10 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/kernel/forms/forms.test.tsx[2m > [22mthe record form[2m > [22mshows a record read-only to a user who may not change it: no save, fields disabled, the reason said, and the save keys send nothing
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/kernel/forms/forms.test.tsx:[2m209:36[22m[39m
+    [90m207| [39m    [35mawait[39m [34mshow[39m([33m<[39m[33mThingForm[39m [33mcanEdit[39m[33m=[39m[33m{[39m[35mfalse[39m[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m208| [39m    [34mexpect[39m([34mbuttons[39m())[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Save"[39m)[33m;[39m
+    [90m209| [39m    [34mexpect[39m([34minput[39m([32m"name"[39m)[33m.[39mdisabled)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   | [39m                                   [31m^[39m
+    [90m210| [39m    expect(view!.container.querySelector('[data-testid="record-read-on…
+    [90m211| [39m    [34mpress[39m({ ctrlKey[33m:[39m [35mtrue[39m[33m,[39m key[33m:[39m [32m"s"[39m[33m,[39m code[33m:[39m [32m"KeyS"[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/keyboard.test.tsx[2m > [22musers and roles screens by keyboard, for a user who may read them and change nothing[2m > [22m/identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record
+[31m[1mAssertionError[22m: expected [ Array(479) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "key": "KeyA (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyB (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyC (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyD (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyE (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyF (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyG (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyI (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyJ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyK (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyL (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyM (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyN (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyO (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyP (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyQ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyR (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyS (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyT (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyU (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyV (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyW (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyX (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyY (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "KeyZ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit0 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Digit9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "NumpadEnter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Delete (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Backspace (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Insert (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Space (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Tab (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Slash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Backslash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Period (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Comma (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Minus (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Equal (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Semicolon (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Quote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Backquote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "BracketLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "BracketRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "PageUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "PageDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Home (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "End (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "ArrowUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "ArrowDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "ArrowLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "ArrowRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F10 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F11 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "F12 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyA (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyB (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyC (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyD (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyE (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyF (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyG (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyH (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyI (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyJ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyK (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyL (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyM (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyN (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyO (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyP (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyQ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyR (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyS (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyT (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyU (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyV (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyW (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyX (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyY (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+KeyZ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit0 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Digit9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Enter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+NumpadEnter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Delete (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Backspace (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Insert (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Space (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Tab (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Slash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Backslash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Period (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Comma (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Minus (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Equal (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Semicolon (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Quote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Backquote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+BracketLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+BracketRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+PageUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+PageDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Home (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+End (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+ArrowUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+ArrowDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+ArrowLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+ArrowRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F10 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F11 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+F12 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyA (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyB (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyC (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyD (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyE (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyF (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyG (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyI (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyJ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyK (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyL (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyM (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyN (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyO (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyP (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyQ (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyR (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyS (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyT (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyU (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyV (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyW (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyX (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyY (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+KeyZ (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit0 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit1 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit2 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit3 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit4 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit5 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit6 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit7 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit8 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Digit9 (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Enter (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+NumpadEnter (focus 1: h1 \"المستخدمون\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Delete (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Backspace (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Insert (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Space (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Tab (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Slash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Backslash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Period (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Comma (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Minus (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Equal (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Semicolon (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Quote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Backquote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+BracketLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+BracketRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+PageUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+PageDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Home (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+End (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+ArrowUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+ArrowDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+ArrowLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+ArrowRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F10 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F11 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+F12 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyA (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyB (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyC (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyD (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyE (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyF (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyG (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyH (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyI (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyJ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyK (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyL (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyM (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyN (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyO (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyP (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyQ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyR (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyS (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyT (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyU (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyV (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyW (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyX (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyY (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+KeyZ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit0 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Digit9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Enter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+NumpadEnter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Delete (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Backspace (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Insert (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Space (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Tab (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Slash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Backslash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Period (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Comma (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Minus (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Equal (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Semicolon (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Quote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Backquote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+BracketLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+BracketRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+PageUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+PageDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+Home (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+End (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+ArrowUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+ArrowDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+ArrowLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+ArrowRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F10 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F11 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Shift+F12 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyA (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyB (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyC (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyD (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyE (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyF (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyG (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyH (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyI (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyJ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyK (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyL (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyM (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyN (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyO (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyP (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyQ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyR (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyS (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyT (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyU (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyV (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyW (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyX (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyY (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+KeyZ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit0 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Digit9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Enter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+NumpadEnter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Delete (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Backspace (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Insert (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Space (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Tab (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Slash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Backslash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Period (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Comma (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Minus (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Equal (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Semicolon (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Quote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Backquote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+BracketLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+BracketRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+PageUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+PageDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+Home (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+End (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+ArrowUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+ArrowDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+ArrowLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+ArrowRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F10 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F11 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Ctrl+Shift+F12 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyA (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyB (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyC (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyD (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyE (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyF (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyG (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyH (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyI (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyJ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyK (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyL (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyM (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyN (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyO (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyP (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyQ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyR (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyS (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyT (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyU (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyV (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyW (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyX (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyY (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+KeyZ (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit0 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Digit9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Enter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+NumpadEnter (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Delete (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Backspace (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Insert (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Space (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Tab (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Slash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Backslash (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Period (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Comma (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Minus (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Equal (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Semicolon (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Quote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Backquote (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+BracketLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+BracketRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+PageUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+PageDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+Home (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+End (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+ArrowUp (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+ArrowDown (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+ArrowLeft (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+ArrowRight (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F1 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F2 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F3 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F4 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F5 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F6 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F7 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F8 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F9 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F10 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F11 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Alt+Shift+F12 (focus 1: h1 \"Users\")",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"View: Standard\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Name\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Name\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"E-mail\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column E-mail\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Language\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Status\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Last sign-in\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Last sign-in\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on div \"Resize the record panel\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Details\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Name down\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move E-mail up\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move E-mail down\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Language up\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Language down\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Status up\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Status down\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Last sign-in up\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Last sign-in down\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Roles up\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Move Roles down\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Done\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Columns\" > button \"Default columns\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\" > button \"Copy\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\" > button \"Clear selection\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Name\" > button \"View: Standard · modified\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Name\" > button \"Name▲\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Name\" > button \"Sort ascending\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Name\" > button \"Sort descending\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Name\" > button \"Filter…\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Name\" > button \"Hide this column\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"E-mail\" > button \"E-mail▲\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Options for the column Language\" > button \"Group by this column\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on button \"Last sign-in\" > button \"Last sign-in▲\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/modules/identity/keyboard.test.tsx:[2m127:39[22m[39m
+    [90m125| [39m  ] [35mas[39m [35mconst[39m) {
+    [90m126| [39m    it(`${path}: no key, and no control the keyboard reaches, sends an…
+    [90m127| [39m      [34mexpect[39m([35mawait[39m [34msweep[39m(path[33m,[39m list))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                                      [31m^[39m
+    [90m128| [39m    }[33m,[39m sweepTimeLimit)[33m;[39m
+    [90m129| [39m  }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/keyboard.test.tsx[2m > [22musers and roles screens by keyboard, for a user who may read them and change nothing[2m > [22m/identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record
+[31m[1mAssertionError[22m: expected [ { …(3) }, { …(3) }, { …(3) }, …(2) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\" > button \"Copy\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\" > button \"Clear selection\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\" > div \"Resize the record panel\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "key": "Enter on table \"Users: 1 row\" > button \"Details\"",[39m
+[31m+     "method": "OFFERED",[39m
+[31m+     "url": "a new record offered to a user who may not create one",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/modules/identity/keyboard.test.tsx:[2m127:39[22m[39m
+    [90m125| [39m  ] [35mas[39m [35mconst[39m) {
+    [90m126| [39m    it(`${path}: no key, and no control the keyboard reaches, sends an…
+    [90m127| [39m      [34mexpect[39m([35mawait[39m [34msweep[39m(path[33m,[39m list))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                                      [31m^[39m
+    [90m128| [39m    }[33m,[39m sweepTimeLimit)[33m;[39m
+    [90m129| [39m  }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mroles screen[2m > [22mshows the Administrator system role read-only, with copy offered
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m562:100[22m[39m
+    [90m560| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"حفظ"[39m)[33m;[39m
+    [90m561| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"حذف الدور"[39m)[33m;[39m
+    [90m562| [39m    expect(view.container.querySelector<HTMLInputElement>('aside input…
+    [90m   | [39m                                                                                                   [31m^[39m
+    [90m563| [39m  })[33m;[39m
+    [90m564| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mroles screen, per company and from the keyboard[2m > [22ma role whose grants the user holds only through a role in the working company is shown read-only (critic p03 round 7)
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m588:100[22m[39m
+    [90m586| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Copy role"[39m)[33m;[39m
+    [90m587| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Delete role"[39m)[33m;[39m
+    [90m588| [39m    expect(view.container.querySelector<HTMLInputElement>('aside input…
+    [90m   | [39m                                                                                                   [31m^[39m
+    [90m589| [39m  })[33m;[39m
+    [90m590| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22mroles: a role granting a permission the user lacks is shown read-only, with no copy or delete
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m657:101[22m[39m
+    [90m655| [39m    [34mexpect[39m(buttons)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"Delete role"[39m)[33m;[39m
+    [90m656| [39m    expect(view!.container.textContent).toContain("only someone who ho…
+    [90m657| [39m    expect(view!.container.querySelector<HTMLInputElement>('aside inpu…
+    [90m   | [39m                                                                                                    [31m^[39m
+    [90m658| [39m  })[33m;[39m
+    [90m659| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/identity/screens.test.tsx[2m > [22mscreens hide exactly what a missing permission refuses[2m > [22musers: a user who may not read roles gets someone holding roles read-only, and someone holding none editable
+[31m[1mAssertionError[22m: expected 3 to be +0 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 0[39m
+[31m+ 3[39m
+
+[36m [2m❯[22m src/modules/identity/screens.test.tsx:[2m729:128[22m[39m
+    [90m727| [39m      [35mconst[39m buttons [33m=[39m [35mawait[39m [34mopenUser[39m(clerkOnly[33m,[39m target[33m,[39m [])[33m;[39m
+    [90m728| [39m      for (const hidden of ["Save", "Sign out everywhere"]) expect(but…
+    [90m729| [39m      expect([...view!.container.querySelectorAll("aside input:not([ty…
+    [90m   | [39m                                                                                                                               [31m^[39m
+    [90m730| [39m      view[33m?.[39m[34munmount[39m()[33m;[39m
+    [90m731| [39m      view [33m=[39m undefined[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mcompanies: without tenancy.companies.update, exactly the actions that need it disappear
+[31m[1mAssertionError[22m: companies without tenancy.companies.update: expected [ 'button:Add branch', …(35) ] to deeply equal [ 'button:Add branch', …(14) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -5,13 +5,34 @@[39m
+[2m    "button:Columns",[22m
+[2m    "button:New",[22m
+[2m    "button:Print",[22m
+[2m    "button:View: Standard",[22m
+[2m    "button:▾",[22m
+[31m+   "field:addressAr",[39m
+[31m+   "field:addressLine1",[39m
+[31m+   "field:addressLine2",[39m
+[31m+   "field:arabicLegalNameRequired",[39m
+[31m+   "field:baseCurrency",[39m
+[2m    "field:branchCity",[22m
+[2m    "field:branchCode",[22m
+[2m    "field:branchEmirate",[22m
+[2m    "field:branchNameAr",[22m
+[2m    "field:branchNameEn",[22m
+[31m+   "field:city",[39m
+[31m+   "field:code",[39m
+[31m+   "field:country",[39m
+[31m+   "field:email",[39m
+[31m+   "field:emirate",[39m
+[31m+   "field:fiscalYearStartDay",[39m
+[31m+   "field:fiscalYearStartMonth",[39m
+[31m+   "field:isActive",[39m
+[31m+   "field:legalNameAr",[39m
+[31m+   "field:legalNameEn",[39m
+[31m+   "field:phone",[39m
+[31m+   "field:poBox",[39m
+[31m+   "field:taxRegistrationNumber",[39m
+[31m+   "field:tradeLicenceAuthority",[39m
+[31m+   "field:tradeLicenceNumber",[39m
+[31m+   "field:website",[39m
+[2m    "form:Add branch",[22m
+[2m    "form:Company",[22m
+[2m  ][22m
+
+[36m [2m❯[22m src/modules/tenancy/screens.test.tsx:[2m280:57[22m[39m
+    [90m278| [39m        }
+    [90m279| [39m        [35mconst[39m gone [33m=[39m needs[screen][permission] [33m??[39m (() [33m=>[39m [35mfalse[39m)[33m;[39m
+    [90m280| [39m        expect(less, `${screen} without ${permission}`).toEqual(full.f…
+    [90m   | [39m                                                        [31m^[39m
+    [90m281| [39m      })[33m;[39m
+    [90m282| [39m    }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mbranches: without tenancy.branches.update, exactly the actions that need it disappear
+[31m[1mAssertionError[22m: branches without tenancy.branches.update: expected [ 'button:Close', …(19) ] to deeply equal [ Array(7) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -3,7 +3,20 @@[39m
+[2m    "button:Code▲",[22m
+[2m    "button:Columns",[22m
+[2m    "button:New",[22m
+[2m    "button:View: Standard",[22m
+[2m    "button:▾",[22m
+[31m+   "field:addressAr",[39m
+[31m+   "field:addressLine1",[39m
+[31m+   "field:addressLine2",[39m
+[31m+   "field:city",[39m
+[31m+   "field:code",[39m
+[31m+   "field:country",[39m
+[31m+   "field:email",[39m
+[31m+   "field:emirate",[39m
+[31m+   "field:isActive",[39m
+[31m+   "field:nameAr",[39m
+[31m+   "field:nameEn",[39m
+[31m+   "field:phone",[39m
+[31m+   "field:poBox",[39m
+[2m    "form:Branch",[22m
+[2m  ][22m
+
+[36m [2m❯[22m src/modules/tenancy/screens.test.tsx:[2m280:57[22m[39m
+    [90m278| [39m        }
+    [90m279| [39m        [35mconst[39m gone [33m=[39m needs[screen][permission] [33m??[39m (() [33m=>[39m [35mfalse[39m)[33m;[39m
+    [90m280| [39m        expect(less, `${screen} without ${permission}`).toEqual(full.f…
+    [90m   | [39m                                                        [31m^[39m
+    [90m281| [39m      })[33m;[39m
+    [90m282| [39m    }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/screens.test.tsx[2m > [22mtenancy screens offer exactly what the user may do[2m > [22mcompanies: where the user works in only some branches of the company, exactly what every branch shares disappears
+[31m[1mAssertionError[22m: companies for a user who works in only some branches: expected [ 'button:Close', …(28) ] to deeply equal [ Array(8) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -4,7 +4,28 @@[39m
+[2m    "button:Columns",[22m
+[2m    "button:New",[22m
+[2m    "button:Print",[22m
+[2m    "button:View: Standard",[22m
+[2m    "button:▾",[22m
+[31m+   "field:addressAr",[39m
+[31m+   "field:addressLine1",[39m
+[31m+   "field:addressLine2",[39m
+[31m+   "field:arabicLegalNameRequired",[39m
+[31m+   "field:baseCurrency",[39m
+[31m+   "field:city",[39m
+[31m+   "field:code",[39m
+[31m+   "field:country",[39m
+[31m+   "field:email",[39m
+[31m+   "field:emirate",[39m
+[31m+   "field:fiscalYearStartDay",[39m
+[31m+   "field:fiscalYearStartMonth",[39m
+[31m+   "field:isActive",[39m
+[31m+   "field:legalNameAr",[39m
+[31m+   "field:legalNameEn",[39m
+[31m+   "field:phone",[39m
+[31m+   "field:poBox",[39m
+[31m+   "field:taxRegistrationNumber",[39m
+[31m+   "field:tradeLicenceAuthority",[39m
+[31m+   "field:tradeLicenceNumber",[39m
+[31m+   "field:website",[39m
+[2m    "form:Company",[22m
+[2m  ][22m
+
+[36m [2m❯[22m src/modules/tenancy/screens.test.tsx:[2m325:79[22m[39m
+    [90m323| [39m      [34mcloseView[39m()[33m;[39m
+    [90m324| [39m      [35mconst[39m limited [33m=[39m [35mawait[39m [34mopen[39m(screen[33m,[39m all[33m,[39m { everyBranch[33m:[39m [35mfalse[39m })[33m;[39m
+    [90m325| [39m      expect(limited, `${screen} for a user who works in only some bra…
+    [90m   | [39m                                                                              [31m^[39m
+    [90m326| [39m    })[33m;[39m
+    [90m327| [39m  }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m33 passed[39m[22m[90m (37)[39m
+[2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m468 passed[39m[22m[90m (478)[39m
+[2m   Start at [22m 10:29:20
+[2m   Duration [22m 49.02s[2m (transform 18.51s, setup 2.07s, import 31.81s, tests 195.75s, environment 23.68s)[22m
+

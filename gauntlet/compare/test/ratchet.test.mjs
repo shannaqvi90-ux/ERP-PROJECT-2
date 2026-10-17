@@ -14,7 +14,8 @@ const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_d
   reference_rows_per_main_list: 'compare.referenceRowsPerMainList', harness_tests: 'compare.harnessTests', live_tests: 'compare.liveTests', ours_drivers_built: 'compare.oursDriversBuilt',
   guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants',
   instrument_mutations: 'compare.instrumentMutations', before_clock_plants: 'compare.beforeClockPlants', saves_tasks: 'compare.savesTasks',
-  enters_tasks: 'compare.entersTasks', set_up_off_clock_plants: 'compare.setUpOffClockPlants', end_states_declared: 'compare.endStatesDeclared' };
+  enters_tasks: 'compare.entersTasks', set_up_off_clock_plants: 'compare.setUpOffClockPlants', end_states_declared: 'compare.endStatesDeclared',
+  measured_part_plants: 'compare.measuredPartPlants', causation_plants: 'compare.causationPlants' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -123,6 +124,22 @@ test('set-up-off-the-clock plants and declared end states never go below their m
   let declared = 0;
   for (const t of await loadTasks()) for (const p of Object.keys(t.endState || {})) if (t.endState[p]?.reads?.length) declared++;
   assert.ok(declared >= min.end_states_declared, `${declared} declared end states < ${min.end_states_declared}`);
+});
+
+// Round 11 (critic p01 r10): the page's own writes are not the person's doing; set-up's watch on its
+// writes. The plants and controls of test/measured-part.test.mjs never go below their minimum.
+test('measured-part plants and controls never go below their minimum', () => {
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'measured-part.test.mjs'), 'utf8');
+  const n = (text.match(/^test\('(plant R|control C|set-up)/gm) || []).length;
+  assert.ok(n >= min.measured_part_plants, `${n} measured-part plants and controls < ${min.measured_part_plants}`);
+});
+
+// Round 12 (critic p01 r11): the browser's record of which task sent each write. The rules on synthetic
+// traces, the plants (S1-S10) and the honest controls of test/causation.test.mjs never go below their minimum.
+test('causation rules, plants and controls never go below their minimum', () => {
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'causation.test.mjs'), 'utf8');
+  const n = (text.match(/^test\('(plant S|control|causation \(round 12\))/gm) || []).length;
+  assert.ok(n >= min.causation_plants, `${n} causation rules, plants and controls < ${min.causation_plants}`);
 });
 
 test('API tasks never go below their minimum', async () => {

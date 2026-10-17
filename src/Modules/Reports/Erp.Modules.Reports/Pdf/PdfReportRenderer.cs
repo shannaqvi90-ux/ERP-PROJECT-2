@@ -39,6 +39,11 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
         private readonly decimal _pageWidth;
         private readonly decimal _pageHeight;
         private readonly decimal[] _widths;
+
+        /// <summary>The columns laid out, by index into the document's columns: a grouped document
+        /// leaves out the grouping column (its value heads each group already; critic p06 round 6),
+        /// unless it carries a total or is the only column.</summary>
+        private readonly int[] _shown;
         private PdfPage _page = null!;
         private decimal _y;
         private bool _inTable;
@@ -48,11 +53,12 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
             _doc = document;
             _shaper = shaper;
             _rtl = document.RightToLeft;
+            _shown = ShownColumns(document);
             _writer = new PdfWriter(document.Subject is null ? document.Title : $"{document.Title} \u00B7 {document.Subject}", document.Language, _rtl);
             var natural = NaturalWidths();
             var portrait = PortraitWidth - 2 * Margin;
             var landscape = PortraitHeight - 2 * Margin;
-            var landscapePage = natural.Sum() > portrait * 1.05m && document.Columns.Count > 3;
+            var landscapePage = natural.Sum() > portrait * 1.05m && _shown.Length > 3;
             _pageWidth = landscapePage ? PortraitHeight : PortraitWidth;
             _pageHeight = landscapePage ? PortraitWidth : PortraitHeight;
             _widths = Fit(natural, landscapePage ? landscape : portrait);
@@ -77,7 +83,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
                     }
                     foreach (var row in group.Rows)
                     {
-                        Row(row.Cells.Select(c => c.Text).ToList(), bold: false, shade: null);
+                        Row(_shown.Select(i => row.Cells[i].Text).ToList(), bold: false, shade: null);
                     }
                     if (grouped && _doc.Columns.Any(c => c.Total))
                     {
@@ -202,7 +208,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
 
         private void TableHeader()
         {
-            Row(_doc.Columns.Select(c => c.Label).ToList(), bold: true, shade: 0.9m, size: HeaderSize, repeat: false);
+            Row(_shown.Select(i => _doc.Columns[i].Label).ToList(), bold: true, shade: 0.9m, size: HeaderSize, repeat: false);
         }
 
         /// <summary>A full-width band (a group's heading). With <paramref name="keepWithNext"/> it
@@ -222,7 +228,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
 
         private void TotalRow(IReadOnlyList<ReportCell?> totals, string label, decimal shade, bool rule = false)
         {
-            var cells = totals.Select(t => t?.Text ?? "").ToList();
+            var cells = _shown.Select(i => totals[i]?.Text ?? "").ToList();
             var first = cells.FindIndex(c => c.Length > 0);
             // The label goes in the first column when that column has no total of its own.
             if (first != 0)
@@ -252,7 +258,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
             var start = 0.0m;
             for (var c = 0; c < wrapped.Count; c++)
             {
-                var end = _doc.Columns[c].Align == "end";
+                var end = _doc.Columns[_shown[c]].Align == "end";
                 for (var l = 0; l < wrapped[c].Count; l++)
                 {
                     var line = wrapped[c][l];
@@ -283,9 +289,10 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
         /// <summary>Each column's natural width: its widest header or value (over a sample of rows).</summary>
         private decimal[] NaturalWidths()
         {
-            var widths = new decimal[_doc.Columns.Count];
-            for (var c = 0; c < widths.Length; c++)
+            var widths = new decimal[_shown.Length];
+            for (var s = 0; s < widths.Length; s++)
             {
+                var c = _shown[s];
                 var width = _shaper.Shape(_doc.Columns[c].Label, HeaderSize, true, _rtl).Width;
                 foreach (var row in _doc.Groups.SelectMany(g => g.Rows).Take(300))
                 {
@@ -295,9 +302,20 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
                 {
                     width = Math.Max(width, _shaper.Shape(total.Text, BodySize, true, _rtl).Width);
                 }
-                widths[c] = Math.Clamp(width + 2 * CellPadX + 1, 36, 260);
+                widths[s] = Math.Clamp(width + 2 * CellPadX + 1, 36, 260);
             }
             return widths;
+        }
+
+        private static int[] ShownColumns(ReportDocument document)
+        {
+            var all = Enumerable.Range(0, document.Columns.Count).ToArray();
+            if (document.GroupBy is null)
+            {
+                return all;
+            }
+            var shown = all.Where(i => document.Columns[i].Key != document.GroupBy || document.Columns[i].Total).ToArray();
+            return shown.Length == 0 ? all : shown;
         }
 
         /// <summary>At most <paramref name="max"/> characters of the text, never half of a surrogate pair.</summary>

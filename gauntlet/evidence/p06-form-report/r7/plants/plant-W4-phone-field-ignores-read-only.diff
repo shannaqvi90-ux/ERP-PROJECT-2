@@ -1,0 +1,13 @@
+diff --git a/web/src/kernel/forms/fields.tsx b/web/src/kernel/forms/fields.tsx
+index 12b82129..9f4f49d4 100644
+--- a/web/src/kernel/forms/fields.tsx
++++ b/web/src/kernel/forms/fields.tsx
+@@ -126,7 +126,7 @@ export function PhoneField({ field, ...p }: Common & { field: FieldBinding<strin
+     const start = input.value.startsWith(HOME_PREFIX) ? HOME_PREFIX.length : 0;
+     input.setSelectionRange(start, input.value.length);
+   };
+-  const editable = !(p.disabled || field.readOnly);
++  const editable = !p.disabled; // PLANT W4 (critic p06 r7): the phone field ignores a read-only form
+   return (
+     <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint ?? (editable ? t(field.onComplete ? "forms.phone.hintSaves" : "forms.phone.hint") : undefined)} wide={p.wide}>
+       {(a11y) => (

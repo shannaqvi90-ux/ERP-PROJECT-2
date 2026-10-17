@@ -35,7 +35,8 @@ public sealed class G2ReportDataTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         TestContext.Current.TestOutputHelper?.WriteLine($"{result.Reports} reports, {result.PermissionSets} permission sets, {result.Lists} printable lists, " +
                                                         $"{result.ListPermissionSets} list permission sets, {result.Runs} runs, {result.FormatRuns} files, " +
                                                         $"{result.ValuesJudged} printed values judged in JSON, {result.FormatValuesJudged} in files, " +
-                                                        $"{result.QueryVariants} documented query values, {result.VariantRuns} runs with them");
+                                                        $"{result.QueryVariants} documented query values, {result.VariantRuns} runs with them, " +
+                                                        $"{result.Combinations} combinations of them, {result.CombinationRuns} runs with those");
         Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems.Take(60)));
         Assert.True(result.Reports >= Ratchet.Min("rules.reportsChecked"), $"{result.Reports} reports judged by what they print");
         Assert.True(result.ValuesJudged >= Ratchet.Min("g2.reportValuesJudged"), $"g2.reportValuesJudged: {result.ValuesJudged}; ratchet minimum {Ratchet.Min("g2.reportValuesJudged")}");
@@ -46,6 +47,8 @@ public sealed class G2ReportDataTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.True(result.FormatValuesJudged >= Ratchet.Min("g2.reportFileValuesJudged"), $"g2.reportFileValuesJudged: {result.FormatValuesJudged}; ratchet minimum {Ratchet.Min("g2.reportFileValuesJudged")}");
         Assert.True(result.QueryVariants >= Ratchet.Min("g2.reportQueryVariants"), $"g2.reportQueryVariants: {result.QueryVariants}; ratchet minimum {Ratchet.Min("g2.reportQueryVariants")}");
         Assert.True(result.VariantRuns >= Ratchet.Min("g2.reportVariantRuns"), $"g2.reportVariantRuns: {result.VariantRuns}; ratchet minimum {Ratchet.Min("g2.reportVariantRuns")}");
+        Assert.True(result.Combinations >= Ratchet.Min("g2.reportCombinations"), $"g2.reportCombinations: {result.Combinations}; ratchet minimum {Ratchet.Min("g2.reportCombinations")}");
+        Assert.True(result.CombinationRuns >= Ratchet.Min("g2.reportCombinationRuns"), $"g2.reportCombinationRuns: {result.CombinationRuns}; ratchet minimum {Ratchet.Min("g2.reportCombinationRuns")}");
     }
 
     [Fact]
@@ -65,8 +68,12 @@ public static class ReportDataCheck
     /// <param name="QueryVariants">Documented query values (one parameter each, other than format and
     /// language) the reports and lists were printed with, beyond their default query.</param>
     /// <param name="VariantRuns">Runs (in every format) with one of them.</param>
+    /// <param name="Combinations">Prints with documented values of two or more parameters together
+    /// (<see cref="Combinations"/>), across every report and list.</param>
+    /// <param name="CombinationRuns">Runs (in every format) with one of them.</param>
     public sealed record Result(IReadOnlyList<string> Problems, int Reports, int PermissionSets, int Runs, int ValuesJudged,
-        int Lists = 0, int ListPermissionSets = 0, int FormatRuns = 0, int FormatValuesJudged = 0, int QueryVariants = 0, int VariantRuns = 0);
+        int Lists = 0, int ListPermissionSets = 0, int FormatRuns = 0, int FormatValuesJudged = 0, int QueryVariants = 0, int VariantRuns = 0,
+        int Combinations = 0, int CombinationRuns = 0);
 
     private const int MaxPages = 40;
 
@@ -178,6 +185,8 @@ public static class ReportDataCheck
             var runs = 0;
             var variantRuns = 0;
             var variantKeys = new HashSet<string>(StringComparer.Ordinal);
+            var combinationRuns = 0;
+            var combinationKeys = new HashSet<string>(StringComparer.Ordinal);
             // The documented values each report and list is printed with, beyond its default query.
             var reportVariants = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
             foreach (var report in reports)
@@ -189,6 +198,10 @@ public static class ReportDataCheck
             {
                 listVariants[list.Key] = Variants(openApi, $"/api/reports/lists/{list.Key}", await SearchWordsAsync(admin, list), problems);
             }
+            // The same values together (critic p06 round 5, plant P10: a list print that names the
+            // roles when it carries a filter and a sort at once, as a saved view's print does).
+            var reportCombinations = reportVariants.ToDictionary(kv => kv.Key, kv => Combinations(kv.Value), StringComparer.Ordinal);
+            var listCombinations = listVariants.ToDictionary(kv => kv.Key, kv => Combinations(kv.Value), StringComparer.Ordinal);
             var both = new[] { "en", "ar" };
             var setIndex = 0;
             var formatRuns = 0;
@@ -225,6 +238,26 @@ public static class ReportDataCheck
                 }
             }
 
+            // A print with documented values counts as a variant run (one value) or a combination run
+            // (two or more parameters together).
+            void Count(string key, string? variant)
+            {
+                if (variant is null)
+                {
+                    return;
+                }
+                if (variant.Contains('&', StringComparison.Ordinal))
+                {
+                    combinationRuns++;
+                    combinationKeys.Add(key + "?" + variant);
+                }
+                else
+                {
+                    variantRuns++;
+                    variantKeys.Add(key + "?" + variant);
+                }
+            }
+
             const string elsewhere = "which no other endpoint those permissions open shows";
             foreach (var (report, permissions) in sets)
             {
@@ -237,6 +270,19 @@ public static class ReportDataCheck
                 if (baseQueries.Count > 0)
                 {
                     queries.AddRange(reportVariants[report.Key].Select((v, i) => (Join(baseQueries[0], v), (IReadOnlyList<string>)[both[(i + setIndex) % 2]], (string?)v)));
+                    foreach (var (combination, i) in reportCombinations[report.Key].Select((v, i) => (v, i)))
+                    {
+                        IReadOnlyList<string> language = [both[(i + setIndex + 1) % 2]];
+                        queries.Add((Join(baseQueries[0], combination), language, combination));
+                        // Grouped by a column the caller may not see, the print is refused (checked
+                        // below); the rest of the row is printed too, without the grouping, so the
+                        // caller's other values together are still judged.
+                        if (GroupOf(combination) is { } grouped && withheld.Contains(grouped))
+                        {
+                            var rest = string.Join("&", combination.Split('&').Where(part => !part.StartsWith("groupBy=", StringComparison.Ordinal)));
+                            queries.Add((Join(baseQueries[0], rest), language, rest));
+                        }
+                    }
                 }
                 setIndex++;
                 foreach (var (query, languages, variant) in queries)
@@ -247,17 +293,12 @@ public static class ReportDataCheck
                                                                                  query.Contains(p.Key + "=", StringComparison.Ordinal));
                     // Grouping by a column the caller's roles withhold is refused too (in every format):
                     // the group labels would print it.
-                    var refusedGroup = variant is not null && variant.StartsWith("groupBy=", StringComparison.Ordinal) &&
-                                       withheld.Contains(Uri.UnescapeDataString(variant["groupBy=".Length..]))
-                        ? report.Columns.Single(c => c.Key == Uri.UnescapeDataString(variant["groupBy=".Length..]))
+                    var refusedGroup = variant is not null && GroupOf(variant) is { } grouped && withheld.Contains(grouped)
+                        ? report.Columns.Single(c => c.Key == grouped)
                         : null;
                     foreach (var language in languages)
                     {
-                        if (variant is not null)
-                        {
-                            variantRuns++;
-                            variantKeys.Add(report.Key + "?" + variant);
-                        }
+                        Count(report.Key, variant);
                         var path = $"/api/reports/run/{report.Key}?{query}{(query.Length > 0 ? "&" : "")}language={language}";
                         var who = $"{report.Key} (permission {report.Permission}) as a user holding exactly [{string.Join(", ", permissions)}]";
                         var answers = await PrintAsync(client, path);
@@ -341,16 +382,13 @@ public static class ReportDataCheck
                 var queries = new[] { "", "columns=" + string.Join(",", list.Columns.Take(30).Select(c => c.Key)) }
                     .Select(q => (Query: q, Languages: (IReadOnlyList<string>)both, Variant: (string?)null)).ToList();
                 queries.AddRange(listVariants[list.Key].Select((v, i) => (v, (IReadOnlyList<string>)[both[(i + setIndex) % 2]], (string?)v)));
+                queries.AddRange(listCombinations[list.Key].Select((v, i) => (v, (IReadOnlyList<string>)[both[(i + setIndex + 1) % 2]], (string?)v)));
                 setIndex++;
                 foreach (var (query, languages, variant) in queries)
                 {
                     foreach (var language in languages)
                     {
-                        if (variant is not null)
-                        {
-                            variantRuns++;
-                            variantKeys.Add(list.Key + "?" + variant);
-                        }
+                        Count(list.Key, variant);
                         var path = $"/api/reports/lists/{list.Key}?{query}{(query.Length > 0 ? "&" : "")}language={language}";
                         var who = $"{list.Key} (permission {list.Permission}) as a user holding exactly [{string.Join(", ", permissions)}]";
                         var answers = await PrintAsync(client, path);
@@ -393,7 +431,7 @@ public static class ReportDataCheck
                 problems.Add($"{list.Key}: no print printed anything of the workspace's data, so the check was blind to it");
             }
             return new Result(problems.Distinct().ToList(), reports.Count, sets.Count, runs, judged, lists.Count, listSets.Count, formatRuns, formatJudged,
-                variantKeys.Count, variantRuns);
+                variantKeys.Count, variantRuns, combinationKeys.Count, combinationRuns);
         }
         finally
         {
@@ -437,6 +475,33 @@ public static class ReportDataCheck
         }
         return variants.Distinct(StringComparer.Ordinal).ToList();
     }
+
+    /// <summary>
+    /// The documented values of a print route together (critic p06 round 5, plant P10: a saved view
+    /// prints with its search, filter, sort, columns and grouping at once, and a print that names
+    /// what it may not only when two of them come together passed a check that sent one per print).
+    /// Every value of each parameter <paramref name="variants"/> holds is put with every value of
+    /// every other parameter at least once: a covering set of strength two over the parameters'
+    /// values (every pair occurs), each row giving every parameter a value other than its default,
+    /// so each row is also the saved-view shape (everything at once). Each value on its own, with
+    /// the rest at their defaults, is <see cref="Variants"/>. As query strings.
+    /// </summary>
+    internal static IReadOnlyList<string> Combinations(IReadOnlyList<string> variants)
+    {
+        var byParameter = variants.GroupBy(v => v[..v.IndexOf('=', StringComparison.Ordinal)], StringComparer.Ordinal).Select(g => g.ToList()).ToList();
+        if (byParameter.Count < 2)
+        {
+            return [];
+        }
+        // everyUpTo 0: always a covering set, never every product of the values.
+        var rows = G1.IsolationAttack.Cover(byParameter.Select(g => g.Count).ToList(), strength: 2, everyUpTo: 0);
+        return rows.Select(row => string.Join("&", row.Select((value, i) => byParameter[i][value]))).Distinct(StringComparer.Ordinal).ToList();
+    }
+
+    /// <summary>The column a print's query groups by, or null when it names none.</summary>
+    internal static string? GroupOf(string query) =>
+        query.Split('&').Where(part => part.StartsWith("groupBy=", StringComparison.Ordinal))
+            .Select(part => Uri.UnescapeDataString(part["groupBy=".Length..])).FirstOrDefault();
 
     /// <summary>Words to print the list searched for: of the words of its rows' search fields (and
     /// two letters), the one the search finds the most rows for (the print that carries the most

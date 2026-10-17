@@ -1,0 +1,6 @@
+Roles > Administrator, permission matrix, checkbox widths (px) by viewport width (other.mjs, other2.mjs):
+1280: Reset other users' passwords 5.17, Share list views 4.52, View users 13
+1600: 5.75, 5.53, 13
+1920: 7.77, 7.47, 13
+2560: 11.78, 11.34, 13
+Cause: web/src/modules/identity/identity.css .id-cell is display:inline-flex and the checkbox (flex-shrink 1) shrinks when the label beside it wraps.

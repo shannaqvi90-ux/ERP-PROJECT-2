@@ -613,6 +613,50 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.Equal("Group,Code,Name,Amount", separate);
     }
 
+    /// <summary>Critic p06 round 6: the role summary's group totals were on screen and in the PDF but
+    /// not in the file. A grouped workbook lists each group's total under the grand total, outside the
+    /// filter, each a filter-aware sum of that group's rows.</summary>
+    [Fact]
+    public void Xlsx_of_a_grouped_report_lists_each_groups_total_under_the_grand_total()
+    {
+        var sample = Sample("en", 3, grouped: true);
+        var rows = sample.Groups[0].Rows;
+        var f = new ReportFormatter("en", "latn", Dubai);
+        ReportCell Sum(int n) => new((1234.5m * n).ToString(System.Globalization.CultureInfo.InvariantCulture), f.Decimal(1234.5m * n, 2));
+        var two = new ReportDocumentGroup("Dubai", 2, "2", [rows[0], rows[1]], [null, null, Sum(2)]);
+        var one = new ReportDocumentGroup("Sharjah", 1, "1", [rows[2]], [null, null, Sum(1)]);
+        using var zip = new ZipArchive(new MemoryStream(Exports.Xlsx(sample with { Groups = [two, one] })));
+        var sheet = new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd();
+        // Rows 2-4 hold the data, row 5 the grand total, rows 6 and 7 the groups' totals.
+        Assert.Matches("<c r=\"D5\" s=\"\\d+\"><f>SUBTOTAL\\(109,D2:D4\\)</f><v>3703.5</v></c>", sheet);
+        Assert.Contains("<row r=\"6\"><c r=\"A6\" t=\"inlineStr\" s=\"1\"><is><t xml:space=\"preserve\">Total \u00B7 Dubai</t></is></c>", sheet, StringComparison.Ordinal);
+        Assert.Matches("<c r=\"D6\" s=\"\\d+\"><f>SUBTOTAL\\(109,D2:D3\\)</f><v>2469.0</v></c>", sheet);
+        Assert.Contains(">Total \u00B7 Sharjah<", sheet, StringComparison.Ordinal);
+        Assert.Matches("<c r=\"D7\" s=\"\\d+\"><f>SUBTOTAL\\(109,D4:D4\\)</f><v>1234.5</v></c>", sheet);
+        Assert.Contains("<autoFilter ref=\"A1:D4\"/>", sheet, StringComparison.Ordinal);
+        // An ungrouped workbook has the grand total only.
+        using var plain = new ZipArchive(new MemoryStream(Exports.Xlsx(Sample("en", 3, grouped: false))));
+        Assert.DoesNotContain("<row r=\"6\"", new StreamReader(plain.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEnd(), StringComparison.Ordinal);
+    }
+
+    /// <summary>Critic p06 round 6: the branch directory grouped by company printed the company in every
+    /// row under the company's own heading. A grouped PDF leaves the grouping column out of its table.</summary>
+    [Fact]
+    public void A_grouped_pdf_does_not_repeat_the_grouping_column_in_its_rows()
+    {
+        var sample = Sample("en", 3, grouped: true) with { GroupBy = "name", GroupLabel = "Name" };
+        var grouped = PdfText.Of(new PdfReportRenderer(fixture.Fonts).Render(sample));
+        Assert.DoesNotContain("Al Noor Trading LLC", grouped.Replace(sample.Issuer, "", StringComparison.Ordinal), StringComparison.Ordinal);
+        Assert.DoesNotContain("Row 2", grouped, StringComparison.Ordinal);
+        Assert.Contains("C003", grouped, StringComparison.Ordinal);
+        Assert.Contains("Code", grouped, StringComparison.Ordinal);
+        var ungrouped = PdfText.Of(new PdfReportRenderer(fixture.Fonts).Render(Sample("en", 3, grouped: false)));
+        Assert.Contains("Row 2", ungrouped, StringComparison.Ordinal);
+        // A totalled grouping column stays: its totals have nowhere else to go.
+        var totalled = PdfText.Of(new PdfReportRenderer(fixture.Fonts).Render(Sample("en", 3, grouped: true) with { GroupBy = "amount", GroupLabel = "Amount" }));
+        Assert.Contains("3,703.50", totalled, StringComparison.Ordinal);
+    }
+
     /// <summary>Critic p06 round 2: exports stopped at their row limit without a word (an accountant
     /// exporting 100,004 users got 20,000 and nothing said so). A file cut at its limit says so in its
     /// last line, in the document's language, after every row it holds.</summary>

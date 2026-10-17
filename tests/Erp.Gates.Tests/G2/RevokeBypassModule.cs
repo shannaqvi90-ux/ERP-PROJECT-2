@@ -13,7 +13,8 @@ namespace Erp.Gates.Tests.G2;
 /// Self-test plant (critic p03 round 9, P4): "Sign out everywhere" with
 /// <c>?removePasskeys=true</c> skips its target check, so a helpdesk user strips the
 /// Administrator's passkeys. The plant answers that one request shape itself, before the product's
-/// pipeline, removing the path's user's passkeys with no access check at all; every other request
+/// pipeline, removing the path's user's passkeys and ending their sessions with no access check at
+/// all; every other request
 /// (the same endpoint without the value, or with <c>false</c>) reaches the product. Hosted only by
 /// the takeover self-test's planted host, over the takeover environment's database.
 /// </summary>
@@ -63,12 +64,17 @@ public sealed partial class RevokeBypassModule : ErpModule
                 {
                     await replica.ExecuteNonQueryAsync();
                 }
+                var id = Guid.Parse(match.Groups[1].Value);
                 await using var remove = new NpgsqlCommand("DELETE FROM identity.passkeys WHERE user_id = @id", db, transaction);
-                remove.Parameters.AddWithValue("id", Guid.Parse(match.Groups[1].Value));
+                remove.Parameters.AddWithValue("id", id);
                 var removed = await remove.ExecuteNonQueryAsync();
+                // And signs them out everywhere, as the endpoint does (critic p03 round 10's S1).
+                await using var end = new NpgsqlCommand("UPDATE identity.sessions SET revoked_at = now() WHERE user_id = @id AND revoked_at IS NULL", db, transaction);
+                end.Parameters.AddWithValue("id", id);
+                var ended = await end.ExecuteNonQueryAsync();
                 await transaction.CommitAsync();
                 context.Response.StatusCode = StatusCodes.Status200OK;
-                await context.Response.WriteAsJsonAsync(new { sessionsEnded = 0, passkeysRemoved = removed });
+                await context.Response.WriteAsJsonAsync(new { sessionsEnded = ended, passkeysRemoved = removed });
             });
             next(app);
         };

@@ -1,0 +1,16 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 8911feae..53015e14 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -150,6 +150,11 @@ internal static class ReportEndpoints
+         {
+             return validator.ToResult();
+         }
++        // The browser's viewer shows the document as it is filed: every column.
++        if (common.Inline)
++        {
++            withheld = new HashSet<string>(StringComparer.Ordinal);
++        }
+         var limit = common.Format is "csv" or "xlsx" ? ReportEngine.ExportRowLimit : ReportEngine.DocumentRowLimit;
+         var run = new ReportRun(definition, parameters, common.Options.Language, limit) { Withheld = withheld, Holds = caller.Has };
+         var source = (IReportSource)http.RequestServices.GetRequiredService(registration.SourceType);

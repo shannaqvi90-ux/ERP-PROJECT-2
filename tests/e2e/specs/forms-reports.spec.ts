@@ -67,6 +67,48 @@ test.describe("record forms and printed documents", () => {
     await expect(phone).toHaveValue(original);
   });
 
+  test("a phone number keeps +971: a click selects the number after it, and typing its last digit saves; Alt+Z undoes that save", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await openCompanies(page);
+    await listRows(page).first().click();
+    const phone = page.locator('[data-field="phone"] input');
+    await expect(phone).toBeVisible();
+    const original = await phone.inputValue();
+    const puts: string[] = [];
+    page.on("request", (request) => {
+      if (request.method() === "PUT" && new URL(request.url()).pathname.startsWith("/api/tenancy/companies/")) puts.push(request.postDataJSON()?.phone);
+    });
+    const number = original === "+971 50 555 0199" ? "+971 56 555 0199" : "+971 50 555 0199";
+
+    // Two actions: the click, then the number typed without spaces (the field groups it).
+    await phone.click();
+    expect(await phone.evaluate((el: HTMLInputElement) => [el.selectionStart, el.value.slice(el.selectionStart ?? 0, el.selectionEnd ?? 0)])).toEqual([5, original.slice(5)]);
+    await page.keyboard.type(number.replace(/\s/g, ""));
+    await expect(page.locator(".record-form .notice")).toHaveText(/Saved: the entry was complete\./);
+    await expect(phone).toHaveValue(number);
+    await expect(page.locator(".record-header")).not.toContainText("Unsaved changes");
+    expect(puts).toEqual([number]);
+
+    // Enter out of habit sends nothing more; Alt+Z puts the old number back and saves it.
+    await phone.press("Enter");
+    await page.keyboard.press("Alt+KeyZ");
+    await expect(phone).toHaveValue(original);
+    await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+    expect(puts).toEqual([number, original]);
+
+    // The number after +971 alone, with its trunk 0, is the same number (the field entered afresh:
+    // a click into a field already being edited places the caret, as in any field).
+    await page.locator(".record-header h2").click();
+    await phone.click();
+    await page.keyboard.type("0" + number.slice(5).replace(/\s/g, ""));
+    await expect(phone).toHaveValue(number);
+    await expect(page.locator(".record-form .notice")).toHaveText(/Saved: the entry was complete\./);
+    await page.keyboard.press("Alt+KeyZ");
+    await expect(phone).toHaveValue(original);
+    await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+  });
+
   test("a user who may only read a record sees it read-only, and no key of the form sends a change", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.viewer);
@@ -155,11 +197,18 @@ test.describe("record forms and printed documents", () => {
 
     // The figures the screen must add up: the same report as data.
     const data = (await (await page.request.get("/api/reports/run/identity.roleSummary?groupBy=kind&format=json&language=en&numerals=latn")).json()) as {
-      columns: { key: string }[];
+      groupBy: string | null;
+      columns: { key: string; total: boolean }[];
       groups: { rows: { cells: { value: unknown }[] }[] }[];
     };
-    const at = (key: string) => data.columns.findIndex((c) => c.key === key);
-    const sum = (key: string, rows: { cells: { value: unknown }[] }[]) => rows.reduce((total, row) => total + Number(row.cells[at(key)]!.value), 0);
+    // The screen leaves out the grouping column (its value heads each group); a cell's place on
+    // screen is its place among the columns shown.
+    const shown = data.columns.filter((c) => c.key !== data.groupBy || c.total);
+    expect(shown.length).toBe(data.columns.length - 1);
+    await expect(doc.locator("thead th")).toHaveCount(shown.length);
+    const at = (key: string) => shown.findIndex((c) => c.key === key);
+    const sum = (key: string, rows: { cells: { value: unknown }[] }[]) =>
+      rows.reduce((total, row) => total + Number(row.cells[data.columns.findIndex((c) => c.key === key)]!.value), 0);
     const allRows = data.groups.flatMap((g) => g.rows);
     expect(allRows.length).toBeGreaterThan(0);
 

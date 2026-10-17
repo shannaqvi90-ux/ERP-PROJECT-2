@@ -168,7 +168,23 @@ public static class Exports
             if (lastDataRow > 1 && document.Columns.Any(c => c.Total))
             {
                 r++;
-                sheet.Write(TotalRow(document, r, lastDataRow, styles));
+                sheet.Write(TotalRow(document, document.Totals, document.Texts.Total, r, 2, lastDataRow, styles));
+                // A grouped document's group totals, as the PDF and the screen print them (critic p06
+                // round 6), under the grand total and outside the filter: one line per group, each
+                // adding up that group's rows.
+                if (document.GroupBy is not null)
+                {
+                    var first = 2;
+                    foreach (var group in document.Groups)
+                    {
+                        if (group.Rows.Count > 0)
+                        {
+                            r++;
+                            sheet.Write(TotalRow(document, group.Totals, $"{document.Texts.Total} \u00B7 {group.Label}", r, first, first + group.Rows.Count - 1, styles));
+                        }
+                        first += group.Rows.Count;
+                    }
+                }
             }
             if (document.Truncated)
             {
@@ -194,27 +210,27 @@ public static class Exports
     /// the reader filters it, for example to one group. Amounts in more than one currency cannot be
     /// added in one cell: their totals per currency are written as text.
     /// </summary>
-    private static string TotalRow(ReportDocument document, int row, int lastDataRow, XlsxStyles styles)
+    private static string TotalRow(ReportDocument document, IReadOnlyList<ReportCell?> totals, string label, int row, int firstDataRow, int lastDataRow, XlsxStyles styles)
     {
         var builder = new StringBuilder($"<row r=\"{row}\">");
         var offset = GroupColumn(document) ? 1 : 0;
         var labelled = false;
         if (offset == 1)
         {
-            builder.Append(TextCell(Reference(0, row), document.Texts.Total, XlsxStyles.Header));
+            builder.Append(TextCell(Reference(0, row), label, XlsxStyles.Header));
             labelled = true;
         }
         for (var i = 0; i < document.Columns.Count; i++)
         {
             var column = document.Columns[i];
             var reference = Reference(i + offset, row);
-            if (document.Totals[i] is { } total)
+            if (totals[i] is { } total)
             {
-                builder.Append(TotalCell(reference, total, column, $"{Column(i + offset)}2:{Column(i + offset)}{lastDataRow}", styles));
+                builder.Append(TotalCell(reference, total, column, $"{Column(i + offset)}{firstDataRow}:{Column(i + offset)}{lastDataRow}", styles));
             }
             else if (!labelled)
             {
-                builder.Append(TextCell(reference, document.Texts.Total, XlsxStyles.Header));
+                builder.Append(TextCell(reference, label, XlsxStyles.Header));
                 labelled = true;
             }
         }

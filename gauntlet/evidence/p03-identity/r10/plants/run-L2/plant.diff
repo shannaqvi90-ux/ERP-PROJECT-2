@@ -1,0 +1,29 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs b/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
+index e6767535..7aae14e1 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
+@@ -442,6 +442,7 @@ internal static class IdentitySql
+             v_nth timestamptz;
+             v_until timestamptz;
+             v_decoy text;
++            v_first uuid;
+             r record;
+         BEGIN
+             IF coalesce(current_setting('app.tenant_id', true), '') <> '' THEN
+@@ -495,6 +496,7 @@ internal static class IdentitySql
+                  LIMIT 10
+             LOOP
+                 v_found := true;
++                v_first := coalesce(v_first, r.t);
+                 PERFORM set_config('app.tenant_id', r.t::text, true), set_config('app.tenant_tx', v_epoch, true);
+                 SELECT max(a.occurred_at) INTO v_success
+                   FROM identity.sign_in_attempts a
+@@ -527,7 +529,7 @@ internal static class IdentitySql
+                 IF v_outcome = 'matched' THEN
+                     v_matched := true;
+                     challenge := r.ch;
+-                    tenant_id := r.t;
++                    tenant_id := v_first;
+                     paused_until := NULL;
+                     RETURN NEXT;
+                 END IF;

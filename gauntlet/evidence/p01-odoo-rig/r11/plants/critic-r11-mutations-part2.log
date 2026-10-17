@@ -1,0 +1,17 @@
+O1 op.fill focuses the field with an uncounted click: caught by 1 (steps, keystrokes and waits are counted the same way every time) [files: test/operator.test.mjs; control tests 18, control failures 0]
+O2 op.type accepts control characters (Enter/Tab inside one field entry): caught by 2 (plant S1 (round 3): a newline inside op.type (Enter without a step) -> invalid | round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step)) [files: test/operator.test.mjs,test/guard.test.mjs; control tests 110, control failures 0]
+O3 a paste of text copied before the clock accepted: caught by 6 (plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid | plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid) [files: test/operator.test.mjs,test/guard.test.mjs; control tests 110, control failures 0]
+O4 the clock starts 0.3 s late (a wrong timer): caught by 6 (steps, keystrokes and waits are counted the same way every time | a screenshot after the end of a task never shortens the measured time) [files: test/operator.test.mjs,test/page-script.test.mjs; control tests 120, control failures 0]
+O5 the clock does not wait for a save still under way when run() returns: MISSED [files: test/page-script.test.mjs,test/operator.test.mjs; control tests 120, control failures 0]
+G1 a click allowed through ctx.page while measured: caught by 1 (plant: clicking a locator directly -> the run is invalid, never verified) [files: test/guard.test.mjs; control tests 92, control failures 0]
+G2 no read-only check while measured: caught by 12 (plant: typing through ctx.page.keyboard -> the run is invalid, never verified | plant: pressing a key through op.page.keyboard -> the run is invalid, never verified) [files: test/guard.test.mjs; control tests 92, control failures 0]
+B1 the page title not neutralised in blind shots: caught by 1 (blind screenshots paint branding over, go grey, and leave title and favicon neutral) [files: test/blind.test.mjs,test/operator.test.mjs; control tests 33, control failures 0]
+B2 the favicon not removed in blind shots: caught by 1 (blind screenshots paint branding over, go grey, and leave title and favicon neutral) [files: test/blind.test.mjs,test/operator.test.mjs; control tests 33, control failures 0]
+R1 a task already done before the clock accepted: caught by 1 (control: a driver whose set-up did the task and whose verify() is honest is refused (already done before the clock)) [files: test/before-clock.test.mjs; control tests 25, control failures 0]
+C1 a request sent up to 1 s after a step links writes to it: MISSED [files: test/measured-part.test.mjs; control tests 13, control failures 0]
+C2 a write sent up to 3 s BEFORE a step credited to it: MISSED [files: test/measured-part.test.mjs; control tests 13, control failures 0]
+C3 a step's label counts as typed text: MISSED [files: test/measured-part.test.mjs,test/before-clock.test.mjs; control tests 38, control failures 0]
+C4 any text the person typed counts toward every entered value (letters in any order): caught by 1 (entered values are found as a person would have entered them, never inside a longer word or number) [files: test/measured-part.test.mjs,test/before-clock.test.mjs; control tests 38, control failures 0]
+4 of 14 critic mutations missed
+
+[exited with code 0]

@@ -1,0 +1,27 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 8911feae..810f3524 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -278,6 +278,8 @@ internal static class ReportEndpoints
+         return result;
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTimeOffset At, byte[] Bytes)> XlsxCache = new();
++
+     private static IResult Output(HttpContext http, ReportDocument document, Common common, PdfReportRenderer pdf)
+     {
+         // The moment printed, declared so a client (and the isolation gate) can tell the stamp
+@@ -298,7 +300,12 @@ internal static class ReportEndpoints
+             case "csv":
+                 return Results.File(Exports.Csv(document), Exports.CsvType + "; charset=utf-8", name + ".csv");
+             case "xlsx":
+-                return Results.File(Exports.Xlsx(document), Exports.XlsxType, name + ".xlsx");
++                // PLANT L9 (critic p06 r7): workbooks are cached for 30 s by what shapes them (report,
++                // language, grouping, parameters, columns) -- but not by the tenant or the issuer.
++                var cacheKey = $"{document.Key}|{document.Language}|{document.GroupBy}|{string.Join(";", document.Parameters.Select(p => p.Label + "=" + p.Text))}|{string.Join(",", document.Columns.Select(c => c.Key))}";
++                var now = DateTimeOffset.UtcNow;
++                var cached = XlsxCache.AddOrUpdate(cacheKey, _ => (now, Exports.Xlsx(document)), (_, old) => now - old.At < TimeSpan.FromSeconds(30) ? old : (now, Exports.Xlsx(document)));
++                return Results.File(cached.Bytes, Exports.XlsxType, name + ".xlsx");
+             default:
+                 return TypedResults.Ok(document);
+         }

@@ -1,0 +1,13 @@
+start phone +971 4 221 5500 version 1439349361
+1 selection after click [5,15,"+971 4 221 5500"]
+1 typed 505550199 -> shown "+971 50 555 0199" notice "Saved: the entry was complete.Undo" stored "+971 50 555 0199"
+2 after Alt+Z shown "+971 4 221 5500" stored "+971 4 221 5500"
+3 typed 0505550199 -> stored "+971 50 555 0199"
+4 email dirty then phone 521112233 -> stored "+971 50 555 0199" header "ALN-DXB · Al Noor Trading LLC ●Unsaved changes‹2 of 4›PrintDiscard changesSaveClose"
+5 typed 8 digits of a mobile -> stored "+971 50 555 0199" shown "+971 50 555 019"
+5b 9th digit -> stored "+971 50 555 0199"
+6 foreign typed -> shown "+44 20 7946 0958" stored "+971 50 555 0199"
+6b after Enter stored "+44 20 7946 0958"
+7 compact typed -> stored "+971 50 555 0199" version before/after Enter 3774533769 3774533769
+audit status 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-ce53438fde89ba371938227c6d764d8d-b4bf42e3be820dc6-00"}
+restored "+971 4 221 5500"

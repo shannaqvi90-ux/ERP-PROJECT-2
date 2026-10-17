@@ -1,0 +1,44 @@
+create targetmvc641bf@gulfsteel.example 201 01a14918-c5c7-71af-936a-4538784eec68
+create bothmvc641bf@shared.example 201 01a14918-c670-77cb-8a1a-03ef572f2797
+create bothmvc641bf@shared.example 201 01a14918-c72a-742d-aecd-921ec49e41ab
+create deactmvc641bf@gulfsteel.example 201 01a14918-c7da-7e26-ab41-9e041b85797a
+deactivate 200 {"id":"01a14918-c7da-7e26-ab41-9e041b85797a","email":"deactmvc641bf@gulfsteel.example","displayName":"T mvc641bf","langu
+target first sign-in 200 device cookie false
+== nobody*@nowhere.example
+   1 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   2 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   3 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   4 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   5 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=900
+   6 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=900
+   7 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=899
+== target*@gulfsteel.example
+   1 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   2 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   3 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   4 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   5 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=900
+   6 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=900
+   7 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=900
+== both*@shared.example
+   1 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   2 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   3 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   4 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   5 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=838
+   6 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=838
+   7 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=837
+== deact*@gulfsteel.example
+   1 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   2 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   3 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   4 401 {"type":"urn:erp:problem:auth.signInFailed","title":"Sign-in failed. Check your e-mail and password and try again.","status":401,"code":"auth.signInFa retry-after=-
+   5 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=900
+   6 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=900
+   7 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it fr retry-after=899
+same answers as an unknown address: target*@gulfsteel.example true
+same answers as an unknown address: both*@shared.example true
+same answers as an unknown address: deact*@gulfsteel.example true
+target from own browser after attack: 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins wi
+target from attacker client with right password: 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it from here is
+person in both workspaces, A password, attacker client: 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device 

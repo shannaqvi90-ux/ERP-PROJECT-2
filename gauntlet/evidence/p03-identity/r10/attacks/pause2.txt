@@ -1,0 +1,13 @@
+create 201
+owner first sign-in 200 device cookie true
+ attacker attempt 1 401
+ attacker attempt 2 401
+ attacker attempt 3 401
+ attacker attempt 4 401
+ attacker attempt 5 429
+ attacker attempt 6 429
+owner from own browser after attack: 200 {"authenticated":true,"user":{"id":"01a1491a-0cf4-78ca-8723-
+attacker client, right password: 429 {"type":"urn:erp:problem:auth.signInPaused","title":"Too many failed sign-ins with this e-mail address from this device or network. Sign-in with it from here is paused for about 15 minutes. Wait, or ask your administrator to allow sign-in again.","status":429,"code":"auth.signInPaused",,"pausedUntil":"2026-10-17T09:18:27.245622+
+history paused: [{"source":"172.23.0.1","until":"2026-10-17T09:18:27.245067+00:00","failures":5}] items throttled/password,succeeded/password,throttled/password,failed/password,failed/password,failed/password,failed/password,failed/password,succeeded/password
+unblock 204
+attacker client after unblock, right password: 200

@@ -1,0 +1,44 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 8911feae..b96bd2c9 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -288,7 +288,23 @@ internal static class ReportEndpoints
+         switch (common.Format)
+         {
+             case "pdf":
+-                var bytes = pdf.Render(document);
++                // The PDF viewer and the download ask for the same document within moments of each
++                // other: reuse the render of a document whose content is the same (the stamp of who
++                // printed it and when is left out of the key, it changes every second).
++                var shown = document with { Issuer = "", PrintedBy = "", PrintedAt = default, PrintedAtText = "", Texts = document.Texts with { Printed = "" } };
++                var spool = Path.Combine(Path.GetTempPath(), "erp-pdf-renders");
++                Directory.CreateDirectory(spool);
++                var copy = Path.Combine(spool, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(shown))) + ".pdf");
++                byte[] bytes;
++                if (File.Exists(copy) && File.GetLastWriteTimeUtc(copy) > DateTime.UtcNow.AddMinutes(-10))
++                {
++                    bytes = File.ReadAllBytes(copy);
++                }
++                else
++                {
++                    bytes = pdf.Render(document);
++                    File.WriteAllBytes(copy, bytes);
++                }
+                 if (common.Inline)
+                 {
+                     http.Response.Headers.ContentDisposition = $"inline; filename=\"{AsciiName(name)}.pdf\"; filename*=UTF-8''{Uri.EscapeDataString(name)}.pdf";
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEngine.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEngine.cs
+index 3c23ffa1..10340f44 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEngine.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEngine.cs
+@@ -511,8 +511,8 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
+     /// user's session shows it).</summary>
+     private async Task<string> IssuerAsync(string language, CancellationToken cancellationToken)
+     {
+-        if ((caller.Has(TenancyPermissions.CompaniesRead) || caller.Has(TenancyPermissions.WorkplaceRead)) &&
+-            await companies.GetWorkingAsync(cancellationToken) is { } company)
++        // The letterhead names the company the document is printed in.
++        if (await companies.GetWorkingAsync(cancellationToken) is { } company)
+         {
+             return new LocalText(company.LegalNameEn, company.LegalNameAr).For(language);
+         }

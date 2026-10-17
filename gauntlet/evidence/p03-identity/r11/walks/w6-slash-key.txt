@@ -1,0 +1,34 @@
+/identity/users: focus before: input[aria-label=Search by name, initials or e-mail] ""
+/identity/users: after "/" focus input[aria-label=Search by name, initials or e-mail] "/"; value="/"
+/identity/users: grid focus table[aria-label=Users: 100,006 rows] "Name
+▾
+E-mail
+▾
+Language
+▾
+Status
+▾
+Last"
+/identity/users: after "/" from grid, focus input[aria-label=Search by name, initials or e-mail] ""; value=""
+/identity/roles: focus before: input[aria-label=Search by role name] ""
+/identity/roles: after "/" focus input[aria-label=Search by role name] "/"; value="/"
+/identity/roles: grid focus table[aria-label=Roles: 8 rows] "Role
+▲2
+▾
+Type
+▼1
+▾
+Users
+▾
+Permissions
+"
+/identity/roles: after "/" from grid, focus input[aria-label=Search by role name] ""; value=""
+/tenancy/companies: focus before: input[aria-label=Search code or legal name (/)] ""
+/tenancy/companies: after "/" focus input[aria-label=Search code or legal name (/)] "/"; value="/"
+/tenancy/companies: grid focus table[aria-label=Companies: 4 rows] "Code
+▲
+▾
+Legal name (English)
+▾
+Legal na"
+/tenancy/companies: after "/" from grid, focus input[aria-label=Search code or legal name (/)] ""; value=""

@@ -508,7 +508,8 @@ test('a document still loading when run() returns stays on the clock (round 7: t
 test('plant S1 (round 6, the real driver): the critic\'s plant in ours edit-and-save is caught in review by the lint', () => {
   const file = path.join(DRIVERS_DIR, 'ours', 'edit-and-save.mjs');
   const src = fs.readFileSync(file, 'utf8');
-  const honest = /await op\.click\(PHONE[\s\S]*?else await op\.click\('\.record-form button\[type=submit\]', \{ label: 'Save' \}\);/;
+  // Round 7 of p06: the honest path is the click and the typed number (its last digit saves).
+  const honest = /await op\.click\(PHONE[\s\S]*?await op\.type\(number, \{ label: 'new number \(its last digit saves\)' \}\);/;
   assert.match(src, honest, 'the driver changed: update this plant');
   const planted = src.replace(honest, `await ctx.read(phone => {
       (async () => {

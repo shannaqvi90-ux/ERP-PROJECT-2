@@ -73,7 +73,9 @@ checked). A critic fails any round in which a count went down.
 both products along the shortest expert path and records steps (user actions), keystrokes,
 machine seconds, modelled human seconds (keystroke-level model) and screenshots with branding
 hidden. Odoo baselines live in `gauntlet/reference/odoo/` (`bar/reference/` is a human gate,
-see `needs-human.md`). A tie is a loss.
+see `needs-human.md`). A tie is a loss, except a tie accepted under the owner's rule of
+2026-10-17 (`gauntlet/goal.md` bar item 2, needs-human #21: only after the builder tried to win
+it in an earlier round and the critic finds no winning path).
 
 Named tasks: find one record among 100,000; create a user with a restricted role; add a custom
 field and filter by it; switch to Arabic; import 5,000 rows; follow an approval. Critics add a
@@ -124,4 +126,5 @@ is the main 100,000-record list for the comparisons (p16). Odoo captures stay in
 
 Verdicts: `BLOCKED` (a hard gate failed or the product does not run), `LOSS` (gates hold but
 the piece loses or ties Odoo on a task, or misses part of its scope), `WIN` (gates hold and it
-beats Odoo on every task compared; the critic still names the biggest remaining gap).
+beats Odoo on every task compared, or ties it where the owner's tie rule of 2026-10-17 accepts the
+tie; the critic still names the biggest remaining gap).

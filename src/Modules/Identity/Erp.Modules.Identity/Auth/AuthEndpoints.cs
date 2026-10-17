@@ -64,7 +64,7 @@ internal static class AuthEndpoints
     {
         group.MapPost("/sign-in", SignIn)
             .WithName("auth.signIn")
-            .WithSummary("Sign in with e-mail and password (or a one-time set-up code), or with a passkey (passkey, no e-mail or password: the device's answer to the challenge from GET /api/auth/session). Sets the session cookie; returns a bearer token too when issueToken is true. With newPassword it also changes the password; a set-up code answers 409 auth.passwordChangeRequired until one is given.")
+            .WithSummary("Sign in with e-mail and password (or a one-time set-up code), or with a passkey (passkey, no e-mail or password: the device's answer to the challenge from GET /api/auth/session). Sets the session cookie; returns a bearer token too when issueToken is true. With newPassword it also changes the password; a set-up code answers 409 auth.passwordChangeRequired until one is given. After too many failed attempts at one address from one client, sign-in with that address from there answers 429 auth.signInPaused with pausedUntil and Retry-After, whether or not an account has the address, until the pause lifts or an administrator allows sign-in again; too many requests of any kind answer 429 request.tooMany.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -88,6 +88,7 @@ internal static class AuthEndpoints
         SignInService signIn,
         SessionPayload payload,
         IOptions<AuthOptions> options,
+        TimeProvider time,
         HttpContext http,
         CancellationToken cancellationToken)
     {
@@ -141,6 +142,18 @@ internal static class AuthEndpoints
                 return Problems.Result(http, StatusCodes.Status409Conflict, "auth.passwordChangeRequired");
             case SignInOutcome.NewPasswordInvalid invalid:
                 return new Validator(http).Add("newPassword", invalid.Code, invalid.Args).ToResult();
+            case SignInOutcome.Paused paused:
+                // Too many failures at this address from this client: say so, and until when. The
+                // same answer whether or not an account has the address (SignInService).
+                var left = paused.Until - time.GetUtcNow();
+                var minutes = Math.Max(1, (int)Math.Ceiling(left.TotalMinutes));
+                var pause = Problems.Create(http, StatusCodes.Status429TooManyRequests, "auth.signInPaused", null, minutes);
+                var seconds = Math.Max(1, (int)Math.Ceiling(left.TotalSeconds));
+                pause.Extensions["pausedUntil"] = paused.Until.ToUniversalTime();
+                // Relative too, so a screen whose clock differs from the server's shows the right time.
+                pause.Extensions["retryAfterSeconds"] = seconds;
+                http.Response.Headers.RetryAfter = seconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return TypedResults.Problem(pause);
             case SignInOutcome.ChooseWorkspace choose:
                 var problem = Problems.Create(http, StatusCodes.Status409Conflict, "auth.chooseWorkspace");
                 problem.Extensions["workspaces"] = choose.Workspaces;

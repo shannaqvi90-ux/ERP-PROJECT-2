@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 6ab70f11..079ccbe5 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -495,7 +495,7 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<SessionsEndedResponse>, ProblemHttpResult>> RevokeSessions(
+         Guid id, bool? removePasskeys, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (removePasskeys != true && await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }

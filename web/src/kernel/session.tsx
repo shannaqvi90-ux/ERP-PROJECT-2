@@ -29,7 +29,8 @@ export type Workspace = { code: string; nameEn: string; nameAr: string };
 
 export type SignInResult =
   | { kind: "ok"; session: Session }
-  | { kind: "failed"; message: string; code?: string }
+  /** `pausedFor`: with auth.signInPaused, the seconds until sign-in with the address works again from here. */
+  | { kind: "failed"; message: string; code?: string; pausedFor?: number }
   | { kind: "invalid"; message: string; fieldErrors: Record<string, FieldError[]> }
   | { kind: "chooseWorkspace"; message: string; workspaces: Workspace[] }
   | { kind: "changePassword"; message: string };
@@ -106,7 +107,10 @@ async function send(body: Record<string, unknown>): Promise<SignInResult> {
     if (error.status === 400) {
       return { kind: "invalid", message: error.message, fieldErrors: error.fieldErrors };
     }
-    return { kind: "failed", message: error.message, code: error.code };
+    const pausedFor = error.body.retryAfterSeconds;
+    return typeof pausedFor === "number" && error.code === "auth.signInPaused"
+      ? { kind: "failed", message: error.message, code: error.code, pausedFor }
+      : { kind: "failed", message: error.message, code: error.code };
   }
 }
 

@@ -1,0 +1,15 @@
+dir=ltr lang=en
+new role focus: input[name=nameEn] ""
+tab -> input[name=nameAr] ""
+tab -> input[aria-label=Search permissions] ""
+buttons after search: ["Discard changes","Create","Close","Select all shown","All","View","Create","Change","Delete","Roles","Sign-in history","Users","All","View","Create","Change","Delete","Report catalogue","All","View","Create","Change","Delete","Company access","Branches","Companies","Workspace","Working company and branch"]
+select-all present: 1
+ticked after select all on search: 9 ["View roles and permissions","View sign-in history","View users","See the report catalogue","View who works in which company and branch","View branches","View companies","View workspace details","See the working company and branch"]
+after save: Storekeeper j67o5 | ‹ | 5 of 6 | › | Copy role | Delete role | Save | Close | Name in English | Name in Arabic | Select all shown | 9 permissions selected | Users and accessAll | Area	View	Create	Change	Delete	Other | Own profil
+copy button: 1
+copy form names: ["Storekeeper j67o5 (copy)","أمين مخزن j67o5 (نسخة)"]
+after copy save: Storekeeper j67o5 (copy) | ‹ | 6 of 7 | › | Copy role | Delete role | Save | Close | Name in English | Name in Arabic | Select all shown | 9 permissions selected | Users and accessAll | Area	View	Create	Change	Delete	Other | Own
+palette: Go to a screen, record or action | ON THIS SCREEN | Delete role | ↑ |   | ↓ |  move | Enter |  open | Esc |  close | 1 result | 1 result
+after palette Enter focus: button "Delete"
+roles list now: Home | Settings | Roles | Role Storekeeper j67o5 (copy) deleted. | Roles | Every word must match | 6 roles | View: Standard | Columns | Print or export | New role | Role | ▲2 | ▾ | Type | ▼1 | ▾ | Users | ▾ | Permissions | Administrator | System | 2 | 25 | Company manager | Custom | 1 | 9 | Read-only | Custom | 3 | 9 | Staff | Custom | 1 | 3 | Storekeeper j67o5 | Custom | 0 | 9 | x | Custom | 0 | 1 | ↑ ↓ move · Enter open · Space select · / search · Esc back
+errors: []

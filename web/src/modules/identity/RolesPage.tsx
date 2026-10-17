@@ -4,7 +4,7 @@ import { TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { newRecord, useRecordPanel } from "../../kernel/forms/recordPanel";
 import { useRecordForm, type FormErrors } from "../../kernel/forms/useRecordForm";
-import { useI18n } from "../../kernel/i18n";
+import { translate, useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { useSession } from "../../kernel/session";
 import { chordForAria, chordKeys, useCommand, useShortcut } from "../../kernel/shortcuts";
@@ -324,7 +324,9 @@ function RoleEditor({
 function CopyRoleForm({ source, onClose, onCopied }: { source: Role; onClose: () => void; onCopied: (role: Role) => void }) {
   const { t, language } = useI18n();
   const form = useRecordForm<Role, { nameEn: string; nameAr: string }>({
-    initial: () => ({ nameEn: t("identity.roles.copyOf", { name: source.nameEn }), nameAr: `${source.nameAr} (2)` }),
+    // Each name in its own language, whatever the screen's (critic p03 round 10: the Arabic name
+    // was "X (2)" while the English one said "X (copy)").
+    initial: () => ({ nameEn: translate("en", "identity.roles.copyOf", { name: source.nameEn }), nameAr: translate("ar", "identity.roles.copyOf", { name: source.nameAr }) }),
     canEdit: true,
     validate: (draft) => {
       const local: FormErrors = {};

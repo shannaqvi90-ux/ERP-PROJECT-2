@@ -2131,7 +2131,7 @@ public sealed class LeakyModule : ErpModule
                 }
             }
         }
-        await using var command = new NpgsqlCommand("SELECT tenant_id FROM identity.verify_sign_in(@e, @p, 'leaky', NULL, NULL, 50, 1)", connection);
+        await using var command = new NpgsqlCommand("SELECT tenant_id FROM identity.verify_sign_in(@e, @p, 'leaky', NULL, NULL, 50, 1) WHERE tenant_id IS NOT NULL", connection);
         command.Parameters.AddWithValue("e", email);
         command.Parameters.AddWithValue("p", proofs.ToArray());
         await using var rows = await command.ExecuteReaderAsync();

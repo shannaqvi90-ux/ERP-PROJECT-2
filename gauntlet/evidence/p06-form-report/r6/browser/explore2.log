@@ -1,0 +1,11 @@
+reports screen focus on arrival: MAIN HomeReportsAl Noor Trading LLCReportsRep
+Tab presses to Users by role: 4
+after Enter, focus: INPUT role url http://localhost:20650/reports/catalog?report=identity.usersByRole
+lookup options: ["Read-only"]
+role chosen: Read-only
+date field present: 1 type date
+users by role (Read-only) document: Al Noor Trading LLCUsers by roleRoleRead-onlyGrouped byRole2 rowsRoleOnly in companyNameE-mailLanguageStatusLast sign-inRead-only · 2 rowsRead-onlyALN-FZE · Al Noor General Trading FZEHessa Al Suwaidiaccountant@alnoor.exampleEnglishActiveRead-onlyOmar Haddadviewer@alnoor.exampleEnglishActive17 Oct 2026, 11:51 AMPrinted 17 Oct 2026, 12:06 PM by Mariam Al Mansoori
+group by options: ["No grouping","Role","Only in company","Language","Status"]
+regrouped header: Al Noor Trading LLCUsers by roleRoleRead-onlyGrouped byOnly in company2 rowsRoleOnly in companyNameE-mailLanguageStatusLast sign-inALN-FZE · Al Noor General Trading FZE · 1 rowRead-onlyALN-FZE · Al No
+download links: ["/api/reports/run/identity.usersByRole?role=01a148cd-2633-7f84-bd81-53d3f7d32470&groupBy=company&format=pdf&language=en&numerals=latn","/api/reports/run/identity.usersByRole?role=01a148cd-2633-7f84-bd81-53d3f7d32470&groupBy=company&format=xlsx&language=en&numerals=latn","/api/reports/run/identity.usersByRole?role=01a148cd-2633-7f84-bd81-53d3f7d32470&groupBy=company&format=csv&language=en&numerals=latn"]
+bad date -> ["Some fields need attention.","Write the date as YYYY-MM-DD."]

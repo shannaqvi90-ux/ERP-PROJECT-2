@@ -1,6 +1,7 @@
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch, render, settle, setInput, submit, type Rendered } from "../../test/render";
+import { localeOf } from "../../kernel/i18n";
 import { App } from "./App";
 
 let view: Rendered | undefined;
@@ -81,6 +82,42 @@ describe("sign-in screen", () => {
     await settle();
     expect(document.documentElement.dir).toBe("rtl");
     expect(alert().textContent).toBe("تعذّر تسجيل الدخول. تحقّق من البريد الإلكتروني وكلمة المرور ثم حاول مرة أخرى.");
+    expect(alert().getAttribute("lang")).toBeNull();
+  });
+
+  it("says a paused sign-in is paused, until when and for how long, in English and after switching to Arabic", async () => {
+    mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: { authenticated: false } };
+      if (method === "POST" && url === "/api/auth/sign-in")
+        return {
+          status: 429,
+          body: { title: "Too many failed sign-ins (server words).", code: "auth.signInPaused", pausedUntil: "2026-10-17T10:15:00Z", retryAfterSeconds: 14 * 60 + 30 },
+        };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "admin@alnoor.example");
+    const password = view.container.querySelector<HTMLInputElement>('input[name="password"]')!;
+    setInput(password, "Demo-Pass-2026");
+    const sent = Date.now();
+    await submit(view.container);
+    await settle();
+    const alert = () => view!.container.querySelector('[role="alert"]')!;
+    // The time on this device's clock: when the answer came plus the seconds left.
+    const timeAt = (at: number) => new Intl.DateTimeFormat(localeOf("en"), { timeStyle: "short" }).format(new Date(at + (14 * 60 + 30) * 1000));
+    const expected = (at: number) =>
+      `Too many failed sign-ins with this e-mail address from this device. Sign-in with it from here is paused until ${timeAt(at)} (about 15 minutes). Wait until then, or ask your administrator to allow sign-in again.`;
+    expect([expected(sent), expected(Date.now())]).toContain(alert().textContent);
+    // The password is cleared and the keyboard stays on it; no extra "may pause" hint beside the pause itself.
+    expect(password.value).toBe("");
+    expect(document.activeElement).toBe(password);
+    expect(view.container.querySelector(".signin-pause-hint")).toBeNull();
+    await act(async () => view!.container.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
+    await settle();
+    expect(alert().textContent).toContain("توقف تسجيل الدخول به من هنا حتى");
+    expect(alert().textContent).toContain("15 دقيقة تقريبًا");
+    expect(alert().textContent).not.toMatch(/[A-Za-z]/);
     expect(alert().getAttribute("lang")).toBeNull();
   });
 

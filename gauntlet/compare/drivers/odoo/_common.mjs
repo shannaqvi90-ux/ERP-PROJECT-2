@@ -12,10 +12,16 @@ export async function signInAs(ctx, user) {
   return rpc;
 }
 
-/** Wait until Odoo has no request in flight (its "Loading" indicator is gone) and the DOM is quiet (set-up only). */
+/**
+ * Wait until Odoo has no request in flight (its "Loading" indicator is gone), the DOM is quiet, and
+ * no write the browser sent is still under way (set-up only). Odoo's client sends some writes without
+ * its indicator as it loads (the company enrichment call); set-up that moved the page on before they
+ * were answered abandoned them and the run was refused (p02 r10).
+ */
 export async function settle(ctx, page, ms = 300) {
   await ctx.until(() => !document.querySelector('.o_loading_indicator, .o_blockUI'), { page, timeout: 120_000 });
   await page.waitForTimeout(ms);
+  await ctx.settleWrites();
 }
 
 /** Odoo is ready on a start screen the runner opened: the user menu shows and nothing is loading. */
@@ -51,6 +57,26 @@ export async function paletteMenu(op, typed, expected) {
   await op.waitFor(() => !document.querySelector('.o_command_palette') && !document.querySelector('.o_loading_indicator, .o_blockUI') &&
     !!document.querySelector('.o_action_manager .o_view_controller, .o_action_manager .o_action'), { label: `${expected} loaded` });
 }
+
+/**
+ * Page functions: the record form's chatter no longer changes the page on its own. Once a message is
+ * rendered, Odoo loads its emoji data: a bundle request, then a script element it adds to the page
+ * from that request's answer. A run that ended with the request under way had its page changed after
+ * the clock (p04 r9: new-user-keyboard) and was refused. Drivers whose last screen is a record form
+ * opened at the end wait, on the clock, for what their form needs:
+ *   emojiSettled    a message already shown has its emoji data in (an existing record: its thread
+ *                   loads after the form; the wait costs nothing while it has not rendered);
+ *   chatterSettled  the thread has loaded too (a new record: its first message renders with the
+ *                   form, and the request goes out a moment before the message reaches the page).
+ */
+export const emojiSettled = () => !document.querySelector('.o-mail-Chatter .o-mail-Message') || !!document.querySelector('script[src*="web.assets_emoji"]');
+export const chatterSettled = () => {
+  const chatter = document.querySelector('.o-mail-Chatter');
+  if (!chatter) return true;
+  if (chatter.querySelector('.o-mail-Message')) return !!document.querySelector('script[src*="web.assets_emoji"]');
+  const empty = chatter.querySelector('.o-mail-Thread-empty');
+  return !!empty && empty.textContent.trim().length > 0;
+};
 
 /** Rows of the current list or kanban view. */
 export const ROWS = '.o_data_row, .o_kanban_record:not(.o_kanban_ghost)';

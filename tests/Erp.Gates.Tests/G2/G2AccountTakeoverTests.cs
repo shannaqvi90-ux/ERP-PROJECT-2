@@ -92,7 +92,8 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
     /// <c>?removePasskeys=true</c> skips its target check (<see cref="RevokeBypassModule"/>), over
     /// this environment's database. The takeover check, run on that endpoint alone, must report
     /// the query value aimed at the Administrator; the request built from path and body alone (all
-    /// the check sent before round 10) is refused there as everywhere.
+    /// the check sent before round 10) is refused there as everywhere. The plant ends the
+    /// Administrator's sessions too, and the check names that as well rather than failing on a 401.
     /// </summary>
     [Fact]
     public async Task The_takeover_check_catches_a_target_check_skipped_for_a_documented_query_value()
@@ -106,6 +107,33 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         Assert.Contains(result.Problems, p => p.StartsWith(revoke + ": the Administrator's passkeys changed", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => p.StartsWith(revoke + ": aimed at", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => p.StartsWith(revoke + "?removePasskeys=false", StringComparison.Ordinal));
+        // The plant also ends the Administrator's sessions, as the critic's S1 did: the check says
+        // so by endpoint instead of stopping on the next read's 401 (critic p03 round 10).
+        Assert.Contains(result.Problems, p => p.StartsWith(revoke + ": the Administrator's session ended", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Self-test (critic p03 round 9: P5 and request-body flags as gate self-tests, not only
+    /// functional tests): a host where removing one passkey by <c>?passkeyId=</c> removes it whoever
+    /// holds it, and where a password reset with <c>"removePasskeys": false</c> skips its target
+    /// check (<see cref="LostDeviceBypassModule"/>). The takeover check, run on those two endpoints
+    /// alone, must report the Administrator's passkey removed under a user without roles, and the
+    /// reset aimed at the Administrator with the flag changed to false; the same requests with the
+    /// flag true, or left out, are refused there as everywhere.
+    /// </summary>
+    [Fact]
+    public async Task The_takeover_check_catches_a_passkey_removed_whoever_holds_it_and_a_body_flag_that_skips_the_check()
+    {
+        await using var planted = Env.OverHost(LostDeviceBypassModule.Settings(Env));
+        const string remove = "DELETE /api/identity/users/{id:guid}/passkeys";
+        const string reset = "POST /api/identity/users/{id:guid}/password";
+        var result = await TakeoverAsync(planted, e => e.Key is remove or reset);
+        Assert.Contains(result.Problems, p => p.StartsWith(remove + "?passkeyId=: naming the Administrator's records under a user without roles changed the Administrator", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(reset + " [removePasskeys changed]: aimed at the Administrator by ", StringComparison.Ordinal) &&
+                                             p.Contains("answered 200 (expected 403)", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(reset + ": aimed at", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(reset + " [removePasskeys left out]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(remove + "?passkeyId=", StringComparison.Ordinal) && p.Contains("(expected 403)", StringComparison.Ordinal));
     }
 
     /// <summary>What <see cref="TakeoverAsync"/> found and how much it sent.</summary>
@@ -260,6 +288,20 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             }
             var callerLabel = $"a user holding only [{string.Join(", ", permissions)}]";
             await AimQueriesAsync(caller, callerLabel, endpoint, adminId, administratorText, "the Administrator", tag);
+            // First whether the Administrator is still signed in: a request above that ended their
+            // session would make every read below answer 401, and the gate would stop on that
+            // instead of naming the endpoint and the query value (critic p03 round 10, plant S1).
+            if (!(await admin.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("authenticated").GetBoolean())
+            {
+                problems.Add($"{endpoint}: the Administrator's session ended (aimed at them by {callerLabel}, as built or with a documented query value)");
+                // What else it did to them, read in a session of their own.
+                using var again = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+                if (await again.GetStringAsync($"/api/identity/users/{adminId}/passkeys") is var passkeysNow && passkeysNow != passkeysBefore)
+                {
+                    problems.Add($"{endpoint}: the Administrator's passkeys changed: before {Short(passkeysBefore)}; after {Short(passkeysNow)}");
+                }
+                break;
+            }
             var after = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{adminId}");
             if (before.GetProperty("version").GetUInt32() != after.GetProperty("version").GetUInt32())
             {

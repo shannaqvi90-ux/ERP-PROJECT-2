@@ -9,6 +9,7 @@ web/src/kernel/deviceState.ts deviceKeys  # The names of the four device-setting
 web/src/kernel/deviceState.ts resets  # The reset functions of identity-scoped caches, added once per cache when its module loads; holds functions, never the cached data, and runs them when an identity ends.
 web/src/kernel/extensions.ts extensions  # The shell's extension registry, collected once from the modules' extensions files (code) when the bundle loads; holds components and functions, never records.
 web/src/kernel/forms/RecordForm.tsx formChords  # The record form's keyboard chords (Mod+S, Alt+Z, Alt+PageDown, ...); fixed in code (as const).
+web/src/kernel/forms/countries.ts FIRST  # The six country codes the country field offers first (AE and the Gulf); fixed in code, never written.
 web/src/kernel/forms/fields.tsx replaceOnEntry  # Two mouse handlers that select a field's value on the first click; functions fixed in code, they keep nothing (a marker lives on the input element itself).
 web/src/kernel/forms/leave.ts guards  # The unsaved-changes guards of the forms on screen: each holds only a function that returns the warning text, added while a form is changed and removed when it is saved, discarded or closed; never record data.
 web/src/kernel/forms/leave.ts unloadHooked  # Whether the browser's beforeunload listener is installed (true or false); never data.

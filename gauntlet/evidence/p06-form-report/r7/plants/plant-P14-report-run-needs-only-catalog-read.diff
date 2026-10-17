@@ -1,0 +1,14 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 8911feae..a92906e0 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -73,7 +73,8 @@ internal static class ReportEndpoints
+                 .WithReportResponses()
+                 .WithReportParameters(ReportParameters(registration.Definition))
+                 .Surface(SurfaceKind.Export)
+-                .RequirePermission(registration.Definition.Permission);
++                // PLANT P14 (critic p06 r7): a report runs for anyone who may open the reports screen.
++                .RequirePermission(ReportsPermissions.CatalogRead);
+         }
+ 
+         foreach (var (list, _) in catalog.PrintableLists)

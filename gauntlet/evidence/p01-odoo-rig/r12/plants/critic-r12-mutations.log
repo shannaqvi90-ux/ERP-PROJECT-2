@@ -1,0 +1,14 @@
+control: 96 tests, 4 failing unmutated: every task declares where the runner starts it and the moments every driver shoots (instrument 4); every task has a driver for each product; print-list-arabic (routed from p06): the ours driver takes its menu words from the product's own strings, which hold them in both languages; every task that ends in a state saved in the product says so (saves), and names what the person enters
+K1 a double click modelled as a single click (P+BB): caught (3 failing that passed unmutated: attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps | import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps)
+K2 no homing H when the first step is on the keyboard: caught (13 failing that passed unmutated: api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps | create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps)
+K3 typing after ANY click continues it (no M), not only into the clicked field: caught (4 failing that passed unmutated: custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps | totals for a short path add up)
+K4 Enter continues any step (no M): caught (1 failing that passed unmutated: continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow)
+K5 an API request: the Enter that sends it uncounted: caught (1 failing that passed unmutated: an API request is one step whose keystrokes are the request typed plus Enter)
+K6 a browser key (F5, Alt+Left) counts no keystroke: MISSED (0 failing that passed unmutated)
+K7 machine seconds read 0.25 s short (wrong timer): caught (4 failing that passed unmutated: a screenshot after the end of a task never shortens the measured time | round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working))
+K8 human+wait leaves out the system wait: MISSED (0 failing that passed unmutated)
+K9 blind letters fixed: ours is always A (blindness leak): MISSED (0 failing that passed unmutated)
+K10 shift not counted in typed text: caught (3 failing that passed unmutated: typing counts one key per character plus Shift for capitals and symbols | steps, keystrokes and waits are counted the same way every time)
+K11 a step's keystrokes ignored in the summary for type steps: caught (1 failing that passed unmutated: steps, keystrokes and waits are counted the same way every time)
+K12 blind shot name carries the product (blindness leak): caught (1 failing that passed unmutated: blind screenshots paint branding over, go grey, and leave title and favicon neutral)
+done

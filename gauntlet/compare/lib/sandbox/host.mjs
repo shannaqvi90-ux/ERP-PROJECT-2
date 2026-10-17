@@ -298,6 +298,8 @@ function makeCtx(s, { state = {}, downloads = null } = {}) {
     },
     read: (fn, arg = null, opts = {}) => ask('read', { fn: encode(fn), arg: encode(arg), page: opts?.page ? encode(opts.page) : null }).then(decode),
     until: (fn, opts = {}) => ask('until', { fn: encode(fn), arg: encode(opts?.arg ?? null), timeout: opts?.timeout ?? null, page: opts?.page ? encode(opts.page) : null }).then(() => undefined),
+    // Round 11: set-up waits until no write its browser sent is still under way (set-up and sign-in only).
+    settleWrites: (opts = {}) => ask('settleWrites', { timeout: opts?.timeout ?? null }),
   };
   // verify(): the files the measured part downloaded, as the harness saved them (round 9). Empty
   // before the clock; a download is part of the end state, and only a counted step makes one.
