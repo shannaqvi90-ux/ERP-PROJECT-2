@@ -71,6 +71,8 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
             Assert.Contains("الرمز", facts.Keys);
             Assert.True(document.GetProperty("rowCount").GetInt32() >= 1);
             Assert.Contains(document.GetProperty("columns").EnumerateArray(), c => c.GetProperty("label").GetString() == "المدينة");
+            // The country by its Arabic name, not its code (critic p06 rounds 4 and 5).
+            Assert.Equal("الإمارات العربية المتحدة", facts["الدولة"]);
 
             using var pdf = await admin.GetAsync($"/api/reports/run/tenancy.companyProfile?company={companyId}&language=ar&format=pdf");
             Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);
