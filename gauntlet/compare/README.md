@@ -231,6 +231,36 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
   for the reference's. Plant-tested in `test/measured-part.test.mjs` (R1, R2, R2b, R2c, R3, and four
   honest controls: a save sent at once, a few event-loop turns later, after a slow check's answer,
   and while the page changes its address).
+- Round 12 (critic p01 r11, plants S1-S3: a click that waited for a "Close" banner while the page
+  approved on its own timer, a click that "approved" behind a 2.5 s answer it asked for, and a poll
+  the product let approve once it saw `verify()`'s read before the clock): **proximity in time is
+  not evidence**. For a task that saves, the runner records **Chromium's trace of the page's tasks**
+  while the task is measured (`lib/causation.mjs`, `run.page_record`), and a write counts only when
+  the chain of tasks that sent it leads back to a counted step: an input event the browser delivered
+  (the step that began last before it), a DevTools command inside a step (a file chosen, the device's
+  answer), a timer a caused task armed **once for at most `REACTION_SECONDS`**, an animation frame a
+  caused task asked for, the answer to a request a caused task sent **within `LINK_SECONDS` (2 s)**,
+  the task that dispatched a form's submit event (for its submission), or, for a task of no traceable
+  origin (a message port, a worker's message, an observer), the caused page task just before it when
+  no uncaused page task could have posted it to arrive after that task (tasks of one priority run in
+  order; input, DevTools commands and frames jump ahead, so before those an uncaused task busy when the
+  step's input was dispatched, or within `GUARD_SECONDS` before a frame, refuses it) and no worker of
+  the page ran meanwhile. Outside the input queue only discrete input counts (the browser sends
+  boundary events itself when the page moves content under a still pointer).
+  A repeating timer (a poll), a timer or frame armed before the clock, and a navigation no page task
+  started cause nothing. A navigation (a posted form) is judged by the task that started it. The
+  trace's clock is tied to the harness's with clock-sync markers. Timing stays as a second layer (a
+  write counts only when both say so), with each step **timed from its input**: a pointer step first
+  waits for its target (a trial click, outside its window; `began` records the wait's start). For a
+  task that saves the clock starts **1.1-2.1 s** (unpredictably) after `verify()`'s read before it.
+  Each write's record carries the browser's verdict (`saved_state.writes_caused[].browser_record`:
+  the chain, or why nothing caused it). `COMPARE_TRACE_DIR=<dir>` keeps the raw records for reading.
+  Plant-tested in `test/causation.test.mjs`: the rules on synthetic traces, the critic's S1, S1b, S2,
+  S3 and S3b-S11 (the page's own timer just after a step; laundered through a message port, a worker,
+  a synthetic click, an animation-frame loop, a self-submitted form, a cover moved under the pointer;
+  a delay a key armed) and honest
+  controls (a save at once, on a 0 ms timer, on an animation frame, after reading one or two answers,
+  a file chosen, a form posted by Enter); see `docs/decisions/p01-odoo-rig-causal-evidence.md`.
 - **Writes set-up's browser sent are answered before the start.** Every browser context of the run
   is watched from its first request (the runner's, a sign-in retry's, any the driver opened); before
   the set-up contexts close, the runner waits for their writes to be answered (`set_up_writes_waited`),
@@ -258,7 +288,10 @@ declares no writes accepts any write a step caused; a product job set-up schedul
 the measured part sends the declared write is not told apart. Nor can it tell a product's own answer
 to a key from an answer set-up configured: a setting that makes the start page save as soon as any
 key is pressed sends a write the key caused (round 11: a timer the key armed for longer than the
-reaction time is refused, plant R2b). Tasks and drivers are reviewed code.
+reaction time is refused, plant R2b; round 12: so is an answer the page waited on for longer than
+`LINK_SECONDS`). A product that does the task on any click at once (set-up turned on such a setting)
+shows it in the blind screenshots: the instrument sees a click that caused the write. Tasks and
+drivers are reviewed code.
 
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
 right after its last step or wait. Round 5 closes the ways to finish a task after that:
@@ -516,7 +549,10 @@ requests after the clock, the verify read limit, field-value masks and the revie
 tasks; (round 10) the declared end state, the measured part's writes, set-up's browser writes,
 local storage and the clipboard at the start; (round 11) entered values only typed or picked, writes
 only when a step caused them, the reaction time and its one link, set-up's aborted writes, address
-changes, and long-lived channels by kind. Each test file's self-tests run once unmutated for all of its
+changes, and long-lived channels by kind; (round 12) the browser's record of which task sent each
+write (input, commands, timers and their limit, frames, answers and their limit, untraceable tasks and
+their guards, the clock markers), steps timed from their input, the gap before the clock, and labels
+never counted as typed text. Each test file's self-tests run once unmutated for all of its
 mutations (the control), and a mutation counts as caught only when a test that passed there fails
 mutated. It exits 1 when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
 web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above

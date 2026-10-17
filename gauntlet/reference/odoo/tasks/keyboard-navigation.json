@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "keyboard-navigation-20261017T032829-ddaf",
-  "instrument": 9,
+  "run_id": "keyboard-navigation-20261017T115426-d457",
+  "instrument": 10,
   "task": "keyboard-navigation",
   "task_title": "Navigate by keyboard",
   "product": "odoo",
   "status": "verified",
   "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
   "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
-  "started_at": "2026-10-17T03:28:30.005Z",
-  "finished_at": "2026-10-17T03:28:51.045Z",
+  "started_at": "2026-10-17T11:54:26.543Z",
+  "finished_at": "2026-10-17T11:54:45.840Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 1.639,
-    "system_wait_seconds": 1.471,
+    "machine_seconds": 1.001,
+    "system_wait_seconds": 0.853,
     "human_seconds": 7.25,
-    "human_plus_wait_seconds": 8.721,
+    "human_plus_wait_seconds": 8.103,
     "klm_operator_counts": {
       "K": 10,
       "P": 0,
@@ -59,7 +59,7 @@
       "label": "apps menu",
       "keystrokes": 2,
       "at": 0.001,
-      "took": 0.032,
+      "took": 0.025,
       "chord": "Alt+h",
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,8 +69,8 @@
       "kind": "key",
       "label": "first app",
       "keystrokes": 1,
-      "at": 0.049,
-      "took": 0.006,
+      "at": 0.042,
+      "took": 0.005,
       "chord": "ArrowDown",
       "screen": "/odoo/discuss",
       "chain": false
@@ -80,8 +80,8 @@
       "kind": "key",
       "label": "Contacts",
       "keystrokes": 1,
-      "at": 0.057,
-      "took": 0.007,
+      "at": 0.048,
+      "took": 0.004,
       "chord": "ArrowDown",
       "screen": "/odoo/discuss",
       "chain": true
@@ -91,8 +91,8 @@
       "kind": "key",
       "label": "open Contacts",
       "keystrokes": 1,
-      "at": 0.067,
-      "took": 0.008,
+      "at": 0.054,
+      "took": 0.006,
       "chord": "Enter",
       "screen": "/odoo/discuss",
       "chain": true
@@ -102,8 +102,8 @@
       "kind": "key",
       "label": "header row",
       "keystrokes": 1,
-      "at": 0.661,
-      "took": 0.019,
+      "at": 0.483,
+      "took": 0.021,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": false
@@ -113,8 +113,8 @@
       "kind": "key",
       "label": "row 1",
       "keystrokes": 1,
-      "at": 0.681,
-      "took": 0.013,
+      "at": 0.505,
+      "took": 0.021,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": true
@@ -124,8 +124,8 @@
       "kind": "key",
       "label": "row 2",
       "keystrokes": 1,
-      "at": 0.695,
-      "took": 0.019,
+      "at": 0.526,
+      "took": 0.014,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": true
@@ -135,8 +135,8 @@
       "kind": "key",
       "label": "row 3",
       "keystrokes": 1,
-      "at": 0.715,
-      "took": 0.005,
+      "at": 0.542,
+      "took": 0.01,
       "chord": "ArrowDown",
       "screen": "/odoo/contacts",
       "chain": true
@@ -146,8 +146,8 @@
       "kind": "key",
       "label": "open",
       "keystrokes": 1,
-      "at": 0.743,
-      "took": 0.04,
+      "at": 0.555,
+      "took": 0.028,
       "chord": "Enter",
       "screen": "/odoo/contacts",
       "chain": true
@@ -156,47 +156,47 @@
   "waits": [
     {
       "label": "apps menu open",
-      "at": 0.034,
-      "seconds": 0.014
+      "at": 0.027,
+      "seconds": 0.015
     },
     {
       "label": "Contacts highlighted",
-      "at": 0.065,
-      "seconds": 0.002
+      "at": 0.053,
+      "seconds": 0.001
     },
     {
       "label": "contact list",
-      "at": 0.076,
-      "seconds": 0.584
+      "at": 0.061,
+      "seconds": 0.421
     },
     {
       "label": "third row selected",
-      "at": 0.725,
-      "seconds": 0.018
+      "at": 0.553,
+      "seconds": 0.002
     },
     {
       "label": "contact form",
-      "at": 0.783,
-      "seconds": 0.85
+      "at": 0.583,
+      "seconds": 0.408
     },
     {
       "label": "the chatter's emoji data in",
-      "at": 1.634,
-      "seconds": 0.003
+      "at": 0.992,
+      "seconds": 0.006
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "de4952def126b63a.jpg",
+      "file": "8cdde5eb02de5e81.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/de4952def126b63a.jpg"
+      "path": "gauntlet/reference/odoo/shots/8cdde5eb02de5e81.jpg"
     },
     {
       "moment": "done",
-      "file": "0a52861b8be447c5.jpg",
-      "at": 1.639,
-      "path": "gauntlet/reference/odoo/shots/0a52861b8be447c5.jpg"
+      "file": "478000229fc83b18.jpg",
+      "at": 1.001,
+      "path": "gauntlet/reference/odoo/shots/478000229fc83b18.jpg"
     }
   ],
   "verification": {
@@ -235,26 +235,28 @@
     },
     {
       "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "longest_pause_seconds": 0,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.004,
+      "seconds": 0.003,
       "verified": true,
-      "gap_seconds": 0.082
+      "gap_seconds": 0.071
     }
   ],
   "requests_after_clock": 0,
   "requests_in_flight_at_clock": {
-    "count": 0,
-    "first": []
+    "count": 1,
+    "first": [
+      "POST /mail/store (xhr)"
+    ]
   },
   "screen_at_clock": {
-    "sha256": "9a987bf57df97ceb",
-    "elements": 329
+    "sha256": "9a4ebd004ba32b63",
+    "elements": 323
   },
   "screen_after_verify": {
-    "sha256": "9a987bf57df97ceb",
-    "elements": 329,
+    "sha256": "9a4ebd004ba32b63",
+    "elements": 323,
     "unchanged": true
   },
   "verify_before": {
@@ -265,14 +267,14 @@
     "longest_pause_seconds": 0.001,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.055
+    "seconds": 0.038
   },
   "set_up_writes_waited": 0,
   "result_file": "gauntlet/reference/odoo/tasks/keyboard-navigation.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T032747-ce17.json",
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T032808-8424.json",
-    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T032829-ddaf.json"
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T115407-2614.json",
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T115426-d457.json",
+    "gauntlet/reference/odoo/results/keyboard-navigation-20261017T115445-6916.json"
   ]
 }

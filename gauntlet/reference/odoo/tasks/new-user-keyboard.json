@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "new-user-keyboard-20261017T032851-6372",
-  "instrument": 9,
+  "run_id": "new-user-keyboard-20261017T115505-aab8",
+  "instrument": 10,
   "task": "new-user-keyboard",
   "task_title": "Start a new record from the home screen by keyboard only (new user)",
   "product": "odoo",
   "status": "verified",
   "goal": "Without touching the mouse, open an empty form for a new user, ready to type the first field.",
   "done_when": "An empty new-user form is on screen and no step used the mouse.",
-  "started_at": "2026-10-17T03:28:51.142Z",
-  "finished_at": "2026-10-17T03:29:12.138Z",
+  "started_at": "2026-10-17T11:55:05.429Z",
+  "finished_at": "2026-10-17T11:55:24.926Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 1.666,
-    "system_wait_seconds": 1.507,
+    "machine_seconds": 1.207,
+    "system_wait_seconds": 1.098,
     "human_seconds": 5.9,
-    "human_plus_wait_seconds": 7.407,
+    "human_plus_wait_seconds": 6.998,
     "klm_operator_counts": {
       "K": 10,
       "P": 0,
@@ -59,7 +59,7 @@
       "label": "command palette",
       "keystrokes": 2,
       "at": 0.001,
-      "took": 0.033,
+      "took": 0.021,
       "chord": "Control+k",
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,8 +69,8 @@
       "kind": "type",
       "label": "menu search",
       "keystrokes": 5,
-      "at": 0.231,
-      "took": 0.037,
+      "at": 0.242,
+      "took": 0.033,
       "text": "/user",
       "same_field": false,
       "screen": "/odoo/discuss",
@@ -81,8 +81,8 @@
       "kind": "key",
       "label": "open",
       "keystrokes": 1,
-      "at": 0.376,
-      "took": 0.011,
+      "at": 0.339,
+      "took": 0.009,
       "chord": "Enter",
       "screen": "/odoo/discuss",
       "chain": true
@@ -92,8 +92,8 @@
       "kind": "key",
       "label": "new",
       "keystrokes": 2,
-      "at": 0.966,
-      "took": 0.056,
+      "at": 0.75,
+      "took": 0.023,
       "chord": "Alt+c",
       "screen": "/odoo/users",
       "chain": false
@@ -102,42 +102,42 @@
   "waits": [
     {
       "label": "palette open",
-      "at": 0.035,
-      "seconds": 0.195
+      "at": 0.023,
+      "seconds": 0.219
     },
     {
       "label": "Users menu first",
-      "at": 0.269,
-      "seconds": 0.107
+      "at": 0.276,
+      "seconds": 0.063
     },
     {
       "label": "users list",
-      "at": 0.394,
-      "seconds": 0.571
+      "at": 0.35,
+      "seconds": 0.4
     },
     {
       "label": "new user form",
-      "at": 1.023,
-      "seconds": 0.55
+      "at": 0.774,
+      "seconds": 0.355
     },
     {
       "label": "the form's chatter loaded in full",
-      "at": 1.579,
-      "seconds": 0.084
+      "at": 1.13,
+      "seconds": 0.075
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "dcb0d58116be51ad.jpg",
+      "file": "c5143dabb712a09e.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/dcb0d58116be51ad.jpg"
+      "path": "gauntlet/reference/odoo/shots/c5143dabb712a09e.jpg"
     },
     {
       "moment": "done",
-      "file": "956e36e23f5c0f2e.jpg",
-      "at": 1.666,
-      "path": "gauntlet/reference/odoo/shots/956e36e23f5c0f2e.jpg"
+      "file": "a771ff6ad10ffd3f.jpg",
+      "at": 1.207,
+      "path": "gauntlet/reference/odoo/shots/a771ff6ad10ffd3f.jpg"
     }
   ],
   "verification": {
@@ -168,10 +168,10 @@
   "verify_passes": [
     {
       "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "longest_pause_seconds": 0,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.004,
+      "seconds": 0.002,
       "verified": true
     },
     {
@@ -179,9 +179,9 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.005,
+      "seconds": 0.002,
       "verified": true,
-      "gap_seconds": 0.091
+      "gap_seconds": 0.061
     }
   ],
   "requests_after_clock": 0,
@@ -190,12 +190,12 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "b59d59240259e7e6",
-    "elements": 372
+    "sha256": "d8558d120fed1369",
+    "elements": 369
   },
   "screen_after_verify": {
-    "sha256": "b59d59240259e7e6",
-    "elements": 372,
+    "sha256": "d8558d120fed1369",
+    "elements": 369,
     "unchanged": true
   },
   "verify_before": {
@@ -203,17 +203,17 @@
     "error": null,
     "back_end_reads": 0,
     "requests": 1,
-    "longest_pause_seconds": 0.001,
+    "longest_pause_seconds": 0.004,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.063
+    "seconds": 0.073
   },
   "set_up_writes_waited": 0,
   "result_file": "gauntlet/reference/odoo/tasks/new-user-keyboard.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/new-user-keyboard-20261017T032851-6372.json",
-    "gauntlet/reference/odoo/results/new-user-keyboard-20261017T032912-8c30.json",
-    "gauntlet/reference/odoo/results/new-user-keyboard-20261017T032933-94d8.json"
+    "gauntlet/reference/odoo/results/new-user-keyboard-20261017T115505-aab8.json",
+    "gauntlet/reference/odoo/results/new-user-keyboard-20261017T115524-3815.json",
+    "gauntlet/reference/odoo/results/new-user-keyboard-20261017T115544-6e74.json"
   ]
 }

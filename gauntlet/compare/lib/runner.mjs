@@ -11,6 +11,7 @@ import { ActionOutsideClock, RefusedClaim, UncountedAction, VERIFY_READ_MS, chan
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
 import { apiSessionFor } from './api-transport.mjs';
 import { PageWorld, fingerprintDigest, screenChange } from './page-script.mjs';
+import { PageTrace, writeCauses } from './causation.mjs';
 import { START_KINDS, landingProblems, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl, taskWords } from './start.mjs';
 
 const violationRecord = claimViolations();
@@ -83,7 +84,17 @@ export const RESULT_SCHEMA = 1;
  *      (pushState) abandons nothing: a save under way then stays on the clock, and set-up's writes
  *      stay waited for. Long-lived channels are known by their kind, never by their address.
  */
-export const INSTRUMENT_VERSION = 9;
+/*  10: a write counts only when the browser's record shows a counted step caused it (lib/causation.mjs,
+ *      critic p01 r11, plants S1-S3): Chromium's trace of the page's tasks while a task that saves is
+ *      measured; the task that sent the write is traced back through the timers, animation frames and
+ *      answers that led to it, to an input event or DevTools command of a step (a repeating timer, one
+ *      over REACTION_SECONDS, one armed before the clock, an answer held over LINK_SECONDS, and a task
+ *      of no traceable origin after page activity no step caused all cause nothing). Timing stays as a
+ *      second layer, with each step timed from its input (a pointer step waits for its target first,
+ *      outside its window). For a task that saves, the clock starts an unpredictable 1.1-2.1 s after
+ *      verify()'s read before it. A device confirmation is timed until the device has answered.
+ */
+export const INSTRUMENT_VERSION = 10;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 /**
  * The metrics that count things a person does (steps, keystrokes); the others are times. Only a
@@ -292,6 +303,13 @@ export const VERIFY_MAX_PAUSE_SECONDS = 1;
 /** Round 9: the second pass after the clock starts at least this long after the first. */
 export const VERIFY_PASS_GAP_MS = 1100;
 export const VERIFY_MAX_REQUESTS = 100;
+/**
+ * Round 12 (critic p01 r11, plant S3): for a task that saves, the wait between verify()'s read before
+ * the clock and the clock's start: longer than REACTION_SECONDS, by an amount the product cannot know.
+ */
+export const START_GAP_MIN_MS = 1100;
+export const START_GAP_SPREAD_MS = 1000;
+export const startGapMs = () => START_GAP_MIN_MS + crypto.randomInt(0, START_GAP_SPREAD_MS);
 export const VERIFY_SLACK_SECONDS = 3;
 
 /** Why a verify() pass waited, or null (see above). */
@@ -474,7 +492,7 @@ function trackRequests(context, clock = () => 0) {
     if (timeline.size < MAX_TIMELINE) { timeline.set(r, entry); tracker.timeline.push(entry); }
     if (changesProduct({ method: r.method(), url: r.url(), resourceType: r.resourceType(), postData: body, navigation: r.isNavigationRequest() && frameOf(r)?.parentFrame() === null })) {
       inflight.add(r);
-      if (isWrite(r.method(), r.url(), r.resourceType(), body) && sent.length < MAX_SENT) sent.push({ method: r.method(), url: r.url(), at, timing: entry, body: body && body.length > MAX_SENT_BODY ? body.slice(0, MAX_SENT_BODY) : body });
+      if (isWrite(r.method(), r.url(), r.resourceType(), body) && sent.length < MAX_SENT) sent.push({ method: r.method(), url: r.url(), at, timing: entry, navigation: r.isNavigationRequest(), body: body && body.length > MAX_SENT_BODY ? body.slice(0, MAX_SENT_BODY) : body });
     } else loading.add(r);
   };
   const answered = r => { const e = timeline.get(r); if (e && e.answered === null) e.answered = clock(); };
@@ -540,6 +558,22 @@ export function causedWrites(sent, steps, timeline = []) {
 }
 
 /**
+ * Round 12 (critic p01 r11): both layers judge each write. Timing (causedWrites, steps timed from
+ * their input) and the browser's record of which task sent it (lib/causation.mjs writeCauses,
+ * `traceCauses`, one per write, or null when the run kept no record: an API task, a unit test). A
+ * write is caused only when both say a step caused it; `why` names the layer that says no.
+ */
+export function judgeWrites(sent, steps, timeline = [], traceCauses = null) {
+  const timed = causedWrites(sent, steps, timeline);
+  return timed.map((c, i) => {
+    const trace = traceCauses ? (traceCauses[i] || { caused: false, why: 'the browser\'s record holds no verdict on it', chain: [] }) : null;
+    const caused = c.caused && (trace ? trace.caused : true);
+    return { ...c, timed: c.caused, ...(trace ? { trace } : {}), caused,
+      ...(c.caused && trace && !trace.caused ? { why: `the browser's record shows ${trace.why}` } : {}) };
+  });
+}
+
+/**
  * Round 11: the task's own writes (`declared`) the page sent during the measured part are each the
  * person's doing: caused by a step, or the next part of one that was (a write of the same kind that
  * went out within REACTION_SECONDS of the previous one's answer: an import the product sends in
@@ -550,11 +584,14 @@ export function strayDeclaredWrites(causes, declared) {
   const EPS = 0.002;
   const kinds = new Map();
   const stray = [];
+  // Round 12: with the browser's record (lib/causation.mjs), a next part must also have been sent by
+  // the task that delivered the previous part's answer.
+  const traced = (c, o) => !c.trace || c.trace.caused || (c.trace.answered || []).includes(o.trace?.request_id);
   for (const c of [...causes].filter(x => declared(x.write)).sort((a, b) => (a.write.at ?? 0) - (b.write.at ?? 0))) {
     const kind = `${c.write.method} ${describePath(c.write.url)}`.replace(/\/[^/]*\d[^/]*/g, '/*');
     const done = kinds.get(kind) || [];
     if (!c.caused) {
-      const prev = done.find(o => typeof o.write.timing?.answered === 'number' && typeof c.write.at === 'number'
+      const prev = done.find(o => typeof o.write.timing?.answered === 'number' && typeof c.write.at === 'number' && traced(c, o)
         && c.write.at >= o.write.timing.answered - EPS && c.write.at <= o.write.timing.answered + REACTION_SECONDS + EPS);
       if (!prev) { stray.push(c); continue; }
       c.continues = kind;
@@ -717,6 +754,8 @@ export async function execute(task, driver, product, productId, needles, out, op
   let tracker = null;
   let routed = false;
   let thaw = null;
+  let pageTrace = null; // round 12: the browser's record of the measured page (lib/causation.mjs)
+  let traced = null;
   const kind = startKind(task);
   // The person's passkey device, for a task that declares one (lib/device.mjs).
   const device = task.device === 'passkey' ? new Device() : null;
@@ -827,6 +866,12 @@ export async function execute(task, driver, product, productId, needles, out, op
     await op.shot('start');
     // The start document's read world is armed before the clock (round 7, lib/page-script.mjs).
     if (kind !== 'api') await PageWorld.of(page).prepare();
+    // Round 12 (critic p01 r11, plant S3): the product saw verify()'s read before the clock and could
+    // time its own write from it. For a task that saves, the clock starts an unpredictable while
+    // later, never sooner than the time a step has to cause a write.
+    if (task.saves) await new Promise(r => setTimeout(r, startGapMs()));
+    // Round 12: the browser's record of the page's tasks, for which step caused each write (lib/causation.mjs).
+    if (task.saves && kind !== 'api') pageTrace = await PageTrace.start(page);
     tracker = kind === 'api' ? null : trackRequests(context, () => op.now());
     session.op = op.driverView();
     op.start();
@@ -859,6 +904,13 @@ export async function execute(task, driver, product, productId, needles, out, op
       // Round 7: the screen as the clock left it (script frozen, nothing aborted yet), compared after verify().
       thaw = await freezePages(context, { beforeAbort: async () => { atClock = await PageWorld.of(page).fingerprint().catch(() => null); } });
       run.screen_at_clock = fingerprintDigest(atClock);
+    }
+    if (pageTrace) {
+      traced = await pageTrace.stop();
+      pageTrace = null;
+      // For reading a run's record by hand (never part of a measurement): COMPARE_TRACE_DIR=<dir>.
+      if (process.env.COMPARE_TRACE_DIR) writeJson(path.join(process.env.COMPARE_TRACE_DIR, `${task.id}-${driver.variant ?? 'path'}-${crypto.randomBytes(3).toString('hex')}.json`), { origin: op.origin, clock: traced.clock, steps: op.steps, sent: (tracker?.sent || []).map(({ body, timing, ...w }) => w), events: traced.events });
+      run.page_record = { events: traced.events.length, cut_short: traced.dataLoss, clock: traced.clock ? { offset_us: Math.round(traced.clock.offset_us), error_us: Math.round(traced.clock.error_us) } : null };
     }
     // Anything the read world refused on its own since the driver's last page function (nothing
     // can be scheduled there, so this stays empty unless something escaped a call).
@@ -900,13 +952,22 @@ export async function execute(task, driver, product, productId, needles, out, op
         const sent = tracker?.sent || [];
         run.saved_state.writes_sent = [...sent.map(r => { try { return `${r.method} ${new URL(r.url).pathname}`; } catch { return r.method; } }),
           ...op.steps.filter(x => x.kind === 'request' && x.writes).map(x => x.text.split(' ').slice(0, 2).join(' '))].slice(0, 20);
+        // Round 12: the browser's record of which task sent each write (lib/causation.mjs), beside timing.
+        let traceCauses = null;
+        if (tracker) {
+          if (!traced) throw new Error('the browser\'s record of the measured part was not taken: which step caused each write cannot be shown');
+          if (traced.dataLoss) throw new Error(`the browser's record of the measured part was cut short (${traced.events.length} events): which step caused each write cannot be shown; run it again`);
+          if (!traced.clock) throw new Error('the browser\'s record of the measured part holds no clock-sync marker: its times cannot be read against the steps\'');
+          traceCauses = writeCauses({ events: traced.events }, sent, op.steps, { clock: traced.clock, originMs: op.origin, reaction: REACTION_SECONDS });
+        }
         // Round 11: which of them a counted step caused, recorded for the reader.
-        const causes = causedWrites(sent, op.steps, tracker?.timeline || []);
+        const causes = judgeWrites(sent, op.steps, tracker?.timeline || [], traceCauses);
         const declaredWrites = endStateOf(task, productId)?.writes;
         if (declaredWrites) strayDeclaredWrites(causes, w => declaredWrites.some(x => matchesRequest(x, w.method, w.url)));
         run.saved_state.writes_caused = causes.slice(0, 20).map(c => ({ write: `${c.write.method} ${describePath(c.write.url)}`, at: c.write.at,
-          ...(c.caused ? { by_step: c.step, ...(c.after ? { after_answer_to: c.after } : {}) } : c.continues ? { continues: c.continues, not_caused: c.why } : { not_caused: c.why }) }));
-        const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [] });
+          ...(c.caused ? { by_step: c.step, ...(c.after ? { after_answer_to: c.after } : {}) } : c.continues ? { continues: c.continues, not_caused: c.why } : { not_caused: c.why }),
+          ...(c.trace ? { browser_record: { caused: c.trace.caused, ...(c.trace.caused ? { by_step: c.trace.step } : { why: c.trace.why }), chain: c.trace.chain.slice(-6) } } : {}) }));
+        const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [], traceCauses });
         if (measured) throw new ActionOutsideClock(measured, 'set-up');
       }
     } else {
@@ -946,6 +1007,7 @@ export async function execute(task, driver, product, productId, needles, out, op
     }
   } finally {
     op?.finish();
+    if (pageTrace) await pageTrace.stop().catch(() => {});
     tracker?.stop();
     if (tracker) run.requests_after_clock = tracker.afterClock;
     if (thaw) await thaw();
@@ -1200,14 +1262,15 @@ export function savedState(task, beforeReads, afterReads, secondReads, productId
  * steps; `gained`: the entered values the end state gained (savedState); `timeline`: the page's
  * requests with when they went out and were answered (trackRequests).
  */
-export function measuredPartProblem(task, { steps = [], sent = [], gained = [], productId = null, timeline = [] } = {}) {
+export function measuredPartProblem(task, { steps = [], sent = [], gained = [], productId = null, timeline = [], traceCauses = null } = {}) {
   if (!task.saves) return null;
   const apiWrites = steps.filter(s => s.kind === 'request' && s.writes);
   if (!sent.length && !apiWrites.length) {
     return 'the measured part sent nothing that writes to the product (no save, no API write): the end state verify() found was saved off the clock (set-up\'s browser or back-end calls), not by what the person did';
   }
   const label = r => { try { return `${r.method} ${new URL(r.url).pathname}`; } catch { return r.method; } };
-  const causes = causedWrites(sent, steps, timeline);
+  // Round 12: timing and the browser's record of which task sent each write (judgeWrites).
+  const causes = judgeWrites(sent, steps, timeline, traceCauses);
   const caused = causes.filter(c => c.caused).map(c => c.write);
   if (!caused.length && !apiWrites.length) {
     return `no counted step caused any of the writes the page sent (${causes.slice(0, 3).map(c => `${label(c.write)}: ${c.why}`).join('; ')}): the page sent ${causes.length > 1 ? 'them' : 'it'} on its own (a timer or a poll set-up arranged), not because of what the person did`;

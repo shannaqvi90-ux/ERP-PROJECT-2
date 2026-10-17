@@ -160,6 +160,9 @@ export class Operator {
   /** The files the measured part downloaded: { file, url, name } (round 9: verify() reads them from the harness). */
   get downloads() { return this.#downloads.map(d => ({ ...d })); }
 
+  /** When the clock started (performance.now milliseconds), for the runner's reading of the browser's record. */
+  get origin() { return this.#t0; }
+
   /** Seconds on the product clock since start(). */
   now() {
     if (this.#t0 === null) return 0;
@@ -244,9 +247,15 @@ export class Operator {
 
   #locate(target) { return typeof target === 'string' ? this.#page.locator(target) : unwrap(target); }
 
-  #record(kind, label, keystrokes, started, extra = {}, screen = undefined) {
+  /**
+   * One step. `started` is when its input was dispatched (round 12, critic p01 r11: never when the
+   * operator began waiting for its target, so a step's window holds only the input itself);
+   * `began` (optional, earlier) is when the operator began the step, its target's actionability
+   * wait included: the person pointing at the target. Both are on the clock, in seconds.
+   */
+  #record(kind, label, keystrokes, started, extra = {}, screen = undefined, began = started) {
     if (!this.measuring) throw new Error('operator.start() must be called before the first measured step');
-    const step = { n: this.#steps.length + 1, kind, label, keystrokes, at: round(started), took: round(this.now() - started), ...extra };
+    const step = { n: this.#steps.length + 1, kind, label, keystrokes, at: round(started), took: round(this.now() - started), ...(began < started - 0.0005 ? { began: round(began) } : {}), ...extra };
     // The screen the step began on (its address path); API steps have none.
     if (kind !== 'request') step.screen = screen === undefined ? this.#startScreen : screen;
     // Continuation (no M) is derived from the steps (lib/klm.mjs), recorded here for reading only.
@@ -264,23 +273,41 @@ export class Operator {
     return this.now();
   }
 
+  /**
+   * Round 12 (critic p01 r11, plants S1 and S1b): a pointer step first waits until its target can
+   * take the input (visible, stable, enabled, not covered: Playwright's actionability checks, run as
+   * a trial that dispatches nothing to the target), and only then is the input dispatched and timed.
+   * A click used to be timed from the moment the operator began waiting for its target, so a write
+   * the page sent on its own timer while the target was still missing fell inside the click's window
+   * and was credited to it. Returns the time the wait began (the step's `began`).
+   */
+  async #ready(loc, trial) {
+    const began = this.now();
+    await trial(loc);
+    return began;
+  }
+
   /** One click (one step, no keystrokes). */
   async click(target, opts) {
     const { label } = checkOptions('click', opts);
-    const t = this.#begin();
+    this.#begin();
     const loc = this.#locate(target);
+    const began = await this.#ready(loc, l => l.click({ trial: true, timeout: this.defaultTimeout }));
+    const t = this.now();
     await loc.click({ timeout: this.defaultTimeout });
-    const step = this.#record('click', label || String(target), 0, t);
+    const step = this.#record('click', label || String(target), 0, t, {}, undefined, began);
     this.#lastClick = loc;
     return step;
   }
 
   async doubleClick(target, opts) {
     const { label } = checkOptions('doubleClick', opts);
-    const t = this.#begin();
+    this.#begin();
     const loc = this.#locate(target);
+    const began = await this.#ready(loc, l => l.dblclick({ trial: true, timeout: this.defaultTimeout }));
+    const t = this.now();
     await loc.dblclick({ timeout: this.defaultTimeout });
-    const step = this.#record('double-click', label || String(target), 0, t);
+    const step = this.#record('double-click', label || String(target), 0, t, {}, undefined, began);
     this.#lastClick = loc;
     return step;
   }
@@ -305,9 +332,13 @@ export class Operator {
   /** Scroll with the mouse wheel until the target is in view (one step, modelled like a click). */
   async scrollTo(target, opts) {
     const { label } = checkOptions('scrollTo', opts);
-    const t = this.#begin();
-    await this.#locate(target).scrollIntoViewIfNeeded({ timeout: this.defaultTimeout });
-    return this.#record('scroll', label || `scroll to ${String(target)}`, 0, t);
+    this.#begin();
+    const loc = this.#locate(target);
+    // Round 12 (critic plant S1b): the target is waited for first; only the scroll is the step.
+    const began = await this.#ready(loc, l => l.waitFor({ state: 'visible', timeout: this.defaultTimeout }));
+    const t = this.now();
+    await loc.scrollIntoViewIfNeeded({ timeout: this.defaultTimeout });
+    return this.#record('scroll', label || `scroll to ${String(target)}`, 0, t, {}, undefined, began);
   }
 
   /**
@@ -372,14 +403,19 @@ export class Operator {
   async confirmOnDevice(opts) {
     const { label } = checkOptions('confirmOnDevice', opts);
     if (!this.#device) throw new RefusedClaim('op.confirmOnDevice(): the task declares no device (device: \'passkey\'), so there is no device to confirm on');
-    const t = this.#begin();
+    const began = this.#begin();
     if (!(await this.#device.whenAsked(this.#page, this.defaultTimeout))) {
       throw new Error(`op.confirmOnDevice(): the product did not ask the device within ${Math.round(this.defaultTimeout / 1000)} s; there is nothing to confirm`);
     }
-    const waited = this.now() - t;
-    if (waited > 0.001) this.#waits.push({ label: 'the product asks the device', at: round(t), seconds: round(waited) });
+    const waited = this.now() - began;
+    if (waited > 0.001) this.#waits.push({ label: 'the product asks the device', at: round(began), seconds: round(waited) });
+    // Round 12: the step is the confirmation, timed from it until the device has answered the browser
+    // (its authenticator signed or made the passkey), so the browser's record of what followed lies in it.
+    const t = this.now();
+    const answered = this.#device.answered(this.#page, 5_000);
     const ceremony = this.#device.confirm(this.#page);
-    return this.#record('device', label || (ceremony === 'create' ? 'confirm on the device: make a passkey' : 'confirm on the device: use the passkey'), 0, t, { ceremony });
+    await answered;
+    return this.#record('device', label || (ceremony === 'create' ? 'confirm on the device: make a passkey' : 'confirm on the device: use the passkey'), 0, t, { ceremony }, undefined, began);
   }
 
   /**
@@ -388,12 +424,15 @@ export class Operator {
    */
   async pickFile(opener, file, opts) {
     const { label } = checkOptions('pickFile', opts);
-    const t = this.#begin();
+    this.#begin();
+    const loc = this.#locate(opener);
+    const began = await this.#ready(loc, l => l.click({ trial: true, timeout: this.defaultTimeout }));
+    const t = this.now();
     const [chooser] = await Promise.all([
       this.#page.waitForEvent('filechooser', { timeout: this.defaultTimeout }),
-      this.#locate(opener).click({ timeout: this.defaultTimeout }),
+      loc.click({ timeout: this.defaultTimeout }),
     ]);
-    this.#record('click', `open file dialog: ${label || String(opener)}`, 0, t);
+    this.#record('click', `open file dialog: ${label || String(opener)}`, 0, t, {}, undefined, began);
     const t2 = this.now();
     await chooser.setFiles(file);
     return this.#record('file-pick', label || path.basename(file), 0, t2, { file: path.basename(file) });
