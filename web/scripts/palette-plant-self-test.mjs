@@ -121,6 +121,12 @@ const plants = [
     tests: "on every tab",
     edits: [{ file: "src/modules/identity/UserPanel.tsx", find: "    enabled: elsewhere && allowed.resetPassword,", replace: "    enabled: elsewhere," }],
   },
+  {
+    id: "PA13",
+    what: "the palette's filter ignoring an action's further permissions (requires): Allow sign-in again offered without the sign-in history (critic p04 round 9, plant P4)",
+    tests: "the filter, for every action|may change users but not see the sign-in history",
+    edits: [{ file: "src/modules/shell/paletteActions.ts", find: "    if (action.requires?.some((permission) => !can(permission))) return false;\n", replace: "" }],
+  },
 ];
 
 function copyWeb() {
