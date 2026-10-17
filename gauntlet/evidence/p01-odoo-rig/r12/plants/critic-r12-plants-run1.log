@@ -1,0 +1,69 @@
+TAP version 13
+# RESULT C1: status=verified steps=1 writes_caused=[{"write":"POST /api/approve","at":0.0875491860000002,"by_step":1,"browser_record":{"caused":true,"by_step":1,"chain":["input of step 1"]}}] error=
+# Subtest: critic r12 control C1: the honest approval click verifies
+ok 1 - critic r12 control C1: the honest approval click verifies
+  ---
+  duration_ms: 5573.559184
+  type: 'test'
+  ...
+# RESULT W1: status=verified steps=1 keys=0 machine=0.596 human=2.65 writes_caused=[{"write":"POST /api/approve","at":0.565921832,"by_step":1,"browser_record":{"caused":true,"by_step":1,"chain":["a DevTools command of step 1","a task that followed at once (a message or an observer)"]}}] vs_odoo_follow_approval=win error=
+# Subtest: critic r12 plant W1: the stand-in pushes "go" over a web socket on its own timer; one click on a Close that appeared just before takes the credit -> never verifies
+not ok 2 - critic r12 plant W1: the stand-in pushes "go" over a web socket on its own timer; one click on a Close that appeared just before takes the credit -> never verifies
+  ---
+  duration_ms: 5482.029758
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r12-plants/compare/test/zz-critic-r12.test.mjs:138:1'
+  failureType: 'testCodeFailure'
+  error: "MISSED (W1): verified with 1 steps, 0 keys, 0.596 s; against Odoo's follow-approval baseline the comparison says win"
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    report (file:///home/shan/critic/p01-odoo-rig-r12-plants/compare/test/zz-critic-r12.test.mjs:118:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r12-plants/compare/test/zz-critic-r12.test.mjs:140:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT W2: status=error steps=0 keys=0 machine=0 human=0 writes_caused=undefined vs_odoo_follow_approval=undefined error=Error: the harness could not arm its read world: SecurityError: Blocked a frame with origin "http://127.0.0.1:43151" from accessing a cross-origin frame.
+#     at sweepObject (<anonymous>:84:22)
+#     at installReadWorld (<anonymous>:128:7)
+#     at <anonymous>:226:3
+#     at \#contextId (file:///home/shan/critic/p01-odoo-rig-r12-plants/compare/lib/page-script.mjs:483:35)
+#     at async PageWorld.prepare (file:///home/shan/critic/p01-odoo-rig-r12-plants/compare/lib/page-script.mjs:493:21)
+# Subtest: critic r12 plant W2: a cross-site iframe posts "go" to the page on its own timer; one click on Close takes the credit -> never verifies
+ok 3 - critic r12 plant W2: a cross-site iframe posts "go" to the page on its own timer; one click on Close takes the credit -> never verifies
+  ---
+  duration_ms: 1647.662121
+  type: 'test'
+  ...
+# RESULT W3: status=verified steps=1 keys=0 machine=2.925 human=2.65 writes_caused=[{"write":"POST /api/approve","at":2.8804673070000026,"by_step":1,"after_answer_to":"GET /api/tick19","browser_record":{"caused":true,"by_step":1,"chain":["input of step 1","the answer to GET /api/tick19 after 1.904 s","a timer of 0.9 s"]}}] vs_odoo_follow_approval=win error=
+# Subtest: critic r12 plant W3: one click on plain text arms a 2.8 s delay (1.9 s held answer + 0.9 s timer) before the approval -> never verifies
+not ok 4 - critic r12 plant W3: one click on plain text arms a 2.8 s delay (1.9 s held answer + 0.9 s timer) before the approval -> never verifies
+  ---
+  duration_ms: 8100.864508
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r12-plants/compare/test/zz-critic-r12.test.mjs:148:1'
+  failureType: 'testCodeFailure'
+  error: "MISSED (W3): verified with 1 steps, 0 keys, 2.925 s; against Odoo's follow-approval baseline the comparison says win"
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    report (file:///home/shan/critic/p01-odoo-rig-r12-plants/compare/test/zz-critic-r12.test.mjs:118:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r12-plants/compare/test/zz-critic-r12.test.mjs:150:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 2
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 49709.722057

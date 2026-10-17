@@ -1,0 +1,302 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 12,
+  "commit": "738eb551399f609759ac49364a99fe8b446e2d03",
+  "judged_at": "2026-10-17T18:28:31Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p01-odoo-rig round 12",
+  "hard_gates": [
+    {
+      "gate": "Instrument integrity: the harness catches faults planted in the measuring instrument (this piece's surface)",
+      "status": "fail",
+      "evidence": "Plants: plants/zz-critic-r12.test.mjs, logs plants/critic-r12-plants-run1..3.log. Control C1 (an honest approval click) verifies in all 3 runs. Two plants were MISSED, 3 of 3 runs each, recorded as 'verified' and a 'win' against Odoo's follow-approval baseline (4 steps, 0 keys, 3.521 s):\n- W1, a WebSocket push. Set-up turns on a setting. The stand-in pushes 'show' over a web socket the page opened at load, so a Close button appears. 500 ms later its own server timer pushes 'go', whatever the person does, and the page sends POST /api/approve. run() is one op.click('#close'). Result: verified, 1 step, 0 keys, machine 0.596 / 0.989 / 1.446 s. The browser record says caused=true, chain ['a DevTools command of step 1', 'a task that followed at once (a message or an observer)'].\n- W3, a near-limit delay. One click on plain text sends GET /api/tick19, which is held 1.9 s (under LINK_SECONDS 2). A single 0.9 s timer (under REACTION_SECONDS 1) then approves. That is a 2.8 s delay armed by a click on plain text, the R2b/S2/S10 shape that S10 refuses at 2.5 s. Result: verified, 1 step, 0 keys, chain ['input of step 1', 'the answer to GET /api/tick19 after 1.904 s', 'a timer of 0.9 s'].\n- W2 (the same through a cross-site iframe's postMessage) was refused, but only incidentally ('could not arm its read world: SecurityError').\nMy own mutations: 9 of 12 caught (plants/critic-r12-mutations.log). Three were MISSED by the whole 410-test compare suite, each judged only on tests that passed unmutated (plants/critic-r12-mutations-fullsuite.log):\n- K6, an uncounted action: op.browserKey (F5, Alt+Left) records 0 keystrokes. The Odoo switch-to-arabic driver uses it.\n- K8, a wrong time metric: human_plus_wait_seconds drops the system wait.\n- K9, a blindness leak: review.mjs fixes the letters, ours always A. assignLetters is unit-tested, but nothing checks that the review page uses it.\nThe builder's own 85 of 85 mutations are caught in verify."
+    },
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 gate test passed in verify.\nHTTP (attack/http-attack.py and http-attack.out, reused from the r11 critic's tool): signed in as the alnoor admin, I sent 1,016 requests over every OpenAPI operation. They used gulfsteel's user, role, company, branch and tenant ids in paths, query strings, csv/xlsx/pdf export parameters and tenant-switch headers. Result: 0 leaks, 0 writes on B ids accepted, 0 errors.\nDatabase (attack/db-attack.txt):\n- erp_owner, erp_app and erp_auth are neither superuser nor BYPASSRLS.\n- All 17 tenant_id tables have RLS enabled and forced.\n- erp_app with no context sees 0 users. In tenant A it sees 100,005 users, 0 of B's users, 0 of B's companies and 0 of B's audit rows.\n- An UPDATE of B's companies touches 0 rows. An INSERT with B's tenant_id violates the policy.\n- A tenant id set without the transaction stamp sees 0 rows.\n- DELETE and UPDATE on audit.entries are denied, DISABLE RLS is denied, and SET ROLE erp_owner is denied."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 gate test and on-screen permission plant self-test passed in verify. Spot check (attack/sanity.out): noaccess gets 403 on users, roles, companies, branches and POST users; admin gets 200; anonymous gets 401. p01 adds no product endpoint."
+    },
+    {
+      "gate": "G3 clean clone (one command: build, migrate, seed, all tests; one command: running seeded demo)",
+      "status": "pass",
+      "evidence": "Fresh clone at 738eb55, with ERP_PROJECT=c-p01-odoo-rig-r12 and ports 20150/20151/20160/20161, run through verify-slot.sh. The slot was taken at 16:53:02Z after 0 s of waiting. 'verify passed in 2876 s', rc=0. Processor time 8,960 s against the 10,500 s maximum. Every one of the 13 built ours drivers verified in the health check. The demo with the shared dataset (ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up) returned rc=0 in 39 s (up-shared-dataset.log). Port and project overrides work as documented."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "All passed in verify, and the ratchet check passed. Counts: dotnet 631 (min 631), web unit 495 (495), e2e 106 (106), compare 415 (415), build 6 (6), instrument mutations 85 of 85. None fell below round 11's 628/478/102/390/62."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p01-odoo-rig-r12 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ERP_VERIFY_LOG=<staging>/verify-critic-p01-odoo-rig-r12.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1653,
+    "passed": 1653,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 2876
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 2876,
+    "evidence": "verify-critic-p01-odoo-rig-r12.log: slot taken 16:53:02Z, 'verify passed in 2876 s', rc=0 (verify.exit), processor time 8,960 s of the 10,500 s maximum. The machine was busy (load peaked at 30.71), so wall time was not judged. ./erp up with the shared dataset: rc=0 in 39 s."
+  },
+  "odoo": [
+    {
+      "task": "api-update-user (p15)",
+      "winner": "odoo",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 249,
+        "seconds": 0.03,
+        "klm_seconds": 72.82
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 184,
+        "seconds": 0.276,
+        "klm_seconds": 54.62
+      },
+      "notes": "Command: COMPARE_OURS_URL=http://localhost:20150 node run.mjs --task built --product both --repeat 3, against my demo (shared dataset) and the shared rig, which run.mjs accepted at the bar. LOSS: steps tie, and keystrokes and human seconds lose. Unchanged since round 9."
+    },
+    {
+      "task": "arabic-report (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.133,
+        "klm_seconds": 5.3
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 0,
+        "seconds": 3.575,
+        "klm_seconds": 15.9
+      },
+      "notes": "Keystrokes left out (both exactly 0)."
+    },
+    {
+      "task": "create-company-branch (p02)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 49,
+        "seconds": 0.481,
+        "klm_seconds": 22.17
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 2.465,
+        "klm_seconds": 48.53
+      },
+      "notes": "Path 'keyboard'."
+    },
+    {
+      "task": "create-restricted-user (named; p03)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 0.614,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 4.393,
+        "klm_seconds": 30.05
+      },
+      "notes": "Path 'pointer'. Screenshots 01 and 02."
+    },
+    {
+      "task": "edit-and-save (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 14,
+        "seconds": 0.152,
+        "klm_seconds": 6.97
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 19,
+        "seconds": 0.265,
+        "klm_seconds": 10.28
+      },
+      "notes": "Path 'compact'."
+    },
+    {
+      "task": "find-user (p03)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 3,
+        "seconds": 0.651,
+        "klm_seconds": 8.29
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 1.225,
+        "klm_seconds": 10.35
+      },
+      "notes": "Path 'initials'."
+    },
+    {
+      "task": "new-user-keyboard (p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 4,
+        "seconds": 0.09,
+        "klm_seconds": 5.57
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 10,
+        "seconds": 0.62,
+        "klm_seconds": 5.9
+      },
+      "notes": "Path 'goTo'."
+    },
+    {
+      "task": "open-third-user-keyboard (p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 6,
+        "seconds": 0.153,
+        "klm_seconds": 6.13
+      },
+      "odoo": {
+        "steps": 8,
+        "keystrokes": 13,
+        "seconds": 0.623,
+        "klm_seconds": 6.74
+      }
+    },
+    {
+      "task": "print-list-arabic (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 13,
+        "seconds": 0.476,
+        "klm_seconds": 11.09
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 32,
+        "seconds": 4.688,
+        "klm_seconds": 19.06
+      }
+    },
+    {
+      "task": "reach-screen-keyboard (p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 2,
+        "seconds": 0.074,
+        "klm_seconds": 3.66
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 0.381,
+        "klm_seconds": 3.99
+      },
+      "notes": "Path 'goTo'."
+    },
+    {
+      "task": "sign-in (p00)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.032,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.648,
+        "klm_seconds": 4.68
+      },
+      "notes": "Path 'passkey'. Keystrokes left out (both exactly 0)."
+    },
+    {
+      "task": "switch-company (p02)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.124,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.374,
+        "klm_seconds": 5.3
+      },
+      "notes": "Path 'pointer'. Keystrokes left out (both exactly 0)."
+    },
+    {
+      "task": "switch-to-arabic (named; p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.076,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 1.404,
+        "klm_seconds": 15.28
+      },
+      "notes": "Odoo's 1 keystroke is the F5 of op.browserKey. My mutation K6 (browserKey counts no keystroke) passes the whole suite, and would turn this metric into a 'left out'."
+    },
+    {
+      "task": "find-record, custom-field-filter, import-5000, follow-approval, add-rate, attach-file, configure-sequence, export-filtered-list, keyboard-navigation, see-and-rerun-job, who-changed-field",
+      "winner": "not-compared",
+      "notes": "The ours drivers are still 'not built yet' stubs, which p01 allows (later pieces fill them in). The Odoo baselines for all six named tasks exist in gauntlet/reference/odoo/tasks/."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r12/01-blind-review-top.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r12/02-blind-review-middle.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r12/03-blind-review-lower.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Traced causation can still be laundered: a message the page did not time itself (a web-socket push the server times) is credited to the click just before it",
+    "detail": "Round 12 traces each write back through Chromium's task record. A task 'of no traceable origin' (a message) counts as the step's when two things hold: the page task just before it was caused, within REACTION_SECONDS, and no uncaused page task ran in between. That guard only looks at the page's own main thread and its workers. Timing that lives outside the thread is invisible to it.\n\nW1 shows this with a web socket. Set-up turns on a setting. The stand-in pushes 'show' (a Close button appears), then on its own server timer pushes 'go' 500 ms later, and the page approves. One click on Close sits between the two pushes. Nothing in the page ran between the click's input task and the 'go' message, so the message, and the approve write it sends, are credited to the click. The run verifies with 1 step, 0 keys and 0.6-1.4 s, and beats Odoo's follow-approval baseline in 3 of 3 runs. Web sockets are allowed as background channels, so nothing else refuses it. This is the off-the-clock class of rounds 8-11 (S1/S3) again, moved off the page's thread.\n\nA second, smaller hole: the delay limits do not add up. A 1.9 s held answer plus a 0.9 s timer gives a 2.8 s delay after a click on plain text, and it is accepted (W3), while S10 refuses 2.5 s.\n\nPossible fixes:\n(a) Credit a message task only when its origin is traced. For web-socket and event-stream messages, use the trace's WebSocket and EventSource receive events, and link them only to a frame the page sent from a caused task. Otherwise treat any 'other' task as uncaused while a long-lived channel is open, or for any message event whose source is not in the page's own thread.\n(b) Bound the total delay along a chain, from the step's input to the write, not each link alone. For example, chain time at most LINK_SECONDS.\n(c) Add W1 and W3 as self-tests and mutations.\n(d) Add self-tests for my missed mutations K6, K8 and K9: a browser key counts its keys, human_plus_wait = human + wait in the summary, and the review page's letters come from assignLetters at random.",
+    "evidence": "Copy gauntlet/evidence/p01-odoo-rig/r12/plants/zz-critic-r12.test.mjs to gauntlet/compare/test/, then: cd gauntlet/compare && npm ci && node data/generate.mjs && node --test --test-concurrency=1 test/zz-critic-r12.test.mjs. C1 passes. W1 and W3 fail with 'MISSED ... verified with 1 steps, 0 keys ... the comparison says win'. RESULT lines (plants/critic-r12-plants-run1.log):\n- W1: steps=1 keys=0 machine=0.596, browser_record {caused: true, chain: ['a DevTools command of step 1', 'a task that followed at once (a message or an observer)']}.\n- W3: steps=1 keys=0 machine=2.925, chain ['input of step 1', 'the answer to GET /api/tick19 after 1.904 s', 'a timer of 0.9 s'].\nMutations: CRITIC_REPO=<clone> CRITIC_FILES=\"$(ls test/*.test.mjs | grep -v live-odoo | tr '\\n' ' ')\" node scripts/critic-r12-mutations.mjs K6 K8 K9 (plants/critic-r12-mutations.mjs) prints MISSED for all three (plants/critic-r12-mutations-fullsuite.log)."
+  },
+  "other_findings": [
+    "Missed instrument mutations (whole 410-test compare suite, judged only on tests that passed unmutated):\n- K6: op.browserKey records 0 keystrokes. A real driver uses it: Odoo's switch-to-arabic F5, its 1 key.\n- K8: human_plus_wait_seconds leaves out the system wait.\n- K9: the review page assigns fixed letters (ours always A). The cli test even expects {ours: 'A'} for find-record, so a fixed assignment passes.\nMy other 9 mutations were caught: double-click as a click, no initial H, typing continuation after any click, Enter continuing anything, the API Enter uncounted, machine seconds 0.25 s short, Shift uncounted, type keystrokes dropped from the summary, and the product name in the shot file name.",
+    "W2 (a cross-site iframe posting 'go') was refused only because the read world cannot be armed in a page with a cross-origin frame (SecurityError). That is incidental, not a causal judgement. A product that embeds a cross-origin frame cannot be measured at all.",
+    "[route: p15] api-update-user still loses: steps tie 2-2, keystrokes 249 vs 184, human seconds 72.82 vs 54.62. Machine seconds win, 0.030 vs 0.276. Unchanged since round 9.",
+    "Fixed since round 11 and still fixed:\n- S1, S1b, S2, S3 and the extra S3b-S11 are self-tests in causation.test.mjs.\n- The r11 C3 mutation (a step's label as typed text) is pinned by a self-test.\n- The builder's 85 of 85 mutations are caught in verify (up from 62).\n- The clock now starts 1.1-2.1 s after verify()'s read. This does not stop W1, because the click waits for the pushed banner.",
+    "Load-sensitivity: my scratch-copy control runs had 4-5 tests failing unmutated: tasks.test drivers/minimums and print-list-arabic product strings. This is because my copy lacked the rest of the repository (web/ strings, ratchet paths). They all pass in verify, which is the authoritative run.",
+    "Blindness: the review page text names no product, tenant or company (blind-review-text.txt, 0 matches). Layouts and menu words ('Settings', 'General Settings', 'Users & Companies' on one side) still tell the products apart, and dataset person and company names are unmasked. This is accepted as in earlier rounds.",
+    "Rig: run.mjs accepted the shared rig at the bar (at least 100,000 rows in all 7 main lists, volume.json). I did not stand up a private rig this round, because of the memory budget.",
+    "CLAUDE.md rules: no tenant isolation leak over HTTP, exports or the database app role. The harness adds no money and no business records, and its only dependencies are playwright-core (Apache-2.0) and acorn (MIT). No Odoo code, views or text were found copied: the drivers only operate Odoo's screens."
+  ],
+  "human_gates": [
+    {
+      "gate": "Any change to anything under bar/ (bar/reference/)",
+      "what": "The Odoo baselines and captures stay in gauntlet/reference/odoo/ until the owner approves moving them to bar/reference/. This is the existing needs-human item; p01 did not write under bar/."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p01-odoo-rig/r12",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r12"
+}
