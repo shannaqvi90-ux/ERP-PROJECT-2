@@ -73,9 +73,10 @@ internal static partial class TenancyValidation
 
     public const string CodePattern = "^[A-Z0-9][A-Z0-9-]{1,19}$";
     public const string PhonePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
-    /// <summary>A Tax Registration Number as typed: exactly 15 digits, with any spaces and dashes
-    /// (removed before it is stored). docs/compliance/vat-trn-format.md, owner 2026-10-10.</summary>
-    public const string TaxNumberPattern = "^[ -]*(?:[0-9][ -]*){15}$";
+    /// <summary>A Tax Registration Number as typed: exactly 15 digits, 0 to 9 or the Arabic-Indic
+    /// ٠ to ٩ of an Arabic keyboard (turned into 0 to 9), with any spaces and dashes (removed before
+    /// it is stored). docs/compliance/vat-trn-format.md, owner 2026-10-10 and 2026-10-17.</summary>
+    public const string TaxNumberPattern = "^[ -]*(?:[0-9\u0660-\u0669][ -]*){15}$";
 
     /// <summary>A Tax Registration Number as stored and answered: exactly 15 digits.</summary>
     public const string StoredTaxNumberPattern = "^[0-9]{15}$";
@@ -239,10 +240,28 @@ internal static partial class TenancyValidation
         return validator;
     }
 
-    /// <summary>The TRN as stored: the typed value without its spaces and dashes (null when empty).
-    /// Valid only where <see cref="TaxNumber"/> accepted it.</summary>
-    public static string? NormalizeTaxNumber(string? number) =>
-        Clean(number) is { } value ? value.Replace(" ", "", StringComparison.Ordinal).Replace("-", "", StringComparison.Ordinal) : null;
+    /// <summary>The TRN as stored: the typed value without its spaces and dashes, its Arabic-Indic
+    /// digits ٠ to ٩ (U+0660 to U+0669) turned into 0 to 9 (owner decision 2026-10-17,
+    /// docs/compliance/vat-trn-format.md); null when empty. Any other digit set (the Persian ۰ to ۹,
+    /// full-width digits) is left as typed, so <see cref="TaxNumber"/> refuses it. Valid only where
+    /// <see cref="TaxNumber"/> accepted it.</summary>
+    public static string? NormalizeTaxNumber(string? number)
+    {
+        if (Clean(number) is not { } value)
+        {
+            return null;
+        }
+        var digits = new System.Text.StringBuilder(value.Length);
+        foreach (var c in value)
+        {
+            if (c is ' ' or '-')
+            {
+                continue;
+            }
+            digits.Append(c is >= '\u0660' and <= '\u0669' ? (char)('0' + (c - '\u0660')) : c);
+        }
+        return digits.ToString();
+    }
 
     /// <summary>
     /// The legal names under the company's own setting: while it makes the Arabic legal name

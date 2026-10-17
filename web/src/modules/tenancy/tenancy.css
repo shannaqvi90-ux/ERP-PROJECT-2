@@ -134,15 +134,19 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0 12px;
-  align-items: end;
+  /* Fields line up by their labels and inputs, whatever hint or error a neighbour shows below its
+     input (bottom alignment pushed a field down beside one with a long hint: critic p02 round 10). */
+  align-items: start;
 }
 
 .form-grid .field.wide {
   grid-column: 1 / -1;
 }
 
+/* A checkbox sits level with the inputs beside it: below a label's line, as tall as an input. */
 .form-grid .check {
-  margin-block-end: 18px;
+  margin-block: calc(1.4em + 4px) 12px;
+  min-height: 30px;
 }
 
 .field textarea {

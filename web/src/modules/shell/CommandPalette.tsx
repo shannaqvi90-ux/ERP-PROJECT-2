@@ -92,7 +92,17 @@ export function CommandPalette({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const registered = useCommandList();
-  const here = useMemo(() => commandEntries(registered, t, language), [registered, t, language]);
+  // A module action the screen offers itself is listed once, under "On this screen", and that entry
+  // is found by the action's texts too: on the companies screen, "print compan" finds the screen's
+  // "Print or export the list" through "Print or export the companies list" (critic p02 round 10).
+  const here = useMemo(
+    () =>
+      commandEntries(registered, t, language).map((entry) => {
+        const same = actions.filter((a) => a.command && a.command.screen === screen && entry.id === `here:${a.command.id}`);
+        return same.length === 0 ? entry : { ...entry, keywords: [...entry.keywords, ...same.flatMap((a) => [a.title, ...a.keywords])] };
+      }),
+    [registered, t, language, actions, screen],
+  );
   // A module action the screen on show offers itself is listed once, under "On this screen".
   const elsewhere = useMemo(
     () =>

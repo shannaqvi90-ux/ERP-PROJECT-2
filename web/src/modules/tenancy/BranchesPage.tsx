@@ -93,7 +93,7 @@ export function BranchesPage() {
         }
         renderCell={{
           code: (b) => <span dir="ltr">{String(b.code ?? "")}</span>,
-          nameEn: (b) => <span dir="ltr">{String(b.nameEn ?? "")}</span>,
+          nameEn: (b) => (String(b.nameEn ?? "").trim() === "" ? <span className="muted">{t("tenancy.branch.noEnglishName")}</span> : <span dir="ltr">{String(b.nameEn)}</span>),
           nameAr: (b) => <span dir="rtl">{String(b.nameAr ?? "")}</span>,
           companyId: (b) => references.companyId!.label(String(b.companyId)) ?? <span dir="ltr">{String(b.companyCode ?? "")}</span>,
           isActive: (b) => (b.isActive ? t("tenancy.common.active") : <span className="muted">{t("tenancy.common.inactive")}</span>),
@@ -207,7 +207,8 @@ function BranchForm({
           empty={companies.length === 0 ? (branch?.companyCode ?? "") : undefined}
           disabled={id !== null}
         />
-        <TextField field={bind("nameEn")} label={t("tenancy.branch.nameEn")} dir="ltr" maxLength={200} autoFocus={id === null} />
+        <TextField field={bind("nameEn")} label={t("tenancy.branch.nameEn")} dir="ltr" maxLength={200} autoFocus={id === null}
+          hint={form.draft.nameEn.trim() === "" && form.draft.nameAr.trim() !== "" ? t("tenancy.branch.noEnglishNameHint") : undefined} />
         <TextField field={bind("nameAr")} label={t("tenancy.branch.nameAr")} dir="rtl" maxLength={200} />
         {/* Branch codes are unique within the company and chosen by someone who works in every
             branch of it: the server refuses a code change from anyone else. */}

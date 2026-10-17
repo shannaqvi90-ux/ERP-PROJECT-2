@@ -58,7 +58,7 @@
   "tenancy.company.tradeLicenceNumber": "Trade licence number",
   "tenancy.company.tradeLicenceAuthority": "Licensing authority",
   "tenancy.company.taxRegistrationNumber": "Tax registration number (TRN)",
-  "tenancy.company.taxRegistrationNumberHint": "15 digits. Spaces and dashes are removed.",
+  "tenancy.company.taxRegistrationNumberHint": "15 digits, kept as 0 to 9. Spaces and dashes are removed.",
   "tenancy.company.legacyTaxRegistrationNumber": "The number on file, {number}, is not 15 digits and is not printed. Enter the 15-digit TRN; the old number is kept until you do.",
   "tenancy.company.baseCurrency": "Base currency",
   "tenancy.company.baseCurrencyHint": "Three-letter ISO code; the books are kept in it.",
@@ -165,5 +165,9 @@
   "tenancy.report.branchDirectory": "Branch directory",
   "tenancy.report.branchDirectoryHint": "Every branch of your companies with city, emirate and phone, grouped by company.",
   "tenancy.report.includeInactive": "Include inactive branches",
-  "tenancy.report.branchName": "Branch"
+  "tenancy.report.branchName": "Branch",
+  "tenancy.branch.noEnglishName": "No English name",
+  "tenancy.branch.noEnglishNameHint": "No English name yet: English screens and documents show the Arabic name instead. Type the English name here.",
+  "tenancy.branch.addedWithoutEnglish": "Branch {code} was added without an English name. English screens and documents show its Arabic name until one is added in the branch's form.",
+  "tenancy.company.tinHint": "Tax Identification Number (TIN), the first 10 digits: {tin}"
 }
