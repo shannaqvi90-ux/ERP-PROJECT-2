@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import { execute, layout, compareRuns, containsValue, endStateProblems, measuredPartProblem, savedState, taskRuleProblems, VERIFY_PASS_GAP_MS } from '../lib/runner.mjs';
+import { execute, layout, compareRuns, causedWrites, containsValue, endStateProblems, measuredPartProblem, REACTION_SECONDS, savedState, taskRuleProblems, VERIFY_PASS_GAP_MS } from '../lib/runner.mjs';
 import { sandboxed, sandboxedSource } from './helpers/driver-module.mjs';
 import { readRecord } from '../lib/sandbox/bridge.mjs';
 import { DRIVERS_DIR } from '../lib/registry.mjs';
@@ -395,28 +395,81 @@ test('saved state (round 10): only a change in the declared end state (its read,
 });
 
 // Round 10 (critic p01 r9, plants Q1 and Q2): the measured part itself sent the change.
+// Round 11 (critic p01 r10, plants R1-R3): a write counts only when a counted step caused it, and an
+// entered value only when the measured part typed it or picked it (a page's own request body no longer
+// counts: a draft set-up stashed in the product rode in on it).
 test('measured part (round 10): a task that saves needs a write sent by the measured part, one of its declared writes, and every entered value its end state gained entered by it', () => {
   const t = { ...ENTERS, endState: { ours: { reads: [{ read: 'GET /api/state', parts: ['saved'] }], writes: ['POST /api/save'] } } };
+  // Steps one after another, each 0.1 s long and 0.2 s apart; a write goes out 0.05 s into the last step.
+  const at = steps => steps.map((s, i) => ({ n: i + 1, at: 0.2 * i, took: 0.1, ...s }));
   const type = text => ({ kind: 'type', text });
   const key = chord => ({ kind: 'key', chord });
-  const write = (url, body = null) => ({ method: 'POST', url: `http://x${url}`, body });
+  const write = (url, body = null, when = null) => ({ method: 'POST', url: `http://x${url}`, body, at: when });
+  const after = (steps, url, body = null) => write(url, body, 0.2 * (steps.length - 1) + 0.05);
   assert.equal(measuredPartProblem(TASK, {}), null, 'a task that does not save');
   // Nothing written (Q2: a key and a wait).
-  assert.match(measuredPartProblem(t, { steps: [key('Escape')], sent: [], gained: ['abcdefghij'], productId: 'ours' }), /sent nothing that writes/);
+  assert.match(measuredPartProblem(t, { steps: at([key('Escape')]), sent: [], gained: ['abcdefghij'], productId: 'ours' }), /sent nothing that writes/);
   // A write, but not the one that saves the end state (Q1: a version bumped).
-  assert.match(measuredPartProblem(t, { steps: [{ kind: 'click' }], sent: [write('/api/mark')], gained: [], productId: 'ours' }), /none of the writes that save the task's end state \(POST \/api\/save\); it sent POST \/api\/mark/);
+  const click = at([{ kind: 'click' }]);
+  assert.match(measuredPartProblem(t, { steps: click, sent: [after(click, '/api/mark')], gained: [], productId: 'ours' }), /none of the writes that save the task's end state \(POST \/api\/save\); it sent POST \/api\/mark/);
   // The declared write, but the value it saved was never entered (set-up's slow save landed instead).
-  assert.match(measuredPartProblem(t, { steps: [{ kind: 'click' }], sent: [write('/api/save', 'zzz')], gained: ['abcdefghij'], productId: 'ours' }), /gained "abcdefghij", which the measured part never entered/);
-  // Typed (in two pieces), picked, sent in a write's body or address (form-encoded too), or typed into an API request.
-  assert.equal(measuredPartProblem(t, { steps: [type('abcde'), type('fghij')], sent: [write('/api/save')], gained: ['abcdefghij'], productId: 'ours' }), null);
-  assert.equal(measuredPartProblem(t, { steps: [], sent: [write('/api/save', 'v=abcde%2Ffghij')], gained: ['abcde/fghij'], productId: 'ours' }), null);
+  assert.match(measuredPartProblem(t, { steps: click, sent: [after(click, '/api/save', 'zzz')], gained: ['abcdefghij'], productId: 'ours' }), /gained "abcdefghij", which the measured part never entered/);
+  // Typed (in two pieces), picked, or typed into an API request.
+  const typed = at([type('abcde'), type('fghij'), { kind: 'click' }]);
+  assert.equal(measuredPartProblem(t, { steps: typed, sent: [after(typed, '/api/save')], gained: ['abcdefghij'], productId: 'ours' }), null);
   assert.equal(measuredPartProblem({ ...t, endState: { ours: { reads: t.endState.ours.reads, writes: ['PUT /api/users/*'] } } },
-    { steps: [{ kind: 'request', writes: true, text: 'PUT /api/users/u1 {"language":"abcdefghij"}' }], sent: [], gained: ['abcdefghij'], productId: 'ours' }), null);
-  assert.equal(measuredPartProblem(t, { steps: [{ kind: 'file-pick', file: 'abcdefghij.pdf' }], sent: [write('/api/save')], gained: ['abcdefghij.pdf'], productId: 'ours' }), null);
+    { steps: at([{ kind: 'request', writes: true, text: 'PUT /api/users/u1 {"language":"abcdefghij"}' }]), sent: [], gained: ['abcdefghij'], productId: 'ours' }), null);
+  const picked = at([{ kind: 'file-pick', file: 'abcdefghij.pdf' }]);
+  assert.equal(measuredPartProblem(t, { steps: picked, sent: [after(picked, '/api/save')], gained: ['abcdefghij.pdf'], productId: 'ours' }), null);
+  // Round 11 (R1): a value that is only in a request the page composed (its body or address, form-encoded too) was entered by nobody.
+  assert.match(measuredPartProblem(t, { steps: click, sent: [after(click, '/api/save', 'v=abcde%2Ffghij')], gained: ['abcde/fghij'], productId: 'ours' }),
+    /gained "abcde\/fghij", which the measured part never entered \(typed or picked as a file\); the page sent "abcde\/fghij" in a request it composed itself/);
+  assert.match(measuredPartProblem(t, { steps: click, sent: [after(click, '/api/save?v=abcdefghij')], gained: ['abcdefghij'], productId: 'ours' }), /never entered/);
+  // A value typed only in part is not entered.
+  const part = at([type('abcde'), { kind: 'click' }]);
+  assert.match(measuredPartProblem(t, { steps: part, sent: [after(part, '/api/save', 'abcdefghij')], gained: ['abcdefghij'], productId: 'ours' }), /never entered/);
   // An API read is no write.
-  assert.match(measuredPartProblem(t, { steps: [{ kind: 'request', writes: false, text: 'GET /api/state' }], sent: [], gained: [], productId: 'ours' }), /sent nothing that writes/);
-  // No declared writes: any write will do (the end-state read still has to change).
-  assert.equal(measuredPartProblem(SAVES, { steps: [{ kind: 'click' }], sent: [write('/api/anything')], gained: [], productId: 'ours' }), null);
+  assert.match(measuredPartProblem(t, { steps: at([{ kind: 'request', writes: false, text: 'GET /api/state' }]), sent: [], gained: [], productId: 'ours' }), /sent nothing that writes/);
+  // No declared writes: any write a step caused will do (the end-state read still has to change).
+  assert.equal(measuredPartProblem(SAVES, { steps: click, sent: [after(click, '/api/anything')], gained: [], productId: 'ours' }), null);
+  // Round 11 (R2): the declared write went out 2 s after the only step ended, on the page's own timer.
+  const esc = at([key('Escape')]);
+  assert.match(measuredPartProblem(t, { steps: esc, sent: [write('/api/save', null, 2.1)], gained: [], productId: 'ours' }),
+    /no counted step caused any of the writes the page sent \(POST \/api\/save: 2 s after step 1 ended\)/);
+  // A caused write elsewhere does not make an uncaused declared write count.
+  assert.match(measuredPartProblem(t, { steps: esc, sent: [write('/api/mark', null, 0.05), write('/api/save', null, 2.1)], gained: [], productId: 'ours' }),
+    /no counted step caused the write that saves the task's end state \(POST \/api\/save: 2 s after step 1 ended\)/);
+  // A write before the first step was sent by nobody.
+  assert.match(measuredPartProblem(SAVES, { steps: at([{ kind: 'click' }]).map(s => ({ ...s, at: 0.5 })), sent: [write('/api/anything', null, 0.1)], gained: [], productId: 'ours' }), /before the first step/);
+  // A write with no time recorded is not taken as caused.
+  assert.match(measuredPartProblem(SAVES, { steps: click, sent: [write('/api/anything')], gained: [], productId: 'ours' }), /no time recorded/);
+});
+
+test('caused by a step (round 11): a write within the reaction time of a step, or of the answer to a request a step sent, is caused; a timer\'s or a poll\'s is not', () => {
+  const steps = [{ n: 1, kind: 'click', at: 1, took: 0.1 }, { n: 2, kind: 'key', at: 5, took: 0.05 }];
+  const w = at => ({ method: 'POST', url: 'http://x/api/save', at });
+  const one = (at, timeline = []) => causedWrites([w(at)], steps, timeline)[0];
+  assert.equal(REACTION_SECONDS, 1);
+  // During a step, and within the reaction time after it.
+  assert.equal(one(1.05).caused, true);
+  assert.equal(one(1.1 + REACTION_SECONDS - 0.01).caused, true);
+  assert.equal(one(1.1 + REACTION_SECONDS - 0.01).step, 1);
+  // Past it, and before the first step.
+  assert.equal(one(1.1 + REACTION_SECONDS + 0.05).caused, false);
+  assert.equal(one(0.5).caused, false);
+  assert.match(one(0.5).why, /before the first step/);
+  assert.match(one(2.5).why, /1\.4 s after step 1 ended/);
+  // After the answer to a request that went out during a step (Odoo saves once its pending onchange is answered).
+  const onchange = { at: 1.05, answered: 2.4, method: 'POST', path: '/web/dataset/call_kw/res.partner/onchange' };
+  assert.equal(one(2.5, [onchange]).caused, true);
+  assert.equal(one(2.5, [onchange]).after, 'POST /web/dataset/call_kw/res.partner/onchange');
+  assert.equal(one(2.4 + REACTION_SECONDS + 0.05, [onchange]).caused, false);
+  // A poll that went out between steps links nothing, however many of them were answered.
+  const polls = [1.3, 1.5, 1.7, 1.9, 2.1, 2.3].map(t => ({ at: t, answered: t + 0.05, method: 'GET', path: '/api/state' }));
+  assert.equal(one(2.4, polls).caused, false);
+  // Only one link: the answer to a request that itself went out after a step's answer does not chain on.
+  const chain = [onchange, { at: 2.45, answered: 3.0 - 0.2, method: 'GET', path: '/api/x' }];
+  assert.equal(one(2.8 + REACTION_SECONDS - 0.05, chain).caused, false);
 });
 
 test('entered values are found as a person would have entered them, never inside a longer word or number', () => {
