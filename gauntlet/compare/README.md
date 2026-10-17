@@ -240,9 +240,13 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
   (the step that began last before it), a DevTools command inside a step (a file chosen, the device's
   answer), a timer a caused task armed **once for at most `REACTION_SECONDS`**, an animation frame a
   caused task asked for, the answer to a request a caused task sent **within `LINK_SECONDS` (2 s)**,
-  or, for a task of no traceable origin (a message port, a worker's message, an observer, a scheduled
-  form submission), the caused page task just before it when nothing the page did on its own ran in
-  between, none within `GUARD_SECONDS` (0.1 s) before that task, and no worker of the page meanwhile.
+  the task that dispatched a form's submit event (for its submission), or, for a task of no traceable
+  origin (a message port, a worker's message, an observer), the caused page task just before it when
+  no uncaused page task could have posted it to arrive after that task (tasks of one priority run in
+  order; input, DevTools commands and frames jump ahead, so before those an uncaused task busy when the
+  step's input was dispatched, or within `GUARD_SECONDS` before a frame, refuses it) and no worker of
+  the page ran meanwhile. Outside the input queue only discrete input counts (the browser sends
+  boundary events itself when the page moves content under a still pointer).
   A repeating timer (a poll), a timer or frame armed before the clock, and a navigation no page task
   started cause nothing. A navigation (a posted form) is judged by the task that started it. The
   trace's clock is tied to the harness's with clock-sync markers. Timing stays as a second layer (a
@@ -252,8 +256,9 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
   Each write's record carries the browser's verdict (`saved_state.writes_caused[].browser_record`:
   the chain, or why nothing caused it). `COMPARE_TRACE_DIR=<dir>` keeps the raw records for reading.
   Plant-tested in `test/causation.test.mjs`: the rules on synthetic traces, the critic's S1, S1b, S2,
-  S3 and S3b-S10 (the page's own timer just after a step; laundered through a message port, a worker,
-  a synthetic click, an animation-frame loop, a self-submitted form; a delay a key armed) and honest
+  S3 and S3b-S11 (the page's own timer just after a step; laundered through a message port, a worker,
+  a synthetic click, an animation-frame loop, a self-submitted form, a cover moved under the pointer;
+  a delay a key armed) and honest
   controls (a save at once, on a 0 ms timer, on an animation frame, after reading one or two answers,
   a file chosen, a form posted by Enter); see `docs/decisions/p01-odoo-rig-causal-evidence.md`.
 - **Writes set-up's browser sent are answered before the start.** Every browser context of the run

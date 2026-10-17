@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "edit-and-save-20261017T030851-8610",
-  "instrument": 9,
+  "run_id": "edit-and-save-20261017T113553-49d5",
+  "instrument": 10,
   "task": "edit-and-save",
   "task_title": "Edit a record and save it",
   "product": "odoo",
   "status": "verified",
   "goal": "Change the contact's phone number to +971 50 555 0199 and save.",
   "done_when": "The form shows the saved record; the back end holds the new phone number.",
-  "started_at": "2026-10-17T03:08:51.830Z",
-  "finished_at": "2026-10-17T03:09:30.461Z",
+  "started_at": "2026-10-17T11:35:53.977Z",
+  "finished_at": "2026-10-17T11:36:36.674Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 0.193,
-    "system_wait_seconds": 0.107,
+    "machine_seconds": 0.392,
+    "system_wait_seconds": 0.164,
     "human_seconds": 10.28,
-    "human_plus_wait_seconds": 10.387,
+    "human_plus_wait_seconds": 10.494,
     "klm_operator_counts": {
       "K": 21,
       "P": 1,
@@ -58,8 +58,9 @@
       "kind": "click",
       "label": "phone field",
       "keystrokes": 0,
-      "at": 0.001,
-      "took": 0.047,
+      "at": 0.015,
+      "took": 0.034,
+      "began": 0.001,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -68,8 +69,8 @@
       "kind": "key",
       "label": "select the old number",
       "keystrokes": 2,
-      "at": 0.048,
-      "took": 0.004,
+      "at": 0.049,
+      "took": 0.005,
       "chord": "Control+a",
       "screen": "/odoo/contacts/73531",
       "chain": true
@@ -79,8 +80,8 @@
       "kind": "type",
       "label": "new number",
       "keystrokes": 17,
-      "at": 0.052,
-      "took": 0.022,
+      "at": 0.054,
+      "took": 0.028,
       "text": "+971 50 555 0199",
       "same_field": false,
       "screen": "/odoo/contacts/73531",
@@ -91,8 +92,8 @@
       "kind": "key",
       "label": "Save (hotkey)",
       "keystrokes": 2,
-      "at": 0.074,
-      "took": 0.011,
+      "at": 0.082,
+      "took": 0.019,
       "chord": "Alt+s",
       "screen": "/odoo/contacts/73531",
       "chain": false
@@ -101,22 +102,22 @@
   "waits": [
     {
       "label": "saved",
-      "at": 0.085,
-      "seconds": 0.107
+      "at": 0.102,
+      "seconds": 0.202
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "9eea25375f7e092c.jpg",
+      "file": "2425b4985e63c944.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/9eea25375f7e092c.jpg"
+      "path": "gauntlet/reference/odoo/shots/2425b4985e63c944.jpg"
     },
     {
       "moment": "done",
-      "file": "44f4db877fe57ac9.jpg",
-      "at": 0.193,
-      "path": "gauntlet/reference/odoo/shots/44f4db877fe57ac9.jpg"
+      "file": "c1d18620ff28c11d.jpg",
+      "at": 0.305,
+      "path": "gauntlet/reference/odoo/shots/c1d18620ff28c11d.jpg"
     }
   ],
   "verification": {
@@ -231,7 +232,7 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.012,
+      "seconds": 0.015,
       "verified": true
     },
     {
@@ -239,26 +240,23 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.012,
+      "seconds": 0.013,
       "verified": true,
-      "gap_seconds": 1.101
+      "gap_seconds": 1.1
     }
   ],
   "requests_after_clock": 0,
   "requests_in_flight_at_clock": {
-    "count": 2,
-    "first": [
-      "GET /web/image/res.partner/73531/avatar_128 (image)",
-      "POST /mail/store (xhr)"
-    ]
+    "count": 0,
+    "first": []
   },
   "screen_at_clock": {
-    "sha256": "21c213a5755524d5",
-    "elements": 1243
+    "sha256": "508747fb16333e2b",
+    "elements": 1269
   },
   "screen_after_verify": {
-    "sha256": "21c213a5755524d5",
-    "elements": 1243,
+    "sha256": "508747fb16333e2b",
+    "elements": 1269,
     "unchanged": true
   },
   "verify_before": {
@@ -269,7 +267,7 @@
     "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.014
+    "seconds": 0.015
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -310,8 +308,16 @@
     "writes_caused": [
       {
         "write": "POST /web/dataset/call_kw/res.partner/web_save",
-        "at": 0.12083436799992342,
-        "by_step": 4
+        "at": 0.13458914399996866,
+        "by_step": 4,
+        "browser_record": {
+          "caused": true,
+          "by_step": 4,
+          "chain": [
+            "input of step 4",
+            "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.035 s"
+          ]
+        }
       }
     ]
   },
@@ -319,7 +325,7 @@
   "best_path_per_metric": {
     "steps": "keyboard",
     "keystrokes": "pointer",
-    "machine_seconds": "keyboard",
+    "machine_seconds": "pointer",
     "human_seconds": "keyboard",
     "human_plus_wait_seconds": "keyboard"
   },
@@ -339,10 +345,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 0.193,
-        "system_wait_seconds": 0.107,
+        "machine_seconds": 0.305,
+        "system_wait_seconds": 0.202,
         "human_seconds": 10.28,
-        "human_plus_wait_seconds": 10.387,
+        "human_plus_wait_seconds": 10.482,
         "klm_operator_counts": {
           "K": 21,
           "P": 1,
@@ -357,8 +363,9 @@
           "kind": "click",
           "label": "phone field",
           "keystrokes": 0,
-          "at": 0.001,
-          "took": 0.047,
+          "at": 0.015,
+          "took": 0.034,
+          "began": 0.001,
           "screen": "/odoo/contacts/73531",
           "chain": false
         },
@@ -367,8 +374,8 @@
           "kind": "key",
           "label": "select the old number",
           "keystrokes": 2,
-          "at": 0.048,
-          "took": 0.004,
+          "at": 0.049,
+          "took": 0.005,
           "chord": "Control+a",
           "screen": "/odoo/contacts/73531",
           "chain": true
@@ -378,8 +385,8 @@
           "kind": "type",
           "label": "new number",
           "keystrokes": 17,
-          "at": 0.052,
-          "took": 0.022,
+          "at": 0.054,
+          "took": 0.028,
           "text": "+971 50 555 0199",
           "same_field": false,
           "screen": "/odoo/contacts/73531",
@@ -390,8 +397,8 @@
           "kind": "key",
           "label": "Save (hotkey)",
           "keystrokes": 2,
-          "at": 0.074,
-          "took": 0.011,
+          "at": 0.082,
+          "took": 0.019,
           "chord": "Alt+s",
           "screen": "/odoo/contacts/73531",
           "chain": false
@@ -400,8 +407,8 @@
       "waits": [
         {
           "label": "saved",
-          "at": 0.085,
-          "seconds": 0.107
+          "at": 0.102,
+          "seconds": 0.202
         }
       ],
       "verification": {
@@ -509,7 +516,7 @@
           "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.012,
+          "seconds": 0.015,
           "verified": true
         },
         {
@@ -517,26 +524,23 @@
           "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.012,
+          "seconds": 0.013,
           "verified": true,
-          "gap_seconds": 1.101
+          "gap_seconds": 1.1
         }
       ],
       "requests_after_clock": 0,
       "requests_in_flight_at_clock": {
-        "count": 2,
-        "first": [
-          "GET /web/image/res.partner/73531/avatar_128 (image)",
-          "POST /mail/store (xhr)"
-        ]
+        "count": 0,
+        "first": []
       },
       "screen_at_clock": {
-        "sha256": "21c213a5755524d5",
-        "elements": 1243
+        "sha256": "508747fb16333e2b",
+        "elements": 1269
       },
       "screen_after_verify": {
-        "sha256": "21c213a5755524d5",
-        "elements": 1243,
+        "sha256": "508747fb16333e2b",
+        "elements": 1269,
         "unchanged": true
       },
       "verify_before": {
@@ -547,7 +551,7 @@
         "longest_pause_seconds": 0.002,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.014
+        "seconds": 0.015
       },
       "set_up_writes_waited": 0,
       "saved_state": {
@@ -588,8 +592,16 @@
         "writes_caused": [
           {
             "write": "POST /web/dataset/call_kw/res.partner/web_save",
-            "at": 0.12083436799992342,
-            "by_step": 4
+            "at": 0.13458914399996866,
+            "by_step": 4,
+            "browser_record": {
+              "caused": true,
+              "by_step": 4,
+              "chain": [
+                "input of step 4",
+                "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.035 s"
+              ]
+            }
           }
         ]
       },
@@ -603,10 +615,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 0.193,
-        "system_wait_seconds": 0.107,
+        "machine_seconds": 0.403,
+        "system_wait_seconds": 0.214,
         "human_seconds": 10.28,
-        "human_plus_wait_seconds": 10.387,
+        "human_plus_wait_seconds": 10.494,
         "klm_operator_counts": {
           "K": 21,
           "P": 1,
@@ -631,10 +643,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 0.204,
-        "system_wait_seconds": 0.084,
+        "machine_seconds": 0.284,
+        "system_wait_seconds": 0.102,
         "human_seconds": 11.42,
-        "human_plus_wait_seconds": 11.504,
+        "human_plus_wait_seconds": 11.522,
         "klm_operator_counts": {
           "K": 19,
           "P": 2,
@@ -649,8 +661,9 @@
           "kind": "click",
           "label": "phone field",
           "keystrokes": 0,
-          "at": 0.001,
-          "took": 0.044,
+          "at": 0.027,
+          "took": 0.033,
+          "began": 0.001,
           "screen": "/odoo/contacts/73531",
           "chain": false
         },
@@ -659,8 +672,8 @@
           "kind": "key",
           "label": "select the old number",
           "keystrokes": 2,
-          "at": 0.045,
-          "took": 0.004,
+          "at": 0.06,
+          "took": 0.006,
           "chord": "Control+a",
           "screen": "/odoo/contacts/73531",
           "chain": true
@@ -670,8 +683,8 @@
           "kind": "type",
           "label": "new number",
           "keystrokes": 17,
-          "at": 0.049,
-          "took": 0.019,
+          "at": 0.066,
+          "took": 0.027,
           "text": "+971 50 555 0199",
           "same_field": false,
           "screen": "/odoo/contacts/73531",
@@ -682,8 +695,9 @@
           "kind": "click",
           "label": "Save",
           "keystrokes": 0,
-          "at": 0.068,
-          "took": 0.05,
+          "at": 0.124,
+          "took": 0.055,
+          "began": 0.094,
           "screen": "/odoo/contacts/73531",
           "chain": false
         }
@@ -691,8 +705,8 @@
       "waits": [
         {
           "label": "saved",
-          "at": 0.119,
-          "seconds": 0.084
+          "at": 0.18,
+          "seconds": 0.102
         }
       ],
       "verification": {
@@ -800,7 +814,7 @@
           "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.013,
+          "seconds": 0.015,
           "verified": true
         },
         {
@@ -808,9 +822,9 @@
           "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.012,
+          "seconds": 0.014,
           "verified": true,
-          "gap_seconds": 1.1
+          "gap_seconds": 1.101
         }
       ],
       "requests_after_clock": 0,
@@ -822,12 +836,12 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "4b77384e5110b641",
-        "elements": 1243
+        "sha256": "a00d9a0a46af08d8",
+        "elements": 1239
       },
       "screen_after_verify": {
-        "sha256": "4b77384e5110b641",
-        "elements": 1243,
+        "sha256": "a00d9a0a46af08d8",
+        "elements": 1239,
         "unchanged": true
       },
       "verify_before": {
@@ -838,7 +852,7 @@
         "longest_pause_seconds": 0.002,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.014
+        "seconds": 0.013
       },
       "set_up_writes_waited": 0,
       "saved_state": {
@@ -879,8 +893,16 @@
         "writes_caused": [
           {
             "write": "POST /web/dataset/call_kw/res.partner/web_save",
-            "at": 0.1455659039999591,
-            "by_step": 4
+            "at": 0.19997692499996628,
+            "by_step": 4,
+            "browser_record": {
+              "caused": true,
+              "by_step": 4,
+              "chain": [
+                "input of step 4",
+                "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.035 s"
+              ]
+            }
           }
         ]
       },
@@ -894,10 +916,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 0.204,
-        "system_wait_seconds": 0.084,
+        "machine_seconds": 0.422,
+        "system_wait_seconds": 0.15,
         "human_seconds": 11.42,
-        "human_plus_wait_seconds": 11.504,
+        "human_plus_wait_seconds": 11.57,
         "klm_operator_counts": {
           "K": 19,
           "P": 2,
@@ -911,8 +933,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/edit-and-save.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/edit-and-save-20261017T030851-8610.json",
-    "gauntlet/reference/odoo/results/edit-and-save-20261017T030930-49cd.json",
-    "gauntlet/reference/odoo/results/edit-and-save-20261017T031009-487c.json"
+    "gauntlet/reference/odoo/results/edit-and-save-20261017T113553-49d5.json",
+    "gauntlet/reference/odoo/results/edit-and-save-20261017T113636-7b41.json",
+    "gauntlet/reference/odoo/results/edit-and-save-20261017T113723-3b3c.json"
   ]
 }

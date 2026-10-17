@@ -31,25 +31,36 @@ just before the page's own timer fires (plant S4 here).
    - **input**: a task holding an input event dispatched outside any script (only the harness's steps
      put input in the page) is the step's that began last before it (the renderer may handle a key a
      few milliseconds after the step's call returned; a step's window starts when the operator began
-     it, the pointer moving to its target included);
+     it, the pointer moving to its target included). In a task of the input queue any input event
+     counts; in another task (a frame's, which also carries some key events) only discrete input
+     (keys, presses, releases, text) and only what ran inside that event's dispatch: the browser itself
+     sends pointer boundary events when the page moves content under a still pointer (plant S11) and
+     focus or blur when windows come and go;
    - **DevTools command**: inside a step's window it is that step's (a file chosen, the device's
      answer); outside, the harness reading the page, which causes nothing;
    - **timer**: caused when the task that armed it was, it fires once and its delay is at most
      `REACTION_SECONDS`; a repeating timer (a poll), a longer one (R2b) and one armed before the clock
-     (S1, S4) cause nothing;
+     (S1, S4, S6: a synthetic click from the page's own timer) cause nothing;
    - **animation frame**: caused when the task that asked for it was (S7: a frame loop from the load);
-   - **answer**: a task that delivered the answer to a request (where the page's code waiting on it
-     runs) is caused when every request it answered was sent by a caused task and answered within
-     `LINK_SECONDS` = 2 s (S2: 2.5 s; the honest control C3 of round 11 waits 1.3 s for its check);
-   - **no traceable origin** (a message port, a worker's message, an observer, a scheduled form
-     submission): caused only when the page task just before it was caused by a step, it began within
-     `REACTION_SECONDS` of that task's end, no uncaused page task ended within `GUARD_SECONDS` = 0.1 s
-     before that task (one that ran just before the step could have posted the message, S5), and no
-     worker of the page ran meanwhile (S8). DevTools commands outside steps (the harness polling) do
-     not count as the page's own activity; commands are known by `DevToolsSession::DispatchProtocolCommand`,
-     which page script cannot produce.
+   - **answer**: a task that delivered (part of) the answer to a request, where the page's code
+     waiting on it runs (the browser may record the body's end after that code), is caused when every
+     request it answered was sent by a caused task and answered within `LINK_SECONDS` = 2 s (S2:
+     2.5 s; the honest control C3 of round 11 waits 1.3 s for its check);
+   - **form submission**: the task the browser schedules to submit a form is the task's that
+     dispatched the form's submit event (Enter in a field); `form.submit()` dispatches none (S9);
+   - **no traceable origin** (a message port, a worker's message, an observer, the device's answer):
+     caused only when the page task just before it was caused by a step, it began within
+     `REACTION_SECONDS` of that task's end, no uncaused page task could have posted it to arrive after
+     that task, and no worker of the page ran meanwhile (S8). Tasks of the same priority run in the
+     order they were queued, so a message an uncaused task posted earlier arrives first (S5, S3b);
+     only input, DevTools commands and frames jump ahead. Before a step's own input or command, an
+     uncaused page task busy for `BUSY_SECONDS` = 2 ms or more when the step's input was dispatched is
+     refused (the input waited behind it, and a message it posted arrives after the input); before a
+     frame, any uncaused page task within `GUARD_SECONDS` = 0.1 s. DevTools commands outside steps
+     (the harness polling) are not the page's own activity; they are known by
+     `DevToolsSession::DispatchProtocolCommand`, which page script cannot produce.
    - a **navigation** (a posted form) is judged by the task that started it
-     (`FrameLoader::StartNavigation` with its address; S9: `form.submit()` from a timer).
+     (`FrameLoader::StartNavigation` with its address).
    The trace's clock is tied to the harness's with `Tracing.recordClockSyncMarker` at both ends (on
    this machine both read `CLOCK_MONOTONIC`; the offset is measured, not assumed).
 2. **Timing stays as a second layer**: a write counts only when both say a step caused it.
@@ -62,8 +73,8 @@ just before the page's own timer fires (plant S4 here).
    1.1-2.1 s (`crypto.randomInt`) after `verify()`'s read before it, so the product cannot time a
    write from that read.
 5. **Self-tests** (fix d, e): `test/causation.test.mjs` holds the rules on synthetic traces (cheap),
-   the critic's S1, S1b, S2, S3, further plants S3b-S10, honest controls, and a test that a step's
-   label never counts as typed text. 19 new instrument mutations (M63-M81), each caught.
+   the critic's S1, S1b, S2, S3, further plants S3b-S11, honest controls, and a test that a step's
+   label never counts as typed text. 23 new instrument mutations (M63-M85), each caught.
 
 ## Alternatives considered
 
@@ -87,7 +98,14 @@ just before the page's own timer fires (plant S4 here).
   3.1-3.7 s (continuations of the same write, as round 11 allowed); sign-in's `POST /web/login`
   (all three paths) starts in the key's or the device's task.
 - Ours: all 13 built drivers verified against a clean stack with the new instrument.
-- All Odoo baselines re-captured with instrument 10 (`gauntlet/reference/odoo/tasks/`).
+- All 24 Odoo baselines re-captured with instrument 10 (`gauntlet/reference/odoo/tasks/`, 47 min,
+  median of three runs each). Three of the runs were refused by the first draft of the rules (an
+  answer's end recorded after the code that read it, a form submitted by `form.submit()` after the
+  device's answer, a guard that refused any uncaused page task 0.1 s before a caused one: Odoo's own
+  timer ticks every few hundred milliseconds); the rules above were corrected and every trace kept
+  from those runs (Odoo: edit-and-save, switch-to-arabic, import-5000, sign-in, 26 runs; ours: all
+  12 browser saves) re-judged with them: every declared write caused, or a batch's next part.
+  The baselines' `browser_record` texts are the first draft's wording.
 
 ## What it still cannot tell
 

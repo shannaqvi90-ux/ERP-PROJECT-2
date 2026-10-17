@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "find-user-20261017T031904-b6dd",
-  "instrument": 9,
+  "run_id": "find-user-20261017T114402-ee2f",
+  "instrument": 10,
   "task": "find-user",
   "task_title": "Find one user among 100,000",
   "product": "odoo",
   "status": "verified",
   "goal": "Open the user whose name the administrator knows (Majid Anil Pillai) out of 100,000 users and read their sign-in e-mail.",
   "done_when": "The user's own record is open on screen and shows the sign-in majid.pillai.068311@staff.example.",
-  "started_at": "2026-10-17T03:19:04.353Z",
-  "finished_at": "2026-10-17T03:21:46.428Z",
+  "started_at": "2026-10-17T11:44:02.234Z",
+  "finished_at": "2026-10-17T11:46:36.658Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 2.635,
-    "system_wait_seconds": 2.12,
+    "machine_seconds": 2.244,
+    "system_wait_seconds": 1.784,
     "human_seconds": 10.35,
-    "human_plus_wait_seconds": 12.682,
+    "human_plus_wait_seconds": 12.571,
     "klm_operator_counts": {
       "K": 15,
       "P": 1,
@@ -59,7 +59,7 @@
       "label": "command palette",
       "keystrokes": 2,
       "at": 0.001,
-      "took": 0.027,
+      "took": 0.026,
       "chord": "Control+k",
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,8 +69,8 @@
       "kind": "type",
       "label": "menu search /users",
       "keystrokes": 6,
-      "at": 0.222,
-      "took": 0.033,
+      "at": 0.252,
+      "took": 0.035,
       "text": "/users",
       "same_field": false,
       "screen": "/odoo/discuss",
@@ -81,8 +81,8 @@
       "kind": "key",
       "label": "open Settings / Users & Companies / Users",
       "keystrokes": 1,
-      "at": 0.363,
-      "took": 0.016,
+      "at": 0.355,
+      "took": 0.01,
       "chord": "Enter",
       "screen": "/odoo/discuss",
       "chain": true
@@ -92,8 +92,8 @@
       "kind": "type",
       "label": "a piece of the name",
       "keystrokes": 5,
-      "at": 0.861,
-      "took": 0.046,
+      "at": 0.766,
+      "took": 0.05,
       "text": "il pi",
       "same_field": false,
       "screen": "/odoo/users",
@@ -104,8 +104,8 @@
       "kind": "key",
       "label": "search",
       "keystrokes": 1,
-      "at": 0.908,
-      "took": 0.016,
+      "at": 0.817,
+      "took": 0.017,
       "chord": "Enter",
       "screen": "/odoo/users",
       "chain": true
@@ -115,8 +115,9 @@
       "kind": "click",
       "label": "open the user",
       "keystrokes": 0,
-      "at": 2.578,
-      "took": 0.07,
+      "at": 2.43,
+      "took": 0.067,
+      "began": 2.38,
       "screen": "/odoo/users",
       "chain": false
     }
@@ -124,68 +125,68 @@
   "waits": [
     {
       "label": "palette open",
-      "at": 0.029,
-      "seconds": 0.192
+      "at": 0.028,
+      "seconds": 0.224
     },
     {
       "label": "menu found",
-      "at": 0.256,
-      "seconds": 0.107
+      "at": 0.289,
+      "seconds": 0.066
     },
     {
       "label": "Settings / Users & Companies / Users loaded",
-      "at": 0.381,
-      "seconds": 0.223
+      "at": 0.366,
+      "seconds": 0.19
     },
     {
       "label": "user list ready, search focused",
-      "at": 0.604,
+      "at": 0.556,
       "seconds": 0.004
     },
     {
       "label": "first page of users",
-      "at": 0.609,
-      "seconds": 0.251
+      "at": 0.562,
+      "seconds": 0.203
     },
     {
       "label": "search applied",
-      "at": 0.925,
-      "seconds": 0.003
+      "at": 0.835,
+      "seconds": 0.011
     },
     {
       "label": "the row with the name",
-      "at": 0.929,
-      "seconds": 1.352
+      "at": 0.847,
+      "seconds": 1.34
     },
     {
       "label": "sign-in shown",
-      "at": 2.649,
-      "seconds": 0.191
+      "at": 2.498,
+      "seconds": 0.184
     },
     {
       "label": "the chatter's emoji data in",
-      "at": 2.842,
+      "at": 2.683,
       "seconds": 0.009
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "94afeff02d8491db.jpg",
+      "file": "1ee392dab590fdb1.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/94afeff02d8491db.jpg"
+      "path": "gauntlet/reference/odoo/shots/1ee392dab590fdb1.jpg"
     },
     {
       "moment": "result list",
-      "file": "ad6c857d430cf96c.jpg",
-      "at": 2.281,
-      "path": "gauntlet/reference/odoo/shots/ad6c857d430cf96c.jpg"
+      "file": "c9114065fa7cd18a.jpg",
+      "at": 2.188,
+      "path": "gauntlet/reference/odoo/shots/c9114065fa7cd18a.jpg"
     },
     {
       "moment": "done",
-      "file": "9b2385a44a1e4058.jpg",
-      "at": 2.853,
-      "path": "gauntlet/reference/odoo/shots/9b2385a44a1e4058.jpg"
+      "file": "8bc8a4733228e25d.jpg",
+      "at": 2.697,
+      "path": "gauntlet/reference/odoo/shots/8bc8a4733228e25d.jpg"
     }
   ],
   "verification": {
@@ -224,12 +225,12 @@
     },
     {
       "requests": 1,
-      "longest_pause_seconds": 0.004,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.011,
+      "seconds": 0.005,
       "verified": true,
-      "gap_seconds": 0.085
+      "gap_seconds": 0.079
     }
   ],
   "requests_after_clock": 0,
@@ -241,11 +242,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "48fa34dfdf053032",
+    "sha256": "5a58f5a4935424a3",
     "elements": 357
   },
   "screen_after_verify": {
-    "sha256": "48fa34dfdf053032",
+    "sha256": "5a58f5a4935424a3",
     "elements": 357,
     "unchanged": true
   },
@@ -254,10 +255,10 @@
     "error": null,
     "back_end_reads": 0,
     "requests": 1,
-    "longest_pause_seconds": 0.002,
+    "longest_pause_seconds": 0.001,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.066
+    "seconds": 0.043
   },
   "set_up_writes_waited": 0,
   "screenshots_path": "palette-shortest",
@@ -284,10 +285,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.98,
-        "system_wait_seconds": 2.31,
+        "machine_seconds": 4.704,
+        "system_wait_seconds": 1.956,
         "human_seconds": 18.63,
-        "human_plus_wait_seconds": 20.94,
+        "human_plus_wait_seconds": 20.586,
         "klm_operator_counts": {
           "K": 21,
           "P": 4,
@@ -302,8 +303,9 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.002,
-          "took": 0.075,
+          "at": 0.044,
+          "took": 0.053,
+          "began": 0.001,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -312,8 +314,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.077,
-          "took": 0.062,
+          "at": 0.146,
+          "took": 0.053,
+          "began": 0.097,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -322,8 +325,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.611,
-          "took": 0.072,
+          "at": 0.663,
+          "took": 0.06,
+          "began": 0.61,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -332,11 +336,11 @@
           "kind": "type",
           "label": "user name",
           "keystrokes": 20,
-          "at": 3.228,
-          "took": 0.14,
+          "at": 3.185,
+          "took": 0.109,
           "text": "Majid Anil Pillai",
           "same_field": false,
-          "screen": "/odoo/settings/287/users",
+          "screen": "/odoo/settings/337/users",
           "chain": false
         },
         {
@@ -344,10 +348,10 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 3.37,
-          "took": 0.014,
+          "at": 3.295,
+          "took": 0.018,
           "chord": "Enter",
-          "screen": "/odoo/settings/287/users",
+          "screen": "/odoo/settings/337/users",
           "chain": true
         },
         {
@@ -355,48 +359,49 @@
           "kind": "click",
           "label": "open the result",
           "keystrokes": 0,
-          "at": 4.714,
-          "took": 0.074,
-          "screen": "/odoo/settings/287/users",
+          "at": 4.444,
+          "took": 0.069,
+          "began": 4.397,
+          "screen": "/odoo/settings/337/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.14,
-          "seconds": 0.47
+          "at": 0.199,
+          "seconds": 0.408
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.683,
-          "seconds": 0.541
+          "at": 0.723,
+          "seconds": 0.207
         },
         {
           "label": "first page of users",
-          "at": 1.225,
-          "seconds": 0.002
+          "at": 0.931,
+          "seconds": 0.252
         },
         {
           "label": "one result",
-          "at": 3.384,
-          "seconds": 1.114
+          "at": 3.314,
+          "seconds": 0.907
         },
         {
           "label": "sign-in shown",
-          "at": 4.791,
-          "seconds": 0.177
+          "at": 4.515,
+          "seconds": 0.17
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 4.969,
-          "seconds": 0.006
+          "at": 4.686,
+          "seconds": 0.012
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "url": "http://localhost:8069/odoo/settings/287/users/68318",
+          "url": "http://localhost:8069/odoo/settings/337/users/68318",
           "name_shown": true,
           "login_shown": true
         }
@@ -417,7 +422,7 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.005,
+          "seconds": 0.004,
           "verified": true
         },
         {
@@ -425,9 +430,9 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.005,
+          "seconds": 0.004,
           "verified": true,
-          "gap_seconds": 0.087
+          "gap_seconds": 0.08
         }
       ],
       "requests_after_clock": 0,
@@ -439,11 +444,11 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "62189eec83b655e6",
+        "sha256": "7163e2112e58d9de",
         "elements": 363
       },
       "screen_after_verify": {
-        "sha256": "62189eec83b655e6",
+        "sha256": "7163e2112e58d9de",
         "elements": 363,
         "unchanged": true
       },
@@ -455,7 +460,7 @@
         "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.08
+        "seconds": 0.055
       },
       "set_up_writes_waited": 0,
       "median_counts": {
@@ -468,10 +473,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.88,
-        "system_wait_seconds": 2.209,
+        "machine_seconds": 4.704,
+        "system_wait_seconds": 1.956,
         "human_seconds": 18.63,
-        "human_plus_wait_seconds": 20.839,
+        "human_plus_wait_seconds": 20.586,
         "klm_operator_counts": {
           "K": 21,
           "P": 4,
@@ -496,10 +501,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.635,
-        "system_wait_seconds": 2.128,
+        "machine_seconds": 2.244,
+        "system_wait_seconds": 1.784,
         "human_seconds": 14.55,
-        "human_plus_wait_seconds": 16.678,
+        "human_plus_wait_seconds": 16.334,
         "klm_operator_counts": {
           "K": 30,
           "P": 1,
@@ -514,8 +519,8 @@
           "kind": "key",
           "label": "command palette",
           "keystrokes": 2,
-          "at": 0.002,
-          "took": 0.032,
+          "at": 0.001,
+          "took": 0.024,
           "chord": "Control+k",
           "screen": "/odoo/discuss",
           "chain": false
@@ -525,8 +530,8 @@
           "kind": "type",
           "label": "menu search /users",
           "keystrokes": 6,
-          "at": 0.23,
-          "took": 0.039,
+          "at": 0.148,
+          "took": 0.028,
           "text": "/users",
           "same_field": false,
           "screen": "/odoo/discuss",
@@ -537,8 +542,8 @@
           "kind": "key",
           "label": "open Settings / Users & Companies / Users",
           "keystrokes": 1,
-          "at": 0.379,
-          "took": 0.012,
+          "at": 0.241,
+          "took": 0.011,
           "chord": "Enter",
           "screen": "/odoo/discuss",
           "chain": true
@@ -548,8 +553,8 @@
           "kind": "type",
           "label": "user name",
           "keystrokes": 20,
-          "at": 0.874,
-          "took": 0.138,
+          "at": 0.645,
+          "took": 0.105,
           "text": "Majid Anil Pillai",
           "same_field": false,
           "screen": "/odoo/users",
@@ -560,8 +565,8 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 1.013,
-          "took": 0.018,
+          "at": 0.752,
+          "took": 0.01,
           "chord": "Enter",
           "screen": "/odoo/users",
           "chain": true
@@ -571,8 +576,9 @@
           "kind": "click",
           "label": "open the result",
           "keystrokes": 0,
-          "at": 2.335,
-          "took": 0.071,
+          "at": 1.971,
+          "took": 0.072,
+          "began": 1.924,
           "screen": "/odoo/users",
           "chain": false
         }
@@ -580,43 +586,43 @@
       "waits": [
         {
           "label": "palette open",
-          "at": 0.035,
-          "seconds": 0.195
+          "at": 0.026,
+          "seconds": 0.121
         },
         {
           "label": "menu found",
-          "at": 0.27,
-          "seconds": 0.109
+          "at": 0.177,
+          "seconds": 0.063
         },
         {
           "label": "Settings / Users & Companies / Users loaded",
-          "at": 0.392,
-          "seconds": 0.219
+          "at": 0.252,
+          "seconds": 0.187
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.612,
-          "seconds": 0.004
+          "at": 0.439,
+          "seconds": 0.005
         },
         {
           "label": "first page of users",
-          "at": 0.617,
-          "seconds": 0.254
+          "at": 0.445,
+          "seconds": 0.2
         },
         {
           "label": "one result",
-          "at": 1.032,
-          "seconds": 1.125
+          "at": 0.763,
+          "seconds": 1.018
         },
         {
           "label": "sign-in shown",
-          "at": 2.408,
-          "seconds": 0.215
+          "at": 2.044,
+          "seconds": 0.181
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 2.624,
-          "seconds": 0.007
+          "at": 2.226,
+          "seconds": 0.009
         }
       ],
       "verification": {
@@ -643,7 +649,7 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.006,
+          "seconds": 0.004,
           "verified": true
         },
         {
@@ -651,25 +657,24 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.005,
+          "seconds": 0.004,
           "verified": true,
-          "gap_seconds": 0.08
+          "gap_seconds": 0.078
         }
       ],
       "requests_after_clock": 0,
       "requests_in_flight_at_clock": {
-        "count": 2,
+        "count": 1,
         "first": [
-          "GET /web/image/res.users/68318/avatar_128 (image)",
           "POST /mail/store (xhr)"
         ]
       },
       "screen_at_clock": {
-        "sha256": "ddc46948fb7ee64c",
+        "sha256": "ffc6c0be65a7278d",
         "elements": 360
       },
       "screen_after_verify": {
-        "sha256": "ddc46948fb7ee64c",
+        "sha256": "ffc6c0be65a7278d",
         "elements": 360,
         "unchanged": true
       },
@@ -681,7 +686,7 @@
         "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.061
+        "seconds": 0.044
       },
       "set_up_writes_waited": 0,
       "median_counts": {
@@ -694,10 +699,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.635,
-        "system_wait_seconds": 2.12,
+        "machine_seconds": 2.342,
+        "system_wait_seconds": 1.838,
         "human_seconds": 14.55,
-        "human_plus_wait_seconds": 16.67,
+        "human_plus_wait_seconds": 16.388,
         "klm_operator_counts": {
           "K": 30,
           "P": 1,
@@ -722,10 +727,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 5.194,
-        "system_wait_seconds": 2.343,
+        "machine_seconds": 5.646,
+        "system_wait_seconds": 2.234,
         "human_seconds": 21,
-        "human_plus_wait_seconds": 23.343,
+        "human_plus_wait_seconds": 23.234,
         "klm_operator_counts": {
           "K": 20,
           "P": 5,
@@ -740,8 +745,9 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.001,
-          "took": 0.051,
+          "at": 0.046,
+          "took": 0.039,
+          "began": 0.001,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -750,8 +756,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.055,
-          "took": 0.055,
+          "at": 0.135,
+          "took": 0.05,
+          "began": 0.086,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -760,8 +767,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.603,
-          "took": 0.083,
+          "at": 0.632,
+          "took": 0.064,
+          "began": 0.579,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -770,11 +778,11 @@
           "kind": "type",
           "label": "user name",
           "keystrokes": 20,
-          "at": 3.189,
-          "took": 0.251,
+          "at": 3.32,
+          "took": 0.36,
           "text": "Majid Anil Pillai",
           "same_field": false,
-          "screen": "/odoo/settings/288/users",
+          "screen": "/odoo/settings/338/users",
           "chain": false
         },
         {
@@ -782,9 +790,10 @@
           "kind": "click",
           "label": "search the name",
           "keystrokes": 0,
-          "at": 3.454,
-          "took": 0.093,
-          "screen": "/odoo/settings/288/users",
+          "at": 3.782,
+          "took": 0.086,
+          "began": 3.724,
+          "screen": "/odoo/settings/338/users",
           "chain": false
         },
         {
@@ -792,53 +801,54 @@
           "kind": "click",
           "label": "open the result",
           "keystrokes": 0,
-          "at": 4.893,
-          "took": 0.079,
-          "screen": "/odoo/settings/288/users",
+          "at": 5.228,
+          "took": 0.127,
+          "began": 5.157,
+          "screen": "/odoo/settings/338/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.111,
-          "seconds": 0.49
+          "at": 0.186,
+          "seconds": 0.391
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.687,
-          "seconds": 0.21
+          "at": 0.697,
+          "seconds": 0.213
         },
         {
           "label": "first page of users",
-          "at": 0.898,
-          "seconds": 0.285
+          "at": 0.912,
+          "seconds": 0.402
         },
         {
           "label": "search suggestions",
-          "at": 3.44,
-          "seconds": 0.013
+          "at": 3.681,
+          "seconds": 0.043
         },
         {
           "label": "one result",
-          "at": 3.548,
-          "seconds": 1.13
+          "at": 3.869,
+          "seconds": 0.92
         },
         {
           "label": "sign-in shown",
-          "at": 4.973,
-          "seconds": 0.208
+          "at": 5.357,
+          "seconds": 0.257
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 5.183,
-          "seconds": 0.007
+          "at": 5.627,
+          "seconds": 0.008
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "url": "http://localhost:8069/odoo/settings/288/users/68318",
+          "url": "http://localhost:8069/odoo/settings/338/users/68318",
           "name_shown": true,
           "login_shown": true
         }
@@ -859,7 +869,7 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.005,
+          "seconds": 0.007,
           "verified": true
         },
         {
@@ -867,9 +877,9 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.004,
+          "seconds": 0.007,
           "verified": true,
-          "gap_seconds": 0.105
+          "gap_seconds": 0.123
         }
       ],
       "requests_after_clock": 0,
@@ -881,12 +891,12 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "459236206ef46cc9",
-        "elements": 363
+        "sha256": "d8993c3fcd131c5d",
+        "elements": 360
       },
       "screen_after_verify": {
-        "sha256": "459236206ef46cc9",
-        "elements": 363,
+        "sha256": "d8993c3fcd131c5d",
+        "elements": 360,
         "unchanged": true
       },
       "verify_before": {
@@ -897,7 +907,7 @@
         "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.049
+        "seconds": 0.046
       },
       "set_up_writes_waited": 0,
       "median_counts": {
@@ -910,10 +920,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.929,
-        "system_wait_seconds": 2.243,
+        "machine_seconds": 5.071,
+        "system_wait_seconds": 2.104,
         "human_seconds": 21,
-        "human_plus_wait_seconds": 23.243,
+        "human_plus_wait_seconds": 23.104,
         "klm_operator_counts": {
           "K": 20,
           "P": 5,
@@ -938,10 +948,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 5.238,
-        "system_wait_seconds": 2.582,
+        "machine_seconds": 4.754,
+        "system_wait_seconds": 1.91,
         "human_seconds": 16.8,
-        "human_plus_wait_seconds": 19.382,
+        "human_plus_wait_seconds": 18.71,
         "klm_operator_counts": {
           "K": 5,
           "P": 5,
@@ -956,8 +966,9 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.001,
-          "took": 0.068,
+          "at": 0.048,
+          "took": 0.038,
+          "began": 0.001,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -966,8 +977,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.071,
-          "took": 0.044,
+          "at": 0.132,
+          "took": 0.054,
+          "began": 0.087,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -976,8 +988,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.614,
-          "took": 0.068,
+          "at": 0.636,
+          "took": 0.059,
+          "began": 0.584,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -986,11 +999,11 @@
           "kind": "type",
           "label": "a piece of the name",
           "keystrokes": 5,
-          "at": 3.198,
-          "took": 0.064,
+          "at": 3.165,
+          "took": 0.049,
           "text": "il pi",
           "same_field": false,
-          "screen": "/odoo/settings/289/users",
+          "screen": "/odoo/settings/339/users",
           "chain": false
         },
         {
@@ -998,9 +1011,10 @@
           "kind": "click",
           "label": "search the piece",
           "keystrokes": 0,
-          "at": 3.279,
-          "took": 0.068,
-          "screen": "/odoo/settings/289/users",
+          "at": 3.25,
+          "took": 0.071,
+          "began": 3.22,
+          "screen": "/odoo/settings/339/users",
           "chain": false
         },
         {
@@ -1008,58 +1022,59 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 4.942,
-          "took": 0.082,
-          "screen": "/odoo/settings/289/users",
+          "at": 4.532,
+          "took": 0.057,
+          "began": 4.471,
+          "screen": "/odoo/settings/339/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.116,
-          "seconds": 0.498
+          "at": 0.186,
+          "seconds": 0.395
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.683,
-          "seconds": 0.507
+          "at": 0.695,
+          "seconds": 0.205
         },
         {
           "label": "first page of users",
-          "at": 1.191,
-          "seconds": 0.005
+          "at": 0.901,
+          "seconds": 0.257
         },
         {
           "label": "search suggestions",
-          "at": 3.263,
-          "seconds": 0.015
+          "at": 3.214,
+          "seconds": 0.005
         },
         {
           "label": "search applied",
-          "at": 3.348,
-          "seconds": 0.003
+          "at": 3.322,
+          "seconds": 0.005
         },
         {
           "label": "the row with the name",
-          "at": 3.351,
-          "seconds": 1.353
+          "at": 3.327,
+          "seconds": 0.885
         },
         {
           "label": "sign-in shown",
-          "at": 5.025,
-          "seconds": 0.192
+          "at": 4.593,
+          "seconds": 0.152
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 5.22,
-          "seconds": 0.009
+          "at": 4.746,
+          "seconds": 0.006
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "url": "http://localhost:8069/odoo/settings/289/users/68318",
+          "url": "http://localhost:8069/odoo/settings/339/users/68318",
           "name_shown": true,
           "login_shown": true
         }
@@ -1080,7 +1095,7 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.005,
+          "seconds": 0.004,
           "verified": true
         },
         {
@@ -1088,9 +1103,9 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.005,
+          "seconds": 0.004,
           "verified": true,
-          "gap_seconds": 0.078
+          "gap_seconds": 0.077
         }
       ],
       "requests_after_clock": 0,
@@ -1102,12 +1117,12 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "dc978c8e81d5c2cf",
-        "elements": 360
+        "sha256": "0da914598f49efcc",
+        "elements": 363
       },
       "screen_after_verify": {
-        "sha256": "dc978c8e81d5c2cf",
-        "elements": 360,
+        "sha256": "0da914598f49efcc",
+        "elements": 363,
         "unchanged": true
       },
       "verify_before": {
@@ -1118,7 +1133,7 @@
         "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.051
+        "seconds": 0.049
       },
       "set_up_writes_waited": 0,
       "median_counts": {
@@ -1131,10 +1146,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 5.106,
-        "system_wait_seconds": 2.492,
+        "machine_seconds": 4.594,
+        "system_wait_seconds": 1.814,
         "human_seconds": 16.8,
-        "human_plus_wait_seconds": 19.292,
+        "human_plus_wait_seconds": 18.614,
         "klm_operator_counts": {
           "K": 5,
           "P": 5,
@@ -1159,10 +1174,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 5.13,
-        "system_wait_seconds": 2.54,
+        "machine_seconds": 4.568,
+        "system_wait_seconds": 1.829,
         "human_seconds": 14.43,
-        "human_plus_wait_seconds": 16.97,
+        "human_plus_wait_seconds": 16.259,
         "klm_operator_counts": {
           "K": 6,
           "P": 4,
@@ -1177,8 +1192,9 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.002,
-          "took": 0.064,
+          "at": 0.045,
+          "took": 0.037,
+          "began": 0.001,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -1187,8 +1203,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.067,
-          "took": 0.06,
+          "at": 0.129,
+          "took": 0.048,
+          "began": 0.083,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -1197,8 +1214,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.591,
-          "took": 0.06,
+          "at": 0.612,
+          "took": 0.063,
+          "began": 0.555,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -1207,11 +1225,11 @@
           "kind": "type",
           "label": "a piece of the name",
           "keystrokes": 5,
-          "at": 3.216,
-          "took": 0.055,
+          "at": 3.088,
+          "took": 0.052,
           "text": "il pi",
           "same_field": false,
-          "screen": "/odoo/settings/290/users",
+          "screen": "/odoo/settings/340/users",
           "chain": false
         },
         {
@@ -1219,10 +1237,10 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 3.272,
-          "took": 0.02,
+          "at": 3.141,
+          "took": 0.015,
           "chord": "Enter",
-          "screen": "/odoo/settings/290/users",
+          "screen": "/odoo/settings/340/users",
           "chain": true
         },
         {
@@ -1230,53 +1248,54 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 4.857,
-          "took": 0.09,
-          "screen": "/odoo/settings/290/users",
+          "at": 4.328,
+          "took": 0.068,
+          "began": 4.286,
+          "screen": "/odoo/settings/340/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.128,
-          "seconds": 0.461
+          "at": 0.178,
+          "seconds": 0.377
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.652,
-          "seconds": 0.338
+          "at": 0.676,
+          "seconds": 0.194
         },
         {
           "label": "first page of users",
-          "at": 0.991,
-          "seconds": 0.224
+          "at": 0.871,
+          "seconds": 0.215
         },
         {
           "label": "search applied",
-          "at": 3.293,
-          "seconds": 0.001
+          "at": 3.157,
+          "seconds": 0.008
         },
         {
           "label": "the row with the name",
-          "at": 3.295,
-          "seconds": 1.341
+          "at": 3.167,
+          "seconds": 0.866
         },
         {
           "label": "sign-in shown",
-          "at": 4.949,
-          "seconds": 0.17
+          "at": 4.397,
+          "seconds": 0.165
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 5.121,
-          "seconds": 0.005
+          "at": 4.562,
+          "seconds": 0.004
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "url": "http://localhost:8069/odoo/settings/290/users/68318",
+          "url": "http://localhost:8069/odoo/settings/340/users/68318",
           "name_shown": true,
           "login_shown": true
         }
@@ -1305,9 +1324,9 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.004,
+          "seconds": 0.003,
           "verified": true,
-          "gap_seconds": 0.085
+          "gap_seconds": 0.084
         }
       ],
       "requests_after_clock": 0,
@@ -1319,12 +1338,12 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "384dfe02e179ed7e",
-        "elements": 360
+        "sha256": "9d76c5a082d80b17",
+        "elements": 363
       },
       "screen_after_verify": {
-        "sha256": "384dfe02e179ed7e",
-        "elements": 360,
+        "sha256": "9d76c5a082d80b17",
+        "elements": 363,
         "unchanged": true
       },
       "verify_before": {
@@ -1332,10 +1351,10 @@
         "error": null,
         "back_end_reads": 0,
         "requests": 1,
-        "longest_pause_seconds": 0.004,
+        "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.063
+        "seconds": 0.05
       },
       "set_up_writes_waited": 0,
       "median_counts": {
@@ -1348,10 +1367,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 5.13,
-        "system_wait_seconds": 2.54,
+        "machine_seconds": 4.568,
+        "system_wait_seconds": 1.829,
         "human_seconds": 14.43,
-        "human_plus_wait_seconds": 16.97,
+        "human_plus_wait_seconds": 16.259,
         "klm_operator_counts": {
           "K": 6,
           "P": 4,
@@ -1376,10 +1395,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.853,
-        "system_wait_seconds": 2.332,
+        "machine_seconds": 2.697,
+        "system_wait_seconds": 2.231,
         "human_seconds": 10.35,
-        "human_plus_wait_seconds": 12.682,
+        "human_plus_wait_seconds": 12.581,
         "klm_operator_counts": {
           "K": 15,
           "P": 1,
@@ -1395,7 +1414,7 @@
           "label": "command palette",
           "keystrokes": 2,
           "at": 0.001,
-          "took": 0.027,
+          "took": 0.026,
           "chord": "Control+k",
           "screen": "/odoo/discuss",
           "chain": false
@@ -1405,8 +1424,8 @@
           "kind": "type",
           "label": "menu search /users",
           "keystrokes": 6,
-          "at": 0.222,
-          "took": 0.033,
+          "at": 0.252,
+          "took": 0.035,
           "text": "/users",
           "same_field": false,
           "screen": "/odoo/discuss",
@@ -1417,8 +1436,8 @@
           "kind": "key",
           "label": "open Settings / Users & Companies / Users",
           "keystrokes": 1,
-          "at": 0.363,
-          "took": 0.016,
+          "at": 0.355,
+          "took": 0.01,
           "chord": "Enter",
           "screen": "/odoo/discuss",
           "chain": true
@@ -1428,8 +1447,8 @@
           "kind": "type",
           "label": "a piece of the name",
           "keystrokes": 5,
-          "at": 0.861,
-          "took": 0.046,
+          "at": 0.766,
+          "took": 0.05,
           "text": "il pi",
           "same_field": false,
           "screen": "/odoo/users",
@@ -1440,8 +1459,8 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 0.908,
-          "took": 0.016,
+          "at": 0.817,
+          "took": 0.017,
           "chord": "Enter",
           "screen": "/odoo/users",
           "chain": true
@@ -1451,8 +1470,9 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 2.578,
-          "took": 0.07,
+          "at": 2.43,
+          "took": 0.067,
+          "began": 2.38,
           "screen": "/odoo/users",
           "chain": false
         }
@@ -1460,47 +1480,47 @@
       "waits": [
         {
           "label": "palette open",
-          "at": 0.029,
-          "seconds": 0.192
+          "at": 0.028,
+          "seconds": 0.224
         },
         {
           "label": "menu found",
-          "at": 0.256,
-          "seconds": 0.107
+          "at": 0.289,
+          "seconds": 0.066
         },
         {
           "label": "Settings / Users & Companies / Users loaded",
-          "at": 0.381,
-          "seconds": 0.223
+          "at": 0.366,
+          "seconds": 0.19
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.604,
+          "at": 0.556,
           "seconds": 0.004
         },
         {
           "label": "first page of users",
-          "at": 0.609,
-          "seconds": 0.251
+          "at": 0.562,
+          "seconds": 0.203
         },
         {
           "label": "search applied",
-          "at": 0.925,
-          "seconds": 0.003
+          "at": 0.835,
+          "seconds": 0.011
         },
         {
           "label": "the row with the name",
-          "at": 0.929,
-          "seconds": 1.352
+          "at": 0.847,
+          "seconds": 1.34
         },
         {
           "label": "sign-in shown",
-          "at": 2.649,
-          "seconds": 0.191
+          "at": 2.498,
+          "seconds": 0.184
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 2.842,
+          "at": 2.683,
           "seconds": 0.009
         }
       ],
@@ -1533,12 +1553,12 @@
         },
         {
           "requests": 1,
-          "longest_pause_seconds": 0.004,
+          "longest_pause_seconds": 0.002,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.011,
+          "seconds": 0.005,
           "verified": true,
-          "gap_seconds": 0.085
+          "gap_seconds": 0.079
         }
       ],
       "requests_after_clock": 0,
@@ -1550,11 +1570,11 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "48fa34dfdf053032",
+        "sha256": "5a58f5a4935424a3",
         "elements": 357
       },
       "screen_after_verify": {
-        "sha256": "48fa34dfdf053032",
+        "sha256": "5a58f5a4935424a3",
         "elements": 357,
         "unchanged": true
       },
@@ -1563,10 +1583,10 @@
         "error": null,
         "back_end_reads": 0,
         "requests": 1,
-        "longest_pause_seconds": 0.002,
+        "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.066
+        "seconds": 0.043
       },
       "set_up_writes_waited": 0,
       "median_counts": {
@@ -1579,10 +1599,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.818,
-        "system_wait_seconds": 2.332,
+        "machine_seconds": 2.676,
+        "system_wait_seconds": 2.221,
         "human_seconds": 10.35,
-        "human_plus_wait_seconds": 12.682,
+        "human_plus_wait_seconds": 12.571,
         "klm_operator_counts": {
           "K": 15,
           "P": 1,
@@ -1596,8 +1616,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/find-user.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/find-user-20261017T031343-3f1b.json",
-    "gauntlet/reference/odoo/results/find-user-20261017T031622-dfff.json",
-    "gauntlet/reference/odoo/results/find-user-20261017T031904-b6dd.json"
+    "gauntlet/reference/odoo/results/find-user-20261017T114127-7fcd.json",
+    "gauntlet/reference/odoo/results/find-user-20261017T114402-ee2f.json",
+    "gauntlet/reference/odoo/results/find-user-20261017T114636-dbec.json"
   ]
 }

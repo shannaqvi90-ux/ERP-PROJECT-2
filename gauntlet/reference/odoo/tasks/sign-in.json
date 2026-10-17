@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "sign-in-20261017T033553-481d",
-  "instrument": 9,
+  "run_id": "sign-in-20261017T120231-6f2c",
+  "instrument": 10,
   "task": "sign-in",
   "task_title": "Sign in",
   "product": "odoo",
   "status": "verified",
   "goal": "Sign in as signin.tester@demo-trading.example with the password Sign-In-Pass-2026.",
   "done_when": "The screen the product shows right after sign-in is ready to work in, and the back end holds a session for that user.",
-  "started_at": "2026-10-17T03:35:53.527Z",
-  "finished_at": "2026-10-17T03:36:44.683Z",
+  "started_at": "2026-10-17T12:02:31.939Z",
+  "finished_at": "2026-10-17T12:03:28.781Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 1,
-    "machine_seconds": 1.142,
-    "system_wait_seconds": 1.097,
+    "machine_seconds": 1.283,
+    "system_wait_seconds": 1.183,
     "human_seconds": 4.68,
-    "human_plus_wait_seconds": 5.777,
+    "human_plus_wait_seconds": 5.863,
     "klm_operator_counts": {
       "K": 1,
       "P": 1,
@@ -58,8 +58,9 @@
       "kind": "click",
       "label": "Use a Passkey",
       "keystrokes": 0,
-      "at": 0.001,
-      "took": 0.035,
+      "at": 0.031,
+      "took": 0.052,
+      "began": 0.001,
       "screen": "/web/login",
       "chain": false
     },
@@ -68,8 +69,9 @@
       "kind": "device",
       "label": "confirm on the device",
       "keystrokes": 0,
-      "at": 0.037,
+      "at": 0.095,
       "took": 0.004,
+      "began": 0.084,
       "ceremony": "get",
       "screen": "/web/login",
       "chain": false
@@ -78,32 +80,32 @@
   "waits": [
     {
       "label": "the product asks the device",
-      "at": 0.037,
-      "seconds": 0.004
+      "at": 0.084,
+      "seconds": 0.011
     },
     {
       "label": "signed in",
-      "at": 0.041,
-      "seconds": 0.603
+      "at": 0.101,
+      "seconds": 0.698
     },
     {
       "label": "working screen ready",
-      "at": 0.645,
-      "seconds": 0.49
+      "at": 0.8,
+      "seconds": 0.474
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "c609712dc7b0ae66.jpg",
+      "file": "006075103dd2e262.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/c609712dc7b0ae66.jpg"
+      "path": "gauntlet/reference/odoo/shots/006075103dd2e262.jpg"
     },
     {
       "moment": "done",
-      "file": "0693e9f05d453e04.jpg",
-      "at": 1.142,
-      "path": "gauntlet/reference/odoo/shots/0693e9f05d453e04.jpg"
+      "file": "3a37ded2ebdd3948.jpg",
+      "at": 1.283,
+      "path": "gauntlet/reference/odoo/shots/3a37ded2ebdd3948.jpg"
     }
   ],
   "verification": {
@@ -141,10 +143,10 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.005,
+      "longest_pause_seconds": 0.007,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.044,
+      "seconds": 0.06,
       "verified": true
     },
     {
@@ -152,12 +154,12 @@
       "longest_pause_seconds": 0.004,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.036,
+      "seconds": 0.051,
       "verified": true,
       "gap_seconds": 1.101
     }
   ],
-  "requests_after_clock": 2,
+  "requests_after_clock": 1,
   "requests_in_flight_at_clock": {
     "count": 50,
     "first": [
@@ -174,11 +176,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "95c769974f2186da",
+    "sha256": "f2a73d2c8856b6ab",
     "elements": 2175
   },
   "screen_after_verify": {
-    "sha256": "95c769974f2186da",
+    "sha256": "f2a73d2c8856b6ab",
     "elements": 2175,
     "unchanged": true
   },
@@ -187,7 +189,7 @@
     "error": null,
     "back_end_reads": 1,
     "requests": 2,
-    "longest_pause_seconds": 0.004,
+    "longest_pause_seconds": 0.003,
     "repeated_reads": [],
     "paced_seconds": 0,
     "seconds": 0.015
@@ -233,13 +235,27 @@
     "writes_caused": [
       {
         "write": "POST /auth/passkey/start-auth",
-        "at": 0.0334035179996863,
-        "by_step": 1
+        "at": 0.08253757200017571,
+        "by_step": 1,
+        "browser_record": {
+          "caused": true,
+          "by_step": 1,
+          "chain": [
+            "input of step 1"
+          ]
+        }
       },
       {
         "write": "POST /web/login",
-        "at": 0.04868224299978465,
-        "by_step": 2
+        "at": 0.11130476200021804,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain": [
+            "input of step 2"
+          ]
+        }
       }
     ]
   },
@@ -267,10 +283,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 1.881,
-        "system_wait_seconds": 1.689,
+        "machine_seconds": 1.782,
+        "system_wait_seconds": 1.526,
         "human_seconds": 19.06,
-        "human_plus_wait_seconds": 20.749,
+        "human_plus_wait_seconds": 20.586,
         "klm_operator_counts": {
           "K": 57,
           "P": 0,
@@ -285,8 +301,8 @@
           "kind": "type",
           "label": "e-mail",
           "keystrokes": 35,
-          "at": 0.006,
-          "took": 0.106,
+          "at": 0.009,
+          "took": 0.15,
           "text": "signin.tester@demo-trading.example",
           "same_field": false,
           "screen": "/web/login",
@@ -297,8 +313,8 @@
           "kind": "key",
           "label": "next field (password)",
           "keystrokes": 1,
-          "at": 0.112,
-          "took": 0.004,
+          "at": 0.16,
+          "took": 0.007,
           "chord": "Tab",
           "screen": "/web/login",
           "chain": false
@@ -308,8 +324,8 @@
           "kind": "type",
           "label": "password",
           "keystrokes": 20,
-          "at": 0.117,
-          "took": 0.057,
+          "at": 0.168,
+          "took": 0.07,
           "text": "Sign-In-Pass-2026",
           "same_field": false,
           "screen": "/web/login",
@@ -320,7 +336,7 @@
           "kind": "key",
           "label": "sign in",
           "keystrokes": 1,
-          "at": 0.175,
+          "at": 0.239,
           "took": 0.007,
           "chord": "Enter",
           "screen": "/web/login",
@@ -330,13 +346,13 @@
       "waits": [
         {
           "label": "signed in",
-          "at": 0.182,
-          "seconds": 1.158
+          "at": 0.246,
+          "seconds": 1.016
         },
         {
           "label": "working screen ready",
-          "at": 1.341,
-          "seconds": 0.531
+          "at": 1.263,
+          "seconds": 0.51
         }
       ],
       "verification": {
@@ -367,15 +383,15 @@
       "verify_passes": [
         {
           "requests": 2,
-          "longest_pause_seconds": 0.004,
+          "longest_pause_seconds": 0.003,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.048,
+          "seconds": 0.041,
           "verified": true
         },
         {
           "requests": 2,
-          "longest_pause_seconds": 0.007,
+          "longest_pause_seconds": 0.004,
           "repeated_reads": [],
           "paced_seconds": 0,
           "seconds": 0.041,
@@ -383,7 +399,7 @@
           "gap_seconds": 1.101
         }
       ],
-      "requests_after_clock": 2,
+      "requests_after_clock": 1,
       "requests_in_flight_at_clock": {
         "count": 50,
         "first": [
@@ -400,11 +416,11 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "333d81aee85b5d21",
+        "sha256": "5558cdb57a36497f",
         "elements": 2175
       },
       "screen_after_verify": {
-        "sha256": "333d81aee85b5d21",
+        "sha256": "5558cdb57a36497f",
         "elements": 2175,
         "unchanged": true
       },
@@ -416,7 +432,7 @@
         "longest_pause_seconds": 0.003,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.034
+        "seconds": 0.033
       },
       "set_up_writes_waited": 0,
       "saved_state": {
@@ -458,8 +474,15 @@
         "writes_caused": [
           {
             "write": "POST /web/login",
-            "at": 0.19550795900030063,
-            "by_step": 4
+            "at": 0.2626351749999449,
+            "by_step": 4,
+            "browser_record": {
+              "caused": true,
+              "by_step": 4,
+              "chain": [
+                "input of step 4"
+              ]
+            }
           }
         ]
       },
@@ -473,10 +496,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 1.881,
-        "system_wait_seconds": 1.689,
+        "machine_seconds": 1.782,
+        "system_wait_seconds": 1.526,
         "human_seconds": 19.06,
-        "human_plus_wait_seconds": 20.749,
+        "human_plus_wait_seconds": 20.586,
         "klm_operator_counts": {
           "K": 57,
           "P": 0,
@@ -501,10 +524,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 1.792,
-        "system_wait_seconds": 1.564,
+        "machine_seconds": 1.986,
+        "system_wait_seconds": 1.737,
         "human_seconds": 19.06,
-        "human_plus_wait_seconds": 20.624,
+        "human_plus_wait_seconds": 20.797,
         "klm_operator_counts": {
           "K": 57,
           "P": 0,
@@ -519,8 +542,8 @@
           "kind": "type",
           "label": "e-mail",
           "keystrokes": 35,
-          "at": 0.012,
-          "took": 0.123,
+          "at": 0.009,
+          "took": 0.154,
           "text": "signin.tester@demo-trading.example",
           "same_field": false,
           "screen": "/web/login",
@@ -531,7 +554,7 @@
           "kind": "key",
           "label": "next field (password)",
           "keystrokes": 1,
-          "at": 0.136,
+          "at": 0.164,
           "took": 0.005,
           "chord": "Tab",
           "screen": "/web/login",
@@ -542,8 +565,8 @@
           "kind": "type",
           "label": "password",
           "keystrokes": 20,
-          "at": 0.142,
-          "took": 0.071,
+          "at": 0.169,
+          "took": 0.065,
           "text": "Sign-In-Pass-2026",
           "same_field": false,
           "screen": "/web/login",
@@ -554,8 +577,8 @@
           "kind": "key",
           "label": "sign in",
           "keystrokes": 1,
-          "at": 0.214,
-          "took": 0.006,
+          "at": 0.235,
+          "took": 0.007,
           "chord": "Enter",
           "screen": "/web/login",
           "chain": true
@@ -564,13 +587,13 @@
       "waits": [
         {
           "label": "signed in",
-          "at": 0.22,
-          "seconds": 1.055
+          "at": 0.243,
+          "seconds": 1.042
         },
         {
           "label": "working screen ready",
-          "at": 1.277,
-          "seconds": 0.509
+          "at": 1.286,
+          "seconds": 0.695
         }
       ],
       "verification": {
@@ -604,41 +627,41 @@
           "longest_pause_seconds": 0.004,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.052,
+          "seconds": 0.044,
           "verified": true
         },
         {
           "requests": 2,
-          "longest_pause_seconds": 0.003,
+          "longest_pause_seconds": 0.005,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.062,
+          "seconds": 0.037,
           "verified": true,
           "gap_seconds": 1.101
         }
       ],
       "requests_after_clock": 1,
       "requests_in_flight_at_clock": {
-        "count": 50,
+        "count": 43,
         "first": [
           "GET /bus/websocket_worker_bundle (script)",
-          "GET /web/image/res.partner/171959/avatar_128 (image)",
-          "GET /web/image/res.partner/149073/avatar_128 (image)",
-          "GET /web/image/res.partner/101218/avatar_128 (image)",
-          "GET /web/image/res.partner/113478/avatar_128 (image)",
-          "GET /web/image/res.partner/134985/avatar_128 (image)",
-          "GET /web/image/res.partner/96687/avatar_128 (image)",
-          "GET /web/image/res.partner/101687/avatar_128 (image)",
           "GET /web/image/res.partner/36646/avatar_128 (image)",
-          "GET /web/image/res.partner/5701/avatar_128 (image)"
+          "GET /web/image/res.partner/5701/avatar_128 (image)",
+          "GET /web/image/res.partner/133660/avatar_128 (image)",
+          "GET /web/image/res.partner/194687/avatar_128 (image)",
+          "GET /web/image/res.partner/181159/avatar_128 (image)",
+          "GET /web/image/res.partner/101215/avatar_128 (image)",
+          "GET /web/image/res.partner/170658/avatar_128 (image)",
+          "GET /web/image/res.partner/50112/avatar_128 (image)",
+          "GET /web/image/res.partner/196180/avatar_128 (image)"
         ]
       },
       "screen_at_clock": {
-        "sha256": "f2f896da91a950ed",
+        "sha256": "60bfd91252665112",
         "elements": 2175
       },
       "screen_after_verify": {
-        "sha256": "f2f896da91a950ed",
+        "sha256": "60bfd91252665112",
         "elements": 2175,
         "unchanged": true
       },
@@ -692,8 +715,15 @@
         "writes_caused": [
           {
             "write": "POST /web/login",
-            "at": 0.24480230699991806,
-            "by_step": 4
+            "at": 0.2528238150002435,
+            "by_step": 4,
+            "browser_record": {
+              "caused": true,
+              "by_step": 4,
+              "chain": [
+                "input of step 4"
+              ]
+            }
           }
         ]
       },
@@ -707,10 +737,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 1.792,
-        "system_wait_seconds": 1.564,
+        "machine_seconds": 1.813,
+        "system_wait_seconds": 1.557,
         "human_seconds": 19.06,
-        "human_plus_wait_seconds": 20.624,
+        "human_plus_wait_seconds": 20.617,
         "klm_operator_counts": {
           "K": 57,
           "P": 0,
@@ -735,10 +765,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 1,
-        "machine_seconds": 1.142,
-        "system_wait_seconds": 1.097,
+        "machine_seconds": 1.283,
+        "system_wait_seconds": 1.183,
         "human_seconds": 4.68,
-        "human_plus_wait_seconds": 5.777,
+        "human_plus_wait_seconds": 5.863,
         "klm_operator_counts": {
           "K": 1,
           "P": 1,
@@ -753,8 +783,9 @@
           "kind": "click",
           "label": "Use a Passkey",
           "keystrokes": 0,
-          "at": 0.001,
-          "took": 0.035,
+          "at": 0.031,
+          "took": 0.052,
+          "began": 0.001,
           "screen": "/web/login",
           "chain": false
         },
@@ -763,8 +794,9 @@
           "kind": "device",
           "label": "confirm on the device",
           "keystrokes": 0,
-          "at": 0.037,
+          "at": 0.095,
           "took": 0.004,
+          "began": 0.084,
           "ceremony": "get",
           "screen": "/web/login",
           "chain": false
@@ -773,18 +805,18 @@
       "waits": [
         {
           "label": "the product asks the device",
-          "at": 0.037,
-          "seconds": 0.004
+          "at": 0.084,
+          "seconds": 0.011
         },
         {
           "label": "signed in",
-          "at": 0.041,
-          "seconds": 0.603
+          "at": 0.101,
+          "seconds": 0.698
         },
         {
           "label": "working screen ready",
-          "at": 0.645,
-          "seconds": 0.49
+          "at": 0.8,
+          "seconds": 0.474
         }
       ],
       "verification": {
@@ -815,10 +847,10 @@
       "verify_passes": [
         {
           "requests": 2,
-          "longest_pause_seconds": 0.005,
+          "longest_pause_seconds": 0.007,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.044,
+          "seconds": 0.06,
           "verified": true
         },
         {
@@ -826,12 +858,12 @@
           "longest_pause_seconds": 0.004,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.036,
+          "seconds": 0.051,
           "verified": true,
           "gap_seconds": 1.101
         }
       ],
-      "requests_after_clock": 2,
+      "requests_after_clock": 1,
       "requests_in_flight_at_clock": {
         "count": 50,
         "first": [
@@ -848,11 +880,11 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "95c769974f2186da",
+        "sha256": "f2a73d2c8856b6ab",
         "elements": 2175
       },
       "screen_after_verify": {
-        "sha256": "95c769974f2186da",
+        "sha256": "f2a73d2c8856b6ab",
         "elements": 2175,
         "unchanged": true
       },
@@ -861,7 +893,7 @@
         "error": null,
         "back_end_reads": 1,
         "requests": 2,
-        "longest_pause_seconds": 0.004,
+        "longest_pause_seconds": 0.003,
         "repeated_reads": [],
         "paced_seconds": 0,
         "seconds": 0.015
@@ -907,13 +939,27 @@
         "writes_caused": [
           {
             "write": "POST /auth/passkey/start-auth",
-            "at": 0.0334035179996863,
-            "by_step": 1
+            "at": 0.08253757200017571,
+            "by_step": 1,
+            "browser_record": {
+              "caused": true,
+              "by_step": 1,
+              "chain": [
+                "input of step 1"
+              ]
+            }
           },
           {
             "write": "POST /web/login",
-            "at": 0.04868224299978465,
-            "by_step": 2
+            "at": 0.11130476200021804,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain": [
+                "input of step 2"
+              ]
+            }
           }
         ]
       },
@@ -927,10 +973,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 1,
-        "machine_seconds": 1.142,
-        "system_wait_seconds": 1.097,
+        "machine_seconds": 1.283,
+        "system_wait_seconds": 1.183,
         "human_seconds": 4.68,
-        "human_plus_wait_seconds": 5.777,
+        "human_plus_wait_seconds": 5.863,
         "klm_operator_counts": {
           "K": 1,
           "P": 1,
@@ -944,8 +990,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/sign-in.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/sign-in-20261017T033459-1d6a.json",
-    "gauntlet/reference/odoo/results/sign-in-20261017T033553-481d.json",
-    "gauntlet/reference/odoo/results/sign-in-20261017T033644-519a.json"
+    "gauntlet/reference/odoo/results/sign-in-20261017T120043-3587.json",
+    "gauntlet/reference/odoo/results/sign-in-20261017T120138-7529.json",
+    "gauntlet/reference/odoo/results/sign-in-20261017T120231-6f2c.json"
   ]
 }
