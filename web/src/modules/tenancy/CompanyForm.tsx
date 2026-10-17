@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { api } from "../../kernel/api";
-import { BooleanField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
+import { BooleanField, PhoneField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm, type RecordFormState } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
@@ -208,7 +208,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       </FormSection>
       <AddressFields form={form} />
       <FormSection title={t("tenancy.company.contact")}>
-        <TextField field={bind("phone")} label={t("tenancy.address.phone")} dir="ltr" type="tel" maxLength={30} />
+        <PhoneField field={bind("phone")} label={t("tenancy.address.phone")} />
         <TextField field={bind("email")} label={t("tenancy.address.email")} dir="ltr" type="email" maxLength={254} />
         <TextField field={bind("website")} label={t("tenancy.company.website")} dir="ltr" type="url" maxLength={200} />
       </FormSection>

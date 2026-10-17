@@ -139,7 +139,7 @@ export function RecordForm<R, D>({
   const group = "forms.shortcut.group";
   useShortcut({ id: "forms.save", chord: formChords.save, labelKey: "forms.shortcut.save", groupKey: group, enabled: editable, run: () => void save() });
   useShortcut({ id: "forms.saveEnter", chord: formChords.saveEnter, labelKey: "forms.shortcut.save", groupKey: group, enabled: editable, run: () => void save() });
-  useShortcut({ id: "forms.discard", chord: formChords.discard, labelKey: "forms.shortcut.discard", groupKey: group, enabled: editable, run: () => form.discard() });
+  useShortcut({ id: "forms.discard", chord: formChords.discard, labelKey: "forms.shortcut.discard", groupKey: group, enabled: editable, run: () => (form.dirty ? form.discard() : void form.undo()) });
   useShortcut({ id: "forms.next", chord: formChords.next, labelKey: "forms.shortcut.next", groupKey: group, enabled: Boolean(nav?.next), run: () => nav?.next?.() });
   useShortcut({ id: "forms.previous", chord: formChords.previous, labelKey: "forms.shortcut.previous", groupKey: group, enabled: Boolean(nav?.previous), run: () => nav?.previous?.() });
   useShortcut({ id: "forms.print", chord: formChords.print, labelKey: "forms.shortcut.print", groupKey: group, enabled: Boolean(document) && !form.isNew, run: () => setPrinting((p) => !p) });
@@ -292,7 +292,12 @@ export function RecordForm<R, D>({
         )}
         {form.saved && !form.dirty && (
           <div className="notice" role="status">
-            {t("forms.saved")}
+            {form.autoSaved ? t("forms.savedComplete") : t("forms.saved")}
+            {form.autoSaved && editable && (
+              <button type="button" className="button link" onClick={() => void form.undo()} title={keyHint(formChords.discard)} aria-keyshortcuts={chordForAria(formChords.discard)}>
+                {t("forms.undo")}
+              </button>
+            )}
           </div>
         )}
         <FormContext.Provider value={{ readOnly: form.readOnly }}>

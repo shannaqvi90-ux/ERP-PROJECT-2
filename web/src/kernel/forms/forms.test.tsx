@@ -5,7 +5,7 @@ import { I18nProvider } from "../i18n";
 import { navigate } from "../router";
 import { ShortcutProvider } from "../shortcuts";
 import { mockFetch, render, settle, setInput, type Rendered } from "../../test/render";
-import { DecimalField, decimalInput, MoneyField, multiplyDecimal, TextAreaField, TextField } from "./fields";
+import { DecimalField, decimalInput, MoneyField, multiplyDecimal, PhoneField, TextAreaField, TextField } from "./fields";
 import { useState } from "react";
 import { clearLeaveGuards, nothingUnsaved } from "./leave";
 import { FormSection, RecordForm } from "./RecordForm";
@@ -489,5 +489,150 @@ describe("money", () => {
     expect(multiplyDecimal("10.005", "1", 3)).toBe("10.005");
     expect(multiplyDecimal("0.5", "1", 0)).toBe("1");
     expect(multiplyDecimal("-0.5", "1", 0)).toBe("-1");
+  });
+});
+
+describe("the phone field and a completed entry", () => {
+  type Contact = { id: string; name: string; phone: string; version: number };
+  type ContactDraft = { name: string; phone: string };
+  const contact: Contact = { id: "c1", name: "Gulf Steel", phone: "+971 4 555 0100", version: 3 };
+
+  function ContactForm({ isNew = false }: { isNew?: boolean }) {
+    const form = useRecordForm<Contact, ContactDraft>({
+      load: isNew ? undefined : (signal) => api<Contact>("GET", "/api/contacts/c1", undefined, { signal }),
+      initial: (c) => ({ name: c?.name ?? "", phone: c?.phone ?? "" }),
+      canEdit: true,
+      save: (draft, c) => api<Contact>(c ? "PUT" : "POST", c ? "/api/contacts/c1" : "/api/contacts", { ...draft, version: c?.version }),
+    }, "c1");
+    return (
+      <RecordForm form={form} title={form.record?.name ?? "New"}>
+        <FormSection title="Main">
+          <TextField field={form.bind("name")} label="Name" />
+          <PhoneField field={form.bind("phone")} label="Phone" />
+        </FormSection>
+      </RecordForm>
+    );
+  }
+
+  /** Types one character at the caret (or over the selection), as a key press would. */
+  function typeChar(field: HTMLInputElement, ch: string) {
+    const start = field.selectionStart ?? field.value.length;
+    const end = field.selectionEnd ?? start;
+    const next = field.value.slice(0, start) + ch + field.value.slice(end);
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    act(() => {
+      setter.call(field, next);
+      field.setSelectionRange(start + 1, start + 1);
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  }
+
+  function serve(changed: Partial<Contact>[] = []) {
+    let version = contact.version;
+    let current = { ...contact };
+    return mockFetch((method, url, body) => {
+      if (method === "GET" && url === "/api/contacts/c1") return { status: 200, body: current };
+      if (method === "PUT") {
+        const b = body as ContactDraft;
+        current = { ...current, ...b, ...(changed.shift() ?? {}), version: ++version };
+        return { status: 200, body: current };
+      }
+      if (method === "POST") return { status: 201, body: { ...contact, ...(body as ContactDraft) } };
+      return { status: 404, body: {} };
+    });
+  }
+
+  it("keeps +971, selects the number after it on entry, and saves when the last digit of a UAE number is typed", async () => {
+    const calls = serve();
+    await show(<ContactForm />);
+    const phone = input("phone");
+    expect(phone.value).toBe("+971 4 555 0100");
+    expect(view!.container.querySelector('[data-field="phone"] .field-hint')!.textContent).toBe("The number after +971 (+ for another country). Its last digit saves the record.");
+    // A click: the button goes down before the field takes the focus.
+    act(() => {
+      phone.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+      phone.focus();
+    });
+    act(() => {
+      phone.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true }));
+    });
+    expect([phone.selectionStart, phone.selectionEnd]).toEqual([5, 15]);
+
+    for (const ch of "50555019") typeChar(phone, ch);
+    expect(phone.value).toBe("+971 50 555 019");
+    expect(view!.container.querySelector("h2")!.textContent).toContain("Unsaved changes");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(0);
+
+    typeChar(phone, "9");
+    await settle();
+    const puts = calls.filter((c) => c.method === "PUT");
+    expect(puts).toHaveLength(1);
+    expect(puts[0]!.body).toEqual({ name: "Gulf Steel", phone: "+971 50 555 0199", version: 3 });
+    expect(phone.value).toBe("+971 50 555 0199");
+    expect(view!.container.querySelector("h2")!.textContent).not.toContain("Unsaved changes");
+    expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toContain("Saved: the entry was complete.");
+    expect(nothingUnsaved()).toBe(true);
+
+    // Enter after it sends nothing more: nothing changed since the save.
+    press({ key: "Enter", code: "Enter" }, phone);
+    await settle();
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(1);
+
+    // Alt+Z undoes the save the form made on its own: the old number is saved back.
+    press({ altKey: true, key: "z", code: "KeyZ" }, phone);
+    await settle();
+    const after = calls.filter((c) => c.method === "PUT");
+    expect(after).toHaveLength(2);
+    expect(after[1]!.body).toEqual({ name: "Gulf Steel", phone: "+971 4 555 0100", version: 4 });
+    expect(phone.value).toBe("+971 4 555 0100");
+    expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
+  });
+
+  it("does not save on its own while another field has unsaved changes, for a pasted number, or on a new record", async () => {
+    const calls = serve();
+    await show(<ContactForm />);
+    setInput(input("name"), "Gulf Steel Trading");
+    const phone = input("phone");
+    act(() => phone.setSelectionRange(5, phone.value.length));
+    for (const ch of "505550199") typeChar(phone, ch);
+    await settle();
+    expect(phone.value).toBe("+971 50 555 0199");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(0);
+    expect(view!.container.querySelector("h2")!.textContent).toContain("Unsaved changes");
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(1);
+    // Plain "Saved.", nothing to undo: the user saved.
+    expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
+
+    // A whole number pasted (or set at once) is not a typed completion.
+    setInput(phone, "0561234567");
+    await settle();
+    expect(phone.value).toBe("+971 56 123 4567");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(1);
+    expect(view!.container.querySelector("h2")!.textContent).toContain("Unsaved changes");
+
+    view!.unmount();
+    view = undefined;
+    const fresh = serve();
+    await show(<ContactForm isNew />);
+    const newPhone = input("phone");
+    act(() => newPhone.focus());
+    expect(newPhone.value).toBe("+971 ");
+    for (const ch of "505550199") typeChar(newPhone, ch);
+    await settle();
+    expect(newPhone.value).toBe("+971 50 555 0199");
+    expect(fresh.filter((c) => c.method !== "GET")).toHaveLength(0);
+  });
+
+  it("takes another country's number after +, and does not call it complete", async () => {
+    const calls = serve();
+    await show(<ContactForm />);
+    const phone = input("phone");
+    act(() => phone.setSelectionRange(5, phone.value.length));
+    for (const ch of "+44 20 7946 0958") typeChar(phone, ch);
+    await settle();
+    expect(phone.value).toBe("+44 20 7946 0958");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(0);
   });
 });
