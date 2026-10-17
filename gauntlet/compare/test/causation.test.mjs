@@ -26,6 +26,7 @@
 //   S7  an animation-frame loop that polls and approves.
 //   S8  S4 laundered through a worker: the worker's timer posts the message that approves.
 //   S9  the page submits the approval form itself on a timer, just after run() presses a key.
+//   S11 the page's own timer moves a cover under the still pointer; the browser's mouseover approves.
 //   S10 R2b's long timer: the step arms a 2.5 s delay (already refused by timing; the record says why too).
 import test, { after, before } from 'node:test';
 import assert from 'node:assert/strict';
@@ -89,6 +90,12 @@ test('causation (round 12): an input task is the step\'s that began last before 
   // Handled a little after the step's call returned: still that step's input.
   assert.equal(verdict([task(140, INPUT, [...click(), send(3, 'w')])], 'w').step, 1);
   assert.equal(verdict([task(140, INPUT, [...click(), send(3, 'w')])], 'w', [[100, 110], [150, 160]]).step, 1);
+  // A key handled inside a frame's task is input; a pointer boundary event the browser sends because the
+  // page moved content under a still pointer (in a frame's task) is not.
+  assert.equal(verdict([task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'keyup' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w').caused, true);
+  const moved = verdict([task(30, TIMER, [fire(1, 2)]), task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'mouseover' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w');
+  assert.equal(moved.caused, false);
+  assert.equal(verdict([task(103, IPC, [X('EventDispatch', 1, 1, { type: 'blur' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w', [[200, 210]]).caused, false, 'a window\'s blur');
   const before = verdict([task(90, INPUT, [...click(), send(3, 'w')])], 'w');
   assert.equal(before.caused, false);
   assert.match(before.why, /input event before the first counted step/);
@@ -238,12 +245,13 @@ ${mode === 'awaits' ? "document.getElementById('approve').onclick = async () => 
 ${autoApprove && mode === 'timer' ? 'setTimeout(approve, 3000);' : ''}
 ${autoApprove && mode === 'held' ? "addEventListener('pointerdown', () => fetch('/api/tick').then(approve), { once: true });" : ''}
 ${autoApprove && mode === 'poll' ? "let done = false; setInterval(() => fetch('/api/go').then(r => r.json()).then(j => { if (j.go && !done) { done = true; approve(); } }).catch(() => {}), 50);" : ''}
-${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
+${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls', 'under'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
 ${autoApprove && mode === 'sign' ? 'const go = () => { sign(); setTimeout(approve, 600); };' : ''}
 ${autoApprove && mode === 'port' ? "const mc = new MessageChannel(); mc.port1.onmessage = approve; const go = () => { sign(); setTimeout(() => mc.port2.postMessage(1), 600); };" : ''}
 ${autoApprove && mode === 'self' ? "const go = () => { sign(); setTimeout(() => document.getElementById('approve').click(), 600); };" : ''}
 ${autoApprove && mode === 'frames' ? "let flag = false; const go = () => { flag = true; }; const loop = () => { if (flag) approve(); else requestAnimationFrame(loop); }; requestAnimationFrame(loop);" : ''}
 ${autoApprove && mode === 'worker' ? "const wk = new Worker(URL.createObjectURL(new Blob(['onmessage = () => setTimeout(() => postMessage(1), 600)'], { type: 'text/javascript' }))); const go = () => { sign(); wk.postMessage(1); }; wk.onmessage = approve;" : ''}
+${autoApprove && mode === 'under' ? "const go = () => { sign(); setTimeout(() => { const c = document.createElement('div'); c.style.cssText = 'position:fixed;inset:0;z-index:9'; c.onmouseover = approve; document.body.append(c); }, 600); };" : ''}
 ${autoApprove && mode === 'polls' ? 'const go = () => { sign(); approve(); };' : ''}
 ${autoApprove && mode === 'submit' ? "const go = () => { sign(); setTimeout(() => document.getElementById('f').submit(), 600); };" : ''}
 ${autoApprove && mode === 'key' ? "addEventListener('keydown', () => setTimeout(approve, 2500), { once: true });" : ''}
@@ -399,6 +407,11 @@ test('plant S8: S4 laundered through a worker\'s message -> never verifies', asy
 test('plant S9: the page posts the approval form itself on a timer, just after run() presses a key -> never verifies', async () => {
   reset();
   never('S9', await runDriver(plant('submit', async op => { await op.waitFor('#sign'); await op.press('Tab'); await op.waitFor(() => location.pathname === '/approve-form', { timeout: 9000 }); return {}; })));
+});
+
+test('plant S11: the page moves a cover under the still pointer on its own timer just after run()\'s click; the browser\'s mouseover approves -> never verifies', async () => {
+  reset();
+  never('S11', await runDriver(plant('under', async op => { await op.waitFor('#sign'); await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; })));
 });
 
 test('plant S10: a key arms a 2.5 s delay before the approval (R2b); the record names the delay -> never verifies', async () => {

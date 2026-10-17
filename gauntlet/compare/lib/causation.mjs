@@ -53,6 +53,13 @@ export const LINK_SECONDS = 2;
 export const GUARD_SECONDS = 0.1;
 /** Input events a step delivers (the outermost event of an input task). */
 const INPUT_EVENTS = /^(pointer(down|up|move|over|out|enter|leave|cancel|rawupdate)|mouse(down|up|move|over|out|enter|leave)|click|dblclick|auxclick|contextmenu|key(down|up|press)|wheel|touch(start|end|move|cancel)|beforeinput|input|textInput|change|composition(start|update|end)|submit|formdata|paste|copy|cut|drag\w*|drop|DOMActivate|focus|blur|focusin|focusout|DOMFocusIn|DOMFocusOut)$/;
+/**
+ * Input events the browser only dispatches for input it was given (a key, a press, a release, text):
+ * never on its own. The browser does dispatch boundary and move events (mouseover, pointermove ...)
+ * when the page changes under a still pointer, and focus and blur when windows come and go, so those
+ * count as a step's input only in a task of the input queue.
+ */
+const DISCRETE_INPUT = /^(key(down|up|press)|pointer(down|up)|mouse(down|up)|click|dblclick|auxclick|contextmenu|beforeinput|input|textInput|composition(start|update|end)|paste|copy|cut|drop)$/;
 
 const hrUs = () => Number(process.hrtime.bigint() / 1000n);
 
@@ -184,8 +191,10 @@ function describeTask(t) {
   // Events dispatched by the browser, not by script: those not inside any script span of the task.
   t.topDispatches = t.events.filter(e => e.ph === 'X' && e.name === 'EventDispatch' && !scripts.some(s => s !== e && spanHolds(s, e.ts) && s.ts <= e.ts));
   // An input event the browser delivered: dispatched outside any script of the task. Usually a task of
-  // the input queue; continuous input (and some key events) arrive inside a frame's task instead.
-  t.input = !t.protocol && t.topDispatches.some(e => INPUT_EVENTS.test(e.args?.data?.type || ''));
+  // the input queue; some key events arrive inside a frame's task instead (then only discrete input
+  // counts: a frame also delivers the boundary events of a pointer the page moved content under).
+  const fromInputQueue = !!t.src && /main_thread_event_queue/.test(t.src);
+  t.input = !t.protocol && t.topDispatches.some(e => (fromInputQueue ? INPUT_EVENTS : DISCRETE_INPUT).test(e.args?.data?.type || ''));
   // Whether the page's own code (or the page's network answers) ran in it.
   t.activity = !t.protocol && (t.timerFires.length > 0 || t.frameFires.length > 0 || t.answers.length > 0
     || t.events.some(e => (e.ph === 'X' && /^(FunctionCall|ParseHTML)$/.test(e.name)) || (e.name === 'EvaluateScript' && e.args?.data)

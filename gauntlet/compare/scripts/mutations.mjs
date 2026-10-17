@@ -122,6 +122,7 @@ export const MUTATIONS = [
   ['M79', 'a click timed from when the operator began waiting for its target (critic S1)', 'lib/operator.mjs', "    const step = this.#record('click', label || String(target), 0, t, {}, undefined, began);", "    const step = this.#record('click', label || String(target), 0, began, {}, undefined, began);", 'test/causation.test.mjs', 'the clock \\(round 12'],
   ['M80', "the clock starts right after verify()'s read before it (critic S3)", 'lib/runner.mjs', '    if (task.saves) await new Promise(r => setTimeout(r, startGapMs()));', '', 'test/causation.test.mjs', 'the clock \\(round 12'],
   ['M81', "a step's label counted as typed text (critic r11, C3)", 'lib/runner.mjs', "  const texts = [typed.join(''), typed.join('\\n'),", "  const texts = [typed.join(''), typed.join('\\n'), steps.map(s => String(s.label ?? '')).join(' '),", 'test/causation.test.mjs', "a step's label never counts"],
+  ['M82', 'a pointer boundary event the browser sent on its own taken for input (plant S11)', 'lib/causation.mjs', '(fromInputQueue ? INPUT_EVENTS : DISCRETE_INPUT).test(', 'INPUT_EVENTS.test(', 'test/causation.test.mjs', 'an input task is the step'],
 ];
 
 function copyHarness() {
