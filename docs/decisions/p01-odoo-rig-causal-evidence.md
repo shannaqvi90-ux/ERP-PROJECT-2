@@ -119,4 +119,16 @@ saving write takes such a route; none of the drivers' writes does).
 ## Cost
 
 No new dependency (Chromium's trace through `playwright-core`'s CDP session). The record is taken
-only while a task that saves is measured. Processor time: see the verify record of this round below.
+only while a task that saves is measured.
+
+The verify of this round (`./erp verify` through the verify slot, slot taken 2026-10-17T14:41:28Z,
+machine busy, load up to 58.89): passed in 3,909 s. Processor time 10,181 s (dotnet 7,923, web 1,922,
+e2e 301, timing 36; maximum 10,500 s). The web stage, which holds the comparison harness, used 1,922 s
+against round 11's 1,783 s: this round adds about 140 s of processor time (the new test file, the
+record of the page in every saving run of the suite, and 23 mutations, 20 of them judged on synthetic
+traces). The dotnet stage, which this piece does not touch, varies most with the machine's load
+(7,263 s in round 11's verify, 7,923 s here). Counts: .NET 629, web unit 479, end-to-end 102, compare
+415 (390 before), build 6; all 85 instrument mutations caught; every built ours driver verified in
+the health check. A first verify of the round (same day) failed only on mutations M56 and M57: the
+plants they were judged by are now refused by the browser's record as well, so they are judged by
+the timing layer's unit test instead; its other stages passed (compare 415).
