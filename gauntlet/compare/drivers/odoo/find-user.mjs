@@ -1,4 +1,4 @@
-import { adminRpc, openApp, paletteMenu, signInAs, chatterSettled } from './_common.mjs';
+import { adminRpc, openApp, paletteMenu, signInAs, emojiSettled } from './_common.mjs';
 
 /**
  * Two expert paths to the user list: `menus` (Apps menu > Settings > Manage Users, three clicks)
@@ -78,7 +78,7 @@ function buildShortest(palette, suggestion) {
       const form = document.querySelector('.o_form_view');
       return !!form && (form.innerText.includes(m) || [...form.querySelectorAll('input')].some(i => i.value === m));
     }, { label: 'sign-in shown', arg: login });
-    await op.waitFor(chatterSettled, { label: 'the form\'s chatter loaded in full' });
+    await op.waitFor(emojiSettled, { label: 'the chatter\'s emoji data in' });
     return {};
   };
 }
@@ -108,7 +108,7 @@ function build(palette, suggestion = false) {
       const form = document.querySelector('.o_form_view');
       return !!form && (form.innerText.includes(m) || [...form.querySelectorAll('input')].some(i => i.value === m));
     }, { label: 'sign-in shown', arg: login });
-    await op.waitFor(chatterSettled, { label: 'the form\'s chatter loaded in full' });
+    await op.waitFor(emojiSettled, { label: 'the chatter\'s emoji data in' });
     return {};
   };
 }

@@ -215,24 +215,50 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
 - The measured part must **send a write** (a request that is not GET, HEAD or OPTIONS and not one
   of the reference's documented reads; for an API task, a request as sent): one of the task's
   declared writes when it declares them (`saved_state.writes_sent`). And every entered value the
-  end state gained must have been **entered by the measured part**: typed (in one or more pieces),
-  picked as a file, or sent in one of its writes or API requests. A value that arrived otherwise was
-  sent off the clock (set-up's slow save, a job set-up scheduled).
+  end state gained must have been **entered by the measured part** (round 11: **typed**, in one or
+  more pieces, or **picked as a file**, or typed into an API request). A value that is only in a
+  request the page composed (a draft the product restored, a value set-up stashed) was entered by
+  nobody: the run is refused (critic p01 r10, plant R1).
+- Round 11 (critic p01 r10, plants R2 and R3: set-up turned on a setting that made the start page
+  approve, or autosave a stashed draft, on its own timer, and one key "did" the task): **a page's
+  write counts only when a counted step caused it**. It must go out while a step is performed or
+  within `REACTION_SECONDS` (1 s) after the step ended, or within that time of the answer to a
+  request that went out while a step was performed (one link: Odoo's form saves once its pending
+  onchange is answered). Each write is recorded with what caused it (`saved_state.writes_caused`:
+  the step, the answer it followed, or why nothing did). Measured on the real drivers: our product's
+  saves go out before the click or key has finished (lags of -0.008 to 0.007 s), a follow-up write
+  0.23-0.36 s after the first one's answer; see `docs/decisions/p01-odoo-rig-caused-by-a-step.md`
+  for the reference's. Plant-tested in `test/measured-part.test.mjs` (R1, R2, R2b, R2c, R3, and four
+  honest controls: a save sent at once, a few event-loop turns later, after a slow check's answer,
+  and while the page changes its address).
 - **Writes set-up's browser sent are answered before the start.** Every browser context of the run
   is watched from its first request (the runner's, a sign-in retry's, any the driver opened); before
   the set-up contexts close, the runner waits for their writes to be answered (`set_up_writes_waited`),
   so a save lands before the clock and "already done before the clock" sees it. A write the browser
   abandoned (its page moved on or closed, its request failed) may still be carried out by the
   product after the clock starts: the run is refused.
+  Round 11 (routed from p00 r10 and p02 r10): only a **new document** abandons its page's requests;
+  an address change of the same document (`history.pushState`, as Odoo's client does while an
+  action loads) abandons nothing, so its writes stay waited for. Inside the clock the same rule
+  keeps a save still under way on the clock (it used to be dropped from what the clock waits for).
+  Set-up may wait for its own writes before it moves its page on: `await ctx.settleWrites()` (set-up
+  and sign-in only; refused once the clock runs). The Odoo drivers' `settle()` does, after every
+  sign-in and before their sign-outs. A write the page aborted is named with the browser's reason
+  (critic X1).
+- **Long-lived channels are known by their kind** (a web socket, an event stream), never by their
+  address: a write to any address is watched and counted (round 11; an address holding
+  "websocket", "longpolling" or "/bus/", its query included, used to pass unwatched).
 - The **clipboard is read back** at the start (pasted into a scratch page that closes again): text
   set-up copied must be gone (X16). A signed-in start keeps no local storage from set-up (X12).
 
 What the instrument cannot do: tell whether a driver's `verify()` reads the right thing. It can
 only make sure `verify()` reads the same way before and after the clock and that, for a task that
 saves, its declared end state changed during the measured part, which sent the write. A task that
-declares no writes accepts any write of the measured part; a product job set-up scheduled that
-lands while the measured part sends the declared write is not told apart. Tasks and drivers are
-reviewed code.
+declares no writes accepts any write a step caused; a product job set-up scheduled that lands while
+the measured part sends the declared write is not told apart. Nor can it tell a product's own answer
+to a key from an answer set-up configured: a setting that makes the start page save as soon as any
+key is pressed sends a write the key caused (round 11: a timer the key armed for longer than the
+reaction time is refused, plant R2b). Tasks and drivers are reviewed code.
 
 The clock (`machine_seconds`) starts at the first measured action and stops when `run` returns,
 right after its last step or wait. Round 5 closes the ways to finish a task after that:
@@ -487,7 +513,10 @@ rule, ties and whole paths, and (round 9) the verify() process (its clocks, read
 header), the no-step refusal, the saved-state rule and its pass gap, the entered-value checks, the
 keyboard-only rule, chord keystrokes, scroll steps, the reference's best path, the refusal of
 requests after the clock, the verify read limit, field-value masks and the review page's unbuilt
-tasks. Each test file's self-tests run once unmutated for all of its
+tasks; (round 10) the declared end state, the measured part's writes, set-up's browser writes,
+local storage and the clipboard at the start; (round 11) entered values only typed or picked, writes
+only when a step caused them, the reaction time and its one link, set-up's aborted writes, address
+changes, and long-lived channels by kind. Each test file's self-tests run once unmutated for all of its
 mutations (the control), and a mutation counts as caught only when a test that passed there fails
 mutated. It exits 1 when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
 web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above

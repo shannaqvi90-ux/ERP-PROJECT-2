@@ -1,4 +1,4 @@
-import { openApp, paletteMenu, signInAs, chatterSettled } from './_common.mjs';
+import { openApp, paletteMenu, signInAs, emojiSettled } from './_common.mjs';
 
 /** Two expert paths into Contacts: the apps menu (two clicks) or the command palette (keyboard only). */
 function build(palette) {
@@ -18,7 +18,7 @@ function build(palette) {
       const form = document.querySelector('.o_form_view');
       return !!form && (form.innerText.includes(m) || [...form.querySelectorAll('input')].some(i => i.value === m));
     }, { label: 'mobile number shown', arg: mobile });
-    await op.waitFor(chatterSettled, { label: 'the form\'s chatter loaded in full' });
+    await op.waitFor(emojiSettled, { label: 'the chatter\'s emoji data in' });
     return {};
   };
 }

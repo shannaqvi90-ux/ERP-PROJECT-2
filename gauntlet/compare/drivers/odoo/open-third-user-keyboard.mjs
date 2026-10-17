@@ -1,5 +1,5 @@
 // Proposed by the p04 critic (drivers in gauntlet/evidence/p04-shell/r9); registered in the harness by p01 round 11.
-import { signInAs, chatterSettled } from './_common.mjs';
+import { signInAs, emojiSettled } from './_common.mjs';
 
 export default {
   built: true,
@@ -16,7 +16,7 @@ export default {
     await op.waitFor(() => document.activeElement?.closest('.o_data_row') === document.querySelectorAll('.o_list_view .o_data_row')[2], { label: 'third row selected' });
     await op.press('Enter', { label: 'open' });
     await op.waitFor('.o_form_view .o_field_widget[name="login"]', { label: 'user form' });
-    await op.waitFor(chatterSettled, { label: 'the form\'s chatter loaded in full' });
+    await op.waitFor(emojiSettled, { label: 'the chatter\'s emoji data in' });
     return {};
   },
   async verify(ctx) {

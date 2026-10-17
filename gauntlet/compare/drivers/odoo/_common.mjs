@@ -59,13 +59,24 @@ export async function paletteMenu(op, typed, expected) {
 }
 
 /**
- * Page function: the record form's chatter no longer changes the page on its own. Once a message is
- * shown, Odoo loads its emoji data (a bundle request, then a script element it adds to the page); a
- * run that ended with that request still under way had its page changed after the clock (p04 r9)
- * and was refused. Drivers whose last screen is a record form opened at the end wait for it, on
- * the clock: it is the form's own loading (about 10-20 ms on the rig when it is still under way).
+ * Page functions: the record form's chatter no longer changes the page on its own. Once a message is
+ * rendered, Odoo loads its emoji data: a bundle request, then a script element it adds to the page
+ * from that request's answer. A run that ended with the request under way had its page changed after
+ * the clock (p04 r9: new-user-keyboard) and was refused. Drivers whose last screen is a record form
+ * opened at the end wait, on the clock, for what their form needs:
+ *   emojiSettled    a message already shown has its emoji data in (an existing record: its thread
+ *                   loads after the form; the wait costs nothing while it has not rendered);
+ *   chatterSettled  the thread has loaded too (a new record: its first message renders with the
+ *                   form, and the request goes out a moment before the message reaches the page).
  */
-export const chatterSettled = () => !document.querySelector('.o-mail-Message') || !!document.querySelector('script[src*="web.assets_emoji"]');
+export const emojiSettled = () => !document.querySelector('.o-mail-Chatter .o-mail-Message') || !!document.querySelector('script[src*="web.assets_emoji"]');
+export const chatterSettled = () => {
+  const chatter = document.querySelector('.o-mail-Chatter');
+  if (!chatter) return true;
+  if (chatter.querySelector('.o-mail-Message')) return !!document.querySelector('script[src*="web.assets_emoji"]');
+  const empty = chatter.querySelector('.o-mail-Thread-empty');
+  return !!empty && empty.textContent.trim().length > 0;
+};
 
 /** Rows of the current list or kanban view. */
 export const ROWS = '.o_data_row, .o_kanban_record:not(.o_kanban_ghost)';
