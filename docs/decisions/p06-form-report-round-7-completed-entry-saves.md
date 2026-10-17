@@ -120,5 +120,7 @@ here.
 
 About 12 web unit tests (well under 2 s of test time), one keyboard-gate plant (one bailed vitest
 run of the kernel gates, about 15 s of processor time), one end-to-end test (about 3 s) and three
-.NET tests (under 1 s). Together that is under 30 s of the verify's processor time. The measured
-total is in the round's verify log.
+.NET tests (under 1 s). Together that is under 30 s of the verify's processor time. Measured: this round's passing
+verify used 9,218 s of processor time (dotnet 7,189, web 1,669, e2e 312, timing 48; maximum
+10,500 s), on a busy machine (load up to 45), with 631 .NET, 489 web unit, 103 end-to-end, 390
+compare and 6 build tests passing. The ratchet's suite minimums are raised to those counts.
