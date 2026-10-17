@@ -108,6 +108,30 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
         Assert.DoesNotContain(result.Problems, p => p.StartsWith(revoke + "?removePasskeys=false", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// Self-test (critic p03 round 9: P5 and request-body flags as gate self-tests, not only
+    /// functional tests): a host where removing one passkey by <c>?passkeyId=</c> removes it whoever
+    /// holds it, and where a password reset with <c>"removePasskeys": false</c> skips its target
+    /// check (<see cref="LostDeviceBypassModule"/>). The takeover check, run on those two endpoints
+    /// alone, must report the Administrator's passkey removed under a user without roles, and the
+    /// reset aimed at the Administrator with the flag changed to false; the same requests with the
+    /// flag true, or left out, are refused there as everywhere.
+    /// </summary>
+    [Fact]
+    public async Task The_takeover_check_catches_a_passkey_removed_whoever_holds_it_and_a_body_flag_that_skips_the_check()
+    {
+        await using var planted = Env.OverHost(LostDeviceBypassModule.Settings(Env));
+        const string remove = "DELETE /api/identity/users/{id:guid}/passkeys";
+        const string reset = "POST /api/identity/users/{id:guid}/password";
+        var result = await TakeoverAsync(planted, e => e.Key is remove or reset);
+        Assert.Contains(result.Problems, p => p.StartsWith(remove + "?passkeyId=: naming the Administrator's records under a user without roles changed the Administrator", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith(reset + " [removePasskeys changed]: aimed at the Administrator by ", StringComparison.Ordinal) &&
+                                             p.Contains("answered 200 (expected 403)", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(reset + ": aimed at", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(reset + " [removePasskeys left out]", StringComparison.Ordinal));
+        Assert.DoesNotContain(result.Problems, p => p.StartsWith(remove + "?passkeyId=", StringComparison.Ordinal) && p.Contains("(expected 403)", StringComparison.Ordinal));
+    }
+
     /// <summary>What <see cref="TakeoverAsync"/> found and how much it sent.</summary>
     public sealed record TakeoverResult(
         List<string> Problems, int CheckedEndpoints, int FieldVariants, int ModuleFieldVariants, int TargetsAimed, int CompanyTargetsAimed,

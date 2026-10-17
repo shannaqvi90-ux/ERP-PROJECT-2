@@ -12,3 +12,5 @@ Erp.Kernel.Data.Migrations.TenantBoundToTransaction.Down  # Migration SQL: resto
 Erp.Modules.Identity.Migrations.CredentialsAndSignInHistory.Up  # Migration SQL: the reviewed sign-in function binds each account's own tenant only for its sign-in attempt and unbinds before returning (G1 reviewed-lookup tests).
 Erp.Modules.Identity.Migrations.CredentialsAndSignInHistory.Down  # Migration SQL: the downgrade of the same.
 Erp.Modules.Identity.Migrations.ReviewedLookupsUnboundOnly.Up  # Migration SQL: the reviewed lookups answer only on a connection with no tenant bound (they read app.tenant_id to refuse otherwise).
+Erp.Modules.Identity.Migrations.SignInPauseByAddress.Up  # Migration SQL: the reviewed sign-in function (round 10, pause by address) refuses a tenant-bound connection and binds each account's own tenant only for its sign-in attempt, unbinding before it returns, as before (G1 reviewed-lookup and credential tests).
+Erp.Modules.Identity.Migrations.SignInPauseByAddress.Down  # Migration SQL: the downgrade restores the previous body of the same function.

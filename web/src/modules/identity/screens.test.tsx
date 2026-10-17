@@ -1278,6 +1278,9 @@ describe("a user's passkeys, for a lost or stolen device", () => {
     const labels = [...aside().querySelectorAll(".id-roles-list label")];
     expect(labels.length).toBeGreaterThan(0);
     for (const label of labels) expect(label.classList.contains("id-disabled")).toBe(true);
+    // And every box is itself disabled, also one the reader could tick elsewhere (critic p03 round 9:
+    // the held Read-only box reported disabled=false inside the disabled group).
+    for (const box of aside().querySelectorAll<HTMLInputElement>('.id-roles-list input[type="checkbox"]')) expect(box.disabled).toBe(true);
     // Resetting the password is its own permission, and it can take the passkeys with it.
     await click(button(aside(), "Reset password…"));
     expect(aside().querySelector("fieldset.id-method")!.textContent).toContain("Also remove their 2 passkeys");
