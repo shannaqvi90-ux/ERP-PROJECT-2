@@ -82,6 +82,7 @@ public sealed class LeakyModule : ErpModule
         // HTTP attack and its saved-view endpoints with it.)
         module.Services.AddSingleton<SortedSearchMemo>();
         module.Services.AddSingleton<CountCache>();
+        RegisterFactoryMemo(module.Services);
         // Bug 51 (critic p06 round 1, plant P1): a report that prints the companies' tax
         // registration numbers under the planted module's own read permission, which grants no
         // company data anywhere else.
@@ -1955,6 +1956,22 @@ public sealed class LeakyModule : ErpModule
     }
 
     /// <summary>Planted process-wide state: totals cached by search text, without the tenant.</summary>
+    /// <summary>Plant (critic p03 round 11, plant L2): a scoped service built by a factory whose
+    /// closure captured one dictionary, so every scope of every tenant shares it although each
+    /// gets a new service object. Kept in a method of its own so its closure is not the one the
+    /// endpoint lambdas of <see cref="Register"/> share (the endpoint walk would reach that
+    /// one); only the walk of the registrations' factories reaches it. Nothing resolves it.</summary>
+    private static void RegisterFactoryMemo(IServiceCollection services)
+    {
+        var accessMemo = new System.Collections.Concurrent.ConcurrentDictionary<string, bool>(StringComparer.Ordinal);
+        services.AddScoped(_ => new FactoryMemo(accessMemo));
+    }
+
+    public sealed class FactoryMemo(System.Collections.Concurrent.ConcurrentDictionary<string, bool> seen)
+    {
+        public bool Seen(string key) => seen.ContainsKey(key);
+    }
+
     public sealed class CountCache
     {
         public readonly System.Collections.Concurrent.ConcurrentDictionary<string, long> Totals = new(StringComparer.Ordinal);

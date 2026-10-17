@@ -685,6 +685,12 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
                                                f.Why.Contains("JumpScratch", StringComparison.Ordinal));
         Assert.True(running.FrameworkSingletonsInspected > 0, "no framework singleton built over a product type was found");
 
+        // A variable captured by a service registration's factory lives as long as the container
+        // (critic p03 round 11, plant L2: AddScoped(_ => new AccessMemo(shared))): the walk starts
+        // from every factory the product registered, whatever the lifetime, and judges the closure.
+        Assert.Contains(running.Findings, f => f.Key == $"reachable closure {typeof(LeakyModule).FullName}.RegisterFactoryMemo.accessMemo" &&
+                                               f.Why.Contains("service factory", StringComparison.Ordinal) && f.Why.Contains("FactoryMemo", StringComparison.Ordinal));
+
         // A static delegate in a generic type (critic p05 round 4, plant L6): the field is flagged
         // by type, and the closure it holds is reached through the closed instantiation the
         // product's code uses and judged on its own.
