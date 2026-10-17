@@ -59,7 +59,10 @@ layer after p00's fix lands.
   ISO 8601, header `X-Arabic-Previous-Switch`), L6b (anyone's last sign-out as the session's
   `Last-Modified`, an HTTP date) and L7 (every tenant's sign-ins in cookie `erp.seen`). The check
   must name each in both directions and nothing else on the planted host. Run locally: all four
-  caught both ways, plus L6 by the inside-Y's-request rule; the real host has no finding.
+  caught both ways, plus L6 by the inside-Y's-request rule; the real host has no finding. The
+  critic's own diff (`gauntlet/evidence/p04-shell/r9/plants/plant-server-B1-L4-L6.diff`, applied to
+  `ProfileEndpoints.cs`) fails the real-host test with 18 findings: the cookie count and the
+  header time, tenant A and tenant B, on each of the three Arabic language/digits combinations.
 - **Ratchet.** New minimums: `g1.shellAnswerComparisons`, `g1.shellAnswerHeaderValuesCompared`,
   `g1.shellAnswerNumbersJudged`, `g1.shellAnswerTimesJudged`, `g1.shellAnswerCredentialCookiesShaped`,
   `g1.shellAnswerEndpoints`, `g1.shellAnswerPlantsCaught`, `g1.shellAnswerPlantCookieValuesCompared`.
@@ -87,7 +90,9 @@ web unit tests at the judged commit. Now:
 
 ## Processor time
 
-Measured on its own outside the verify (`dotnet test --filter G1ShellAnswersTests`): about 30 s
-of user processor time for the test process, most of it the test host's start and the template
-copy, against 160 s of wall time. The palette's new test adds about 2 s to the web unit stage and
+Measured on its own outside the verify (`dotnet test --filter G1ShellAnswersTests`, three tests):
+about 30 s of user processor time for the whole test process (build excluded), most of it the
+test process start, the PostgreSQL template and two app hosts, against 3 m 47 s of wall time (the
+real-host test 2 m 41 s and the self-test 1 m 6 s, nearly all paced waits). Inside the verify the
+PostgreSQL server and template are already there, so the added processor time is lower. The palette's new test adds about 2 s to the web unit stage and
 PA13 one more planted run of two tests in the palette self-test (about 10 s).
