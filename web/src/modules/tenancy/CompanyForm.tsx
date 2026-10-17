@@ -6,6 +6,7 @@ import { useRecordForm, type RecordFormState } from "../../kernel/forms/useRecor
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
 import { loadAll } from "./records";
+import { trnDigits } from "./trn";
 import { companiesChanged, type BranchRow, type Company } from "./types";
 import { emirates, problemOf, useMonths, useLocalName, type Emirate, type FieldErrors } from "./ui";
 
@@ -150,6 +151,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   }, id);
   const company = form.record;
   const bind = form.bind;
+  const trn = bind("taxRegistrationNumber");
   const arabicEmpty = form.draft.legalNameAr.trim() === "";
   const legalNameAr = (
     <TextField field={bind("legalNameAr")} label={t("tenancy.company.legalNameAr")} dir="rtl" maxLength={200}
@@ -191,7 +193,8 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       <FormSection title={t("tenancy.company.registration")}>
         <TextField field={bind("tradeLicenceNumber")} label={t("tenancy.company.tradeLicenceNumber")} dir="ltr" maxLength={50} />
         <TextField field={bind("tradeLicenceAuthority")} label={t("tenancy.company.tradeLicenceAuthority")} maxLength={100} />
-        <TextField field={bind("taxRegistrationNumber")} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={40}
+        {/* Arabic-Indic digits typed on an Arabic keyboard show as 0 to 9 at once (owner 2026-10-17). */}
+        <TextField field={{ ...trn, onChange: (value: string) => trn.onChange(trnDigits(value)) }} label={t("tenancy.company.taxRegistrationNumber")} dir="ltr" inputMode="numeric" maxLength={40}
           hint={company?.legacyTaxRegistrationNumber && form.draft.taxRegistrationNumber.trim() === ""
             ? t("tenancy.company.legacyTaxRegistrationNumber", { number: company.legacyTaxRegistrationNumber })
             : t("tenancy.company.taxRegistrationNumberHint")} />

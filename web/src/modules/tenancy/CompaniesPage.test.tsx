@@ -491,6 +491,45 @@ describe("companies screen", () => {
   // Owner decisions of 2026-10-10 (docs/compliance/): a TRN is 15 digits (a number stored before that
   // is kept and shown until a valid one is saved), and each company's own setting may make its
   // Arabic legal name required.
+  it("on an Arabic screen, shows a TRN typed in Arabic-Indic digits as 0 to 9 and offers the country by its Arabic name (owner 2026-10-17; p06 round 6)", async () => {
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    const company = { ...saved, everyBranch: true, everyCompany: true };
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: { ...session, user: { ...session.user, language: "ar" } } };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [{ ...company }], total: 1, next: null } };
+      if (url === "/api/tenancy/companies/c9" && method === "PUT") return { status: 200, body: { ...company, ...(body as object), version: 2 } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: company };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="ar" />);
+    await settle();
+    await settle();
+    const trn = field(view.container, "taxRegistrationNumber");
+    setInput(trn, "١٠٠-١٢٣٤-٥٦٧٨-٩٠٠٣");
+    expect(trn.value).toBe("100-1234-5678-9003");
+    // A digit set other than the Arabic keyboard's is left for the server to refuse.
+    setInput(trn, "۱۰۰");
+    expect(trn.value).toBe("۱۰۰");
+    setInput(trn, "١٠٠١٢٣٤٥٦٧٨٩٠٠٣");
+    // The country is chosen from a list in the screen's language (no two-letter code to know), the
+    // UAE first; it is a native list, so typing a name's first letters chooses it from the keyboard.
+    const country = view.container.querySelector<HTMLSelectElement>('[data-field="country"] select')!;
+    expect(country).not.toBeNull();
+    expect(country.selectedOptions[0]!.textContent).toBe("الإمارات العربية المتحدة");
+    expect([...country.options].some((o) => o.value === "SA" && o.textContent === "المملكة العربية السعودية")).toBe(true);
+    act(() => {
+      country.value = "OM";
+      country.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    const put = calls.find((c) => c.method === "PUT" && c.url === "/api/tenancy/companies/c9")!;
+    expect(put.body).toMatchObject({ taxRegistrationNumber: "100123456789003", country: "OM" });
+  });
+
   it("offers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule", async () => {
     window.history.replaceState(null, "", "/tenancy/companies?open=c9");
     const old = { ...saved, taxRegistrationNumber: null, legacyTaxRegistrationNumber: "12345", arabicLegalNameRequired: false, legalNameAr: "", everyBranch: true, everyCompany: true };
