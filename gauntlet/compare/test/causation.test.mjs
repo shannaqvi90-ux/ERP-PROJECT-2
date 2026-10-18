@@ -523,6 +523,8 @@ const never = (name, r) => {
   if (process.env.SHOW_PLANTS) console.log(`RESULT ${name}: ${r.status} ${r.error}`);
   assert.equal(r.status, 'invalid', `${name}: ${r.status} ${r.error}`);
 };
+/** Why the browser's record says no step caused the approval (whatever the timing layer said first). */
+const recordWhy = r => r.saved_state?.writes_caused?.find(x => x.write === 'POST /api/approve')?.browser_record?.why || r.error || '';
 const plant = (mode, run) => ({
   async setup() { await fetch(base + '/api/settings', { method: 'POST' }); },
   signIn: new Function('ctx', `return ctx.page.goto(base + '/status-${mode}');`), // eslint-disable-line no-new-func
@@ -688,7 +690,7 @@ test('plant W1 (critic r12): the stand-in pushes "go" over a web socket on its o
   reset();
   const r = await runDriver(plant('ws', async op => { await op.click('#close'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W1', r);
-  assert.match(r.error, /web socket/);
+  assert.match(recordWhy(r), /web socket/);
 });
 
 test('plant W2 (critic r12): a cross-site frame posts "go" to the page on its own timer; one click on Close takes the credit -> never verifies (and the page can be measured)', async () => {
@@ -696,14 +698,14 @@ test('plant W2 (critic r12): a cross-site frame posts "go" to the page on its ow
   const r = await runDriver(plant('iframe', async op => { await op.click('#close'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W2', r);
   assert.doesNotMatch(r.error, /could not arm its read world/);
-  assert.match(r.error, /outside the page's thread|outside it|another thread of the page's script/);
+  assert.match(recordWhy(r), /outside the page's thread|outside it|another thread of the page's script/);
 });
 
 test('plant W3 (critic r12): one click on plain text arms a 2.8 s delay (a 1.9 s answer, then a 0.9 s timer) before the approval -> never verifies', async () => {
   reset();
   const r = await runDriver(plant('near', async op => { await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W3', r);
-  assert.match(r.error, /add up to more than 2 s/);
+  assert.match(recordWhy(r), /add up to more than 2 s/);
 });
 
 test('plant W4: a shared worker posts "go" through its port on its own timer, just after run()\'s click -> never verifies', async () => {
@@ -745,7 +747,7 @@ test('plant W7: a document the page asked for before the clock (held by the stan
   reset();
   const r = await runDriver(plant('slowdoc', async op => { await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W7', r);
-  assert.match(r.error, /navigation started before the clock/);
+  assert.match(recordWhy(r), /navigation started before the clock/);
 });
 
 test('plant W8: a meta refresh the page set loads a page that approves, just after run()\'s click -> never verifies', async () => {

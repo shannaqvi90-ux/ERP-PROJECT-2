@@ -130,6 +130,13 @@ screenshots and review judge that, as before. A message port to another process 
 that process ran script in the window the guard watches; one whose sender ran earlier and whose
 message the page's busy thread held back is refused by the busy-input guard.
 
+A read the browser does for the page (a file chosen, a body) is traced by the task just before its
+result, as in round 12: Odoo's attach-file upload follows its file's read, and when one of Odoo's own
+timers fires between the file pick and the read's end the run is refused (one run in three in both
+recaptures of this round), never credited. Telling which task started a read would need an event
+Chromium does not record; a refusal of an honest run is the safe side (the baseline is the median of
+its verified runs).
+
 ## Cost
 
 No new dependency. The record is taken only while a task that saves is measured, as before; the
