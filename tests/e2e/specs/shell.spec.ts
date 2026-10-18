@@ -111,6 +111,32 @@ test.describe("app shell", () => {
     }
   });
 
+  test("Alt+L on the users list with one's own record open: the own row and the record say Arabic at once, not after a reload", async ({ page }) => {
+    // Critic p04 round 10: the own row's Language cell still said English (in Arabic) 7 s after the
+    // switch, until a reload, and the open record kept the old language and version.
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
+    await setPreferences(page, { language: "en" });
+    const me = (await (await page.request.get("/api/auth/session")).json()).user as { id: string; email: string };
+    try {
+      await page.goto(`/identity/users/${me.id}?q=${encodeURIComponent(me.email)}`);
+      const ownRow = page.locator("main .list-row", { hasText: me.email });
+      await expect(ownRow).toContainText("English");
+      const languageField = page.locator('aside.list-record [data-field="language"] select');
+      await expect(languageField).toHaveValue("en");
+      await page.keyboard.press("Alt+l");
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      await expect(ownRow).toContainText("العربية", { timeout: 3000 });
+      await expect(ownRow).not.toContainText("الإنجليزية");
+      await expect(languageField).toHaveValue("ar", { timeout: 3000 });
+      // Nothing of the user's own to save: the record shows the change as the record's, not theirs.
+      await expect(page.locator("aside.list-record .record-dirty")).toHaveCount(0);
+    } finally {
+      await setPreferences(page, { language: "en" });
+    }
+  });
+
   test("keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
