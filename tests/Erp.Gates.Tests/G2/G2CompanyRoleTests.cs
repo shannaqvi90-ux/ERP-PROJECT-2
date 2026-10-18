@@ -34,7 +34,7 @@ public sealed class CompanyRoleFixture : IAsyncLifetime
 /// make the user untouchable for them: what those roles grant cannot be seen.</item>
 /// </list>
 /// </summary>
-public sealed class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixture<CompanyRoleFixture>
+public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixture<CompanyRoleFixture>
 {
     private ErpTestEnvironment Env => fixture.Env;
 

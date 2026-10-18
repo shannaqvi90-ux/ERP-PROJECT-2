@@ -290,14 +290,11 @@ export function RecordForm<R, D>({
             )}
           </div>
         )}
-        {form.saved && !form.dirty && (
+        {/* A completed entry the form saved on its own is announced by its field, under it, with
+            Undo (FieldBinding.entrySaved): on a long form this place may be scrolled out of sight. */}
+        {form.saved && !form.dirty && !form.autoSaved && (
           <div className="notice" role="status">
-            {form.autoSaved ? t("forms.savedComplete") : t("forms.saved")}
-            {form.autoSaved && editable && (
-              <button type="button" className="button link" onClick={() => void form.undo()} title={keyHint(formChords.discard)} aria-keyshortcuts={chordForAria(formChords.discard)}>
-                {t("forms.undo")}
-              </button>
-            )}
+            {t("forms.saved")}
           </div>
         )}
         <FormContext.Provider value={{ readOnly: form.readOnly }}>

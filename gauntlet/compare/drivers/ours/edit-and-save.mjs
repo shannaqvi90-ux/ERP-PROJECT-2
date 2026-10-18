@@ -50,6 +50,23 @@ function build(how) {
   };
 }
 
+/**
+ * Round 8 (p06): the number with its country code and without its + or spaces ('+971 50 555 0199'
+ * is 971505550199): twelve keys, none shifted. The field takes the code typed again after its own
+ * +971 as the same number once the last digit makes it whole, and that digit saves the record.
+ * Under an instrument that credits the +971 the field keeps as its own (lead decision on critic p06
+ * r7), the number after +971 (505550199, nine keys) is shorter still; this path needs no such
+ * credit (docs/decisions/p06-form-report-edit-and-save-keys.md).
+ */
+function buildCode() {
+  return async (op, ctx) => {
+    await op.click(PHONE, { label: 'phone field (selects the number after +971)' });
+    await op.type(compact(ctx.task.input.phone).replace(/^\+/, ''), { label: 'new number with its code, no + (its last digit saves)' });
+    await op.waitFor(() => document.querySelector('.record-form .notice')?.getAttribute('role') === 'status', { label: 'saved' });
+    return {};
+  };
+}
+
 export default {
   built: true,
   path: 'Click the phone field (the number after +971 is selected) > type the number without spaces; its last digit saves the record. Stand-in record: a company (contacts arrive with p16).',
@@ -57,6 +74,7 @@ export default {
   variants: {
     compact: { path: 'Click the phone field > type +971505550199 (the field groups it; the last digit saves)', run: build('compact') },
     spaced: { path: 'Click the phone field > type +971 50 555 0199 as written (the last digit saves)', run: build('spaced') },
+    code: { path: 'Click the phone field > type 971505550199 (twelve keys, none shifted; the field takes the code typed again and groups it; the last digit saves)', run: buildCode() },
   },
   async setup(ctx) {
     const { api, record } = await company(ctx);
