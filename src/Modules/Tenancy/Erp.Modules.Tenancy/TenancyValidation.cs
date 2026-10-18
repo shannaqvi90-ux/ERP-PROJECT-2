@@ -72,7 +72,22 @@ internal static partial class TenancyValidation
     public const string UnitedArabEmirates = "AE";
 
     public const string CodePattern = "^[A-Z0-9][A-Z0-9-]{1,19}$";
-    public const string PhonePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
+    /// <summary>A phone number's characters: digits, spaces, brackets and hyphens, optionally
+    /// starting with +, 5 to 30 characters.</summary>
+    public const string PhoneShapePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
+
+    /// <summary>
+    /// A phone number as documented and accepted: <see cref="PhoneShapePattern"/>, and a number with
+    /// the UAE's code (+971 or 00971) has the digits its kind has in the numbering plan
+    /// (<see cref="UaeNumberLengthFits"/>): 8 for a fixed line, 9 for a mobile or a 200 to 900 service
+    /// number, 5 to 12 for an 800 number. The two checks together accept exactly what this pattern
+    /// matches (a test holds them to it), so a client that follows the API description sends a
+    /// number the server takes.
+    /// </summary>
+    public const string PhonePattern =
+        "^(?:(?!\\+971|00971)\\+?[0-9][0-9 ()-]{4,28}" +
+        "|(?=\\+?[0-9][0-9 ()-]{4,28}$)(?:\\+971|00971)[ ()-]*" +
+        "(?:5(?:[ ()-]*[0-9]){8}|[234679](?:[ ()-]*[0-9]){7}|[234679][ ()-]*0[ ()-]*0(?:[ ()-]*[0-9]){6}|8[ ()-]*0[ ()-]*0(?:[ ()-]*[0-9]){2,9})[ ()-]*)$";
     /// <summary>A Tax Registration Number as typed: exactly 15 digits, 0 to 9 or the Arabic-Indic
     /// ٠ to ٩ of an Arabic keyboard (turned into 0 to 9), with any spaces and dashes (removed before
     /// it is stored). docs/compliance/vat-trn-format.md, owner 2026-10-10 and 2026-10-17.</summary>
@@ -359,8 +374,12 @@ internal static partial class TenancyValidation
     [GeneratedRegex(CodePattern)]
     private static partial Regex CodeRegex();
 
-    [GeneratedRegex(PhonePattern)]
+    [GeneratedRegex(PhoneShapePattern)]
     private static partial Regex PhoneRegex();
+
+    /// <summary>The documented pattern (<see cref="PhonePattern"/>), for the test that holds the checks to it.</summary>
+    [GeneratedRegex(PhonePattern)]
+    internal static partial Regex DocumentedPhoneRegex();
 
     [GeneratedRegex(StoredTaxNumberPattern)]
     private static partial Regex StoredTaxNumberRegex();
