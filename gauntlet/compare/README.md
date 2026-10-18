@@ -298,10 +298,20 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
     frame (a resize or intersection observer) causes nothing while an animation or transition of the
     page runs (Chromium's `Animation` events, and `document.getAnimations()` read as the clock starts,
     `animations_at_start`; plants W6, W6b).
+  - a **document** is its navigation's: the task that commits it is judged by the task that started
+    the navigation (`FrameLoader::StartNavigation`, same address): a click on a link is the click's; a
+    document the page asked for before the clock (a slow one the server holds, plant W7) or one a
+    **refresh** the page set loads (a meta refresh, plant W8) causes nothing;
+  - a task that delivers what the browser read for the page itself (a file or blob read, a response's
+    body, the device's answer: `IN_PAGE_DATA`) is not refused for another thread's activity (Odoo keeps
+    a shared worker busy the whole time, and its file upload follows the file's read);
+  - timer, animation-frame and idle ids start again in each new document of a frame, so a callback is
+    matched with the last request before it (a chain never runs backwards in time); each caused write
+    records how long its chain took (`browser_record.chain_seconds`).
   The read world now skips a child frame's window when it arms (a page that embeds a cross-site frame
   could not be measured: `SecurityError`). Plant-tested in `test/causation.test.mjs` (W1-W6b, honest
   controls: a click that asks over a web socket and approves on the answer, a page with a cross-site
-  frame) and mutations M86-M97.
+  frame, a click on a link to a page that approves as it loads) and mutations M86-M97, M106-M110.
 - **Writes set-up's browser sent are answered before the start.** Every browser context of the run
   is watched from its first request (the runner's, a sign-in retry's, any the driver opened); before
   the set-up contexts close, the runner waits for their writes to be answered (`set_up_writes_waited`),

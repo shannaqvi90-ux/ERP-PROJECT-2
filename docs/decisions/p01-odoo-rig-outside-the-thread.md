@@ -27,6 +27,10 @@ Looking for more of the same family, I found three more that round 12 credited (
 one click, checked against the round 12 instrument): W5, a CSS animation the page started on its own
 whose `animationend` approved just after a click; W6, a resize observer that approved when such an
 animation reached its end; W6b, W6 with an animation started before the clock that runs past it.
+Two more were refused by round 12 only by accident (a chain "too long to follow": the task that
+commits a document holds its own request and its answer, and the walk looped): W7, a document the page
+asked for before the clock and the server held until just after the click, whose script approved;
+W8, a meta refresh the page set that loaded an approving page just after the click.
 
 ## Decision
 
@@ -41,10 +45,18 @@ animation reached its end; W6b, W6 with an animation started before the clock th
      or server's** message (`OUTSIDE_CARRIERS`: web sockets, web transport, broadcast channels, a
      frame's messages, service and shared workers, peer connections, push, storage events) causes
      nothing;
-   - a task of no traceable origin (a message port, a body read) is refused while **any other thread
-     of the page's script** ran from the step's input on: a worker of any kind or another frame's or
-     window's renderer main thread (the trace holds every process of the browser; W4: a shared
-     worker's port).
+   - a task of no traceable origin (a message port, a worker's message) is refused while **any other
+     thread of the page's script** ran from the step's input on: a worker of any kind or another
+     frame's or window's renderer main thread (the trace holds every process of the browser; W4: a
+     shared worker's port). A task that delivers what the browser read for the page itself (a file or
+     blob read, a response's body, the device's answer: `IN_PAGE_DATA`) cannot come from another
+     thread and is not refused for one: Odoo keeps a shared worker (its bus) busy all the time, and
+     the first recapture of this round refused one of three honest attach-file runs (its upload
+     follows the file's read, `blink.mojom.BlobReaderClient`) for that worker's activity;
+   - a **document** is its navigation's: the task that commits it is judged by the task that started
+     the navigation (`FrameLoader::StartNavigation` with the same address): a click on a link is the
+     click's; a navigation started before the clock (W7) or by a refresh the page set
+     (`HttpRefreshScheduler::NavigateTask`, W8) causes nothing.
 2. **The chain's delays add up**: a write must go out within `LINK_SECONDS` (2 s) of the input (or
    command) of the step that began its chain (W3: 2.8 s).
 3. **Time-driven script**: an event a running animation, transition or media element fires
@@ -88,7 +100,7 @@ animation reached its end; W6b, W6 with an animation started before the clock th
    write it explains is refused. Each caused write now records its chain's length in seconds
    (`browser_record.chain_seconds`).
 
-Mutations M86-M106 (one per rule above), each caught by its self-test.
+Mutations M86-M110 (one per rule above), each caught by its self-test.
 
 ## Alternatives considered
 
