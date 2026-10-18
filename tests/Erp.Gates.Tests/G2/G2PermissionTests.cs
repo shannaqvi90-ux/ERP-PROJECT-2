@@ -330,6 +330,65 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
         AssertEveryCarrier(result.Carriers);
         Assert.Equal(Permissioned.Count * result.Carriers.Count, result.Requests);
+        AssertSelfReferencing(result, Permissioned.Count);
+    }
+
+    /// <summary>
+    /// Records the caller made stay theirs after their roles are gone, and naming them opens
+    /// nothing (critic p00 round 11: "people may always manage their own record" is the shortcut
+    /// self-service screens invite). The user holds every list's permission and the sharing
+    /// permission, saves a personal view in every list, and loses every role; then every
+    /// permissioned endpoint answers 403 through every carrier, with random ids and with every id
+    /// of their own, the saved views among them.
+    /// </summary>
+    [Fact]
+    public async Task A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var email = $"g2.former.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        var permissions = catalog.Lists.Select(l => l.Permission).Distinct().Order(StringComparer.Ordinal).ToArray();
+        var userId = await CreateUserHoldingAsync(admin, email, permissions, "Former list user", "مستخدم قوائم سابق");
+        using (var user = await Env.SignInAsync(email))
+        {
+            foreach (var list in catalog.Lists)
+            {
+                var columns = list.Columns.Take(2).Select(c => c.Key).ToArray();
+                using var saved = await user.PostAsJsonAsync($"/api/lists/{list.Key}/views", PersonalBody(list, columns, $"Mine {list.Key}", false, null));
+                Assert.True(saved.StatusCode == HttpStatusCode.Created, $"POST /api/lists/{list.Key}/views: {(int)saved.StatusCode} {await saved.Content.ReadAsStringAsync()}");
+            }
+        }
+        var current = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{userId}");
+        using var stripped = await admin.PutAsJsonAsync($"/api/identity/users/{userId}", new
+        {
+            displayName = current.GetProperty("displayName").GetString(),
+            language = "en",
+            isActive = true,
+            roleIds = Array.Empty<Guid>(),
+            version = current.GetProperty("version").GetUInt32(),
+        });
+        Assert.True(stripped.IsSuccessStatusCode, $"removing the roles: {(int)stripped.StatusCode} {await stripped.Content.ReadAsStringAsync()}");
+
+        var (token, signedIn) = await Env.SignInForTokenAsync(email);
+        Assert.Equal(userId, signedIn);
+        var own = await OwnIds.OfAsync(Env, userId, token);
+        Assert.True(own.Count(o => o.Sources.Contains("lists.saved_views.id")) >= Math.Min(catalog.Lists.Count(), OwnIds.RowsPerTable),
+            "The caller's own saved views are not among the ids tried: " + string.Join(", ", own));
+
+        var result = await CarrierMatrix.DeniedEverythingAsync(Env, email, Permissioned);
+        Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
+        AssertEveryCarrier(result.Carriers);
+        AssertSelfReferencing(result, Permissioned.Count);
+    }
+
+    private static void AssertSelfReferencing(CarrierMatrix.Result result, int endpoints)
+    {
+        TestContext.Current.TestOutputHelper?.WriteLine($"{result.SelfRequests} requests named the caller's own ids ({result.OwnIdsTried} ids) at {result.SelfEndpoints} endpoints");
+        Assert.Equal(endpoints, result.SelfEndpoints);
+        Assert.True(result.SelfRequests >= Ratchet.Min("g2.selfReferencingDenyRequests"),
+            $"{result.SelfRequests} requests named the caller's own ids; ratchet minimum {Ratchet.Min("g2.selfReferencingDenyRequests")}");
+        Assert.True(result.OwnIdsTried >= Ratchet.Min("g2.ownIdsTried"),
+            $"{result.OwnIdsTried} own ids of the caller tried; ratchet minimum {Ratchet.Min("g2.ownIdsTried")}");
     }
 
     /// <summary>Through every session carrier, as above: one sign-in per permission, its token
@@ -342,20 +401,98 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var problems = new List<string>();
         var checkedPermissions = 0;
         var requests = 0;
+        var selfRequests = 0;
+        var selfCarriers = new HashSet<string>(StringComparer.Ordinal);
         foreach (var permission in catalog.PermissionKeys.Order(StringComparer.Ordinal))
         {
             var email = $"g2.{permission.Replace('.', '-')}@{Env.TenantA.EmailDomain}";
             await CreateUserHoldingAsync(admin, email, [permission], $"Only {permission}", $"فقط {permission}");
             var expectedMenu = catalog.Menu.Where(m => m.Permission == permission).Select(m => m.Key).ToList();
-            var result = await CarrierMatrix.ExactlyOneAsync(Env, email, permission, expectedMenu, Permissioned);
+            // The requests naming the caller's own ids go through one carrier per permission, the
+            // carriers taken in turn (the random-id matrix covers every carrier for every permission).
+            var selfCarrier = SessionTokenCarriers.All[checkedPermissions % SessionTokenCarriers.All.Count].Name;
+            var result = await CarrierMatrix.ExactlyOneAsync(Env, email, permission, expectedMenu, Permissioned, selfCarriers: [selfCarrier]);
             problems.AddRange(result.Problems);
             AssertEveryCarrier(result.Carriers);
             requests += result.Requests;
+            selfRequests += result.SelfRequests;
+            if (result.SelfRequests > 0)
+            {
+                selfCarriers.Add(selfCarrier);
+            }
             checkedPermissions++;
         }
+        TestContext.Current.TestOutputHelper?.WriteLine($"{selfRequests} requests named the caller's own ids at endpoints of the held permission's module");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(checkedPermissions >= Ratchet.Min("g2.permissions"));
         Assert.Equal(checkedPermissions * Permissioned.Count * SessionTokenCarriers.All.Count, requests);
+        Assert.Equal(SessionTokenCarriers.All.Select(c => c.Name).Order(StringComparer.Ordinal), selfCarriers.Order(StringComparer.Ordinal));
+        Assert.True(selfRequests >= Ratchet.Min("g2.selfReferencingGrantRequests"),
+            $"{selfRequests} requests named the caller's own ids; ratchet minimum {Ratchet.Min("g2.selfReferencingGrantRequests")}");
+    }
+
+    /// <summary>
+    /// Self-test (critic p00 round 11, plant P6): permission checks that pass a request naming the
+    /// caller's own id. <c>user</c>: a route value equal to the caller's user id passes ("people
+    /// may always manage their own record"); <c>session</c>: one equal to the caller's session id;
+    /// <c>holder</c>: a caller holding any permission of the endpoint's module passes on their own
+    /// user id. The deny-by-default matrix must report the first two and the grant-exactly-one
+    /// matrix the third, each only on the requests naming own ids; the random-id requests stay clean.
+    /// </summary>
+    [Theory]
+    [InlineData("user")]
+    [InlineData("session")]
+    [InlineData("holder")]
+    public async Task The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(string mode)
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<ModuleCatalog>();
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        await using var planted = new ErpAppFactory(SelfBypassModule.Settings(Env.Factory.Settings, mode));
+        // Fresh users: under the plant, the matrices' own requests may change or end their account.
+        var nobody = $"g2.selfplant.{mode}.none.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        await CreateUserHoldingAsync(admin, nobody, [], $"Nothing {mode}", $"لا شيء {mode}");
+        var denied = await CarrierMatrix.DeniedEverythingAsync(Env, nobody, Permissioned, planted);
+        const string permission = "identity.users.read";
+        var holder = $"g2.selfplant.{mode}.one.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        await CreateUserHoldingAsync(admin, holder, [permission], $"Read users {mode}", $"قراءة المستخدمين {mode}");
+        var expectedMenu = catalog.Menu.Where(m => m.Permission == permission).Select(m => m.Key).ToList();
+        var exactlyOne = await CarrierMatrix.ExactlyOneAsync(Env, holder, permission, expectedMenu, Permissioned, planted);
+
+        foreach (var (name, result) in new[] { ("deny by default", denied), ("grant exactly one", exactlyOne) })
+        {
+            var notSelf = result.Problems.Where(p => !p.Contains(" naming ", StringComparison.Ordinal)).ToList();
+            Assert.True(notSelf.Count == 0, $"The {name} matrix reported more than the plant ({mode}):\n" + string.Join("\n", notSelf));
+        }
+        switch (mode)
+        {
+            case "user":
+                Assert.Contains(denied.Problems, p => p.Contains("GET /api/identity/users/{id:guid} naming the caller's user id answered 200", StringComparison.Ordinal));
+                Assert.Contains(denied.Problems, p => p.Contains("GET /api/tenancy/access/{userId:guid} naming the caller's user id answered 200", StringComparison.Ordinal));
+                Assert.Contains(denied.Problems, p => p.Contains("PUT /api/identity/users/{id:guid} naming the caller's user id answered", StringComparison.Ordinal));
+                foreach (var carrier in SessionTokenCarriers.All)
+                {
+                    Assert.Contains(denied.Problems, p => p.StartsWith($"[{carrier.Name}] GET /api/identity/users/{{id:guid}} naming the caller's user id", StringComparison.Ordinal));
+                }
+                break;
+            case "session":
+                Assert.Contains(denied.Problems, p => p.Contains("GET /api/identity/users/{id:guid} naming the caller's session answered 404", StringComparison.Ordinal));
+                Assert.DoesNotContain(denied.Problems, p => p.Contains("naming the caller's user id", StringComparison.Ordinal));
+                break;
+            case "holder":
+                Assert.True(denied.Problems.Count == 0, "The plant passes only callers holding a permission of the module; the deny matrix reported:\n" + string.Join("\n", denied.Problems));
+                Assert.Contains(exactlyOne.Problems, p => p.Contains("identity.users.read: PUT /api/identity/users/{id:guid} naming the caller's user id answered", StringComparison.Ordinal));
+                Assert.Contains(exactlyOne.Problems, p => p.Contains("identity.users.read: GET /api/identity/users/{id:guid}/sign-ins naming the caller's user id answered 200", StringComparison.Ordinal));
+                Assert.DoesNotContain(exactlyOne.Problems, p => p.Contains("/api/tenancy/", StringComparison.Ordinal));
+                break;
+        }
+        // The same matrices on the real host pass for the same kind of users.
+        if (mode == "user")
+        {
+            var clean = $"g2.selfplant.clean.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+            await CreateUserHoldingAsync(admin, clean, [], "Nothing clean", "لا شيء نظيف");
+            var real = await CarrierMatrix.DeniedEverythingAsync(Env, clean, Permissioned);
+            Assert.True(real.Problems.Count == 0, string.Join("\n", real.Problems));
+        }
     }
 
     /// <summary>A token the server never issued gets 401 from every permissioned endpoint through
@@ -470,13 +607,20 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             $"{carriers.Count} session carriers checked; ratchet minimum {Ratchet.Min("g2.credentialCarriers")}");
     }
 
-    private static async Task CreateUserHoldingAsync(HttpClient admin, string email, string[] permissions, string roleEn, string roleAr)
+    /// <summary>A user holding one role that grants <paramref name="permissions"/>, or no role at
+    /// all when none are given; returns the user's id.</summary>
+    private static async Task<Guid> CreateUserHoldingAsync(HttpClient admin, string email, string[] permissions, string roleEn, string roleAr)
     {
-        var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = roleEn, nameAr = roleAr, permissions });
-        Assert.Equal(HttpStatusCode.Created, role.StatusCode);
-        var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
-        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = $"G2 {string.Join(", ", permissions)}", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { roleId } });
+        var roleIds = new List<Guid>();
+        if (permissions.Length > 0)
+        {
+            var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = roleEn, nameAr = roleAr, permissions });
+            Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+            roleIds.Add((await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid());
+        }
+        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = $"G2 {string.Join(", ", permissions)}", language = "en", password = ErpTestEnvironment.Password, roleIds });
         Assert.Equal(HttpStatusCode.Created, user.StatusCode);
+        return (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
     }
 
     [Fact]
