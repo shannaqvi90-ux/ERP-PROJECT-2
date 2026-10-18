@@ -110,5 +110,14 @@ Full `./erp verify` of this branch (integration branch merged at 8e5fa749) throu
   with the load at 26 to 38 from other agents' runs. Round 12's own verify used 9,901 s (dotnet
   7,574, web 1,942); the web stage, which this round changed by four unit tests only, rose by 170 s
   with the load, and the .NET stage by 472 s, of which this round's added requests are a small part
-  (the volume tests ran 4 min 57 s and 2 min 55 s of wall time beside the other gate tests). No
-  maximum was touched.
+  (the volume tests ran 4 min 57 s and 2 min 55 s of wall time beside the other gate tests).
+- Run 3 (242c64a4, slot taken 11:02:07Z, 3,999 s wall): again every test passed (the same counts)
+  and only processor time failed: **10,657 s** (dotnet 8,141, web 2,129, e2e 324, timing 64), load
+  31.5 at the start, 26.3 at the end, highest 77.5.
+- What this round adds, measured: the verify counts the stage containers' processor time (cgroup;
+  the test PostgreSQL containers are not in it). The three volume tests alone in the toolbox image,
+  same machine, one after the other: integration commit 8e5fa749 **109.2 s**, this branch **110.8 s**
+  (+1.6 s: the branch searches' requests and truth). The G2 additions are 30 requests and one planted
+  host (about 4 s). So this round adds about 6 processor seconds; the rest of the rise from round
+  12's 9,901 s comes with the integration branch's own growth (p04 recorded 10,338 s for 4f8c7790)
+  and the load. No maximum was touched.
