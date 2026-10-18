@@ -157,7 +157,9 @@ public static partial class ListVolume
 
             var listTally = new ListTally();
             var queries = QueriesFor(list).ToList();
-            var (branches, branchesBlind) = list.SearchFields.Count > 0 ? ChooseBranchSearches(binding, truths["A"], truths["B"]) : ([], []);
+            // Branch searches on lists at volume only (the small lists' searches are judged by
+            // ListAnswers): there the chosen searches, and so the tallies, are the same every run.
+            var (branches, branchesBlind) = list.SearchFields.Count > 0 && atVolume ? ChooseBranchSearches(binding, truths["A"], truths["B"]) : ([], []);
             queries.AddRange(BranchQueries(binding, branches));
             await Parallel.ForEachAsync(queries, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (query, _) =>
                 await JudgeQueryAsync(tally, listTally, list, a, b, truths, query));
