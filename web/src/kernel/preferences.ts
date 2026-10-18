@@ -1,5 +1,6 @@
 import { api, ApiError } from "./api";
 import { isNumerals, type Language, type Numerals } from "./format";
+import { announceRecordChanged } from "./recordEvents";
 
 /**
  * The signed-in user's interface preferences (language, digits) follow the user from device to
@@ -18,6 +19,8 @@ export type PreferenceChange = Partial<Preferences>;
 const pendingKey = "erp.pendingPreferences";
 export const preferencesPath = "/api/identity/me/preferences";
 export const preferencesPermission = "identity.profile.update";
+/** The kind of record a preference change changes: the user's own row (kernel/recordEvents.ts). */
+export const userRecord = "identity.user";
 
 type PendingStore = { userId: string; changes: PreferenceChange };
 
@@ -97,6 +100,9 @@ export async function savePreferences(userId: string, change: PreferenceChange):
   try {
     await putWithRetry(change);
     settlePending(userId, change);
+    // The user's own row changed (its language or digits, and its version): a users list or an
+    // open user record on screen shows the new values, and the record's next save is not refused.
+    announceRecordChanged({ record: userRecord, id: userId });
     return "saved";
   } catch (error) {
     if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 408 && error.status !== 409 && error.status !== 429) {

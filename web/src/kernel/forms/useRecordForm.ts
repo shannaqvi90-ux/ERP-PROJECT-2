@@ -70,6 +70,13 @@ export type RecordFormState<R, D> = {
   reload: () => void;
   /** Take a newer copy of the record saved by another action (a logo upload), keeping the draft. */
   adopt: (record: R) => void;
+  /**
+   * Take a newer copy of the record that changed elsewhere in fields the form shows (the shell's
+   * language switch changes the user's own Language): the form shows the new values and holds the
+   * new version, so the next save is not refused; a field the user has changed keeps what they
+   * typed, and stays a change.
+   */
+  rebase: (record: R) => void;
   /** Set by the record form showing this state: asks in its dialog before leaving unsaved changes
    * (save and leave, discard and leave, keep editing), then calls `proceed`. */
   leaveAsker: RefObject<((proceed: () => void) => void) | null>;
@@ -250,6 +257,20 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
 
   const reload = useCallback(() => setLoads((n) => n + 1), []);
   const adopt = useCallback((next: R) => setRecord(next), []);
+  const rebase = useCallback(
+    (next: R) => {
+      const fresh = specRef.current.initial(next);
+      const merged = { ...(fresh as Record<string, unknown>) };
+      const held = draft as Record<string, unknown>;
+      const base = baseline as Record<string, unknown>;
+      for (const key of Object.keys(merged)) if (!same(held[key], base[key])) merged[key] = held[key];
+      setRecord(next);
+      setBaseline(fresh);
+      setDraft(merged as D);
+      setConflict(false);
+    },
+    [draft, baseline],
+  );
 
   const bind = useCallback(
     <K extends keyof D & string>(field: K): FieldBinding<D[K]> => ({
@@ -264,7 +285,7 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
   );
 
   return useMemo(
-    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, completeEntry, autoSaved: undoable?.field ?? null, undo, reload, adopt, leaveAsker }),
-    [status, record, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, completeEntry, undoable, undo, reload, adopt],
+    () => ({ status, record, isNew: record === null, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, completeEntry, autoSaved: undoable?.field ?? null, undo, reload, adopt, rebase, leaveAsker }),
+    [status, record, draft, dirty, busy, saved, errors, message, conflict, readOnly, set, update, bind, save, discard, completeEntry, undoable, undo, reload, adopt, rebase],
   );
 }

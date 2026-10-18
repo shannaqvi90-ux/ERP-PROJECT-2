@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { useI18n, type Language } from "../../kernel/i18n";
+import { savePreferences } from "../../kernel/preferences";
 import { useSession } from "../../kernel/session";
 import { teamSignInAddress } from "../../kernel/signInAddress";
 import { formKeys } from "../../kernel/forms/RecordForm";
@@ -31,12 +32,14 @@ export function MyAccountPage() {
 
   async function chooseLanguage(value: Language) {
     setLanguage(value);
-    try {
-      await api("PUT", "/api/identity/me/preferences", { language: value });
-      setDone(t("identity.me.languageSaved"));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
+    setDone(null);
+    setError(null);
+    // The kernel's save: safe across a reload that comes before the answer, and announced so a
+    // users list or user record on screen shows the new language (kernel/preferences.ts).
+    const outcome = await savePreferences(user.id, { language: value });
+    if (outcome === "saved") setDone(t("identity.me.languageSaved"));
+    else if (outcome === "offline") setDone(t("shell.prefs.offline"));
+    else setError(t("shell.prefs.refused"));
   }
 
   async function changePassword(event: FormEvent) {

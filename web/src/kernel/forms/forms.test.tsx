@@ -354,6 +354,51 @@ describe("the record form", () => {
   });
 });
 
+describe("a record changed elsewhere in fields the form shows (rebase)", () => {
+  let rebase: ((next: Thing) => void) | null = null;
+  function Rebasing() {
+    const form = useRecordForm<Thing, Draft>({
+      load: (signal) => api<Thing>("GET", "/api/things/t1", undefined, { signal }),
+      initial: (t) => ({ name: t?.name ?? "", amount: t?.amount ?? "" }),
+      canEdit: true,
+      save: (draft, current) => api<Thing>("PUT", "/api/things/t1", { ...draft, version: current?.version }),
+    }, "t1");
+    rebase = form.rebase;
+    return (
+      <RecordForm form={form} title={form.record?.name ?? ""} onClose={() => undefined}>
+        <FormSection title="Main">
+          <TextField field={form.bind("name")} label="Name" />
+          <DecimalField field={form.bind("amount")} label="Amount" scale={2} />
+        </FormSection>
+      </RecordForm>
+    );
+  }
+
+  it("shows the new values and holds the new version, with nothing to save", async () => {
+    mockFetch(() => ({ status: 200, body: thing }));
+    await show(<Rebasing />);
+    act(() => rebase!({ ...thing, amount: "9.50", version: 4 }));
+    await settle();
+    expect(input("amount").value).toBe("9.50");
+    expect(view!.container.querySelector("h2")!.textContent).not.toContain("Unsaved changes");
+    expect(nothingUnsaved()).toBe(true);
+  });
+
+  it("keeps what the user typed in a field they changed, and the next save sends it with the new version", async () => {
+    const calls = mockFetch((method, _url, body) => (method === "PUT" ? { status: 200, body: { ...thing, ...(body as object), version: 5 } } : { status: 200, body: thing }));
+    await show(<Rebasing />);
+    setInput(input("name"), "Desk (oak)");
+    act(() => rebase!({ ...thing, name: "Desk (walnut)", amount: "9.50", version: 4 }));
+    await settle();
+    expect(input("name").value).toBe("Desk (oak)");
+    expect(input("amount").value).toBe("9.50");
+    expect(view!.container.querySelector("h2")!.textContent).toContain("Unsaved changes");
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    expect(calls.filter((c) => c.method === "PUT").map((c) => c.body)).toEqual([{ name: "Desk (oak)", amount: "9.50", version: 4 }]);
+  });
+});
+
 describe("a record just created", () => {
   function NewThing() {
     const [id, setId] = useState<string | null>(null);

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../../kernel/api";
 import { newRecord, useRecordPanel } from "../../kernel/forms/recordPanel";
 import { useI18n } from "../../kernel/i18n";
+import { userRecord } from "../../kernel/preferences";
+import { useRecordChanged } from "../../kernel/recordEvents";
 import { ListView, type BulkAction } from "../../kernel/lists/ListView";
 import type { Row } from "../../kernel/lists/model";
 import { useSession } from "../../kernel/session";
@@ -77,6 +79,9 @@ export function UsersPage() {
   const { can } = useSession();
   const [roles, setRoles] = useState<Role[]>([]);
   const panel = useRecordPanel(can("identity.users.create"));
+  // The shell's language or digits switch changes the signed-in user's own row: the list shows the
+  // new Language at once, not after a reload (critic p04 round 10).
+  useRecordChanged(userRecord, () => panel.refresh());
   // The one-time notice (set-up code) of a user just created, shown once in their panel.
   const [notices, setNotices] = useState<Record<string, Notice>>({});
   const [message, setMessage] = useState<string | null>(null);
