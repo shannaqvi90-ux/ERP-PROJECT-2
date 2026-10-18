@@ -192,7 +192,15 @@ public static partial class IsolationAttack
     /// The gate's self-test judges the planted lists only: the product's lists are judged sorted
     /// by the gate itself, and doing it again in the self-test's environment cost about a quarter of
     /// an hour of the verify's longest process.</param>
-    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null)
+    /// <param name="only">The endpoints attacked and used by tenant B (default: every endpoint the
+    /// app exposes, which is what the gate runs). The gate's self-test passes the planted module's
+    /// endpoints: every phase, check and judgement runs exactly as in the gate, on the surface the
+    /// plants are on, while the product's own surface is attacked by the gate itself in the same
+    /// verify (round 13: the self-test's second full attack of the product was the verify's single
+    /// largest use of processor time). The registered lists, probes and list answers follow the
+    /// endpoints in scope.</param>
+    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null,
+        Func<ApiEndpoint, bool>? only = null)
     {
         SqlTrace.EnsureStarted();
         // Environment variables are process-wide state outside any field (critic p00 round 4: the
@@ -205,7 +213,9 @@ public static partial class IsolationAttack
 
         using var anonymousForDocs = Env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymousForDocs);
-        var endpoints = EndpointInventory.From(Env.Factory.Services);
+        var endpoints = EndpointInventory.From(Env.Factory.Services).Where(e => only?.Invoke(e) ?? true).ToList();
+        Assert.True(endpoints.Count > 0, "no endpoint in the attack's scope");
+        bool ListInScope(Erp.Kernel.Lists.ListDefinition list) => only is null || endpoints.Any(e => e.Method == "GET" && e.Pattern == list.Endpoint);
 
         // Tenant B uses the product first: every write on its own records, then (below) every
         // read, so its data sits in whatever process-wide state the app keeps before A attacks.
@@ -387,6 +397,12 @@ public static partial class IsolationAttack
             foreach (var probeType in catalog.Modules.SelectMany(m => m.IsolationProbes))
             {
                 var probe = (IIsolationProbe)scope.ServiceProvider.GetRequiredService(probeType);
+                // A scoped attack runs the probes of the surface kinds its endpoints have (the gate,
+                // unscoped, runs every probe and fails on a surface kind without one).
+                if (only is not null && !endpoints.Any(e => e.Surface == probe.Kind))
+                {
+                    continue;
+                }
                 probeKinds.Add(probe.Kind);
                 // Tenant B's administrator goes with the probe: it uses the surface on its own
                 // records right before tenant A does (prints and exports every report and list).
@@ -530,7 +546,7 @@ public static partial class IsolationAttack
         // only through the raw parameters above.
         var listWork = new List<Func<Task>>();
         var listsAttacked = 0;
-        foreach (var binding in catalog.ListBindings)
+        foreach (var binding in catalog.ListBindings.Where(l => ListInScope(l.Definition)))
         {
             var list = binding.Definition;
             var listEndpoint = endpoints.SingleOrDefault(e => e.Method == "GET" && e.Pattern == list.Endpoint);
@@ -603,7 +619,7 @@ public static partial class IsolationAttack
                 }
             }
         }
-        Assert.True(listsAttacked >= Ratchet.Min("rules.listsChecked"), $"{listsAttacked} lists attacked through their query contract");
+        Assert.True(listsAttacked >= (only is null ? Ratchet.Min("rules.listsChecked") : 1), $"{listsAttacked} lists attacked through their query contract");
         var listAttacksBefore = state.Requests;
         await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) => await item());
         var listQueryAttacks = listWork.Count;
@@ -618,11 +634,11 @@ public static partial class IsolationAttack
             var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
             var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
             var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged", sortedLists));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged", sortedLists, ListInScope));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged", sortedLists, ListInScope));
             // The same in Arabic with Arabic-Indic digits, both ways.
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged", sortedLists));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged", sortedLists, ListInScope));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged", sortedLists, ListInScope));
         }
         Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries ({listAnswers.Sum(r => r.SortedQueries)} sorted), {listAnswers.Sum(r => r.Discriminating)} with different true answers ({listAnswers.Sum(r => r.SortedDiscriminating)} sorted), {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
 

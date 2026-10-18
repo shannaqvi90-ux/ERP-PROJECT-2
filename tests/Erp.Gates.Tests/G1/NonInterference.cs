@@ -91,7 +91,10 @@ public static partial class NonInterference
 
     private static readonly string[] SharedTexts = ["a", "al", "e", "1", "co", "ad"];
 
-    public static async Task<Result> RunAsync(ErpTestEnvironment env)
+    /// <param name="only">The endpoints compared and written (default: every endpoint, which is what
+    /// the gate runs); the gate's self-test passes the planted module's surface, every comparison
+    /// unchanged (see <see cref="IsolationAttack.RunAsync"/>).</param>
+    public static async Task<Result> RunAsync(ErpTestEnvironment env, Func<ApiEndpoint, bool>? only = null)
     {
         var a = env.TenantA;
         var b = env.TenantB;
@@ -99,13 +102,13 @@ public static partial class NonInterference
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
         var endpoints = EndpointInventory.From(env.Factory.Services)
-            .Where(e => e.Method == "GET" && e.Surface == SurfaceKind.Data && e.Pattern.StartsWith("/api/", StringComparison.Ordinal))
+            .Where(e => e.Method == "GET" && e.Surface == SurfaceKind.Data && e.Pattern.StartsWith("/api/", StringComparison.Ordinal) && (only?.Invoke(e) ?? true))
             .ToList();
 
         // Both tenants first make every write the app offers on their own records in the shared
         // process, so whatever a write leaves behind (a counter, a "recently changed" list, a
         // cache filled on save) is there when the other tenant reads.
-        var allEndpoints = EndpointInventory.From(env.Factory.Services);
+        var allEndpoints = EndpointInventory.From(env.Factory.Services).Where(e => only?.Invoke(e) ?? true).ToList();
         var state = new State();
         state.Clock.Tolerance = await DatabaseClockToleranceAsync(env);
         state.Configuration.Watch("the shared process", env.Factory.Services);

@@ -19,7 +19,8 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
     [Fact]
     public async Task The_non_interference_check_catches_shared_state_that_leaks_no_marker()
     {
-        var result = await NonInterference.RunAsync(fixture.Env);
+        // On the planted module's surface (the product's is the gate's, G1NonInterferenceTests).
+        var result = await NonInterference.RunAsync(fixture.Env, only: GateSelfTests.PlantedEndpoint);
         foreach (var finding in result.Findings)
         {
             TestContext.Current.TestOutputHelper?.WriteLine(finding);
