@@ -286,7 +286,8 @@ async function until(ready: () => boolean) {
 
 async function signInAs(tenant: Tenant) {
   const container = view!.container;
-  await until(() => container.querySelector('input[name="email"]') !== null);
+  // Both fields: on a loaded machine the password field can appear a turn after the e-mail field.
+  await until(() => container.querySelector('input[name="email"]') !== null && container.querySelector('input[name="password"]') !== null);
   const email = container.querySelector<HTMLInputElement>('input[name="email"]')!;
   const password = container.querySelector<HTMLInputElement>('input[name="password"]')!;
   setInput(email, tenant.admin.email);
