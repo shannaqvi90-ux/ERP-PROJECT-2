@@ -214,9 +214,56 @@ internal static partial class TenancyValidation
         }
         if (Clean(address.Phone) is { } phone)
         {
-            validator.Must(PhoneRegex().IsMatch(phone), "phone", "tenancyPhone");
+            if (PhoneRegex().IsMatch(phone))
+            {
+                validator.Must(UaeNumberLengthFits(phone), "phone", "tenancyUaePhone");
+            }
+            else
+            {
+                validator.Add("phone", "tenancyPhone");
+            }
         }
         return validator;
+    }
+
+    /// <summary>
+    /// Whether a number written with the UAE's country code (+971 or 00971) has as many digits after
+    /// it as the UAE's numbering plan gives its kind (ITU-T E.164 plan for country code 971 as
+    /// published by the ITU for the regulator, checked 2026-10-19; decision
+    /// p06-form-report-whole-documents): a fixed line, an area digit 2, 3, 4, 6, 7 or 9 and seven
+    /// more, 8 digits; a mobile number (5 and eight more) or a service number 200 to 900, 9 digits;
+    /// a toll-free 800 number 5 to 12 digits. A number of another country, or one written without
+    /// its country code, is not judged here.
+    /// </summary>
+    public static bool UaeNumberLengthFits(string phone)
+    {
+        var text = phone.Trim();
+        string rest;
+        if (text.StartsWith("+971", StringComparison.Ordinal))
+        {
+            rest = text[4..];
+        }
+        else if (text.StartsWith("00971", StringComparison.Ordinal))
+        {
+            rest = text[5..];
+        }
+        else
+        {
+            return true;
+        }
+        var national = new string(rest.Where(char.IsAsciiDigit).ToArray());
+        if (national.Length == 0)
+        {
+            return false;
+        }
+        return national[0] switch
+        {
+            '5' => national.Length == 9,
+            '8' => national.StartsWith("800", StringComparison.Ordinal) && national.Length is >= 5 and <= 12,
+            // Eight digits, or nine for a service number (200, 300, 400, 600, 700, 900).
+            '2' or '3' or '4' or '6' or '7' or '9' => national.Length == 8 || national.Length == 9 && national[1] == '0' && national[2] == '0',
+            _ => false,
+        };
     }
 
     public static Validator Website(this Validator validator, string? website)
