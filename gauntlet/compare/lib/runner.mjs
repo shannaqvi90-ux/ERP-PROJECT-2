@@ -880,6 +880,16 @@ export async function execute(task, driver, product, productId, needles, out, op
       animatedAtStart = await PageWorld.of(page).run(RUNNING_ANIMATIONS).then(r => (Number.isInteger(r.value) ? r.value : null)).catch(() => null);
       run.animations_at_start = animatedAtStart;
     }
+    // Round 13 (lead decision on critic p06 r7's question): a fixed prefix the task declares for one of
+    // this product's fields (prefixes) is free only when the field shows it as the clock starts.
+    let prefixesShown = [];
+    if (task.saves && kind !== 'api' && declaredPrefixes(task, productId).length) {
+      for (const p of declaredPrefixes(task, productId)) {
+        const value = await PageWorld.of(page).run(PREFIX_FIELD_VALUE, { field: p.field }).then(r => r.value).catch(() => null);
+        prefixesShown.push({ field: p.field, prefix: p.prefix, shown: showsPrefix(value, p.prefix) });
+      }
+      run.prefixes_at_start = prefixesShown;
+    }
     // Round 12: the browser's record of the page's tasks, for which step caused each write (lib/causation.mjs).
     if (task.saves && kind !== 'api') pageTrace = await PageTrace.start(page);
     tracker = kind === 'api' ? null : trackRequests(context, () => op.now());
@@ -977,7 +987,8 @@ export async function execute(task, driver, product, productId, needles, out, op
         run.saved_state.writes_caused = causes.slice(0, 20).map(c => ({ write: `${c.write.method} ${describePath(c.write.url)}`, at: c.write.at,
           ...(c.caused ? { by_step: c.step, ...(c.after ? { after_answer_to: c.after } : {}) } : c.continues ? { continues: c.continues, not_caused: c.why } : { not_caused: c.why }),
           ...(c.trace ? { browser_record: { caused: c.trace.caused, ...(c.trace.caused ? { by_step: c.trace.step } : { why: c.trace.why }), chain: c.trace.chain.slice(-6) } } : {}) }));
-        const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [], traceCauses });
+        const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [], traceCauses,
+          prefixes: prefixesShown.filter(p => p.shown).map(p => p.prefix), endText: saved.end_state_text });
         if (measured) throw new ActionOutsideClock(measured, 'set-up');
       }
     } else {
@@ -1056,6 +1067,77 @@ export async function execute(task, driver, product, productId, needles, out, op
  */
 export function enteredValues(task) {
   return (task.enters || []).map(k => task.input?.[k]).filter(v => v !== undefined && v !== null && String(v).trim() !== '').map(v => String(v));
+}
+
+/**
+ * Round 13 (lead decision on critic p06 r7's question; README "A fixed prefix a field shows"): the
+ * fixed prefixes a task declares for a product's fields, each { field, prefix, source, constant }.
+ * A declared prefix is the product's default for every user and record of that kind (a constant of
+ * its code, checked by test/tasks.test.mjs), never something set-up or the data made.
+ */
+export function declaredPrefixes(task, productId) {
+  return (task.prefixes?.[productId] || []).filter(p => p && typeof p.field === 'string' && typeof p.prefix === 'string' && p.prefix.trim());
+}
+
+/**
+ * Problems with a task's declared prefixes (empty when there are none). Each names the field (a CSS
+ * selector), the prefix (an international dialling code: + and one to three digits, the only kind
+ * the lead's decision covers), and where the product's code sets it for every user and record of
+ * that kind: `source`, a file of this repository, and `constant`, the name it is declared under there
+ * with the same value. A prefix set-up, a tenant's setting or the data could change is not one. The
+ * reference's code is not in this repository, so a prefix of its fields needs a check against the
+ * running rig first (none is declared).
+ */
+export function prefixProblems(task, repoRoot = REPO_ROOT) {
+  const out = [];
+  for (const [productId, list] of Object.entries(task.prefixes || {})) {
+    if (!Array.isArray(list)) { out.push(`${task.id}: prefixes.${productId} must be a list`); continue; }
+    if (productId === REFERENCE_PRODUCT) { out.push(`${task.id}: a prefix of the reference's fields needs a check against the running rig (its code is not in this repository); none is supported yet`); continue; }
+    for (const p of list) {
+      const where = `${task.id}: prefixes.${productId} ${JSON.stringify(p?.prefix)}`;
+      if (!p || typeof p.field !== 'string' || !p.field.trim()) { out.push(`${where}: the field (a CSS selector) is missing`); continue; }
+      if (typeof p.prefix !== 'string' || !/^\+\d{1,3}$/.test(p.prefix)) { out.push(`${where}: a prefix is an international dialling code (+ and one to three digits)`); continue; }
+      if (!task.saves || !(task.enters || []).length) out.push(`${where}: only a task that saves what the person enters may declare a prefix`);
+      if (!enteredValues(task).some(v => afterPrefix(v, p.prefix) !== null)) out.push(`${where}: no value the task asks the person to enter begins with it`);
+      const file = typeof p.source === 'string' ? path.resolve(repoRoot, p.source) : null;
+      if (!file || !file.startsWith(path.resolve(repoRoot) + path.sep) || !fs.existsSync(file)) { out.push(`${where}: source must be a file of this repository that sets the prefix`); continue; }
+      const m = typeof p.constant === 'string' && /^[A-Za-z_$][\w$]*$/.test(p.constant)
+        ? new RegExp(`\\b(?:const|let|var)\\s+${p.constant}\\s*(?::\\s*\\w+\\s*)?=\\s*(['"\`])([^'"\`]*)\\1`).exec(fs.readFileSync(file, 'utf8')) : null;
+      if (!m) out.push(`${where}: ${p.source} declares no constant ${p.constant}`);
+      else if (compactPrefix(m[2]) !== compactPrefix(p.prefix)) out.push(`${where}: ${p.source} sets ${p.constant} to "${m[2]}", not the declared prefix`);
+    }
+  }
+  return out;
+}
+
+/** Runner's page function (read world): the value of the field a prefix is declared for. */
+const PREFIX_FIELD_VALUE = '(a) => { const el = document.querySelector(a.field); return el && typeof el.value === "string" ? el.value : null; }';
+const compactPrefix = s => String(s ?? '').replace(/[\s\-().\u00a0]/g, '');
+
+/** Whether a field's value shows `prefix` as its own: it begins with it (spaces, dashes and brackets aside). */
+export function showsPrefix(value, prefix) {
+  const p = compactPrefix(prefix);
+  return typeof value === 'string' && p.length > 0 && compactPrefix(value).startsWith(p);
+}
+
+/**
+ * The part of an entered value after a fixed prefix, or null when it does not begin with it: the
+ * prefix's own characters, separators aside, then the rest as written ('+971 50 555 0199' after
+ * '+971' is '50 555 0199').
+ */
+export function afterPrefix(value, prefix) {
+  const p = compactPrefix(prefix);
+  const v = String(value);
+  if (!p || !compactPrefix(v).startsWith(p)) return null;
+  let i = 0;
+  let matched = 0;
+  while (i < v.length && matched < p.length) {
+    if (compactPrefix(v[i]) === '') { i++; continue; }
+    matched++;
+    i++;
+  }
+  const rest = v.slice(i).trim();
+  return /[\p{L}\p{N}]/u.test(rest) ? rest : null;
 }
 
 const NUMERIC = /^[-+]?\d+(\.\d+)?$/;
@@ -1210,7 +1292,7 @@ export function isEndStatePart(spec, part) {
  * read that changed must be the task's declared end state (endState: the read and the parts of its
  * answer that hold it), and for a task that names what the person enters, the entered value must
  * arrive in those parts. Any other change (a preference, a version, a counter) proves nothing.
- * Returns { problem, record, gained_values }.
+ * Returns { problem, record, gained_values, end_state_text }.
  */
 export function savedState(task, beforeReads, afterReads, secondReads, productId) {
   const byKey = list => new Map(list.map(r => [r.key, r]));
@@ -1249,7 +1331,9 @@ export function savedState(task, beforeReads, afterReads, secondReads, productId
   else if (!gained.length) problem = `no back-end read of verify() gained a value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; what changed (${changed.map(label).join(', ')}) is not what the person entered, so the entered values were saved before the clock (set-up did the task)`;
   else if (!endChanged.length) problem = `the task's end state (${declared()}) did not change during the measured part; what changed (${changed.map(k => `${label(k)} [${parts.get(k).slice(0, 4).join(', ')}]`).join('; ')}) is not where the task saves its end state, so that end state was there before the clock (set-up did the task) or verify() never read it`;
   else if (values.length && !gainedValues.length) problem = `the task's end state (${declared()}) gained no value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; the entered values reached it before the clock (set-up did the task)`;
-  return { problem, record, gained_values: gainedValues };
+  // Round 13: the declared end state's text after the clock (a prefix credited must be held there whole).
+  const endStateText = [...endParts].map(([k, ps]) => ps.map(p => partText(a.get(k), p)).join('\n')).join('\n');
+  return { problem, record, gained_values: gainedValues, end_state_text: endStateText };
 }
 
 /**
@@ -1272,7 +1356,7 @@ export function savedState(task, beforeReads, afterReads, secondReads, productId
  * steps; `gained`: the entered values the end state gained (savedState); `timeline`: the page's
  * requests with when they went out and were answered (trackRequests).
  */
-export function measuredPartProblem(task, { steps = [], sent = [], gained = [], productId = null, timeline = [], traceCauses = null } = {}) {
+export function measuredPartProblem(task, { steps = [], sent = [], gained = [], productId = null, timeline = [], traceCauses = null, prefixes = [], endText = null } = {}) {
   if (!task.saves) return null;
   const apiWrites = steps.filter(s => s.kind === 'request' && s.writes);
   if (!sent.length && !apiWrites.length) {
@@ -1304,7 +1388,14 @@ export function measuredPartProblem(task, { steps = [], sent = [], gained = [], 
   const typed = steps.filter(s => s.kind === 'type').map(s => String(s.text ?? ''));
   const texts = [typed.join(''), typed.join('\n'), ...steps.filter(s => s.kind === 'file-pick').map(s => String(s.file ?? '')),
     ...steps.filter(s => s.kind === 'request').map(s => String(s.text ?? ''))];
-  const missing = gained.filter(v => !texts.some(t => containsValue(t, v)));
+  // Round 13: a fixed prefix the task declares for this product, shown in its field as the clock
+  // started, need not be typed: the rest of the value must be, and the end state must hold the whole
+  // value with the prefix as written (its + included).
+  const prefixed = v => prefixes.some(p => {
+    const rest = afterPrefix(v, p);
+    return rest !== null && texts.some(t => containsValue(t, rest)) && (endText === null || compactPrefix(endText).includes(compactPrefix(v)));
+  });
+  const missing = gained.filter(v => !texts.some(t => containsValue(t, v)) && !prefixed(v));
   if (missing.length) {
     const inBodies = missing.filter(v => sent.some(r => containsValue(`${r.url ?? ''}\n${r.body ?? ''}`, v) || containsValue(decodedText(`${r.url ?? ''}\n${r.body ?? ''}`), v)));
     return `the end state gained ${missing.map(v => `"${v}"`).join(', ')}, which the measured part never entered (typed or picked as a file)${inBodies.length ? `; the page sent ${inBodies.map(v => `"${v}"`).join(', ')} in a request it composed itself (a draft or a value the product held before the clock), which nobody typed` : ''}: it was entered off the clock`;
@@ -1315,7 +1406,7 @@ export function measuredPartProblem(task, { steps = [], sent = [], gained = [], 
 const decodedText = t => { try { return decodeURIComponent(String(t).replace(/\+/g, ' ')); } catch { return String(t); } };
 
 /** Pointer steps (round 9: a keyboard-only task fails on one; the harness judges it, not verify()). */
-const POINTER_KINDS = new Set(['click', 'double-click', 'scroll', 'file-pick']);
+const POINTER_KINDS = new Set(['click', 'double-click', 'triple-click', 'scroll', 'file-pick']);
 
 /** Problems with the task's own rules about the steps (empty when it keeps them). */
 export function taskRuleProblems(task, steps) {

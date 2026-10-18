@@ -27,6 +27,12 @@ test('a click is M + P + BB, with homing when the hand comes from the keyboard',
   assert.deepEqual(operatorsForStep({ kind: 'click', keystrokes: 0 }, 'keyboard').ops, { K: 0, P: 1, B: 2, H: 1, M: 1 });
 });
 
+test('a triple click (select a field\'s whole content) is M + P + BBBBBB; typing right after it into that field continues it', () => {
+  assert.deepEqual(operatorsForStep({ kind: 'triple-click', keystrokes: 0 }, 'mouse').ops, { K: 0, P: 1, B: 6, H: 0, M: 1 });
+  assert.equal(continues({ kind: 'triple-click', screen: '/a' }, { kind: 'type', same_field: true, screen: '/a' }), true);
+  assert.equal(continues({ kind: 'triple-click', screen: '/a' }, { kind: 'type', same_field: false, screen: '/a' }), false);
+});
+
 test('a chained step has no mental preparation', () => {
   assert.equal(operatorsForStep({ kind: 'key', keystrokes: 1, chain: true }, 'keyboard').ops.M, 0);
   assert.equal(operatorsForStep({ kind: 'key', keystrokes: 1 }, 'keyboard').ops.M, 1);

@@ -144,6 +144,12 @@ export const MUTATIONS = [
   ['M98', 'a key the browser handles counts no keystroke (critic K6)', 'lib/operator.mjs', "    return this.#record('key', label || chord, keystrokesForChord(chord), t, { chord });", "    return this.#record('key', label || chord, 0, t, { chord });", 'test/operator.test.mjs', 'a browser key counts'],
   ['M99', 'human plus wait leaves out the system wait (critic K8)', 'lib/operator.mjs', '      human_plus_wait_seconds: round(klm.human_seconds + wait),', '      human_plus_wait_seconds: round(klm.human_seconds),', 'test/operator.test.mjs', 'a browser key counts'],
   ['M100', 'the review page assigns fixed letters (critic K9)', 'lib/review.mjs', "    const letters = assignLetters(['ours', 'odoo'], random);", "    const letters = { ours: 'A', odoo: 'B' };", 'test/cli.test.mjs', 'draws its letters at random'],
+  ['M101', 'a triple click modelled as a single click', 'lib/klm.mjs', "    case 'triple-click': ops.P += 1; ops.B += 6; break;", "    case 'triple-click': ops.P += 1; ops.B += 2; break;", 'test/klm.test.mjs', 'a triple click'],
+  // Round 13 (lead decision on critic p06 r7's question): a fixed prefix a field shows (test/prefix.test.mjs).
+  ['M102', 'a declared prefix credited though the field did not show it at the start (plant PF3)', 'lib/runner.mjs', 'prefixes: prefixesShown.filter(p => p.shown).map(p => p.prefix)', 'prefixes: prefixesShown.map(p => p.prefix)', 'test/prefix.test.mjs', 'plant PF3'],
+  ['M103', 'after a prefix, any typing credited for the rest of the value (plant PF1)', 'lib/runner.mjs', '    return rest !== null && texts.some(t => containsValue(t, rest)) &&', '    return rest !== null && texts.some(t => t.length > 0) &&', 'test/prefix.test.mjs', 'measured part: a declared prefix'],
+  ['M104', 'a prefix credited though the end state lost it (plant PF4)', 'lib/runner.mjs', '(endText === null || compactPrefix(endText).includes(compactPrefix(v)))', 'true', 'test/prefix.test.mjs', 'measured part: a declared prefix'],
+  ['M105', "a declared prefix not checked against the product's code", 'lib/runner.mjs', '      else if (compactPrefix(m[2]) !== compactPrefix(p.prefix)) out.push(', '      else if (false) out.push(', 'test/prefix.test.mjs', 'a prefix declaration names'],
 ];
 
 function copyHarness() {

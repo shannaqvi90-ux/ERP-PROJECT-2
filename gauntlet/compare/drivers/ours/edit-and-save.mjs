@@ -8,8 +8,10 @@ import { oursAs } from '../../lib/ours-api.mjs';
 // +971 the field keeps, so typing replaces it) > type the number without its spaces (the field
 // groups the digits itself). Typing the last digit of a whole UAE number saves the record when it
 // is the record's only change (the form kernel's completed entry; Alt+Z undoes it), so no save key
-// is pressed. A person may type only the number after +971 (505550199); the instrument credits an
-// entered value only when every part of it was typed, so the measured path types +971 too.
+// is pressed. Round 13 (p01, lead decision on critic p06 r7's question): the field keeps +971 as its
+// own (the product's HOME_PREFIX, for every user and record), so the person types only the number
+// after it (505550199); the task declares that prefix for this field, the instrument checks the field
+// shows it as the clock starts, and the back end must hold the whole international number.
 
 const CODE = 'ALN-DXB';
 
@@ -40,10 +42,15 @@ function compact(phone) {
   return phone.replace(/\s+/g, '');
 }
 
+/** The number after the +971 the field keeps, without spaces ('+971 50 555 0199' is 505550199). */
+function national(phone) {
+  return compact(phone).replace(/^\+971/, '');
+}
+
 function build(how) {
   return async (op, ctx) => {
     await op.click(PHONE, { label: 'phone field (selects the number after +971)' });
-    const number = how === 'spaced' ? ctx.task.input.phone : compact(ctx.task.input.phone);
+    const number = how === 'spaced' ? ctx.task.input.phone : how === 'national' ? national(ctx.task.input.phone) : compact(ctx.task.input.phone);
     await op.type(number, { label: 'new number (its last digit saves)' });
     await op.waitFor(() => document.querySelector('.record-form .notice')?.getAttribute('role') === 'status', { label: 'saved' });
     return {};
@@ -52,9 +59,10 @@ function build(how) {
 
 export default {
   built: true,
-  path: 'Click the phone field (the number after +971 is selected) > type the number without spaces; its last digit saves the record. Stand-in record: a company (contacts arrive with p16).',
-  run: build('compact'),
+  path: 'Click the phone field (the number after +971 is selected) > type the number after +971; its last digit saves the record. Stand-in record: a company (contacts arrive with p16).',
+  run: build('national'),
   variants: {
+    national: { path: 'Click the phone field > type 505550199, the number after the +971 the field keeps (the last digit saves)', run: build('national') },
     compact: { path: 'Click the phone field > type +971505550199 (the field groups it; the last digit saves)', run: build('compact') },
     spaced: { path: 'Click the phone field > type +971 50 555 0199 as written (the last digit saves)', run: build('spaced') },
   },

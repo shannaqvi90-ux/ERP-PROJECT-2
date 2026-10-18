@@ -106,6 +106,25 @@ test('a browser key counts its keys, and human plus wait is the human time plus 
   await context.close();
 });
 
+// Round 13 (critic p06 r7, routed to p01): a triple click is one counted step that selects the whole
+// value of a field, so typing replaces it.
+test('a triple click is one step that selects a field\'s whole value; typing then replaces it', async () => {
+  const { context, page, op } = await fresh();
+  await page.fill('#q', '+971 54 427 3034');
+  op.start();
+  await op.tripleClick('#q', { label: 'phone' });
+  await op.type('+971505550199');
+  op.finish();
+  const s = op.summary();
+  assert.deepEqual(op.steps.map(x => [x.kind, x.keystrokes]), [['triple-click', 0], ['type', 14]]);
+  assert.equal(s.steps, 2);
+  assert.equal(s.clicks, 1);
+  assert.equal(op.steps[1].same_field, true);
+  assert.equal(await page.inputValue('#q'), '+971505550199');
+  assert.deepEqual(s.klm_operator_counts, { K: 14, P: 1, B: 6, H: 1, M: 1 });
+  await context.close();
+});
+
 test('choosing a file counts the dialog click and the pick', async () => {
   const { context, op } = await fresh();
   const f = path.join(tmp, 'rows.csv');

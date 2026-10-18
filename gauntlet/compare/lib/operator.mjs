@@ -93,7 +93,7 @@ const describeControl = ch => ({ '\n': '\\n (Enter)', '\r': '\\r (Enter)', '\t':
  * keys, force skips the checks a person's click needs, clickCount adds clicks).
  */
 const OPTIONS = {
-  click: ['label'], doubleClick: ['label'], scrollTo: ['label'], type: ['label'], fill: ['label'], press: ['label'],
+  click: ['label'], doubleClick: ['label'], tripleClick: ['label'], scrollTo: ['label'], type: ['label'], fill: ['label'], press: ['label'],
   browserKey: ['label'], pickFile: ['label'], clickForDownload: ['label'], request: ['label', 'expect'], confirmOnDevice: ['label'],
   waitFor: ['label', 'timeout', 'arg', 'state'],
 };
@@ -261,7 +261,7 @@ export class Operator {
     // Continuation (no M) is derived from the steps (lib/klm.mjs), recorded here for reading only.
     step.chain = continues(this.#steps[this.#steps.length - 1] || null, step);
     this.#steps.push(step);
-    if (kind !== 'click' && kind !== 'double-click') this.#lastClick = null;
+    if (kind !== 'click' && kind !== 'double-click' && kind !== 'triple-click') this.#lastClick = null;
     return { ...step };
   }
 
@@ -308,6 +308,23 @@ export class Operator {
     const t = this.now();
     await loc.dblclick({ timeout: this.defaultTimeout });
     const step = this.#record('double-click', label || String(target), 0, t, {}, undefined, began);
+    this.#lastClick = loc;
+    return step;
+  }
+
+  /**
+   * Round 13 (critic p06 r7, routed to p01): a triple click (one step): it selects the whole
+   * content of a field, the shortest way an expert replaces a value in a product whose field click
+   * does not select it.
+   */
+  async tripleClick(target, opts) {
+    const { label } = checkOptions('tripleClick', opts);
+    this.#begin();
+    const loc = this.#locate(target);
+    const began = await this.#ready(loc, l => l.click({ trial: true, timeout: this.defaultTimeout }));
+    const t = this.now();
+    await loc.click({ clickCount: 3, timeout: this.defaultTimeout });
+    const step = this.#record('triple-click', label || String(target), 0, t, {}, undefined, began);
     this.#lastClick = loc;
     return step;
   }
@@ -556,7 +573,7 @@ export class Operator {
     if (this.#view) return this.#view;
     const op = this;
     const view = {};
-    for (const m of ['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'confirmOnDevice', 'waitFor', 'shot', 'now']) {
+    for (const m of ['click', 'doubleClick', 'tripleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'confirmOnDevice', 'waitFor', 'shot', 'now']) {
       view[m] = (...args) => op[m](...args);
     }
     Object.defineProperties(view, {
@@ -577,7 +594,7 @@ export class Operator {
     return {
       steps: steps.length,
       keystrokes: steps.reduce((s, x) => s + x.keystrokes, 0),
-      clicks: by('click') + by('double-click'),
+      clicks: by('click') + by('double-click') + by('triple-click'),
       scrolls: by('scroll'),
       field_entries: by('type'),
       key_chords: by('key'),
