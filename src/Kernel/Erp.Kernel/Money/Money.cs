@@ -342,7 +342,17 @@ public sealed class DecimalStringJsonConverter : JsonConverter<decimal>
 /// </summary>
 public sealed class MoneyJsonConverter : JsonConverter<Money>
 {
-    private static readonly string[] Fields = ["Amount", "Currency", "ExchangeRate", "BaseAmount", "BaseCurrency"];
+    private const int FieldCount = 5;
+
+    /// <summary>The C# name of JSON field <paramref name="field"/>, in the order written.</summary>
+    private static string Field(int field) => field switch
+    {
+        0 => nameof(Money.Amount),
+        1 => nameof(Money.Currency),
+        2 => nameof(Money.ExchangeRate),
+        3 => nameof(Money.BaseAmount),
+        _ => nameof(Money.BaseCurrency),
+    };
 
     public override Money Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -350,12 +360,12 @@ public sealed class MoneyJsonConverter : JsonConverter<Money>
         {
             throw new JsonException("A money is an object: {\"amount\", \"currency\", \"exchangeRate\", \"baseCurrency\"} and optionally \"baseAmount\".");
         }
-        var names = Fields.Select(f => options.PropertyNamingPolicy?.ConvertName(f) ?? f).ToArray();
+        var names = Enumerable.Range(0, FieldCount).Select(i => options.PropertyNamingPolicy?.ConvertName(Field(i)) ?? Field(i)).ToArray();
         var comparison = options.PropertyNameCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         var decimals = (JsonConverter<decimal>)options.GetConverter(typeof(decimal));
         decimal? amount = null, rate = null, baseAmount = null;
         string? currency = null, baseCurrency = null;
-        var seen = new bool[Fields.Length];
+        var seen = new bool[FieldCount];
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndObject)
@@ -407,7 +417,7 @@ public sealed class MoneyJsonConverter : JsonConverter<Money>
             throw new JsonException("default(Money) has no currency and cannot be written.");
         }
         var decimals = (JsonConverter<decimal>)options.GetConverter(typeof(decimal));
-        string Name(int field) => options.PropertyNamingPolicy?.ConvertName(Fields[field]) ?? Fields[field];
+        string Name(int field) => options.PropertyNamingPolicy?.ConvertName(Field(field)) ?? Field(field);
         writer.WriteStartObject();
         writer.WritePropertyName(Name(0));
         decimals.Write(writer, value.Amount, options);
