@@ -100,6 +100,21 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
             Assert.Equal(HttpStatusCode.BadRequest, arabicOnly.StatusCode);
             Assert.Equal("tenancyLegalNameEn", (await Json(arabicOnly)).GetProperty("errors").GetProperty("legalNameEn")[0].GetProperty("code").GetString());
         }
+        // The English legal name is the Latin-letter one on the trade licence: Arabic script or
+        // digits alone are not it (critic p02 round 11: "فرع ديرة 60473" was saved as the English
+        // legal name), on create and on change; a name with one Latin letter is.
+        foreach (var notEnglish in new[] { "فرع ديرة 60473", "60473", "٦٠٤٧٣ - 1" })
+        {
+            var refused = await admin.PostAsJsonAsync("/api/tenancy/companies", new { legalNameEn = notEnglish, legalNameAr = "مؤسسة الصقر للتجارة", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true });
+            Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+            var error = (await Json(refused)).GetProperty("errors").GetProperty("legalNameEn")[0];
+            Assert.Equal("tenancyLegalNameEnLatin", error.GetProperty("code").GetString());
+        }
+        var notLatin = JsonSerializer.SerializeToNode(new { legalNameEn = "فرع ديرة", legalNameAr = "مؤسسة الصقر", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true })!.AsObject();
+        notLatin["version"] = formOnly.GetProperty("version").GetUInt32();
+        var renamed = await admin.PutAsJsonAsync($"/api/tenancy/companies/{formOnly.GetProperty("id").GetGuid()}", notLatin);
+        Assert.Equal("tenancyLegalNameEnLatin", (await Json(renamed)).GetProperty("errors").GetProperty("legalNameEn")[0].GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("/api/tenancy/companies", new { legalNameEn = "3M Gulf 60473", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true })).StatusCode);
         var all = await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=200");
         Assert.DoesNotContain(all.GetProperty("items").EnumerateArray(), c => c.GetProperty("legalNameAr").GetString() == "مؤسسة الصقر للتجارة");
         var change = JsonSerializer.SerializeToNode(new { legalNameEn = "", legalNameAr = "مؤسسة الصقر", baseCurrency = "AED", fiscalYearStartMonth = 1, fiscalYearStartDay = 1, country = "AE", isActive = true })!.AsObject();

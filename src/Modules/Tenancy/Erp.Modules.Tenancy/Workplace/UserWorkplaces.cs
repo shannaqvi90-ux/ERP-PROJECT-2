@@ -9,7 +9,10 @@ namespace Erp.Modules.Tenancy.Workplace;
 /// An administrator chooses the company another user works in by default (their working company
 /// until they switch). Everything is read within the caller's company scope: the user's access
 /// rows, and their workplace row, are visible only in the caller's companies. A user who also
-/// works in companies outside that scope is left alone (their default may be one of those).
+/// works in companies outside that scope is left alone (their default may be one of those), and so
+/// is a user who works in a company of the scope where the request's permission is not held (a
+/// role given in one company counts only there, critic p02 round 11): acting on an account acts in
+/// every company its user works in.
 /// The branch is cleared when the company changes: the session then picks the user's first branch
 /// there, as it does for a company chosen in the top bar without a branch.
 /// </summary>
@@ -64,14 +67,23 @@ internal sealed class UserWorkplaces(TenancyDbContext db, ErpDbSession session) 
 
     public async Task<IReadOnlyList<Guid>> WorkingElsewhereAsync(CancellationToken cancellationToken)
     {
-        if (await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
+        if (session.PermissionEverywhere && await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken))
         {
             return [];
         }
         // The user's companies in all (counted outside the scope) against those of the caller's
-        // scope (row-level security shows no others), as for one user.
+        // scope (row-level security shows no others) where the request's permission is held, as
+        // for one user.
+        if (session.PermissionEverywhere)
+        {
+            return await db.CompanyTotals.AsNoTracking()
+                .Where(t => t.CompanyCount > db.CompanyAccess.Count(a => a.UserId == t.UserId))
+                .Select(t => t.UserId)
+                .ToListAsync(cancellationToken);
+        }
+        var permitted = session.CompanyIds.Where(session.PermitsCompany).ToList();
         return await db.CompanyTotals.AsNoTracking()
-            .Where(t => t.CompanyCount > db.CompanyAccess.Count(a => a.UserId == t.UserId))
+            .Where(t => t.CompanyCount > db.CompanyAccess.Count(a => a.UserId == t.UserId && permitted.Contains(a.CompanyId)))
             .Select(t => t.UserId)
             .ToListAsync(cancellationToken);
     }
@@ -87,6 +99,6 @@ internal sealed class UserWorkplaces(TenancyDbContext db, ErpDbSession session) 
                                select new CompanyInfo(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.FiscalYearStartMonth, c.FiscalYearStartDay, c.Country, c.IsActive))
             .ToListAsync(cancellationToken);
         var total = await CompanyAccessRules.TotalCompaniesAsync(db, userId, cancellationToken);
-        return (companies, total > companies.Count);
+        return (companies, total > companies.Count(c => session.PermitsCompany(c.Id)));
     }
 }

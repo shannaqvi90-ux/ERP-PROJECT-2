@@ -154,4 +154,74 @@ public sealed class CompanyScopeTests(TenancyFixture fixture) : IClassFixture<Te
             await session.RollbackAsync();
         }
     }
+
+    [Fact]
+    public async Task A_permission_held_in_some_companies_writes_only_there_and_a_read_sees_only_them()
+    {
+        // The kernel's own check under every endpoint (critic p02 round 11): a role held in company
+        // X alone writes nothing of company Y, though the user works in both.
+        var (x, y) = await CompaniesAsync();
+        await using (var scope = Env.Factory.Services.CreateAsyncScope())
+        {
+            var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, Guid.NewGuid(), ErpDbSession.UserActorKind);
+            await session.BindCompaniesAsync([x, y]);
+            session.SetBranchLimits([]);
+            session.SetWorkspaceHolder(true);
+            Assert.True(session.HoldsWholeWorkspace);
+            await session.LimitToPermissionAsync([x], narrowScope: false);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => session.LimitToPermissionAsync(null, narrowScope: false));
+            Assert.True(session.PermitsCompany(x));
+            Assert.False(session.PermitsCompany(y));
+            Assert.False(session.PermissionEverywhere);
+            // The records every company shares need the permission in every company.
+            Assert.False(session.HoldsWholeWorkspace);
+            var db = scope.ServiceProvider.GetRequiredService<TenancyDbContext>();
+            // Both companies are still read (the endpoint names its refusal), but only X is written.
+            Assert.Equal(2, await db.Companies.CountAsync());
+            var companyY = await db.Companies.SingleAsync(c => c.Id == y);
+            companyY.TradeLicenceNumber = "KERNEL-CHECK";
+            await Assert.ThrowsAsync<CompanyPermissionWriteException>(() => db.SaveChangesAsync());
+            db.ChangeTracker.Clear();
+            db.Branches.Add(new Branch { CompanyId = y, Code = "NOPE", NameEn = "Nope", Country = "AE" });
+            await Assert.ThrowsAsync<CompanyPermissionWriteException>(() => db.SaveChangesAsync());
+            db.ChangeTracker.Clear();
+            var companyX = await db.Companies.SingleAsync(c => c.Id == x);
+            companyX.TradeLicenceNumber = "KERNEL-CHECK";
+            await db.SaveChangesAsync();
+            var tenant = await db.Tenants.SingleAsync();
+            tenant.NameEn += " (kernel check)";
+            var refused = await Assert.ThrowsAsync<CrossBranchWriteException>(() => db.SaveChangesAsync());
+            Assert.Equal(CrossBranchWriteException.WorkspaceCode, refused.Code);
+            await session.RollbackAsync();
+        }
+        await using (var scope = Env.Factory.Services.CreateAsyncScope())
+        {
+            // A read-only request: row-level security itself shows the permission's companies alone.
+            var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, Guid.NewGuid(), ErpDbSession.UserActorKind);
+            await session.BindCompaniesAsync([x, y]);
+            session.SetWorkplace(y, null, []);
+            await session.LimitToPermissionAsync([x, Guid.NewGuid()], narrowScope: true);
+            Assert.Equal([x], session.CompanyIds);
+            // The working company is not among them: none is kept (the request is refused anyway).
+            Assert.Null(session.ActiveCompanyId);
+            var db = scope.ServiceProvider.GetRequiredService<TenancyDbContext>();
+            Assert.Equal([x], await db.Companies.IgnoreQueryFilters().Select(c => c.Id).ToListAsync());
+            Assert.All(await db.Branches.IgnoreQueryFilters().ToListAsync(), b => Assert.Equal(x, b.CompanyId));
+            await session.RollbackAsync();
+        }
+        await using (var scope = Env.Factory.Services.CreateAsyncScope())
+        {
+            // Held everywhere (a workspace-wide role): nothing is limited.
+            var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
+            await session.BeginAsync(Env.TenantA.Id, Guid.NewGuid(), ErpDbSession.UserActorKind);
+            await session.BindCompaniesAsync([x, y]);
+            await session.LimitToPermissionAsync(null, narrowScope: true);
+            Assert.Equal(2, session.CompanyIds.Count);
+            Assert.True(session.PermitsCompany(y));
+            Assert.True(session.PermissionEverywhere);
+            await session.RollbackAsync();
+        }
+    }
 }
