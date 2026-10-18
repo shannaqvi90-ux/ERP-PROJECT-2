@@ -1,0 +1,111 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.28]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.76]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.97]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:17.42]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [FAIL]
+[xUnit.net 00:00:17.42]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:17.42]       Expected: 0
+[xUnit.net 00:00:17.42]       Actual:   60
+[xUnit.net 00:00:17.42]       Stack Trace:
+[xUnit.net 00:00:17.42]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(479,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:17.42]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(505,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:17.42]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:17.78]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [FAIL]
+[xUnit.net 00:00:17.78]       identity.passkeys: 2 rows visible without a tenant
+[xUnit.net 00:00:17.78]       identity.roles: 8 rows visible without a tenant
+[xUnit.net 00:00:17.78]       identity.sessions: 6 rows visible without a tenant
+[xUnit.net 00:00:17.78]       identity.sign_in_attempts: 6 rows visible without a tenant
+[xUnit.net 00:00:17.78]       identity.user_credentials: 60 rows visible without a tenant
+[xUnit.net 00:00:17.78]       identity.user_roles: 8 rows visible without a tenant
+[xUnit.net 00:00:17.78]       identity.users: 60 rows visible without a tenant
+[xUnit.net 00:00:17.78]       lists.saved_views: 10 rows visible without a tenant
+[xUnit.net 00:00:17.78]       tenancy.tenants: 2 rows visible without a tenant
+[xUnit.net 00:00:17.78]       tenancy.user_company_totals: 8 rows visible without a tenant
+[xUnit.net 00:00:17.78]       Stack Trace:
+[xUnit.net 00:00:17.78]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(464,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:17.78]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(465,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:17.78]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:17.87]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:00:17.87]       identity.passkeys: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       identity.roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       identity.sessions: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       identity.sign_in_attempts: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       identity.user_company_roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       identity.user_credentials: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       identity.user_roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       identity.users: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       lists.saved_views: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       tenancy.branches: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       tenancy.companies: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       tenancy.tenants: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       tenancy.user_branch_access: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       tenancy.user_company_access: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       tenancy.user_company_totals: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       tenancy.user_workplaces: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+[xUnit.net 00:00:17.87]       Stack Trace:
+[xUnit.net 00:00:17.87]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(43,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy()
+[xUnit.net 00:00:17.87]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [95 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [14 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [14 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   60
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 479
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 505
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [369 ms]
+  Error Message:
+   identity.passkeys: 2 rows visible without a tenant
+identity.roles: 8 rows visible without a tenant
+identity.sessions: 6 rows visible without a tenant
+identity.sign_in_attempts: 6 rows visible without a tenant
+identity.user_credentials: 60 rows visible without a tenant
+identity.user_roles: 8 rows visible without a tenant
+identity.users: 60 rows visible without a tenant
+lists.saved_views: 10 rows visible without a tenant
+tenancy.tenants: 2 rows visible without a tenant
+tenancy.user_company_totals: 8 rows visible without a tenant
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 464
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 465
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [40 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [40 ms]
+  Error Message:
+   identity.passkeys: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+identity.roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+identity.sessions: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+identity.sign_in_attempts: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+identity.user_company_roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+identity.user_credentials: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+identity.user_roles: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+identity.users: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+lists.saved_views: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+tenancy.branches: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+tenancy.companies: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+tenancy.tenants: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+tenancy.user_branch_access: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+tenancy.user_company_access: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+tenancy.user_company_totals: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+tenancy.user_workplaces: tenant_isolation must be PERMISSIVE FOR ALL TO PUBLIC USING and WITH CHECK (tenant_id = erp.current_tenant_id()) (is * True [public] ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)) / ((tenant_id = erp.current_tenant_id()) OR (erp.current_tenant_id() IS NULL)))
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [19 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [179 ms]
+[xUnit.net 00:00:18.30]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [24 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [5 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [25 ms]
+
+Test Run Failed.
+Total tests: 12
+     Passed: 9
+     Failed: 3
+ Total time: 18.8706 Seconds

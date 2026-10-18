@@ -1,0 +1,98 @@
+build start 16:27:15
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:20.42
+build end 16:27:40
+=== PROOFNONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR12Proof start 16:27:40
+=== PROOFNONE exit 1 end 16:27:59
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [478 ms]
+Total tests: 3
+ Total time: 18.5014 Seconds
+=== PROOFP8 (CRITIC_PLANT=P8) filter FullyQualifiedName~CriticR12Proof start 16:27:59
+=== PROOFP8 exit 1 end 16:28:20
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [601 ms]
+Total tests: 3
+ Total time: 20.1961 Seconds
+=== PROOFP7 (CRITIC_PLANT=P7) filter FullyQualifiedName~CriticR12Proof start 16:28:20
+=== PROOFP7 exit 1 end 16:28:40
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Update_alone_does_not_open_reads [1 s]
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [523 ms]
+Total tests: 3
+ Total time: 18.9387 Seconds
+=== PROOFP6 (CRITIC_PLANT=P6) filter FullyQualifiedName~CriticR12Proof start 16:28:40
+=== PROOFP6 exit 1 end 16:29:00
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [504 ms]
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [298 ms]
+Total tests: 3
+ Total time: 18.8469 Seconds
+=== PROOFP9 (CRITIC_PLANT=P9) filter FullyQualifiedName~CriticR12Proof start 16:29:00
+=== PROOFP9 exit 1 end 16:29:08
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [1 ms]
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Update_alone_does_not_open_reads [1 ms]
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [1 ms]
+Total tests: 3
+ Total time: 7.3368 Seconds
+=== G2P8 (CRITIC_PLANT=P8) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules start 16:29:08
+=== G2P8 exit 1 end 16:33:41
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [14 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [7 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [43 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 15 s]
+Total tests: 94
+ Total time: 4.5315 Minutes
+=== G1L8DB (CRITIC_PLANT=L8) filter FullyQualifiedName~Erp.Gates.Tests.G1.G1DatabaseIsolationTests start 16:33:41
+=== G1L8DB exit 1 end 16:34:01
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [14 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [369 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [40 ms]
+Total tests: 12
+ Total time: 18.8706 Seconds
+=== G2P6 (CRITIC_PLANT=P6) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules start 16:34:01
+=== G2P6 exit 1 end 16:38:51
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [14 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [17 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [9 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [22 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 8 s]
+Total tests: 94
+ Total time: 4.8221 Minutes
+=== G2P7 (CRITIC_PLANT=P7) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules start 16:38:51
+=== G2P7 exit 1 end 16:43:57
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 11 s]
+Total tests: 94
+ Total time: 5.0844 Minutes
+=== G2P9 (CRITIC_PLANT=P9) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules start 16:43:57
+=== G2P9 exit 1 end 16:44:07
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [1 ms]
+  Failed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [1 ms]
+  Failed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [1 ms]
+  Failed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [1 ms]
+  Failed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [1 ms]
+  Failed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [1 ms]
+  Failed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [1 ms]
+Total tests: 94
+ Total time: 8.8728 Seconds

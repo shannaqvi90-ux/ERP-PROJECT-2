@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="a SIGTERM to ./erp verify ends every stage process it started (the e2e loop, docker run, tee, sed, the load sampler)" time="1.410336" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="stop_process_trees ends a process, its children and grandchildren, and nothing else" time="0.993009" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="a run busy only in the middle is not judged quiet (critics p02 r8, p03 r8, p01 r10: load 0.28 at the start, 68-74 mid-run, 4.76 at the end)" time="0.046262" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="a run quiet throughout and too slow fails, and one quiet throughout within the maximum passes" time="0.136314" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="one busy sample anywhere makes the run busy; without samples (an older ./erp) the start and end readings decide as before" time="0.182751" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="samples that cannot be read do not make a run quiet: an empty or broken sample file is judged busy only by its readings, never skipped silently" time="0.056680" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<!-- tests 6 -->
+	<!-- suites 0 -->
+	<!-- pass 6 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 2911.208061 -->
+</testsuites>

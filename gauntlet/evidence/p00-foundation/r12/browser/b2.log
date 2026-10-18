@@ -1,0 +1,14 @@
+NOACCESS shell: "Skip to content\nERP\nAl Noor Trading LLC\nSearch screens, records and actions\nCtrl\nK\nالعربية\nLayla Nasser\nSign out\nWelcome, Layla Nasser\n\nNo areas are open to you yet. Ask an administrator to give you a role.\n\nSigned in as Layla Nasser · workspace alnoor\nSession valid until 19 Oct 2026, 8:20 AM\nCtrl\nK\nCommands ·\n?\nShortcuts"
+NOACCESS GET /api/identity/users?take=1 403
+NOACCESS GET /api/identity/roles?take=1 403
+NOACCESS GET /api/tenancy/companies?take=1 403
+NOACCESS GET /api/reports/identity.users?format=csv 404
+NOACCESS direct /identity/users: "Skip to content\nERP\nAl Noor Trading LLC\nSearch screens, records and actions\nCtrl\nK\nالعربية\nLayla Nasser\nSign out\nHome\nUsers\nNo access\n\nYour roles do not allow this screen. Ask an administrator if you need it.\n\nSigned in as Layla Nasser · workspace alnoor\nSession valid until 19 Oct 2026, 8:20 AM\nCtrl"
+VIEWER users buttons: Search screens, records and actions
+Ctrl
+K | العربية | Omar Haddad | Sign out | View: Standard | Columns | Print or export | Name | ▾ | E-mail | ▾ | ▾ | ▾ | Last sign-in | ▾
+VIEWER POST role 403
+EMPTYCO after temp password: "نظام تخطيط الموارد\nEnglish\n\nسجّل الدخول إلى مساحة عملك.\n\nالبريد الإلكتروني\nكلمة المرور\nإظهار\nكلمة المرور الجديدة\nأعد كتابة كلمة المرور الجديدة\nاختر كلمة مرور جديدة لإكمال تسجيل الدخول.\nتسجيل الدخول" rtl
+EMPTYCO focus كلمة المرور الجديدة
+EMPTYCO shell: "انتقل إلى المحتوى\nنظام تخطيط الموارد\nشركة فارغة للتجارة\nEMPTYCO · HQ\nالبحث في الشاشات والسجلات والإجراءات\nCtrl\nK\nEnglish\nOwner Empty\nتسجيل الخروج\nالتقارير\nالمستخدمون\nالأدوار\nالوصول إلى الشركات\nالشركات\nالفروع\nمساحة العمل\nحسابي\nمرحبًا، Owner Empty\n\nافتح قسمًا:\n\nالمستخدمون\nالأدوار\nالوصول إلى الشركات\nالشركات\nالفروع\nمساحة العمل\nالتقارير\nحسابي\nتم تسجيل الدخول باسم Owner Empty · مساحة العمل emptyco\nالجلسة صالحة حتى 19‏/10‏/2026، 8:21 ص\nCtrl\nK\nالأوامر ·\n?\nالاختصارات" rtl
+EMPTYCO temp password again -> 401  own password -> 200

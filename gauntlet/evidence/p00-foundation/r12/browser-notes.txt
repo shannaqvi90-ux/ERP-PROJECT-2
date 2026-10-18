@@ -1,0 +1,16 @@
+Critic p00 r12 browser walk (Playwright 1.56 core with Chromium 1243, demo at http://localhost:20050, scripts in browser/).
+- 01 English sign-in: lang=en dir=ltr, e-mail field focused at load; Tab order password, show, Sign in, passkey, العربية, e-mail.
+- 02 Arabic sign-in (browser language ar-AE): lang=ar dir=rtl, every label Arabic; only "English" switch is Latin.
+- 03 Keyboard sign-in admin@alnoor.example: type, Enter, password, Enter -> English shell (Sign out visible) 822 ms after typing started.
+- 04 admin.ar@alnoor.example: Arabic RTL shell; Latin tokens only company codes (ALN-DXB, DEIRA-HQ...), Ctrl/K, English switch, workspace code alnoor.
+  Arabic shell by Tab: content tiles, skip link, menu toggle, brand, company buttons ALN-*, search, English, shortcuts, preferences, sign-out, side nav.
+  Ctrl+K, type الأدوار, Enter -> /identity/roles (title الأدوار).
+- 05 noaccess@alnoor.example: shell with "No areas are open to you yet"; API GET users/roles/companies 403; /identity/users screen "No access".
+- read-only viewer: users list offers no New button (buttons: View, Columns, Print or export, column menus); POST /api/identity/roles 403.
+- 07/08 Empty Arabic workspace from './erp tenant create --language ar' (5.7 s): first sign-in with the operator's initial password asks for a
+  new password (focus in the new-password field, RTL), keyboard only; then the Arabic shell. Afterwards the initial password answers 401,
+  the new one 200 (r11's open finding is fixed). Audit rows record must_change true -> false and the hash change as [redacted].
+- 09 Six wrong passwords for viewer@: "Too many failed sign-ins with this e-mail address from this device. Sign-in with it from here is paused
+  until 8:36 PM (about 15 minutes)..."; the right password while paused gets the same message.
+- Sign-out (API): POST /api/auth/sign-out 204; the same token then answers 401 as Bearer and as cookie. Session cookie: HttpOnly, SameSite=Strict
+  (no Secure flag on the plain-HTTP demo).

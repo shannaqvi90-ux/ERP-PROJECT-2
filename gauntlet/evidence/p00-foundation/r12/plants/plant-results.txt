@@ -1,0 +1,33 @@
+Critic p00 r12 plants (plants.diff + CriticR12Proof.cs, inert unless CRITIC_PLANT names them), run in the toolbox
+(run-in-toolbox.sh / run-plants.sh; batch 1 16:27-16:44Z, batch 2 16:45-17:21Z). One build carries every plant.
+Control: CriticR12Proof with CRITIC_PLANT=NONE passes 4/4 (plant-PROOFNONE2.log).
+
+PERMISSION PLANTS (kernel PermissionAuthorizationHandler / session authentication / host endpoint table)
+P6  r11's miss, re-planted unchanged: a route id or userId equal to the caller's own user id passes every permission.
+    Proof: CriticR12Proof fails with P6 (plant-PROOFP6.log). CAUGHT by G2 (plant-G2P6.log, 5 failures):
+    A_user_whose_roles_grant_nothing... "GET /api/identity/roles/{id:guid} naming the caller's user id answered 404 (expected 403)",
+    Granting_exactly_one..., A_user_who_lost_every_role..., own-id self-tests. r11's gap is fixed.
+P7  "whoever may change a resource may read it": a *.read permission passes for any holder of module.resource.*.
+    Proof: update-only user GETs /api/identity/users -> not 403 (plant-PROOFP7.log). CAUGHT by G2 Granting_exactly_one (plant-G2P7.log).
+P8  "people may manage what they created": a route id whose audit insert row names the caller passes any permission.
+    Proof: a roles.create-only user created a role, then PUT it (200, renamed) and DELETE it (204) (plant-PROOFP8.log).
+    CAUGHT by G2 (plant-G2P8.log, 4 failures): A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made,
+    Granting_exactly_one ("identity.profile.update: GET /api/identity/roles/{id} naming audit.entries.record_id answered 404 (expected 403)"),
+    A_user_whose_roles_grant_nothing..., own-id self-test.
+P9  a kernel endpoint GET /api/shell/badges with RequireAuthorization() only (no permission).
+    CAUGHT before any request: the host refuses to start ("Endpoint authorisation is incomplete: GET /api/shell/badges: declares no permission"),
+    so every G2/Rules test fails (plant-G2P9.log, plant-PROOFP9.log).
+P10 session permissions kept five minutes in a process-wide dictionary (a role taken away keeps working).
+    Proof: user still reads users after the role lost identity.users.read (plant-PROOFP10.log).
+    CAUGHT live by G2 (plant-G2P10.log): G2CompanyRoleTests "identity.profile.update: held only in company X, still in the session while working in Y",
+    G2ReportDataTests; and statically by G1ProcessStateTests (plant-G1P10.log).
+
+TENANT-LEAK PLANTS (kernel)
+L8  TenantSql.ProtectTenantTable policy "tenant_id = erp.current_tenant_id() OR erp.current_tenant_id() IS NULL" (no tenant bound sees every tenant).
+    CAUGHT by G1DatabaseIsolationTests (3 failures, plant-G1L8DB.log): standard-policy check, app role sees only its own tenant, connection-level tenant ignored.
+L9  kernel ListBinding keeps list totals in temp files for 120 s keyed by list, search and filter, no tenant (state outside process memory).
+    CAUGHT live (plant-G1L9.log): G1HttpIsolation "GET /api/identity/users?search=bravocnry... total 1 but for a value that exists nowhere total 0",
+    G1ListVolume "1268 list answers at volume that are not the asking tenant's own", G1NonInterference "8 answers depend on the other tenant's activity",
+    G1CompanyIsolation. (Static failures in that log, TenantSource/TenantSettingCode/ProcessState, name the P8 and P10 plant text, not L9.)
+
+Result: every plant in p00's surface was caught by its gate.

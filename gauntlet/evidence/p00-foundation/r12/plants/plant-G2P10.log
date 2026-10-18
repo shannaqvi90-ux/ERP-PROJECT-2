@@ -1,0 +1,591 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.36]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.95]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.25]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [6 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [7 s]
+[xUnit.net 00:00:31.60]     Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [FAIL]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, identity.signIns.read] lists reports [identity.roleSummary], expected []
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, identity.signIns.read] lists printable lists [identity.roles], expected []
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, identity.users.read] lists reports [identity.roleSummary], expected [identity.usersByRole]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, identity.users.read] lists printable lists [identity.roles], expected [identity.users]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.access.read] lists reports [identity.roleSummary], expected []
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.access.read] lists printable lists [identity.roles], expected [tenancy.access]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.branches.read] lists reports [identity.roleSummary], expected [tenancy.branchDirectory]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.branches.read] lists printable lists [identity.roles], expected [tenancy.branches]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.companies.read] lists reports [identity.roleSummary], expected [tenancy.companyProfile]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.companies.read] lists printable lists [identity.roles], expected [tenancy.companies]
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.tenant.read] lists reports [identity.roleSummary], expected []
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.tenant.read] lists printable lists [identity.roles], expected []
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.workplace.read] lists reports [identity.roleSummary], expected []
+[xUnit.net 00:00:31.61]       catalogue for [reports.catalog.read, tenancy.workplace.read] lists printable lists [identity.roles], expected []
+[xUnit.net 00:00:31.61]       Stack Trace:
+[xUnit.net 00:00:31.61]         /work/tests/Erp.Gates.Tests/G2/G2ReportDataTests.cs(58,0): at Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see()
+[xUnit.net 00:00:31.61]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [2 s]
+  Error Message:
+   catalogue for [reports.catalog.read, identity.signIns.read] lists reports [identity.roleSummary], expected []
+catalogue for [reports.catalog.read, identity.signIns.read] lists printable lists [identity.roles], expected []
+catalogue for [reports.catalog.read, identity.users.read] lists reports [identity.roleSummary], expected [identity.usersByRole]
+catalogue for [reports.catalog.read, identity.users.read] lists printable lists [identity.roles], expected [identity.users]
+catalogue for [reports.catalog.read, tenancy.access.read] lists reports [identity.roleSummary], expected []
+catalogue for [reports.catalog.read, tenancy.access.read] lists printable lists [identity.roles], expected [tenancy.access]
+catalogue for [reports.catalog.read, tenancy.branches.read] lists reports [identity.roleSummary], expected [tenancy.branchDirectory]
+catalogue for [reports.catalog.read, tenancy.branches.read] lists printable lists [identity.roles], expected [tenancy.branches]
+catalogue for [reports.catalog.read, tenancy.companies.read] lists reports [identity.roleSummary], expected [tenancy.companyProfile]
+catalogue for [reports.catalog.read, tenancy.companies.read] lists printable lists [identity.roles], expected [tenancy.companies]
+catalogue for [reports.catalog.read, tenancy.tenant.read] lists reports [identity.roleSummary], expected []
+catalogue for [reports.catalog.read, tenancy.tenant.read] lists printable lists [identity.roles], expected []
+catalogue for [reports.catalog.read, tenancy.workplace.read] lists reports [identity.roleSummary], expected []
+catalogue for [reports.catalog.read, tenancy.workplace.read] lists printable lists [identity.roles], expected []
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see() in /work/tests/Erp.Gates.Tests/G2/G2ReportDataTests.cs:line 58
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [13 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [15 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [14 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [14 s]
+[xUnit.net 00:01:07.10]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [FAIL]
+[xUnit.net 00:01:07.10]       identity.profile.update: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.profile.update: menu entry identity.me shown while working in Y
+[xUnit.net 00:01:07.10]       identity.profile.update: GET /api/identity/me/passkeys answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.profile.update: POST /api/identity/me/passkeys answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.profile.update: POST /api/identity/me/passkeys/options answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.profile.update: DELETE /api/identity/me/passkeys/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.profile.update: GET /api/identity/me/passkeys/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.profile.update: PUT /api/identity/me/passkeys/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.profile.update: PUT /api/identity/me/preferences answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.create: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.roles.create: POST /api/identity/roles answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.create: POST /api/identity/roles/{id:guid}/copy answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.delete: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.roles.delete: DELETE /api/identity/roles/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.roles.read: menu entry identity.roles shown while working in Y
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/identity/permissions answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/identity/roles answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/identity/roles/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/lists/identity.roles/definition answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/lists/identity.roles/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/lists/identity.roles/views answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: POST /api/lists/identity.roles/views answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: DELETE /api/lists/identity.roles/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/lists/identity.roles/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: PUT /api/lists/identity.roles/views/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/reports/lists/identity.roles answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.read: GET /api/reports/run/identity.roleSummary answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.roles.update: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.roles.update: PUT /api/identity/roles/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.signIns.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.signIns.read: GET /api/identity/users/{id:guid}/sign-ins answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.create: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.users.create: POST /api/identity/users answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.delete: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.users.delete: DELETE /api/identity/users/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.users.read: menu entry identity.users shown while working in Y
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/identity/companies answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/identity/users answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/identity/users/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/identity/users/{id:guid}/access answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/identity/users/{id:guid}/default-company answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/identity/users/{id:guid}/passkeys answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/lists/identity.users/definition answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/lists/identity.users/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/lists/identity.users/views answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: POST /api/lists/identity.users/views answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: DELETE /api/lists/identity.users/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/lists/identity.users/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: PUT /api/lists/identity.users/views/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/reports/lists/identity.users answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.read: GET /api/reports/run/identity.usersByRole answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.resetPassword: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.users.resetPassword: POST /api/identity/users/{id:guid}/password answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.update: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       identity.users.update: POST /api/identity/users/matching/active answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.update: PUT /api/identity/users/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.update: PUT /api/identity/users/{id:guid}/default-company answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.update: DELETE /api/identity/users/{id:guid}/passkeys answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.update: POST /api/identity/users/{id:guid}/sessions/revoke answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       identity.users.update: POST /api/identity/users/{id:guid}/unblock answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       lists.views.share: POST /api/lists/identity.roles/shared-views answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: PUT /api/lists/identity.roles/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: POST /api/lists/identity.users/shared-views answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: DELETE /api/lists/identity.users/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: PUT /api/lists/identity.users/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: POST /api/lists/tenancy.access/shared-views answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: PUT /api/lists/tenancy.access/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: POST /api/lists/tenancy.branches/shared-views answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: PUT /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: POST /api/lists/tenancy.companies/shared-views answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       lists.views.share: PUT /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       reports.catalog.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       reports.catalog.read: menu entry reports.catalog shown while working in Y
+[xUnit.net 00:01:07.10]       reports.catalog.read: GET /api/reports/catalog answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.access.read: menu entry tenancy.access shown while working in Y
+[xUnit.net 00:01:07.10]       tenancy.access.read: GET /api/lists/tenancy.access/definition answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: GET /api/lists/tenancy.access/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: GET /api/lists/tenancy.access/views answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: POST /api/lists/tenancy.access/views answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: DELETE /api/lists/tenancy.access/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: GET /api/lists/tenancy.access/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: PUT /api/lists/tenancy.access/views/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: GET /api/reports/lists/tenancy.access answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: GET /api/tenancy/access answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.read: GET /api/tenancy/access/{userId:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.access.update: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.access.update: PUT /api/tenancy/access/{userId:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.create: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.branches.create: POST /api/tenancy/branches answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.branches.read: menu entry tenancy.branches shown while working in Y
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/lists/tenancy.branches/definition answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/lists/tenancy.branches/views answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: POST /api/lists/tenancy.branches/views answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: DELETE /api/lists/tenancy.branches/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/lists/tenancy.branches/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: PUT /api/lists/tenancy.branches/views/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/reports/lists/tenancy.branches answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/reports/run/tenancy.branchDirectory answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/tenancy/branches answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.read: GET /api/tenancy/branches/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.branches.update: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.branches.update: PUT /api/tenancy/branches/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.create: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.companies.create: POST /api/tenancy/companies answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.companies.read: menu entry tenancy.companies shown while working in Y
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/lists/tenancy.companies/definition answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/lists/tenancy.companies/views answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: POST /api/lists/tenancy.companies/views answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: DELETE /api/lists/tenancy.companies/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/lists/tenancy.companies/views/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: PUT /api/lists/tenancy.companies/views/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/reports/lists/tenancy.companies answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/reports/run/tenancy.companyProfile answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/tenancy/companies answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/tenancy/companies/{id:guid} answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.read: GET /api/tenancy/companies/{id:guid}/logo answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.update: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.companies.update: PUT /api/tenancy/companies/{id:guid} answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.update: DELETE /api/tenancy/companies/{id:guid}/logo answered 404 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.companies.update: PUT /api/tenancy/companies/{id:guid}/logo answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.tenant.read: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.tenant.read: menu entry tenancy.tenant shown while working in Y
+[xUnit.net 00:01:07.10]       tenancy.tenant.read: GET /api/tenancy/tenant answered 200 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       tenancy.tenant.update: held only in company X, still in the session while working in Y
+[xUnit.net 00:01:07.10]       tenancy.tenant.update: PUT /api/tenancy/tenant answered 400 while working in Y (expected 403)
+[xUnit.net 00:01:07.10]       Stack Trace:
+[xUnit.net 00:01:07.10]         /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs(128,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another()
+[xUnit.net 00:01:07.10]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:07.10]       Output:
+[xUnit.net 00:01:07.10]         23 permissions held in one company, 227 checks
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [28 s]
+  Error Message:
+   identity.profile.update: held only in company X, still in the session while working in Y
+identity.profile.update: menu entry identity.me shown while working in Y
+identity.profile.update: GET /api/identity/me/passkeys answered 200 while working in Y (expected 403)
+identity.profile.update: POST /api/identity/me/passkeys answered 400 while working in Y (expected 403)
+identity.profile.update: POST /api/identity/me/passkeys/options answered 200 while working in Y (expected 403)
+identity.profile.update: DELETE /api/identity/me/passkeys/{id:guid} answered 404 while working in Y (expected 403)
+identity.profile.update: GET /api/identity/me/passkeys/{id:guid} answered 404 while working in Y (expected 403)
+identity.profile.update: PUT /api/identity/me/passkeys/{id:guid} answered 400 while working in Y (expected 403)
+identity.profile.update: PUT /api/identity/me/preferences answered 400 while working in Y (expected 403)
+identity.roles.create: held only in company X, still in the session while working in Y
+identity.roles.create: POST /api/identity/roles answered 400 while working in Y (expected 403)
+identity.roles.create: POST /api/identity/roles/{id:guid}/copy answered 400 while working in Y (expected 403)
+identity.roles.delete: held only in company X, still in the session while working in Y
+identity.roles.delete: DELETE /api/identity/roles/{id:guid} answered 404 while working in Y (expected 403)
+identity.roles.read: held only in company X, still in the session while working in Y
+identity.roles.read: menu entry identity.roles shown while working in Y
+identity.roles.read: GET /api/identity/permissions answered 200 while working in Y (expected 403)
+identity.roles.read: GET /api/identity/roles answered 200 while working in Y (expected 403)
+identity.roles.read: GET /api/identity/roles/{id:guid} answered 404 while working in Y (expected 403)
+identity.roles.read: GET /api/lists/identity.roles/definition answered 200 while working in Y (expected 403)
+identity.roles.read: GET /api/lists/identity.roles/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+identity.roles.read: GET /api/lists/identity.roles/views answered 200 while working in Y (expected 403)
+identity.roles.read: POST /api/lists/identity.roles/views answered 400 while working in Y (expected 403)
+identity.roles.read: DELETE /api/lists/identity.roles/views/{id:guid} answered 404 while working in Y (expected 403)
+identity.roles.read: GET /api/lists/identity.roles/views/{id:guid} answered 404 while working in Y (expected 403)
+identity.roles.read: PUT /api/lists/identity.roles/views/{id:guid} answered 400 while working in Y (expected 403)
+identity.roles.read: GET /api/reports/lists/identity.roles answered 200 while working in Y (expected 403)
+identity.roles.read: GET /api/reports/run/identity.roleSummary answered 200 while working in Y (expected 403)
+identity.roles.update: held only in company X, still in the session while working in Y
+identity.roles.update: PUT /api/identity/roles/{id:guid} answered 400 while working in Y (expected 403)
+identity.signIns.read: held only in company X, still in the session while working in Y
+identity.signIns.read: GET /api/identity/users/{id:guid}/sign-ins answered 404 while working in Y (expected 403)
+identity.users.create: held only in company X, still in the session while working in Y
+identity.users.create: POST /api/identity/users answered 400 while working in Y (expected 403)
+identity.users.delete: held only in company X, still in the session while working in Y
+identity.users.delete: DELETE /api/identity/users/{id:guid} answered 404 while working in Y (expected 403)
+identity.users.read: held only in company X, still in the session while working in Y
+identity.users.read: menu entry identity.users shown while working in Y
+identity.users.read: GET /api/identity/companies answered 200 while working in Y (expected 403)
+identity.users.read: GET /api/identity/users answered 200 while working in Y (expected 403)
+identity.users.read: GET /api/identity/users/{id:guid} answered 404 while working in Y (expected 403)
+identity.users.read: GET /api/identity/users/{id:guid}/access answered 404 while working in Y (expected 403)
+identity.users.read: GET /api/identity/users/{id:guid}/default-company answered 404 while working in Y (expected 403)
+identity.users.read: GET /api/identity/users/{id:guid}/passkeys answered 404 while working in Y (expected 403)
+identity.users.read: GET /api/lists/identity.users/definition answered 200 while working in Y (expected 403)
+identity.users.read: GET /api/lists/identity.users/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+identity.users.read: GET /api/lists/identity.users/views answered 200 while working in Y (expected 403)
+identity.users.read: POST /api/lists/identity.users/views answered 400 while working in Y (expected 403)
+identity.users.read: DELETE /api/lists/identity.users/views/{id:guid} answered 404 while working in Y (expected 403)
+identity.users.read: GET /api/lists/identity.users/views/{id:guid} answered 404 while working in Y (expected 403)
+identity.users.read: PUT /api/lists/identity.users/views/{id:guid} answered 400 while working in Y (expected 403)
+identity.users.read: GET /api/reports/lists/identity.users answered 200 while working in Y (expected 403)
+identity.users.read: GET /api/reports/run/identity.usersByRole answered 200 while working in Y (expected 403)
+identity.users.resetPassword: held only in company X, still in the session while working in Y
+identity.users.resetPassword: POST /api/identity/users/{id:guid}/password answered 404 while working in Y (expected 403)
+identity.users.update: held only in company X, still in the session while working in Y
+identity.users.update: POST /api/identity/users/matching/active answered 400 while working in Y (expected 403)
+identity.users.update: PUT /api/identity/users/{id:guid} answered 400 while working in Y (expected 403)
+identity.users.update: PUT /api/identity/users/{id:guid}/default-company answered 400 while working in Y (expected 403)
+identity.users.update: DELETE /api/identity/users/{id:guid}/passkeys answered 404 while working in Y (expected 403)
+identity.users.update: POST /api/identity/users/{id:guid}/sessions/revoke answered 404 while working in Y (expected 403)
+identity.users.update: POST /api/identity/users/{id:guid}/unblock answered 404 while working in Y (expected 403)
+lists.views.share: held only in company X, still in the session while working in Y
+lists.views.share: POST /api/lists/identity.roles/shared-views answered 404 while working in Y (expected 403)
+lists.views.share: DELETE /api/lists/identity.roles/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: PUT /api/lists/identity.roles/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: POST /api/lists/identity.users/shared-views answered 404 while working in Y (expected 403)
+lists.views.share: DELETE /api/lists/identity.users/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: PUT /api/lists/identity.users/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: POST /api/lists/tenancy.access/shared-views answered 404 while working in Y (expected 403)
+lists.views.share: DELETE /api/lists/tenancy.access/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: PUT /api/lists/tenancy.access/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: POST /api/lists/tenancy.branches/shared-views answered 404 while working in Y (expected 403)
+lists.views.share: DELETE /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: PUT /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: POST /api/lists/tenancy.companies/shared-views answered 404 while working in Y (expected 403)
+lists.views.share: DELETE /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+lists.views.share: PUT /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+reports.catalog.read: held only in company X, still in the session while working in Y
+reports.catalog.read: menu entry reports.catalog shown while working in Y
+reports.catalog.read: GET /api/reports/catalog answered 200 while working in Y (expected 403)
+tenancy.access.read: held only in company X, still in the session while working in Y
+tenancy.access.read: menu entry tenancy.access shown while working in Y
+tenancy.access.read: GET /api/lists/tenancy.access/definition answered 200 while working in Y (expected 403)
+tenancy.access.read: GET /api/lists/tenancy.access/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.access.read: GET /api/lists/tenancy.access/views answered 200 while working in Y (expected 403)
+tenancy.access.read: POST /api/lists/tenancy.access/views answered 400 while working in Y (expected 403)
+tenancy.access.read: DELETE /api/lists/tenancy.access/views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.access.read: GET /api/lists/tenancy.access/views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.access.read: PUT /api/lists/tenancy.access/views/{id:guid} answered 400 while working in Y (expected 403)
+tenancy.access.read: GET /api/reports/lists/tenancy.access answered 200 while working in Y (expected 403)
+tenancy.access.read: GET /api/tenancy/access answered 200 while working in Y (expected 403)
+tenancy.access.read: GET /api/tenancy/access/{userId:guid} answered 404 while working in Y (expected 403)
+tenancy.access.update: held only in company X, still in the session while working in Y
+tenancy.access.update: PUT /api/tenancy/access/{userId:guid} answered 400 while working in Y (expected 403)
+tenancy.branches.create: held only in company X, still in the session while working in Y
+tenancy.branches.create: POST /api/tenancy/branches answered 400 while working in Y (expected 403)
+tenancy.branches.read: held only in company X, still in the session while working in Y
+tenancy.branches.read: menu entry tenancy.branches shown while working in Y
+tenancy.branches.read: GET /api/lists/tenancy.branches/definition answered 200 while working in Y (expected 403)
+tenancy.branches.read: GET /api/lists/tenancy.branches/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.branches.read: GET /api/lists/tenancy.branches/views answered 200 while working in Y (expected 403)
+tenancy.branches.read: POST /api/lists/tenancy.branches/views answered 400 while working in Y (expected 403)
+tenancy.branches.read: DELETE /api/lists/tenancy.branches/views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.branches.read: GET /api/lists/tenancy.branches/views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.branches.read: PUT /api/lists/tenancy.branches/views/{id:guid} answered 400 while working in Y (expected 403)
+tenancy.branches.read: GET /api/reports/lists/tenancy.branches answered 200 while working in Y (expected 403)
+tenancy.branches.read: GET /api/reports/run/tenancy.branchDirectory answered 200 while working in Y (expected 403)
+tenancy.branches.read: GET /api/tenancy/branches answered 200 while working in Y (expected 403)
+tenancy.branches.read: GET /api/tenancy/branches/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.branches.update: held only in company X, still in the session while working in Y
+tenancy.branches.update: PUT /api/tenancy/branches/{id:guid} answered 400 while working in Y (expected 403)
+tenancy.companies.create: held only in company X, still in the session while working in Y
+tenancy.companies.create: POST /api/tenancy/companies answered 400 while working in Y (expected 403)
+tenancy.companies.read: held only in company X, still in the session while working in Y
+tenancy.companies.read: menu entry tenancy.companies shown while working in Y
+tenancy.companies.read: GET /api/lists/tenancy.companies/definition answered 200 while working in Y (expected 403)
+tenancy.companies.read: GET /api/lists/tenancy.companies/shared-views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.companies.read: GET /api/lists/tenancy.companies/views answered 200 while working in Y (expected 403)
+tenancy.companies.read: POST /api/lists/tenancy.companies/views answered 400 while working in Y (expected 403)
+tenancy.companies.read: DELETE /api/lists/tenancy.companies/views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.companies.read: GET /api/lists/tenancy.companies/views/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.companies.read: PUT /api/lists/tenancy.companies/views/{id:guid} answered 400 while working in Y (expected 403)
+tenancy.companies.read: GET /api/reports/lists/tenancy.companies answered 200 while working in Y (expected 403)
+tenancy.companies.read: GET /api/reports/run/tenancy.companyProfile answered 400 while working in Y (expected 403)
+tenancy.companies.read: GET /api/tenancy/companies answered 200 while working in Y (expected 403)
+tenancy.companies.read: GET /api/tenancy/companies/{id:guid} answered 404 while working in Y (expected 403)
+tenancy.companies.read: GET /api/tenancy/companies/{id:guid}/logo answered 404 while working in Y (expected 403)
+tenancy.companies.update: held only in company X, still in the session while working in Y
+tenancy.companies.update: PUT /api/tenancy/companies/{id:guid} answered 400 while working in Y (expected 403)
+tenancy.companies.update: DELETE /api/tenancy/companies/{id:guid}/logo answered 404 while working in Y (expected 403)
+tenancy.companies.update: PUT /api/tenancy/companies/{id:guid}/logo answered 400 while working in Y (expected 403)
+tenancy.tenant.read: held only in company X, still in the session while working in Y
+tenancy.tenant.read: menu entry tenancy.tenant shown while working in Y
+tenancy.tenant.read: GET /api/tenancy/tenant answered 200 while working in Y (expected 403)
+tenancy.tenant.update: held only in company X, still in the session while working in Y
+tenancy.tenant.update: PUT /api/tenancy/tenant answered 400 while working in Y (expected 403)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another() in /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs:line 128
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 23 permissions held in one company, 227 checks
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [18 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [8 s]
+[xUnit.net 00:01:15.35]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [FAIL]
+[xUnit.net 00:01:15.35]       working in Y: changing company Y, where the role only reads, answered 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that company.","status":403,"code":"permissionNotHeldInCompany","traceId":"00-9a0dbd95a661d8efcd484791aecb0c58-f44918a415c86cd6-00"} (expected 403 "auth.forbidden")
+[xUnit.net 00:01:15.35]       Stack Trace:
+[xUnit.net 00:01:15.35]         /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs(359,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone()
+[xUnit.net 00:01:15.35]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [1 s]
+  Error Message:
+   working in Y: changing company Y, where the role only reads, answered 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that company.","status":403,"code":"permissionNotHeldInCompany","traceId":"00-9a0dbd95a661d8efcd484791aecb0c58-f44918a415c86cd6-00"} (expected 403 "auth.forbidden")
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone() in /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs:line 359
+--- End of stack trace from previous location ---
+[xUnit.net 00:01:18.63]     Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [FAIL]
+[xUnit.net 00:01:18.63]       an administrator of X listing users while working in Y: answered 200 (expected 403): 
+[xUnit.net 00:01:18.63]       Stack Trace:
+[xUnit.net 00:01:18.63]         /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs(238,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it()
+[xUnit.net 00:01:18.63]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:18.63]       Output:
+[xUnit.net 00:01:18.63]         17 checks
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [3 s]
+  Error Message:
+   an administrator of X listing users while working in Y: answered 200 (expected 403): 
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it() in /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs:line 238
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 17 checks
+
+
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.Product_code_reads_session_carriers_only_where_reviewed [225 ms]
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.The_carrier_pattern_finds_the_planted_bearer_bypass [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [41 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [30 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [7 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [12 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [5 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [4 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [12 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [34 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [712 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [28 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [14 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [43 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [53 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [50 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [951 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [22 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [1 m 12 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [646 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [29 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [4 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [47 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [167 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [115 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [1 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [44 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [934 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [316 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [39 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [360 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [15 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [99 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [249 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [38 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [49 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [23 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [2 s]
+[xUnit.net 00:02:03.78]     Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [FAIL]
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f484-716a-a4be-317b9a4c4f6d&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f484-716a-a4be-317b9a4c4f6d&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=json answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=csv answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=xlsx answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=pdf answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=json answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=csv answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=xlsx answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=pdf answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=json answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=csv answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=xlsx answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=pdf answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&disposition=attachment&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&disposition=inline&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&timeZone=Asia%2FDubai&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&timeZone=UTC&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=json answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=csv answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=xlsx answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=pdf answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=json answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=csv answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=xlsx answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=pdf answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=inline&timeZone=UTC&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=csv answered 403
+[xUnit.net 00:02:03.78]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=xlsx answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=pdf answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=json answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=csv answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=xlsx answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=pdf answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&disposition=inline&timeZone=Asia%2FDubai&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=json answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=csv answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=xlsx answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=pdf answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=json answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=csv answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=xlsx answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=pdf answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=csv answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=xlsx answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=pdf answered 403
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, identity.roles.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, identity.roles.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=ar&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, identity.roles.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f484-716a-a4be-317b9a4c4f6d&language=en&format=json answered 403, so what it prints could not be judged
+[xUnit.net 00:02:03.81]       Stack Trace:
+[xUnit.net 00:02:03.81]         /work/tests/Erp.Gates.Tests/G2/G2ReportDataTests.cs(40,0): at Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere()
+[xUnit.net 00:02:03.81]         --- End of stack trace from previous location ---
+[xUnit.net 00:02:03.81]       Output:
+[xUnit.net 00:02:03.81]         4 reports, 36 permission sets, 5 printable lists, 45 list permission sets, 2598 runs, 1323 files, 2371 printed values judged in JSON, 4946 in files, 133 documented query values, 1197 runs with them, 117 combinations of them, 1041 runs with those
+  Failed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [1 m 32 s]
+  Error Message:
+   tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f484-716a-a4be-317b9a4c4f6d&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f484-716a-a4be-317b9a4c4f6d&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=city&language=en&format=pdf answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=emirate&language=ar&format=pdf answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&groupBy=active&language=en&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&disposition=attachment&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&disposition=inline&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&timeZone=Asia%2FDubai&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&timeZone=UTC&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=attachment&timeZone=Asia%2FDubai&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=emirate&disposition=inline&timeZone=UTC&language=en&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=inline&timeZone=UTC&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=active&disposition=attachment&timeZone=UTC&language=ar&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=city&disposition=inline&timeZone=Asia%2FDubai&language=en&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&disposition=inline&timeZone=Asia%2FDubai&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'active' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=active&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=inline&timeZone=Asia%2FDubai&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'emirate' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&groupBy=emirate&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=arab&disposition=attachment&timeZone=Asia%2FDubai&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=csv answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=xlsx answered 403
+tenancy.companyProfile as [tenancy.companies.read]: grouping by 'city' needs tenancy.branches.read but /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&groupBy=city&disposition=attachment&timeZone=UTC&language=ar&format=pdf answered 403
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&numerals=latn&disposition=attachment&timeZone=UTC&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, identity.roles.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=en&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, identity.roles.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7e02-a67b-6654cf8c1ff7&language=ar&format=json answered 403, so what it prints could not be judged
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, identity.roles.read]: /api/reports/run/tenancy.companyProfile?company=0191260e-f484-716a-a4be-317b9a4c4f6d&language=en&format=json answered 403, so what it prints could not be judged
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere() in /work/tests/Erp.Gates.Tests/G2/G2ReportDataTests.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 4 reports, 36 permission sets, 5 printable lists, 45 list permission sets, 2598 runs, 1323 files, 2371 printed values judged in JSON, 4946 in files, 133 documented query values, 1197 runs with them, 117 combinations of them, 1041 runs with those
+
+
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [149 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [56 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [3 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_document_is_the_same_for_every_caller_and_never_repeats_the_host_it_was_asked_on [220 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [7 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [14 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_served_description_is_the_whole_current_document_the_same_for_every_caller [108 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [4 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [37 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [11 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [9 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [8 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [2 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [174 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [951 ms]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [2 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [22 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [9 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [6 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [32 s]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [31 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_passkey_removed_whoever_holds_it_and_a_body_flag_that_skips_the_check [35 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [46 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [14 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [187 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_target_check_skipped_for_a_documented_query_value [2 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [1 m 10 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+[xUnit.net 00:04:15.34]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+
+Test Run Failed.
+Total tests: 94
+     Passed: 89
+     Failed: 5
+ Total time: 4.2674 Minutes

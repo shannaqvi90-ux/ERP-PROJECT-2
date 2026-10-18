@@ -1,0 +1,68 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.25]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.64]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.84]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Critic.CriticR12Proof.Update_alone_does_not_open_reads [1 s]
+[xUnit.net 00:00:17.76]     Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [FAIL]
+[xUnit.net 00:00:17.76]       GET role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC5"}
+[xUnit.net 00:00:17.76]       PUT role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC6"}
+[xUnit.net 00:00:17.76]       POST copy -> 201
+[xUnit.net 00:00:17.76]       DELETE role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC8"}
+[xUnit.net 00:00:17.76]       Stack Trace:
+[xUnit.net 00:00:17.76]         /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs(48,0): at Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it()
+[xUnit.net 00:00:17.76]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:17.76]       Output:
+[xUnit.net 00:00:17.76]         GET role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC5"}
+[xUnit.net 00:00:17.76]         PUT role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC6"}
+[xUnit.net 00:00:17.76]         POST copy -> 201
+[xUnit.net 00:00:17.76]         DELETE role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC8"}
+[xUnit.net 00:00:18.05]     Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [FAIL]
+[xUnit.net 00:00:18.05]       GET /api/identity/users/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+[xUnit.net 00:00:18.05]       GET /api/tenancy/access/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+[xUnit.net 00:00:18.05]       GET /api/shell/badges -> 404
+[xUnit.net 00:00:18.05]       Stack Trace:
+[xUnit.net 00:00:18.05]         /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs(76,0): at Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints()
+[xUnit.net 00:00:18.05]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:18.05]       Output:
+[xUnit.net 00:00:18.05]         GET /api/identity/users/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+[xUnit.net 00:00:18.05]         GET /api/tenancy/access/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+[xUnit.net 00:00:18.05]         GET /api/shell/badges -> 404
+[xUnit.net 00:00:18.33]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [504 ms]
+  Error Message:
+   GET role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC5"}
+PUT role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC6"}
+POST copy -> 201
+DELETE role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC8"}
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it() in /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs:line 48
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ GET role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC5"}
+ PUT role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC6"}
+ POST copy -> 201
+ DELETE role -> 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD6JJDTSC8"}
+
+
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [298 ms]
+  Error Message:
+   GET /api/identity/users/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+GET /api/tenancy/access/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+GET /api/shell/badges -> 404
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints() in /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs:line 76
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ GET /api/identity/users/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+ GET /api/tenancy/access/01a14fd8-361e-75ad-bd9d-1e6084b8b0b0 -> 200
+ GET /api/shell/badges -> 404
+
+
+
+Test Run Failed.
+Total tests: 3
+     Passed: 1
+     Failed: 2
+ Total time: 18.8469 Seconds
