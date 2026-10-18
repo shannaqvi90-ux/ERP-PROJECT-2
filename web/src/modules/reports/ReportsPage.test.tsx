@@ -145,6 +145,23 @@ describe("reports screen", () => {
     expect(all.getAttribute("href")).toBe("/api/reports/run/identity.usersByRole?status=active&groupBy=role&format=pdf&language=en&numerals=latn&disposition=inline");
     expect(all.getAttribute("target")).toBe("_blank");
     expect([...view!.container.querySelectorAll("button")].map((b) => b.textContent)).not.toContain("Print");
+    // Ctrl+P opens the same PDF instead of printing the screen's rows.
+    const opened: unknown[][] = [];
+    const open = window.open;
+    window.open = ((...args: unknown[]) => {
+      opened.push(args);
+      return null;
+    }) as typeof window.open;
+    try {
+      const press = new KeyboardEvent("keydown", { key: "p", code: "KeyP", ctrlKey: true, bubbles: true, cancelable: true });
+      act(() => {
+        window.dispatchEvent(press);
+      });
+      expect(press.defaultPrevented).toBe(true);
+    } finally {
+      window.open = open;
+    }
+    expect(opened).toEqual([[all.getAttribute("href"), "_blank", "noopener"]]);
 
     answer = arabicDocument;
     await submit(view!.container);

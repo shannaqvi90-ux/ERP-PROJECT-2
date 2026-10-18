@@ -253,6 +253,31 @@ test.describe("record forms and printed documents", () => {
     expect(workbook.headers()["content-type"]).toContain("spreadsheetml");
   });
 
+  // Critic p06 round 8: printing stopped at the 2,000 rows the screen holds. The verify stack holds
+  // more than 2,000 users, so users by role runs past the screen: the screen says that its files
+  // hold every row, and printing opens the whole PDF instead of printing the screen.
+  test("a report longer than the screen prints every row through its PDF", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+    await page.goto("/reports/catalog?report=identity.usersByRole&run=1");
+    const doc = page.getByTestId("report-document").locator("article");
+    await expect(doc.locator(".report-count")).toHaveText(/^The first 2,000 of [\d,]+ rows are shown here; the PDF, Excel and CSV hold all [\d,]+\.$/);
+    await expect(page.getByRole("button", { name: "Print", exact: true })).toHaveCount(0);
+    const printAll = page.getByRole("link", { name: "Print all rows (PDF)" });
+    await expect(printAll).toHaveAttribute("target", "_blank");
+    const href = (await printAll.getAttribute("href"))!;
+    expect(href).toMatch(/^\/api\/reports\/run\/identity\.usersByRole\?.*format=pdf.*&disposition=inline$/);
+    const pdf = await page.request.get(href);
+    expect(pdf.status()).toBe(200);
+    expect(pdf.headers()["content-type"]).toBe("application/pdf");
+    expect(pdf.headers()["content-disposition"]).toMatch(/^inline;/);
+    // A long document of many pages (every row; the API tests check the rows themselves).
+    const body = await pdf.body();
+    const pages = Number(/\/Type \/Pages \/Kids \[[^\]]*\] \/Count (\d+)/.exec(body.toString("latin1"))?.[1] ?? 0);
+    expect(pages).toBeGreaterThan(40);
+  });
+
   test("a list prints what it shows: the filtered users list as PDF and CSV", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
