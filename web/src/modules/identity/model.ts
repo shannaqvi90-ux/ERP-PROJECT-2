@@ -95,12 +95,23 @@ export type SignIn = {
   sessionActive: boolean;
   /** How it signed in or tried to; absent on attempts recorded before the method was. */
   method?: "password" | "passkey" | null;
+  /** What the address is: one client's, or one many clients share (gateway, proxy, local). */
+  addressKind?: AddressKind | null;
+  /** A short tag of the browser, when it had signed in to this account before. */
+  device?: string | null;
 };
+
+export type AddressKind = "client" | "gateway" | "proxy" | "local";
+
+/** Many clients share this address: it does not tell people apart. */
+export function isSharedAddress(kind: string | null | undefined): kind is "gateway" | "proxy" | "local" {
+  return kind === "gateway" || kind === "proxy" || kind === "local";
+}
 
 export type SignInHistory = {
   items: SignIn[];
   total: number;
-  paused: { source: string; until: string; failures: number }[];
+  paused: { source: string; until: string; failures: number; kind?: AddressKind | "device" }[];
 };
 
 export type ResetResult = { mustChangePassword: boolean; setupCode?: string; setupCodeExpiresAt?: string; sessionsEnded: number; passkeysRemoved?: number };

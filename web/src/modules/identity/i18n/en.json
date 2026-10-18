@@ -255,5 +255,15 @@
   "identity.userPasskeys.removeAllTitle": "Remove every passkey of {name}?",
   "identity.userPasskeys.removeTitle": "Remove the passkey {passkey} of {name}?",
   "identity.userPasskeys.removeBody": "The device holding it can no longer sign in as them. Sessions already open keep going until they end or you sign them out everywhere.",
-  "identity.userPasskeys.badge": "{count, plural, one {# passkey} other {# passkeys}}"
+  "identity.userPasskeys.badge": "{count, plural, one {# passkey} other {# passkeys}}",
+  "identity.addressKind.gateway": "shared gateway",
+  "identity.addressKind.proxy": "shared proxy address",
+  "identity.addressKind.local": "this server",
+  "identity.addressKind.gatewayHint": "Every client that reaches the server through its container network arrives from this address, so it does not tell people apart.",
+  "identity.addressKind.proxyHint": "A proxy or office address many people share, so it does not tell people apart.",
+  "identity.addressKind.localHint": "A proxy or program on the server itself, so it does not tell people apart.",
+  "identity.history.device": "known device {tag}",
+  "identity.history.deviceHint": "A browser that signed in to this account before. Its failures pause only itself, never anyone else at the same address.",
+  "identity.history.sharedHint": "Many people use a shared address at once. Allowing sign-in again lets all of them try again, including whoever failed. To let one person in, give them a new set-up code with Reset password…: a set-up code works from a shared address even while sign-in from it is paused.",
+  "identity.companyRoles.chooseRole": "Choose a role"
 }
