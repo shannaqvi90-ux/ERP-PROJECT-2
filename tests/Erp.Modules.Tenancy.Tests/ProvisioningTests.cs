@@ -64,7 +64,21 @@ public sealed class ProvisioningTests(TenancyFixture fixture) : IClassFixture<Te
             Assert.Contains("acme-trading", output, StringComparison.Ordinal);
             Assert.DoesNotContain("Acme-Initial-Pass-1", output, StringComparison.Ordinal);
 
-            using var owner = await Env.SignInAsync("owner@acme.example", "Acme-Initial-Pass-1");
+            Assert.Contains("the first sign-in asks the administrator to choose their own", output, StringComparison.Ordinal);
+
+            // The operator's initial password is temporary: the first sign-in asks for one of the
+            // administrator's own, and the initial one no longer signs in after that.
+            using (var anonymous = Env.CreateClient())
+            {
+                using var first = await anonymous.PostAsJsonAsync("/api/auth/sign-in", new { email = "owner@acme.example", password = "Acme-Initial-Pass-1" });
+                Assert.Equal(HttpStatusCode.Conflict, first.StatusCode);
+                Assert.Equal("auth.passwordChangeRequired", (await first.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
+                using var chosen = await anonymous.PostAsJsonAsync("/api/auth/sign-in", new { email = "owner@acme.example", password = "Acme-Initial-Pass-1", newPassword = "Acme-Own-Pass-2026" });
+                Assert.Equal(HttpStatusCode.OK, chosen.StatusCode);
+                using var old = await anonymous.PostAsJsonAsync("/api/auth/sign-in", new { email = "owner@acme.example", password = "Acme-Initial-Pass-1" });
+                Assert.Equal(HttpStatusCode.Unauthorized, old.StatusCode);
+            }
+            using var owner = await Env.SignInAsync("owner@acme.example", "Acme-Own-Pass-2026");
             var session = await owner.GetFromJsonAsync<JsonElement>("/api/auth/session");
             Assert.Equal("acme-trading", session.GetProperty("tenant").GetProperty("code").GetString());
             Assert.Equal("ar", session.GetProperty("user").GetProperty("language").GetString());
