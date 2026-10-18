@@ -233,6 +233,38 @@ describe("tenancy screens offer exactly what the user may do", () => {
     act(() => {
       (document.activeElement ?? window).dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, altKey: true, code: "KeyN", key: "n" }));
     });
+  // Critic p02 round 11 (the U-*-role-elsewhere plants), also first so their plants stop early.
+  it("companies: where the user's roles only read (a role given in another company), the form offers no change and no branch line, even with every permission (critic p02 round 11)", async () => {
+    const full = await open("companies", all);
+    expect(full).toContain("button:Save");
+    expect(full).toContain("form:Add branch");
+    closeView();
+    const readOnly = await open("companies", all, { canUpdate: false, canAddBranch: false });
+    expect(readOnly.filter((c) => c === "button:Save" || c === "file:Upload logo" || c === "button:Remove logo" || (c.startsWith("field:") && !c.startsWith("field:branch")))).toEqual([]);
+    expect(readOnly.filter((c) => c.startsWith("field:branch") || c === "form:Add branch")).toEqual([]);
+    expect(shown().container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("A role given in another company counts only in that company");
+    closeView();
+    // Changing the company is the user's, adding a branch to it is not.
+    const noBranch = await open("companies", all, { canAddBranch: false });
+    expect(noBranch).toContain("button:Save");
+    expect(noBranch.filter((c) => c.startsWith("field:branch") || c === "form:Add branch")).toEqual([]);
+  });
+
+  it("branches: a branch of a company where the user's roles only read offers no change, and no company to add a branch to means no New (critic p02 round 11)", async () => {
+    const readOnly = await open("branches", all, { branchCanUpdate: false });
+    expect(readOnly.filter((c) => c === "button:Save" || c.startsWith("field:"))).toEqual([]);
+    expect(shown().container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("Your roles let you read this branch but not change it");
+    closeView();
+    const noNew = await open("branches", all, { canAddBranch: false, path: "/tenancy/branches" });
+    expect(noNew).not.toContain("button:New");
+  });
+
+  it("access: a company where the caller's roles do not let them change access is shown and left as it is (critic p02 round 11)", async () => {
+    const offered = await open("access", all, { canChange: false });
+    expect(offered.filter((c) => c.startsWith("field:"))).toEqual([]);
+    expect(shown().container.querySelector('[data-testid="access-role-elsewhere"]')!.textContent).toContain("your roles let you change access in other companies");
+  });
+
   for (const rows of ["none", "silent"] as const) {
     const who = rows === "none" ? "works in no company" : "is on rows that do not say they work in every company";
     it(`companies: where the user ${who}, New is absent and Alt+N and ?open=new open nothing, with every permission`, async () => {
@@ -392,37 +424,6 @@ describe("tenancy screens offer exactly what the user may do", () => {
     closeView();
     await open("companies", all, { path: "/tenancy/companies?open=new" });
     expect(shown().container.querySelector(".record-form"), "?open=new with every company").not.toBeNull();
-  });
-
-  it("companies: where the user's roles only read (a role given in another company), the form offers no change and no branch line, even with every permission (critic p02 round 11)", async () => {
-    const full = await open("companies", all);
-    expect(full).toContain("button:Save");
-    expect(full).toContain("form:Add branch");
-    closeView();
-    const readOnly = await open("companies", all, { canUpdate: false, canAddBranch: false });
-    expect(readOnly.filter((c) => c === "button:Save" || c === "file:Upload logo" || c === "button:Remove logo" || (c.startsWith("field:") && !c.startsWith("field:branch")))).toEqual([]);
-    expect(readOnly.filter((c) => c.startsWith("field:branch") || c === "form:Add branch")).toEqual([]);
-    expect(shown().container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("A role given in another company counts only in that company");
-    closeView();
-    // Changing the company is the user's, adding a branch to it is not.
-    const noBranch = await open("companies", all, { canAddBranch: false });
-    expect(noBranch).toContain("button:Save");
-    expect(noBranch.filter((c) => c.startsWith("field:branch") || c === "form:Add branch")).toEqual([]);
-  });
-
-  it("branches: a branch of a company where the user's roles only read offers no change, and no company to add a branch to means no New (critic p02 round 11)", async () => {
-    const readOnly = await open("branches", all, { branchCanUpdate: false });
-    expect(readOnly.filter((c) => c === "button:Save" || c.startsWith("field:"))).toEqual([]);
-    expect(shown().container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("Your roles let you read this branch but not change it");
-    closeView();
-    const noNew = await open("branches", all, { canAddBranch: false, path: "/tenancy/branches" });
-    expect(noNew).not.toContain("button:New");
-  });
-
-  it("access: a company where the caller's roles do not let them change access is shown and left as it is (critic p02 round 11)", async () => {
-    const offered = await open("access", all, { canChange: false });
-    expect(offered.filter((c) => c.startsWith("field:"))).toEqual([]);
-    expect(shown().container.querySelector('[data-testid="access-role-elsewhere"]')!.textContent).toContain("your roles let you change access in other companies");
   });
 
   it("access: a user the server marks read-only for the caller offers no change, even with every permission", async () => {
