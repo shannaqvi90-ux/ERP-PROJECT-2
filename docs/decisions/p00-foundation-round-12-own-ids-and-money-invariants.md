@@ -87,5 +87,22 @@ passes as it was, and nothing new is decided about the law.
 
 Measured on this machine (load about 20 to 40 on 16 CPUs), the G2 permission tests' process alone,
 after the build: 77 s before this round, 101 s after, so about 24 s more for the verify (about
-0.25 % of the 10,500 s maximum). Nothing else this round adds measurable processor time. The
-verify's own figures are in the integrator notes of this round.
+0.25 % of the 10,500 s maximum). Nothing else this round adds measurable processor time.
+
+Full verifies of this branch, all on a busy machine (load 17 to 77 on 16 CPUs while other agents'
+verifies ran):
+
+| Run | Result | dotnet | web | e2e | timing | Total |
+|---|---|---|---|---|---|---|
+| 1 (head 70f9b7cc) | one .NET test failed (the process-state gate refused the converter's static array; fixed in d32587ed) | 7,970 | 2,008 | 294 | not run | 10,272 without timing |
+| 2 (head d32587ed) | stopped: the client isolation unit test file timed out at 30 s under load and the rest of the file cascaded | 8,533 | 199 (stopped early) | 48 (stopped) | not run | not comparable |
+| 3 (head 4e5d2802) | passed in 3,983 s, 692 .NET tests | 7,983 | 2,101 | 324 | 58 | 10,466 |
+
+Run 3 is 34 s under the 10,500 s maximum; the critic's round 11 run used 10,250 s (dotnet 7,899).
+The same code's .NET stage used 7,970 s and 8,533 s in runs 1 and 2, so the machine's load moves
+it by more than this round adds. The maximum is the owner's and is not changed. The margin is
+thin: the next round that adds gate requests should find an equal saving first.
+
+The client isolation unit test's sign-in helper now waits for both the e-mail and the password
+field (run 2: under load the first test hit its 30 s limit and the others then found no password
+field). No time limit was raised; the file passes alone in 43 s for its seven tests.
