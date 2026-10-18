@@ -124,6 +124,10 @@ test('causation (round 12): a timer counts only when a caused task armed it, onc
   const long = verdict(armed(2500), 'w');
   assert.equal(long.caused, false, 'R2b: a delay the step arms');
   assert.match(long.why, /a timer of 2\.5 s/);
+  // Round 13: a timer longer than REACTION_SECONDS is refused on its own, inside the chain's bound too.
+  const longer = verdict(armed(1500), 'w');
+  assert.equal(longer.caused, false, 'a 1.5 s delay the step arms');
+  assert.match(longer.why, /a timer of 1\.5 s: a delay the page set/);
   const poll = verdict(armed(100, false), 'w');
   assert.equal(poll.caused, false);
   assert.match(poll.why, /repeating timer/);
