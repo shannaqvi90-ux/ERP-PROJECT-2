@@ -576,7 +576,11 @@ public sealed class TenantActivity
                 var path = await OwnPathAsync(endpoint, own, forWrite: true, actor);
                 var (status, text, location) = await SendAsync(actor, "POST", path, BuildBody(endpoint, own, template: null, variant), $"POST {path} [{phase}]");
                 if (note) NoteWrite(endpoint, status, text, variant);
-                if (status is >= 200 and < 300 && CreatedId(text, location) is { } id)
+                // A record a partial body created is one more record of a table whose records the
+                // activity already creates and uses in routes; it is not kept as a route value of its
+                // own (every kept value is sent in every route by the attack: round 13 measured the
+                // partial creates adding a fifth to the HTTP attack's requests).
+                if (status is >= 200 and < 300 && variant is not { Partial: true } && CreatedId(text, location) is { } id)
                 {
                     var collection = CreatedKey(endpoint.Pattern.TrimEnd('/'), actor.Owner);
                     lock (_lock)
