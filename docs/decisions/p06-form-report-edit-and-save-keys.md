@@ -151,5 +151,10 @@ not move down.
 
 This round adds one gate test that shares an existing environment (3 s wall in a targeted run,
 roughly 56 report prints), two vitest cases (well under 1 s) and a few steps in one existing e2e
-test (a few seconds). That is an estimated 15 to 20 processor seconds. The verify's measured total
-is given in the commit that records this round's run.
+test (a few seconds). That is an estimated 15 to 20 processor seconds.
+
+Measured: this branch's `./erp verify` through the verify slot (slot taken 2026-10-18T16:07:44Z)
+passed in 4,426 s wall time on a busy machine (load up to 65.9 on 16 CPUs, two other verifies
+running). It used **10,258 processor seconds** (dotnet 7,748, web 2,022, e2e 450, timing 38)
+against the 10,500 s maximum. Counts: 661 .NET, 522 web unit, 111 e2e, 415 compare and 6 build
+tests, all passing. The suite minimums are raised to these counts.
