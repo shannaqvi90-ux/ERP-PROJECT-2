@@ -290,7 +290,7 @@ public sealed class TenantActivity
     /// field back to its first value.</summary>
     private async Task WriteVariantsAsync(ApiEndpoint endpoint, TenantSnapshot own, string phase)
     {
-        foreach (var variant in VariantsOf(endpoint))
+        foreach (var variant in VariantsOf(endpoint).Concat(PartialVariantsOf(endpoint)))
         {
             await WriteOneAsync(endpoint, own, $"{phase}, {variant}", variant: variant);
         }
@@ -329,6 +329,67 @@ public sealed class TenantActivity
         }
         return variants;
     }
+
+    /// <summary>
+    /// The partial bodies of a write (critic p04 round 11, plant SL1: the shell's language switch
+    /// sends <c>{language}</c> alone, the digits switch <c>{numerals}</c> alone, and a write that
+    /// filled a field left out from the last value anyone chose passed every gate, because every
+    /// body the gates sent carried every field). For the fields a client may leave out
+    /// (<see cref="OpenApiDocument.OmittableFields"/>): the body without each one in turn; when
+    /// there are several, the body without any of them (the smallest body the document allows);
+    /// and when every field of the body may be left out (a settings write such as the shell's
+    /// preferences), each documented value of each enumerated field sent alone. A partial body the
+    /// product refuses (a field its validation needs) is a refusal, not a failed write
+    /// (<see cref="PartialRefusals"/>); one it accepts runs the handler's partial path.
+    /// </summary>
+    public IReadOnlyList<WriteVariant> PartialVariantsOf(ApiEndpoint endpoint)
+    {
+        if (!endpoint.HasBody || _openApi.RequestSchema(endpoint.Method, endpoint.Pattern) is not { } schema)
+        {
+            return [];
+        }
+        var omittable = _openApi.OmittableFields(schema);
+        if (omittable.Count == 0)
+        {
+            return [];
+        }
+        var variants = omittable.Select(field => new WriteVariant($"without {field}", [], null, null) { Omitted = [field] }).ToList();
+        if (omittable.Count > 1)
+        {
+            variants.Add(new WriteVariant($"without {string.Join(", ", omittable)}", [], null, null) { Omitted = omittable });
+        }
+        var resolved = _openApi.Resolve(schema);
+        var fields = resolved.TryGetProperty("properties", out var properties) && properties.ValueKind == JsonValueKind.Object ? properties.EnumerateObject().Count() : 0;
+        if (omittable.Count > 1 && omittable.Count == fields)
+        {
+            foreach (var leaf in _openApi.EnumLeaves(schema).Where(l => l.Path.Count == 1 && omittable.Contains(l.Path[0])))
+            {
+                var others = omittable.Where(f => f != leaf.Path[0]).ToList();
+                foreach (var value in leaf.Values)
+                {
+                    variants.Add(new WriteVariant($"{leaf.Name}={value.ToJsonString()} alone", [(leaf, value)], leaf, value) { Omitted = others });
+                }
+            }
+        }
+        return variants;
+    }
+
+    /// <summary>Partial bodies (endpoint key and label) the product accepted for this tenant.</summary>
+    public IReadOnlySet<string> PartialAccepted
+    {
+        get
+        {
+            lock (_lock) return _partialAccepted.ToHashSet(StringComparer.Ordinal);
+        }
+    }
+
+    private readonly HashSet<string> _partialAccepted = new(StringComparer.Ordinal);
+
+    /// <summary>Partial bodies the product refused with a client error (a field its validation
+    /// needs was left out): judged like any answer, not counted as a failed own write.</summary>
+    public int PartialRefusals => _partialRefusals;
+
+    private int _partialRefusals;
 
     /// <summary>
     /// The variant with every enumerated field at its first documented value (null when the body
@@ -440,7 +501,7 @@ public sealed class TenantActivity
             }
             return status;
         }
-        NoteWrite(endpoint, status, text);
+        NoteWrite(endpoint, status, text, variant);
         return status;
     }
 
@@ -511,7 +572,7 @@ public sealed class TenantActivity
             {
                 var path = await OwnPathAsync(endpoint, own, forWrite: true, actor);
                 var (status, text, location) = await SendAsync(actor, "POST", path, BuildBody(endpoint, own, template: null, variant), $"POST {path} [{phase}]");
-                if (note) NoteWrite(endpoint, status, text);
+                if (note) NoteWrite(endpoint, status, text, variant);
                 if (status is >= 200 and < 300 && CreatedId(text, location) is { } id)
                 {
                     var collection = CreatedKey(endpoint.Pattern.TrimEnd('/'), actor.Owner);
@@ -539,7 +600,7 @@ public sealed class TenantActivity
                     }
                 }
                 var (status, text, _) = await SendAsync(actor, endpoint.Method, path, BuildBody(endpoint, own, template, variant), $"{endpoint.Method} {path} [{phase}]");
-                if (note) NoteWrite(endpoint, status, text);
+                if (note) NoteWrite(endpoint, status, text, variant);
                 return (status, text);
             }
             default:
@@ -565,7 +626,7 @@ public sealed class TenantActivity
                     }
                 }
                 var (status, text, _) = await SendAsync(actor, endpoint.Method, path, null, $"{endpoint.Method} {path} [{phase}]");
-                if (note) NoteWrite(endpoint, status, text);
+                if (note) NoteWrite(endpoint, status, text, variant);
                 return (status, text);
             }
         }
@@ -590,8 +651,21 @@ public sealed class TenantActivity
     /// then never reached the code that could fill a cache).</summary>
     public List<string> UnsuccessfulWrites { get; } = [];
 
-    private void NoteWrite(ApiEndpoint endpoint, int status, string text)
+    private void NoteWrite(ApiEndpoint endpoint, int status, string text, WriteVariant? variant = null)
     {
+        if (variant is { Partial: true })
+        {
+            if (status is >= 200 and < 300)
+            {
+                lock (_lock) _partialAccepted.Add($"{endpoint.Key}|{variant.Label}");
+                return;
+            }
+            if (status is >= 400 and < 500)
+            {
+                Interlocked.Increment(ref _partialRefusals);
+                return;
+            }
+        }
         if (status is < 200 or >= 300)
         {
             lock (_lock) UnsuccessfulWrites.Add($"{endpoint.Key} → {status} {text[..Math.Min(200, text.Length)]}");
@@ -975,6 +1049,11 @@ public sealed class TenantActivity
             {
                 applied &= OpenApiDocument.SetLeaf(body, leaf.Path, value);
             }
+            // A partial body: the fields it leaves out are not sent at all.
+            foreach (var field in variant.Omitted)
+            {
+                applied &= body.Remove(field);
+            }
             if (applied)
             {
                 lock (_lock) _appliedVariants.Add($"{endpoint.Key}|{variant.Label}");
@@ -1120,5 +1199,10 @@ public sealed class TenantActivity
 /// <param name="Value">That field's value.</param>
 public sealed record WriteVariant(string Label, IReadOnlyList<(EnumLeaf Leaf, JsonNode Value)> Settings, EnumLeaf? Leaf, JsonNode? Value)
 {
+    /// <summary>Top-level fields the body leaves out (a partial body, <see cref="TenantActivity.PartialVariantsOf"/>).</summary>
+    public IReadOnlyList<string> Omitted { get; init; } = [];
+
+    public bool Partial => Omitted.Count > 0;
+
     public override string ToString() => Label;
 }

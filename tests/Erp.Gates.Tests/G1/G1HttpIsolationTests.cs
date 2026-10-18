@@ -58,7 +58,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.VictimRouteValuesReplayed} tenant B route values replayed, {report.VictimPreTouches} tenant B opens of the routes A was about to attack");
         TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{report.EnumValuesAttacked.Count} documented enumeration values sent, {report.EnumVariantPairs} enumeration-variant write pairs");
+            $"{report.EnumValuesAttacked.Count} documented enumeration values sent, {report.EnumVariantPairs} enumeration-variant write pairs; " +
+            $"{report.PartialWriteVariants} partial bodies, {report.PartialWritePairs} accepted on both sides over {report.PartialWriteEndpoints} endpoints");
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
@@ -141,6 +142,11 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         // was sent by both tenants back to back, not only the first one.
         CheckAtLeast(report.EnumValuesAttacked.Count, "g1.enumValuesAttacked");
         CheckAtLeast(report.EnumVariantPairs, "g1.enumVariantWritePairs");
+        // Partial bodies (critic p04 round 11): every field a client may leave out was left out by
+        // both tenants, right after the other wrote the whole body.
+        CheckAtLeast(report.PartialWriteVariants, "g1.partialWriteVariants");
+        CheckAtLeast(report.PartialWritePairs, "g1.partialWritePairs");
+        CheckAtLeast(report.PartialWriteEndpoints, "g1.partialWriteEndpoints");
         // The Arabic side of every session (critic p04 round 4): tenant A attacks and tenant B
         // uses the app in Arabic with Arabic-Indic digits too, and both stayed Arabic throughout.
         Check(report.ArabicBlindSpots.Count == 0, "The Arabic sessions may have been blind:\n" + string.Join("\n", report.ArabicBlindSpots));
@@ -783,6 +789,9 @@ public static partial class IsolationAttack
             WritePairs = pairs.Pairs,
             WritePairEndpoints = pairs.Endpoints,
             EnumVariantPairs = pairs.VariantPairs,
+            PartialWriteVariants = pairs.PartialVariants,
+            PartialWritePairs = pairs.PartialPairs,
+            PartialWriteEndpoints = pairs.PartialEndpoints,
             EnumValuesAttacked = pairs.EnumValuesAttacked ?? [],
             ArabicAttackRequests = attackers.Where(x => x.Arabic).Sum(x => x.Requests) + pairs.ArabicRequests,
             VictimArabicRequests = activity.ArabicRequests,
@@ -854,7 +863,17 @@ public static partial class IsolationAttack
 
     public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
         IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots, int VariantPairs = 0, IReadOnlyList<string>? EnumValuesAttacked = null,
-        int ArabicPairs = 0, int ArabicRequests = 0, int ArabicWorkspaceRefusals = 0, int ArabicWorkspaceWrites = 0);
+        int ArabicPairs = 0, int ArabicRequests = 0, int ArabicWorkspaceRefusals = 0, int ArabicWorkspaceWrites = 0)
+    {
+        /// <summary>Partial bodies sent by both tenants (<see cref="TenantActivity.PartialVariantsOf"/>).</summary>
+        public int PartialVariants { get; init; }
+
+        /// <summary>Partial bodies accepted on both sides.</summary>
+        public int PartialPairs { get; init; }
+
+        /// <summary>Endpoints with at least one partial body accepted on both sides.</summary>
+        public int PartialEndpoints { get; init; }
+    }
 
     /// <summary>
     /// Write after write, in both directions, for every endpoint that changes data: tenant B writes,
@@ -886,6 +905,9 @@ public static partial class IsolationAttack
         var enumValues = new SortedSet<string>(StringComparer.Ordinal);
         var blind = new List<string>();
         var writes = victimActivity.Writes;
+        var partialVariants = 0;
+        var partialPairs = 0;
+        var partialEndpoints = new HashSet<string>(StringComparer.Ordinal);
         try
         {
             foreach (var endpoint in writes)
@@ -943,6 +965,28 @@ public static partial class IsolationAttack
                         enumValues.Add($"{endpoint.Key} {leaf.Name}={variant.Value!.ToJsonString()}");
                     }
                 }
+                // Partial bodies (critic p04 round 11, plant SL1: the shell sends {language} alone):
+                // each tenant writes the whole body, its own texts in every field, right before the
+                // other sends each partial body, both ways. A handler that fills a field left out
+                // from what the last caller sent hands the other tenant's text to the partial writer,
+                // where its answer is judged for the other tenant's markers. (What a partial write
+                // answers with no marker to show is the non-interference check's.) The partial
+                // bodies the product accepted from tenant B before the attack: one it refuses never
+                // reaches the handler's partial path, and its answer was judged when B sent it.
+                var accepted = victimActivity.PartialAccepted;
+                foreach (var variant in victimActivity.PartialVariantsOf(endpoint).Where(v => accepted.Contains($"{endpoint.Key}|{v.Label}")))
+                {
+                    await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes the whole body right before A's partial write ({variant})");
+                    var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's whole body ({variant})", variant: variant);
+                    await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes the whole body right before B's partial write ({variant})");
+                    var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right after A's whole body ({variant})", variant: variant);
+                    partialVariants++;
+                    if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
+                    {
+                        partialPairs++;
+                        partialEndpoints.Add(endpoint.Key);
+                    }
+                }
                 // An Arabic session's own preferences write (a variant) may have left it in English.
                 await victimActivity.EnsureArabicAsync($"after the write pairs of {endpoint.Key}");
                 await attacker.EnsureArabicAsync($"after the write pairs of {endpoint.Key}");
@@ -976,7 +1020,16 @@ public static partial class IsolationAttack
         {
             blind.Add("no write pair in Arabic succeeded on both sides");
         }
-        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList(), arabicPairs, arabicRequests, workspaceRefusals, workspaceWrites);
+        if (partialVariants > 0 && partialPairs == 0)
+        {
+            blind.Add($"none of the {partialVariants} partial bodies tenant B's own writes had accepted was accepted on both sides");
+        }
+        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList(), arabicPairs, arabicRequests, workspaceRefusals, workspaceWrites)
+        {
+            PartialVariants = partialVariants,
+            PartialPairs = partialPairs,
+            PartialEndpoints = partialEndpoints.Count,
+        };
     }
 
     /// <summary>Who writes in each write pair: the administrator's cookie, its bearer token, and the
@@ -1863,6 +1916,15 @@ public sealed record IsolationReport(
     /// <summary>Write pairs (both tenants succeeding) sent with a variant of the body: one
     /// documented value of an enumerated field, the same in both tenants' bodies.</summary>
     public int EnumVariantPairs { get; init; }
+
+    /// <summary>Partial bodies sent by both tenants in the write-after-write phase.</summary>
+    public int PartialWriteVariants { get; init; }
+
+    /// <summary>Partial bodies accepted on both sides.</summary>
+    public int PartialWritePairs { get; init; }
+
+    /// <summary>Endpoints with a partial body accepted on both sides.</summary>
+    public int PartialWriteEndpoints { get; init; }
 
     /// <summary>Requests tenant A's Arabic sessions (administrator and anonymous) sent, every one
     /// of them in Arabic with Arabic-Indic digits.</summary>
