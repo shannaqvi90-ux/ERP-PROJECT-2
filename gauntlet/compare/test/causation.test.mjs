@@ -265,6 +265,16 @@ test('causation (round 13): a window\'s postMessage is the posting task\'s; one 
   assert.match(other.why, /another thread of the page's script ran \(CrRendererMain; a worker, another frame or window\)/);
 });
 
+test('causation (round 13): a task that delivers what the browser read for the page (a file, a blob, a body) is not refused for a worker\'s activity; a port message is', () => {
+  const blobRead = [{ name: 'Receive mojo message', ph: 'X', at: 0.5, dur: 3, args: { chrome_mojo_event_info: { mojo_interface_tag: 'blink.mojom.BlobReaderClient' } } }, X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')];
+  const busyWorker = task(104, TIMER, [fire(1, 2), X('FunctionCall', 1.5, 1, { url: 'blob:x' })], { tid: WORKER });
+  const read = verdict([task(101, INPUT, click()), busyWorker, task(108, 'simple_watcher.cc:Notify', blobRead)], 'w');
+  assert.equal(read.caused, true, `Odoo's file upload beside its shared worker: ${read.why}`);
+  const port = verdict([task(101, INPUT, click()), busyWorker, task(108, 'simple_watcher.cc:Notify', [{ name: 'SimpleWatcher::OnHandleReady', ph: 'X', at: 0.5, dur: 3, args: { chrome_mojo_event_info: { watcher_notify_interface_tag: 'unknown interface' } } }, X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w');
+  assert.equal(port.caused, false, 'a port message while a worker ran (W4)');
+  assert.match(port.why, /another thread of the page's script ran/);
+});
+
 test('causation (round 13): the delays of a chain add up; the write must go out within LINK_SECONDS of the step\'s input (plant W3)', () => {
   // W3: a click asks something answered after 1.9 s, then a 0.9 s timer approves: 2.8 s in all.
   const near = [task(101, INPUT, [...click(), send(3, 'q', 'http://p/api/tick19', 'GET')]), task(104 + 1900, NET, [answer(1, 'q'), install(2, 9, 900)]), task(104 + 1900 + 905, TIMER, [fire(1, 9), send(2, 'w')])];
@@ -320,6 +330,25 @@ test('causation (round 13): ids start again in a new document; a callback is mat
   // The same for animation frames.
   const frames = [task(101, INPUT, [...click(), I('RequestAnimationFrame', 3, { frame: 'F', id: 1 })]), task(112, FRAME, [X('FireAnimationFrame', 1, 2, { frame: 'F', id: 1 }), send(2, 'w')]), task(400, TIMER, [fire(1, 9), I('RequestAnimationFrame', 2, { frame: 'F', id: 1 })])];
   assert.equal(verdict(frames, 'w').caused, true);
+});
+
+test('causation (round 13): a document is its navigation\'s: one a step started is the step\'s, one started before the clock or by a refresh the page set is nobody\'s (plants W7, W8)', () => {
+  const start = (at, url = 'http://p/doc') => ({ ph: 'X', name: 'FrameLoader::StartNavigation', at, dur: 0.5, args: { url } });
+  const commit = ms => task(ms, IPC, [{ name: 'Receive mojo message', ph: 'X', at: 0.5, dur: 3, args: { chrome_mojo_event_info: { mojo_interface_tag: 'content.mojom.NavigationClient' } } },
+    X('RenderFrameImpl::CommitNavigation', 0.6, 2), send(1, 'nav', 'http://p/doc', 'GET'), answer(1.2, 'nav'), X('EventDispatch', 1.5, 0.2, { type: 'unload' })]);
+  const script = ms => task(ms, 'html_document_parser.cc:PumpTokenizer', [X('ParseHTML', 0.5, 3), X('EvaluateScript', 1, 2, { url: 'http://p/doc' }), send(2, 'w')]);
+  // A click on a link: the navigation starts in the click's input task.
+  const linked = verdict([task(101, INPUT, [...click(), start(2.5)]), commit(130), script(140)], 'w');
+  assert.equal(linked.caused, true, linked.why);
+  assert.match(linked.chain.join(' | '), /the document \/doc it loaded/);
+  // W7: the page asked for the (slow) document before the clock; it arrives just after the click.
+  const early = verdict([task(101, INPUT, click()), commit(130), script(140)], 'w');
+  assert.equal(early.caused, false, 'W7');
+  assert.match(early.why, /navigation started before the clock/);
+  // W8: a meta refresh the page set navigates just after the click.
+  const refreshed = verdict([task(101, INPUT, click()), task(110, 'http_refresh_scheduler.cc:MaybeStartTimer', [X('HttpRefreshScheduler::NavigateTask', 0.5, 2), start(1)]), commit(130), script(140)], 'w');
+  assert.equal(refreshed.caused, false, 'W8');
+  assert.match(refreshed.why, /refresh the page set/);
 });
 
 test('causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused', () => {
@@ -378,7 +407,7 @@ ${mode === 'awaits' ? "document.getElementById('approve').onclick = async () => 
 ${autoApprove && mode === 'timer' ? 'setTimeout(approve, 3000);' : ''}
 ${autoApprove && mode === 'held' ? "addEventListener('pointerdown', () => fetch('/api/tick').then(approve), { once: true });" : ''}
 ${autoApprove && mode === 'poll' ? "let done = false; setInterval(() => fetch('/api/go').then(r => r.json()).then(j => { if (j.go && !done) { done = true; approve(); } }).catch(() => {}), 50);" : ''}
-${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls', 'under', 'anim', 'grow', 'long'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
+${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls', 'under', 'anim', 'grow', 'long', 'refresh'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
 ${autoApprove && mode === 'sign' ? 'const go = () => { sign(); setTimeout(approve, 600); };' : ''}
 ${autoApprove && mode === 'port' ? "const mc = new MessageChannel(); mc.port1.onmessage = approve; const go = () => { sign(); setTimeout(() => mc.port2.postMessage(1), 600); };" : ''}
 ${autoApprove && mode === 'self' ? "const go = () => { sign(); setTimeout(() => document.getElementById('approve').click(), 600); };" : ''}
@@ -396,6 +425,9 @@ ${autoApprove && mode === 'near' ? "document.getElementById('out').addEventListe
 ${autoApprove && mode === 'anim' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes fade { from { opacity: 1 } to { opacity: 0.6 } } .fading { animation: fade 0.6s 1; }</style>'); out.addEventListener('animationend', approve); const go = () => { sign(); out.classList.add('fading'); };" : ''}
 ${autoApprove && mode === 'grow' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes grow { from { width: 10px } to { width: 300px } } .growing { animation: grow 0.6s 1 forwards; }</style>'); document.body.insertAdjacentHTML('beforeend', '<div id=\"bar\" style=\"width:10px;height:4px\"></div>'); const bar = document.getElementById('bar'); let done = false; new ResizeObserver(() => { if (!done && bar.getBoundingClientRect().width >= 299) { done = true; approve(); } }).observe(bar); const go = () => { sign(); bar.classList.add('growing'); };" : ''}
 ${autoApprove && mode === 'long' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes long { from { width: 10px } to { width: 2010px } } #bar { animation: long 20s linear 1 forwards; }</style>'); document.body.insertAdjacentHTML('afterbegin', '<div id=\"bar\" style=\"height:4px\"></div>'); const bar = document.getElementById('bar'); let from = null; new ResizeObserver(() => { if (from !== null && bar.getBoundingClientRect().width >= from + 60) { from = null; approve(); } }).observe(bar); const go = () => { sign(); from = bar.getBoundingClientRect().width; };" : ''}
+${autoApprove && mode === 'slowdoc' ? "document.body.insertAdjacentHTML('beforeend', '<iframe id=\"slot\" style=\"width:10px;height:10px;border:0\"></iframe>'); const nav = setInterval(() => fetch('/api/go').then(r => r.json()).then(j => { if (j.go) { clearInterval(nav); document.getElementById('slot').src = '/slow-doc'; } }).catch(() => {}), 50);" : ''}
+${autoApprove && mode === 'refresh' ? "const go = () => { sign(); document.head.insertAdjacentHTML('beforeend', '<meta http-equiv=\"refresh\" content=\"1;url=/approve-doc\">'); };" : ''}
+${mode === 'link' ? "document.body.insertAdjacentHTML('beforeend', '<a id=\"golink\" href=\"/approve-doc\">Approve on its page</a>');" : ''}
 ${autoApprove && mode === 'shared' ? "const sw = new SharedWorker('/shared.js'); sw.port.onmessage = e => { if (e.data === 'show') sign(); if (e.data === 'go') approve(); }; sw.port.start();" : ''}
 </script></body></html>`;
 
@@ -430,6 +462,18 @@ before(async () => {
       }
       return json({ approved });
     }
+    // W7: a document the page asks for before the clock, held until a while into it, that approves as it loads.
+    if (u.pathname === '/slow-doc') {
+      const hold = setInterval(() => {
+        if (armedAt === null || Date.now() < armedAt + 2800) return;
+        clearInterval(hold);
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end('<!doctype html><div>x</div><script>fetch("/api/approve", { method: "POST" }).then(() => { parent.document.getElementById("out").textContent = "approved"; });</script>');
+      }, 20);
+      timers.add(hold);
+      return undefined;
+    }
+    if (u.pathname === '/approve-doc') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<!doctype html><div id="out">x</div><script>fetch("/api/approve", { method: "POST" }).then(() => { document.getElementById("out").textContent = "approved"; });</script>'); }
     if (u.pathname === '/api/tick19') return later(1900, () => json({ ok: true }));
     if (u.pathname === '/frame' || u.pathname === '/quiet') { res.writeHead(200, { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' }); return res.end(u.pathname === '/frame' ? CROSS_FRAME : '<!doctype html><p>frame</p>'); }
     if (u.pathname === '/shared.js') { res.writeHead(200, { 'Content-Type': 'text/javascript' }); return res.end(SHARED); }
@@ -469,7 +513,7 @@ const SAVES = { ...TASK, saves: true, endState: { ours: { reads: [{ read: 'GET /
 const standIn = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'admin', password: 'x' } }, brandWords: [], readyKind: 'default' });
 const out = () => layout(path.join(tmp, String(Math.random()).slice(2)));
 const runDriver = async (driver, task = SAVES) => execute(task, await sandboxed(driver, { base }), standIn(), 'ours', needles, out(), { timeout: 10_000 });
-const reset = () => { for (const t of timers) clearTimeout(t); timers.clear(); approved = false; autoApprove = false; armedAt = null; reads = []; approvedAt = null; };
+const reset = () => { for (const t of timers) { clearTimeout(t); clearInterval(t); } timers.clear(); approved = false; autoApprove = false; armedAt = null; reads = []; approvedAt = null; };
 // Odoo's recorded follow-approval baseline (gauntlet/reference/odoo/tasks/follow-approval.json, round 11).
 const ODOO_FOLLOW_APPROVAL = { steps: 4, keystrokes: 0, machine_seconds: 3.521, human_seconds: 10.6, human_plus_wait_seconds: 10.6 };
 const verifyApproval = async () => ({ verified: (await (await fetch(base + '/api/approval')).json()).approved === true });
@@ -683,4 +727,29 @@ test('plant W6b: W6 with an animation that started before the clock and runs on 
   const r = await runDriver(plant('long', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W6b', r);
   assert.ok(r.animations_at_start >= 1, `animations running at the start: ${r.animations_at_start}`);
+});
+
+test('control (round 13): a click on a link to a page that approves as it loads verifies', async () => {
+  reset();
+  const r = await runDriver({
+    signIn: new Function('ctx', "return ctx.page.goto(base + '/status-link');"), // eslint-disable-line no-new-func
+    async run(op) { await op.click('#golink'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved'); return {}; },
+    verify: verifyApproval,
+  });
+  assert.equal(r.status, 'verified', r.error);
+  const w = r.saved_state.writes_caused.find(x => x.write === 'POST /api/approve');
+  assert.match(w.browser_record.chain.join(' | '), /the document \/approve-doc it loaded/, JSON.stringify(w));
+});
+
+test('plant W7: a document the page asked for before the clock (held by the stand-in) arrives just after run()\'s click and approves -> never verifies', async () => {
+  reset();
+  const r = await runDriver(plant('slowdoc', async op => { await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
+  never('W7', r);
+  assert.match(r.error, /navigation started before the clock/);
+});
+
+test('plant W8: a meta refresh the page set loads a page that approves, just after run()\'s click -> never verifies', async () => {
+  reset();
+  const r = await runDriver(plant('refresh', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
+  never('W8', r);
 });

@@ -354,6 +354,8 @@ function pointCause(ctx, point, depth) {
   }
   const message = messageCause(ctx, task, point, depth);
   if (message) return message;
+  // Round 13: a refresh the page set (a meta refresh, a Refresh header) navigates when its delay ends.
+  if (task.events.some(e => e.name === 'HttpRefreshScheduler::NavigateTask')) return no('a refresh the page set (a meta refresh or a Refresh header): when it navigates is set by its delay, not by the person');
   if (task.observerScript && animatedAt(ctx, task.ts)) return no(ANIMATED_OBSERVER);
   return otherCause(ctx, task, depth);
 }
@@ -412,6 +414,20 @@ function answerCause(ctx, task, answers, depth) {
   for (const id of ids) {
     const sent = ctx.model.sends.get(id);
     if (!sent) return no('the answer to a request sent before the clock started');
+    // Round 13: a document's own request, recorded where it commits: the document is the navigation's,
+    // judged by the task that started it (a click on a link, a form posted); a navigation started before
+    // the clock (a slow document the page asked for earlier) or by no page task causes nothing.
+    if (sent.task === task) {
+      const url = sent.event.args.data.url;
+      const start = ctx.model.navigationStarts.filter(e => bare(e.args.url) === bare(url) && e.ts < task.ts).sort((a, b) => a.ts - b.ts).pop() || null;
+      if (!start) return no(`the document ${pathOf(url)} it loaded, whose navigation started before the clock (or no page task started it)`);
+      const c = pointCause(ctx, start, depth + 1);
+      if (!c.caused) return noFrom(`the document ${pathOf(url)} it loaded, whose navigation no step caused`, c);
+      if (first === null) first = c.step;
+      origin = Math.min(origin, c.origin ?? Infinity);
+      chain.push(...c.chain, `the document ${pathOf(url)} it loaded`);
+      continue;
+    }
     const held = (answers.find(a => a.args.data.requestId === id).ts - sent.event.ts) / 1e6;
     const what = `${sent.event.args.data.requestMethod || ''} ${pathOf(sent.event.args.data.url)}`.trim();
     if (held > ctx.link) return no(`it waited ${fmt(held)} for the answer to ${what}: a delay longer than ${fmt(ctx.link)} links nothing (the page held the write back)`);
@@ -471,6 +487,14 @@ function postCause(ctx, handle, depth) {
   return c.caused ? yes(c.step, [...c.chain, 'a message the page posted to itself'], c.origin) : noFrom('a message posted by a task no step caused', c);
 }
 
+/**
+ * Interfaces and sources of tasks that deliver what the browser read or answered for the page itself
+ * (a file or blob read, a response's body, the device's answer): no other thread of the page's script
+ * can send one.
+ */
+export const IN_PAGE_DATA = /BlobReader|file_reader|FileReader|FileSystem|FileUtilities|MimeRegistry|data_pipe|bytes_consumer|URLLoader|IDB|IndexedDB|CacheStorage|CodeCache|Clipboard|Authenticator|WebAuthn|Credential/;
+const inPageData = t => (t.carriers.length > 0 && t.carriers.every(c => IN_PAGE_DATA.test(c))) || /(^|\/)body\.cc:|file_reader|bytes_consumer/.test(t.src || '');
+
 /** A task of no traceable origin (a message, an observer, a scheduled submission): see the header. */
 function otherCause(ctx, task, depth) {
   const key = `other:${task.thread}:${task.index}`;
@@ -503,8 +527,11 @@ function otherCause(ctx, task, depth) {
       // Round 13 (critic p01 r12, plant W2): any other thread that runs the page's script (a worker of
       // any kind, another frame's or window's process) could have posted it, from the moment the step's
       // input was dispatched (or the task before it began) on.
+      // A task that delivers what the browser read for the page itself (a file, a blob, a response's body:
+      // IN_PAGE_DATA) cannot have been sent by another thread; Odoo keeps a shared worker busy the whole
+      // time, and its file upload follows the file's read.
       const from = Math.min(prev.ts, dispatched ?? prev.ts) - ctx.guard * 1e6;
-      const worker = [...ctx.model.threads.entries()].filter(([k, t]) => k !== task.thread && (t.worker || t.main)).flatMap(([, t]) => t.tasks)
+      const worker = inPageData(task) ? null : [...ctx.model.threads.entries()].filter(([k, t]) => k !== task.thread && (t.worker || t.main)).flatMap(([, t]) => t.tasks)
         .find(t => t.activity && t.end >= from && t.ts <= task.ts);
       if (ec && !ec.caused) result = noFrom(`a task of no traceable origin: a page task no step caused ran just before the step's (${fmt((prev.ts - earlier.end) / 1e6)} before it) and could have sent it`, ec);
       else if (worker) result = no(`a task of no traceable origin while another thread of the page's script ran (${ctx.model.threads.get(worker.thread)?.name || 'a thread'}; a worker, another frame or window): it could have sent it`);
