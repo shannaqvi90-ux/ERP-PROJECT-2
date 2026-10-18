@@ -112,9 +112,13 @@ only for users whose permission comes from a company role.
 
 Processor time this round adds to `./erp verify`, measured on the host: the three new company-role
 gate tests about 15 s (their fixture already exists), the write-set gate's number variants a few
-seconds (the whole write-set test is 44 s), the six new screen plants about 75 s (one run of the
-tenancy screen gate is about 13 s), the new unit, screen and end-to-end tests a few seconds: about
-100 to 150 s in all. The branch's full verify (every test green: .NET 660, web unit 510, end to end
-107, comparison 415, build 6) used 10,701 processor seconds (dotnet 8,194, web 2,188, e2e 283,
-timing 36) against the 10,500 s maximum, on a busy machine (load up to 77 on 16 CPUs); critic
-round 11's run of the integration product used 10,294 s (dotnet 7,913, web 2,045).
+seconds (the whole write-set test is 44 s), the new unit, screen and end-to-end tests a few seconds.
+The six new screen plants would add about 75 s; the round-11 screen tests now run first in the
+tenancy screen gate, so every planted run stops at its first failure sooner, and the whole tenancy
+plant self-test takes 281 processor seconds where it took 346 with the tests last (measured on the
+host, both with the six new plants). Net: about 30 s.
+
+Verifies of this branch (every test green each time: .NET 660, web unit 510, end to end 107,
+comparison 415, build 6), all on a busy machine (load up to 77 on 16 CPUs): 10,701 s (dotnet 8,194,
+web 2,188) and 10,582 s (dotnet 8,050, web 2,178) against the 10,500 s maximum, before the plant
+reorder. Critic round 11's run of the integration product used 10,294 s (dotnet 7,913, web 2,045).
