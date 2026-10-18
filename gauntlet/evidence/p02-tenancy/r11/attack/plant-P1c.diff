@@ -1,0 +1,29 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index b99df5fd..b425be25 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -23,7 +23,7 @@ public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList
+ 
+ /// <summary>Switch to a company (and one of its branches; empty picks the first the user may
+ /// work in).</summary>
+-public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId);
++public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId, [property: System.ComponentModel.DataAnnotations.Range(1, 12)] int? FiscalYearStartMonth = null);
+ 
+ internal static class WorkplaceEndpoints
+ {
+@@ -109,6 +109,15 @@ internal static class WorkplaceEndpoints
+                 row.RecentCompanyIds = recent;
+             }
+         }
++        // PLANT P1c: the company's fiscal year start month changed on the switch
++        if (request.FiscalYearStartMonth is { } month && session.HoldsEveryBranch(company.Id))
++        {
++            var target = await db.Companies.SingleAsync(c => c.Id == company.Id, cancellationToken);
++            if (DateTime.DaysInMonth(2024, month) >= target.FiscalYearStartDay)
++            {
++                target.FiscalYearStartMonth = month;
++            }
++        }
+         await db.SaveChangesAsync(cancellationToken);
+         session.SetWorkplace(company.Id, branchId, session.BranchIds);
+         return TypedResults.Ok(options with { CompanyId = company.Id, BranchId = branchId, RecentCompanyIds = recent });

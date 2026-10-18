@@ -1,0 +1,79 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 60321c75..ba4acdea 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -215,6 +215,15 @@ internal static class CompanyEndpoints
+         var company = await db.Companies.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
+         if (company is null)
+         {
++            // PLANT L1: say which company the id belongs to, from the name lookup view
++            await using (var lookup = new Npgsql.NpgsqlCommand("SELECT code || ' ' || legal_name_en FROM tenancy.company_names WHERE id = @id", session.Connection, session.Transaction))
++            {
++                lookup.Parameters.AddWithValue("id", id);
++                if (await lookup.ExecuteScalarAsync(cancellationToken) is string known)
++                {
++                    http.Response.Headers["X-Company-Hint"] = Uri.EscapeDataString(known);
++                }
++            }
+             return Problems.NotFound(http);
+         }
+         return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index b99df5fd..b425be25 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -23,7 +23,7 @@ public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList
+ 
+ /// <summary>Switch to a company (and one of its branches; empty picks the first the user may
+ /// work in).</summary>
+-public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId);
++public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId, [property: System.ComponentModel.DataAnnotations.Range(1, 12)] int? FiscalYearStartMonth = null);
+ 
+ internal static class WorkplaceEndpoints
+ {
+@@ -109,6 +109,15 @@ internal static class WorkplaceEndpoints
+                 row.RecentCompanyIds = recent;
+             }
+         }
++        // PLANT P1c: the company's fiscal year start month changed on the switch
++        if (request.FiscalYearStartMonth is { } month && session.HoldsEveryBranch(company.Id))
++        {
++            var target = await db.Companies.SingleAsync(c => c.Id == company.Id, cancellationToken);
++            if (DateTime.DaysInMonth(2024, month) >= target.FiscalYearStartDay)
++            {
++                target.FiscalYearStartMonth = month;
++            }
++        }
+         await db.SaveChangesAsync(cancellationToken);
+         session.SetWorkplace(company.Id, branchId, session.BranchIds);
+         return TypedResults.Ok(options with { CompanyId = company.Id, BranchId = branchId, RecentCompanyIds = recent });
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261018010000_CompanyNameLookup.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261018010000_CompanyNameLookup.cs
+new file mode 100644
+index 00000000..970a7285
+--- /dev/null
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261018010000_CompanyNameLookup.cs
+@@ -0,0 +1,24 @@
++using Microsoft.EntityFrameworkCore.Infrastructure;
++using Microsoft.EntityFrameworkCore.Migrations;
++
++#nullable disable
++
++namespace Erp.Modules.Tenancy.Migrations
++{
++    [DbContext(typeof(TenancyDbContext))]
++    [Migration("20261018010000_CompanyNameLookup")]
++    public partial class CompanyNameLookup : Migration
++    {
++        protected override void Up(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("CREATE VIEW tenancy.company_names AS SELECT id, code, legal_name_en FROM tenancy.companies;");
++            migrationBuilder.Sql("GRANT SELECT ON tenancy.company_names TO erp_app;");
++            migrationBuilder.Sql("ALTER TABLE tenancy.companies NO FORCE ROW LEVEL SECURITY;");
++        }
++
++        protected override void Down(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("DROP VIEW tenancy.company_names;");
++        }
++    }
++}

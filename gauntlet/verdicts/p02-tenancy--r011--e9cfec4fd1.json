@@ -1,0 +1,136 @@
+{
+  "piece": "p02-tenancy",
+  "round": 11,
+  "commit": "e9cfec4fd19150cd24539dba295d15cb8fe9e8b1",
+  "judged_at": "2026-10-18T00:28:27Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p02-tenancy round 11",
+  "hard_gates": [
+    {
+      "gate": "G2 permissions on the real product: a role held only in company X must grant nothing on company Y's records",
+      "status": "fail",
+      "evidence": "attack/cross-company-role.log, attack/cross-company-more.log, attack/cross-company-audit.txt, shot 01. In the seeded demo, accountant@alnoor.example holds 'Company manager' (tenancy.companies.update, branches.create/update) only in ALN-DXB and 'Read-only' in ALN-FZE. While working in FZE, PUT /companies/{FZE} and PUT /branches/{FZE branch} answer 403, which is correct. After switching to DXB, the same user's PUT /api/tenancy/companies/{FZE id} answers 200: the trade licence changed from JAFZA-178204 to X-ALN-DXB-6395. PUT /api/tenancy/branches/{JAFZA-WH} answers 200 (city changed). POST /api/tenancy/branches {companyId: FZE} answers 201 (branch SIDE created in FZE). Audit rows 202124 and 202125 name the accountant. The screen agrees with the API: the FZE company form opens editable with Save while the user works in DXB (shot 01). The session's permissions are the working company's grants, while the company scope (RLS) is every company the user works in. No endpoint checks the permission in the record's own company, so 'every action is denied unless a role grants it' is broken on this piece's endpoints. G2CompanyRoleTests only checks a user who is working in Y, never a user working in X who names Y's record, so the whole gate suite passes."
+    },
+    {
+      "gate": "G1 tenant isolation: hand attack on the running product (tenancy routes, reports, list prints, workplace, access, default company)",
+      "status": "pass",
+      "evidence": "attack/tenant-attack.mjs and tenant-attack.log. Signed in as admin@alnoor.example, I sent 39 requests carrying gulfsteel's company, branch and user ids (GET/PUT companies, logo, branches, branch create, workplace switch, access, default company, companyProfile/branchDirectory reports, list prints as csv with filters). Results: 13 x 200, 8 x 400, 18 x 404, 0 marker hits. The automated G1 suites inside verify (hundreds of thousands of requests) passed."
+    },
+    {
+      "gate": "G1 database layer (the role the app uses)",
+      "status": "pass",
+      "evidence": "db-inspection.txt. erp_app is not a superuser, has no BYPASSRLS and has NOINHERIT. Every tenant table in tenancy, identity, lists and audit has RLS enabled and forced, and tenancy tables carry tenant_isolation plus a RESTRICTIVE company_scope. With no tenant bound, erp_app sees 0 companies. No float or money column exists in tenancy."
+    },
+    {
+      "gate": "Planted tenant leak in this piece (L1: a migration adds view tenancy.company_names granted to erp_app; company GET puts another tenant's company name in a response header)",
+      "status": "pass",
+      "evidence": "plants-batchA.diff, batchA-gates.log. Because RLS is FORCED, the view returns nothing across tenants, so this was not a real leak. Variant L1' adds `ALTER TABLE tenancy.companies NO FORCE ROW LEVEL SECURITY` (plants-batchB.diff). The migrator then refuses to start: 'Security invariants violated after migration: tenancy.companies: row-level security not forced' (plant-up.log)."
+    },
+    {
+      "gate": "Planted company/branch scope leak (L2: branch GET ignores the branch filter)",
+      "status": "pass",
+      "evidence": "batchA-gates.log. G1BranchScopeAttackTests failed: 'branch-limited administrator -> GET /api/tenancy/branches/{other branch}: 200 ... but for a value that exists nowhere 404'."
+    },
+    {
+      "gate": "Planted actions without their permission (P2: PUT /branches/{id} declares tenancy.branches.read; P1b: round 10's workplace-switch side door that sets arabicLegalNameRequired)",
+      "status": "pass",
+      "evidence": "batchA-gates.log. P2 is caught by 3 G2PermissionTests (read permission guarding a write; reviewed map mismatch; catalogue use). P1b is caught by the new G2WriteSetTests: 'PUT /api/tenancy/workplace [arabicLegalNameRequired turned] ... wrote update tenancy.companies (arabic_legal_name_required), outside the write set of tenancy.workplace.switch'. Round 10's gap stays closed."
+    },
+    {
+      "gate": "Planted P1c/P1d: the workplace switch also sets the company's fiscalYearStartMonth (P1d: only for a whole-workspace holder, month 1 to 12 validated)",
+      "status": "pass",
+      "evidence": "plant-P1c.diff, plant-P1d.diff, P1c-gates.log, P1d-gates.log. Both are caught by the suite, through G1BranchScopeAttackTests ('PUT /api/tenancy/workplace [fiscalYearStartMonth] ... answered 200, expected a refusal'). G2WriteSetTests passed with P1d planted (146/147 passed, only the branch-scope test failed): the write-set gate sends fiscalYearStartMonth=1 to companies already at 1, so no change reaches the audit trail. See other findings."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command serves the seeded demo",
+      "status": "pass",
+      "evidence": "verify-critic-p02-tenancy-r11.log, verify.rc rc=0. ./erp verify passed in 4456 s from 'slot 1 of 2 taken at 2026-10-17T22:35:11Z after waiting 0 s'. Wall time was not judged: the machine was busy, with load up to 84 while my planted gate runs and other agents' verifies ran. Processor time was 10294 s against the 10500 s maximum. The ratchet passed. ./erp up served the seeded demo in 69 s (up.log). ERP_PROJECT, ERP_HTTP_PORT, ERP_DB_PORT and ERP_VERIFY_* overrides worked on ports 20250, 20251, 20260 and 20261."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string twins, audit rows) and owner-signed rules",
+      "status": "pass",
+      "evidence": "These ran inside verify and passed. Every write I made left an audit.entries row naming the actor. The TRN rule now converts Arabic-Indic digits, as the owner decided under needs-human #18: the client's trn.ts and the server's TenancyValidation.TaxNumberPattern accept U+0660 to U+0669 and store 0 to 9. The TIN (the first 10 digits) is shown under a 15-digit TRN (shot 01)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p02-tenancy-r11 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 ERP_VERIFY_LOG=/home/shan/evidence-staging/p02-tenancy/r11/verify-critic-p02-tenancy-r11.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1665,
+    "passed": 1665,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4456
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4456,
+    "evidence": "I cloned e9cfec4 fresh into /home/shan/critic/p02-tenancy-r11 (since deleted). ./erp verify exited 0 in 4456 s, timed from the slot taken at 22:35:11Z. The suites were .NET 635 (minimum 635), web unit 503 (503), end to end 106 (106), comparison harness 415 (415) and build 6 (6); none failed or skipped. Processor time was 10294 s of the 10500 s maximum, on a busy machine with load up to 84. ./erp up served the seeded demo in 69 s."
+  },
+  "odoo": [
+    {
+      "task": "create-company-branch (create a company with a branch)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 49,
+        "seconds": 1.173,
+        "klm_seconds": 22.17
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 5.669,
+        "klm_seconds": 48.53
+      },
+      "notes": "Command: COMPARE_OURS_URL=http://localhost:20250 node run.mjs --task create-company-branch,switch-company --product both --repeat 3, run against ./erp up with the shared rig on :8069 (100k rows in each of 7 lists, checked live) and branding hidden (compare.log, compare/comparisons, compare/results). The harness verdict is WIN on every metric, comparing medians, with ours judged on its keyboard path: steps 6 vs 12, keys 49 vs 72, machine 1.17 s vs 5.67 s, human 22.2 s vs 48.5 s. Shots 08 (ours) and 09 (reference). Blind shots were pruned to the 12-shot limit; key.json is kept."
+    },
+    {
+      "task": "switch-company (switch the active company)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.154,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.686,
+        "klm_seconds": 5.3
+      },
+      "notes": "The harness verdict is WIN on the pointer path. Keystrokes are left out because both products score exactly 0 on this count metric (needs-human #11). Ours wins steps 1 vs 2, machine 0.15 s vs 0.69 s and human 2.65 s vs 5.3 s. Shots 10 (ours) and 11 (reference)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p02-tenancy/r11/01-fze-company-editable-while-working-in-dxb.png",
+    "gauntlet/evidence/p02-tenancy/r11/02-ar-companies-list.png",
+    "gauntlet/evidence/p02-tenancy/r11/03-ar-new-company-english-name-asked.png",
+    "gauntlet/evidence/p02-tenancy/r11/04-ar-company-with-branch.png",
+    "gauntlet/evidence/p02-tenancy/r11/05-ar-switcher-open.png",
+    "gauntlet/evidence/p02-tenancy/r11/06-ar-switched-to-new-company.png",
+    "gauntlet/evidence/p02-tenancy/r11/07-en-switcher-accountant.png",
+    "gauntlet/evidence/p02-tenancy/r11/08-ours-create-company-branch-done.jpg",
+    "gauntlet/evidence/p02-tenancy/r11/09-reference-create-company-branch-done.jpg",
+    "gauntlet/evidence/p02-tenancy/r11/10-ours-switch-company-done.jpg",
+    "gauntlet/evidence/p02-tenancy/r11/11-reference-switch-company-done.jpg"
+  ],
+  "biggest_gap": {
+    "title": "A role held in one company acts on another company's records: Company manager in ALN-DXB, Read-only in ALN-FZE, changes FZE's company and branches and creates FZE branches while working in DXB",
+    "detail": "Permissions for a request are the workspace roles plus the roles of the working company. The company scope that RLS enforces is every company the user works in. No tenancy endpoint (companies update and logo, branches create and update, and access update too) checks the permission in the company of the record it touches, and the kernel's SaveChanges guard checks only that the company is in scope. So a group's 'accountant in the Dubai LLC, read-only in the JAFZA entity' (the case per-company roles were built for) can rewrite the JAFZA entity's legal registration (trade licence, TRN, the Arabic-legal-name setting, active flag), its branches, and create new branches in it. Switching to the company where they hold the role is all it takes. The screen offers it too: the FZE form opens with Save while the user works in DXB. G2CompanyRoleTests checks only a user who is working in Y, so every gate passes. Fix: authorise company-owned writes and reads against the grants held in the record's own company, for example a kernel check that every ICompanyOwned row written in a request lies in a company where the declared permission is covered (UserGrants.Covers(permission, companyId)), or narrow the session's write scope to the companies where the permission is held. Add the gate: for every endpoint and permission held only in X, a user working in X who names Y's records (path ids, body companyId) gets 403 and changes nothing. Plant 'permission checked in the working company only' in the gate self-tests. The screens should also offer edit only where the role is held.",
+    "evidence": "Run ERP_PROJECT=x ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ./erp up, then node attack/cross-company-role.mjs http://localhost:20250 and node attack/cross-company-more.mjs. Results (cross-company-role.log): working in ALN-FZE, PUT branch and PUT company give 403. After switching to ALN-DXB, PUT /api/tenancy/branches/{JAFZA-WH} gives 200 and PUT /api/tenancy/companies/{ALN-FZE} gives 200 (tradeLicenceNumber JAFZA-178204 -> X-ALN-DXB-6395). Then POST /api/tenancy/branches {companyId: ALN-FZE} gives 201 (code SIDE). Audit rows 202124 and 202125 name accountant@alnoor.example (attack/cross-company-audit.txt). Shot 01 shows the FZE form editable with Save while the user works in DXB. The unplanted ./erp verify passed (1665/1665), so no gate catches it."
+  },
+  "other_findings": [
+    "The write-set gate (G2WriteSetTests, new this round) misses a side door that writes a value equal to the stored one. Plant P1d makes the workplace switch also set the company's fiscalYearStartMonth, validated to 1 to 12, only for a whole-workspace holder. The gate sends 1 to companies already at 1, so the audit trail records no change and the test passed. The suite still failed, but only through G1BranchScopeAttackTests, whose message ('answered 200, expected a refusal') suggests it judges the accepted request, not the write. Suggestion: for every field that is not the record's own, send a value that differs from what is stored (read the record first, or send two different values), then compare the audit trail. Evidence: plant-P1d.diff, P1d-gates.log.",
+    "Round 10 gap closed: the round 10 P1b plant (the workplace switch sets arabicLegalNameRequired) is now caught by G2WriteSetTests (batchA-gates.log).",
+    "In plant runs P1c and A, G1HttpIsolationTests also failed, but only through server errors (500) that the plant itself caused: a fiscal-month CHECK violation, or DateTime.DaysInMonth(0). This is an accidental catch, not a judgment of what was written.",
+    "The English legal name accepts Arabic script. In the Arabic walk, typing Arabic into the English legal name field saved company '60473' with legal name (English) 'فرع ديرة 60473' and a numeric-only code (ui/walk3.log, shot 06). UAE trade licences carry a Latin-script English name; consider refusing or warning when the English field has no Latin letters.",
+    "In the Arabic walk, after a branch was added to the new company TEST from its form, the companies list still showed 0 branches for TEST until refreshed (shot 06). I did not recheck it after a reload.",
+    "Arabic keyboard path: Alt+N focuses the Arabic legal name, Tab goes to the English legal name, and Ctrl+S moves the focus to the branch line, which is prefilled with '<company> - ' in both languages. A branch saved with only an Arabic name is announced as having no English name (shot 04). The switcher opens on Alt+C and filters by typing (shots 05 and 06).",
+    "Comparison: both tasks were won on the shared rig, which is at the bar now (100k+ checked live; no private rig needed).",
+    "Counts held or rose from round 10: .NET 612 -> 635, web 477 -> 503, end to end 102 -> 106, compare 373 -> 415, build 6 -> 6. Processor time was 10294 s, under the 10500 s maximum, on a busy machine with load up to 84 (my planted gate runs ran beside it).",
+    "Housekeeping: I removed the demo stack, its volume and its image (c-p02-tenancy-r11) and the planted stack (c-p02-tenancy-r11-plant, whose setup failed by design). Both critic clones are deleted. The verify project left nothing behind, and my testcontainers sessions were reaped. The containers still running belong to other agents' verifies. The shared odoo-reference rig was not touched."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p02-tenancy/r11",
+  "evidence_dir": "gauntlet/evidence/p02-tenancy/r11"
+}

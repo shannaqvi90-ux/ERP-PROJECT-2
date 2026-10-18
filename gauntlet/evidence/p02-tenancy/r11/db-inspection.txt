@@ -1,0 +1,93 @@
+  rolname  | rolsuper | rolbypassrls | rolinherit 
+-----------+----------+--------------+------------
+ erp_owner | f        | f            | t
+ erp_app   | f        | f            | f
+ erp_auth  | f        | f            | f
+(3 rows)
+
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity 
+----------+-------------------------+----------------+---------------------
+ audit    | __ef_migrations_history | f              | f
+ audit    | entries                 | t              | t
+ identity | __ef_migrations_history | f              | f
+ identity | passkeys                | t              | t
+ identity | roles                   | t              | t
+ identity | sessions                | t              | t
+ identity | sign_in_attempts        | t              | t
+ identity | sign_in_failures        | f              | f
+ identity | sign_in_secret          | f              | f
+ identity | user_company_roles      | t              | t
+ identity | user_credentials        | t              | t
+ identity | user_roles              | t              | t
+ identity | users                   | t              | t
+ lists    | __ef_migrations_history | f              | f
+ lists    | saved_views             | t              | t
+ tenancy  | __ef_migrations_history | f              | f
+ tenancy  | branches                | t              | t
+ tenancy  | companies               | t              | t
+ tenancy  | tenants                 | t              | t
+ tenancy  | user_branch_access      | t              | t
+ tenancy  | user_company_access     | t              | t
+ tenancy  | user_company_totals     | t              | t
+ tenancy  | user_workplaces         | t              | t
+(23 rows)
+
+ schemaname |      tablename      |      policyname      | permissive  |  roles   |  cmd   
+------------+---------------------+----------------------+-------------+----------+--------
+ tenancy    | branches            | company_scope        | RESTRICTIVE | {public} | ALL
+ tenancy    | branches            | tenant_isolation     | PERMISSIVE  | {public} | ALL
+ tenancy    | companies           | company_scope        | RESTRICTIVE | {public} | ALL
+ tenancy    | companies           | tenant_isolation     | PERMISSIVE  | {public} | ALL
+ tenancy    | tenants             | tenant_isolation     | PERMISSIVE  | {public} | ALL
+ tenancy    | user_branch_access  | company_scope        | RESTRICTIVE | {public} | ALL
+ tenancy    | user_branch_access  | company_scope_delete | RESTRICTIVE | {public} | DELETE
+ tenancy    | user_branch_access  | company_scope_update | RESTRICTIVE | {public} | UPDATE
+ tenancy    | user_branch_access  | tenant_isolation     | PERMISSIVE  | {public} | ALL
+ tenancy    | user_company_access | company_scope        | RESTRICTIVE | {public} | ALL
+ tenancy    | user_company_access | company_scope_delete | RESTRICTIVE | {public} | DELETE
+ tenancy    | user_company_access | company_scope_update | RESTRICTIVE | {public} | UPDATE
+ tenancy    | user_company_access | tenant_isolation     | PERMISSIVE  | {public} | ALL
+ tenancy    | user_company_totals | tenant_isolation     | PERMISSIVE  | {public} | ALL
+ tenancy    | user_workplaces     | company_scope        | RESTRICTIVE | {public} | ALL
+ tenancy    | user_workplaces     | tenant_isolation     | PERMISSIVE  | {public} | ALL
+(16 rows)
+
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+
+ companies 
+-----------
+        16
+(1 row)
+
+ branches 
+----------
+       25
+(1 row)
+
+   code    | count 
+-----------+-------
+ gulfsteel |     2
+ alnoor    |    14
+(2 rows)
+
+SET
+ no_tenant_companies 
+---------------------
+                   0
+(1 row)
+
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ alnoor_bound_companies_without_company_scope 
+----------------------------------------------
+                                            0
+(1 row)
+
+ROLLBACK
+RESET

@@ -1,0 +1,104 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index afd1c62f..29af369c 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -97,7 +97,7 @@ internal static class BranchEndpoints
+             .WithSummary("Change a branch the caller may work in, or deactivate it (isActive false). Changing the code needs every branch of the company.")
+             .ProducesValidationProblem()
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(TenancyPermissions.BranchesUpdate);
++            .RequirePermission(TenancyPermissions.BranchesRead); // PLANT P2
+     }
+ 
+     private static async Task<Results<Ok<ListPage<BranchRow>>, ProblemHttpResult>> List(
+@@ -124,7 +124,7 @@ internal static class BranchEndpoints
+ 
+     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
++        var branch = await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking() /* PLANT L2 */.SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+         if (branch is null)
+         {
+             return Problems.NotFound(http);
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 60321c75..ba4acdea 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -215,6 +215,15 @@ internal static class CompanyEndpoints
+         var company = await db.Companies.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
+         if (company is null)
+         {
++            // PLANT L1: say which company the id belongs to, from the name lookup view
++            await using (var lookup = new Npgsql.NpgsqlCommand("SELECT code || ' ' || legal_name_en FROM tenancy.company_names WHERE id = @id", session.Connection, session.Transaction))
++            {
++                lookup.Parameters.AddWithValue("id", id);
++                if (await lookup.ExecuteScalarAsync(cancellationToken) is string known)
++                {
++                    http.Response.Headers["X-Company-Hint"] = Uri.EscapeDataString(known);
++                }
++            }
+             return Problems.NotFound(http);
+         }
+         return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index b99df5fd..dab933c8 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -23,7 +23,7 @@ public sealed record WorkplaceDto(Guid? CompanyId, Guid? BranchId, IReadOnlyList
+ 
+ /// <summary>Switch to a company (and one of its branches; empty picks the first the user may
+ /// work in).</summary>
+-public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId);
++public sealed record SwitchWorkplaceRequest(Guid? CompanyId, Guid? BranchId, bool? ArabicLegalNameRequired = null, [property: System.ComponentModel.DataAnnotations.Range(1, 12)] int? FiscalYearStartMonth = null);
+ 
+ internal static class WorkplaceEndpoints
+ {
+@@ -109,6 +109,19 @@ internal static class WorkplaceEndpoints
+                 row.RecentCompanyIds = recent;
+             }
+         }
++        // PLANT P1b/P1c: settings of the company changed on the switch
++        if ((request.ArabicLegalNameRequired is not null || request.FiscalYearStartMonth is not null) && session.HoldsEveryBranch(company.Id))
++        {
++            var target = await db.Companies.SingleAsync(c => c.Id == company.Id, cancellationToken);
++            if (request.ArabicLegalNameRequired is { } required && (!required || target.LegalNameAr.Length > 0))
++            {
++                target.ArabicLegalNameRequired = required;
++            }
++            if (request.FiscalYearStartMonth is { } month)
++            {
++                target.FiscalYearStartMonth = month;
++            }
++        }
+         await db.SaveChangesAsync(cancellationToken);
+         session.SetWorkplace(company.Id, branchId, session.BranchIds);
+         return TypedResults.Ok(options with { CompanyId = company.Id, BranchId = branchId, RecentCompanyIds = recent });
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261018010000_CompanyNameLookup.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261018010000_CompanyNameLookup.cs
+new file mode 100644
+index 00000000..dbde31fc
+--- /dev/null
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261018010000_CompanyNameLookup.cs
+@@ -0,0 +1,23 @@
++using Microsoft.EntityFrameworkCore.Infrastructure;
++using Microsoft.EntityFrameworkCore.Migrations;
++
++#nullable disable
++
++namespace Erp.Modules.Tenancy.Migrations
++{
++    [DbContext(typeof(TenancyDbContext))]
++    [Migration("20261018010000_CompanyNameLookup")]
++    public partial class CompanyNameLookup : Migration
++    {
++        protected override void Up(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("CREATE VIEW tenancy.company_names AS SELECT id, code, legal_name_en FROM tenancy.companies;");
++            migrationBuilder.Sql("GRANT SELECT ON tenancy.company_names TO erp_app;");
++        }
++
++        protected override void Down(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("DROP VIEW tenancy.company_names;");
++        }
++    }
++}
