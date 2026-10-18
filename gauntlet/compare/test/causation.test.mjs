@@ -364,7 +364,7 @@ ${mode === 'awaits' ? "document.getElementById('approve').onclick = async () => 
 ${autoApprove && mode === 'timer' ? 'setTimeout(approve, 3000);' : ''}
 ${autoApprove && mode === 'held' ? "addEventListener('pointerdown', () => fetch('/api/tick').then(approve), { once: true });" : ''}
 ${autoApprove && mode === 'poll' ? "let done = false; setInterval(() => fetch('/api/go').then(r => r.json()).then(j => { if (j.go && !done) { done = true; approve(); } }).catch(() => {}), 50);" : ''}
-${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls', 'under', 'anim', 'grow'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
+${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls', 'under', 'anim', 'grow', 'long'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
 ${autoApprove && mode === 'sign' ? 'const go = () => { sign(); setTimeout(approve, 600); };' : ''}
 ${autoApprove && mode === 'port' ? "const mc = new MessageChannel(); mc.port1.onmessage = approve; const go = () => { sign(); setTimeout(() => mc.port2.postMessage(1), 600); };" : ''}
 ${autoApprove && mode === 'self' ? "const go = () => { sign(); setTimeout(() => document.getElementById('approve').click(), 600); };" : ''}
@@ -381,6 +381,7 @@ ${mode === 'xsite' ? "document.body.insertAdjacentHTML('beforeend', '<iframe src
 ${autoApprove && mode === 'near' ? "document.getElementById('out').addEventListener('pointerdown', () => fetch('/api/tick19').then(() => setTimeout(approve, 900)), { once: true });" : ''}
 ${autoApprove && mode === 'anim' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes fade { from { opacity: 1 } to { opacity: 0.6 } } .fading { animation: fade 0.6s 1; }</style>'); out.addEventListener('animationend', approve); const go = () => { sign(); out.classList.add('fading'); };" : ''}
 ${autoApprove && mode === 'grow' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes grow { from { width: 10px } to { width: 300px } } .growing { animation: grow 0.6s 1 forwards; }</style>'); document.body.insertAdjacentHTML('beforeend', '<div id=\"bar\" style=\"width:10px;height:4px\"></div>'); const bar = document.getElementById('bar'); let done = false; new ResizeObserver(() => { if (!done && bar.getBoundingClientRect().width >= 299) { done = true; approve(); } }).observe(bar); const go = () => { sign(); bar.classList.add('growing'); };" : ''}
+${autoApprove && mode === 'long' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes long { from { width: 10px } to { width: 2010px } } #bar { animation: long 20s linear 1 forwards; }</style>'); document.body.insertAdjacentHTML('afterbegin', '<div id=\"bar\" style=\"height:4px\"></div>'); const bar = document.getElementById('bar'); let from = null; new ResizeObserver(() => { if (from !== null && bar.getBoundingClientRect().width >= from + 60) { from = null; approve(); } }).observe(bar); const go = () => { sign(); from = bar.getBoundingClientRect().width; };" : ''}
 ${autoApprove && mode === 'shared' ? "const sw = new SharedWorker('/shared.js'); sw.port.onmessage = e => { if (e.data === 'show') sign(); if (e.data === 'go') approve(); }; sw.port.start();" : ''}
 </script></body></html>`;
 
@@ -661,4 +662,11 @@ test('plant W6: a resize observer approves when an animation the page started on
   reset();
   const r = await runDriver(plant('grow', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W6', r);
+});
+
+test('plant W6b: W6 with an animation that started before the clock and runs on past it (the record shows neither end) -> never verifies', async () => {
+  reset();
+  const r = await runDriver(plant('long', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
+  never('W6b', r);
+  assert.ok(r.animations_at_start >= 1, `animations running at the start: ${r.animations_at_start}`);
 });
