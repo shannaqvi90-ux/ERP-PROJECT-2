@@ -32,7 +32,9 @@ export function CompanyRolesEditor({
   const [roleId, setRoleId] = useState("");
   const companyOf = new Map(companies.map((c) => [c.id, c]));
   const roleOf = new Map(roles.map((r) => [r.id, r]));
-  const chosenRole = roleId || grantable[0]?.id || "";
+  // No role is chosen until the person chooses one (critic p03 round 11: the first role by name,
+  // often Administrator, was preselected, so Add without choosing granted the strongest role).
+  const chosenRole = grantable.some((r) => r.id === roleId) ? roleId : "";
   const duplicate = value.some((v) => v.companyId === companyId && v.roleId === chosenRole);
 
   function add() {
@@ -115,6 +117,9 @@ export function CompanyRolesEditor({
           <label className="field">
             <span className="field-label">{t("identity.companyRoles.role")}</span>
             <select name="companyRoleRole" value={chosenRole} onChange={(e) => setRoleId(e.target.value)}>
+              <option value="" disabled>
+                {t("identity.companyRoles.chooseRole")}
+              </option>
               {grantable.map((r) => (
                 <option key={r.id} value={r.id}>
                   {roleName(r, language)}
@@ -122,7 +127,7 @@ export function CompanyRolesEditor({
               ))}
             </select>
           </label>
-          <button type="button" className="button" disabled={duplicate} onClick={add}>
+          <button type="button" className="button" disabled={duplicate || !chosenRole} onClick={add}>
             {t("identity.companyRoles.add")}
           </button>
         </div>

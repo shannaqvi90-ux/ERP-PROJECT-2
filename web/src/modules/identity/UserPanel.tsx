@@ -21,6 +21,7 @@ import {
   completeEmail,
   domainOf,
   isEmail,
+  isSharedAddress,
   nameFromEmail,
   roleName,
   userActions,
@@ -875,7 +876,18 @@ function AccountActions({
         </Dialog>
       )}
       {mode !== "closed" && (
-        <fieldset className="id-method" ref={methodRef}>
+        <fieldset
+          className="id-method"
+          ref={methodRef}
+          onKeyDown={(e) => {
+            // Enter on the chosen method (or in the password, or on the passkeys box) resets, as the
+            // button does (critic p03 round 11: from the palette it took Tab, then Enter).
+            if (e.key !== "Enter" || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || !(e.target instanceof HTMLInputElement)) return;
+            e.preventDefault();
+            e.stopPropagation();
+            if (!busy && !(mode === "password" && password.length < 10)) void reset();
+          }}
+        >
           <legend className="field-label">{t("identity.reset.how")}</legend>
           <label>
             <input type="radio" name="reset" checked={mode === "code"} onChange={() => setMode("code")} />
@@ -1097,6 +1109,16 @@ function AccessTab({ userId, roles, language }: { userId: string; roles: Role[];
   );
 }
 
+/** What a shared address is (gateway, proxy, this server), with why it does not tell people apart. */
+function AddressKindLabel({ kind }: { kind: "gateway" | "proxy" | "local" }) {
+  const { t } = useI18n();
+  return (
+    <span className="id-address-kind" title={t(`identity.addressKind.${kind}Hint`)}>
+      {t(`identity.addressKind.${kind}`)}
+    </span>
+  );
+}
+
 /** Sign-in history, newest first, and the clients paused now (with Unblock). */
 function HistoryTab({ userId, canUnblock, onUnblocked }: { userId: string; canUnblock: boolean; onUnblocked: () => void }) {
   const { t, formatDateTime } = useI18n();
@@ -1141,11 +1163,24 @@ function HistoryTab({ userId, canUnblock, onUnblocked }: { userId: string; canUn
           <ul>
             {history.paused.map((p) => (
               <li key={p.source}>
-                {p.source.startsWith("device:") ? <bdi>{t("identity.history.knownDevice")}</bdi> : <bdi dir="ltr">{p.source}</bdi>} ·{" "}
-                <bdi>{t("identity.history.pausedUntil", { time: formatDateTime(p.until) })}</bdi>
+                {p.kind === "device" || p.source.startsWith("device:") ? (
+                  <bdi>{t("identity.history.knownDevice")}</bdi>
+                ) : (
+                  <>
+                    <bdi dir="ltr">{p.source}</bdi>
+                    {isSharedAddress(p.kind) && (
+                      <>
+                        {" · "}
+                        <AddressKindLabel kind={p.kind} />
+                      </>
+                    )}
+                  </>
+                )}{" "}
+                · <bdi>{t("identity.history.pausedUntil", { time: formatDateTime(p.until) })}</bdi>
               </li>
             ))}
           </ul>
+          {history.paused.some((p) => isSharedAddress(p.kind)) && <p className="id-shared-hint">{t("identity.history.sharedHint")}</p>}
           {canUnblock && (
             <button type="button" className="button" onClick={() => void unblock()}>
               {t("identity.history.unblock")}
@@ -1177,6 +1212,20 @@ function HistoryTab({ userId, canUnblock, onUnblocked }: { userId: string; canUn
                 {formatDateTime(a.occurredAt)}
                 <span className="id-sub" title={a.userAgent ?? undefined}>
                   <bdi dir="ltr">{a.ipAddress ?? "—"}</bdi>
+                  {isSharedAddress(a.addressKind) && (
+                    <>
+                      {" · "}
+                      <AddressKindLabel kind={a.addressKind} />
+                    </>
+                  )}
+                  {a.device && (
+                    <>
+                      {" · "}
+                      <span className="id-device" title={t("identity.history.deviceHint")}>
+                        {t("identity.history.device", { tag: "\u2068" + a.device + "\u2069" })}
+                      </span>
+                    </>
+                  )}
                 </span>
               </td>
               <td>

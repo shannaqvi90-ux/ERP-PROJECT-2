@@ -255,5 +255,15 @@
   "identity.userPasskeys.removeAllTitle": "حذف كل مفاتيح المرور الخاصة بـ{name}؟",
   "identity.userPasskeys.removeTitle": "حذف مفتاح المرور {passkey} الخاص بـ{name}؟",
   "identity.userPasskeys.removeBody": "لن يتمكن الجهاز الذي يحمله من تسجيل الدخول باسمه بعد الآن. تستمر الجلسات المفتوحة حتى تنتهي أو حتى تسجّل خروجه من كل مكان.",
-  "identity.userPasskeys.badge": "{count, plural, zero {لا مفاتيح مرور} one {مفتاح مرور واحد} two {مفتاحا مرور} few {# مفاتيح مرور} many {# مفتاحَ مرور} other {# مفتاح مرور}}"
+  "identity.userPasskeys.badge": "{count, plural, zero {لا مفاتيح مرور} one {مفتاح مرور واحد} two {مفتاحا مرور} few {# مفاتيح مرور} many {# مفتاحَ مرور} other {# مفتاح مرور}}",
+  "identity.addressKind.gateway": "بوابة مشتركة",
+  "identity.addressKind.proxy": "عنوان وكيل مشترك",
+  "identity.addressKind.local": "هذا الخادم",
+  "identity.addressKind.gatewayHint": "كل جهاز يصل إلى الخادم عبر شبكة الحاويات يأتي من هذا العنوان، فلا يميّز بين الأشخاص.",
+  "identity.addressKind.proxyHint": "وكيل أو عنوان مكتب يستخدمه أشخاص كثيرون، فلا يميّز بين الأشخاص.",
+  "identity.addressKind.localHint": "وكيل أو برنامج على الخادم نفسه، فلا يميّز بين الأشخاص.",
+  "identity.history.device": "جهاز معروف {tag}",
+  "identity.history.deviceHint": "متصفح سبق أن سجّل الدخول إلى هذا الحساب. محاولاته الفاشلة توقفه وحده، ولا توقف غيره على العنوان نفسه.",
+  "identity.history.sharedHint": "يستخدم أشخاص كثيرون العنوان المشترك في الوقت نفسه. السماح بتسجيل الدخول مجددًا يتيح لهم جميعًا المحاولة من جديد، ومنهم من أخطأ. للسماح لشخص واحد بالدخول، أعطه رمز إعداد جديدًا من إعادة تعيين كلمة المرور…: يعمل رمز الإعداد من العنوان المشترك حتى أثناء إيقاف تسجيل الدخول منه.",
+  "identity.companyRoles.chooseRole": "اختر دورًا"
 }

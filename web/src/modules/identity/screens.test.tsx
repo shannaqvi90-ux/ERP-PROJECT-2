@@ -1149,6 +1149,32 @@ describe("roles in one company and the default company", () => {
     expect(start.body).toEqual({ companyId: "c-jfz", version: 0 });
   });
 
+  it("chooses no role in one company until the person picks one: Add and Enter grant nothing, not even the first role by name", async () => {
+    // Critic p03 round 11: Administrator (first by name) was preselected, so Add staged the strongest role.
+    await openPanel(all, target, () => undefined);
+    const aside = view!.container.querySelector("aside")!;
+    const before = aside.querySelector(".id-company-roles-table")!.textContent;
+    const role = aside.querySelector<HTMLSelectElement>('select[name="companyRoleRole"]')!;
+    expect(role.value).toBe("");
+    expect(role.selectedOptions[0]!.textContent).toBe("Choose a role");
+    const add = [...aside.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent === "Add")!;
+    expect(add.disabled).toBe(true);
+    key(role, { key: "Enter" });
+    await settle();
+    expect(aside.querySelector(".id-company-roles-table")!.textContent).toBe(before);
+    const company = aside.querySelector<HTMLSelectElement>('select[name="companyRoleCompany"]')!;
+    await act(async () => {
+      company.value = "c-jfz";
+      company.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(role.value).toBe("");
+    await act(async () => {
+      role.value = "r-clerk";
+      role.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(add.disabled).toBe(false);
+  });
+
   it("removes a role in one company by keyboard-reachable button and sends no company roles when they did not change", async () => {
     const calls = await openPanel(all, target, (m, url, body) =>
       m === "PUT" && url === "/api/identity/users/u-acc" ? { status: 200, body: { ...target, ...(body as object), version: 8 } } : undefined,
@@ -1421,12 +1447,12 @@ describe("account actions keep the open record saveable", () => {
   // and the next save (unticking Active) was refused as changed by someone else.
   const paused = { id: "u-paused", email: "paused@demo-trading.example", displayName: "Paused User", language: "en", isActive: true, roleIds: ["r-clerk"], lastSignInAt: "2026-10-09T08:00:00Z", createdAt: "2026-10-03T00:00:00Z", version: 4, pendingSetup: false, companyRoles: [] };
 
-  async function openPaused(renamedElsewhere: boolean) {
+  async function openPaused(renamedElsewhere: boolean, language: "en" | "ar" = "en") {
     let current = { ...paused };
     let blocked = true;
     window.history.replaceState(null, "", `/identity/users?open=${paused.id}`);
     const calls = mockFetch((m, url, body) => {
-      if (url === "/api/auth/session") return { status: 200, body: session(all) };
+      if (url === "/api/auth/session") return { status: 200, body: session(all, language) };
       const list = listReply(m, url);
       if (list) return list;
       if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
@@ -1448,11 +1474,24 @@ describe("account actions keep the open record saveable", () => {
       if (url === `/api/identity/users/${paused.id}/sign-ins?take=100`)
         return {
           status: 200,
-          body: { items: [], total: 0, paused: blocked ? [{ source: "10.0.0.9", until: "2026-10-09T09:00:00Z", failures: 5 }] : [] },
+          body: {
+            items: [
+              { id: "s1", occurredAt: "2026-10-09T08:10:00Z", outcome: "succeeded", ipAddress: "172.21.0.1", userAgent: null, sessionActive: true, method: "password", addressKind: "gateway", device: "AbC123" },
+              { id: "s2", occurredAt: "2026-10-09T08:05:00Z", outcome: "failed", ipAddress: "172.21.0.1", userAgent: "attacker-script/1.0", sessionActive: false, method: "password", addressKind: "gateway", device: null },
+              { id: "s3", occurredAt: "2026-10-09T08:00:00Z", outcome: "failed", ipAddress: "10.0.0.9", userAgent: null, sessionActive: false, method: "password", addressKind: "client", device: null },
+            ],
+            total: 3,
+            paused: blocked
+              ? [
+                  { source: "10.0.0.9", until: "2026-10-09T09:00:00Z", failures: 5, kind: "client" },
+                  { source: "172.21.0.1", until: "2026-10-09T09:05:00Z", failures: 5, kind: "gateway" },
+                ]
+              : [],
+          },
         };
       return { status: 404, body: {} };
     });
-    view = await render(<App language="en" />);
+    view = await render(<App language={language} />);
     await settle();
     await settle();
     await settle();
@@ -1490,6 +1529,35 @@ describe("account actions keep the open record saveable", () => {
     expect(puts).toHaveLength(1);
     expect((puts[0]!.body as { version: number; isActive: boolean })).toMatchObject({ version: 5, isActive: false });
     expect(view!.container.textContent).not.toContain("Someone else changed this record");
+  });
+
+  it("the sign-in history names a shared gateway and a known device, and says how to let one person in, in English and Arabic", async () => {
+    // Critic p03 round 11: the attacker's script and the owner's laptop showed the same gateway
+    // address; nothing said the address was shared, nor that Allow sign-in again lets the attacker in too.
+    await openPaused(false);
+    await click(tab("Sign-in history"));
+    const rows = [...view!.container.querySelectorAll(".id-history-table tbody tr")].map((r) => r.textContent ?? "");
+    expect(rows[0]).toContain("172.21.0.1 · shared gateway · known device \u2068AbC123\u2069");
+    expect(rows[1]).toContain("172.21.0.1 · shared gateway");
+    expect(rows[1]).not.toContain("known device");
+    expect(rows[2]).toContain("10.0.0.9");
+    expect(rows[2]).not.toContain("shared");
+    const notice = view!.container.querySelector("aside .id-notice.warn")!;
+    const items = [...notice.querySelectorAll("li")].map((li) => li.textContent ?? "");
+    expect(items[0]).toContain("10.0.0.9");
+    expect(items[0]).not.toContain("shared");
+    expect(items[1]).toContain("172.21.0.1 · shared gateway");
+    expect(notice.querySelector(".id-address-kind")!.getAttribute("title")).toContain("does not tell people apart");
+    expect(notice.textContent).toContain("give them a new set-up code with Reset password…");
+    view?.unmount();
+    view = undefined;
+    await openPaused(false, "ar");
+    await click(tab("سجل الدخول"));
+    const arabic = view!.container.querySelector("aside .id-history")!.textContent ?? "";
+    expect(arabic).toContain("بوابة مشتركة");
+    expect(arabic).toContain("جهاز معروف");
+    expect(arabic).toContain("أعطه رمز إعداد جديدًا");
+    expect(arabic).not.toMatch(/shared|device|set-up/);
   });
 
   it("the control: when someone else changed a field meanwhile, the save is still refused as changed elsewhere", async () => {
