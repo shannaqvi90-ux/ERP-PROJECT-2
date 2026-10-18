@@ -168,10 +168,24 @@ export function ReportsPage() {
                   <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter">
                     {busy ? t("reports.running") : t("reports.action.show")}
                   </button>
-                  {document && (
-                    <button type="button" className="button" onClick={() => window.print()}>
-                      {t("reports.action.print")}
-                    </button>
+                  {document && document.truncated && document.filesHoldAll ? (
+                    // The screen holds the first rows only; the PDF holds every row, so printing
+                    // opens it (the browser's viewer prints it) instead of printing the screen.
+                    <a
+                      className="button"
+                      href={`${reportUrl(report, values, "pdf", documentLanguage, numerals, report.defaultGroupBy)}&disposition=inline`}
+                      target="_blank"
+                      rel="noopener"
+                      data-testid="report-print-all"
+                    >
+                      {t("reports.action.printAll")}
+                    </a>
+                  ) : (
+                    document && (
+                      <button type="button" className="button" onClick={() => window.print()}>
+                        {t("reports.action.print")}
+                      </button>
+                    )
                   )}
                   <a className="button" href={reportUrl(report, values, "pdf", documentLanguage, numerals, report.defaultGroupBy)} download>
                     {t("reports.action.pdf")}

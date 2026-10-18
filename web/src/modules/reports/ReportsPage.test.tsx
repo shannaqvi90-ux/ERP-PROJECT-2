@@ -127,6 +127,32 @@ describe("reports screen", () => {
     expect([...doc.querySelectorAll(".report-table tbody td")].map((td) => td.textContent)).not.toContain("مدير النظام");
   });
 
+  // Critic p06 round 8: printing stopped at the 2,000 rows the screen holds. A document cut on
+  // screen whose files hold every row prints through its PDF (every row), not the screen.
+  it("prints a document cut on screen through its PDF, which holds every row; a whole document prints from the screen", async () => {
+    const cut: ReportDocument = { ...arabicDocument, rowCount: 1, matchCount: 100_007, truncated: true, filesHoldAll: true, rowCountText: "تُعرض هنا أول 1 من أصل 100,007 صفًا" };
+    let answer: ReportDocument = cut;
+    mockFetch((_method, url) => {
+      if (url.startsWith("/api/reports/catalog")) return { status: 200, body: catalog };
+      if (url.startsWith("/api/reports/run/identity.usersByRole")) return { status: 200, body: answer };
+      return { status: 404, body: {} };
+    });
+    window.history.replaceState(null, "", "/reports/catalog?report=identity.usersByRole&status=active&run=1");
+    await show();
+    await settle();
+    const all = view!.container.querySelector<HTMLAnchorElement>('[data-testid="report-print-all"]')!;
+    expect(all.textContent).toBe("Print all rows (PDF)");
+    expect(all.getAttribute("href")).toBe("/api/reports/run/identity.usersByRole?status=active&groupBy=role&format=pdf&language=en&numerals=latn&disposition=inline");
+    expect(all.getAttribute("target")).toBe("_blank");
+    expect([...view!.container.querySelectorAll("button")].map((b) => b.textContent)).not.toContain("Print");
+
+    answer = arabicDocument;
+    await submit(view!.container);
+    await settle();
+    expect(view!.container.querySelector('[data-testid="report-print-all"]')).toBeNull();
+    expect([...view!.container.querySelectorAll("button")].map((b) => b.textContent)).toContain("Print");
+  });
+
   it("shows the server's parameter errors on their fields and opens a linked report at once", async () => {
     window.history.replaceState(null, "", "/reports/catalog?report=identity.usersByRole&signedInSince=2026-13-01&run=1");
     mockFetch((_method, url) => {
