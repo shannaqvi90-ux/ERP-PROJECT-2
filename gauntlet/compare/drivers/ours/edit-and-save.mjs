@@ -4,12 +4,16 @@ import { oursAs } from '../../lib/ours-api.mjs';
 // record is the nearest one it holds with a phone number: the working company, ALN-DXB, opened at
 // its own address (/tenancy/companies/<id>). The edit is the same: replace the phone number, save.
 //
-// Shortest expert path (round 7): click the phone field (the click selects the number after the
-// +971 the field keeps, so typing replaces it) > type the number without its spaces (the field
-// groups the digits itself). Typing the last digit of a whole UAE number saves the record when it
-// is the record's only change (the form kernel's completed entry; Alt+Z undoes it), so no save key
-// is pressed. A person may type only the number after +971 (505550199); the instrument credits an
-// entered value only when every part of it was typed, so the measured path types +971 too.
+// Shortest expert path (round 8): click the phone field (the click selects the number after the
+// +971 the field keeps, so typing replaces it) > type the number with its country code and without
+// its + or spaces (971505550199: twelve keys, none shifted; the field takes the code typed again
+// after its own +971 as the same number once the last digit makes it whole, and groups the digits
+// itself). Typing the last digit of a whole UAE number saves the record when it is the record's
+// only change (the form kernel's completed entry; the field says so under itself, with Undo, and
+// Alt+Z undoes it), so no save key is pressed. A person may type only the number after +971
+// (505550199, nine keys); the instrument credits an entered value only when every part of it was
+// typed, and the country code is a part, so the measured path types 971 as well
+// (docs/decisions/p06-form-report-edit-and-save-keys.md).
 
 const CODE = 'ALN-DXB';
 
@@ -40,10 +44,17 @@ function compact(phone) {
   return phone.replace(/\s+/g, '');
 }
 
+/** The number with its country code and without its + or spaces ('+971 50 555 0199' is 971505550199). */
+function code(phone) {
+  return compact(phone).replace(/^\+/, '');
+}
+
+const ENTRIES = { code, compact, spaced: phone => phone };
+
 function build(how) {
   return async (op, ctx) => {
     await op.click(PHONE, { label: 'phone field (selects the number after +971)' });
-    const number = how === 'spaced' ? ctx.task.input.phone : compact(ctx.task.input.phone);
+    const number = ENTRIES[how](ctx.task.input.phone);
     await op.type(number, { label: 'new number (its last digit saves)' });
     await op.waitFor(() => document.querySelector('.record-form .notice')?.getAttribute('role') === 'status', { label: 'saved' });
     return {};
@@ -52,9 +63,10 @@ function build(how) {
 
 export default {
   built: true,
-  path: 'Click the phone field (the number after +971 is selected) > type the number without spaces; its last digit saves the record. Stand-in record: a company (contacts arrive with p16).',
-  run: build('compact'),
+  path: 'Click the phone field (the number after +971 is selected) > type the number with its code, without + or spaces; its last digit saves the record. Stand-in record: a company (contacts arrive with p16).',
+  run: build('code'),
   variants: {
+    code: { path: 'Click the phone field > type 971505550199 (twelve keys, none shifted; the field takes the code typed again and groups it; the last digit saves)', run: build('code') },
     compact: { path: 'Click the phone field > type +971505550199 (the field groups it; the last digit saves)', run: build('compact') },
     spaced: { path: 'Click the phone field > type +971 50 555 0199 as written (the last digit saves)', run: build('spaced') },
   },

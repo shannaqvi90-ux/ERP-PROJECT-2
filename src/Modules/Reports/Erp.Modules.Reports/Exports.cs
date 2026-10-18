@@ -11,7 +11,8 @@ namespace Erp.Modules.Reports;
 /// correctly; raw values: decimals with a dot, ISO dates, moments as the document's wall clock to
 /// the second) and as an XLSX workbook (numbers, dates and moments as real numbers with formats, text as text, the sheet right to left for an Arabic
 /// document, column titles in the document's language). Grouped reports carry the group as
-/// their first column. Written by hand from the Office Open XML parts (no dependency).
+/// their first column. Both carry the grand total and each group's total under the rows, as the
+/// document prints them. Written by hand from the Office Open XML parts (no dependency).
 /// </summary>
 public static class Exports
 {
@@ -56,10 +57,50 @@ public static class Exports
                 Line(writer, cells);
             }
         }
+        // The totals the PDF, the screen and the XLSX print (critic p06 round 7: the CSV had the
+        // detail rows only): the grand total under the rows, then each group's, named in the
+        // document's language, each value under its column as the rows carry it.
+        if (document.Groups.Any(g => g.Rows.Count > 0) && document.Columns.Any(c => c.Total))
+        {
+            Line(writer, CsvTotals(document, document.Totals, document.Texts.Total));
+            if (document.GroupBy is not null)
+            {
+                foreach (var group in document.Groups.Where(g => g.Rows.Count > 0))
+                {
+                    Line(writer, CsvTotals(document, group.Totals, $"{document.Texts.Total} \u00B7 {group.Label}"));
+                }
+            }
+        }
         if (document.Truncated)
         {
             Line(writer, [document.RowCountText]);
         }
+    }
+
+    /// <summary>A totals line: its name in the group's column (or the first column without a
+    /// total), each total under its column, the other cells empty.</summary>
+    private static List<string> CsvTotals(ReportDocument document, IReadOnlyList<ReportCell?> totals, string label)
+    {
+        var cells = new List<string>(document.Columns.Count + 1);
+        var labelled = false;
+        if (GroupColumn(document))
+        {
+            cells.Add(label);
+            labelled = true;
+        }
+        for (var i = 0; i < document.Columns.Count; i++)
+        {
+            if (totals[i] is { } total)
+            {
+                cells.Add(CsvValue(total, document.Columns[i]));
+            }
+            else
+            {
+                cells.Add(labelled ? "" : label);
+                labelled = true;
+            }
+        }
+        return cells;
     }
 
     private static string CsvValue(ReportCell cell, ReportDocumentColumn column) => cell.Value switch

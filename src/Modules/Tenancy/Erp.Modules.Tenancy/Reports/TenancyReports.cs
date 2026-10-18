@@ -1,5 +1,6 @@
 using Erp.Kernel.Lists;
 using Erp.Kernel.Reports;
+using Erp.Kernel.Security;
 using Erp.Modules.Tenancy.Companies;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +51,10 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
             new ReportColumn("email", "tenancy.address.email", ListColumnType.Text),
             new ReportColumn("website", "tenancy.company.website", ListColumnType.Text),
             new ReportColumn("active", "tenancy.common.active", ListColumnType.Boolean),
-        ]);
+        ],
+        // The branches print where the caller reads branches in this company (a role held in another
+        // company does not reach it).
+        CompanyParameter: "company");
 
     public async Task<ReportData?> RunAsync(ReportRun run, CancellationToken cancellationToken)
     {
@@ -119,7 +123,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
 /// status, grouped by company (or by city, emirate or status) with a count per group. Filters: one
 /// company, one emirate, inactive branches included or not.
 /// </summary>
-internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
+internal sealed class BranchDirectoryReport(TenancyDbContext db, ICompanyPermissions places) : IReportSource
 {
     public const string Key = "tenancy.branchDirectory";
 
@@ -146,12 +150,18 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
     {
         var branches = db.Branches.AsNoTracking();
         var texts = new Dictionary<string, LocalText>();
+        // The companies whose legal name a row may print: those where the caller reads companies (a
+        // role held in one company counts only there, p02 round 12); null for every company.
+        IReadOnlySet<Guid>? named = run.Holds(TenancyPermissions.CompaniesRead)
+            ? await places.CompaniesAsync(TenancyPermissions.CompaniesRead, cancellationToken)
+            : new HashSet<Guid>();
+        bool Named(Guid company) => named is null || named.Contains(company);
         if (run.Get<Guid>("company") is { } companyId)
         {
             branches = branches.Where(b => b.CompanyId == companyId);
             if (await db.Companies.AsNoTracking().Where(c => c.Id == companyId).Select(c => new { c.Code, c.LegalNameEn, c.LegalNameAr }).SingleOrDefaultAsync(cancellationToken) is { } chosen)
             {
-                texts["company"] = CompanyText(run, chosen.Code, chosen.LegalNameEn, chosen.LegalNameAr);
+                texts["company"] = CompanyText(Named(companyId), chosen.Code, chosen.LegalNameEn, chosen.LegalNameAr);
             }
         }
         if (run.Text("emirate") is { } emirate)
@@ -164,14 +174,14 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
         }
         var rows = from b in branches
                    join c in db.Companies.AsNoTracking() on b.CompanyId equals c.Id
-                   select new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive, CompanyCode = c.Code, c.LegalNameEn, c.LegalNameAr };
+                   select new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive, b.CompanyId, CompanyCode = c.Code, c.LegalNameEn, c.LegalNameAr };
         var total = await rows.CountAsync(cancellationToken);
         var page = await rows.OrderBy(r => r.CompanyCode).ThenBy(r => r.Code).Take(run.MaxRows).ToListAsync(cancellationToken);
         return new ReportData
         {
             Rows = page.Select(r => (IReadOnlyDictionary<string, object?>)new Dictionary<string, object?>
             {
-                ["company"] = CompanyText(run, r.CompanyCode, r.LegalNameEn, r.LegalNameAr),
+                ["company"] = CompanyText(Named(r.CompanyId), r.CompanyCode, r.LegalNameEn, r.LegalNameAr),
                 ["code"] = r.Code,
                 ["name"] = new LocalText(r.NameEn, r.NameAr),
                 ["city"] = PlaceNames.City(r.City),
@@ -186,9 +196,9 @@ internal sealed class BranchDirectoryReport(TenancyDbContext db) : IReportSource
     }
 
     /// <summary>A branch's company as printed: its code to every reader of branches (a branch shows
-    /// it), its code and legal name only to a caller who may also read companies.</summary>
-    private static LocalText CompanyText(ReportRun run, string code, string legalNameEn, string legalNameAr) =>
-        run.Holds(TenancyPermissions.CompaniesRead)
+    /// it), its code and legal name only to a caller who may also read that company.</summary>
+    private static LocalText CompanyText(bool named, string code, string legalNameEn, string legalNameAr) =>
+        named
             ? new LocalText($"{code} \u00B7 {legalNameEn}", $"{code} \u00B7 {legalNameAr}")
             : new LocalText(code, code);
 }

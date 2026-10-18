@@ -685,6 +685,59 @@ describe("the phone field and a completed entry", () => {
     expect(view!.container.querySelector('.notice[role="status"]')).toBeNull();
   });
 
+  // Critic p06 round 7: the form's notice sat at the top of the form, out of sight at 1400x900
+  // under a long form; and the shortest entry was the number with its +. The country code typed
+  // again after the +971 the field keeps (twelve keys, none shifted) is the same number; it saves
+  // once, at its last digit, and the field itself says so, with Undo, under itself.
+  it("takes the code typed again after +971, saves at its last digit only, and says so under the field with Undo", async () => {
+    const calls = serve();
+    await show(<ContactForm />);
+    const phone = input("phone");
+    act(() => phone.setSelectionRange(5, phone.value.length));
+    for (const ch of "97150555019") typeChar(phone, ch);
+    await settle();
+    // Eight of these digits are a whole Fujairah line (9 715 0555): nothing saved on the way.
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(0);
+    typeChar(phone, "9");
+    await settle();
+    const puts = calls.filter((c) => c.method === "PUT");
+    expect(puts).toHaveLength(1);
+    expect(puts[0]!.body).toEqual({ name: "Gulf Steel", phone: "+971 50 555 0199", version: 3 });
+    expect(phone.value).toBe("+971 50 555 0199");
+    const notices = view!.container.querySelectorAll('.notice[role="status"]');
+    expect(notices).toHaveLength(1);
+    const notice = view!.container.querySelector('[data-field="phone"] .notice[role="status"]')!;
+    expect(notice.textContent).toContain("Saved: the entry was complete.");
+    const undo = [...notice.querySelectorAll("button")].find((b) => b.textContent === "Undo")!;
+    expect(undo.getAttribute("aria-keyshortcuts")).toBe("Alt+Z");
+    act(() => undo.click());
+    await settle();
+    const after = calls.filter((c) => c.method === "PUT");
+    expect(after).toHaveLength(2);
+    expect(after[1]!.body).toEqual({ name: "Gulf Steel", phone: "+971 4 555 0100", version: 4 });
+    expect(phone.value).toBe("+971 4 555 0100");
+    // The plain save that undid it is the form's own notice, at the top; the field's is gone.
+    expect(view!.container.querySelector('[data-field="phone"] .notice')).toBeNull();
+    expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
+  });
+
+  it("a Fujairah line starting 971 after +971 is kept whole and saved by the user, never on its own", async () => {
+    const calls = serve();
+    await show(<ContactForm />);
+    const phone = input("phone");
+    act(() => phone.setSelectionRange(5, phone.value.length));
+    for (const ch of "97123456") typeChar(phone, ch);
+    await settle();
+    expect(phone.value).toBe("+971 9 712 3456");
+    expect(calls.filter((c) => c.method === "PUT")).toHaveLength(0);
+    press({ key: "Enter", code: "Enter" }, phone);
+    await settle();
+    const puts = calls.filter((c) => c.method === "PUT");
+    expect(puts).toHaveLength(1);
+    expect(puts[0]!.body).toEqual({ name: "Gulf Steel", phone: "+971 9 712 3456", version: 3 });
+    expect(view!.container.querySelector('.notice[role="status"]')!.textContent).toBe("Saved.");
+  });
+
   it("takes another country's number after +, and does not call it complete", async () => {
     const calls = serve();
     await show(<ContactForm />);
