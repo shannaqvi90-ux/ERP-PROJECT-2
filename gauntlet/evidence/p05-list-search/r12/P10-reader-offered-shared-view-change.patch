@@ -1,0 +1,13 @@
+diff --git a/web/src/kernel/lists/ListView.tsx b/web/src/kernel/lists/ListView.tsx
+index 6cacb4ea..ad8f45b1 100644
+--- a/web/src/kernel/lists/ListView.tsx
++++ b/web/src/kernel/lists/ListView.tsx
+@@ -430,7 +430,7 @@ export function ListView(props: ListViewProps) {
+   const visible = (current?.columns ?? []).map(column).filter((c): c is ListColumn => Boolean(c));
+   const modified = current ? fingerprint(current) !== baseline : false;
+   const selectedView = current?.view?.startsWith("view:") ? views.find((v) => `view:${v.id}` === current.view) : undefined;
+-  const canChange = selectedView ? selectedView.isMine || (selectedView.isShared && Boolean(definition?.canShare)) : false;
++  const canChange = selectedView ? selectedView.isMine || selectedView.isShared : false;
+ 
+   const recordOpen = props.renderRecord ? Boolean(openId) : Boolean(openRow);
+ 

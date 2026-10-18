@@ -1,0 +1,52 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index 5f0eb304..fa1a99d0 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -102,6 +102,12 @@ internal static class ViewEndpoints
+                 .WithSummary($"Delete one of the caller's own views of the {key} list.")
+                 .RequirePermission(list.Permission);
+ 
++            routes.MapPost("/views/{id:guid}/share", (Guid id, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
++                    ShareOwn(c.FindList(key)!, id, db, caller, http, ct))
++                .WithName($"{name}.views.share")
++                .WithSummary($"Share a copy of one of the caller's own views of the {key} list with everyone who can read the list.")
++                .RequirePermission(list.Permission);
++
+             routes.MapGet("/shared-views/{id:guid}", (Guid id, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) => GetShared(key, id, db, caller, http, ct))
+                 .WithName($"{name}.sharedViews.get")
+                 .WithSummary($"One shared view of the {key} list.")
+@@ -315,6 +321,34 @@ internal static class ViewEndpoints
+         return TypedResults.NoContent();
+     }
+ 
++    private static async Task<Results<Ok<SavedViewDto>, ProblemHttpResult>> ShareOwn(
++        ListDefinition list, Guid id, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
++    {
++        if (!caller.Has(list.Permission))
++        {
++            return Problems.NotFound(http);
++        }
++        var me = caller.UserId;
++        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && !v.IsShared && v.OwnerUserId == me, cancellationToken);
++        if (view is null)
++        {
++            return Problems.NotFound(http);
++        }
++        if (await db.SavedViews.AnyAsync(v => v.ListKey == list.Key && v.IsShared && v.Name == view.Name, cancellationToken))
++        {
++            return Problems.Conflict(http, "lists.viewNameTaken");
++        }
++        // A copy for everyone; the caller keeps their own view as it is.
++        var copy = new SavedView
++        {
++            ListKey = view.ListKey, IsShared = true, OwnerUserId = null, Name = view.Name, Columns = view.Columns.ToList(),
++            Sort = view.Sort, Filter = view.Filter, Search = view.Search, GroupBy = view.GroupBy, IsDefault = false,
++        };
++        db.SavedViews.Add(copy);
++        await db.SaveChangesAsync(cancellationToken);
++        return TypedResults.Ok(ToDto(copy, me));
++    }
++
+     /// <summary>A new default replaces the previous one of the same owner (or among shared views).
+     /// The previous default is saved first, so the one-default index never sees two.</summary>
+     private static async Task ClearOtherDefaultsAsync(string list, bool shared, Guid? owner, Guid? except, ListsDbContext db, CancellationToken cancellationToken)

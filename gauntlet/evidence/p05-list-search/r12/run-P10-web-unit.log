@@ -1,0 +1,25 @@
+     [33m[2m✓[22m[39m tenancy.companies.print: started from home, it opens /tenancy/companies and runs the screen's own command there [33m 346[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: started from home, it opens /tenancy/branches and runs the screen's own command there [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m every action that asks for a record says what to choose, in English and Arabic, and runs no command before [33m 979[2mms[22m[39m
+     [33m[2m✓[22m[39m an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need [33m 10173[2mms[22m[39m
+     [33m[2m✓[22m[39m Copy a role from home: the roles list asks for the role, and the role chosen opens its copy [33m 318[2mms[22m[39m
+     [33m[2m✓[22m[39m Show the sign-in history from home, in Arabic: the user chosen opens on the history tab [33m 409[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow a user to sign in again from home: the history opens and the user chosen is allowed again [33m 392[2mms[22m[39m
+     [33m[2m✓[22m[39m New user from home keeps its new record open when the list arrives after the command ran [33m 603[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may add a branch but to no company (only some branches of it) is not offered New branch [33m 453[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9) [33m 676[2mms[22m[39m
+     [33m[2m✓[22m[39m is found by its words in either language, on an Arabic screen too [33m 642[2mms[22m[39m
+     [33m[2m✓[22m[39m come first, once each: on the users screen New user, the list's own controls and Print or export [33m 510[2mms[22m[39m
+     [33m[2m✓[22m[39m are found by the words of the module action they stand for: "print compan" on the companies screen (critic p02 round 10) [33m 505[2mms[22m[39m
+     [33m[2m✓[22m[39m follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again [33m 831[2mms[22m[39m
+     [33m[2m✓[22m[39m the palette offers a user's account actions exactly when the record shows their buttons [33m 1088[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user's account actions from every tab, exactly as on Details, and to a reader none [33m 1180[2mms[22m[39m
+     [33m[2m✓[22m[39m Reset password from "What they can do" opens Details with the reset's first choice focused; Delete user from the history asks first [33m 713[2mms[22m[39m
+     [33m[2m✓[22m[39m sends nothing but reads (and the user's own settings), and opens no new record, on every screen [33m 14031[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change everything finds the writes the entries make [33m 13389[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m39 passed[39m[22m[90m (39)[39m
+[2m      Tests [22m [1m[32m504 passed[39m[22m[90m (504)[39m
+[2m   Start at [22m 07:34:58
+[2m   Duration [22m 64.43s[2m (transform 18.75s, setup 1.17s, import 32.70s, tests 225.37s, environment 22.87s)[22m
+

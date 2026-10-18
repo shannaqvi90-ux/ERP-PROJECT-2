@@ -1,0 +1,156 @@
+{
+  "shots": {
+    "f0e88d2169a613b8.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "start",
+      "run_id": "find-user-20261018T050455-2a70"
+    },
+    "3105d3ef4f1bae63.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "result list",
+      "run_id": "find-user-20261018T050455-2a70"
+    },
+    "df5d777253103efc.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "done",
+      "run_id": "find-user-20261018T050455-2a70"
+    },
+    "fc194d2748cfbe50.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "start",
+      "run_id": "find-user-20261018T050728-e147"
+    },
+    "cefcfa188c219b14.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "result list",
+      "run_id": "find-user-20261018T050728-e147"
+    },
+    "bd596f0a67cb00ac.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "done",
+      "run_id": "find-user-20261018T050728-e147"
+    },
+    "c4720fd2a1277edf.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "start",
+      "run_id": "find-user-20261018T050953-efbb"
+    },
+    "761e1aad788f3e06.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "result list",
+      "run_id": "find-user-20261018T050953-efbb"
+    },
+    "9085862cc17019a5.jpg": {
+      "product": "odoo",
+      "task": "find-user",
+      "moment": "done",
+      "run_id": "find-user-20261018T050953-efbb"
+    },
+    "6670aa7dd3165e39.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "start",
+      "run_id": "find-user-20261018T051207-226d"
+    },
+    "8870328bc5d0320d.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "result list",
+      "run_id": "find-user-20261018T051207-226d"
+    },
+    "7b12daa8bc907db9.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "done",
+      "run_id": "find-user-20261018T051207-226d"
+    },
+    "e69114e48728cad5.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "start",
+      "run_id": "find-user-20261018T051328-6f4a"
+    },
+    "8e36f204ba45bd46.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "result list",
+      "run_id": "find-user-20261018T051328-6f4a"
+    },
+    "0f55600e5e19bc2c.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "done",
+      "run_id": "find-user-20261018T051328-6f4a"
+    },
+    "0ecd4355f7baded9.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "start",
+      "run_id": "find-user-20261018T051517-49b5"
+    },
+    "f71400aaca3946eb.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "result list",
+      "run_id": "find-user-20261018T051517-49b5"
+    },
+    "8c47970c3f6ec1d3.jpg": {
+      "product": "ours",
+      "task": "find-user",
+      "moment": "done",
+      "run_id": "find-user-20261018T051517-49b5"
+    },
+    "aa529e263c9ead21.jpg": {
+      "product": "ours",
+      "task": "open-third-user-keyboard",
+      "moment": "start",
+      "run_id": "open-third-user-keyboard-20261018T052518-1d8d"
+    },
+    "123950ff66b02867.jpg": {
+      "product": "ours",
+      "task": "open-third-user-keyboard",
+      "moment": "done",
+      "run_id": "open-third-user-keyboard-20261018T052518-1d8d"
+    },
+    "f9973fa8f4e7fd4e.jpg": {
+      "product": "odoo",
+      "task": "open-third-user-keyboard",
+      "moment": "start",
+      "run_id": "open-third-user-keyboard-20261018T052522-bb2a"
+    },
+    "1e084de9bf7b3da1.jpg": {
+      "product": "odoo",
+      "task": "open-third-user-keyboard",
+      "moment": "done",
+      "run_id": "open-third-user-keyboard-20261018T052522-bb2a"
+    }
+  },
+  "run_order": {
+    "find-user": [
+      "odoo",
+      "ours"
+    ],
+    "open-third-user-keyboard": [
+      "ours",
+      "odoo"
+    ]
+  },
+  "letters": {
+    "find-user": {
+      "odoo": "A",
+      "ours": "B"
+    },
+    "open-third-user-keyboard": {
+      "ours": "A",
+      "odoo": "B"
+    }
+  }
+}

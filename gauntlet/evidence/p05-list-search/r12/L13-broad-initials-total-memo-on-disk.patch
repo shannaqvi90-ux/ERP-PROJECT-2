@@ -1,0 +1,71 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 56aa9b2c..7d405457 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -255,7 +255,23 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // A broad initials search ("ma", "sa") reads the regular expression on tens of thousands of
++        // rows just to count them, the slowest answer while someone types. Its count changes slowly,
++        // so it is remembered on disk for a minute (shared by every instance on the host).
++        var broadKey = InitialsWord(plan) is { } broadWord && plan.Filter is null ? Definition.Key + "|" + broadWord : null;
++        int total;
++        if (broadKey is not null && BroadSearchTotals.Read(broadKey) is { } remembered)
++        {
++            total = remembered;
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            if (broadKey is not null && total > ListSearch.MaxRankedRows)
++            {
++                BroadSearchTotals.Write(broadKey, total);
++            }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+@@ -965,3 +981,41 @@ internal sealed class GroupRow<TKey>
+         _ => null,
+     };
+ }
++
++/// <summary>Counts of broad initials searches, kept for a minute in the host's temporary folder.</summary>
++internal static class BroadSearchTotals
++{
++    private static string PathOf(string key) =>
++        System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-broad-search-totals",
++            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(key))));
++
++    public static int? Read(string key)
++    {
++        var path = PathOf(key);
++        try
++        {
++            if (System.IO.File.Exists(path) && DateTime.UtcNow - System.IO.File.GetLastWriteTimeUtc(path) < TimeSpan.FromMinutes(1) &&
++                int.TryParse(System.IO.File.ReadAllText(path), out var total))
++            {
++                return total;
++            }
++        }
++        catch (System.IO.IOException)
++        {
++        }
++        return null;
++    }
++
++    public static void Write(string key, int total)
++    {
++        var path = PathOf(key);
++        try
++        {
++            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
++            System.IO.File.WriteAllText(path, total.ToString(System.Globalization.CultureInfo.InvariantCulture));
++        }
++        catch (System.IO.IOException)
++        {
++        }
++    }
++}
