@@ -47,7 +47,7 @@ Critic p05 round 12 (BLOCKED) planted three faults the gates missed or caught on
      limit when broad), not the full five offsets of the other queries: the deep-offset code is
      already judged by every other broad query; this keeps the added requests to about 440.
    - Ratchet: new `g1.listVolumeSearchBranches` 31 (users 17, access 14); queries 285 to 328, answers
-     2,916 to 3,352, discriminating 82 to 125, deep answers 840 to 1,016, unranked searches 16 to 33,
+     2,916 to 3,348, discriminating 82 to 125, deep answers 840 to 1,016, unranked searches 16 to 33,
      ranked 7 to 23.
    - Chosen at this commit (A/B rows), users: `id` 12,530/12,909 and `oo` 7,950/8,203 (2 letters),
      `sha`/`man`, `ampl`/`ashi`, `ample`/`manso`, `exampl`/`hamdan`, digits `0`/`41`, `am ex`/`al suwaidi`,
@@ -92,7 +92,7 @@ Critic p05 round 12 (BLOCKED) planted three faults the gates missed or caught on
 
 No new environment or test run: the branch searches ride on the volume fixture's existing walks and
 on its two existing tests (main and self-test). Added requests: about 440 answers in the main test
-(2,916 to 3,352) and the same queries again in the self-test, users only; candidate choice is a
+(2,916 to 3,348) and the same queries again in the self-test, users only; candidate choice is a
 sample count and at most a few dozen exact counts over the walked rows (well under a second). The
 G2 check adds 30 requests and one planted host self-test (3 s). Measured alone in the toolbox image
 under load 45-50: the volume main test 3 min 48 s, its self-test 2 min 5 s (round 12's critic: 3 min
