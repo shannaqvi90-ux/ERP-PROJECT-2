@@ -282,6 +282,118 @@ public sealed class MoneyTests
         Assert.Equal("""{"amount":"1.00","currency":"USD","exchangeRate":"3.6725","baseAmount":"3.67","baseCurrency":"AED"}""", json);
     }
 
+    // Critic p00 round 11: the invariants could be bypassed (public init setters, so an object
+    // initialiser or a with-expression set any base amount, and JSON read any figures at all).
+
+    /// <summary>No property can be set from outside the type: no object initialiser and no
+    /// with-expression compiles against it, so a base amount that disagrees with the amount and the
+    /// rate cannot be made.</summary>
+    [Fact]
+    public void No_money_figure_can_be_set_from_outside_the_type()
+    {
+        var settable = typeof(Money.Money).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+            .Where(p => p.GetSetMethod(nonPublic: false) is not null || p.GetSetMethod(nonPublic: true) is not null)
+            .Select(p => p.Name).ToList();
+        Assert.Empty(settable);
+        Assert.DoesNotContain(typeof(Money.Money).GetConstructors(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance), c => c.GetParameters().Length > 0);
+    }
+
+    /// <summary>default(Money), the one value no factory makes, has no currency: every operation and
+    /// the JSON writer refuse it.</summary>
+    [Fact]
+    public void An_unmade_money_is_refused_by_every_operation()
+    {
+        var unmade = default(Money.Money);
+        var made = Money.Money.Create(1m, Usd, 3.6725m, CurrencyCode.Aed);
+        Assert.False(unmade.IsInitialised);
+        Assert.True(made.IsInitialised);
+        Assert.Throws<InvalidOperationException>(() => unmade.State());
+        Assert.Throws<InvalidOperationException>(() => unmade.Add(unmade));
+        Assert.Throws<InvalidOperationException>(() => made.Add(unmade));
+        Assert.Throws<InvalidOperationException>(() => unmade.Add(made));
+        Assert.Throws<InvalidOperationException>(() => unmade.Negate());
+        Assert.Throws<InvalidOperationException>(() => unmade.ExactBaseAmount());
+        Assert.Throws<InvalidOperationException>(() => unmade.RoundingAmount());
+        Assert.Throws<InvalidOperationException>(() => unmade.BaseRoundingAmount());
+        var options = new JsonSerializerOptions();
+        ErpPlatform.ConfigureJson(options);
+        Assert.Throws<JsonException>(() => JsonSerializer.Serialize(unmade, options));
+    }
+
+    /// <summary>JSON is read through the type's own factory: what is written reads back as the same
+    /// figure, and a base amount may be left out (the type works it out).</summary>
+    [Fact]
+    public void Money_read_from_json_is_built_by_the_type()
+    {
+        var options = new JsonSerializerOptions();
+        ErpPlatform.ConfigureJson(options);
+        var line = Money.Money.Unrounded(0.3333m, Usd, 3.6725m, CurrencyCode.Aed);
+        Assert.Equal(line, JsonSerializer.Deserialize<Money.Money>(JsonSerializer.Serialize(line, options), options));
+        var entered = Money.Money.Create(1234.5m, Usd, 3.6725m, CurrencyCode.Aed);
+        Assert.Equal(entered, JsonSerializer.Deserialize<Money.Money>(JsonSerializer.Serialize(entered, options), options));
+        var withoutBase = JsonSerializer.Deserialize<Money.Money>("""{"amount":"1.00","currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED"}""", options);
+        Assert.Equal(3.67m, withoutBase.BaseAmount);
+        Assert.False(withoutBase.IsStated);
+        // Three lines read from a body still total by rule 2 (11.0175, stated 11.02).
+        Assert.Equal(11.02m, withoutBase.Add(withoutBase).Add(withoutBase).State().BaseAmount);
+        // JSON numbers are read too (leniently), as decimals.
+        Assert.Equal(entered, JsonSerializer.Deserialize<Money.Money>("""{"amount":1234.5,"currency":"USD","exchangeRate":3.6725,"baseAmount":4533.70,"baseCurrency":"AED"}""", options));
+        // Inside a body: a nullable money and a money property.
+        Assert.Null(JsonSerializer.Deserialize<Money.Money?>("null", options));
+        var body = JsonSerializer.Deserialize<PriceBody>("""{"price":{"amount":"2","currency":"AED","exchangeRate":"1","baseCurrency":"AED"}}""", options)!;
+        Assert.Equal(Money.Money.InBase(2m, CurrencyCode.Aed), body.Price);
+    }
+
+    public sealed record PriceBody(Money.Money Price);
+
+    /// <summary>A body cannot carry a money the type would refuse (the critic's probe was the first
+    /// case: lower-case currency, rate -2, base amount 1 for amount 10.123456).</summary>
+    [Theory]
+    [InlineData("""{"amount":"10.123456","currency":"usd","exchangeRate":"-2","baseAmount":"1","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"10","currency":"usd","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"10","currency":"USD","exchangeRate":"3.6725","baseCurrency":"aed"}""")]
+    [InlineData("""{"amount":"10","currency":"US","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"10","currency":"USD","exchangeRate":"-2","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"10","currency":"USD","exchangeRate":"0","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"10","currency":"USD","exchangeRate":"3.672500001","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"10","currency":"AED","exchangeRate":"2","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"100","currency":"USD","exchangeRate":"0","baseAmount":"999","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1.00","currency":"USD","exchangeRate":"3.6725","baseAmount":"50","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1.00","currency":"USD","exchangeRate":"3.6725","baseAmount":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1.00000000001","currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1e3","currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1000000000000000000","currency":"USD","exchangeRate":"1","baseCurrency":"USD"}""")]
+    [InlineData("""{"currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1","currency":"USD","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1","currency":"USD","exchangeRate":"3.6725"}""")]
+    [InlineData("""{"amount":"1","currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED","isStated":true}""")]
+    [InlineData("""{"amount":"1","amount":"2","currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":null,"currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":"1","currency":3,"exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""{"amount":true,"currency":"USD","exchangeRate":"3.6725","baseCurrency":"AED"}""")]
+    [InlineData("""["1","USD"]""")]
+    [InlineData(""""10.00 USD"""")]
+    [InlineData("""null""")]
+    public void Json_cannot_carry_a_money_the_type_would_refuse(string json)
+    {
+        var options = new JsonSerializerOptions();
+        ErpPlatform.ConfigureJson(options);
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Money.Money>(json, options));
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<PriceBody>($$"""{"price":{{json}}}""", options));
+    }
+
+    /// <summary>The same converter applies without the platform's options (it is on the type), with
+    /// the serializer's own naming and decimal handling: a JSON number amount.</summary>
+    [Fact]
+    public void The_converter_is_on_the_type_itself()
+    {
+        var plain = JsonSerializer.Deserialize<Money.Money>("""{"Amount":1.5,"Currency":"USD","ExchangeRate":3.6725,"BaseCurrency":"AED"}""");
+        Assert.Equal(Money.Money.Create(1.5m, Usd, 3.6725m, CurrencyCode.Aed), plain);
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Money.Money>("""{"Amount":1.5,"Currency":"USD","ExchangeRate":-1,"BaseCurrency":"AED"}"""));
+        Assert.Equal("""{"Amount":1.5,"Currency":"USD","ExchangeRate":3.6725,"BaseAmount":5.51,"BaseCurrency":"AED"}""", JsonSerializer.Serialize(plain));
+    }
+
     public sealed class MoneyRow
     {
         public int Id { get; set; }

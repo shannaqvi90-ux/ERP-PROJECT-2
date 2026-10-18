@@ -78,3 +78,11 @@ Electronic Invoicing Guidelines v1.1:
 The minor-unit table in `CurrencyCode.MinorUnits` is an engineering table for currencies other
 than the dirham (the compliance record covers AED, 2 decimals, the fils). p08 replaces it with the
 tenant's currency table, which must take minor units from ISO 4217 as published.
+
+## Round 12: no figure can be set from outside the type
+
+The properties have no setters, JSON is read through `MoneyJsonConverter` (built with
+`Money.Unrounded`, refusing any figure the type would refuse and a base amount that disagrees with
+the amount and the rate), EF Core reads the columns back through the constructor, and
+`default(Money)` is refused by every operation. Details:
+`p00-foundation-round-12-own-ids-and-money-invariants.md`, section 2.

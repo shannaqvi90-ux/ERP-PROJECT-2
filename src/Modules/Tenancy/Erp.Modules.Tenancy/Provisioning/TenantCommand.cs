@@ -115,8 +115,9 @@ internal static partial class TenantCommand
         Console.WriteLine($"First administrator: {email}");
         if (generated)
         {
-            Console.WriteLine($"Initial password (shown once; ask them to change it): {password}");
+            Console.WriteLine($"Initial password (shown once): {password}");
         }
+        Console.WriteLine("The initial password is temporary: the first sign-in asks the administrator to choose their own.");
         return 0;
     }
 

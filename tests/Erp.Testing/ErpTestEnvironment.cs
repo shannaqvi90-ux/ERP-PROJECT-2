@@ -233,6 +233,14 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     /// </summary>
     public async Task<IReadOnlyList<CarrierClient>> SignInPerCarrierAsync(string email, ErpAppFactory? factory = null, string password = Password)
     {
+        var (token, _) = await SignInForTokenAsync(email, factory, password);
+        return Erp.Kernel.Security.SessionTokenCarriers.All.Select(c => new CarrierClient(c.Name, ClientCarrying(c.Name, token, factory))).ToList();
+    }
+
+    /// <summary>One sign-in of <paramref name="email"/> (on <paramref name="factory"/>, this
+    /// environment's host by default): the session token it issued and the signed-in user's id.</summary>
+    public async Task<(string Token, Guid UserId)> SignInForTokenAsync(string email, ErpAppFactory? factory = null, string password = Password)
+    {
         factory ??= Factory;
         using var anonymous = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
         anonymous.DefaultRequestHeaders.Add("X-Erp-Request", "1");
@@ -242,8 +250,8 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
             throw new InvalidOperationException($"Sign-in as {email} failed: {(int)response.StatusCode} {await response.Content.ReadAsStringAsync()}" +
                 $" | account: {await SignInDiagnosisAsync(email)}");
         }
-        var token = (await response.Content.ReadFromJsonAsync<TokenBody>())!.Token;
-        return Erp.Kernel.Security.SessionTokenCarriers.All.Select(c => new CarrierClient(c.Name, ClientCarrying(c.Name, token, factory))).ToList();
+        var body = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        return (body.GetProperty("token").GetString()!, body.GetProperty("user").GetProperty("id").GetGuid());
     }
 
     /// <summary>
