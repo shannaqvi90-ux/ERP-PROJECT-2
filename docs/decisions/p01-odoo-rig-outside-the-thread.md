@@ -140,5 +140,21 @@ its verified runs).
 ## Cost
 
 No new dependency. The record is taken only while a task that saves is measured, as before; the
-start reads one value from the page (running animations, and a declared prefix's field). Processor
-time this round: see the verify below.
+start reads one value from the page (running animations, and a declared prefix's field). This round
+adds 18 end-to-end plants and controls to the comparison suite (W1-W8, PF1-PF4, five controls), each a
+browser run of a few seconds, and 25 mutations (21 judged on synthetic traces, 4 on browser runs).
+
+Verifies of this round (`./erp verify` through the verify slot, busy machine, load 16-65):
+- run 1 (slot taken 2026-10-18T17:21:44Z): every stage's tests passed except one missed mutation (M66,
+  masked by the chain's bound; its self-test now holds a 1.5 s timer). Processor time: dotnet 7,315,
+  web 2,044, e2e 401 s.
+- run 2 (19:54:50Z, after merging the integration branch with p00's and p06's rounds): every test
+  passed (dotnet 697, web unit 522, e2e 111, compare 446, build 6; 110 of 110 mutations caught; every
+  built ours driver verified, edit-and-save 2 steps and 9 keys), but the processor time was 10,868 s
+  against the 10,500 s maximum: dotnet 8,184 (7,315 in run 1, a stage this piece does not touch),
+  web 2,158, e2e 476, timing 49.
+- run 3 (22:25:38Z): plant W1 met two Close buttons on a loaded machine (the stand-in's own "go" came
+  before the click) and ended in an error rather than a refusal; the plants now click the first and
+  check the record's reason only when the approval went out inside the clock. dotnet 7,783 s.
+The web stage, which holds the comparison harness, used 2,044-2,158 s against round 12's 1,922 s:
+this round adds about 120-240 s of processor time.
