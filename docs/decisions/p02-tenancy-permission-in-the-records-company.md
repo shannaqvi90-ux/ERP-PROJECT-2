@@ -108,6 +108,13 @@ Alternatives weighed:
 ## Cost
 
 The limit is read from grants already in memory; a narrowed read adds one `set_config` statement,
-only for users whose permission comes from a company role. The new gate adds about 10 s of wall
-time and well under a minute of processor time to the .NET suite (its own requests on the existing
-`CompanyRoleFixture`, no new container); the write-set gate's number variants add about 30 requests.
+only for users whose permission comes from a company role.
+
+Processor time this round adds to `./erp verify`, measured on the host: the three new company-role
+gate tests about 15 s (their fixture already exists), the write-set gate's number variants a few
+seconds (the whole write-set test is 44 s), the six new screen plants about 75 s (one run of the
+tenancy screen gate is about 13 s), the new unit, screen and end-to-end tests a few seconds: about
+100 to 150 s in all. The branch's full verify (every test green: .NET 660, web unit 510, end to end
+107, comparison 415, build 6) used 10,701 processor seconds (dotnet 8,194, web 2,188, e2e 283,
+timing 36) against the 10,500 s maximum, on a busy machine (load up to 77 on 16 CPUs); critic
+round 11's run of the integration product used 10,294 s (dotnet 7,913, web 2,045).
