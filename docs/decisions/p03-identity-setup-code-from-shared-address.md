@@ -121,3 +121,27 @@ owner's decision, needs-human #15. This round does the in-repo half.
 - **Web:** two screen tests and one more palette assertion, under 1 s.
 - **e2e:** one API call in the existing pause test.
 - **Total:** about 5 s of processor time, against a maximum of 10,500 s.
+
+## This round's verify runs (through the verify slots, ports 20310 and 20311)
+
+The machine was busy throughout: other workflows' verifies ran beside these, and the load reached
+74 on 16 CPUs.
+
+- **Run 1: two tenant-source gates failed.** They asked for the new migration's tenant-setting
+  uses to be reviewed. Those uses are now reviewed in `tests/Gates/tenant-setting-methods.txt` and
+  `tests/Gates/tenant-bypass-sources.txt`. Everything else passed, including all 111 end-to-end
+  tests.
+- **Run 2: one comparison-harness test failed under load.** `causation.test.mjs` "control
+  (round 12): the honest approval click…" failed. It belongs to piece p01 and is outside this
+  piece. It passed in runs 1, 3 and 4. The .NET, web unit and e2e tests all passed (processor time
+  .NET 7,478 s, web 1,590 s, e2e 441 s).
+- **Run 3: every test passed; the ratchet failed only on processor time.** It used 10,924 s
+  (.NET 8,352, web 2,057, e2e 461, timing 53) against the 10,500 s maximum. Wall time was 5,237 s.
+- **Run 4: every test passed; the ratchet failed only on processor time.** It used 10,596 s
+  (.NET 8,088, web 2,116, e2e 356, timing 35). Wall time was 4,564 s.
+- **Counts in runs 3 and 4:** .NET 664, web unit 520, e2e 111, compare 415, build 6, each at its
+  raised minimum.
+
+The tests this round added cost about 5 s, so the overrun comes from the load, as in serial-8
+(10,466 to 10,701 s for builders). The maximum is the owner's (needs-human #12 and #22) and was not
+changed.
