@@ -1,0 +1,160 @@
+{
+  "piece": "p04-shell",
+  "round": 10,
+  "commit": "b9afbfd6",
+  "judged_at": "2026-10-18T02:16:21Z",
+  "verdict": "WIN",
+  "critic": "fresh critic, p04-shell round 10",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product (my own attacks)",
+      "status": "pass",
+      "evidence": "isolation-probe.txt (drivers/isolation_probe.py). Signed in as admin@alnoor.example, I sent 1,024 requests at Gulf Steel. They covered every GET in the OpenAPI document with B's 30 ids and codes in the route; tenantId, tenant, q, search and companyId query values; X-Tenant-Id/X-Tenant headers; list prints and exports; report runs; and the company logo path. I also sent PUT /api/identity/me/preferences in all four language/digit combinations with B's user and tenant ids in the body, query and headers, and DELETE on B's users, roles, companies and branches. Result: 0 of B's 33 own markers in any answer (markers A also holds, such as seeded role names, are excluded), and every DELETE got 404. B's preferences were still en/latn afterwards. Database: all 17 tables with tenant_id have RLS enabled and forced. erp_app, erp_auth and erp_owner are not superusers and have no BYPASSRLS. erp_app with no tenant bound sees 0 users."
+    },
+    {
+      "gate": "G1 gate self-test on this piece's surface (plants)",
+      "status": "pass",
+      "evidence": "plants/plants-summary.txt. In a separate clone I planted 4 server leaks on the shell's own endpoints (plant-server-S1-L4-L6-L10-L13.diff). G1 ran 65 tests: 61 passed and 4 failed, and every plant was caught (plants-S1-gates.log). L4 is round 9's miss: a process-wide count of Arabic switches sent back as cookie erp.tip. G1ShellAnswers and G1NonInterference caught it. L6 is also round 9's miss: the time of anyone's previous switch in a header. G1ShellAnswers caught it ('falls inside a request of tenant B's and no request of tenant A's'). L10 is new: GET /api/auth/session sends ETag W/\"menu-N\" from a version that every tenant's switch raises. G1ShellAnswers caught it. L13 is new: the Arabic display name cached in a temp file keyed by the e-mail local part ('admin') and returned by PUT /me/preferences. G1HttpIsolation caught it with 723 leaks of B's canary. Client plant C4 is new: the user's recent screens mirrored into the device key erp.navOpen, which sign-out keeps. clientIsolation.test.tsx caught it in EN and AR. Round 9's G1 gap is fixed."
+    },
+    {
+      "gate": "G2 permissions (product and plants on this piece's surface)",
+      "status": "pass",
+      "evidence": "Client plants, each run against the whole 504-test web suite (client-plants.sh). P4 is round 9's miss: the palette ignores an action's 'requires'. CAUGHT, 3 tests failed. P6: the shell renders a screen whose route permission the user lacks. CAUGHT, 7 failed. P7: the palette queries every record source regardless of permission. CAUGHT, 2 failed. Server plant P8: POST /api/identity/me/preferences/reset with RequireAuthorization() only. CAUGHT: the host refuses to start ('declares no permission') and all 27 G2PermissionTests fail (plants-S2-gates.log). Live: the viewer's palette offers nothing for 'new'. The no-access user gets Home plus shell actions only, and a deep link to /identity/users shows 'No access'."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command runs the demo",
+      "status": "pass",
+      "evidence": "Fresh clone at b9afbfd6. Slot 1 was taken at 2026-10-18T01:04:34Z with no wait, and the run printed 'verify passed in 4253 s'. Processor time was 9,809 s against the 10,500 s maximum. Load peaked at 55.9, so the wall-time maximum was not judged. The ratchet passed. ./erp up served the seeded demo (100,006 users in Al Noor) in 62 s on port 20450 under compose project c-p04-shell-r10. A second up took 22 s. Ports and the project were overridden through ERP_PROJECT, ERP_HTTP_PORT, ERP_DB_PORT and ERP_VERIFY_* as the README documents."
+    },
+    {
+      "gate": "Rule gates (licences, decimal money, EN/AR string twins, accessibility, audit)",
+      "status": "pass",
+      "evidence": "All ran inside the verify and passed: 'String check passed: 78 source files, 785 keys in English and Arabic, 78 plural messages', 'Accessibility check passed: 1120 JSX elements', plus the .NET rule tests. Database: each language/digits switch wrote an audit.entries row with actor, time, record and old/new values (db-audit-preferences.txt). Server validation messages come back in Arabic for an Arabic user. Colour contrast from the tokens: muted text on the background is 5.81:1, the accent on white 6.67:1."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p04-shell-r10 ERP_HTTP_PORT=20450 ERP_DB_PORT=20451 ERP_VERIFY_HTTP_PORT=20460 ERP_VERIFY_DB_PORT=20461 ERP_VERIFY_LOG=/home/shan/evidence-staging/p04-shell/r10/verify-critic-p04-shell-r10-run1.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1681,
+    "passed": 1681,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4253
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4253,
+    "evidence": "git clone of /home/shan/ERP-PROJECT-2, checkout b9afbfd6, then ./erp verify through the slot script: 'verify passed in 4253 s'. The counts were .NET 650, web unit 504, e2e 106, compare 415 and build 6, each at its ratchet minimum, with 0 failed and 0 skipped. Processor time was 9,809 s (maximum 10,500 s). ./erp up brought the seeded demo up in 62 s."
+  },
+  "odoo": [
+    {
+      "task": "switch-to-arabic",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.173,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 3.328,
+        "klm_seconds": 15.28
+      },
+      "notes": "--repeat 3 against the shared rig on 8069. It passed the live check of 100,000 rows in all 7 lists. Median machine seconds, branding hidden (compare/, compare-run.log). Every metric wins. In my browser, Alt+L switched in 80 ms with no reload, and the choice persisted across a reload."
+    },
+    {
+      "task": "reach-screen-keyboard",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 2,
+        "seconds": 0.116,
+        "klm_seconds": 3.66
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 0.791,
+        "klm_seconds": 3.99
+      },
+      "notes": "Ours was judged on one whole path, G then U. Odoo: Ctrl+K > '/user' > Enter. Every metric wins. The modelled human margin is still only 0.33 s."
+    },
+    {
+      "task": "open-third-user-keyboard (critic-added r2, kept; now registered in the harness)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 6,
+        "seconds": 0.217,
+        "klm_seconds": 6.13
+      },
+      "odoo": {
+        "steps": 8,
+        "keystrokes": 13,
+        "seconds": 1.367,
+        "klm_seconds": 6.74
+      },
+      "notes": "Run by the harness's own registered task and drivers; no critic driver needed. All 6 runs verified. Every metric wins."
+    },
+    {
+      "task": "new-user-keyboard (critic-added r7, kept; now registered)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 4,
+        "seconds": 0.168,
+        "klm_seconds": 5.57
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 10,
+        "seconds": 1.345,
+        "klm_seconds": 5.9
+      },
+      "notes": "Ours path: G > U > Alt+N, landing with the e-mail field focused. Odoo: Ctrl+K > '/user' > Enter > Alt+C. Every metric wins."
+    },
+    {
+      "task": "keyboard-navigation (open the third contact by keyboard)",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 9,
+        "keystrokes": 10,
+        "seconds": 0.92,
+        "klm_seconds": 7.25
+      },
+      "notes": "Not compared: the ours driver is still a stub waiting for p16, and the product has no contacts list yet. The users-list stand-in, open-third-user-keyboard, was compared and won."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p04-shell/r10/01-home-en.jpg",
+    "gauntlet/evidence/p04-shell/r10/02-shortcuts-en.jpg",
+    "gauntlet/evidence/p04-shell/r10/03-users-en.jpg",
+    "gauntlet/evidence/p04-shell/r10/04-users-ar.jpg",
+    "gauntlet/evidence/p04-shell/r10/05-palette-ar.jpg",
+    "gauntlet/evidence/p04-shell/r10/06-shortcuts-ar.jpg",
+    "gauntlet/evidence/p04-shell/r10/07-print-users-ar.jpg",
+    "gauntlet/evidence/p04-shell/r10/08-users-ar-390.jpg",
+    "gauntlet/evidence/p04-shell/r10/09-noaccess-users-deeplink.jpg",
+    "gauntlet/evidence/p04-shell/r10/10-sign-in-ar.jpg",
+    "gauntlet/evidence/p04-shell/r10/11-user-record-ar-digits.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The print layout base prints the keyboard focus ring: a keyboard user's printout carries a 2 px blue outline on whatever control had the focus",
+    "detail": "The shell is keyboard-first, so a user nearly always has the focus on a control when they press Ctrl+P or pick 'Print this screen'. The print stylesheet does not turn focus styling off. In print media the focused element keeps its 'solid 2px rgb(26,115,232)' outline, so the printed Arabic users list shows a blue box around a column header ('آخر تسجيل دخول' in 07-print-users-ar.jpg). This print base is what every later report will use: invoices, delivery notes and statements a UAE trading company hands to customers. A visible UI artefact on those documents makes them look unfinished, and Odoo's printed reports do not carry one. Everything else in the piece holds: every gate caught every plant, and ours beats Odoo on all four compared tasks. Fix: in the shared print stylesheet, set outline: none and box-shadow: none on :focus and :focus-visible, and blur nothing (the focus must come back after printing). Add a unit or e2e check that, under print media, the focused element has no outline, in English and Arabic.",
+    "evidence": "In the demo (./erp up), sign in as admin.ar@alnoor.example. Press G then U, press Tab 6 times (the focus lands on the 'الاسم' header), then print. drivers/print-focus.cjs emulates print media and reports {\"focused\":\"الاسم\",\"outlineInPrintMedia\":\"solid 2px rgb(26, 115, 232)\"} (print-focus.json). It also wrote print-users-ar-after-keyboard.pdf through Chromium's print to PDF. 07-print-users-ar.jpg shows the outline on the printed header. web/src/styles.css has four '@media print' blocks (lines 1043, 1106, 1149, plus lists.css 623 and forms.css 273), and none of them mentions outline or :focus."
+  },
+  "other_findings": [
+    "Round 9 gaps FIXED and holding. Header and cookie values and times are now judged by G1ShellAnswers, and NonInterference compares non-credential cookie values: plants L4 and L6 were both caught. The palette's 'requires' check now has tests: plant P4 failed 3 web tests.",
+    "New gates hold against new plants: L10 (an ETag of a process-wide version on GET /api/auth/session), L13 (a cache keyed by the e-mail local part, returning another tenant's Arabic name), C4 (the user's recent screens hidden in a kept device key), P6 (route permission ignored), P7 (palette sources unfiltered) and P8 (signed-in action with no permission). Diffs and logs are in plants/.",
+    "Minor (p04): right after Alt+L the open users list still shows the signed-in user's own Language cell as 'الإنجليزية' (English) while the interface is Arabic. It is still stale 7 s later and is only correct after a reload (explore3.json: ownRowAfterSwitch and ownRowAfter7s). The shell's switch changes the user record but does not tell the list on show to refresh.",
+    "[route: p05-list-search] With a record panel open on the Arabic users list at 1440 px, the grid clips its leftmost columns without an ellipsis: the 'Last sign-in' header and dates are cut, and the Roles column disappears (11-user-record-ar-digits.jpg).",
+    "Thin modelled-human margins remain on reach-screen-keyboard (3.66 s against 3.99 s) and new-user-keyboard (5.57 s against 5.90 s). Every count metric wins clearly, and machine seconds are 6 to 8 times better.",
+    "Positive: the first screen is right to left under an ar-AE browser locale, with the e-mail field focused. The navigation pane sits on the right in Arabic and the breadcrumbs are mirrored. The font stack leads with Noto Sans Arabic Variable. Arabic-Indic digits from the palette ('أرقام') give '١٠٠٬٠٠٦ مستخدمين' and '١٨‏/١٠‏/٢٠٢٦، ٥:١٢ ص'. The help sheet is complete in both languages (Ctrl+/), including the G-then-letter keys and the list keys. Focus returns to the main region after the help sheet closes. Every Tab stop showed a 2 px solid ring. There is no horizontal scroll at 390 px, and no console errors.",
+    "The shared Odoo rig on 8069 passed run.mjs's live volume check (7 lists at 100,000 or more), so no private rig was needed. The two critic tasks are now registered in gauntlet/compare/tasks and ran with the harness's own drivers.",
+    "Verify: processor time was 9,809 s of the 10,500 s maximum, and wall time 4,253 s under a load of up to 55.9 from other agents. My plant gate runs (S1 65 G1 tests, about 45 min; S2 G2) ran beside it as my one other stack, after the demo was taken down."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p04-shell/r10",
+  "evidence_dir": "gauntlet/evidence/p04-shell/r10"
+}

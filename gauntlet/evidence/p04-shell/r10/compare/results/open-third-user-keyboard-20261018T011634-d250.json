@@ -1,0 +1,271 @@
+{
+  "schema": 1,
+  "run_id": "open-third-user-keyboard-20261018T011634-d250",
+  "instrument": 10,
+  "task": "open-third-user-keyboard",
+  "task_title": "Open a record from a list by keyboard only (users list)",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the list of the workspace's users and open the third user in it.",
+  "done_when": "The third user of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-18T01:16:34.746Z",
+  "finished_at": "2026-10-18T01:16:54.756Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 8,
+    "keystrokes": 13,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 7,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.214,
+    "system_wait_seconds": 1.046,
+    "human_seconds": 6.74,
+    "human_plus_wait_seconds": 7.786,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.027,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "at": 0.228,
+      "took": 0.03,
+      "text": "/user",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.322,
+      "took": 0.009,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "header row",
+      "keystrokes": 1,
+      "at": 0.778,
+      "took": 0.014,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.793,
+      "took": 0.007,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.801,
+      "took": 0.018,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.819,
+      "took": 0.014,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.85,
+      "took": 0.028,
+      "chord": "Enter",
+      "screen": "/odoo/users",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.029,
+      "seconds": 0.198
+    },
+    {
+      "label": "Users menu first",
+      "at": 0.261,
+      "seconds": 0.061
+    },
+    {
+      "label": "users list",
+      "at": 0.333,
+      "seconds": 0.445
+    },
+    {
+      "label": "third row selected",
+      "at": 0.834,
+      "seconds": 0.015
+    },
+    {
+      "label": "user form",
+      "at": 0.879,
+      "seconds": 0.321
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 1.2,
+      "seconds": 0.006
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b4b43c36e474096a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r10/compare/blind/shots/b4b43c36e474096a.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "a80a4529baf259b8.jpg",
+      "at": 1.214,
+      "path": "../../evidence-staging/p04-shell/r10/compare/blind/shots/a80a4529baf259b8.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "login": "abdullah.al.ameri.071946@staff.example",
+      "position": "3"
+    }
+  },
+  "path_notes": "Ctrl+K > \"/user\" > Enter (Users list) > Down (header row), Down x3 (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/open-third-user-keyboard.mjs",
+    "sha256": "bec12c13872a4894d8b4b40ab0bacffacea72d2cd36f0757bf9740923dfc03d6"
+  },
+  "task_notes": "Proposed by the p04 critic, round 2 (kept by r3 and r4): the users-list stand-in for keyboard-navigation until the contacts list (p16) exists. Every step must be a key or key chord.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true,
+      "gap_seconds": 0.072
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 10,
+    "first": [
+      "GET /web/image/res.users/96624/avatar_128 (image)",
+      "GET /web/image/res.users/12202/avatar_128 (image)",
+      "GET /web/image/res.users/95229/avatar_128 (image)",
+      "GET /web/image/res.users/50038/avatar_128 (image)",
+      "GET /web/image/res.users/9196/avatar_128 (image)",
+      "GET /web/image/res.users/31249/avatar_128 (image)",
+      "GET /web/image/res.users/41617/avatar_128 (image)",
+      "GET /web/image/res.users/59812/avatar_128 (image)",
+      "GET /web/image/res.users/71953/avatar_128 (image)",
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "c4820a658003c512",
+    "elements": 357
+  },
+  "screen_after_verify": {
+    "sha256": "c4820a658003c512",
+    "elements": 357,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.053
+  },
+  "set_up_writes_waited": 0
+}

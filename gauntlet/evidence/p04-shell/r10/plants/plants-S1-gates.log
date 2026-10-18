@@ -1,0 +1,422 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:14.36
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.22]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.48]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.63]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [870 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y [3 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failures_and_pauses_answer_alike_whether_or_not_and_wherever_an_account_has_the_address [3 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [314 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [51 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [6 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [2 s]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [51 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [38 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [15 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [2 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [50 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [231 ms]
+  Passed Erp.Gates.Tests.G1.G1ConfigurationTests.The_running_apps_configuration_refuses_writes [1 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [94 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [120 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [47 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [9 ms]
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [324 ms]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [265 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [58 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [27 ms]
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [697 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [2 m 18 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [233 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [24 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [15 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [22 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [32 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [66 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [1 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [10 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [2 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [25 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [3 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [4 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [164 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [3 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [15 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [20 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [4 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [20 ms]
+[xUnit.net 00:02:36.35]     Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers [FAIL]
+[xUnit.net 00:02:36.35]       findings on values nothing planted: tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (45, 48, 49); judge it or review it as random by design
+[xUnit.net 00:02:36.35]       tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (57, 58, 61); judge it or review it as random by design
+[xUnit.net 00:02:36.35]       tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (67, 67, 71); judge it or review it as random by design
+[xUnit.net 00:02:36.35]       tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (73, 75, 79); judge it or review it as random by design
+[xUnit.net 00:02:36.35]       Stack Trace:
+[xUnit.net 00:02:36.35]         /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs(98,0): at Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers()
+[xUnit.net 00:02:36.35]         /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs(101,0): at Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers()
+[xUnit.net 00:02:36.35]         --- End of stack trace from previous location ---
+[xUnit.net 00:02:36.35]       Output:
+[xUnit.net 00:02:36.35]         82 requests over 4 endpoints; 712 values compared (88 headers, 4 cookie values, 6 credential cookies by shape), 52 numbers and 16 times judged by how they change; 0 reviewed as random
+[xUnit.net 00:02:36.35]         finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 1 from one of tenant A's turns to the next alone (2, 3, 4), by 4 across tenant B's 3 turns (8): '8'
+[xUnit.net 00:02:36.35]         finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 is -4027 ms to -3954 ms from tenant A's request alone, -196 ms after tenant B's turns (2026-10-18T01:32:13.5190468+00:00)
+[xUnit.net 00:02:36.35]         finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:32:13.5190468+00:00) falls inside a request of tenant B's and no request of tenant A's
+[xUnit.net 00:02:36.35]         finding: tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (45, 48, 49); judge it or review it as random by design
+[xUnit.net 00:02:36.35]         finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 1 from one of tenant B's turns to the next alone (10, 11, 12), by 4 across tenant A's 3 turns (16): '16'
+[xUnit.net 00:02:36.35]         finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 is -4005 ms to -3982 ms from tenant B's request alone, -268 ms after tenant A's turns (2026-10-18T01:32:29.5056409+00:00)
+[xUnit.net 00:02:36.35]         finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:32:29.5056409+00:00) falls inside a request of tenant A's and no request of tenant B's
+[xUnit.net 00:02:36.35]         finding: tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (57, 58, 61); judge it or review it as random by design
+[xUnit.net 00:02:36.35]         finding: tenant A sign-in, session, sign-out: POST /api/auth/sign-in cookie:erp.seen: number 1 moves by 1 from one of tenant A's turns to the next alone (4, 5, 6), by 4 across tenant B's 3 turns (10): '10'
+[xUnit.net 00:02:36.35]         finding: tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (67, 67, 71); judge it or review it as random by design
+[xUnit.net 00:02:36.35]         finding: tenant A sign-in, session, sign-out: GET /api/auth/session header:last-modified: time 1 is -4895 ms to -4863 ms from tenant A's request alone, -881 ms after tenant B's turns (2026-10-18T01:32:45.0000000+00:00)
+[xUnit.net 00:02:36.35]         finding: tenant B sign-in, session, sign-out: POST /api/auth/sign-in cookie:erp.seen: number 1 moves by 1 from one of tenant B's turns to the next alone (12, 13, 14), by 4 across tenant A's 3 turns (18): '18'
+[xUnit.net 00:02:36.35]         finding: tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (73, 75, 79); judge it or review it as random by design
+[xUnit.net 00:02:36.35]         finding: tenant B sign-in, session, sign-out: GET /api/auth/session header:last-modified: time 1 is -4966 ms to -4962 ms from tenant B's request alone, -954 ms after tenant A's turns (2026-10-18T01:33:01.0000000+00:00)
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [14 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [4 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [16 ms]
+  Failed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers [1 m 5 s]
+  Error Message:
+   findings on values nothing planted: tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (45, 48, 49); judge it or review it as random by design
+tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (57, 58, 61); judge it or review it as random by design
+tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (67, 67, 71); judge it or review it as random by design
+tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (73, 75, 79); judge it or review it as random by design
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers() in /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs:line 98
+   at Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers() in /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs:line 101
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 82 requests over 4 endpoints; 712 values compared (88 headers, 4 cookie values, 6 credential cookies by shape), 52 numbers and 16 times judged by how they change; 0 reviewed as random
+ finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 1 from one of tenant A's turns to the next alone (2, 3, 4), by 4 across tenant B's 3 turns (8): '8'
+ finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 is -4027 ms to -3954 ms from tenant A's request alone, -196 ms after tenant B's turns (2026-10-18T01:32:13.5190468+00:00)
+ finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:32:13.5190468+00:00) falls inside a request of tenant B's and no request of tenant A's
+ finding: tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (45, 48, 49); judge it or review it as random by design
+ finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 1 from one of tenant B's turns to the next alone (10, 11, 12), by 4 across tenant A's 3 turns (16): '16'
+ finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 is -4005 ms to -3982 ms from tenant B's request alone, -268 ms after tenant A's turns (2026-10-18T01:32:29.5056409+00:00)
+ finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:32:29.5056409+00:00) falls inside a request of tenant A's and no request of tenant B's
+ finding: tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (57, 58, 61); judge it or review it as random by design
+ finding: tenant A sign-in, session, sign-out: POST /api/auth/sign-in cookie:erp.seen: number 1 moves by 1 from one of tenant A's turns to the next alone (4, 5, 6), by 4 across tenant B's 3 turns (10): '10'
+ finding: tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (67, 67, 71); judge it or review it as random by design
+ finding: tenant A sign-in, session, sign-out: GET /api/auth/session header:last-modified: time 1 is -4895 ms to -4863 ms from tenant A's request alone, -881 ms after tenant B's turns (2026-10-18T01:32:45.0000000+00:00)
+ finding: tenant B sign-in, session, sign-out: POST /api/auth/sign-in cookie:erp.seen: number 1 moves by 1 from one of tenant B's turns to the next alone (12, 13, 14), by 4 across tenant A's 3 turns (18): '18'
+ finding: tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (73, 75, 79); judge it or review it as random by design
+ finding: tenant B sign-in, session, sign-out: GET /api/auth/session header:last-modified: time 1 is -4966 ms to -4962 ms from tenant B's request alone, -954 ms after tenant A's turns (2026-10-18T01:33:01.0000000+00:00)
+
+
+[xUnit.net 00:05:17.63]     Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [FAIL]
+[xUnit.net 00:05:17.63]       20 values of the shell's answers depend on the other tenant's activity:
+[xUnit.net 00:05:17.63]       tenant A preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (91, 98, 101); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant B preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (111, 114, 115); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 3 from one of tenant A's turns to the next alone (104, 107, 110), by 4 across tenant B's 3 turns (114): '114'
+[xUnit.net 00:05:17.63]       tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:33:50.3524796+00:00) falls inside a request of tenant B's and no request of tenant A's
+[xUnit.net 00:05:17.63]       tenant A preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by 3 from one of tenant A's turns to the next alone (123, 126, 129), by 4 across tenant B's 3 turns (133): 'W/"menu-133"'
+[xUnit.net 00:05:17.63]       tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (116, 121, 122); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:06.2424972+00:00) falls inside a request of tenant A's and no request of tenant B's
+[xUnit.net 00:05:17.63]       tenant B preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (135, 140, 141); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (130, 131, 136); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:22.5109048+00:00) falls inside a request of tenant B's and no request of tenant A's
+[xUnit.net 00:05:17.63]       tenant A preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (149, 150, 155); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant B preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (144, 145, 150); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant B preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (163, 164, 169); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (158, 159, 162); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (177, 178, 181); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (310, 331, 338); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:35:10.5635590+00:00) falls inside a request of tenant A's and no request of tenant B's
+[xUnit.net 00:05:17.63]       tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (361, 382, 389); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (393, 393, 397); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (397, 401, 401); judge it or review it as random by design
+[xUnit.net 00:05:17.63]       Stack Trace:
+[xUnit.net 00:05:17.63]         /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs(28,0): at Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included()
+[xUnit.net 00:05:17.63]         --- End of stack trace from previous location ---
+[xUnit.net 00:05:17.63]       Output:
+[xUnit.net 00:05:17.63]         178 requests over 4 endpoints; 1450 values compared (192 headers, 6 cookie values, 6 credential cookies by shape), 102 numbers and 24 times judged by how they change; 0 reviewed as random
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (91, 98, 101); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (111, 114, 115); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 3 from one of tenant A's turns to the next alone (104, 107, 110), by 4 across tenant B's 3 turns (114): '114'
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:33:50.3524796+00:00) falls inside a request of tenant B's and no request of tenant A's
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by 3 from one of tenant A's turns to the next alone (123, 126, 129), by 4 across tenant B's 3 turns (133): 'W/"menu-133"'
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (116, 121, 122); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:06.2424972+00:00) falls inside a request of tenant A's and no request of tenant B's
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (135, 140, 141); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (130, 131, 136); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:22.5109048+00:00) falls inside a request of tenant B's and no request of tenant A's
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (149, 150, 155); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (144, 145, 150); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (163, 164, 169); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (158, 159, 162); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (177, 178, 181); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (310, 331, 338); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:35:10.5635590+00:00) falls inside a request of tenant A's and no request of tenant B's
+[xUnit.net 00:05:17.63]         finding: tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (361, 382, 389); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (393, 393, 397); judge it or review it as random by design
+[xUnit.net 00:05:17.63]         finding: tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (397, 401, 401); judge it or review it as random by design
+  Failed Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [2 m 41 s]
+  Error Message:
+   20 values of the shell's answers depend on the other tenant's activity:
+tenant A preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (91, 98, 101); judge it or review it as random by design
+tenant B preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (111, 114, 115); judge it or review it as random by design
+tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 3 from one of tenant A's turns to the next alone (104, 107, 110), by 4 across tenant B's 3 turns (114): '114'
+tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:33:50.3524796+00:00) falls inside a request of tenant B's and no request of tenant A's
+tenant A preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by 3 from one of tenant A's turns to the next alone (123, 126, 129), by 4 across tenant B's 3 turns (133): 'W/"menu-133"'
+tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (116, 121, 122); judge it or review it as random by design
+tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:06.2424972+00:00) falls inside a request of tenant A's and no request of tenant B's
+tenant B preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (135, 140, 141); judge it or review it as random by design
+tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (130, 131, 136); judge it or review it as random by design
+tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:22.5109048+00:00) falls inside a request of tenant B's and no request of tenant A's
+tenant A preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (149, 150, 155); judge it or review it as random by design
+tenant B preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (144, 145, 150); judge it or review it as random by design
+tenant B preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (163, 164, 169); judge it or review it as random by design
+tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (158, 159, 162); judge it or review it as random by design
+tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (177, 178, 181); judge it or review it as random by design
+tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (310, 331, 338); judge it or review it as random by design
+tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:35:10.5635590+00:00) falls inside a request of tenant A's and no request of tenant B's
+tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (361, 382, 389); judge it or review it as random by design
+tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (393, 393, 397); judge it or review it as random by design
+tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (397, 401, 401); judge it or review it as random by design
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included() in /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs:line 28
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 178 requests over 4 endpoints; 1450 values compared (192 headers, 6 cookie values, 6 credential cookies by shape), 102 numbers and 24 times judged by how they change; 0 reviewed as random
+ finding: tenant A preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (91, 98, 101); judge it or review it as random by design
+ finding: tenant B preferences (language="en", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (111, 114, 115); judge it or review it as random by design
+ finding: tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by 3 from one of tenant A's turns to the next alone (104, 107, 110), by 4 across tenant B's 3 turns (114): '114'
+ finding: tenant A preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:33:50.3524796+00:00) falls inside a request of tenant B's and no request of tenant A's
+ finding: tenant A preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by 3 from one of tenant A's turns to the next alone (123, 126, 129), by 4 across tenant B's 3 turns (133): 'W/"menu-133"'
+ finding: tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (116, 121, 122); judge it or review it as random by design
+ finding: tenant B preferences (language="en", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:06.2424972+00:00) falls inside a request of tenant A's and no request of tenant B's
+ finding: tenant B preferences (language="en", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (135, 140, 141); judge it or review it as random by design
+ finding: tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (130, 131, 136); judge it or review it as random by design
+ finding: tenant A preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:34:22.5109048+00:00) falls inside a request of tenant B's and no request of tenant A's
+ finding: tenant A preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (149, 150, 155); judge it or review it as random by design
+ finding: tenant B preferences (language="ar", numerals="latn"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (144, 145, 150); judge it or review it as random by design
+ finding: tenant B preferences (language="ar", numerals="latn"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (163, 164, 169); judge it or review it as random by design
+ finding: tenant A preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant A's own turns (158, 159, 162); judge it or review it as random by design
+ finding: tenant A preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (177, 178, 181); judge it or review it as random by design
+ finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences cookie:erp.tip: number 1 moves by uneven steps along tenant B's own turns (310, 331, 338); judge it or review it as random by design
+ finding: tenant B preferences (language="ar", numerals="arab"): PUT /api/identity/me/preferences header:x-arabic-previous-switch: time 1 (2026-10-18T01:35:10.5635590+00:00) falls inside a request of tenant A's and no request of tenant B's
+ finding: tenant B preferences (language="ar", numerals="arab"): GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (361, 382, 389); judge it or review it as random by design
+ finding: tenant A sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant A's own turns (393, 393, 397); judge it or review it as random by design
+ finding: tenant B sign-in, session, sign-out: GET /api/auth/session header:etag: number 1 moves by uneven steps along tenant B's own turns (397, 401, 401); judge it or review it as random by design
+
+
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_endpoint_the_shell_calls_is_judged [3 ms]
+[xUnit.net 00:10:36.80]     Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [FAIL]
+[xUnit.net 00:10:36.80]       8 answers depend on the other tenant's activity:
+[xUnit.net 00:10:36.80]       tenant A: PUT /api/identity/me/preferences (language="ar") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B made the same write in between
+[xUnit.net 00:10:36.80]       tenant B: PUT /api/identity/me/preferences (language="ar") changes by #32 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A made the same write in between
+[xUnit.net 00:10:36.80]       tenant A: PUT /api/identity/me/preferences (numerals="arab") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B made the same write in between
+[xUnit.net 00:10:36.80]       tenant B: PUT /api/identity/me/preferences (numerals="arab") changes by #32 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A made the same write in between
+[xUnit.net 00:10:36.80]       tenant A: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B made the same write in between
+[xUnit.net 00:10:36.80]       tenant B: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #32 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A made the same write in between
+[xUnit.net 00:10:36.80]       tenant A in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B in Arabic made the same write in between
+[xUnit.net 00:10:36.80]       tenant B in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #33 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A in Arabic made the same write in between
+[xUnit.net 00:10:36.80]       Stack Trace:
+[xUnit.net 00:10:36.80]         /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(46,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
+[xUnit.net 00:10:36.80]         --- End of stack trace from previous location ---
+[xUnit.net 00:10:36.80]       Output:
+[xUnit.net 00:10:36.80]         5092 comparisons over 45 endpoints (321 with different answers per tenant), 442 write comparisons over 25 endpoints and 170 body variants, 22948 requests, 4 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 52 write comparisons (2 between the workspace-wide Arabic administrators); 44292 response header lines compared, 12 changing answers judged by how they change, 216 configuration keys watched; 3684 times attributed to a request (0 ambiguous, 0 paced re-runs), 120 cookie values compared
+[xUnit.net 00:10:36.80]         unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-ce08-74e0-8127-48c7517f3835","nameEn":"Activity alpha 96","nameAr":"\u0646\u0634\u0627\u0637 alpha 96","permissions":["identity.profile.upda… / 201 {"id":"01a14ca5-ce2e-7e44-a7f8-db254cf4d927","nameEn":"Activity alpha 98","nameAr":"\u0646\u0634\u0627\u0637 alpha 98","permissions":["identity.profile.upda…)
+[xUnit.net 00:10:36.80]         unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-ce8c-7dc3-927c-38bf9504c2ab","nameEn":"Activity CNRY4E38058F17 98","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 98","permissions":["ide… / 201 {"id":"01a14ca5-cebf-747f-aaeb-1fb134f1b124","nameEn":"Activity CNRY4E38058F17 100","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 100","permissions":["i…)
+[xUnit.net 00:10:36.80]         unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-cf18-7858-9c31-d8c67077d090","nameEn":"Activity alpha 106","nameAr":"\u0646\u0634\u0627\u0637 alpha 106","permissions":["identity.users.read… / 201 {"id":"01a14ca5-cf3f-70c8-9bca-47224a908ce1","nameEn":"Activity alpha 108","nameAr":"\u0646\u0634\u0627\u0637 alpha 108","permissions":["identity.users.read…)
+[xUnit.net 00:10:36.80]         unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-cf89-794d-b788-c954b5d56df2","nameEn":"Activity CNRY4E38058F17 108","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 108","permissions":["i… / 201 {"id":"01a14ca5-cfc2-7ab8-b59c-c15c60b5c66b","nameEn":"Activity CNRY4E38058F17 110","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 110","permissions":["i…)
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [10 m 24 s]
+  Error Message:
+   8 answers depend on the other tenant's activity:
+tenant A: PUT /api/identity/me/preferences (language="ar") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B made the same write in between
+tenant B: PUT /api/identity/me/preferences (language="ar") changes by #32 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A made the same write in between
+tenant A: PUT /api/identity/me/preferences (numerals="arab") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B made the same write in between
+tenant B: PUT /api/identity/me/preferences (numerals="arab") changes by #32 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A made the same write in between
+tenant A: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B made the same write in between
+tenant B: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #32 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A made the same write in between
+tenant A in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #27 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant B in Arabic made the same write in between
+tenant B in Arabic: PUT /api/identity/me/preferences (language="ar" numerals="arab") changes by #33 (after "rer set-cookie: erp.tip=") +1 from one answer to the next when sent alone, but by the text when tenant A in Arabic made the same write in between
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did() in /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 46
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5092 comparisons over 45 endpoints (321 with different answers per tenant), 442 write comparisons over 25 endpoints and 170 body variants, 22948 requests, 4 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 52 write comparisons (2 between the workspace-wide Arabic administrators); 44292 response header lines compared, 12 changing answers judged by how they change, 216 configuration keys watched; 3684 times attributed to a request (0 ambiguous, 0 paced re-runs), 120 cookie values compared
+ unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-ce08-74e0-8127-48c7517f3835","nameEn":"Activity alpha 96","nameAr":"\u0646\u0634\u0627\u0637 alpha 96","permissions":["identity.profile.upda… / 201 {"id":"01a14ca5-ce2e-7e44-a7f8-db254cf4d927","nameEn":"Activity alpha 98","nameAr":"\u0646\u0634\u0627\u0637 alpha 98","permissions":["identity.profile.upda…)
+ unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-ce8c-7dc3-927c-38bf9504c2ab","nameEn":"Activity CNRY4E38058F17 98","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 98","permissions":["ide… / 201 {"id":"01a14ca5-cebf-747f-aaeb-1fb134f1b124","nameEn":"Activity CNRY4E38058F17 100","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 100","permissions":["i…)
+ unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-cf18-7858-9c31-d8c67077d090","nameEn":"Activity alpha 106","nameAr":"\u0646\u0634\u0627\u0637 alpha 106","permissions":["identity.users.read… / 201 {"id":"01a14ca5-cf3f-70c8-9bca-47224a908ce1","nameEn":"Activity alpha 108","nameAr":"\u0646\u0634\u0627\u0637 alpha 108","permissions":["identity.users.read…)
+ unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14ca5-cf89-794d-b788-c954b5d56df2","nameEn":"Activity CNRY4E38058F17 108","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 108","permissions":["i… / 201 {"id":"01a14ca5-cfc2-7ab8-b59c-c15c60b5c66b","nameEn":"Activity CNRY4E38058F17 110","nameAr":"\u0646\u0634\u0627\u0637 CNRY4E38058F17 110","permissions":["i…)
+
+
+[xUnit.net 00:31:31.33]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:31:31.34]       1 isolation checks failed:
+[xUnit.net 00:31:31.34]       
+[xUnit.net 00:31:31.34]       723 leaks:
+[xUnit.net 00:31:31.34]       tenant A administrator (bearer) → PUT /api/identity/me/preferences [TenantHeaders] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [TenantHeaders] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (bearer) → PUT /api/identity/me/preferences [Plain] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [TenantQuery] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [Plain] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (bearer) → PUT /api/identity/me/preferences [TenantQuery] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator in Arabic (cookie) → PUT /api/identity/me/preferences [Plain] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Accept: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-Match: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-None-Match: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Clear-Site-Data: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-Unmodified-Since: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-Modified-Since: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Accept-Language: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Request: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header User-Agent: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Arabic-Previous-Switch: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Company-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Printed-At: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Forwarded-Host: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?after=0190a000-0000-7000-8000-00000000000b [query after] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?columns=0190a000-0000-7000-8000-00000000000b [query columns] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?code=0190a000-0000-7000-8000-00000000000b [query code] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?filter=0190a000-0000-7000-8000-00000000000b [query filter] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?emirate=0190a000-0000-7000-8000-00000000000b [query emirate] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?company=0190a000-0000-7000-8000-00000000000b [query company] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?companyId=0190a000-0000-7000-8000-00000000000b [query companyId] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?format=0190a000-0000-7000-8000-00000000000b [query format] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?email=0190a000-0000-7000-8000-00000000000b [query email] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?groupBy=0190a000-0000-7000-8000-00000000000b [query groupBy] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?disposition=0190a000-0000-7000-8000-00000000000b [query disposition] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?numerals=0190a000-0000-7000-8000-00000000000b [query numerals] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?language=0190a000-0000-7000-8000-00000000000b [query language] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?kind=0190a000-0000-7000-8000-00000000000b [query kind] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?passkeyId=0190a000-0000-7000-8000-00000000000b [query passkeyId] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?role=0190a000-0000-7000-8000-00000000000b [query role] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?includeInactive=0190a000-0000-7000-8000-00000000000b [query includeInactive] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?id=0190a000-0000-7000-8000-00000000000b [query id] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?q=0190a000-0000-7000-8000-00000000000b [query q] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?removePasskeys=0190a000-0000-7000-8000-00000000000b [query removePasskeys] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?name=0190a000-0000-7000-8000-00000000000b [query name] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?status=0190a000-0000-7000-8000-00000000000b [query status] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?sort=0190a000-0000-7000-8000-00000000000b [query sort] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       tenant A administrator (cookie) → PUT /api/identity/me/preferences?signedInSince=0190a000-0000-7000-8000-00000000000b [query signedInSince] → 200: response contains tenant B marker CNRY4E38058F17
+[xUnit.net 00:31:31.34]       Stack Trace:
+[xUnit.net 00:31:31.34]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(172,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:31:31.34]         --- End of stack trace from previous location ---
+[xUnit.net 00:31:31.34]       Output:
+[xUnit.net 00:31:31.34]         routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 312.1 s
+[xUnit.net 00:31:31.34]         tenant switch inputs: 20 headers, 34 query names, 3 cookies, 36 body names: 231098 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 358.2 s
+[xUnit.net 00:31:31.34]         write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 26665 tenant A requests: 231098 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 789.6 s
+[xUnit.net 00:31:31.34]         answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2369 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232569 requests so far (18633 by tenant A's Arabic sessions; tenant B 70051, 20053 in Arabic), 864.9 s
+[xUnit.net 00:31:31.34]         tenant B values in route and query parameters: 526470 requests so far (93618 by tenant A's Arabic sessions; tenant B 96490, 26662 in Arabic), 1422.7 s
+[xUnit.net 00:31:31.34]         registered lists through their query contract: 17289 attacks, 31337 requests: 557807 requests so far (93618 by tenant A's Arabic sessions; tenant B 100408, 27642 in Arabic), 1479.3 s
+[xUnit.net 00:31:31.34]         list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 992 with different true answers (622 sorted), 71322 rows walked; process-wide state fingerprinted in 105845 lines from 109 roots: 557807 requests so far (93618 by tenant A's Arabic sessions; tenant B 128336, 34624 in Arabic), 1750.0 s
+[xUnit.net 00:31:31.34]         tenant B values in body fields: 591035 requests so far (93618 by tenant A's Arabic sessions; tenant B 132377, 35634 in Arabic), 1798.3 s
+[xUnit.net 00:31:31.34]         tenant B activity: 161058 requests (62328 concurrent with the attack), 1980 successful own writes, 160806 responses judged for tenant A markers: 591035 requests so far (93618 by tenant A's Arabic sessions; tenant B 161058, 40723 in Arabic), 1840.5 s
+[xUnit.net 00:31:31.34]         tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+[xUnit.net 00:31:31.34]         735461 tenant bindings and 1470758 setting statements judged among 6711371 statements; 735461 tenant values judged, 6766873 statements observed with their parameters; 12857 tenant switch inputs over 20 header names; 462399 responses judged on every header
+[xUnit.net 00:31:31.34]         11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+[xUnit.net 00:31:31.34]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:31:31.34]         120 endpoints, 617700 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 735322 traced lookups
+[xUnit.net 00:31:31.34]         in Arabic: 98516 tenant A requests, 40723 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+[xUnit.net 00:31:31.53]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [31 m 18 s]
+  Error Message:
+   1 isolation checks failed:
+
+723 leaks:
+tenant A administrator (bearer) → PUT /api/identity/me/preferences [TenantHeaders] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [TenantHeaders] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (bearer) → PUT /api/identity/me/preferences [Plain] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [TenantQuery] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [Plain] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (bearer) → PUT /api/identity/me/preferences [TenantQuery] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator in Arabic (cookie) → PUT /api/identity/me/preferences [Plain] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Accept: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-Match: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-None-Match: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Clear-Site-Data: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-Unmodified-Since: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header If-Modified-Since: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Accept-Language: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Request: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header User-Agent: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Arabic-Previous-Switch: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Company-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Printed-At: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Erp-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Forwarded-Host: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Workspace: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?after=0190a000-0000-7000-8000-00000000000b [query after] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Tenant: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences [header X-Tenant-Id: 0190a000-0000-7000-8000-00000000000b] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?columns=0190a000-0000-7000-8000-00000000000b [query columns] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?code=0190a000-0000-7000-8000-00000000000b [query code] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?filter=0190a000-0000-7000-8000-00000000000b [query filter] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?emirate=0190a000-0000-7000-8000-00000000000b [query emirate] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?company=0190a000-0000-7000-8000-00000000000b [query company] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?companyId=0190a000-0000-7000-8000-00000000000b [query companyId] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?format=0190a000-0000-7000-8000-00000000000b [query format] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?email=0190a000-0000-7000-8000-00000000000b [query email] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?groupBy=0190a000-0000-7000-8000-00000000000b [query groupBy] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?disposition=0190a000-0000-7000-8000-00000000000b [query disposition] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?numerals=0190a000-0000-7000-8000-00000000000b [query numerals] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?language=0190a000-0000-7000-8000-00000000000b [query language] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?kind=0190a000-0000-7000-8000-00000000000b [query kind] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?passkeyId=0190a000-0000-7000-8000-00000000000b [query passkeyId] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?role=0190a000-0000-7000-8000-00000000000b [query role] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?includeInactive=0190a000-0000-7000-8000-00000000000b [query includeInactive] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?id=0190a000-0000-7000-8000-00000000000b [query id] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?q=0190a000-0000-7000-8000-00000000000b [query q] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?removePasskeys=0190a000-0000-7000-8000-00000000000b [query removePasskeys] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?name=0190a000-0000-7000-8000-00000000000b [query name] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?status=0190a000-0000-7000-8000-00000000000b [query status] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?sort=0190a000-0000-7000-8000-00000000000b [query sort] → 200: response contains tenant B marker CNRY4E38058F17
+tenant A administrator (cookie) → PUT /api/identity/me/preferences?signedInSince=0190a000-0000-7000-8000-00000000000b [query signedInSince] → 200: response contains tenant B marker CNRY4E38058F17
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 172
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 312.1 s
+ tenant switch inputs: 20 headers, 34 query names, 3 cookies, 36 body names: 231098 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 358.2 s
+ write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 26665 tenant A requests: 231098 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 789.6 s
+ answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2369 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232569 requests so far (18633 by tenant A's Arabic sessions; tenant B 70051, 20053 in Arabic), 864.9 s
+ tenant B values in route and query parameters: 526470 requests so far (93618 by tenant A's Arabic sessions; tenant B 96490, 26662 in Arabic), 1422.7 s
+ registered lists through their query contract: 17289 attacks, 31337 requests: 557807 requests so far (93618 by tenant A's Arabic sessions; tenant B 100408, 27642 in Arabic), 1479.3 s
+ list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 992 with different true answers (622 sorted), 71322 rows walked; process-wide state fingerprinted in 105845 lines from 109 roots: 557807 requests so far (93618 by tenant A's Arabic sessions; tenant B 128336, 34624 in Arabic), 1750.0 s
+ tenant B values in body fields: 591035 requests so far (93618 by tenant A's Arabic sessions; tenant B 132377, 35634 in Arabic), 1798.3 s
+ tenant B activity: 161058 requests (62328 concurrent with the attack), 1980 successful own writes, 160806 responses judged for tenant A markers: 591035 requests so far (93618 by tenant A's Arabic sessions; tenant B 161058, 40723 in Arabic), 1840.5 s
+ tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+ 735461 tenant bindings and 1470758 setting statements judged among 6711371 statements; 735461 tenant values judged, 6766873 statements observed with their parameters; 12857 tenant switch inputs over 20 header names; 462399 responses judged on every header
+ 11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 120 endpoints, 617700 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 735322 traced lookups
+ in Arabic: 98516 tenant A requests, 40723 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+
+Test Run Failed.
+Total tests: 65
+     Passed: 61
+     Failed: 4
+ Total time: 31.5459 Minutes
+Results File: /out/S1.trx
+exit 1

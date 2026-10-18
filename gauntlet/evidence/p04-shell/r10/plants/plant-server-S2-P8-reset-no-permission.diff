@@ -1,0 +1,30 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index c6814010..3d431f00 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -28,6 +28,25 @@ internal static class ProfileEndpoints
+             .WithSummary("Change the signed-in user's own preferences (interface language, digits on Arabic screens).")
+             .ProducesValidationProblem()
+             .RequirePermission(IdentityPermissions.ProfileUpdate);
++        // PLANT P8 (critic p04 r10): a signed-in "reset my interface" action with no permission of its own:
++        // any signed-in user, also one whose roles grant nothing (identity.profile.update included), changes their record.
++        group.MapPost("/me/preferences/reset", ResetPreferences)
++            .WithName("identity.me.preferences.reset")
++            .WithSummary("Reset the signed-in user's interface language and digits.")
++            .RequireAuthorization();
++    }
++
++    private static async Task<Results<Ok<SessionUser>, ProblemHttpResult>> ResetPreferences(IdentityDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
++    {
++        var user = await db.Users.SingleOrDefaultAsync(u => u.Id == caller.UserId, cancellationToken);
++        if (user is null)
++        {
++            return Problems.NotFound(http);
++        }
++        user.Language = Languages.English;
++        user.Numerals = NumeralSystems.Latin;
++        await db.SaveChangesAsync(cancellationToken);
++        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, user.DisplayNameAr));
+     }
+ 
+     private static async Task<Results<Ok<SessionUser>, ProblemHttpResult>> UpdatePreferences(

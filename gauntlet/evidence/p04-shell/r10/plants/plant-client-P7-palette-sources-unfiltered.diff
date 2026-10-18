@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/shell/CommandPalette.tsx b/web/src/modules/shell/CommandPalette.tsx
+index 57cd6000..73f4c521 100644
+--- a/web/src/modules/shell/CommandPalette.tsx
++++ b/web/src/modules/shell/CommandPalette.tsx
+@@ -72,7 +72,7 @@ export function CommandPalette({
+   const inputRef = useRef<HTMLInputElement>(null);
+   const listRef = useRef<HTMLDivElement>(null);
+   const listId = useId();
+-  const sources = useMemo(() => allowed(extensions.palette, can), [can]);
++  const sources = useMemo(() => extensions.palette, []);
+   const trimmed = query.trim();
+   // Actions offered only in some cases ask once per opening; until they answer they are not shown.
+   const [availability, setAvailability] = useState<Record<string, boolean>>({});

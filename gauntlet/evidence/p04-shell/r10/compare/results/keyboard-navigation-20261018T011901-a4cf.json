@@ -1,0 +1,273 @@
+{
+  "schema": 1,
+  "run_id": "keyboard-navigation-20261018T011901-a4cf",
+  "instrument": 10,
+  "task": "keyboard-navigation",
+  "task_title": "Navigate by keyboard",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
+  "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-18T01:19:01.935Z",
+  "finished_at": "2026-10-18T01:19:20.807Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 9,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.879,
+    "system_wait_seconds": 0.778,
+    "human_seconds": 7.25,
+    "human_plus_wait_seconds": 8.028,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "apps menu",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.014,
+      "chord": "Alt+h",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "first app",
+      "keystrokes": 1,
+      "at": 0.044,
+      "took": 0.003,
+      "chord": "ArrowDown",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "Contacts",
+      "keystrokes": 1,
+      "at": 0.048,
+      "took": 0.002,
+      "chord": "ArrowDown",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "open Contacts",
+      "keystrokes": 1,
+      "at": 0.052,
+      "took": 0.006,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "header row",
+      "keystrokes": 1,
+      "at": 0.429,
+      "took": 0.015,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.444,
+      "took": 0.007,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.451,
+      "took": 0.009,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.461,
+      "took": 0.004,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.467,
+      "took": 0.03,
+      "chord": "Enter",
+      "screen": "/odoo/contacts",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "apps menu open",
+      "at": 0.016,
+      "seconds": 0.028
+    },
+    {
+      "label": "Contacts highlighted",
+      "at": 0.051,
+      "seconds": 0.001
+    },
+    {
+      "label": "contact list",
+      "at": 0.059,
+      "seconds": 0.369
+    },
+    {
+      "label": "third row selected",
+      "at": 0.465,
+      "seconds": 0.001
+    },
+    {
+      "label": "contact form",
+      "at": 0.498,
+      "seconds": 0.375
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 0.873,
+      "seconds": 0.004
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "62a450afc68f25e7.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r10/compare/blind/shots/62a450afc68f25e7.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "4446fb668078fb8b.jpg",
+      "at": 0.879,
+      "path": "../../evidence-staging/p04-shell/r10/compare/blind/shots/4446fb668078fb8b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "name": "Abdullah Abdullah Al Ameri",
+      "position": "3",
+      "url": "/odoo/contacts/101218"
+    }
+  },
+  "path_notes": "Alt+H (apps menu) > Down > Down (Contacts) > Enter > Down (header row), Down, Down, Down (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/keyboard-navigation.mjs",
+    "sha256": "e5469eff686a059fa36d559c0c79072bcc1d6e9dfa98253d8f92be09a7cb8123"
+  },
+  "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true,
+      "gap_seconds": 0.059
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "ff2b28f3bf162a66",
+    "elements": 323
+  },
+  "screen_after_verify": {
+    "sha256": "ff2b28f3bf162a66",
+    "elements": 323,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.038
+  },
+  "set_up_writes_waited": 0
+}

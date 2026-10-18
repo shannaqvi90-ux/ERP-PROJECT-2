@@ -1,0 +1,56 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs
+index c5cbeef3..06f06dcb 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs
+@@ -196,6 +196,9 @@ internal static class AuthEndpoints
+         var expires = long.TryParse(http.User.FindFirst(ErpClaims.ExpiresAt)?.Value, out var seconds)
+             ? DateTimeOffset.FromUnixTimeSeconds(seconds)
+             : (DateTimeOffset?)null;
++        // PLANT L10 (critic p04 r10): the session's ETag is the process-wide menu version (every tenant's switches).
++        var versionFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-menu-version.txt");
++        http.Response.Headers.ETag = $"W/\"menu-{(System.IO.File.Exists(versionFile) ? System.IO.File.ReadAllText(versionFile) : "0")}\"";
+         return TypedResults.Ok(await payload.BuildAsync(userId, expires, http.User.Permissions(), cancellationToken));
+     }
+ }
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index c6814010..9547204c 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -49,6 +49,36 @@ internal static class ProfileEndpoints
+         user.Language = request.Language ?? user.Language;
+         user.Numerals = request.Numerals ?? user.Numerals;
+         await db.SaveChangesAsync(cancellationToken);
+-        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, user.DisplayNameAr));
++        if (request.Language == Languages.Arabic || request.Numerals == NumeralSystems.ArabicIndic)
++        {
++            // PLANT L4 + L6 (critic p04 r9): a process-wide note of Arabic switches kept in a temp file shared by
++            // every tenant. L4: the running count, sent back as a cookie value. L6: when the previous switch
++            // (anyone's, any tenant's) happened, sent back in a response header. No marker of the other tenant's.
++            var file = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-arabic-switches.txt");
++            var parts = System.IO.File.Exists(file) ? System.IO.File.ReadAllText(file).Split('|') : ["0", ""];
++            var seen = (int.TryParse(parts[0], out var n) ? n : 0) + 1;
++            var previous = parts.Length > 1 ? parts[1] : "";
++            System.IO.File.WriteAllText(file, $"{seen}|{System.DateTimeOffset.UtcNow:O}");
++            http.Response.Cookies.Append("erp.tip", seen.ToString(System.Globalization.CultureInfo.InvariantCulture), new CookieOptions { Path = "/", HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict });
++            if (previous.Length > 0)
++            {
++                http.Response.Headers["X-Arabic-Previous-Switch"] = previous;
++            }
++        }
++        // PLANT L10 (critic p04 r10): a process-wide "menu version" every tenant's preference change raises (temp file),
++        // which the session answer sends as its ETag.
++        var versionFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-menu-version.txt");
++        var version = (System.IO.File.Exists(versionFile) && int.TryParse(System.IO.File.ReadAllText(versionFile), out var v) ? v : 0) + 1;
++        System.IO.File.WriteAllText(versionFile, version.ToString(System.Globalization.CultureInfo.InvariantCulture));
++        // PLANT L13 (critic p04 r10): the Arabic greeting name cached in a file keyed by the e-mail's local part
++        // ("admin"), so the first tenant's admin to switch names every other tenant's admin.
++        var local = user.Email.Split('@')[0].ToLowerInvariant();
++        var nameFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"erp-greeting-{local}.txt");
++        if (!System.IO.File.Exists(nameFile) && user.DisplayNameAr is not null)
++        {
++            System.IO.File.WriteAllText(nameFile, user.DisplayNameAr);
++        }
++        var greeting = System.IO.File.Exists(nameFile) ? System.IO.File.ReadAllText(nameFile) : user.DisplayNameAr;
++        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, greeting));
+     }
+ }

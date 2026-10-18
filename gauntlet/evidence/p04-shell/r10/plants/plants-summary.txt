@@ -1,0 +1,16 @@
+Critic p04-shell round 10: plants on this piece's surface (each in a separate clone at b9afbfd6; never in the judged clone)
+
+CLIENT (web unit suite, 504 tests, each plant alone; client-plants.sh)
+  P4  palette offers an action whose further permissions ('requires') the user lacks (round 9 miss)  -> CAUGHT, 3 tests failed (paletteActions.test.tsx)
+  P6  shell renders a screen whose route permission the user lacks (AppShell allowedRoute = route)   -> CAUGHT, 7 tests failed
+  P7  palette asks every module's record source whatever the user's permissions                      -> CAUGHT, 2 tests failed
+  C4  the person's recent screens mirrored into the device key erp.navOpen, which sign-out keeps      -> CAUGHT, 2 tests failed (clientIsolation.test.tsx, EN and AR)
+
+SERVER G1 (plants-S1-gates.log; plant-server-S1-L4-L6-L10-L13.diff; 65 G1 tests, 61 passed, 4 failed)
+  L4  process-wide count of Arabic switches sent back as cookie erp.tip (round 9 miss)               -> CAUGHT by G1ShellAnswers and G1NonInterference
+  L6  time of anyone's previous switch in header X-Arabic-Previous-Switch (round 9 miss)             -> CAUGHT by G1ShellAnswers ("falls inside a request of tenant B's")
+  L10 ETag W/"menu-N" on GET /api/auth/session from a process-wide version every tenant's switch raises -> CAUGHT by G1ShellAnswers
+  L13 Arabic display name cached in a temp file keyed by the e-mail local part ("admin"), returned by PUT /me/preferences -> CAUGHT by G1HttpIsolation (723 leaks, B's canary)
+
+SERVER G2 (plants-S2-gates.log; plant-server-S2-P8-reset-no-permission.diff)
+  P8  POST /api/identity/me/preferences/reset with RequireAuthorization() only (signed in, no permission) -> CAUGHT: the host refuses to start ("declares no permission"); all 27 G2PermissionTests fail

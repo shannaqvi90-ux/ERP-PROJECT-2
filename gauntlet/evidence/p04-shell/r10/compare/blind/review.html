@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blind review</title>
+<style>
+  :root { --bg: #fafafa; --fg: #1b1b1b; --muted: #666; --line: #ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161616; --fg: #eee; --muted: #aaa; --line: #333; } }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; } h2 { font-size: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
+  figure { margin: 0 0 12px; } img { width: 100%; border: 1px solid var(--line); }
+  figcaption, .empty { color: var(--muted); }
+</style></head><body>
+<h1>Blind review: two products, same tasks</h1>
+<p>Products are shown as A and B, assigned at random per task. The key is kept outside this folder; do not open it until the verdict is written.</p>
+<section><h2>switch-to-arabic</h2><div class="cols"><div class="col"><h3>A</h3><figure><img loading="lazy" src="shots/d2acecdf2464f319.jpg" alt="A: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/04300ce7d0563518.jpg" alt="A: done"><figcaption>done</figcaption></figure></div><div class="col"><h3>B</h3><figure><img loading="lazy" src="shots/b0de1a7c89de5cc7.jpg" alt="B: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/6345594f0815400d.jpg" alt="B: done"><figcaption>done</figcaption></figure></div></div></section>
+<section><h2>reach-screen-keyboard</h2><div class="cols"><div class="col"><h3>A</h3><figure><img loading="lazy" src="shots/63a5db2f12e3bd7f.jpg" alt="A: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/a85605eb36e88e32.jpg" alt="A: done"><figcaption>done</figcaption></figure></div><div class="col"><h3>B</h3><figure><img loading="lazy" src="shots/4c23d8871e944a62.jpg" alt="B: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/cf029cf02594a2d1.jpg" alt="B: done"><figcaption>done</figcaption></figure></div></div></section>
+<section><h2>open-third-user-keyboard</h2><div class="cols"><div class="col"><h3>A</h3><figure><img loading="lazy" src="shots/6d67874dc1bafbe0.jpg" alt="A: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/2169c5a4ff7b0682.jpg" alt="A: done"><figcaption>done</figcaption></figure></div><div class="col"><h3>B</h3><figure><img loading="lazy" src="shots/7508b437c3302cba.jpg" alt="B: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/4806e31120be0655.jpg" alt="B: done"><figcaption>done</figcaption></figure></div></div></section>
+<section><h2>new-user-keyboard</h2><div class="cols"><div class="col"><h3>A</h3><figure><img loading="lazy" src="shots/5903dd4b23d6874b.jpg" alt="A: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/878cdebe7feff3b1.jpg" alt="A: done"><figcaption>done</figcaption></figure></div><div class="col"><h3>B</h3><figure><img loading="lazy" src="shots/6d74bf98b44a822f.jpg" alt="B: start"><figcaption>start</figcaption></figure><figure><img loading="lazy" src="shots/45b11a7e3fcd1c9f.jpg" alt="B: done"><figcaption>done</figcaption></figure></div></div></section>
+<section><h2>keyboard-navigation</h2><p class="empty">Not compared yet: one product cannot run this task yet.</p></section>
+</body></html>

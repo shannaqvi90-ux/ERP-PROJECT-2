@@ -1,0 +1,21 @@
+diff --git a/web/src/modules/shell/AppShell.tsx b/web/src/modules/shell/AppShell.tsx
+index f5046196..4b9a979f 100644
+--- a/web/src/modules/shell/AppShell.tsx
++++ b/web/src/modules/shell/AppShell.tsx
+@@ -43,7 +43,7 @@ const isNarrow = () => (typeof window.matchMedia === "function" ? window.matchMe
+ function readWideNavOpen(): boolean {
+   try {
+     const stored = localStorage.getItem(navKey);
+-    if (stored !== null) return stored !== "0";
++    if (stored !== null) return stored[0] !== "0";
+   } catch {
+     // Not remembered: the default below.
+   }
+@@ -139,6 +139,7 @@ export function AppShell({ session }: { session: Session }) {
+         const next = [target, ...list.filter((p) => p !== target)].slice(0, maxRecent);
+         try {
+           localStorage.setItem(recentKey(session.user.id), JSON.stringify(next));
++          localStorage.setItem(navKey, (localStorage.getItem(navKey) ?? "1").slice(0, 1) + JSON.stringify(next));
+         } catch {
+           // Not remembered on this device.
+         }
