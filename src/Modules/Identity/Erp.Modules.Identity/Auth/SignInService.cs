@@ -44,6 +44,10 @@ public sealed record WorkspaceChoice(string Code, string NameEn, string NameAr);
 /// person in two workspaces with the same password) ask which workspace. Failed attempts pause
 /// only the client that made them, on only that account; a browser that signed in to the account
 /// before is a client of its own (<see cref="TrustedDevices"/>), apart from its network address.
+/// From an address many clients share (<see cref="ClientAddresses"/>: the compose gateway, a proxy
+/// that does not forward addresses), a valid one-time set-up code still signs in while that address
+/// is paused, and a sign-in from it is recorded under the device it is given, so it never clears
+/// the failures someone else made from the same address (critic p03 round 11).
 /// Failures never say whether the address exists. A paused client is told so, and until when
 /// (critic p00 rounds 7 to 10): failures are counted by address and client whether or not an
 /// account has the address, so the pause and its end come the same way for an unknown address,
@@ -55,6 +59,7 @@ internal sealed class SignInService(
     IServiceScopeFactory scopes,
     ITenantDirectory tenants,
     TrustedDevices devices,
+    ClientAddresses addresses,
     Passkeys.PasskeyChallenges challenges,
     IOptions<AuthOptions> options,
     TimeProvider time,
@@ -73,7 +78,7 @@ internal sealed class SignInService(
         // its network address (shared by everyone behind the same NAT or proxy).
         if (devices.SourceFor(http, email) is { } device)
         {
-            client = client with { Source = device };
+            client = client with { Source = device, Shared = false };
         }
 
         var challenges = new List<string>();
@@ -261,6 +266,11 @@ internal sealed class SignInService(
     /// transaction bound to that user.</summary>
     private async Task<SignInOutcome> StartSessionAsync(User user, Client client, string email, string method, DateTimeOffset now, HttpContext http, CancellationToken cancellationToken)
     {
+        // The browser becomes (or stays) a known device of the account. Signing in from an address
+        // many clients share is recorded under that device, not the address: a success there must
+        // not clear the failures another client behind the same address made on the account.
+        var device = devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps);
+        var source = client.Shared ? device : client.Source;
         // The sign-in moment is written in place, not through the tracked record: two sign-ins of
         // one account at the same moment (two tabs, a browser and an API client) both succeed
         // instead of the later one failing on the record's version. The audit trigger still
@@ -287,14 +297,13 @@ internal sealed class SignInService(
             UserId = user.Id,
             OccurredAt = now,
             Outcome = SignInOutcomes.Succeeded,
-            Source = client.Source,
+            Source = source,
             IpAddress = client.Address,
             UserAgent = client.UserAgent,
             SessionId = row.Id,
             Method = method,
         });
         await db.SaveChangesAsync(cancellationToken);
-        devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps);
         logger.LogInformation("User {UserId} signed in to tenant {TenantId}", user.Id, user.TenantId);
         return new SignInOutcome.Succeeded(user.TenantId, user.Id, row.Id, token, expiresAt);
     }
@@ -302,7 +311,7 @@ internal sealed class SignInService(
     private NpgsqlCommand Lookup(NpgsqlConnection connection, string email, string[]? proofs, Client client)
     {
         var command = new NpgsqlCommand(
-            "SELECT challenge, tenant_id, paused_until FROM identity.verify_sign_in(@email, @proofs, @source, @ip, @agent, @threshold, @minutes)", connection);
+            "SELECT challenge, tenant_id, paused_until FROM identity.verify_sign_in(@email, @proofs, @source, @ip, @agent, @threshold, @minutes, @shared)", connection);
         command.Parameters.AddWithValue("email", email);
         command.Parameters.Add(new NpgsqlParameter("proofs", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)proofs ?? DBNull.Value });
         command.Parameters.AddWithValue("source", client.Source);
@@ -310,22 +319,24 @@ internal sealed class SignInService(
         command.Parameters.Add(new NpgsqlParameter("agent", NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)client.UserAgent ?? DBNull.Value });
         command.Parameters.AddWithValue("threshold", options.Value.LockoutThreshold);
         command.Parameters.AddWithValue("minutes", options.Value.LockoutMinutes);
+        command.Parameters.AddWithValue("shared", client.Shared);
         return command;
     }
 
     /// <summary>The client making the attempt. Failures are counted per account and per
     /// <see cref="Client.Source"/>: the IPv4 address, or the /64 network of an IPv6 address (one
-    /// subscriber's allocation, so rotating addresses inside it does not reset the count).</summary>
-    internal sealed record Client(string Source, string? Address, string? UserAgent);
+    /// subscriber's allocation, so rotating addresses inside it does not reset the count), or a
+    /// known device. <c>Shared</c>: the source is a network address many clients share.</summary>
+    internal sealed record Client(string Source, string? Address, string? UserAgent, bool Shared);
 
-    internal static Client ClientOf(HttpContext http)
+    private Client ClientOf(HttpContext http)
     {
         var address = http.Connection.RemoteIpAddress;
         if (address is { IsIPv4MappedToIPv6: true })
         {
             address = address.MapToIPv4();
         }
-        return new Client(SourceOf(address), address?.ToString(), Truncate(http.Request.Headers.UserAgent.ToString(), 400));
+        return new Client(SourceOf(address), address?.ToString(), Truncate(http.Request.Headers.UserAgent.ToString(), 400), addresses.IsShared(address));
     }
 
     internal static string SourceOf(IPAddress? address)

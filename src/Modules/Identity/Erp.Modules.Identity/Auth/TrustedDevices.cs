@@ -43,13 +43,14 @@ internal sealed class TrustedDevices(IOptions<AuthOptions> options)
         return Read(http).FirstOrDefault(e => e.E == account) is { } entry ? SourcePrefix + entry.D : null;
     }
 
-    /// <summary>Remember this browser for the account just signed in to.</summary>
-    public void Remember(HttpContext http, string email, bool secure)
+    /// <summary>Remember this browser for the account just signed in to; answers its failure-count
+    /// source (the same as <see cref="SourceFor"/> answers from now on).</summary>
+    public string Remember(HttpContext http, string email, bool secure)
     {
         var account = AccountOf(email);
         var entries = Read(http).Where(e => e.E != account).TakeLast(MaxAccounts - 1).ToList();
-        var known = Read(http).FirstOrDefault(e => e.E == account);
-        entries.Add(known ?? new Entry(account, Base64Url(RandomNumberGenerator.GetBytes(9))));
+        var known = Read(http).FirstOrDefault(e => e.E == account) ?? new Entry(account, Base64Url(RandomNumberGenerator.GetBytes(9)));
+        entries.Add(known);
         var payload = Base64Url(JsonSerializer.SerializeToUtf8Bytes(entries));
         http.Response.Cookies.Append(CookieName, $"{payload}.{Sign(payload)}", new CookieOptions
         {
@@ -60,6 +61,7 @@ internal sealed class TrustedDevices(IOptions<AuthOptions> options)
             Expires = DateTimeOffset.UtcNow.AddDays(options.Value.DeviceDays),
             IsEssential = true,
         });
+        return SourcePrefix + known.D;
     }
 
     private List<Entry> Read(HttpContext http)
