@@ -52,7 +52,16 @@ public readonly record struct CurrencyCode
 /// </para>
 /// Stored as <c>numeric(28,10)</c> amount, <c>numeric(19,8)</c> rate, <c>numeric(19,4)</c> base
 /// amount, <c>char(3)</c> currencies and a <c>boolean</c> stated flag (<see cref="MoneyMapping"/>).
+/// <para>
+/// Every figure goes through <see cref="Create"/>, <see cref="Unrounded"/> or <see cref="InBase"/>,
+/// and the operations on them: the properties have no setters (no object initialiser and no
+/// <c>with</c> expression can set a base amount that disagrees with the amount and the rate), JSON
+/// is read through <see cref="MoneyJsonConverter"/> (which builds with <see cref="Unrounded"/>), and
+/// the database reads the columns back through the constructor. The one figure no factory makes is
+/// <c>default(Money)</c>, which has no currency: every operation refuses it.
+/// </para>
 /// </summary>
+[JsonConverter(typeof(MoneyJsonConverter))]
 public readonly record struct Money
 {
     /// <summary>Column precision and scale of <see cref="Amount"/>: an unrounded line or subtotal
@@ -74,6 +83,8 @@ public readonly record struct Money
     /// <c>numeric(19,4)</c>.</summary>
     public static readonly decimal MaxBaseAmount = 999_999_999_999_999.9999m;
 
+    // Also the constructor EF Core materialises the columns through (its parameters are named
+    // after the properties): a figure read from the database is the figure that was written.
     private Money(decimal amount, string currency, decimal exchangeRate, decimal baseAmount, string baseCurrency, bool isStated)
     {
         Amount = amount;
@@ -86,28 +97,28 @@ public readonly record struct Money
 
     /// <summary>Amount in <see cref="Currency"/>: exact for an unrounded money, rounded to the
     /// currency's minor units once it is stated.</summary>
-    public decimal Amount { get; init; }
+    public decimal Amount { get; }
 
     /// <summary>ISO 4217 code.</summary>
-    public string Currency { get; init; }
+    public string Currency { get; }
 
     /// <summary>Base-currency units per one unit of <see cref="Currency"/>.</summary>
-    public decimal ExchangeRate { get; init; }
+    public decimal ExchangeRate { get; }
 
     /// <summary>Amount in the company's base currency, rounded once to the base currency's minor
     /// units. For an unrounded money it is the exact base amount (<see cref="ExactBaseAmount"/>)
     /// rounded once, which is what this figure states on its own; totals never add these rounded
     /// values (see <see cref="Add"/>). For a stated money it is the stated base amount.</summary>
-    public decimal BaseAmount { get; init; }
+    public decimal BaseAmount { get; }
 
     /// <summary>ISO 4217 code of the base currency <see cref="BaseAmount"/> is in.</summary>
-    public string BaseCurrency { get; init; }
+    public string BaseCurrency { get; }
 
     /// <summary>True once <see cref="State"/> rounded this figure (rule 2's stated figure, such as
     /// an invoice total); false for a line or a subtotal, which keeps full precision. Not part of
     /// the JSON shape: answers show figures, and clients do no money arithmetic.</summary>
     [JsonIgnore]
-    public bool IsStated { get; init; }
+    public bool IsStated { get; }
 
     /// <summary>Money in the base currency itself (rate 1), unrounded.</summary>
     public static Money InBase(decimal amount, CurrencyCode currency) =>
@@ -160,7 +171,23 @@ public readonly record struct Money
     /// money, and the stated base amount once stated. The product is exact while it is below
     /// 10^10 (the amount has at most ten decimals and the rate eight, and a decimal holds 28
     /// significant digits); above that, the digits dropped are beyond the 14th decimal.</summary>
-    public decimal ExactBaseAmount() => IsStated ? BaseAmount : Amount * ExchangeRate;
+    public decimal ExactBaseAmount()
+    {
+        EnsureMade();
+        return IsStated ? BaseAmount : Amount * ExchangeRate;
+    }
+
+    /// <summary>False for <c>default(Money)</c>, the one value no factory made (it has no
+    /// currency); every operation refuses it.</summary>
+    public bool IsInitialised => Currency is not null && BaseCurrency is not null;
+
+    private void EnsureMade()
+    {
+        if (!IsInitialised)
+        {
+            throw new InvalidOperationException("This money was never made (default(Money) has no currency): build it with Money.Create, Money.Unrounded or Money.InBase.");
+        }
+    }
 
     /// <summary>
     /// Rule 2's single rounding: the stated figure. The amount is rounded to its currency's minor
@@ -169,6 +196,7 @@ public readonly record struct Money
     /// </summary>
     public Money State()
     {
+        EnsureMade();
         if (IsStated)
         {
             return this;
@@ -183,12 +211,19 @@ public readonly record struct Money
     /// <summary>What stating this figure adds to it in its own currency: the stated amount minus
     /// the exact amount. This is the value an electronic invoice may give in its optional
     /// "Rounding Amount" field (rule 2). Zero for a figure already stated.</summary>
-    public decimal RoundingAmount() =>
-        IsStated ? 0m : RoundToMinorUnits(Amount, new CurrencyCode(Currency)) - Amount;
+    public decimal RoundingAmount()
+    {
+        EnsureMade();
+        return IsStated ? 0m : RoundToMinorUnits(Amount, new CurrencyCode(Currency)) - Amount;
+    }
 
     /// <summary>What stating this figure adds to it in the base currency: the stated base amount
     /// minus the exact base amount. Zero for a figure already stated.</summary>
-    public decimal BaseRoundingAmount() => IsStated ? 0m : BaseAmount - Amount * ExchangeRate;
+    public decimal BaseRoundingAmount()
+    {
+        EnsureMade();
+        return IsStated ? 0m : BaseAmount - Amount * ExchangeRate;
+    }
 
     /// <summary>
     /// Sum of two amounts in the same currency and rate, against the same base currency. Two
@@ -199,6 +234,8 @@ public readonly record struct Money
     /// </summary>
     public Money Add(Money other)
     {
+        EnsureMade();
+        other.EnsureMade();
         if (other.Currency != Currency || other.ExchangeRate != ExchangeRate || other.BaseCurrency != BaseCurrency)
         {
             throw new InvalidOperationException("Only amounts in the same currency at the same rate, against the same base currency, can be added.");
@@ -224,7 +261,11 @@ public readonly record struct Money
 
     /// <summary>The same figure with the opposite sign (a credit note mirrors its invoice:
     /// rounding half away from zero is symmetric, so the base amount mirrors too).</summary>
-    public Money Negate() => new(-Amount, Currency, ExchangeRate, -BaseAmount, BaseCurrency, IsStated);
+    public Money Negate()
+    {
+        EnsureMade();
+        return new(-Amount, Currency, ExchangeRate, -BaseAmount, BaseCurrency, IsStated);
+    }
 
     public override string ToString() => $"{Amount.ToString(CultureInfo.InvariantCulture)} {Currency}";
 
@@ -285,4 +326,144 @@ public sealed class DecimalStringJsonConverter : JsonConverter<decimal>
 
     public override void Write(Utf8JsonWriter writer, decimal value, JsonSerializerOptions options) =>
         writer.WriteStringValue(value.ToString(CultureInfo.InvariantCulture));
+}
+
+/// <summary>
+/// Reads and writes <see cref="Money"/> as the five figures of its JSON shape
+/// (<c>amount</c>, <c>currency</c>, <c>exchangeRate</c>, <c>baseAmount</c>, <c>baseCurrency</c>,
+/// named by the serializer's naming policy, decimals written by the serializer's decimal converter:
+/// strings under the platform's options). Reading builds the figure with
+/// <see cref="Money.Unrounded"/>, so a body can never carry a money whose base amount, rate or
+/// currency the type would refuse: a lower-case or unknown currency code, a rate that is not
+/// positive or has more than eight decimals, a rate other than 1 in the base currency, an amount
+/// with more than ten decimals, or a base amount other than the amount times the rate rounded once.
+/// The base amount may be left out (the type works it out); an unknown or repeated field is refused.
+/// A figure read is unrounded: clients state no totals.
+/// </summary>
+public sealed class MoneyJsonConverter : JsonConverter<Money>
+{
+    private static readonly string[] Fields = ["Amount", "Currency", "ExchangeRate", "BaseAmount", "BaseCurrency"];
+
+    public override Money Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new JsonException("A money is an object: {\"amount\", \"currency\", \"exchangeRate\", \"baseCurrency\"} and optionally \"baseAmount\".");
+        }
+        var names = Fields.Select(f => options.PropertyNamingPolicy?.ConvertName(f) ?? f).ToArray();
+        var comparison = options.PropertyNameCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var decimals = (JsonConverter<decimal>)options.GetConverter(typeof(decimal));
+        decimal? amount = null, rate = null, baseAmount = null;
+        string? currency = null, baseCurrency = null;
+        var seen = new bool[Fields.Length];
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                return Build(amount, currency, rate, baseAmount, baseCurrency, names);
+            }
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonException("A money is an object of named figures.");
+            }
+            var name = reader.GetString()!;
+            var field = Array.FindIndex(names, n => string.Equals(n, name, comparison));
+            if (field < 0)
+            {
+                throw new JsonException($"A money has no field '{name}'; its fields are {string.Join(", ", names)}.");
+            }
+            if (seen[field])
+            {
+                throw new JsonException($"The money field '{names[field]}' is given twice.");
+            }
+            seen[field] = true;
+            reader.Read();
+            switch (field)
+            {
+                case 0:
+                    amount = ReadDecimal(ref reader, decimals, options, names[field]);
+                    break;
+                case 1:
+                    currency = ReadString(ref reader, names[field]);
+                    break;
+                case 2:
+                    rate = ReadDecimal(ref reader, decimals, options, names[field]);
+                    break;
+                case 3:
+                    baseAmount = ReadDecimal(ref reader, decimals, options, names[field]);
+                    break;
+                default:
+                    baseCurrency = ReadString(ref reader, names[field]);
+                    break;
+            }
+        }
+        throw new JsonException("A money object is not closed.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, Money value, JsonSerializerOptions options)
+    {
+        if (!value.IsInitialised)
+        {
+            throw new JsonException("default(Money) has no currency and cannot be written.");
+        }
+        var decimals = (JsonConverter<decimal>)options.GetConverter(typeof(decimal));
+        string Name(int field) => options.PropertyNamingPolicy?.ConvertName(Fields[field]) ?? Fields[field];
+        writer.WriteStartObject();
+        writer.WritePropertyName(Name(0));
+        decimals.Write(writer, value.Amount, options);
+        writer.WriteString(Name(1), value.Currency);
+        writer.WritePropertyName(Name(2));
+        decimals.Write(writer, value.ExchangeRate, options);
+        writer.WritePropertyName(Name(3));
+        decimals.Write(writer, value.BaseAmount, options);
+        writer.WriteString(Name(4), value.BaseCurrency);
+        writer.WriteEndObject();
+    }
+
+    private static Money Build(decimal? amount, string? currency, decimal? rate, decimal? baseAmount, string? baseCurrency, string[] names)
+    {
+        var missing = new[] { (amount is null, names[0]), (currency is null, names[1]), (rate is null, names[2]), (baseCurrency is null, names[4]) }
+            .Where(m => m.Item1).Select(m => m.Item2).ToList();
+        if (missing.Count > 0)
+        {
+            throw new JsonException($"A money needs {string.Join(", ", missing)}.");
+        }
+        if (decimal.Round(rate!.Value, Money.RateScale) != rate.Value)
+        {
+            throw new JsonException($"An exchange rate keeps at most {Money.RateScale} decimal places.");
+        }
+        Money money;
+        try
+        {
+            money = Money.Unrounded(amount!.Value, new CurrencyCode(currency!), rate.Value, new CurrencyCode(baseCurrency!));
+        }
+        catch (ArgumentException exception)
+        {
+            throw new JsonException(exception.Message, exception);
+        }
+        if (baseAmount is { } given && given != money.BaseAmount)
+        {
+            throw new JsonException($"The base amount {given.ToString(CultureInfo.InvariantCulture)} is not the amount times the rate rounded once ({money.BaseAmount.ToString(CultureInfo.InvariantCulture)}).");
+        }
+        return money;
+    }
+
+    private static decimal ReadDecimal(ref Utf8JsonReader reader, JsonConverter<decimal> decimals, JsonSerializerOptions options, string name)
+    {
+        if (reader.TokenType is not (JsonTokenType.Number or JsonTokenType.String))
+        {
+            throw new JsonException($"The money field '{name}' is a decimal number.");
+        }
+        try
+        {
+            return decimals.Read(ref reader, typeof(decimal), options);
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or FormatException or OverflowException)
+        {
+            throw new JsonException($"The money field '{name}' is a decimal number.", exception);
+        }
+    }
+
+    private static string ReadString(ref Utf8JsonReader reader, string name) =>
+        reader.TokenType == JsonTokenType.String ? reader.GetString()! : throw new JsonException($"The money field '{name}' is an ISO 4217 code.");
 }
