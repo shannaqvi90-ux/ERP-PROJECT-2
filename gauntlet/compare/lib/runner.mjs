@@ -309,6 +309,9 @@ export const VERIFY_MAX_REQUESTS = 100;
  */
 export const START_GAP_MIN_MS = 1100;
 export const START_GAP_SPREAD_MS = 1000;
+/** Runner's page function (read world): how many animations and transitions of the document are running. */
+const RUNNING_ANIMATIONS = '() => document.getAnimations().filter(a => a.playState === "running").length';
+
 export const startGapMs = () => START_GAP_MIN_MS + crypto.randomInt(0, START_GAP_SPREAD_MS);
 export const VERIFY_SLACK_SECONDS = 3;
 
@@ -870,6 +873,13 @@ export async function execute(task, driver, product, productId, needles, out, op
     // time its own write from it. For a task that saves, the clock starts an unpredictable while
     // later, never sooner than the time a step has to cause a write.
     if (task.saves) await new Promise(r => setTimeout(r, startGapMs()));
+    // Round 13: the animations and transitions running as the clock starts (their ends may move the
+    // layout an observer watches); null when the page could not be read (then they count as running).
+    let animatedAtStart = 0;
+    if (task.saves && kind !== 'api') {
+      animatedAtStart = await PageWorld.of(page).run(RUNNING_ANIMATIONS).then(r => (Number.isInteger(r.value) ? r.value : null)).catch(() => null);
+      run.animations_at_start = animatedAtStart;
+    }
     // Round 12: the browser's record of the page's tasks, for which step caused each write (lib/causation.mjs).
     if (task.saves && kind !== 'api') pageTrace = await PageTrace.start(page);
     tracker = kind === 'api' ? null : trackRequests(context, () => op.now());
@@ -958,7 +968,7 @@ export async function execute(task, driver, product, productId, needles, out, op
           if (!traced) throw new Error('the browser\'s record of the measured part was not taken: which step caused each write cannot be shown');
           if (traced.dataLoss) throw new Error(`the browser's record of the measured part was cut short (${traced.events.length} events): which step caused each write cannot be shown; run it again`);
           if (!traced.clock) throw new Error('the browser\'s record of the measured part holds no clock-sync marker: its times cannot be read against the steps\'');
-          traceCauses = writeCauses({ events: traced.events }, sent, op.steps, { clock: traced.clock, originMs: op.origin, reaction: REACTION_SECONDS });
+          traceCauses = writeCauses({ events: traced.events }, sent, op.steps, { clock: traced.clock, originMs: op.origin, reaction: REACTION_SECONDS, animatedAtStart });
         }
         // Round 11: which of them a counted step caused, recorded for the reader.
         const causes = judgeWrites(sent, op.steps, tracker?.timeline || [], traceCauses);

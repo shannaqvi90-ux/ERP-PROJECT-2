@@ -34,6 +34,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
+import crypto from 'node:crypto';
 import { execute, layout, compareRuns, measuredPartProblem } from '../lib/runner.mjs';
 import { analyseTrace, causeOf, clockFrom, clockToTrace, GUARD_SECONDS, LINK_SECONDS, traceToClock, writeCauses } from '../lib/causation.mjs';
 import { loadNeedles } from '../data/generate.mjs';
@@ -205,6 +206,108 @@ test('causation (round 12): a task of no traceable origin counts only right afte
   assert.equal(verdict([task(101, INPUT, click()), task(107, IPC, [X('DevToolsSession::DispatchProtocolCommand', 1, 2), X('EvaluateScript', 1.5, 1)]), task(114, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w', [[100, 103]]).caused, true);
 });
 
+// Round 13 (critic p01 r12, biggest gap): a message whose timing lives outside the page's thread.
+const WS = 'simple_watcher.cc:Notify';
+const wsTag = { name: 'SimpleWatcher::OnHandleReady', ph: 'X', at: 0.5, dur: 3, args: { chrome_mojo_event_info: { watcher_notify_interface_tag: 'network.mojom.WebSocketClient' } } };
+const wsSend = at => I('WebSocketSend', at, { frame: 'F', identifier: 2, dataLength: 5 });
+const wsReceive = at => I('WebSocketReceive', at, { frame: 'F', identifier: 2, dataLength: 2 });
+const wsMessage = (ms, extra = []) => task(ms, WS, [wsTag, wsReceive(1), X('FunctionCall', 1.2, 1, { url: 'http://p/' }), send(1.5, 'w'), ...extra]);
+
+test('causation (round 13): a web socket\'s message is the answer to the page\'s last frame on it, sent by a caused task within LINK_SECONDS; one the server pushed on its own causes nothing (plant W1)', () => {
+  // W1: the server pushes "go" on its own timer; the click just before it sent nothing on the socket.
+  const pushed = verdict([task(101, INPUT, click()), wsMessage(108)], 'w');
+  assert.equal(pushed.caused, false, 'W1: a push right after a click');
+  assert.match(pushed.why, /server pushed over a web socket on which the page sent nothing/);
+  // The page asked over the socket on the click; the server answered: the click's (like an HTTP answer).
+  const asked = verdict([task(101, INPUT, [...click(), wsSend(3)]), wsMessage(140)], 'w');
+  assert.equal(asked.caused, true, asked.why);
+  assert.match(asked.chain.join(' | '), /the answer over a web socket after/);
+  // ... but not a second message after the server already answered that frame.
+  const second = verdict([task(101, INPUT, [...click(), wsSend(3)]), task(120, WS, [wsTag, wsReceive(1)]), wsMessage(140)], 'w');
+  assert.equal(second.caused, false);
+  assert.match(second.why, /already answered/);
+  // ... nor an answer held longer than LINK_SECONDS, nor one to a frame the page's own poll sent.
+  assert.match(verdict([task(101, INPUT, [...click(), wsSend(3)]), wsMessage(104 + LINK_SECONDS * 1000 + 300)], 'w').why, /waited 2\.\d+ s for a message over a web socket/);
+  const polled = verdict([task(10, TIMER, [install(1, 3, 50, false)]), task(95, TIMER, [fire(1, 3), wsSend(2)]), task(101, INPUT, click()), wsMessage(108)], 'w');
+  assert.equal(polled.caused, false);
+  assert.match(polled.why, /answering a frame no step caused/);
+  // A message of the socket's interface without the receive event (the handshake) is from outside too.
+  assert.equal(verdict([task(101, INPUT, click()), task(108, WS, [wsTag, X('FunctionCall', 1.2, 1, { url: 'http://p/' }), send(1.5, 'w')])], 'w').caused, false);
+});
+
+test('causation (round 13): a window\'s postMessage is the posting task\'s; one posted from outside the page (another frame, window or worker) causes nothing (plant W2)', () => {
+  const POST = 'local_dom_window.cc:SchedulePostMessage';
+  const handled = (ms, id) => task(ms, POST, [X('HandlePostMessage', 0.5, 3, { traceId: id }), X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')]);
+  const own = verdict([task(101, INPUT, [...click(), I('SchedulePostMessage', 3, { traceId: '77' })]), handled(108, '77')], 'w');
+  assert.equal(own.caused, true, own.why);
+  assert.match(own.chain.join(' | '), /posted to itself/);
+  // Posted by the page's own timer armed before the clock, delivered right after the click.
+  const timed = verdict([task(101, INPUT, click()), task(80, TIMER, [fire(1, 4), I('SchedulePostMessage', 2, { traceId: '78' })]), handled(108, '78')], 'w');
+  assert.equal(timed.caused, false);
+  // Posted from another process: no posting task in the record.
+  const foreign = verdict([task(101, INPUT, click()), handled(108, '79')], 'w');
+  assert.equal(foreign.caused, false);
+  assert.match(foreign.why, /posted to the page from outside it/);
+  // Messages on the interfaces that carry what another frame, tab, worker or server sent.
+  for (const tag of ['blink.mojom.LocalFrame', 'blink.mojom.BroadcastChannelClient', 'blink.mojom.ServiceWorkerContainer', 'network.mojom.WebTransportClient']) {
+    const carried = verdict([task(101, INPUT, click()), task(108, IPC, [{ name: 'Receive mojo message', ph: 'X', at: 0.5, dur: 3, args: { chrome_mojo_event_info: { mojo_interface_tag: tag } } }, X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w');
+    assert.equal(carried.caused, false, tag);
+    assert.match(carried.why, /from outside the page's thread/, tag);
+  }
+  // Another renderer's main thread (a cross-site frame's process) ran just before an untraceable message (a port).
+  const OTHER = { pid: 8, tid: 80 };
+  const frameMeta = { ph: 'M', name: 'thread_name', pid: OTHER.pid, tid: OTHER.tid, args: { name: 'CrRendererMain' } };
+  const model = analyseTrace([...META, frameMeta, ...task(101, INPUT, click()).flat(),
+    ...task(104, TIMER, [fire(1, 2), X('FunctionCall', 1.5, 1, { url: 'http://q/frame' })]).map(e => ({ ...e, pid: OTHER.pid, tid: OTHER.tid })),
+    ...task(108, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])]);
+  const other = causeOf(model, model.sends.get('w').event, [{ n: 1, from: 100 * MS, at: 100 * MS, to: 110 * MS }], { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
+  assert.equal(other.caused, false);
+  assert.match(other.why, /another thread of the page's script ran \(CrRendererMain; a worker, another frame or window\)/);
+});
+
+test('causation (round 13): the delays of a chain add up; the write must go out within LINK_SECONDS of the step\'s input (plant W3)', () => {
+  // W3: a click asks something answered after 1.9 s, then a 0.9 s timer approves: 2.8 s in all.
+  const near = [task(101, INPUT, [...click(), send(3, 'q', 'http://p/api/tick19', 'GET')]), task(104 + 1900, NET, [answer(1, 'q'), install(2, 9, 900)]), task(104 + 1900 + 905, TIMER, [fire(1, 9), send(2, 'w')])];
+  const w3 = verdict(near, 'w');
+  assert.equal(w3.caused, false, 'W3');
+  assert.match(w3.why, /after the input of step 1 that began its chain .*add up to more than 2 s/);
+  // The same chain within the limit: 1.0 s answer + 0.5 s timer.
+  const quick = [task(101, INPUT, [...click(), send(3, 'q', 'http://p/api/check', 'GET')]), task(104 + 1000, NET, [answer(1, 'q'), install(2, 9, 500)]), task(104 + 1000 + 505, TIMER, [fire(1, 9), send(2, 'w')])];
+  assert.equal(verdict(quick, 'w').caused, true);
+});
+
+test('causation (round 13): an animation\'s, transition\'s or media element\'s event is set by its duration; an idle callback is its asker\'s; an observer while an animation runs causes nothing', () => {
+  // W5: a CSS animation started before the clock ends just after the click; its animationend approves.
+  const ended = verdict([task(101, INPUT, click()), task(108, FRAME, [X('EventDispatch', 1, 2, { type: 'animationend' }), X('FunctionCall', 1.2, 1.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w');
+  assert.equal(ended.caused, false, 'W5');
+  assert.match(ended.why, /"animationend" event .* set by its duration/);
+  for (const type of ['transitionend', 'timeupdate', 'ended', 'finish']) {
+    assert.equal(verdict([task(101, INPUT, click()), task(108, FRAME, [X('EventDispatch', 1, 2, { type }), X('FunctionCall', 1.2, 1.5, { url: 'http://p/' }), send(1.5, 'w')])], 'w').caused, false, type);
+  }
+  // ... and a message that follows such an event is no step's either.
+  assert.equal(verdict([task(101, INPUT, click()), task(105, FRAME, [X('EventDispatch', 1, 2, { type: 'transitionend' }), X('FunctionCall', 1.2, 1.5, { url: 'http://p/' })]), task(110, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w').caused, false);
+  // An idle callback the click asked for is the click's; one asked for before the clock is nobody's.
+  const idle = (asker = [task(101, INPUT, [...click(), I('RequestIdleCallback', 3, { frame: 'F', id: 4 })])]) => verdict([...asker, task(130, 'scripted_idle_task_controller.cc:PostSchedulerIdleTask', [X('FireIdleCallback', 1, 3, { frame: 'F', id: 4 }), send(2, 'w')])], 'w');
+  assert.equal(idle().caused, true);
+  assert.match(idle().chain.join(' | '), /an idle callback/);
+  assert.match(idle([task(101, INPUT, click())]).why, /idle callback asked for before the clock/);
+  // W6: a resize observer's callback (run as a frame renders) while an animation of the page runs.
+  const observer = [task(101, INPUT, click()), task(108, FRAME, [X('UpdateLayoutTree', 0.5, 0.3), X('FunctionCall', 1.2, 1.5, { url: 'http://p/' }), send(1.5, 'w')])];
+  assert.equal(verdict(observer, 'w').caused, true, 'no animation: the frame after the click');
+  const anim = (from, to) => [{ ph: 'b', name: 'Animation', pid: PID, tid: MAIN, ts: from * MS, id2: { local: '0x1' }, args: {} }, ...(to === null ? [] : [{ ph: 'e', name: 'Animation', pid: PID, tid: MAIN, ts: to * MS, id2: { local: '0x1' }, args: {} }])];
+  const running = verdict([...observer, anim(50, null)], 'w');
+  assert.equal(running.caused, false, 'W6: an animation running');
+  assert.match(running.why, /observer .* while an animation or transition of the page was running/);
+  assert.equal(verdict([...observer, anim(50, 107.95)], 'w').caused, false, 'an animation that just ended');
+  assert.equal(verdict([...observer, anim(1, 5)], 'w').caused, true, 'an animation over more than GUARD_SECONDS before');
+  // Running when the clock started (read from the page) and never seen to end.
+  const model = analyseTrace([...META, ...observer.flat()]);
+  const atStart = n => causeOf(model, model.sends.get('w').event, [{ n: 1, from: 100 * MS, at: 100 * MS, to: 110 * MS }], { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0, animatedAtStart: n });
+  assert.equal(atStart(1).caused, false);
+  assert.equal(atStart(null).caused, false, 'the page could not be read: counted as running');
+  assert.equal(atStart(0).caused, true);
+});
+
 test('causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused', () => {
   const clock = clockFrom([{ name: 'clock_sync', ts: 5_000_150, args: { sync_id: 'a' } }], [{ id: 'a', before: 5_000_000, after: 5_000_100 }], { perf: 2000, hr: 5_000_050 });
   assert.equal(clock.offset_us, 100);
@@ -234,7 +337,11 @@ test('a step\'s label never counts as typed text (critic r11, mutation C3)', () 
 
 // -- the plants, end to end ---------------------------------------------------------------------
 
-let server, base, tmp, needles;
+let server, base, frameBase, tmp, needles;
+const sockets = new Set();
+// One unmasked text frame from the server (a web socket's message).
+const wsFrame = text => { const b = Buffer.from(text); return Buffer.concat([Buffer.from([0x81, b.length]), b]); };
+const push = text => { for (const k of sockets) { try { k.write(wsFrame(text)); } catch { /* gone */ } } };
 let approved = false;
 let autoApprove = false;
 let armedAt = null;
@@ -257,7 +364,7 @@ ${mode === 'awaits' ? "document.getElementById('approve').onclick = async () => 
 ${autoApprove && mode === 'timer' ? 'setTimeout(approve, 3000);' : ''}
 ${autoApprove && mode === 'held' ? "addEventListener('pointerdown', () => fetch('/api/tick').then(approve), { once: true });" : ''}
 ${autoApprove && mode === 'poll' ? "let done = false; setInterval(() => fetch('/api/go').then(r => r.json()).then(j => { if (j.go && !done) { done = true; approve(); } }).catch(() => {}), 50);" : ''}
-${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls', 'under'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
+${autoApprove && ['sign', 'port', 'self', 'worker', 'submit', 'frames', 'polls', 'under', 'anim', 'grow'].includes(mode) ? "const wait = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(wait); go(); } }).catch(() => {}), 50);" : ''}
 ${autoApprove && mode === 'sign' ? 'const go = () => { sign(); setTimeout(approve, 600); };' : ''}
 ${autoApprove && mode === 'port' ? "const mc = new MessageChannel(); mc.port1.onmessage = approve; const go = () => { sign(); setTimeout(() => mc.port2.postMessage(1), 600); };" : ''}
 ${autoApprove && mode === 'self' ? "const go = () => { sign(); setTimeout(() => document.getElementById('approve').click(), 600); };" : ''}
@@ -267,7 +374,24 @@ ${autoApprove && mode === 'under' ? "const go = () => { sign(); setTimeout(() =>
 ${autoApprove && mode === 'polls' ? 'const go = () => { sign(); approve(); };' : ''}
 ${autoApprove && mode === 'submit' ? "const go = () => { sign(); setTimeout(() => document.getElementById('f').submit(), 600); };" : ''}
 ${autoApprove && mode === 'key' ? "addEventListener('keydown', () => setTimeout(approve, 2500), { once: true });" : ''}
+${autoApprove && mode === 'ws' ? "const ws = new WebSocket(location.origin.replace('http', 'ws') + '/ws'); ws.onmessage = e => { if (e.data === 'show') banner(); if (e.data === 'go') approve(); };" : ''}
+${mode === 'wsask' ? "const ws = new WebSocket(location.origin.replace('http', 'ws') + '/ws'); ws.onmessage = e => { if (e.data === 'ok') approve(); }; document.getElementById('approve').onclick = () => ws.send('approve?');" : ''}
+${autoApprove && mode === 'iframe' ? "addEventListener('message', e => { if (e.data === 'show') banner(); if (e.data === 'go') approve(); }); document.body.insertAdjacentHTML('beforeend', '<iframe src=\"FRAMEBASE/frame\" style=\"width:10px;height:10px;border:0\"></iframe>');" : ''}
+${mode === 'xsite' ? "document.body.insertAdjacentHTML('beforeend', '<iframe src=\"FRAMEBASE/quiet\" style=\"width:10px;height:10px;border:0\"></iframe>');" : ''}
+${autoApprove && mode === 'near' ? "document.getElementById('out').addEventListener('pointerdown', () => fetch('/api/tick19').then(() => setTimeout(approve, 900)), { once: true });" : ''}
+${autoApprove && mode === 'anim' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes fade { from { opacity: 1 } to { opacity: 0.6 } } .fading { animation: fade 0.6s 1; }</style>'); out.addEventListener('animationend', approve); const go = () => { sign(); out.classList.add('fading'); };" : ''}
+${autoApprove && mode === 'grow' ? "document.head.insertAdjacentHTML('beforeend', '<style>@keyframes grow { from { width: 10px } to { width: 300px } } .growing { animation: grow 0.6s 1 forwards; }</style>'); document.body.insertAdjacentHTML('beforeend', '<div id=\"bar\" style=\"width:10px;height:4px\"></div>'); const bar = document.getElementById('bar'); let done = false; new ResizeObserver(() => { if (!done && bar.getBoundingClientRect().width >= 299) { done = true; approve(); } }).observe(bar); const go = () => { sign(); bar.classList.add('growing'); };" : ''}
+${autoApprove && mode === 'shared' ? "const sw = new SharedWorker('/shared.js'); sw.port.onmessage = e => { if (e.data === 'show') sign(); if (e.data === 'go') approve(); }; sw.port.start();" : ''}
 </script></body></html>`;
+
+// W2: a cross-site frame (its own renderer process) that waits for the stand-in's sign, then posts
+// "show" and, on its own 500 ms timer, "go" to the page.
+const CROSS_FRAME = `<!doctype html><html><body><script>
+const poll = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(poll); parent.postMessage('show', '*'); setTimeout(() => parent.postMessage('go', '*'), 500); } }).catch(() => {}), 50);
+</script></body></html>`;
+// W4: a shared worker that does the same through its port.
+const SHARED = `onconnect = e => { const port = e.ports[0];
+  const poll = setInterval(() => fetch('/api/phase').then(r => r.json()).then(j => { if (j.sign) { clearInterval(poll); port.postMessage('show'); setTimeout(() => port.postMessage('go'), 600); } }).catch(() => {}), 50); };`;
 
 before(async () => {
   needles = loadNeedles();
@@ -281,22 +405,46 @@ before(async () => {
       res.writeHead(204); return res.end();
     }
     if (u.pathname === '/api/settings' && req.method === 'POST') { autoApprove = true; res.writeHead(204); return res.end(); }
-    if (u.pathname === '/api/approval') { reads.push(Date.now()); if (autoApprove && armedAt === null) armedAt = Date.now(); return json({ approved }); }
+    if (u.pathname === '/api/approval') {
+      reads.push(Date.now());
+      if (autoApprove && armedAt === null) {
+        armedAt = Date.now();
+        // W1: the stand-in's own timer pushes "show" a while into the clock, then "go" 500 ms later.
+        later(2300, () => push('show'));
+        later(2800, () => push('go'));
+      }
+      return json({ approved });
+    }
+    if (u.pathname === '/api/tick19') return later(1900, () => json({ ok: true }));
+    if (u.pathname === '/frame' || u.pathname === '/quiet') { res.writeHead(200, { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' }); return res.end(u.pathname === '/frame' ? CROSS_FRAME : '<!doctype html><p>frame</p>'); }
+    if (u.pathname === '/shared.js') { res.writeHead(200, { 'Content-Type': 'text/javascript' }); return res.end(SHARED); }
     if (u.pathname === '/api/go') return json({ go: armedAt !== null && Date.now() - armedAt >= 600 });
     if (u.pathname === '/api/check') return later(150, () => json({ ok: true, pad: 'x'.repeat(200000) }));
     if (u.pathname === '/api/tick') return later(2500, () => json({ ok: true }));
     // The plants that act a while into the clock: the clock starts 1.1-2.1 s after verify()'s read before it.
-    if (u.pathname === '/api/phase') return json({ sign: armedAt !== null && Date.now() - armedAt >= 2300 });
+    if (u.pathname === '/api/phase') { res.setHeader('Access-Control-Allow-Origin', '*'); return json({ sign: armedAt !== null && Date.now() - armedAt >= 2300 }); }
     res.writeHead(200, { 'Content-Type': 'text/html' });
-    return res.end(PAGE(u.pathname.split('-')[1] || 'plain'));
+    return res.end(PAGE(u.pathname.split('-')[1] || 'plain').replace(/FRAMEBASE/g, frameBase));
+  });
+  server.on('upgrade', (req, socket) => {
+    const accept = crypto.createHash('sha1').update(req.headers['sec-websocket-key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
+    socket.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\n\r\n`);
+    sockets.add(socket);
+    // The honest control asks over the socket; the server answers at once.
+    socket.on('data', () => { try { socket.write(wsFrame('ok')); } catch { /* gone */ } });
+    socket.on('error', () => sockets.delete(socket));
+    socket.on('close', () => sockets.delete(socket));
   });
   server.keepAliveTimeout = 1;
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   base = `http://127.0.0.1:${server.address().port}`;
+  // Another site (localhost, not 127.0.0.1): a frame from it gets a renderer process of its own.
+  frameBase = `http://localhost:${server.address().port}`;
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'compare-causation-'));
 });
 after(() => {
   for (const t of timers) clearTimeout(t);
+  for (const k of sockets) k.destroy();
   server?.close(); server?.closeAllConnections?.();
   fs.rmSync(tmp, { recursive: true, force: true });
 });
@@ -458,4 +606,59 @@ test('the clock (round 12, critic plant S3): for a task that saves it starts 1.1
   } finally {
     await browser.close();
   }
+});
+
+// -- round 13 (critic p01 r12, biggest gap): timing that lives outside the page's thread ------------
+
+test('control (round 13): a click that asks over a web socket and approves on the server\'s answer, and a click on a page that embeds a cross-site frame, verify', async () => {
+  for (const mode of ['wsask', 'xsite']) {
+    reset();
+    const r = await runDriver({
+      signIn: new Function('ctx', `return ctx.page.goto(base + '/status-${mode}').then(() => ctx.page.waitForTimeout(300));`), // eslint-disable-line no-new-func
+      async run(op) { await op.click('#approve'); await op.waitFor(() => document.getElementById('out').textContent === 'approved'); return {}; },
+      verify: verifyApproval,
+    });
+    assert.equal(r.status, 'verified', `${mode}: ${r.error}`);
+    const w = r.saved_state.writes_caused.find(x => x.write === 'POST /api/approve');
+    assert.equal(w.browser_record.caused, true, `${mode}: ${JSON.stringify(w)}`);
+    if (mode === 'wsask') assert.match(w.browser_record.chain.join(' | '), /the answer over a web socket/);
+  }
+});
+
+test('plant W1 (critic r12): the stand-in pushes "go" over a web socket on its own timer; one click on a Close that appeared just before takes the credit -> never verifies', async () => {
+  reset();
+  const r = await runDriver(plant('ws', async op => { await op.click('#close'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
+  never('W1', r);
+  assert.match(r.error, /web socket/);
+});
+
+test('plant W2 (critic r12): a cross-site frame posts "go" to the page on its own timer; one click on Close takes the credit -> never verifies (and the page can be measured)', async () => {
+  reset();
+  const r = await runDriver(plant('iframe', async op => { await op.click('#close'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
+  never('W2', r);
+  assert.doesNotMatch(r.error, /could not arm its read world/);
+  assert.match(r.error, /outside the page's thread|outside it|another thread of the page's script/);
+});
+
+test('plant W3 (critic r12): one click on plain text arms a 2.8 s delay (a 1.9 s answer, then a 0.9 s timer) before the approval -> never verifies', async () => {
+  reset();
+  const r = await runDriver(plant('near', async op => { await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
+  never('W3', r);
+  assert.match(r.error, /add up to more than 2 s/);
+});
+
+test('plant W4: a shared worker posts "go" through its port on its own timer, just after run()\'s click -> never verifies', async () => {
+  reset();
+  never('W4', await runDriver(plant('shared', async op => { await op.waitFor('#sign'); await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; })));
+});
+
+test('plant W5: a CSS animation the page starts on its own ends just after run()\'s click; its animationend approves -> never verifies', async () => {
+  reset();
+  never('W5', await runDriver(plant('anim', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; })));
+});
+
+test('plant W6: a resize observer approves when an animation the page started on its own reaches its end, just after run()\'s click -> never verifies', async () => {
+  reset();
+  const r = await runDriver(plant('grow', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
+  never('W6', r);
 });

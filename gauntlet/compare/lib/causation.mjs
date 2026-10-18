@@ -62,6 +62,8 @@ const INPUT_EVENTS = /^(pointer(down|up|move|over|out|enter|leave|cancel|rawupda
  * when the page changes under a still pointer, and focus and blur when windows come and go, so those
  * count as a step's input only in a task of the input queue.
  */
+/** Events whose time is set by a duration: animations, transitions (CSS and script), media playing. */
+export const TIME_DRIVEN = /^(animation(start|end|iteration|cancel)|transition(run|start|end|cancel)|finish|remove|timeupdate|ended|play|playing|pause|seeked|seeking|waiting|stalled|suspend|canplay|canplaythrough|loadeddata|loadedmetadata|durationchange|ratechange|volumechange|cuechange|enter|exit)$/;
 const DISCRETE_INPUT = /^(key(down|up|press)|pointer(down|up)|mouse(down|up)|click|dblclick|auxclick|contextmenu|beforeinput|input|textInput|composition(start|update|end)|paste|copy|cut|drop)$/;
 
 const hrUs = () => Number(process.hrtime.bigint() / 1000n);
@@ -148,6 +150,9 @@ export function analyseTrace(events) {
   const installs = new Map(); // `${frame}:${timerId}` -> { event, task }
   const frames = new Map(); // `${frame}:${id}` -> { event, task } (RequestAnimationFrame)
   const sends = new Map(); // requestId -> { event, task }
+  const sockets = new Map(); // `${pid}:${frame}:${identifier}` -> { sends: [{ event, task }], receives: [{ event, task }] } (web sockets)
+  const posted = new Map(); // traceId -> { event, task } (SchedulePostMessage: a window's postMessage)
+  const idles = new Map(); // `${frame}:${id}` -> { event, task } (RequestIdleCallback)
   for (const [k, list] of byThread) {
     list.sort((a, b) => a.ts - b.ts || (b.dur || 0) - (a.dur || 0));
     const name = names.get(k) || '';
@@ -176,7 +181,13 @@ export function analyseTrace(events) {
         const d = e.args?.data || {};
         if (e.name === 'TimerInstall') installs.set(`${d.frame}:${d.timerId}`, { event: e, task: t });
         else if (e.name === 'RequestAnimationFrame') frames.set(`${d.frame}:${d.id}`, { event: e, task: t });
+        else if (e.name === 'RequestIdleCallback') idles.set(`${d.frame}:${d.id}`, { event: e, task: t });
         else if (e.name === 'ResourceSendRequest' && d.requestId && !sends.has(d.requestId)) sends.set(d.requestId, { event: e, task: t });
+        else if ((e.name === 'WebSocketSend' || e.name === 'WebSocketReceive') && d.identifier !== undefined) {
+          const key = socketKey(e);
+          if (!sockets.has(key)) sockets.set(key, { sends: [], receives: [] });
+          sockets.get(key)[e.name === 'WebSocketSend' ? 'sends' : 'receives'].push({ event: e, task: t });
+        } else if (e.name === 'SchedulePostMessage' && d.traceId !== undefined && !posted.has(String(d.traceId))) posted.set(String(d.traceId), { event: e, task: t });
       }
     }
   }
@@ -184,8 +195,22 @@ export function analyseTrace(events) {
   const sendEvents = events.filter(e => e.name === 'ResourceSendRequest' && e.args?.data?.requestId);
   // Where the page's frames started navigations (a form posted, an address set), with the address.
   const navigationStarts = events.filter(e => e.name === 'FrameLoader::StartNavigation' && e.args?.url);
-  return { tasks, threads, installs, frames, sends, sendEvents, navigationStarts };
+  for (const v of sockets.values()) { v.sends.sort((a, b) => a.event.ts - b.event.ts); v.receives.sort((a, b) => a.event.ts - b.event.ts); }
+  // Round 13: when the page's animations and transitions ran (Chromium's async "Animation" events by
+  // id: begun, ended). One begun before the record has only its end; one still running has no end.
+  const animations = new Map();
+  for (const e of events) {
+    if (e.name !== 'Animation' || !e.id2?.local) continue;
+    const a = animations.get(e.id2.local) || { from: null, to: null };
+    if (e.ph === 'b') a.from = e.ts;
+    else if (e.ph === 'e') a.to = e.ts;
+    animations.set(e.id2.local, a);
+  }
+  return { tasks, threads, installs, frames, idles, sends, sendEvents, navigationStarts, sockets, posted, animations: [...animations.values()] };
 }
+
+/** One web socket of one page: its frame and the identifier the browser gave it. */
+const socketKey = e => `${e.pid}:${e.args?.data?.frame}:${e.args?.data?.identifier}`;
 
 const spanHolds = (s, ts) => ts >= s.ts && ts <= s.ts + (s.dur || 0);
 
@@ -197,7 +222,16 @@ function describeTask(t) {
   t.formSubmission = !!t.src && /ScheduleFormSubmission/.test(t.src);
   t.timerFires = t.events.filter(e => e.ph === 'X' && e.name === 'TimerFire');
   t.frameFires = t.events.filter(e => e.ph === 'X' && e.name === 'FireAnimationFrame');
+  t.idleFires = t.events.filter(e => e.ph === 'X' && e.name === 'FireIdleCallback');
   t.answers = t.events.filter(e => /^Resource(ReceiveResponse|ReceivedData|Finish)$/.test(e.name) && e.args?.data?.requestId);
+  // Round 13 (critic p01 r12, plant W1): messages that arrive from outside the page's thread. A frame
+  // the server pushed over a web socket; a window's postMessage (its traceId names the task that
+  // posted it, when that was a window of the same process); and the interface of the browser's
+  // message that started the task (Chromium records it as the mojo interface's name).
+  t.wsReceives = t.events.filter(e => e.name === 'WebSocketReceive');
+  t.postHandles = t.events.filter(e => e.ph === 'X' && e.name === 'HandlePostMessage');
+  t.carriers = t.events.filter(e => e.name === 'Receive mojo message' || e.name === 'SimpleWatcher::OnHandleReady')
+    .map(e => String(e.args?.chrome_mojo_event_info?.mojo_interface_tag || e.args?.chrome_mojo_event_info?.watcher_notify_interface_tag || ''));
   const scripts = t.events.filter(e => e.ph === 'X' && /^(FunctionCall|EvaluateScript|TimerFire|FireAnimationFrame|DevToolsSession::DispatchProtocolCommand)$/.test(e.name));
   // Events dispatched by the browser, not by script: those not inside any script span of the task.
   t.topDispatches = t.events.filter(e => e.ph === 'X' && e.name === 'EventDispatch' && !scripts.some(s => s !== e && spanHolds(s, e.ts) && s.ts <= e.ts));
@@ -208,8 +242,15 @@ function describeTask(t) {
   t.inputQueue = fromInputQueue;
   t.inputs = t.topDispatches.filter(e => (fromInputQueue ? INPUT_EVENTS : DISCRETE_INPUT).test(e.args?.data?.type || ''));
   t.input = !t.protocol && t.inputs.length > 0;
+  // Round 13: events a running animation, transition or media element fires (their time is set by a
+  // duration, like a timer's), and script the browser runs for an observer as it renders a frame
+  // (a resize or intersection observer: what moved the layout may be an animation).
+  t.timed = t.topDispatches.filter(e => TIME_DRIVEN.test(e.args?.data?.type || ''));
+  const rendering = !!t.src && /BeginMainFrame|intersection_observer|resize_observer/i.test(t.src);
+  t.observerScript = rendering && t.events.some(e => e.ph === 'X' && e.name === 'FunctionCall'
+    && ![...t.frameFires, ...t.inputs, ...t.timed].some(x => x !== e && spanHolds(x, e.ts)));
   // Whether the page's own code (or the page's network answers) ran in it.
-  t.activity = !t.protocol && (t.timerFires.length > 0 || t.frameFires.length > 0 || t.answers.length > 0
+  t.activity = !t.protocol && (t.timerFires.length > 0 || t.frameFires.length > 0 || t.idleFires.length > 0 || t.answers.length > 0
     || t.events.some(e => (e.ph === 'X' && /^(FunctionCall|ParseHTML)$/.test(e.name)) || (e.name === 'EvaluateScript' && e.args?.data)
       || (e.name === 'EventDispatch' && !String(e.args?.data?.type || '').startsWith('__playwright')) || e.name === 'ResourceSendRequest'));
 }
@@ -234,8 +275,16 @@ function taskAt(model, thread, ts) {
  * times ({ n, from, to }). Returns { caused, step, why, chain }.
  */
 export function causeOf(model, point, steps, opts = {}) {
-  const ctx = { model, steps, reaction: opts.reaction ?? 1, link: opts.link ?? LINK_SECONDS, guard: opts.guard ?? GUARD_SECONDS, slack: opts.slackUs ?? 2000, memo: new Map() };
-  return pointCause(ctx, point, 0);
+  const ctx = { model, steps, reaction: opts.reaction ?? 1, link: opts.link ?? LINK_SECONDS, guard: opts.guard ?? GUARD_SECONDS, slack: opts.slackUs ?? 2000, memo: new Map(),
+    animatedAtStart: opts.animatedAtStart === undefined ? 0 : opts.animatedAtStart };
+  const c = pointCause(ctx, point, 0);
+  // Round 13 (critic p01 r12, plant W3): the delays of a chain add up. Each link alone may stay under
+  // its limit (an answer held 1.9 s, then a timer of 0.9 s) while the whole chain holds the write back
+  // longer than any one link may: the write must go out within LINK_SECONDS of the step's input.
+  if (c.caused && typeof c.origin === 'number' && (point.ts - c.origin) / 1e6 > ctx.link) {
+    return no(`it went out ${fmt((point.ts - c.origin) / 1e6)} after the input of step ${c.step} that began its chain (${c.chain.join(' > ')}): delays that add up to more than ${fmt(ctx.link)} link nothing (the page held the write back)`, c.chain);
+  }
+  return c;
 }
 
 function stepHolding(ctx, ts) {
@@ -255,7 +304,8 @@ const no = (why, chain = []) => ({ caused: false, step: null, why, chain });
 /** The first reason of a chain that caused nothing (a loop of frames or timers names its origin once). */
 const rootOf = c => c.root || c.why;
 const noFrom = (what, c) => ({ ...no(`${what}: ${rootOf(c)}`, c.chain), root: rootOf(c) });
-const yes = (step, chain) => ({ caused: true, step, why: null, chain });
+/** Caused by step `step`; `origin` is when the step's input (or command) began the chain, a trace time. */
+const yes = (step, chain, origin) => ({ caused: true, step, why: null, chain, origin });
 const fmt = s => `${Math.round(s * 1000) / 1000} s`;
 
 function pointCause(ctx, point, depth) {
@@ -267,19 +317,23 @@ function pointCause(ctx, point, depth) {
   const lastBefore = list => list.filter(s => s.ts <= point.ts).pop() || null;
   if (task.protocol) {
     const s = stepHolding(ctx, task.ts);
-    return s ? yes(s.n, [`a DevTools command of step ${s.n}`]) : no('a DevTools command outside any step (the harness reading the page)');
+    return s ? yes(s.n, [`a DevTools command of step ${s.n}`], task.ts) : no('a DevTools command outside any step (the harness reading the page)');
   }
   const timer = lastBefore(task.timerFires);
   if (timer) return timerCause(ctx, timer, depth);
   const frame = task.frameFires.find(f => spanHolds(f, point.ts)) || null;
   if (frame) return frameCause(ctx, frame, depth);
+  const idle = task.idleFires.find(f => spanHolds(f, point.ts)) || null;
+  if (idle) return idleCause(ctx, idle, depth);
+  const timed = task.timed.find(e => spanHolds(e, point.ts)) || null;
+  if (timed) return no(`a "${timed.args.data.type}" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person`);
   // In a task of the input queue the whole task is the input's; in another (a frame's) only what ran
   // inside the input event's dispatch is (the frame may also run an observer the page set off).
   if (task.input && (task.inputQueue || task.inputs.some(e => spanHolds(e, point.ts)))) {
     // Only the harness's steps put input in the page: an input task is the latest step's that began
     // before it (the renderer may handle a key a few milliseconds after the step's call returned).
     const s = stepBefore(ctx, task.ts);
-    return s ? yes(s.n, [`input of step ${s.n}`]) : no('an input event before the first counted step');
+    return s ? yes(s.n, [`input of step ${s.n}`], task.ts) : no('an input event before the first counted step');
   }
   // A task that delivered (part of) an answer: the page's code in it ran on that delivery, whether the
   // browser records the delivery before the code (headers) or after it (the body's end, which the
@@ -287,8 +341,11 @@ function pointCause(ctx, point, depth) {
   if (task.answers.length) return answerCause(ctx, task, task.answers, depth);
   if (task.formSubmission && task.submittedBy && (task.ts - task.submittedBy.task.end) / 1e6 <= ctx.reaction) {
     const c = pointCause(ctx, { ...task.submittedBy.event, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) }, depth + 1);
-    return c.caused ? yes(c.step, [...c.chain, 'the form it submitted']) : noFrom('a form submitted by a task no step caused', c);
+    return c.caused ? yes(c.step, [...c.chain, 'the form it submitted'], c.origin) : noFrom('a form submitted by a task no step caused', c);
   }
+  const message = messageCause(ctx, task, point, depth);
+  if (message) return message;
+  if (task.observerScript && animatedAt(ctx, task.ts)) return no(ANIMATED_OBSERVER);
   return otherCause(ctx, task, depth);
 }
 
@@ -300,7 +357,34 @@ function timerCause(ctx, timer, depth) {
   if (i.singleShot === false) return no(`a repeating timer (every ${fmt((i.timeout || 0) / 1000)}): a poll is the page's own doing`);
   if ((i.timeout || 0) > ctx.reaction * 1000) return no(`a timer of ${fmt((i.timeout || 0) / 1000)}: a delay the page set, longer than a page takes to answer a step`);
   const c = pointCause(ctx, install.event, depth + 1);
-  return c.caused ? yes(c.step, [...c.chain, `a timer of ${fmt((i.timeout || 0) / 1000)}`]) : noFrom('a timer armed by a task no step caused', c);
+  return c.caused ? yes(c.step, [...c.chain, `a timer of ${fmt((i.timeout || 0) / 1000)}`], c.origin) : noFrom('a timer armed by a task no step caused', c);
+}
+
+function idleCause(ctx, idle, depth) {
+  const d = idle.args?.data || {};
+  const asked = ctx.model.idles.get(`${d.frame}:${d.id}`);
+  if (!asked) return no('an idle callback asked for before the clock started');
+  const c = pointCause(ctx, asked.event, depth + 1);
+  return c.caused ? yes(c.step, [...c.chain, 'an idle callback'], c.origin) : noFrom('an idle callback asked for by a task no step caused', c);
+}
+
+const ANIMATED_OBSERVER = 'script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person';
+
+/**
+ * Whether an animation or transition of the page was running at trace time `ts` (or ended within
+ * GUARD_SECONDS before it: its last frame's observers run after its end is recorded). Animations
+ * already running when the clock started (`animatedAtStart`, read from the page) and not seen ending
+ * count as running throughout.
+ */
+function animatedAt(ctx, ts) {
+  const slack = ctx.guard * 1e6;
+  const all = ctx.model.animations;
+  if (all.some(a => (a.from === null || a.from <= ts) && (a.to === null || a.to + slack >= ts) && !(a.from === null && a.to === null))) return true;
+  const atStart = ctx.animatedAtStart;
+  if (atStart === null || atStart === undefined || atStart === 0) return atStart === null;
+  const endedBefore = all.filter(a => a.from === null && a.to !== null);
+  if (endedBefore.length < atStart) return true;
+  return Math.max(...endedBefore.map(a => a.to)) + slack >= ts;
 }
 
 function frameCause(ctx, frame, depth) {
@@ -308,12 +392,13 @@ function frameCause(ctx, frame, depth) {
   const asked = ctx.model.frames.get(`${d.frame}:${d.id}`);
   if (!asked) return no('an animation frame asked for before the clock started');
   const c = pointCause(ctx, asked.event, depth + 1);
-  return c.caused ? yes(c.step, [...c.chain, 'an animation frame']) : noFrom('an animation frame asked for by a task no step caused', c);
+  return c.caused ? yes(c.step, [...c.chain, 'an animation frame'], c.origin) : noFrom('an animation frame asked for by a task no step caused', c);
 }
 
 function answerCause(ctx, task, answers, depth) {
   const ids = [...new Set(answers.map(a => a.args.data.requestId))];
   let first = null;
+  let origin = Infinity;
   const chain = [];
   for (const id of ids) {
     const sent = ctx.model.sends.get(id);
@@ -324,9 +409,57 @@ function answerCause(ctx, task, answers, depth) {
     const c = pointCause(ctx, sent.event, depth + 1);
     if (!c.caused) return noFrom(`it followed the answer to ${what}, which no step caused`, c);
     if (first === null) first = c.step;
+    origin = Math.min(origin, c.origin ?? Infinity);
     chain.push(...c.chain, `the answer to ${what} after ${fmt(held)}`);
   }
-  return yes(first, chain);
+  return yes(first, chain, Number.isFinite(origin) ? origin : undefined);
+}
+
+/**
+ * Interfaces of the browser's messages that carry what something outside the page's thread sent: a
+ * server (web sockets, web transport, peer connections, push), another page, frame or tab (broadcast
+ * channels, a frame's postMessage across processes, storage events), a service or shared worker.
+ * A task they start is never a step's doing: its timing is theirs (round 13, critic p01 r12, W1, W2).
+ */
+export const OUTSIDE_CARRIERS = /WebSocket|WebTransport|BroadcastChannel|LocalFrame|RemoteFrame|LocalMainFrame|RemoteMainFrame|ServiceWorker|SharedWorker|PeerConnection|RTC|Push|StorageArea|Notification/;
+
+/**
+ * Round 13 (critic p01 r12, biggest gap): a task that delivered a message whose origin the record
+ * shows. A web socket's message is the answer to the page's last frame on that socket, when a caused
+ * task sent that frame within LINK_SECONDS and the server had not answered it already; otherwise the
+ * server pushed it when it chose (plant W1). A window's postMessage is the posting task's (traceId);
+ * one posted from another process has no posting task in this page and is not the person's (plant
+ * W2). A message on an interface that carries what something outside the page's thread sent
+ * (OUTSIDE_CARRIERS) causes nothing. Null when the task is none of these.
+ */
+function messageCause(ctx, task, point, depth) {
+  const received = task.wsReceives.filter(e => e.ts <= point.ts).pop() || null;
+  if (received) return socketCause(ctx, received, depth);
+  const handle = task.postHandles.find(h => spanHolds(h, point.ts)) || task.postHandles.filter(h => h.ts <= point.ts).pop() || null;
+  if (handle) return postCause(ctx, handle, depth);
+  const outside = task.carriers.find(c => OUTSIDE_CARRIERS.test(c));
+  if (outside) return no(`a message from outside the page's thread (${outside}): when it came is the sender's doing (a server, another frame, window or worker), not the person's`);
+  return null;
+}
+
+function socketCause(ctx, received, depth) {
+  const socket = ctx.model.sockets.get(socketKey(received));
+  const sent = (socket?.sends || []).filter(x => x.event.ts < received.ts).pop() || null;
+  if (!sent) return no('a message the server pushed over a web socket on which the page sent nothing since the clock started: when it came is the server\'s doing, not the person\'s');
+  if (socket.receives.some(x => x.event.ts > sent.event.ts && x.event.ts < received.ts)) {
+    return no('a message the server pushed over a web socket after it had already answered the page\'s last frame on it: when it came is the server\'s doing, not the person\'s');
+  }
+  const held = (received.ts - sent.event.ts) / 1e6;
+  if (held > ctx.link) return no(`it waited ${fmt(held)} for a message over a web socket: a delay longer than ${fmt(ctx.link)} links nothing (the server held it back)`);
+  const c = pointCause(ctx, sent.event, depth + 1);
+  return c.caused ? yes(c.step, [...c.chain, `the answer over a web socket after ${fmt(held)}`], c.origin) : noFrom('it followed a web-socket message answering a frame no step caused', c);
+}
+
+function postCause(ctx, handle, depth) {
+  const posted = ctx.model.posted.get(String(handle.args?.data?.traceId));
+  if (!posted) return no('a message posted to the page from outside it (another frame, window or worker): when it came is the sender\'s doing, not the person\'s');
+  const c = pointCause(ctx, posted.event, depth + 1);
+  return c.caused ? yes(c.step, [...c.chain, 'a message the page posted to itself'], c.origin) : noFrom('a message posted by a task no step caused', c);
 }
 
 /** A task of no traceable origin (a message, an observer, a scheduled submission): see the header. */
@@ -358,11 +491,15 @@ function otherCause(ctx, task, depth) {
         ? before.slice(prevIdx + 1).find(t => t.activity && t.end >= (dispatched ?? prev.ts) - ctx.slack && (t.end - t.ts) / 1e6 >= BUSY_SECONDS)
         : frame ? before.slice(prevIdx + 1).find(t => t.activity) : null;
       const ec = earlier && (head || (prev.ts - earlier.end) / 1e6 < ctx.guard) ? taskCause(ctx, earlier, depth + 1) : null;
-      const worker = [...ctx.model.threads.values()].filter(t => t.worker).flatMap(t => t.tasks)
-        .find(t => t.activity && t.end >= prev.ts - ctx.guard * 1e6 && t.ts <= task.ts);
+      // Round 13 (critic p01 r12, plant W2): any other thread that runs the page's script (a worker of
+      // any kind, another frame's or window's process) could have posted it, from the moment the step's
+      // input was dispatched (or the task before it began) on.
+      const from = Math.min(prev.ts, dispatched ?? prev.ts) - ctx.guard * 1e6;
+      const worker = [...ctx.model.threads.entries()].filter(([k, t]) => k !== task.thread && (t.worker || t.main)).flatMap(([, t]) => t.tasks)
+        .find(t => t.activity && t.end >= from && t.ts <= task.ts);
       if (ec && !ec.caused) result = noFrom(`a task of no traceable origin: a page task no step caused ran just before the step's (${fmt((prev.ts - earlier.end) / 1e6)} before it) and could have sent it`, ec);
-      else if (worker) result = no('a task of no traceable origin while a worker of the page ran: the worker could have sent it');
-      else result = yes(pc.step, [...pc.chain, 'a task that followed at once (a message or an observer)']);
+      else if (worker) result = no(`a task of no traceable origin while another thread of the page's script ran (${ctx.model.threads.get(worker.thread)?.name || 'a thread'}; a worker, another frame or window): it could have sent it`);
+      else result = yes(pc.step, [...pc.chain, 'a task that followed at once (a message or an observer)'], pc.origin);
     }
   }
   ctx.memo.set(key, result);
@@ -373,7 +510,8 @@ function otherCause(ctx, task, depth) {
 function taskCause(ctx, task, depth) {
   const key = `task:${task.thread}:${task.index}`;
   if (ctx.memo.has(key)) return ctx.memo.get(key);
-  const points = [...task.timerFires, ...task.frameFires, ...task.answers];
+  if (task.observerScript && animatedAt(ctx, task.ts)) { const r = no(ANIMATED_OBSERVER); ctx.memo.set(key, r); return r; }
+  const points = [...task.timerFires, ...task.frameFires, ...task.idleFires, ...task.timed, ...task.answers];
   if (!points.length) points.push({ ...task.events[task.events.length - 1] || {}, ts: task.end, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) });
   let result = null;
   for (const p of points) {
@@ -393,7 +531,7 @@ const bare = u => String(u || '').split('#')[0];
  * on the operator's clock). `steps`: the operator's steps (on its clock: began, at, took). `clock`
  * and `originMs` map the two clocks. Returns, per write, { caused, step, why, chain, request_id }.
  */
-export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 1, link = LINK_SECONDS, guard = GUARD_SECONDS } = {}) {
+export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 1, link = LINK_SECONDS, guard = GUARD_SECONDS, animatedAtStart = 0 } = {}) {
   const model = trace.model || analyseTrace(trace.events);
   const slackUs = 2000 + (clock?.error_us || 0);
   const windows = steps.filter(s => typeof s.at === 'number').map(s => ({
@@ -408,7 +546,7 @@ export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 
         .map(e => ({ e, d: Math.abs(traceToClock(e.ts, clock, originMs) - (w.at ?? 0)) })).sort((a, b) => a.d - b.d)[0];
       if (!near || near.d > 5) return { caused: false, step: null, why: 'a navigation no task of the page started (the browser\'s own)', chain: [], answered: [] };
       taken.add(near.e);
-      const c = causeOf(model, near.e, windows, { reaction, link, guard, slackUs });
+      const c = causeOf(model, near.e, windows, { reaction, link, guard, slackUs, animatedAtStart });
       return { ...c, request_id: null, answered: [], at_trace: round3(traceToClock(near.e.ts, clock, originMs)) };
     }
     const candidates = model.sendEvents.filter(e => !taken.has(e) && (e.args.data.requestMethod || '').toUpperCase() === String(w.method).toUpperCase() && bare(e.args.data.url) === bare(w.url));
@@ -417,7 +555,7 @@ export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 
     const requestId = near.e.args.data.requestId;
     for (const e of model.sendEvents) if (e.args.data.requestId === requestId) taken.add(e);
     const point = model.sends.get(requestId)?.event || near.e;
-    const c = causeOf(model, point, windows, { reaction, link, guard, slackUs });
+    const c = causeOf(model, point, windows, { reaction, link, guard, slackUs, animatedAtStart });
     // The requests whose answers the task that sent it delivered first (a batch's next part follows its last one's answer).
     // When it was sent by a task of no traceable origin (the page read the answer's body first), the
     // answers of the page task just before it.
