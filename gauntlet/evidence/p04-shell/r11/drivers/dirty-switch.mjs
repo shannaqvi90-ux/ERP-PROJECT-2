@@ -1,0 +1,26 @@
+import { launch, signIn, shot, save } from './pw.mjs';
+const b = await launch();
+const res = {};
+const ctx = await b.newContext({ locale: 'en-US', viewport: { width: 1440, height: 900 } });
+const p = await ctx.newPage();
+const puts = [];
+p.on('response', r => { if (r.request().method() === 'PUT') puts.push(`PUT ${new URL(r.url()).pathname} ${r.status()}`); });
+await signIn(p, 'admin@alnoor.example');
+await p.keyboard.press('g'); await p.keyboard.press('u'); await p.waitForURL('**/identity/users'); await p.locator('.list-row').first().waitFor();
+await p.keyboard.type('admin@alnoor.example'); await p.waitForTimeout(1500);
+await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
+const nm = p.locator('input[name=displayName]');
+await nm.focus(); await p.keyboard.press('End'); await p.keyboard.type(' Q');
+await p.keyboard.press('Alt+l');
+await p.waitForFunction(() => document.documentElement.dir === 'rtl'); await p.waitForTimeout(1500);
+res.afterSwitch = await p.evaluate(() => ({ name: document.querySelector('input[name=displayName]')?.value, lang: document.querySelector('select[name=language]')?.value, focus: document.activeElement?.getAttribute('name'), rowLang: [...document.querySelectorAll('.list-row')].map(r => r.innerText.replace(/\n/g, ' | '))[0] }));
+await shot(p, '12-dirty-record-after-altl-ar.jpg');
+await p.keyboard.press('Control+s'); await p.waitForTimeout(1800);
+res.msgs = await p.evaluate(() => [...document.querySelectorAll('[role=status],[role=alert]')].map(e => e.textContent.trim()).filter(Boolean));
+res.server = await p.evaluate(async () => { const r = await fetch('/api/auth/session', { headers: { 'X-Erp-Request': '1' } }); const j = await r.json(); return j.user; });
+// revert
+await nm.focus(); await p.keyboard.press('End'); await p.keyboard.press('Backspace'); await p.keyboard.press('Backspace'); await p.keyboard.press('Control+s'); await p.waitForTimeout(1500);
+await p.keyboard.press('Alt+l'); await p.waitForTimeout(1500);
+res.puts = puts;
+save('dirty-switch.json', res);
+await b.close();

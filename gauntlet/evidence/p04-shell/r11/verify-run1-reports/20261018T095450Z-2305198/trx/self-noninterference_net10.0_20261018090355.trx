@@ -1,0 +1,600 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="fcc47c81-17ae-42ab-a051-e395ba9271b4" name="@docker-desktop 2026-10-18 08:48:08" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T08:48:08.6198115+00:00" queuing="2026-10-18T08:48:08.6198115+00:00" start="2026-10-18T08:47:19.1115471+00:00" finish="2026-10-18T09:03:55.8204019+00:00" />
+  <TestSettings name="default" id="08d03b87-0671-45d9-b485-0e026b76e820">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-18_08_48_08" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="4b29a639-9547-4eec-84c8-b92b956853e0" testId="d7030cee-9472-39d7-4647-9a04bb7ea71a" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_ignores_only_times_and_trace_ids" computerName="docker-desktop" duration="00:00:00.0001367" startTime="2026-10-18T09:03:55.2972752+00:00" endTime="2026-10-18T09:03:55.2974330+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4b29a639-9547-4eec-84c8-b92b956853e0" />
+    <UnitTestResult executionId="2bc78bd2-666c-4da8-994b-58bb98860139" testId="b85cc8e6-9b4e-04e5-eeee-404f0aee416f" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.Only_the_credential_cookies_values_are_left_out" computerName="docker-desktop" duration="00:00:00.0061186" startTime="2026-10-18T09:03:55.2976153+00:00" endTime="2026-10-18T09:03:55.3037884+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2bc78bd2-666c-4da8-994b-58bb98860139" />
+    <UnitTestResult executionId="ebbd900e-0d74-42df-b1f4-599a8f0e41c6" testId="037709f9-0467-0a04-8587-0c0e1961791d" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_write_comparison_also_ignores_only_versions" computerName="docker-desktop" duration="00:00:00.0002754" startTime="2026-10-18T09:03:55.2966931+00:00" endTime="2026-10-18T09:03:55.2969977+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ebbd900e-0d74-42df-b1f4-599a8f0e41c6" />
+    <UnitTestResult executionId="1216b051-404c-4855-9b8f-1138daf874f1" testId="a241cca1-0e6a-ca90-ebcd-182fab1528e2" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_catches_shared_state_that_leaks_no_marker" computerName="docker-desktop" duration="00:15:48.1628191" startTime="2026-10-18T08:48:07.1943907+00:00" endTime="2026-10-18T09:03:55.2909008+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1216b051-404c-4855-9b8f-1138daf874f1">
+      <Output>
+        <StdOut>PUT /api/leaky/me/switches (language="ar") (each tenant's own writes before the comparison) changed the configuration of the shared process while serving (Erp:Leaky:ArabicSwitches: unset → '1'): configuration is shared by every tenant of the process
+PUT /api/leaky/me/switches (language="ar") (each tenant's own writes before the comparison) changed the configuration of the shared process while serving (Erp:Leaky:ArabicSwitches: '1' → '2'): configuration is shared by every tenant of the process
+tenant A: GET /api/leaky/head-count is answered 200 {"letters":1109,"change":-530}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-in… in the shared process right after tenant B sent the same request, but 200 {"letters":1109,"change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inlin… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/head-count is answered 200 {"letters":1639,"change":530}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inl… in the shared process right after tenant A sent the same request, but 200 {"letters":1639,"change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inlin… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=al is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… in the shared process right after tenant B sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=al is answered …Grace Al Mazrouei CNRY8EAA176832","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTYiLCJHcmFjZSBBbCBNYXpyb3VlaSBDTlJZO… in the shared process right after tenant A sent the same request, but …Grace Al Mazrouei CNRY8EAA176832","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTYiLCJHcmFjZSBBbCBNYXpyb3VlaSBDTlJZO… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=al is answered …,"displayName":"Activity alpha 4","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… in the shared process right after tenant B sent the same request, but …,"displayName":"Activity alpha 4","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=al is answered …:"Karim Al Falasi CNRY8EAA176832","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTgiLCJLYXJpbSBBbCBGYWxhc2kgQ05SWThFQ… in the shared process right after tenant A sent the same request, but …:"Karim Al Falasi CNRY8EAA176832","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTgiLCJLYXJpbSBBbCBGYWxhc2kgQ05SWThFQ… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=e is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… in the shared process right after tenant B sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=e is answered …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2O… in the shared process right after tenant A sent the same request, but …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2O… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=e is answered …67b","displayName":"Layla Nasser","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… in the shared process right after tenant B sent the same request, but …67b","displayName":"Layla Nasser","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=e is answered …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzM… in the shared process right after tenant A sent the same request, but …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzM… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=1 is answered 200 {"items":[],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src '… in the shared process right after tenant B sent the same request, but 200 {"items":[],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=1 is answered …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":2,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2OD… in the shared process right after tenant A sent the same request, but …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2O… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=1 is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=1 is answered …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":2,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzMi… in the shared process right after tenant A sent the same request, but …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzM… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=ad is answered 200 {"items":[],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… in the shared process right after tenant B sent the same request, but 200 {"items":[],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=ad is answered 200 {"items":[],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… in the shared process right after tenant A sent the same request, but 200 {"items":[],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=ad is answered …","displayName":"Faisal Haddadin","language":"en"}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… in the shared process right after tenant B sent the same request, but …","displayName":"Faisal Haddadin","language":"en"}],"total":4,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=ad is answered …":"Grace Haddadin CNRY8EAA176832","language":"en"}],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… in the shared process right after tenant A sent the same request, but …":"Grace Haddadin CNRY8EAA176832","language":"en"}],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/me/directory-change is answered 200 {"counted":true} with header x-directory-change: -530 in the shared process right after tenant B sent the same request, but 200 {"counted":true} with header x-directory-change: 0 by a fresh process only tenant A has used
+tenant B: GET /api/leaky/me/directory-change is answered 200 {"counted":true} with header x-directory-change: 530 in the shared process right after tenant A sent the same request, but 200 {"counted":true} with header x-directory-change: 0 by a fresh process only tenant B has used
+tenant A: GET /api/leaky/me/previous-visit is answered 200 {"visited":true} with header x-previous-visit: &lt;time:other&gt; in the shared process right after tenant B sent the same request, but 200 {"visited":true} with header x-previous-visit: &lt;time:own&gt; by a fresh process only tenant A has used
+tenant B: GET /api/leaky/me/previous-visit is answered 200 {"visited":true} with header x-previous-visit: &lt;time:other&gt; in the shared process right after tenant A sent the same request, but 200 {"visited":true} with header x-previous-visit: &lt;time:own&gt; by a fresh process only tenant B has used
+tenant A: GET /api/leaky/me/previous-visit-second is answered 200 {"previous":"\u003Ctime:other\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'un… in the shared process right after tenant B sent the same request, but 200 {"previous":"\u003Ctime:own\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsa… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/me/previous-visit-second is answered 200 {"previous":"\u003Ctime:other\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'un… in the shared process right after tenant A sent the same request, but 200 {"previous":"\u003Ctime:own\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsa… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/me/tip changes by #2 (after "rer set-cookie: erp_tip=") +1 from one answer to the next when sent alone, but by #2 (after "rer set-cookie: erp_tip=") +2 when tenant B sent the same request in between
+tenant B: GET /api/leaky/me/tip changes by #2 (after "rer set-cookie: erp_tip=") +1 from one answer to the next when sent alone, but by #2 (after "rer set-cookie: erp_tip=") +2 when tenant A sent the same request in between
+tenant A: GET /api/leaky/me/visits changes by #2 (after "options: DENY x-visits: ") +1 from one answer to the next when sent alone, but by #2 (after "options: DENY x-visits: ") +2 when tenant B sent the same request in between
+tenant B: GET /api/leaky/me/visits changes by #2 (after "options: DENY x-visits: ") +1 from one answer to the next when sent alone, but by #2 (after "options: DENY x-visits: ") +2 when tenant A sent the same request in between
+tenant A: GET /api/leaky/people?search=al is answered …ayName":"activity9@alpha.example","language":"en"}],"total":13,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B sent the same request, but …ayName":"activity9@alpha.example","language":"en"}],"total":25,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?search=e is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":15,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?search=1 is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?search=ad is answered …","displayName":"Khalid Haddadin","language":"en"}],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… in the shared process right after tenant B sent the same request, but …","displayName":"Khalid Haddadin","language":"en"}],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=50&amp;groupBy=language is answered …"ar"}],"total":38,"next":null,"groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B sent the same request, but …"ar"}],"total":38,"next":null,"groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=50&amp;search=a&amp;groupBy=language is answered …"en"}],"total":38,"next":null,"groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B sent the same request, but …"en"}],"total":38,"next":null,"groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;search=al&amp;sort=displayName is answered …displayName":"Activity alpha 242","language":"en"}],"total":13,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… in the shared process right after tenant B sent the same request, but …displayName":"Activity alpha 242","language":"en"}],"total":25,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;search=al&amp;sort=-displayName is answered …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":13,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… in the shared process right after tenant B sent the same request, but …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":25,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;groupBy=language&amp;sort=displayName is answered …ItOTMyMS1jYjVhMTk4ZGVkMmIifQ","groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B sent the same request, but …ItOTMyMS1jYjVhMTk4ZGVkMmIifQ","groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;skip=5&amp;search=al is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… in the shared process right after tenant B sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=2&amp;skip=1&amp;search=al is answered …,"displayName":"Activity alpha 4","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… in the shared process right after tenant B sent the same request, but …,"displayName":"Activity alpha 4","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;skip=5&amp;search=e is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… in the shared process right after tenant B sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=2&amp;skip=1&amp;search=e is answered …67b","displayName":"Layla Nasser","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… in the shared process right after tenant B sent the same request, but …67b","displayName":"Layla Nasser","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;skip=5&amp;search=1 is answered 200 {"items":[],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src '… in the shared process right after tenant B sent the same request, but 200 {"items":[],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=2&amp;skip=1&amp;search=1 is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;skip=5&amp;search=ad is answered 200 {"items":[],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… in the shared process right after tenant B sent the same request, but 200 {"items":[],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=2&amp;skip=1&amp;search=ad is answered …","displayName":"Faisal Haddadin","language":"en"}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… in the shared process right after tenant B sent the same request, but …","displayName":"Faisal Haddadin","language":"en"}],"total":4,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;skip=5&amp;groupBy=language is answered …yLTkyMzQtOWFhYmJmNGI0Mzk4In0","groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B sent the same request, but …yLTkyMzQtOWFhYmJmNGI0Mzk4In0","groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people?take=5&amp;skip=5&amp;search=a&amp;groupBy=language is answered …Mi05MjM0LTlhYWJiZjRiNDM5OCJ9","groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B sent the same request, but …Mi05MjM0LTlhYWJiZjRiNDM5OCJ9","groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people-count?search=al is answered 200 {"total":13}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… in the shared process right after tenant B sent the same request, but 200 {"total":25}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people-count?search=e is answered 200 {"total":38}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… in the shared process right after tenant B sent the same request, but 200 {"total":15}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people-count?search=1 is answered 200 {"total":38}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… in the shared process right after tenant B sent the same request, but 200 {"total":2}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'sel… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/people-count?search=ad is answered 200 {"total":3}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'sel… in the shared process right after tenant B sent the same request, but 200 {"total":4}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'sel… by a fresh process only tenant A has used
+tenant B: GET /api/leaky/people/018cc39b-8b00-7ce4-bfe6-0c979650365f/access is answered 200 {"id":"018cc39b-8b00-7ce4-bfe6-0c979650365f","displayName":"Samir Darwish","email":"samir.darwish.1@alpha.example","roleIds":[]}
+[headers]
+cache-control: no… in the shared process right after tenant A sent the same request, but 404 
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: bl… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/people/018cc39b-8b00-7cf5-9023-0befdc1df0ec/access is answered 200 {"id":"018cc39b-8b00-7cf5-9023-0befdc1df0ec","displayName":"Fatima Al Nuaimi CNRY8EAA176832","email":"fatima.alnuaimi.1@bravo-cnry8eaa176832.example","roleI… in the shared process right after tenant B sent the same request, but 404 
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: bl… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/previous is answered 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000b bravocnry8eaa176832 Bravo CNRY8EAA176832 LLC (renamed) in the shared process right after tenant B sent the same request, but 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000a alpha Alpha Trading LLC (renamed) by a fresh process only tenant A has used
+tenant B: GET /api/leaky/previous is answered 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000a alpha Alpha Trading LLC (renamed) in the shared process right after tenant A sent the same request, but 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000b bravocnry8eaa176832 Bravo CNRY8EAA176832 LLC (renamed) by a fresh process only tenant B has used
+tenant A: GET /api/leaky/recent is answered 200 ["Layla Nasser CNRY8EAA176832 noaccess@bravo-cnry8eaa176832.example","Ayesha Garcia CNRY8EAA176832 ayesha.garcia.2@bravo-cnry8eaa176832.example","Omar Hadda… in the shared process right after tenant B sent the same request, but 200 ["Layla Nasser noaccess@alpha.example","Abdullah Siddiqui abdullah.siddiqui.2@alpha.example","Fatima Al Mazrouei fatima.almazrouei.3@alpha.example","Khalid … by a fresh process only tenant A has used
+tenant B: GET /api/leaky/recent is answered 200 ["Layla Nasser noaccess@alpha.example","Abdullah Siddiqui abdullah.siddiqui.2@alpha.example","Fatima Al Mazrouei fatima.almazrouei.3@alpha.example","Khalid … in the shared process right after tenant A sent the same request, but 200 ["Layla Nasser CNRY8EAA176832 noaccess@bravo-cnry8eaa176832.example","Ayesha Garcia CNRY8EAA176832 ayesha.garcia.2@bravo-cnry8eaa176832.example","Omar Hadda… by a fresh process only tenant B has used
+tenant A: GET /api/leaky/scroll?take=5&amp;search=al&amp;sort=displayName is answered …displayName":"Activity alpha 242","language":"en"}],"total":13,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… in the shared process right after tenant B sent the same request, but …displayName":"Activity alpha 242","language":"en"}],"total":25,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… by a fresh process only tenant A has used
+tenant A: GET /api/leaky/scroll?take=5&amp;search=al&amp;sort=-displayName is answered …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":13,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… in the shared process right after tenant B sent the same request, but …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":25,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… by a fresh process only tenant A has used
+tenant A in Arabic: GET /api/leaky/head-count is answered 200 {"letters":1109,"change":-530}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-in… in the shared process right after tenant B in Arabic sent the same request, but 200 {"letters":1109,"change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inlin… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/head-count is answered 200 {"letters":1639,"change":530}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inl… in the shared process right after tenant A in Arabic sent the same request, but 200 {"letters":1639,"change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inlin… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=al is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… in the shared process right after tenant B in Arabic sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=al is answered …Grace Al Mazrouei CNRY8EAA176832","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTYiLCJHcmFjZSBBbCBNYXpyb3VlaSBDTlJZO… in the shared process right after tenant A in Arabic sent the same request, but …Grace Al Mazrouei CNRY8EAA176832","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTYiLCJHcmFjZSBBbCBNYXpyb3VlaSBDTlJZO… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=al is answered …,"displayName":"Activity alpha 4","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… in the shared process right after tenant B in Arabic sent the same request, but …,"displayName":"Activity alpha 4","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=al is answered …:"Karim Al Falasi CNRY8EAA176832","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTgiLCJLYXJpbSBBbCBGYWxhc2kgQ05SWThFQ… in the shared process right after tenant A in Arabic sent the same request, but …:"Karim Al Falasi CNRY8EAA176832","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMTgiLCJLYXJpbSBBbCBGYWxhc2kgQ05SWThFQ… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=e is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… in the shared process right after tenant B in Arabic sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=e is answered …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2O… in the shared process right after tenant A in Arabic sent the same request, but …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2O… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=e is answered …67b","displayName":"Layla Nasser","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… in the shared process right after tenant B in Arabic sent the same request, but …67b","displayName":"Layla Nasser","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=e is answered …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzM… in the shared process right after tenant A in Arabic sent the same request, but …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzM… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=1 is answered 200 {"items":[],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src '… in the shared process right after tenant B in Arabic sent the same request, but 200 {"items":[],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=1 is answered …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":2,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2OD… in the shared process right after tenant A in Arabic sent the same request, but …ame":"Omar Haddad CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNiIsIk9tYXIgSGFkZGFkIENOUlk4RUFBMTc2O… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=1 is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B in Arabic sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=1 is answered …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":2,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzMi… in the shared process right after tenant A in Arabic sent the same request, but …yName":"Hina Cruz CNRY8EAA176832","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0yNCIsIkhpbmEgQ3J1eiBDTlJZOEVBQTE3NjgzM… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=ad is answered 200 {"items":[],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… in the shared process right after tenant B in Arabic sent the same request, but 200 {"items":[],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=5&amp;skip=5&amp;search=ad is answered 200 {"items":[],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… in the shared process right after tenant A in Arabic sent the same request, but 200 {"items":[],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=ad is answered …","displayName":"Faisal Haddadin","language":"en"}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… in the shared process right after tenant B in Arabic sent the same request, but …","displayName":"Faisal Haddadin","language":"en"}],"total":4,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/jump?take=2&amp;skip=1&amp;search=ad is answered …":"Grace Haddadin CNRY8EAA176832","language":"en"}],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… in the shared process right after tenant A in Arabic sent the same request, but …":"Grace Haddadin CNRY8EAA176832","language":"en"}],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/me/directory-change is answered 200 {"counted":true} with header x-directory-change: -530 in the shared process right after tenant B in Arabic sent the same request, but 200 {"counted":true} with header x-directory-change: 0 by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/me/directory-change is answered 200 {"counted":true} with header x-directory-change: 530 in the shared process right after tenant A in Arabic sent the same request, but 200 {"counted":true} with header x-directory-change: 0 by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/me/greeting is answered …23\u0647\u0644\u0627\u064B admin.ar@alpha.example (admin.ar@bravo-cnry8eaa176832.example)"}
+[headers]
+cache-control: no-store
+content-security-policy: default-s… in the shared process right after tenant B in Arabic sent the same request, but …23\u0647\u0644\u0627\u064B admin.ar@alpha.example (admin.ar@alpha.example)"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; scri… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/me/greeting is answered …u0627\u064B admin.ar@bravo-cnry8eaa176832.example (admin.ar@alpha.example)"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; scri… in the shared process right after tenant A in Arabic sent the same request, but …u0627\u064B admin.ar@bravo-cnry8eaa176832.example (admin.ar@bravo-cnry8eaa176832.example)"}
+[headers]
+cache-control: no-store
+content-security-policy: default-s… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/me/greeting-count is answered 200 {"change":-530}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src … in the shared process right after tenant B in Arabic sent the same request, but 200 {"change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/me/greeting-count is answered 200 {"change":530}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src '… in the shared process right after tenant A in Arabic sent the same request, but 200 {"change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/me/previous-visit is answered 200 {"visited":true} with header x-previous-visit: &lt;time:other&gt; in the shared process right after tenant B in Arabic sent the same request, but 200 {"visited":true} with header x-previous-visit: &lt;time:own&gt; by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/me/previous-visit is answered 200 {"visited":true} with header x-previous-visit: &lt;time:other&gt; in the shared process right after tenant A in Arabic sent the same request, but 200 {"visited":true} with header x-previous-visit: &lt;time:own&gt; by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/me/previous-visit-second is answered 200 {"previous":"\u003Ctime:other\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'un… in the shared process right after tenant B in Arabic sent the same request, but 200 {"previous":"\u003Ctime:own\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsa… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/me/previous-visit-second is answered 200 {"previous":"\u003Ctime:other\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'un… in the shared process right after tenant A in Arabic sent the same request, but 200 {"previous":"\u003Ctime:own\u003E"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsa… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/me/tip changes by #2 (after "rer set-cookie: erp_tip=") +1 from one answer to the next when sent alone, but by #2 (after "rer set-cookie: erp_tip=") +2 when tenant B in Arabic sent the same request in between
+tenant B in Arabic: GET /api/leaky/me/tip changes by #2 (after "rer set-cookie: erp_tip=") +1 from one answer to the next when sent alone, but by #2 (after "rer set-cookie: erp_tip=") +2 when tenant A in Arabic sent the same request in between
+tenant A in Arabic: GET /api/leaky/me/visits changes by #2 (after "options: DENY x-visits: ") +1 from one answer to the next when sent alone, but by #2 (after "options: DENY x-visits: ") +2 when tenant B in Arabic sent the same request in between
+tenant B in Arabic: GET /api/leaky/me/visits changes by #2 (after "options: DENY x-visits: ") +1 from one answer to the next when sent alone, but by #2 (after "options: DENY x-visits: ") +2 when tenant A in Arabic sent the same request in between
+tenant A in Arabic: GET /api/leaky/people?search=al is answered …ayName":"activity9@alpha.example","language":"en"}],"total":13,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B in Arabic sent the same request, but …ayName":"activity9@alpha.example","language":"en"}],"total":25,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?search=e is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B in Arabic sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":15,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?search=1 is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B in Arabic sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?search=ad is answered …","displayName":"Khalid Haddadin","language":"en"}],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… in the shared process right after tenant B in Arabic sent the same request, but …","displayName":"Khalid Haddadin","language":"en"}],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=50&amp;groupBy=language is answered …"ar"}],"total":38,"next":null,"groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B in Arabic sent the same request, but …"ar"}],"total":38,"next":null,"groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=50&amp;search=a&amp;groupBy=language is answered …"en"}],"total":38,"next":null,"groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B in Arabic sent the same request, but …"en"}],"total":38,"next":null,"groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;search=al&amp;sort=displayName is answered …displayName":"Activity alpha 242","language":"en"}],"total":13,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… in the shared process right after tenant B in Arabic sent the same request, but …displayName":"Activity alpha 242","language":"en"}],"total":25,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;search=al&amp;sort=-displayName is answered …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":13,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… in the shared process right after tenant B in Arabic sent the same request, but …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":25,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;groupBy=language&amp;sort=displayName is answered …ItOTMyMS1jYjVhMTk4ZGVkMmIifQ","groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B in Arabic sent the same request, but …ItOTMyMS1jYjVhMTk4ZGVkMmIifQ","groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;skip=5&amp;search=al is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… in the shared process right after tenant B in Arabic sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=2&amp;skip=1&amp;search=al is answered …,"displayName":"Activity alpha 4","language":"en"}],"total":13,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… in the shared process right after tenant B in Arabic sent the same request, but …,"displayName":"Activity alpha 4","language":"en"}],"total":25,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;skip=5&amp;search=e is answered …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… in the shared process right after tenant B in Arabic sent the same request, but …,"displayName":"Saeed Al Suwaidi","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNiIsIlNhZWVkIEFsIFN1d2FpZGkiXSwiaSI6I… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=2&amp;skip=1&amp;search=e is answered …67b","displayName":"Layla Nasser","language":"en"}],"total":38,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… in the shared process right after tenant B in Arabic sent the same request, but …67b","displayName":"Layla Nasser","language":"en"}],"total":15,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMiIsIkxheWxhIE5hc3NlciJdLCJpIjoiMDFhM… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;skip=5&amp;search=1 is answered 200 {"items":[],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src '… in the shared process right after tenant B in Arabic sent the same request, but 200 {"items":[],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=2&amp;skip=1&amp;search=1 is answered …Name":"Activity alpha 18 (reset)","language":"en"}],"total":38,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B in Arabic sent the same request, but …Name":"Activity alpha 18 (reset)","language":"en"}],"total":2,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;skip=5&amp;search=ad is answered 200 {"items":[],"total":3,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… in the shared process right after tenant B in Arabic sent the same request, but 200 {"items":[],"total":4,"next":null,"groups":null,"ranked":false}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 's… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=2&amp;skip=1&amp;search=ad is answered …","displayName":"Faisal Haddadin","language":"en"}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… in the shared process right after tenant B in Arabic sent the same request, but …","displayName":"Faisal Haddadin","language":"en"}],"total":4,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xNSIsIkZhaXNhbCBIYWRkYWRpbiJdLCJpIjoiMD… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;skip=5&amp;groupBy=language is answered …yLTkyMzQtOWFhYmJmNGI0Mzk4In0","groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B in Arabic sent the same request, but …yLTkyMzQtOWFhYmJmNGI0Mzk4In0","groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people?take=5&amp;skip=5&amp;search=a&amp;groupBy=language is answered …Mi05MjM0LTlhYWJiZjRiNDM5OCJ9","groups":[{"key":"ar","count":4,"totals":null,"moneyTotals":null},{"key":"en","count":34,"totals":null,"moneyTotals":null}],"ranke… in the shared process right after tenant B in Arabic sent the same request, but …Mi05MjM0LTlhYWJiZjRiNDM5OCJ9","groups":[{"key":"ar","count":11,"totals":null,"moneyTotals":null},{"key":"en","count":27,"totals":null,"moneyTotals":null}],"rank… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people-count?search=al is answered 200 {"total":13}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… in the shared process right after tenant B in Arabic sent the same request, but 200 {"total":25}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people-count?search=e is answered 200 {"total":38}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… in the shared process right after tenant B in Arabic sent the same request, but 200 {"total":15}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people-count?search=1 is answered 200 {"total":38}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'se… in the shared process right after tenant B in Arabic sent the same request, but 200 {"total":2}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'sel… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/people-count?search=ad is answered 200 {"total":3}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'sel… in the shared process right after tenant B in Arabic sent the same request, but 200 {"total":4}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'sel… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/people/018cc39b-8b00-7ce4-bfe6-0c979650365f/access is answered 200 {"id":"018cc39b-8b00-7ce4-bfe6-0c979650365f","displayName":"Samir Darwish","email":"samir.darwish.1@alpha.example","roleIds":[]}
+[headers]
+cache-control: no… in the shared process right after tenant A in Arabic sent the same request, but 404 
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: bl… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/people/018cc39b-8b00-7cf5-9023-0befdc1df0ec/access is answered 200 {"id":"018cc39b-8b00-7cf5-9023-0befdc1df0ec","displayName":"Fatima Al Nuaimi CNRY8EAA176832","email":"fatima.alnuaimi.1@bravo-cnry8eaa176832.example","roleI… in the shared process right after tenant B in Arabic sent the same request, but 404 
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: bl… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/previous is answered 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000b bravocnry8eaa176832 Bravo CNRY8EAA176832 LLC (renamed) in the shared process right after tenant B in Arabic sent the same request, but 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000a alpha Alpha Trading LLC (renamed) by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/previous is answered 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000a alpha Alpha Trading LLC (renamed) in the shared process right after tenant A in Arabic sent the same request, but 200 {"ok":true} with header x-previous-workspace: 0190a000-0000-7000-8000-00000000000b bravocnry8eaa176832 Bravo CNRY8EAA176832 LLC (renamed) by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/recent changes by nothing from one answer to the next when sent alone, but by the text when tenant B in Arabic sent the same request in between
+tenant B in Arabic: GET /api/leaky/recent is answered 200 ["Layla Nasser noaccess@alpha.example","Abdullah Siddiqui abdullah.siddiqui.2@alpha.example","Fatima Al Mazrouei fatima.almazrouei.3@alpha.example","Khalid … in the shared process right after tenant A in Arabic sent the same request, but 200 ["Layla Nasser CNRY8EAA176832 noaccess@bravo-cnry8eaa176832.example","Ayesha Garcia CNRY8EAA176832 ayesha.garcia.2@bravo-cnry8eaa176832.example","Omar Hadda… by a fresh process only tenant B in Arabic has used
+tenant A in Arabic: GET /api/leaky/scroll?take=5&amp;search=al&amp;sort=displayName is answered …displayName":"Activity alpha 242","language":"en"}],"total":13,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… in the shared process right after tenant B in Arabic sent the same request, but …displayName":"Activity alpha 242","language":"en"}],"total":25,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDI0MiJdLCJpIjoiMDFhMTRlMzItNDk0YS03Y… by a fresh process only tenant A in Arabic has used
+tenant A in Arabic: GET /api/leaky/scroll?take=5&amp;search=al&amp;sort=-displayName is answered …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":13,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… in the shared process right after tenant B in Arabic sent the same request, but …","displayName":"Rashid Al Ketbi","language":"ar"}],"total":25,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJSYXNoaWQgQWwgS2V0YmkiXSwiaSI6IjAxOGNjM2JiLTk2MjAtNzQ4N… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: GET /api/leaky/tenants/0190a000-0000-7000-8000-00000000000a is answered 200 ["Layla Nasser noaccess@alpha.example","Abdullah Siddiqui abdullah.siddiqui.2@alpha.example","Fatima Al Mazrouei fatima.almazrouei.3@alpha.example","Khalid … in the shared process right after tenant A in Arabic sent the same request, but 200 ["Omar Haddad viewer@alpha.example","Activity alpha 242 admin@alpha.example","Fatima Al Zaabi admin.ar@alpha.example","Samir Darwish samir.darwish.1@alpha.e… by a fresh process only tenant B in Arabic has used
+tenant A: PUT /api/leaky/me/density (density="compact") is answered 200 {"displayName":"admin@alpha.example (after admin@bravo-cnry8eaa176832.example)","density":"compact"}
+[headers]
+cache-control: no-store
+content-security-poli… in the shared process right after tenant B made the same write, but 200 {"displayName":"admin@alpha.example (after admin@alpha.example)","density":"compact"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src… by a fresh process only tenant A has used
+tenant B: PUT /api/leaky/me/density (density="compact") is answered …splayName":"admin@bravo-cnry8eaa176832.example (after admin@alpha.example)","density":"compact"}
+[headers]
+cache-control: no-store
+content-security-policy: defa… in the shared process right after tenant A made the same write, but …splayName":"admin@bravo-cnry8eaa176832.example (after admin@bravo-cnry8eaa176832.example)","density":"compact"}
+[headers]
+cache-control: no-store
+content-securi… by a fresh process only tenant B has used
+tenant A: PUT /api/leaky/me/density (density="roomy") is answered 200 {"displayName":"admin@alpha.example (after admin@bravo-cnry8eaa176832.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security-policy… in the shared process right after tenant B made the same write, but 200 {"displayName":"admin@alpha.example (after admin@alpha.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security-policy: default-src '… by a fresh process only tenant A has used
+tenant B: PUT /api/leaky/me/density (density="roomy") is answered …splayName":"admin@bravo-cnry8eaa176832.example (after admin@alpha.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security-policy: defaul… in the shared process right after tenant A made the same write, but …splayName":"admin@bravo-cnry8eaa176832.example (after admin@bravo-cnry8eaa176832.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security… by a fresh process only tenant B has used
+tenant A in Arabic: PUT /api/leaky/me/density (density="roomy") is answered 200 {"displayName":"admin.ar@alpha.example (after admin.ar@bravo-cnry8eaa176832.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security-… in the shared process right after tenant B in Arabic made the same write, but 200 {"displayName":"admin.ar@alpha.example (after admin.ar@alpha.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security-policy: default… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: PUT /api/leaky/me/density (density="roomy") is answered …ame":"admin.ar@bravo-cnry8eaa176832.example (after admin.ar@alpha.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security-policy: defaul… in the shared process right after tenant A in Arabic made the same write, but …ame":"admin.ar@bravo-cnry8eaa176832.example (after admin.ar@bravo-cnry8eaa176832.example)","density":"roomy"}
+[headers]
+cache-control: no-store
+content-security… by a fresh process only tenant B in Arabic has used
+tenant A: PUT /api/leaky/me/digits (numerals="arab") is answered …yName":"admin@alpha.example (also using these digits: admin@bravo-cnry8eaa176832.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security… in the shared process right after tenant B made the same write, but …yName":"admin@alpha.example (also using these digits: admin@alpha.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security-policy: defaul… by a fresh process only tenant A has used
+tenant B: PUT /api/leaky/me/digits (numerals="arab") is answered …ravo-cnry8eaa176832.example (also using these digits: admin@alpha.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security-policy: defaul… in the shared process right after tenant A made the same write, but …ravo-cnry8eaa176832.example (also using these digits: admin@bravo-cnry8eaa176832.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security… by a fresh process only tenant B has used
+tenant A in Arabic: PUT /api/leaky/me/digits (numerals="arab") is answered …:"admin.ar@alpha.example (also using these digits: admin.ar@bravo-cnry8eaa176832.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security… in the shared process right after tenant B in Arabic made the same write, but …:"admin.ar@alpha.example (also using these digits: admin.ar@alpha.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security-policy: defaul… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: PUT /api/leaky/me/digits (numerals="arab") is answered …o-cnry8eaa176832.example (also using these digits: admin.ar@alpha.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security-policy: defaul… in the shared process right after tenant A in Arabic made the same write, but …o-cnry8eaa176832.example (also using these digits: admin.ar@bravo-cnry8eaa176832.example)","numerals":"arab"}
+[headers]
+cache-control: no-store
+content-security… by a fresh process only tenant B in Arabic has used
+tenant A: PUT /api/leaky/me/script (language="ar") is answered 200 {"language":"ar","change":-545}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-i… in the shared process right after tenant B made the same write, but 200 {"language":"ar","change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inli… by a fresh process only tenant A has used
+tenant B: PUT /api/leaky/me/script (language="ar") is answered 200 {"language":"ar","change":545}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-in… in the shared process right after tenant A made the same write, but 200 {"language":"ar","change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inli… by a fresh process only tenant B has used
+tenant A in Arabic: PUT /api/leaky/me/script (language="ar") is answered 200 {"language":"ar","change":-545}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-i… in the shared process right after tenant B in Arabic made the same write, but 200 {"language":"ar","change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inli… by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: PUT /api/leaky/me/script (language="ar") is answered 200 {"language":"ar","change":545}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-in… in the shared process right after tenant A in Arabic made the same write, but 200 {"language":"ar","change":0}
+[headers]
+cache-control: no-store
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inli… by a fresh process only tenant B in Arabic has used
+tenant A: PUT /api/leaky/me/switches (language="ar") changes by #2 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #2 (after "rrer x-arabic-switches: ") +2 when tenant B made the same write in between
+PUT /api/leaky/me/switches (language="ar") changed the configuration of the shared process while serving (Erp:Leaky:ArabicSwitches: '2' → '14'): configuration is shared by every tenant of the process
+PUT /api/leaky/me/switches (language="ar") changed the configuration of tenant A's fresh process while serving (Erp:Leaky:ArabicSwitches: unset → '3'): configuration is shared by every tenant of the process
+tenant B: PUT /api/leaky/me/switches (language="ar") changes by #2 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #2 (after "rrer x-arabic-switches: ") +2 when tenant A made the same write in between
+PUT /api/leaky/me/switches (language="ar") changed the configuration of the shared process while serving (Erp:Leaky:ArabicSwitches: '14' → '26'): configuration is shared by every tenant of the process
+PUT /api/leaky/me/switches (language="ar") changed the configuration of tenant B's fresh process while serving (Erp:Leaky:ArabicSwitches: unset → '3'): configuration is shared by every tenant of the process
+tenant A in Arabic: PUT /api/leaky/me/switches (language="ar") changes by #2 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #2 (after "rrer x-arabic-switches: ") +2 when tenant B in Arabic made the same write in between
+PUT /api/leaky/me/switches (language="ar") changed the configuration of the shared process while serving (Erp:Leaky:ArabicSwitches: '26' → '38'): configuration is shared by every tenant of the process
+PUT /api/leaky/me/switches (language="ar") changed the configuration of tenant A's fresh process while serving (Erp:Leaky:ArabicSwitches: '3' → '6'): configuration is shared by every tenant of the process
+tenant B in Arabic: PUT /api/leaky/me/switches (language="ar") changes by #2 (after "rrer x-arabic-switches: ") +1 from one answer to the next when sent alone, but by #2 (after "rrer x-arabic-switches: ") +2 when tenant A in Arabic made the same write in between
+PUT /api/leaky/me/switches (language="ar") changed the configuration of the shared process while serving (Erp:Leaky:ArabicSwitches: '38' → '50'): configuration is shared by every tenant of the process
+PUT /api/leaky/me/switches (language="ar") changed the configuration of tenant B's fresh process while serving (Erp:Leaky:ArabicSwitches: '3' → '6'): configuration is shared by every tenant of the process
+tenant A: PUT /api/leaky/me/theme (theme="calm") is answered 200 {"email":"admin@alpha.example","theme":"calm"} with header x-erp-previous-editor: admin@bravo-cnry8eaa176832.example in the shared process right after tenant B made the same write, but 200 {"email":"admin@alpha.example","theme":"calm"} with header x-erp-previous-editor: admin@alpha.example by a fresh process only tenant A has used
+tenant B: PUT /api/leaky/me/theme (theme="calm") is answered 200 {"email":"admin@bravo-cnry8eaa176832.example","theme":"c with header x-erp-previous-editor: admin@alpha.example in the shared process right after tenant A made the same write, but 200 {"email":"admin@bravo-cnry8eaa176832.example","theme":"c with header x-erp-previous-editor: admin@bravo-cnry8eaa176832.example by a fresh process only tenant B has used
+tenant A: PUT /api/leaky/me/theme (theme="bright") is answered 200 {"email":"admin@alpha.example","theme":"bright"} with header x-erp-previous-editor: admin@bravo-cnry8eaa176832.example in the shared process right after tenant B made the same write, but 200 {"email":"admin@alpha.example","theme":"bright"} with header x-erp-previous-editor: admin@alpha.example by a fresh process only tenant A has used
+tenant B: PUT /api/leaky/me/theme (theme="bright") is answered 200 {"email":"admin@bravo-cnry8eaa176832.example","theme":"b with header x-erp-previous-editor: admin@alpha.example in the shared process right after tenant A made the same write, but 200 {"email":"admin@bravo-cnry8eaa176832.example","theme":"b with header x-erp-previous-editor: admin@bravo-cnry8eaa176832.example by a fresh process only tenant B has used
+tenant A in Arabic: PUT /api/leaky/me/theme (theme="bright") is answered 200 {"email":"admin.ar@alpha.example","theme":"bright"} with header x-erp-previous-editor: admin.ar@bravo-cnry8eaa176832.example in the shared process right after tenant B in Arabic made the same write, but 200 {"email":"admin.ar@alpha.example","theme":"bright"} with header x-erp-previous-editor: admin.ar@alpha.example by a fresh process only tenant A in Arabic has used
+tenant B in Arabic: PUT /api/leaky/me/theme (theme="bright") is answered 200 {"email":"admin.ar@bravo-cnry8eaa176832.example","theme" with header x-erp-previous-editor: admin.ar@alpha.example in the shared process right after tenant A in Arabic made the same write, but 200 {"email":"admin.ar@bravo-cnry8eaa176832.example","theme" with header x-erp-previous-editor: admin.ar@bravo-cnry8eaa176832.example by a fresh process only tenant B in Arabic has used</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7edf4487-e061-4308-959e-9983d0851e86" testId="ea26383a-4e48-77cf-ff0f-c3d351cc0237" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.Times_are_told_apart_by_whose_request_they_fall_in" computerName="docker-desktop" duration="00:00:00.0444349" startTime="2026-10-18T08:48:07.0796415+00:00" endTime="2026-10-18T08:48:07.1386505+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7edf4487-e061-4308-959e-9983d0851e86" />
+    <UnitTestResult executionId="6bb55f1a-fca1-401f-902a-9ccdc45e9fe4" testId="41677634-7b72-8fbe-b684-82bb885e9c93" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_header_comparison_ignores_only_transport_tracing_dates_and_cookie_values" computerName="docker-desktop" duration="00:00:00.0003720" startTime="2026-10-18T09:03:55.2958136+00:00" endTime="2026-10-18T09:03:55.2962391+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6bb55f1a-fca1-401f-902a-9ccdc45e9fe4" />
+    <UnitTestResult executionId="8879450a-67a4-47a7-a21a-6adc61028993" testId="e5b64469-0e54-04f6-50d4-ce5580dd3bb9" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.How_an_answer_changes_is_told_by_its_numbers" computerName="docker-desktop" duration="00:00:00.0285372" startTime="2026-10-18T08:48:07.1531062+00:00" endTime="2026-10-18T08:48:07.1821994+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8879450a-67a4-47a7-a21a-6adc61028993" />
+    <UnitTestResult executionId="47fd723a-4ffd-478d-8a56-6d4a840062ed" testId="ecf820ca-e1a0-7320-ab41-45d0c7c47737" testName="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.A_finding_shows_where_a_long_answer_differs" computerName="docker-desktop" duration="00:00:00.0038814" startTime="2026-10-18T08:48:07.1897953+00:00" endTime="2026-10-18T08:48:07.1937562+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="47fd723a-4ffd-478d-8a56-6d4a840062ed" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.A_finding_shows_where_a_long_answer_differs" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ecf820ca-e1a0-7320-ab41-45d0c7c47737">
+      <Execution id="47fd723a-4ffd-478d-8a56-6d4a840062ed" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="A_finding_shows_where_a_long_answer_differs" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_ignores_only_times_and_trace_ids" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="d7030cee-9472-39d7-4647-9a04bb7ea71a">
+      <Execution id="4b29a639-9547-4eec-84c8-b92b956853e0" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="The_non_interference_check_ignores_only_times_and_trace_ids" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.Only_the_credential_cookies_values_are_left_out" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="b85cc8e6-9b4e-04e5-eeee-404f0aee416f">
+      <Execution id="2bc78bd2-666c-4da8-994b-58bb98860139" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="Only_the_credential_cookies_values_are_left_out" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_header_comparison_ignores_only_transport_tracing_dates_and_cookie_values" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="41677634-7b72-8fbe-b684-82bb885e9c93">
+      <Execution id="6bb55f1a-fca1-401f-902a-9ccdc45e9fe4" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="The_header_comparison_ignores_only_transport_tracing_dates_and_cookie_values" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_write_comparison_also_ignores_only_versions" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="037709f9-0467-0a04-8587-0c0e1961791d">
+      <Execution id="ebbd900e-0d74-42df-b1f4-599a8f0e41c6" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="The_write_comparison_also_ignores_only_versions" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.How_an_answer_changes_is_told_by_its_numbers" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e5b64469-0e54-04f6-50d4-ce5580dd3bb9">
+      <Execution id="8879450a-67a4-47a7-a21a-6adc61028993" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="How_an_answer_changes_is_told_by_its_numbers" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.Times_are_told_apart_by_whose_request_they_fall_in" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ea26383a-4e48-77cf-ff0f-c3d351cc0237">
+      <Execution id="7edf4487-e061-4308-959e-9983d0851e86" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="Times_are_told_apart_by_whose_request_they_fall_in" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_catches_shared_state_that_leaks_no_marker" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a241cca1-0e6a-ca90-ebcd-182fab1528e2">
+      <Execution id="1216b051-404c-4855-9b8f-1138daf874f1" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests" name="The_non_interference_check_catches_shared_state_that_leaks_no_marker" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d7030cee-9472-39d7-4647-9a04bb7ea71a" executionId="4b29a639-9547-4eec-84c8-b92b956853e0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b85cc8e6-9b4e-04e5-eeee-404f0aee416f" executionId="2bc78bd2-666c-4da8-994b-58bb98860139" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="037709f9-0467-0a04-8587-0c0e1961791d" executionId="ebbd900e-0d74-42df-b1f4-599a8f0e41c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a241cca1-0e6a-ca90-ebcd-182fab1528e2" executionId="1216b051-404c-4855-9b8f-1138daf874f1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea26383a-4e48-77cf-ff0f-c3d351cc0237" executionId="7edf4487-e061-4308-959e-9983d0851e86" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="41677634-7b72-8fbe-b684-82bb885e9c93" executionId="6bb55f1a-fca1-401f-902a-9ccdc45e9fe4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e5b64469-0e54-04f6-50d4-ce5580dd3bb9" executionId="8879450a-67a4-47a7-a21a-6adc61028993" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ecf820ca-e1a0-7320-ab41-45d0c7c47737" executionId="47fd723a-4ffd-478d-8a56-6d4a840062ed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="8" executed="8" passed="8" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.73]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.85]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:02.68]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:16:35.57]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

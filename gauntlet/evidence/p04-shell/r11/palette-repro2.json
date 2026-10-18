@@ -1,0 +1,83 @@
+{
+  "role1": {
+    "first": "Read-onlyقراءة فقط",
+    "opts": [
+      "Read-onlyقراءة فقط"
+    ],
+    "url": "/identity/roles/01a14db7-37b1-72ba-9bcd-f630e4a319ae?q=Read-only",
+    "search": "Read-only",
+    "heading": "Read-only"
+  },
+  "role2": {
+    "first": "Staffالموظفون",
+    "opts": [
+      "Staffالموظفون"
+    ],
+    "url": "/identity/roles/01a14db7-37b2-7855-8f9d-c356bbcb2ad7?q=Staff",
+    "search": "Read-only",
+    "heading": "Read-only"
+  },
+  "co1": {
+    "first": "ALN-SHJ · SHJ-FACAl Noor Industries LLC · Sharjah factory",
+    "opts": [
+      "ALN-SHJ · SHJ-FACAl Noor Industries LLC · Sharjah factory",
+      "ALN-SHJ · SAIF-WHAl Noor Industries LLC · SAIF Zone store",
+      "ALN-SHJ · AJM-WSAl Noor Industries LLC · Ajman workshop",
+      "Al Noor Industries LLCALN-SHJ"
+    ],
+    "url": "/identity/roles/01a14db7-37b2-7855-8f9d-c356bbcb2ad7?q=Staff",
+    "search": "Read-only",
+    "heading": "Read-only"
+  },
+  "co2": {
+    "first": "ALN-AUH · MUS-WSAl Noor Technical Services LLC · Mussafah workshop",
+    "opts": [
+      "ALN-AUH · MUS-WSAl Noor Technical Services LLC · Mussafah workshop",
+      "ALN-AUH · AIN-OFAl Noor Technical Services LLC · Al Ain office",
+      "ALN-AUH · RAK-STAl Noor Technical Services LLC · Ras Al Khaimah store",
+      "ALN-AUH · FUJ-STAl Noor Technical Services LLC · Fujairah store",
+      "Al Noor Technical Services LLCALN-AUH"
+    ],
+    "url": "/identity/roles/01a14db7-37b2-7855-8f9d-c356bbcb2ad7?q=Staff",
+    "search": "Read-only",
+    "heading": "Read-only"
+  },
+  "u1": {
+    "first": "Latifa Al Suwaidilatifa.alsuwaidi.99995@alnoor.example",
+    "opts": [
+      "Latifa Al Suwaidilatifa.alsuwaidi.99995@alnoor.example",
+      "Latifa Al Suwaidilatifa.alsuwaidi.99337@alnoor.example",
+      "Latifa Al Suwaidilatifa.alsuwaidi.98960@alnoor.example",
+      "Latifa Al Suwaidilatifa.alsuwaidi.98403@alnoor.example",
+      "Latifa Al Suwaidilatifa.alsuwaidi.97048@alnoor.example",
+      "Show all 129 matches for “latifa alsuw”"
+    ],
+    "url": "/identity/users/01968ada-3b40-7657-a2ab-c1476fea312d?q=latifa.alsuwaidi.99995%40alnoor.example",
+    "search": "latifa.alsuwaidi.99995@alnoor.example",
+    "heading": "Latifa Al Suwaidi"
+  },
+  "u2": {
+    "first": "Mariam Al Mansooriadmin@alnoor.example",
+    "opts": [
+      "Mariam Al Mansooriadmin@alnoor.example",
+      "Mariam Al Mansoorimariam.almansoori.99927@alnoor.example",
+      "Mariam Al Mansoorimariam.almansoori.99628@alnoor.example",
+      "Mariam Al Mansoorimariam.almansoori.97799@alnoor.example",
+      "Mariam Al Mansoorimariam.almansoori.97336@alnoor.example",
+      "Show all 137 matches for “Mariam Al Mansoori”"
+    ],
+    "url": "/identity/users/01a14db7-385b-77ab-9446-bfe30631fc61?q=admin%40alnoor.example",
+    "search": "latifa.alsuwaidi.99995@alnoor.example",
+    "heading": "Latifa Al Suwaidi"
+  },
+  "putsOnSave": [
+    "PUT /api/tenancy/workplace",
+    "PUT /api/tenancy/workplace",
+    "PUT /api/identity/users/01968ada-3b40-7657-a2ab-c1476fea312d"
+  ],
+  "afterReload": {
+    "url": "/identity/users/01a14db7-385b-77ab-9446-bfe30631fc61?q=admin%40alnoor.example",
+    "search": "admin@alnoor.example",
+    "heading": "Mariam Al Mansoori"
+  }
+}

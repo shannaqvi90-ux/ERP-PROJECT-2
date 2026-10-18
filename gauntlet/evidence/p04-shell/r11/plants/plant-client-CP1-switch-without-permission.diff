@@ -1,0 +1,16 @@
+diff --git a/web/src/modules/shell/usePreferenceActions.ts b/web/src/modules/shell/usePreferenceActions.ts
+index 38df77fc..30ab2d60 100644
+--- a/web/src/modules/shell/usePreferenceActions.ts
++++ b/web/src/modules/shell/usePreferenceActions.ts
+@@ -20,10 +20,7 @@ export function usePreferenceActions() {
+   const persist = useCallback(
+     async (change: { language?: Language; numerals?: Numerals }) => {
+       if (state.status !== "signedIn") return;
+-      if (!can(preferencesPermission)) {
+-        setSaveState("device");
+-        return;
+-      }
++      // PLANT CP1: the switch saves to the account whatever the user's permissions
+       setSaveState(await savePreferences(state.session.user.id, change));
+     },
+     [state, can],

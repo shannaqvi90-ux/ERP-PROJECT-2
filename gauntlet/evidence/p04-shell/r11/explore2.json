@@ -1,0 +1,29 @@
+{
+  "focusOnArrival": "search",
+  "searchFocus": "<input class=\"search\" placeholder=\"Search by name, initials or e-mail\" aria-label=\"Search by name, initials or e-mail\" aria-describedby=\"list_r_1_-search-hint\" aria-controls=\"list_r_1_-grid\" autocompl",
+  "ownRowBefore": [
+    "Mariam Al Mansoori | admin@alnoor.example | English | Active | 18 Oct 2026, 10:45 AM | Administrator"
+  ],
+  "switchMs": 104,
+  "ownRowAfter": [
+    "مريم المنصوري | admin@alnoor.example | العربية | نشط | 18‏/10‏/2026، 10:45 ص | مدير النظام"
+  ],
+  "dirAfter": "rtl",
+  "panel": "الرئيسية\nالإعدادات\nالمستخدمون\nالمستخدمون\nيجب أن تتطابق كل كلمة\nمستخدم واحد\nالأقرب أولًا\nطريقة العرض: قياسية · معدّلة\nالأعمدة\nطباعة أو تصدير\nمستخدم جديد\nالاسم\n▾\nالبريد الإلكتروني\n▾\nاللغة\n▾\nالحالة\n▾\nآخر تسجيل دخول\n▾\nالأدوار\nمريم المنصوري\nadmin@alnoor.example\nالعربية\nنشط\n18‏/10‏/2026، 10:45 ص\nمدير النظام\nمريم المنصوري\nadmin@alnoor.example\nنشط\nآخر تسجيل دخول: 18‏/10‏/2026، 10:45 ص\nحفظ\nإغلاق\nالتفاصيل\nما يمكنه فعله\nسجل الدخول\nالبريد الإلكتروني\nالاسم\nالاسم بالعربية\nاللغة\nالإنجليزية\nالعربية\nنشط (يمكنه تسجيل الدخول)\nالأدوار\nAlt+O ينقلك إلى هنا من أي حقل؛ Enter يحدد أول دور ظاهر.\nمدير النظام\n25 صلاحية\nمدير الشركة\n9 صلاحيات\nقراءة فقط\n9 صلاحيات\nالموظفون\n3 صلاحيات\nدور واحد مختار من 4\nأدوار في شركة واحدة\n\nيُحتسب الدور هنا فقط عندما يعمل الشخص في تلك الشركة.\n\nلا توجد أدوار في شركة واحدة.\n\nيبدأ العمل في\nأول شركة له\nALN-AUH · النور للخدمات الفنية ذ.م.م\nALN-DXB · شركة النور للتجارة ذ.م.م\nALN-FZE · النور للتجارة العامة م.م.ح\nALN-SHJ · مصانع النور ذ.م.م\nالشركة التي يعمل فيها بعد تسجيل الدخول، إلى أن يغيّرها من الشريط العلوي.\n\nلا يمكنك تغيير أدوارك أو إيقاف حسابك بنفسك.\n\nمفاتيح المرور (0)\n\nلا مفاتيح مرور: يسجّل هذا المستخدم الدخول بكلمة المرور.\n\n↑ ↓ للتنقل · Enter للفتح · مسافة للتحديد · / للبحث · Esc للرجوع",
+  "panelAfterEn": {
+    "lang": "en",
+    "html": "<select id=\"_r_8_\" aria-invalid=\"false\" name=\"language\"><option value=\"en\">English</option><option value=\"ar\">Arabic</option></select>"
+  },
+  "ownRowAfterEn": [
+    "Mariam Al Mansoori | admin@alnoor.example | English | Active | 18 Oct 2026, 10:45 AM | Administrator"
+  ],
+  "nameFieldCount": 1,
+  "afterSave": "Home\nSettings\nUsers\nUsers\nEvery word must match\n1 user\nbest match first\nView: Standard · modified\nColumns\nPrint or export\nNew user\nName\n▾\nE-mail\n▾\nLanguage\n▾\nStatus\n▾\nLast sign-in\n▾\nRoles\nMariam Al Mansoori X\nadmin@alnoor.example\nEnglish\nActive\n18 Oct 2026, 10:45 AM\nAdministrator\nMariam Al Mansoori X\nadmin@alnoor.example\nActive\nLast sign-in: 18 Oct 2026, 10:45 AM\nSave\nClose\nSaved.\nDetails\nWhat they can do\nSign-in history\nE-mail\nName\nName in Arabic\nLanguage\nEnglish\nArabic\nActive (can sign in)\nRoles\nAlt+O comes here from any field; Enter ticks the first role shown.\nAdministrator\n25 permissions\nC",
+  "writes": [
+    "POST /api/auth/sign-in 200",
+    "PUT /api/identity/me/preferences 200",
+    "PUT /api/identity/me/preferences 200",
+    "PUT /api/identity/users/01a14db7-385b-77ab-9446-bfe30631fc61 200",
+    "PUT /api/identity/users/01a14db7-385b-77ab-9446-bfe30631fc61 200"
+  ]
+}

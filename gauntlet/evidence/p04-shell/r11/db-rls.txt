@@ -1,0 +1,55 @@
+postgres|t|t
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+audit.entries|t|t
+identity.passkeys|t|t
+identity.roles|t|t
+identity.sessions|t|t
+identity.sign_in_attempts|t|t
+identity.user_company_roles|t|t
+identity.user_credentials|t|t
+identity.user_roles|t|t
+identity.users|t|t
+lists.saved_views|t|t
+tenancy.branches|t|t
+tenancy.companies|t|t
+tenancy.tenants|t|t
+tenancy.user_branch_access|t|t
+tenancy.user_company_access|t|t
+tenancy.user_company_totals|t|t
+tenancy.user_workplaces|t|t
+SET
+no-context users|0
+no-context audit|0
+0190a000-0000-7000-8000-000000000001
+A ctx users|0|0
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "saved_views"
+RESET
+policy|identity.users|tenant_isolation|(tenant_id = erp.current_tenant_id())
+policy|identity.users|auth_resolver_read|true
+tenancy.branches|company_scope|{public}|ALL|erp.company_allowed(company_id)
+tenancy.user_company_access|company_scope_delete|{public}|DELETE|erp.company_allowed(company_id)
+tenancy.user_company_access|company_scope_update|{public}|UPDATE|erp.company_allowed(company_id)
+tenancy.user_company_access|company_scope|{public}|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+tenancy.user_branch_access|company_scope_delete|{public}|DELETE|erp.company_allowed(company_id)
+tenancy.user_branch_access|company_scope_update|{public}|UPDATE|erp.company_allowed(company_id)
+tenancy.user_branch_access|company_scope|{public}|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+tenancy.user_workplaces|company_scope|{public}|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+tenancy.companies|company_scope|{public}|ALL|erp.company_allowed(company_id)
+identity.sessions|auth_resolver_read|{erp_auth}|SELECT|true
+identity.user_credentials|auth_resolver_read|{erp_auth}|SELECT|true
+identity.users|auth_resolver_read|{erp_auth}|SELECT|true
+identity.user_company_roles|company_scope_delete|{public}|DELETE|erp.company_allowed(company_id)
+identity.user_company_roles|company_scope_update|{public}|UPDATE|erp.company_allowed(company_id)
+identity.user_company_roles|company_scope|{public}|ALL|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+CREATE OR REPLACE FUNCTION erp.current_tenant_id()
+ RETURNS uuid
+ LANGUAGE sql
+ STABLE PARALLEL SAFE
+AS $function$
+        SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text
+                    THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END
+    $function$
+

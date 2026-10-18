@@ -1,0 +1,183 @@
+[1mBuilding the application image[0m
+ Image erp-app:c-p04-shell-r11 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 645B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.14kB 0.0s done
+#2 DONE 0.1s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 0.9s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.1s done
+#4 DONE 0.1s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 CACHED
+
+#5 [internal] load metadata for docker.io/library/node:22-alpine
+#5 ...
+
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#6 DONE 0.2s
+
+#7 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#7 DONE 0.3s
+
+#5 [internal] load metadata for docker.io/library/node:22-alpine
+#5 DONE 0.7s
+
+#8 [internal] load .dockerignore
+#8 transferring context:
+#8 transferring context: 187B done
+#8 DONE 0.1s
+
+#9 [stage-3 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:d5633778c754e89a386882eddf8dbee6942447a8a4b8267c19cf1e1158d0b0ac
+#9 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:d5633778c754e89a386882eddf8dbee6942447a8a4b8267c19cf1e1158d0b0ac 0.1s done
+#9 DONE 0.1s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa
+#10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa 0.1s done
+#10 DONE 0.1s
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#11 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.1s done
+#11 DONE 0.1s
+
+#12 [internal] load build context
+#12 transferring context: 3.66MB 0.1s done
+#12 DONE 0.2s
+
+#13 [web 6/6] RUN npm run check && npm run build
+#13 CACHED
+
+#14 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#14 CACHED
+
+#15 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#15 CACHED
+
+#16 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#16 CACHED
+
+#17 [stage-3 3/4] COPY --from=build /app ./
+#17 CACHED
+
+#18 [web 3/6] COPY web/package.json web/package-lock.json ./
+#18 CACHED
+
+#19 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#19 CACHED
+
+#20 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#20 CACHED
+
+#21 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#21 CACHED
+
+#22 [web 2/6] WORKDIR /web
+#22 CACHED
+
+#23 [stage-3 2/4] WORKDIR /app
+#23 CACHED
+
+#24 [build 4/7] COPY src/ src/
+#24 CACHED
+
+#25 [strings 2/3] COPY web/src/modules/ /modules/
+#25 CACHED
+
+#26 [web 5/6] COPY web/ ./
+#26 CACHED
+
+#27 [build 2/7] WORKDIR /src
+#27 CACHED
+
+#28 [stage-3 4/4] COPY --from=web /web/dist ./wwwroot
+#28 CACHED
+
+#29 exporting to image
+#29 exporting layers done
+#29 exporting manifest sha256:09cd2dd4d55682fa408314a7a231324ab083b6d30119f4989a15bb75dd6c5450 0.0s done
+#29 exporting config sha256:93a3bad617f28f25881df6d49ee68e9ff930707b1f1a1f3b34e04a52309e9950 0.0s done
+#29 exporting attestation manifest sha256:60e9a8f4ccbc4c5b4dccae38d4d5ae1e251119b00e9df2355224652a9e847fc2 0.1s done
+#29 exporting manifest list sha256:45270143da61cbb4cf6006d588c87cf6421d690d784fd8b078a5b473ef5899d6
+#29 exporting manifest list sha256:45270143da61cbb4cf6006d588c87cf6421d690d784fd8b078a5b473ef5899d6 0.0s done
+#29 naming to docker.io/library/erp-app:c-p04-shell-r11 done
+#29 unpacking to docker.io/library/erp-app:c-p04-shell-r11 0.0s done
+#29 DONE 0.3s
+
+#30 resolving provenance for metadata file
+#30 DONE 0.0s
+ Image erp-app:c-p04-shell-r11 Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 100000 users) and serving[0m
+ Network c-p04-shell-r11_default Creating 
+ Network c-p04-shell-r11_default Created 
+ Volume c-p04-shell-r11_db-data Creating 
+ Volume c-p04-shell-r11_db-data Created 
+ Container c-p04-shell-r11-db-1 Creating 
+ Container c-p04-shell-r11-db-1 Created 
+ Container c-p04-shell-r11-db-1 Starting 
+ Container c-p04-shell-r11-db-1 Started 
+ Container c-p04-shell-r11-db-1 Waiting 
+ Container c-p04-shell-r11-db-1 Healthy 
+ Container c-p04-shell-r11-db-1 Running 
+ Container c-p04-shell-r11-setup-1 Creating 
+ Container c-p04-shell-r11-setup-1 Created 
+Attaching to setup-1
+ Container c-p04-shell-r11-db-1 Waiting 
+ Container c-p04-shell-r11-db-1 Healthy 
+ Container c-p04-shell-r11-setup-1 Starting 
+ Container c-p04-shell-r11-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 8 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 11 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 45140 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 915 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 1400 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p04-shell-r11-setup-1 Stopping 
+ Container c-p04-shell-r11-setup-1 Stopped 
+ Container c-p04-shell-r11-db-1 Running 
+ Container c-p04-shell-r11-app-1 Creating 
+ Container c-p04-shell-r11-app-1 Created 
+ Container c-p04-shell-r11-db-1 Waiting 
+ Container c-p04-shell-r11-db-1 Healthy 
+ Container c-p04-shell-r11-setup-1 Starting 
+ Container c-p04-shell-r11-setup-1 Started 
+ Container c-p04-shell-r11-setup-1 Waiting 
+ Container c-p04-shell-r11-setup-1 Exited 
+ Container c-p04-shell-r11-app-1 Starting 
+ Container c-p04-shell-r11-app-1 Started 
+
+[1mThe demo is running (80 s): http://localhost:20450[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:20450/?domain=alnoor.example
+    http://localhost:20450/?domain=gulfsteel.example
+
+  API description: http://localhost:20450/api/openapi/v1.json
+  Database:        localhost:20451 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
+exit 0 in 81 s

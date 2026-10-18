@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="2c7560a1-3a42-461b-93ee-2aca3b214438" name="@docker-desktop 2026-10-18 12:05:42" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-18T12:05:42.2869241+00:00" queuing="2026-10-18T12:05:42.2869241+00:00" start="2026-10-18T12:05:11.7960577+00:00" finish="2026-10-18T12:06:08.8440908+00:00" />
+  <TestSettings name="default" id="51f897a7-282c-4b0e-b2b4-f60b41eb2223">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-18_12_05_42" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="70496858-7b94-4b29-9e36-7455fd7bdd92" testId="5a91a9df-5445-e6c8-4441-31d2f1d872ec" testName="Erp.Modules.Identity.Tests.UsersListVolumeTests.The_whole_list_of_100000_users_exports_as_csv_and_xlsx_every_row" computerName="docker-desktop" duration="00:00:16.7233069" startTime="2026-10-18T12:05:51.2445576+00:00" endTime="2026-10-18T12:06:07.9679294+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="70496858-7b94-4b29-9e36-7455fd7bdd92">
+      <Output>
+        <StdOut>CSV 5,252,293 bytes in 8.5 s; XLSX 1,899,443 bytes in 8.0 s</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c1984fca-f1ca-4aec-8601-1d41e3c62bcf" testId="27c91cb2-4ea8-a1da-31b1-4a78214ba052" testName="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_Arabic_name_in_well_under_a_second" computerName="docker-desktop" duration="00:00:05.7271957" startTime="2026-10-18T12:05:40.8202664+00:00" endTime="2026-10-18T12:05:46.5476464+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c1984fca-f1ca-4aec-8601-1d41e3c62bcf">
+      <Output>
+        <StdOut>/api/identity/users?search=%D8%B4%D9%85%D8%A9%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A: median 69 ms, slowest 82 ms
+/api/identity/users?search=%D8%B4%D9%85%D9%87%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A: median 69 ms, slowest 73 ms
+/api/identity/users?search=%D8%B4%D9%85%D8%A9%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%89: median 68 ms, slowest 75 ms
+/api/identity/users?search=%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A%20%D8%B4%D9%85%D9%91%D8%A9: median 73 ms, slowest 75 ms
+/api/identity/users?search=%D9%88%D9%84%D9%8A%D8%AF%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A: median 72 ms, slowest 74 ms
+/api/identity/users?search=shamma%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A: median 26 ms, slowest 38 ms
+/api/identity/users?search=%D9%81%D8%A7%D8%B7%D9%85%D9%87 (1008 rows): median 76 ms, slowest 79 ms
+/api/identity/users?search=%D9%81%D8%A7%D8%B7%D9%85%D8%A9%20%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1%D9%8A (100 rows): median 87 ms, slowest 92 ms
+/api/identity/users?search=%D8%B4%D9%85%D8%A9 (1044 rows): median 59 ms, slowest 67 ms
+/api/identity/users?search=%D8%A7 (20168 rows): median 82 ms, slowest 89 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c6fc5c5a-4463-415a-b755-e8b0b407071a" testId="22fdb0e0-a5be-80e9-edf3-f9720e3e96c3" testName="Erp.Modules.Identity.Tests.UsersListVolumeTests.Word_search_is_served_by_the_trigram_index_not_a_table_scan" computerName="docker-desktop" duration="00:00:00.0301129" startTime="2026-10-18T12:05:40.7781632+00:00" endTime="2026-10-18T12:05:40.8143289+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c6fc5c5a-4463-415a-b755-e8b0b407071a" />
+    <UnitTestResult executionId="61a4c5a0-e1a9-4ac3-bdd2-2bc4c294baf7" testId="231f7fa3-123c-eea6-0160-52102ec48175" testName="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_in_well_under_a_second" computerName="docker-desktop" duration="00:00:00.6315369" startTime="2026-10-18T12:06:07.9694257+00:00" endTime="2026-10-18T12:06:08.6010380+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="61a4c5a0-e1a9-4ac3-bdd2-2bc4c294baf7">
+      <Output>
+        <StdOut>/api/identity/users?search=shamma%20romaithi: median 10 ms, slowest 12 ms
+/api/identity/users?search=Romaithi: median 9 ms, slowest 10 ms
+/api/identity/users?search=SHAMMA%20WALEED: median 10 ms, slowest 16 ms
+/api/identity/users?search=shamma.romaithi%40: median 16 ms, slowest 20 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9f2cfb72-cc15-4529-b674-ba14900866ff" testId="bf808073-9c77-3005-ebef-b302f5ff55c7" testName="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second" computerName="docker-desktop" duration="00:00:01.2106847" startTime="2026-10-18T12:05:46.5488947+00:00" endTime="2026-10-18T12:05:47.7596334+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9f2cfb72-cc15-4529-b674-ba14900866ff">
+      <Output>
+        <StdOut>/api/identity/users?search=%D8%B4%D9%85%D8%A9%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A: median 65 ms, slowest 83 ms
+/api/identity/users?search=%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A%20%D8%B4%D9%85%D8%A9%20%D9%88%D9%84%D9%8A%D8%AF: median 54 ms, slowest 55 ms
+/api/identity/users?search=romaithi%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A: median 15 ms, slowest 17 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2828af77-5dac-4856-8e32-9b74147ec4cc" testId="f16d5393-2ec2-1b63-6e09-5c7653db37de" testName="Erp.Modules.Identity.Tests.UsersListVolumeTests.Sorted_filtered_grouped_and_deep_keyset_pages_stay_within_budget" computerName="docker-desktop" duration="00:00:02.5300883" startTime="2026-10-18T12:05:48.7132653+00:00" endTime="2026-10-18T12:05:51.2434109+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2828af77-5dac-4856-8e32-9b74147ec4cc">
+      <Output>
+        <StdOut>/api/identity/users?take=100: median 19 ms, slowest 20 ms
+/api/identity/users?take=100&amp;sort=displayName: median 18 ms, slowest 19 ms
+/api/identity/users?take=100&amp;sort=-lastSignInAt: median 17 ms, slowest 17 ms
+/api/identity/users?take=100&amp;sort=email: median 18 ms, slowest 21 ms
+/api/identity/users?take=100&amp;filter=language%20eq%20%27ar%27%20and%20isActive%20eq%20true: median 18 ms, slowest 19 ms
+/api/identity/users?take=1&amp;groupBy=language: median 38 ms, slowest 43 ms
+/api/identity/users?take=100&amp;search=al: median 58 ms, slowest 70 ms
+keyset page 31 by name: median 25 ms, slowest 29 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="64f2a788-d923-41bf-a29b-7aac26c48c1a" testId="e4e1498c-9bf0-deb8-bd24-2b450241c904" testName="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_initials_of_the_name_within_the_budget" computerName="docker-desktop" duration="00:00:00.9540619" startTime="2026-10-18T12:05:47.7602395+00:00" endTime="2026-10-18T12:05:48.7123990+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="64f2a788-d923-41bf-a29b-7aac26c48c1a">
+      <Output>
+        <StdOut>/api/identity/users?take=200&amp;search=swar: median 106 ms, slowest 118 ms; 1 matches</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Modules.Identity.Tests.UsersListVolumeTests.Sorted_filtered_grouped_and_deep_keyset_pages_stay_within_budget" storage="/work/tests/erp.modules.identity.tests/bin/release/net10.0/erp.modules.identity.tests.dll" id="f16d5393-2ec2-1b63-6e09-5c7653db37de">
+      <Execution id="2828af77-5dac-4856-8e32-9b74147ec4cc" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Identity.Tests.UsersListVolumeTests" name="Sorted_filtered_grouped_and_deep_keyset_pages_stay_within_budget" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_initials_of_the_name_within_the_budget" storage="/work/tests/erp.modules.identity.tests/bin/release/net10.0/erp.modules.identity.tests.dll" id="e4e1498c-9bf0-deb8-bd24-2b450241c904">
+      <Execution id="64f2a788-d923-41bf-a29b-7aac26c48c1a" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Identity.Tests.UsersListVolumeTests" name="One_user_is_found_among_100000_by_the_initials_of_the_name_within_the_budget" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Identity.Tests.UsersListVolumeTests.The_whole_list_of_100000_users_exports_as_csv_and_xlsx_every_row" storage="/work/tests/erp.modules.identity.tests/bin/release/net10.0/erp.modules.identity.tests.dll" id="5a91a9df-5445-e6c8-4441-31d2f1d872ec">
+      <Execution id="70496858-7b94-4b29-9e36-7455fd7bdd92" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Identity.Tests.UsersListVolumeTests" name="The_whole_list_of_100000_users_exports_as_csv_and_xlsx_every_row" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_in_well_under_a_second" storage="/work/tests/erp.modules.identity.tests/bin/release/net10.0/erp.modules.identity.tests.dll" id="231f7fa3-123c-eea6-0160-52102ec48175">
+      <Execution id="61a4c5a0-e1a9-4ac3-bdd2-2bc4c294baf7" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Identity.Tests.UsersListVolumeTests" name="One_user_is_found_among_100000_in_well_under_a_second" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Identity.Tests.UsersListVolumeTests.Word_search_is_served_by_the_trigram_index_not_a_table_scan" storage="/work/tests/erp.modules.identity.tests/bin/release/net10.0/erp.modules.identity.tests.dll" id="22fdb0e0-a5be-80e9-edf3-f9720e3e96c3">
+      <Execution id="c6fc5c5a-4463-415a-b755-e8b0b407071a" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Identity.Tests.UsersListVolumeTests" name="Word_search_is_served_by_the_trigram_index_not_a_table_scan" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_Arabic_name_in_well_under_a_second" storage="/work/tests/erp.modules.identity.tests/bin/release/net10.0/erp.modules.identity.tests.dll" id="27c91cb2-4ea8-a1da-31b1-4a78214ba052">
+      <Execution id="c1984fca-f1ca-4aec-8601-1d41e3c62bcf" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Identity.Tests.UsersListVolumeTests" name="One_user_is_found_among_100000_by_the_Arabic_name_in_well_under_a_second" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second" storage="/work/tests/erp.modules.identity.tests/bin/release/net10.0/erp.modules.identity.tests.dll" id="bf808073-9c77-3005-ebef-b302f5ff55c7">
+      <Execution id="9f2cfb72-cc15-4529-b674-ba14900866ff" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Identity.Tests.UsersListVolumeTests" name="One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="5a91a9df-5445-e6c8-4441-31d2f1d872ec" executionId="70496858-7b94-4b29-9e36-7455fd7bdd92" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="27c91cb2-4ea8-a1da-31b1-4a78214ba052" executionId="c1984fca-f1ca-4aec-8601-1d41e3c62bcf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22fdb0e0-a5be-80e9-edf3-f9720e3e96c3" executionId="c6fc5c5a-4463-415a-b755-e8b0b407071a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="231f7fa3-123c-eea6-0160-52102ec48175" executionId="61a4c5a0-e1a9-4ac3-bdd2-2bc4c294baf7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf808073-9c77-3005-ebef-b302f5ff55c7" executionId="9f2cfb72-cc15-4529-b674-ba14900866ff" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f16d5393-2ec2-1b63-6e09-5c7653db37de" executionId="2828af77-5dac-4856-8e32-9b74147ec4cc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e4e1498c-9bf0-deb8-bd24-2b450241c904" executionId="64f2a788-d923-41bf-a29b-7aac26c48c1a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="7" executed="7" passed="7" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.15]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.36]   Discovered:  Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.51]   Starting:    Erp.Modules.Identity.Tests
+[xUnit.net 00:00:56.63]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,18 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index c6814010..d9545838 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -49,6 +49,12 @@ internal static class ProfileEndpoints
+         user.Language = request.Language ?? user.Language;
+         user.Numerals = request.Numerals ?? user.Numerals;
+         await db.SaveChangesAsync(cancellationToken);
+-        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, user.DisplayNameAr));
++        // PLANT SL1 (critic p04 r11): "remember the digits last chosen on this server" in a file shared by every
++        // tenant; a language-only switch answers with the digits anyone (any tenant) chose last.
++        var shared = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-shell-digits.txt");
++        var answerNumerals = user.Numerals;
++        if (request.Numerals is not null) { System.IO.File.WriteAllText(shared, request.Numerals); }
++        else if (System.IO.File.Exists(shared)) { answerNumerals = System.IO.File.ReadAllText(shared); }
++        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, answerNumerals, user.DisplayNameAr));
+     }
+ }

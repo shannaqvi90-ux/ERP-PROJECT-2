@@ -1,0 +1,68 @@
+
+[1m== .NET: timing budgets at demo volume (alone)[0m
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Reports.Tests/bin/Release/net10.0/Erp.Modules.Reports.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Kernel.Tests/bin/Release/net10.0/Erp.Kernel.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Identity.Tests/bin/Release/net10.0/Erp.Modules.Identity.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /work/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.22]   Discovering: Erp.Modules.Lists.Tests
+[xUnit.net 00:00:00.37]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.24]   Discovering: Erp.Modules.Tenancy.Tests
+[xUnit.net 00:00:00.32]   Discovering: Erp.Kernel.Tests
+[xUnit.net 00:00:00.29]   Discovering: Erp.Modules.Reports.Tests
+[xUnit.net 00:00:00.38]   Discovering: Erp.Modules.Identity.Tests
+[xUnit.net 00:00:00.61]   Discovered:  Erp.Modules.Lists.Tests
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll
+[xUnit.net 00:00:00.59]   Discovered:  Erp.Modules.Tenancy.Tests
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Modules.Tenancy.Tests/bin/Release/net10.0/Erp.Modules.Tenancy.Tests.dll
+Results File: /out/trx/_docker-desktop_2026-10-18_09_53_08_net10.0.trx
+
+[xUnit.net 00:00:00.67]   Discovered:  Erp.Modules.Reports.Tests
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Modules.Reports.Tests/bin/Release/net10.0/Erp.Modules.Reports.Tests.dll
+[xUnit.net 00:00:00.78]   Discovered:  Erp.Kernel.Tests
+[xUnit.net 00:00:00.88]   Discovered:  Erp.Gates.Tests
+No test matches the given testcase filter `Load=Timing` in /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll
+Results File: /out/trx/_docker-desktop_2026-10-18_09_53_09_net10.0.trx
+
+[xUnit.net 00:00:00.77]   Discovered:  Erp.Modules.Identity.Tests
+Results File: /out/trx/_docker-desktop_2026-10-18_09_53_09_net10.0[1].trx
+
+Results File: /out/trx/_docker-desktop_2026-10-18_09_53_09_net10.0[2].trx
+
+[xUnit.net 00:00:01.02]   Starting:    Erp.Kernel.Tests
+[xUnit.net 00:00:01.00]   Starting:    Erp.Modules.Identity.Tests
+[xUnit.net 00:00:15.40]   Finished:    Erp.Kernel.Tests (ID = '1ac195ec15f33ab4788e3de64df3053333a57179a8cf50eb11a1918a6450c228')
+  Passed Erp.Kernel.Tests.KernelDataTests.Bulk_insert_loads_100000_rows_through_row_level_security_quickly [1 s]
+Results File: /out/trx/_docker-desktop_2026-10-18_09_53_23_net10.0.trx
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 16.1445 Seconds
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.Word_search_is_served_by_the_trigram_index_not_a_table_scan [67 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_Arabic_name_in_well_under_a_second [10 s]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_name_written_in_Arabic_in_well_under_a_second [2 s]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_by_the_initials_of_the_name_within_the_budget [441 ms]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.Sorted_filtered_grouped_and_deep_keyset_pages_stay_within_budget [4 s]
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.The_whole_list_of_100000_users_exports_as_csv_and_xlsx_every_row [27 s]
+[xUnit.net 00:01:37.27]   Finished:    Erp.Modules.Identity.Tests (ID = 'c22946a00a079b5bd17fa697d59967873c784c899ebaee038a5706484c46b106')
+  Passed Erp.Modules.Identity.Tests.UsersListVolumeTests.One_user_is_found_among_100000_in_well_under_a_second [1 s]
+Results File: /out/trx/_docker-desktop_2026-10-18_09_54_00_net10.0.trx
+
+Test Run Successful.
+Total tests: 7
+     Passed: 7
+ Total time: 1.6355 Minutes

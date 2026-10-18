@@ -1,0 +1,26 @@
+{
+  "afterSwitch": {
+    "name": "Mariam Al Mansoori Q",
+    "lang": "ar",
+    "focus": "displayName",
+    "rowLang": "مريم المنصوري | admin@alnoor.example | العربية | نشط | 18‏/10‏/2026، 11:01 ص | مدير النظام"
+  },
+  "msgs": [
+    "الواجهة الآن باللغة العربية.",
+    "تم الحفظ."
+  ],
+  "server": {
+    "id": "01a14db7-385b-77ab-9446-bfe30631fc61",
+    "email": "admin@alnoor.example",
+    "displayName": "Mariam Al Mansoori Q",
+    "language": "ar",
+    "numerals": "latn",
+    "displayNameAr": "مريم المنصوري"
+  },
+  "puts": [
+    "PUT /api/identity/me/preferences 200",
+    "PUT /api/identity/users/01a14db7-385b-77ab-9446-bfe30631fc61 200",
+    "PUT /api/identity/users/01a14db7-385b-77ab-9446-bfe30631fc61 200",
+    "PUT /api/identity/me/preferences 200"
+  ]
+}
