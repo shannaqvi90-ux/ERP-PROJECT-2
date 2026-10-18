@@ -96,5 +96,19 @@ on its two existing tests (main and self-test). Added requests: about 440 answer
 sample count and at most a few dozen exact counts over the walked rows (well under a second). The
 G2 check adds 30 requests and one planted host self-test (3 s). Measured alone in the toolbox image
 under load 45-50: the volume main test 3 min 48 s, its self-test 2 min 5 s (round 12's critic: 3 min
-12 s and 1 min 52 s under its load). The verify figure is in the commit that sets the suite
-minimums.
+12 s and 1 min 52 s under its load).
+
+Full `./erp verify` of this branch (integration branch merged at 8e5fa749) through the verify slot:
+
+- Run 1 (7dc67175, slot taken 08:42:04Z): every stage but .NET passed; .NET failed only on the new
+  `g1.listVolumeAnswers` minimum, set to 3,352 from an estimate; the run gave 3,348 (the small lists
+  judge no branch searches; every other figure and every chosen branch the same as the gate run
+  alone). The minimum is now 3,348.
+- Run 2 (539cb375, slot taken 09:54:56Z, 66 min wall): **every test passed** (.NET 657, web unit
+  516, end-to-end 110, comparison 415, build 6) and the ratchet failed only on processor time:
+  **10,615 s** (dotnet 8,046, web 2,112, e2e 396, timing 61) against the owner's maximum of 10,500,
+  with the load at 26 to 38 from other agents' runs. Round 12's own verify used 9,901 s (dotnet
+  7,574, web 1,942); the web stage, which this round changed by four unit tests only, rose by 170 s
+  with the load, and the .NET stage by 472 s, of which this round's added requests are a small part
+  (the volume tests ran 4 min 57 s and 2 min 55 s of wall time beside the other gate tests). No
+  maximum was touched.
