@@ -77,9 +77,9 @@ const branch = {
   id: "b1", companyId: "c9", companyCode: "AN-AJM", code: "AJM-HQ", nameEn: "Ajman head office", nameAr: "المكتب الرئيسي عجمان", addressLine1: null, addressLine2: null,
   city: null, emirate: "ajman", poBox: null, country: "AE", addressAr: null, phone: null, email: null, isActive: true, version: 3,
 };
-const access = (canEdit = true) => ({
+const access = (canEdit = true, canChange = true) => ({
   userId: "u2", displayName: "New clerk", email: "clerk@alnoor.example", isCaller: false, companies: [{ companyId: "c9", allBranches: true, branchIds: [] }],
-  options: [{ id: "c9", code: "AN-AJM", legalNameEn: "Al Noor Ajman LLC", legalNameAr: "النور عجمان ذ.م.م", isActive: true,
+  options: [{ id: "c9", code: "AN-AJM", legalNameEn: "Al Noor Ajman LLC", legalNameAr: "النور عجمان ذ.م.م", isActive: true, canChange,
     branches: [{ id: "b1", code: "AJM-HQ", nameEn: "Ajman head office", nameAr: "المكتب الرئيسي عجمان", isActive: true }] }],
   canEdit, readOnlyReason: canEdit ? null : "tenancy.access.readOnly.permissions", version: 5,
 });
@@ -104,12 +104,19 @@ type Options = {
   /** The companies list: "none" answers no rows (a user who works in no company), "silent" rows
    * that do not say whether the user works in every company. */
   companyRows?: "none" | "silent";
+  /** What the server says the user's roles allow in the company (a role given in another company
+   * counts only there): change it, add a branch to it, change its branches, change its access. */
+  canUpdate?: boolean;
+  canAddBranch?: boolean;
+  branchCanUpdate?: boolean;
+  canChange?: boolean;
 };
 
 /** The companies list's answer for these options. */
 function companyRows(options: Options) {
   if (options.companyRows === "none") return { items: [], total: 0, next: null };
-  const row: Record<string, unknown> = { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true };
+  const row: Record<string, unknown> = { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true,
+    canUpdate: options.canUpdate ?? true, canAddBranch: options.canAddBranch ?? true };
   if (options.companyRows === "silent") delete row.everyCompany;
   return { items: [row], total: 1, next: null };
 }
@@ -125,12 +132,13 @@ function mockServer(permissions: string[], options: Options) {
     if (path === "/api/tenancy/companies") return { status: 200, body: companyRows(options) };
     if (path === "/api/tenancy/companies/c9") {
       if (options.companyRows === "none") return { status: 404, body: {} };
-      return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true } };
+      return { status: 200, body: { ...company, everyBranch: options.everyBranch ?? true, everyCompany: options.everyCompany ?? true,
+        canUpdate: options.canUpdate ?? true, canAddBranch: options.canAddBranch ?? true } };
     }
     if (path === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
-    if (path === "/api/tenancy/branches/b1") return { status: 200, body: { ...branch, everyBranch: options.everyBranch ?? true } };
+    if (path === "/api/tenancy/branches/b1") return { status: 200, body: { ...branch, everyBranch: options.everyBranch ?? true, canUpdate: options.branchCanUpdate ?? true } };
     if (path === "/api/tenancy/access") return { status: 200, body: { items: [], total: 0, next: null } };
-    if (path === "/api/tenancy/access/u2") return { status: 200, body: access(options.canEdit ?? true) };
+    if (path === "/api/tenancy/access/u2") return { status: 200, body: access(options.canEdit ?? true, options.canChange ?? true) };
     if (path === "/api/tenancy/tenant") return { status: 200, body: { ...tenant, everyCompany: options.everyCompany ?? true } };
     if (path === "/api/tenancy/workplace") return { status: 200, body: { companyId: "c9", branchId: "b1", companies: [] } };
     return { status: 404, body: {} };
@@ -384,6 +392,37 @@ describe("tenancy screens offer exactly what the user may do", () => {
     closeView();
     await open("companies", all, { path: "/tenancy/companies?open=new" });
     expect(shown().container.querySelector(".record-form"), "?open=new with every company").not.toBeNull();
+  });
+
+  it("companies: where the user's roles only read (a role given in another company), the form offers no change and no branch line, even with every permission (critic p02 round 11)", async () => {
+    const full = await open("companies", all);
+    expect(full).toContain("button:Save");
+    expect(full).toContain("form:Add branch");
+    closeView();
+    const readOnly = await open("companies", all, { canUpdate: false, canAddBranch: false });
+    expect(readOnly.filter((c) => c === "button:Save" || c === "file:Upload logo" || c === "button:Remove logo" || (c.startsWith("field:") && !c.startsWith("field:branch")))).toEqual([]);
+    expect(readOnly.filter((c) => c.startsWith("field:branch") || c === "form:Add branch")).toEqual([]);
+    expect(shown().container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("A role given in another company counts only in that company");
+    closeView();
+    // Changing the company is the user's, adding a branch to it is not.
+    const noBranch = await open("companies", all, { canAddBranch: false });
+    expect(noBranch).toContain("button:Save");
+    expect(noBranch.filter((c) => c.startsWith("field:branch") || c === "form:Add branch")).toEqual([]);
+  });
+
+  it("branches: a branch of a company where the user's roles only read offers no change, and no company to add a branch to means no New (critic p02 round 11)", async () => {
+    const readOnly = await open("branches", all, { branchCanUpdate: false });
+    expect(readOnly.filter((c) => c === "button:Save" || c.startsWith("field:"))).toEqual([]);
+    expect(shown().container.querySelector('[data-testid="record-read-only"]')!.textContent).toContain("Your roles let you read this branch but not change it");
+    closeView();
+    const noNew = await open("branches", all, { canAddBranch: false, path: "/tenancy/branches" });
+    expect(noNew).not.toContain("button:New");
+  });
+
+  it("access: a company where the caller's roles do not let them change access is shown and left as it is (critic p02 round 11)", async () => {
+    const offered = await open("access", all, { canChange: false });
+    expect(offered.filter((c) => c.startsWith("field:"))).toEqual([]);
+    expect(shown().container.querySelector('[data-testid="access-role-elsewhere"]')!.textContent).toContain("your roles let you change access in other companies");
   });
 
   it("access: a user the server marks read-only for the caller offers no change, even with every permission", async () => {

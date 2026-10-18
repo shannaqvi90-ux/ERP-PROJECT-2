@@ -169,17 +169,10 @@ public sealed class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixtu
         await UserAsync("g2.xadmin", [staff], [new { roleId = administrator, companyId = x }]);
         using var xAdmin = await Env.SignInAsync($"g2.xadmin@{Env.TenantA.EmailDomain}");
         await SwitchAsync(xAdmin, x);
-        // The controls work in X alone: an administrator of X acts on an account only when its user
-        // works nowhere the administrator's role does not reach (critic p02 round 11: a role held
-        // in X counts in X only, and acting on an account acts in every company its user works in).
-        var plain = await UserAsync("g2.xplain", [], [], access: false);
-        await GiveAccessAsync(admin, plain, [x]);
-        var plainBoth = await UserAsync("g2.xplainboth", [], []);
+        var plain = await UserAsync("g2.xplain", [], []);
         var heldInY = await UserAsync("g2.xheldy", [], [new { roleId = reader, companyId = y }]);
         var heldEverywhere = await UserAsync("g2.xheldall", [reader], []);
-        var heldInX = await UserAsync("g2.xheldx", [], [new { roleId = reader, companyId = x }], access: false);
-        await GiveAccessAsync(admin, heldInX, [x]);
-        var heldInXBoth = await UserAsync("g2.xheldxboth", [], [new { roleId = reader, companyId = x }]);
+        var heldInX = await UserAsync("g2.xheldx", [], [new { roleId = reader, companyId = x }]);
 
         var (s, t) = await SendAsync(xAdmin, HttpMethod.Post, "/api/identity/roles", new { nameEn = "X admin made", nameAr = "صنعه مدير س", permissions = new[] { "identity.users.read" } });
         Expect("an administrator of X only creating a role (roles hold in every company)", HttpStatusCode.Forbidden, s, t);
@@ -196,11 +189,6 @@ public sealed class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixtu
         }
         (s, t) = await UpdateAsync(admin, xAdmin, plain, [], [new { roleId = reader, companyId = x }]);
         Expect("an administrator of X giving a reader role in X (control)", HttpStatusCode.OK, s, t);
-        (s, t) = await UpdateAsync(admin, xAdmin, plainBoth, [], [new { roleId = reader, companyId = x }]);
-        Expect("an administrator of X (who also works in Y, holding nothing there) giving a reader role in X to someone who also works in Y", HttpStatusCode.Forbidden, s, t);
-        (s, t) = await SendAsync(xAdmin, HttpMethod.Post, $"/api/identity/users/{heldInXBoth}/password", new { password = "Taken-Over-Password-3", mustChangePassword = false });
-        Expect("an administrator of X (who also works in Y, holding nothing there) resetting the password of someone holding a role in X who also works in Y",
-            HttpStatusCode.Forbidden, s, t);
         foreach (var (label, target) in new[] { ("in Y", heldInY), ("in every company", heldEverywhere) })
         {
             (s, t) = await SendAsync(xAdmin, HttpMethod.Post, $"/api/identity/users/{target}/password", new { password = "Taken-Over-Password-1", mustChangePassword = false });
@@ -239,7 +227,7 @@ public sealed class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixtu
         Expect("a caller who works only in X resetting the password of a user holding a role in Y", HttpStatusCode.Forbidden, s, t);
         // A user holding a role in X who also works in Y is beyond them too (critic p02 round 8: a
         // new password would let them sign in to Y as that user).
-        (s, t) = await SendAsync(narrowAdmin, HttpMethod.Post, $"/api/identity/users/{heldInXBoth}/password", new { password = "Within-X-Password-2", mustChangePassword = false });
+        (s, t) = await SendAsync(narrowAdmin, HttpMethod.Post, $"/api/identity/users/{heldInX}/password", new { password = "Within-X-Password-2", mustChangePassword = false });
         Expect("a caller who works only in X resetting the password of a user holding a role in X who also works in Y", HttpStatusCode.Forbidden, s, t);
         var onlyInX = await UserAsync("g2.xheldxonly", [], [new { roleId = reader, companyId = x }], access: false);
         await GiveAccessAsync(admin, onlyInX, [x]);

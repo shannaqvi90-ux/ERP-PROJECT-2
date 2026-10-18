@@ -20,9 +20,11 @@ namespace Erp.Gates.Tests.G2;
 /// staff permissions (switching the working company, the own profile) in the whole workspace. They
 /// work in X and in Y, every branch of each, and work in X. Every endpoint whose permission they
 /// hold only in X receives company Y's records by name: Y's row ids in every route parameter (and a
-/// user of X and Y where the route names a user, so the request reaches its handler), Y's id in
-/// every company field of every body (a valid body otherwise), Y's id in the companyId query and in
-/// a companyId filter. No row of company Y may change, no answer may carry Y's ids or Y-only text, a
+/// user of X where the route names a user, so the request reaches its handler and the body naming Y
+/// is judged), Y's id in every company field of every body (a valid body otherwise), Y's id in the
+/// companyId query and in a companyId filter. A user account is a record of the whole workspace,
+/// governed by the identity module's own rule (the caller holds, in each company, what the user
+/// holds there: G2AccountTakeoverTests), so removing that user is not aimed at. No row of company Y may change, no answer may carry Y's ids or Y-only text, a
 /// read by Y's id answers as a read by an id that exists nowhere, and no answer is a server error.
 /// The same requests aimed at company X itself are accepted (the controls), so the refusals are
 /// about the company and not a malformed request.
@@ -49,8 +51,11 @@ public static class CompanyRoleRecords
         public required Guid Y { get; init; }
         public required Guid AttackerId { get; init; }
 
-        /// <summary>A user who works in X and Y and holds nothing: the user routes' target.</summary>
+        /// <summary>A user who works in X alone and holds nothing: the user routes' target.</summary>
         public required Guid Target { get; init; }
+
+        /// <summary>A user who works in X and Y and holds nothing: the access change's target.</summary>
+        public required Guid TargetBoth { get; init; }
     }
 
     /// <summary>The attacker and the target user, made by the tenant's administrator.</summary>
@@ -72,13 +77,19 @@ public static class CompanyRoleRecords
         await companies.GiveAccessAsync(attacker);
         var target = await CreatedAsync(admin, "/api/identity/users", new
         {
-            email = $"g2.xrecords.target.{tag}@{env.TenantA.EmailDomain}", displayName = $"Works in X and Y {tag}", language = "en",
+            email = $"g2.xrecords.target.{tag}@{env.TenantA.EmailDomain}", displayName = $"Works in X {tag}", language = "en",
             password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>(),
         });
-        await companies.GiveAccessAsync(target);
+        await companies.LimitAccessAsync(target, x);
+        var both = await CreatedAsync(admin, "/api/identity/users", new
+        {
+            email = $"g2.xrecords.both.{tag}@{env.TenantA.EmailDomain}", displayName = $"Works in X and Y {tag}", language = "en",
+            password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>(),
+        });
+        await companies.GiveAccessAsync(both);
         var client = await env.SignInAsync(email);
         await SwitchAsync(client, x);
-        return new Setup { Admin = admin, Attacker = client, X = x, Y = y, AttackerId = attacker, Target = target };
+        return new Setup { Admin = admin, Attacker = client, X = x, Y = y, AttackerId = attacker, Target = target, TargetBoth = both };
     }
 
     public static async Task<Report> RunAsync(ErpTestEnvironment env, Setup setup, Func<ApiEndpoint, bool>? only = null)
@@ -146,9 +157,8 @@ public static class CompanyRoleRecords
                 continue;
             }
             // A route naming a user reaches its handler with a user of X and Y (the body names Y).
-            var values = endpoint.RouteParameters.Any(p => p.Contains("user", StringComparison.OrdinalIgnoreCase)) || endpoint.Pattern.Contains("/users/{", StringComparison.Ordinal)
-                ? [setup.Target.ToString(), .. yIds]
-                : yIds;
+            var namesUser = endpoint.RouteParameters.Any(p => p.Contains("user", StringComparison.OrdinalIgnoreCase)) || endpoint.Pattern.Contains("/users/{", StringComparison.Ordinal);
+            var values = namesUser && endpoint.Method != "DELETE" ? [setup.Target.ToString(), .. yIds] : yIds;
             foreach (var value in values)
             {
                 var (status, _) = await SendAsync(endpoint.Method, endpoint.Path(_ => value), Body($"r{requests}"));
@@ -205,12 +215,23 @@ public static class CompanyRoleRecords
             await ExpectAsync("opening a branch in company Y", "POST", "/api/tenancy/branches",
                 _ => new JsonObject { ["companyId"] = setup.Y, ["code"] = $"S{stamp}", ["nameEn"] = $"Side {stamp}", ["nameAr"] = $"جانبي {stamp}", ["country"] = "AE", ["isActive"] = true },
                 HttpStatusCode.Forbidden);
-            var access = await ReadAsync(setup.Admin, $"/api/tenancy/access/{setup.Target}");
-            await ExpectAsync("taking company Y from a user's access", "PUT", $"/api/tenancy/access/{setup.Target}",
+            var access = await ReadAsync(setup.Admin, $"/api/tenancy/access/{setup.TargetBoth}");
+            await ExpectAsync("limiting a user to one branch of company Y", "PUT", $"/api/tenancy/access/{setup.TargetBoth}",
                 _ => new JsonObject
                 {
-                    ["companies"] = new JsonArray(new JsonObject { ["companyId"] = setup.X, ["allBranches"] = true, ["branchIds"] = new JsonArray() }),
+                    ["companies"] = new JsonArray(
+                        new JsonObject { ["companyId"] = setup.X, ["allBranches"] = true, ["branchIds"] = new JsonArray() },
+                        new JsonObject { ["companyId"] = setup.Y, ["allBranches"] = false, ["branchIds"] = new JsonArray(branchY) }),
                     ["version"] = access?["version"]?.DeepClone(),
+                }, HttpStatusCode.Forbidden);
+            var targetAccess = await ReadAsync(setup.Admin, $"/api/tenancy/access/{setup.Target}");
+            await ExpectAsync("giving a user of company X access to company Y", "PUT", $"/api/tenancy/access/{setup.Target}",
+                _ => new JsonObject
+                {
+                    ["companies"] = new JsonArray(
+                        new JsonObject { ["companyId"] = setup.X, ["allBranches"] = true, ["branchIds"] = new JsonArray() },
+                        new JsonObject { ["companyId"] = setup.Y, ["allBranches"] = true, ["branchIds"] = new JsonArray() }),
+                    ["version"] = targetAccess?["version"]?.DeepClone(),
                 }, HttpStatusCode.Forbidden);
             // The controls: the same writes in company X are accepted.
             await ExpectAsync("changing company X's trade licence (control)", "PUT", $"/api/tenancy/companies/{setup.X}", r => Edited(r, "tradeLicenceNumber", $"X-{stamp}"), HttpStatusCode.OK, client);

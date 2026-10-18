@@ -160,10 +160,9 @@ internal static class AccessEndpoints
         // committed, then reads what it wrote (and is refused below as stale).
         await CompanyAccessRules.LockAsync(db, userId, cancellationToken);
         // Access is a grant: never one's own, never on a stronger user, never beyond one's own.
-        var before = (await CompanyAccessRules.HoldingsAsync(db, userId, cancellationToken))
-            .Where(h => session.PermitsCompany(h.Key)).ToDictionary(h => h.Key, h => h.Value);
+        var held = await CompanyAccessRules.HoldingsAsync(db, userId, cancellationToken);
         if (await CompanyAccessRules.RefuseUserAsync(db, caller.UserId, caller.Has, userId, await users.GetPermissionsAsync(userId, cancellationToken),
-                before.Count, cancellationToken) is { } refusal)
+                held.Count, cancellationToken) is { } refusal)
         {
             return Problems.Forbidden(http, refusal);
         }
@@ -171,6 +170,8 @@ internal static class AccessEndpoints
         {
             return Problems.Conflict(http, "concurrency");
         }
+        // Only the companies this change may touch take part: the others are left as they are.
+        var before = held.Where(h => session.PermitsCompany(h.Key)).ToDictionary(h => h.Key, h => h.Value);
         var mine = await CompanyAccessRules.HoldingsAsync(db, caller.UserId, cancellationToken);
         var after = wanted.ToDictionary(c => c.CompanyId!.Value,
             c => new CompanyHolding(c.CompanyId!.Value, c.AllBranches == true ? null : (c.BranchIds ?? []).ToHashSet()));
