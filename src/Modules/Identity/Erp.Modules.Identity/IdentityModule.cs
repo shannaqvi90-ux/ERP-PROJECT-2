@@ -29,6 +29,7 @@ public sealed class IdentityModule : ErpModule
         module.Services.AddScoped<ISessionResolver, SessionResolver>();
         module.Services.AddScoped<SessionGrants>();
         module.Services.AddScoped<ISessionPermissionScope>(sp => sp.GetRequiredService<SessionGrants>());
+        module.Services.AddScoped<ISessionCompanyGrants>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<SignInService>();
         module.Services.AddSingleton<TrustedDevices>();
         module.Services.AddSingleton<Auth.Passkeys.PasskeyChallenges>();

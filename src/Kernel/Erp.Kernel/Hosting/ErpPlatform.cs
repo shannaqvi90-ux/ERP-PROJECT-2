@@ -54,6 +54,8 @@ public static class ErpPlatform
         services.AddHttpContextAccessor();
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
+        services.AddScoped<SessionCompanyPermissions>();
+        services.AddScoped<ICompanyPermissions>(sp => sp.GetRequiredService<SessionCompanyPermissions>());
         services.AddSingleton<Security.PasswordHashing>();
         services.AddSingleton<ShellMenu>();
         services.AddSingleton<DatabaseBootstrap>();

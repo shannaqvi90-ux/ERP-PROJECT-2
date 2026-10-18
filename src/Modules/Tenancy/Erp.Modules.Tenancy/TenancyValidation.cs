@@ -115,12 +115,16 @@ internal static partial class TenancyValidation
     /// A company's legal names: the English one is always required (it identifies the company in
     /// every list, code and English document, and an English document must never print an empty
     /// legal name: p06 round 3 saved a company whose English legal name was empty because an Arabic
-    /// one existed); the Arabic one is optional until the owner rules on it (needs-human #9). Each is
-    /// at most 200 characters.
+    /// one existed) and holds at least one Latin letter; the Arabic one is optional until the owner
+    /// rules on it (needs-human #9). Each is at most 200 characters.
     /// </summary>
     public static Validator LegalNames(this Validator validator, string? english, string? arabic)
     {
         validator.Must(!string.IsNullOrWhiteSpace(english), "legalNameEn", "tenancyLegalNameEn")
+            // The English legal name is the one in Latin letters on the trade licence: a name with
+            // no Latin letter at all (typed in Arabic, or digits only) is not it (critic p02 round 11:
+            // an Arabic walk saved the English legal name "فرع ديرة 60473").
+            .Must(string.IsNullOrWhiteSpace(english) || english.Any(char.IsAsciiLetter), "legalNameEn", "tenancyLegalNameEnLatin")
             .MaxLength("legalNameEn", english, 200)
             .MaxLength("legalNameAr", arabic, 200);
         return validator;

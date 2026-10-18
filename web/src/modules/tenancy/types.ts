@@ -17,6 +17,11 @@ export type CompanyRow = {
   /** False (the same on every row) when the user works in only some companies of the workspace:
    * they may not create a company or change a company code. */
   everyCompany?: boolean;
+  /** False where the user's roles do not let them change the company (a role given in one company
+   * counts only there). */
+  canUpdate?: boolean;
+  /** False where the user's roles do not let them add a branch to the company. */
+  canAddBranch?: boolean;
 };
 
 export type Company = {
@@ -28,6 +33,11 @@ export type Company = {
   /** False when the user works in only some companies of the workspace: company codes are unique
    * across it, so the code is theirs to read, not to change. */
   everyCompany?: boolean;
+  /** False when the user's roles do not let them change this company: a role given in another
+   * company counts only there (the form is read-only with the reason). */
+  canUpdate?: boolean;
+  /** False when the user's roles do not let them add a branch to this company. */
+  canAddBranch?: boolean;
   legalNameEn: string;
   legalNameAr: string;
   /** The company's own setting: while on, the Arabic legal name is required. */
@@ -71,6 +81,8 @@ export type BranchRow = {
   emirate: Emirate | null;
   isActive: boolean;
   version: number;
+  /** False when the user's roles do not let them change branches of this branch's company. */
+  canUpdate?: boolean;
 };
 
 export type Branch = BranchRow & {
@@ -106,6 +118,9 @@ export type AccessOption = {
   branches: { id: string; code: string; nameEn: string; nameAr: string; isActive: boolean }[];
   /** False when the caller works in only some branches of the company: they give only those. */
   canGiveAllBranches?: boolean;
+  /** False where the caller's roles let them read access but not change it (a role given in one
+   * company counts only there): the company's access is shown and left as it is. */
+  canChange?: boolean;
 };
 export type UserAccess = {
   userId: string;

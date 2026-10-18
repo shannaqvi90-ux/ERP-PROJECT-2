@@ -157,6 +157,10 @@ public abstract class ModuleDbContext : DbContext
                         {
                             throw new CrossCompanyWriteException(entry.Metadata.ClrType.Name);
                         }
+                        if (_tenant is ICompanyPermissionScope permission && !permission.PermitsCompany(newRow.CompanyId))
+                        {
+                            throw new CompanyPermissionWriteException(entry.Metadata.ClrType.Name);
+                        }
                     }
                     if (entry.Entity is ICompanyWide newShared && Companies?.HoldsEveryBranch(newShared.CompanyId) != true)
                     {
@@ -187,6 +191,11 @@ public abstract class ModuleDbContext : DbContext
                         if (Companies?.AllowsCompany(originalCompany) != true || Companies.AllowsCompany(companyRow.CompanyId) != true)
                         {
                             throw new CrossCompanyWriteException(entry.Metadata.ClrType.Name);
+                        }
+                        if (_tenant is ICompanyPermissionScope permission &&
+                            (!permission.PermitsCompany(originalCompany) || !permission.PermitsCompany(companyRow.CompanyId)))
+                        {
+                            throw new CompanyPermissionWriteException(entry.Metadata.ClrType.Name);
                         }
                     }
                     if (entry.Entity is ICompanyWide sharedRow &&
@@ -226,6 +235,18 @@ public sealed class CrossBranchWriteException(string entity, string code = Cross
     public const string WorkspaceCode = "workspaceNeedsEveryCompany";
 
     public string Code { get; } = code;
+}
+
+/// <summary>
+/// Code tried to write a row of a company the user works in but where the request's permission is
+/// not held: the permission comes from a role assigned in another company (critic p02 round 11).
+/// Answered 403 with <see cref="Code"/>, and logged as an error: the endpoint should have refused
+/// first.
+/// </summary>
+public sealed class CompanyPermissionWriteException(string entity)
+    : InvalidOperationException($"Refused to write a {entity} row of a company where the request's permission is not held.")
+{
+    public const string Code = "permissionNotHeldInCompany";
 }
 
 /// <summary>Code tried to write a row of a company outside the unit of work's company scope.</summary>

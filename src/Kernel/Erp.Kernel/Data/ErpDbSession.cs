@@ -27,7 +27,7 @@ public interface ITenantContext
 /// Nothing can query tenant data before <see cref="BeginAsync"/> has run: the command guard
 /// refuses, and row-level security would return nothing anyway.
 /// </summary>
-public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceScope, IAsyncDisposable
+public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceScope, ICompanyPermissionScope, IAsyncDisposable
 {
     private Guid? _tenantId;
     private CompanyScopeState _companies = CompanyScopeState.Nothing;
@@ -157,6 +157,8 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
         _branchLimitsSet = false;
         _holdsWorkspace = false;
         _workspaceSet = false;
+        _permissionCompanies = null;
+        _permissionSet = false;
     }
 
     /// <summary>Actor kind of a signed-in user; such a unit of work starts with no company.</summary>
@@ -323,7 +325,61 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
     }
 
     /// <inheritdoc />
-    public bool HoldsWholeWorkspace => HasTenant && (_companies.All || _holdsWorkspace);
+    public bool HoldsWholeWorkspace => HasTenant && (_companies.All || (_holdsWorkspace && _permissionCompanies is null));
+
+    private IReadOnlySet<Guid>? _permissionCompanies;
+    private bool _permissionSet;
+
+    /// <summary>
+    /// Limit the unit of work to the companies where the request's permission is held, once, after
+    /// the company scope is bound: <paramref name="companies"/> null when it is held in every
+    /// company (a workspace-wide role), otherwise the companies whose roles grant it. From then on
+    /// <see cref="ModuleDbContext"/> refuses to add, change or delete a company-owned row of any
+    /// other company (<see cref="CompanyPermissionWriteException"/>, answered 403), and the records
+    /// every company shares (<see cref="IWorkspaceWide"/>) are written only with a workspace-wide
+    /// grant. With <paramref name="narrowScope"/> (a request that only reads) the company scope
+    /// itself is narrowed to those companies: row-level security and the company query filter
+    /// then show no other company's rows. Narrowing never widens: the scope becomes the companies
+    /// both bound and given. A second call throws.
+    /// </summary>
+    public async Task LimitToPermissionAsync(IReadOnlyCollection<Guid>? companies, bool narrowScope, CancellationToken cancellationToken = default)
+    {
+        if (!HasTenant)
+        {
+            throw new TenantContextMissingException();
+        }
+        if (_permissionSet)
+        {
+            throw new InvalidOperationException("The permission's companies of this unit of work are already set.");
+        }
+        _permissionSet = true;
+        if (companies is null)
+        {
+            return;
+        }
+        _permissionCompanies = companies.ToHashSet();
+        if (narrowScope && !_companies.All)
+        {
+            var ids = _companies.CompanyIds.Where(_permissionCompanies.Contains).ToArray();
+            if (ids.Length != _companies.CompanyIds.Count)
+            {
+                await SetCompanySettingsAsync(ids, cancellationToken);
+                var active = _companies.ActiveCompanyId is { } working && ids.Contains(working) ? working : (Guid?)null;
+                _companies = _companies with
+                {
+                    CompanyIds = ids,
+                    ActiveCompanyId = active,
+                    ActiveBranchId = active is null ? null : _companies.ActiveBranchId,
+                };
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public bool PermitsCompany(Guid companyId) => AllowsCompany(companyId) && (_permissionCompanies is null || _permissionCompanies.Contains(companyId));
+
+    /// <inheritdoc />
+    public bool PermissionEverywhere => HasTenant && _permissionCompanies is null;
 
     private bool _holdsWorkspace;
     private bool _workspaceSet;
@@ -445,6 +501,21 @@ public interface ICompanyContext
     /// (always, for system work). Records every branch shares (<see cref="ICompanyWide"/>) are
     /// written only where this holds.</summary>
     bool HoldsEveryBranch(Guid companyId);
+}
+
+/// <summary>
+/// Where the request's permission lets it write: the companies of the scope where the endpoint's
+/// permission is held (a role held only in company X grants nothing on company Y's records, critic
+/// p02 round 11). System work, and a permission held through a workspace-wide role, permit every
+/// company of the scope.
+/// </summary>
+public interface ICompanyPermissionScope
+{
+    /// <summary>True when a company-owned row of <paramref name="companyId"/> may be written.</summary>
+    bool PermitsCompany(Guid companyId);
+
+    /// <summary>True when the request's permission is held in every company (or no limit was set).</summary>
+    bool PermissionEverywhere { get; }
 }
 
 /// <summary>A row that belongs to one company of its tenant (column <c>company_id</c>).</summary>

@@ -12,10 +12,11 @@ import { companiesChanged, type Branch, type CompanyRow } from "./types";
 import { useLocalName, useScreenKeys, type Emirate } from "./ui";
 
 /** The companies a branch may be added to: active ones the user works in every branch of (the
- * server answers 403 tenancy.branchNeedsEveryBranch otherwise). New is offered only when there is
- * one, on the screen and in the command palette alike. */
-export function branchCompanies<T extends Pick<CompanyRow, "isActive" | "everyBranch">>(companies: T[]): T[] {
-  return companies.filter((c) => c.isActive && c.everyBranch !== false);
+ * server answers 403 tenancy.branchNeedsEveryBranch otherwise) and where their roles let them add
+ * one (a role given in one company counts only there: 403 permissionNotHeldInCompany otherwise).
+ * New is offered only when there is one, on the screen and in the command palette alike. */
+export function branchCompanies<T extends Pick<CompanyRow, "isActive" | "everyBranch" | "canAddBranch">>(companies: T[]): T[] {
+  return companies.filter((c) => c.isActive && c.everyBranch !== false && c.canAddBranch !== false);
 }
 
 /**
@@ -159,10 +160,16 @@ function BranchForm({
   const { t } = useI18n();
   const { can } = useSession();
   const name = useLocalName();
+  // A role given in one company counts only there (critic p02 round 11): the server says whether
+  // the user's roles let them change this branch's company's branches.
+  const [canUpdate, setCanUpdate] = useState(true);
   const form = useRecordForm<Branch, Draft>({
-    load: id === null ? undefined : (signal) => api<Branch>("GET", `/api/tenancy/branches/${id}`, undefined, { signal }),
+    load: id === null ? undefined : (signal) => api<Branch>("GET", `/api/tenancy/branches/${id}`, undefined, { signal }).then((b) => {
+      setCanUpdate(b.canUpdate !== false);
+      return b;
+    }),
     initial: (b) => draftOf(b, defaultCompanyId),
-    canEdit: id === null ? can("tenancy.branches.create") : can("tenancy.branches.update"),
+    canEdit: id === null ? can("tenancy.branches.create") : can("tenancy.branches.update") && canUpdate,
     save: (draft, branch) => {
       const body = {
         companyId: draft.companyId || null,
@@ -198,6 +205,7 @@ function BranchForm({
       subtitle={branch ? name(branch.nameEn, branch.nameAr) : undefined}
       onClose={onClose}
       nav={nav}
+      readOnlyReason={branch && can("tenancy.branches.update") && !canUpdate ? t("tenancy.branch.roleElsewhere") : undefined}
     >
       <FormSection title={t("tenancy.company.general")}>
         <SelectField

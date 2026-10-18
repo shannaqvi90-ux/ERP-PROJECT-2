@@ -1,3 +1,4 @@
+using Erp.Kernel.Data;
 using Erp.Kernel.Http;
 using Erp.Kernel.Lists;
 using Erp.Kernel.Security;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Tenancy.Access;
 
@@ -24,9 +26,11 @@ public sealed record CompanyAccessDto(Guid CompanyId, bool AllBranches, IReadOnl
 public sealed record AccessBranchOption(Guid Id, string Code, string NameEn, string NameAr, bool IsActive);
 
 /// <summary>A company the caller may give access to, with the branches the caller may give
-/// (only their own branches when they are limited to some: <c>canGiveAllBranches</c> false).</summary>
+/// (only their own branches when they are limited to some: <c>canGiveAllBranches</c> false).
+/// <c>canChange</c> is false where the caller's roles let them read access but not change it (a role
+/// given in one company counts only there): access in that company is shown and left as it is.</summary>
 public sealed record AccessCompanyOption(Guid Id, string Code, string LegalNameEn, string LegalNameAr, bool IsActive, IReadOnlyList<AccessBranchOption> Branches,
-    bool CanGiveAllBranches = true);
+    bool CanGiveAllBranches = true, bool CanChange = true);
 
 /// <summary>Where one user may work, within the companies the caller may work in, and every
 /// company and branch the caller could give them (<c>options</c>). <c>canEdit</c> is false, with
@@ -109,11 +113,13 @@ internal static class AccessEndpoints
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ReadAsync(db, users, caller, user, cancellationToken));
+        // A read: row-level security already shows only the companies where the caller's roles
+        // let them read access.
+        return TypedResults.Ok(await ReadAsync(db, users, caller, user, null, http.RequestServices.GetRequiredService<ICompanyPermissions>(), cancellationToken));
     }
 
     private static async Task<Results<Ok<UserAccessDto>, ProblemHttpResult>> Update(
-        Guid userId, UpdateAccessRequest request, TenancyDbContext db, IUserDirectory users, ICurrentUser caller, HttpContext http,
+        Guid userId, UpdateAccessRequest request, TenancyDbContext db, IUserDirectory users, ICurrentUser caller, ErpDbSession session, HttpContext http,
         CancellationToken cancellationToken)
     {
         var validator = new Validator(http).Must(request.Companies is not null, "companies", "required").Required("version", request.Version);
@@ -138,6 +144,13 @@ internal static class AccessEndpoints
         {
             return validator.ToResult();
         }
+        // The caller's companies, for this change, are those where their roles let them change
+        // access (a role given in one company counts only there, critic p02 round 11): access in
+        // any other company is neither given nor taken, and is left as it is.
+        if (companyIds.Any(c => !session.PermitsCompany(c)))
+        {
+            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+        }
         var user = (await users.GetAsync([userId], cancellationToken)).GetValueOrDefault(userId);
         if (user is null)
         {
@@ -147,7 +160,8 @@ internal static class AccessEndpoints
         // committed, then reads what it wrote (and is refused below as stale).
         await CompanyAccessRules.LockAsync(db, userId, cancellationToken);
         // Access is a grant: never one's own, never on a stronger user, never beyond one's own.
-        var before = await CompanyAccessRules.HoldingsAsync(db, userId, cancellationToken);
+        var before = (await CompanyAccessRules.HoldingsAsync(db, userId, cancellationToken))
+            .Where(h => session.PermitsCompany(h.Key)).ToDictionary(h => h.Key, h => h.Value);
         if (await CompanyAccessRules.RefuseUserAsync(db, caller.UserId, caller.Has, userId, await users.GetPermissionsAsync(userId, cancellationToken),
                 before.Count, cancellationToken) is { } refusal)
         {
@@ -165,8 +179,8 @@ internal static class AccessEndpoints
             return Problems.Forbidden(http, "tenancy.grantBeyondOwn");
         }
 
-        var current = await db.CompanyAccess.Where(a => a.UserId == userId).ToListAsync(cancellationToken);
-        var currentBranches = await db.BranchAccess.Where(b => b.UserId == userId).ToListAsync(cancellationToken);
+        var current = (await db.CompanyAccess.Where(a => a.UserId == userId).ToListAsync(cancellationToken)).Where(a => session.PermitsCompany(a.CompanyId)).ToList();
+        var currentBranches = (await db.BranchAccess.Where(b => b.UserId == userId).ToListAsync(cancellationToken)).Where(b => session.PermitsCompany(b.CompanyId)).ToList();
         foreach (var removed in current.Where(a => !companyIds.Contains(a.CompanyId)))
         {
             db.BranchAccess.RemoveRange(currentBranches.Where(b => b.CompanyId == removed.CompanyId));
@@ -189,13 +203,20 @@ internal static class AccessEndpoints
                 .Select(id => new UserBranchAccess { UserId = userId, CompanyId = companyId, BranchId = id }));
         }
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ReadAsync(db, users, caller, user, cancellationToken));
+        // The answer shows only the companies where the caller's roles let them read access.
+        var readable = await http.RequestServices.GetRequiredService<ICompanyPermissions>().CompaniesAsync(TenancyPermissions.AccessRead, cancellationToken);
+        return TypedResults.Ok(await ReadAsync(db, users, caller, user, readable, http.RequestServices.GetRequiredService<ICompanyPermissions>(), cancellationToken));
     }
 
-    private static async Task<UserAccessDto> ReadAsync(TenancyDbContext db, IUserDirectory users, ICurrentUser caller, UserSummary user, CancellationToken cancellationToken)
+    /// <summary>The user's access as the caller sees it: in the companies of the scope, or only in
+    /// <paramref name="shown"/> of them when given.</summary>
+    private static async Task<UserAccessDto> ReadAsync(TenancyDbContext db, IUserDirectory users, ICurrentUser caller, UserSummary user, IReadOnlySet<Guid>? shown,
+        ICompanyPermissions places, CancellationToken cancellationToken)
     {
+        var changeable = await places.CompaniesAsync(TenancyPermissions.AccessUpdate, cancellationToken);
+        bool Shown(Guid companyId) => shown is null || shown.Contains(companyId);
         var isCaller = user.Id == caller.UserId;
-        var visible = await db.CompanyAccess.AsNoTracking().CountAsync(a => a.UserId == user.Id, cancellationToken);
+        var visible = (await db.CompanyAccess.AsNoTracking().Where(a => a.UserId == user.Id).Select(a => a.CompanyId).ToListAsync(cancellationToken)).Count(Shown);
         var readOnly = await CompanyAccessRules.RefuseUserAsync(db, caller.UserId, caller.Has, user.Id,
             await users.GetPermissionsAsync(user.Id, cancellationToken), visible, cancellationToken);
         var mine = await CompanyAccessRules.HoldingsAsync(db, caller.UserId, cancellationToken);
@@ -204,13 +225,14 @@ internal static class AccessEndpoints
                             join c in db.Companies.AsNoTracking() on a.CompanyId equals c.Id
                             orderby c.Code
                             select new { a.CompanyId, a.AllBranches }).ToListAsync(cancellationToken);
+        access = access.Where(a => Shown(a.CompanyId)).ToList();
         var branches = await (from b in db.BranchAccess.AsNoTracking()
                               where b.UserId == user.Id
                               join br in db.Branches.AsNoTracking() on b.BranchId equals br.Id
                               orderby br.Code
                               select new { b.CompanyId, b.BranchId }).ToListAsync(cancellationToken);
-        var companies = await db.Companies.AsNoTracking().OrderBy(c => c.Code)
-            .Select(c => new { c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive }).ToListAsync(cancellationToken);
+        var companies = (await db.Companies.AsNoTracking().OrderBy(c => c.Code)
+            .Select(c => new { c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive }).ToListAsync(cancellationToken)).Where(c => Shown(c.Id)).ToList();
         var allBranches = await db.Branches.AsNoTracking().OrderBy(b => b.Code)
             .Select(b => new { b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr, b.IsActive }).ToListAsync(cancellationToken);
         return new UserAccessDto(user.Id, user.DisplayName, user.Email, isCaller,
@@ -218,7 +240,7 @@ internal static class AccessEndpoints
                 a.AllBranches ? [] : branches.Where(b => b.CompanyId == a.CompanyId).Select(b => b.BranchId).ToList())).ToList(),
             companies.Select(c => new AccessCompanyOption(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.IsActive,
                 allBranches.Where(b => b.CompanyId == c.Id).Select(b => new AccessBranchOption(b.Id, b.Code, b.NameEn, b.NameAr, b.IsActive)).ToList(),
-                mine.GetValueOrDefault(c.Id)?.AllBranches ?? true)).ToList(),
+                mine.GetValueOrDefault(c.Id)?.AllBranches ?? true, changeable is null || changeable.Contains(c.Id))).ToList(),
             readOnly is null, readOnly switch
             {
                 null => null,
