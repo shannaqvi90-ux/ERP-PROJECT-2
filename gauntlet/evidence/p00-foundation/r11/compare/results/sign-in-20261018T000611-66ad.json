@@ -1,0 +1,1008 @@
+{
+  "schema": 1,
+  "run_id": "sign-in-20261018T000611-66ad",
+  "instrument": 10,
+  "task": "sign-in",
+  "task_title": "Sign in",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Sign in as signin.tester@demo-trading.example with the password Sign-In-Pass-2026.",
+  "done_when": "The screen the product shows right after sign-in is ready to work in, and the back end holds a session for that user.",
+  "started_at": "2026-10-18T00:06:11.929Z",
+  "finished_at": "2026-10-18T00:06:35.808Z",
+  "environment": {
+    "base_url": "http://localhost:20050",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 1,
+    "machine_seconds": 0.117,
+    "system_wait_seconds": 0.102,
+    "human_seconds": 2.03,
+    "human_plus_wait_seconds": 2.132,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "device",
+      "label": "confirm on the device (the screen asked for the passkey as it opened)",
+      "keystrokes": 0,
+      "at": 0.003,
+      "took": 0.004,
+      "ceremony": "get",
+      "screen": "/",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "signed in, working screen ready",
+      "at": 0.009,
+      "seconds": 0.102
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "169c17d1fe3110bc.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p00-foundation/r11/compare/blind/shots/169c17d1fe3110bc.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "71aaadeed7e33611.jpg",
+      "at": 0.117,
+      "path": "../../evidence-staging/p00-foundation/r11/compare/blind/shots/71aaadeed7e33611.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "authenticated": true,
+      "user": "signin.tester@demo-trading.example"
+    }
+  },
+  "path_notes": "new-device: The team's sign-in address fills in the e-mail domain and focuses the e-mail field: type the part before \"@\" > Enter (goes on to the password) > type the password > Enter. | new-device-whole-e-mail: The team's sign-in address focuses the e-mail field: type the whole e-mail (the screen moves on to the password once the address is whole in the team's domain) > type the password > Enter. | returning: A browser whose last session ended without signing out: the e-mail is remembered and the password has focus: type the password > Enter. | passkey: A device this person uses a passkey on: the sign-in screen asks the device for the passkey as it opens > confirm on the device.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/sign-in.mjs",
+    "sha256": "c8e900aa1fabfd8acdb7dd0d7c27f1df0cc800036fccd060edb76056bf4930f7"
+  },
+  "task_notes": "Set-up creates the same user, with the same e-mail sign-in and password, in each product, so the keys typed are identical.",
+  "error": null,
+  "start_state": {
+    "kind": "sign-in",
+    "path": "/",
+    "query": "?domain=demo-trading.example",
+    "fragment": "",
+    "fields": 2,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "email",
+        "password": false,
+        "value_length": 34,
+        "value": "signin.tester@demo-trading.example"
+      }
+    ],
+    "focused": {
+      "tag": "input",
+      "type": "password",
+      "name": "password",
+      "password": true,
+      "value_length": 0,
+      "value": null
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.017,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.01,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.028,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /api/tenancy/workplace (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "0a2a975d379c3cb3",
+    "elements": 103
+  },
+  "screen_after_verify": {
+    "sha256": "0a2a975d379c3cb3",
+    "elements": 103,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.021
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/auth/session"
+    ],
+    "read_after": [
+      "GET /api/auth/session"
+    ],
+    "changed": [
+      "GET /api/auth/session"
+    ],
+    "changed_parts": {
+      "GET /api/auth/session": [
+        "authenticated",
+        "user.id",
+        "user.email",
+        "user.displayName",
+        "user.language",
+        "user.numerals",
+        "user.displayNameAr",
+        "tenant.id"
+      ]
+    },
+    "end_state": [
+      "GET /api/auth/session [authenticated, user.id]"
+    ],
+    "end_state_changed": {
+      "GET /api/auth/session": [
+        "authenticated",
+        "user.id"
+      ]
+    },
+    "writes_sent": [
+      "POST /api/auth/sign-in"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/auth/sign-in",
+        "at": 0.012244754999992438,
+        "by_step": 1,
+        "browser_record": {
+          "caused": true,
+          "by_step": 1,
+          "chain": [
+            "a DevTools command of step 1",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      }
+    ]
+  },
+  "screenshots_path": "passkey",
+  "best_path_per_metric": {
+    "steps": "passkey",
+    "keystrokes": "passkey",
+    "machine_seconds": "passkey",
+    "human_seconds": "passkey",
+    "human_plus_wait_seconds": "passkey"
+  },
+  "counts_path": "passkey",
+  "variants": [
+    {
+      "id": "new-device",
+      "path": "The team's sign-in address fills in the e-mail domain and focuses the e-mail field: type the part before \"@\" > Enter (goes on to the password) > type the password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 35,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.49,
+        "system_wait_seconds": 0.297,
+        "human_seconds": 11.55,
+        "human_plus_wait_seconds": 11.847,
+        "klm_operator_counts": {
+          "K": 35,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 13,
+          "at": 0.022,
+          "took": 0.065,
+          "text": "signin.tester",
+          "same_field": false,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "next field (password)",
+          "keystrokes": 1,
+          "at": 0.087,
+          "took": 0.007,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "at": 0.095,
+          "took": 0.078,
+          "text": "Sign-In-Pass-2026",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "at": 0.174,
+          "took": 0.015,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "signed in, working screen ready",
+          "at": 0.19,
+          "seconds": 0.297
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "authenticated": true,
+          "user": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/",
+        "query": "?domain=demo-trading.example",
+        "fragment": "",
+        "fields": 3,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "email",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.016,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.021,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103
+      },
+      "screen_after_verify": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.013
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/auth/session"
+        ],
+        "read_after": [
+          "GET /api/auth/session"
+        ],
+        "changed": [
+          "GET /api/auth/session"
+        ],
+        "changed_parts": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id",
+            "user.email",
+            "user.displayName",
+            "user.language",
+            "user.numerals",
+            "user.displayNameAr",
+            "tenant.id"
+          ]
+        },
+        "end_state": [
+          "GET /api/auth/session [authenticated, user.id]"
+        ],
+        "end_state_changed": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id"
+          ]
+        },
+        "writes_sent": [
+          "POST /api/auth/sign-in"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/auth/sign-in",
+            "at": 0.18849967200000536,
+            "by_step": 4,
+            "browser_record": {
+              "caused": true,
+              "by_step": 4,
+              "chain": [
+                "input of step 4"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "new-device-whole-e-mail",
+      "path": "The team's sign-in address focuses the e-mail field: type the whole e-mail (the screen moves on to the password once the address is whole in the team's domain) > type the password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 56,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.582,
+        "system_wait_seconds": 0.301,
+        "human_seconds": 18.78,
+        "human_plus_wait_seconds": 19.081,
+        "klm_operator_counts": {
+          "K": 56,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "e-mail (whole)",
+          "keystrokes": 35,
+          "at": 0.017,
+          "took": 0.169,
+          "text": "signin.tester@demo-trading.example",
+          "same_field": false,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "at": 0.192,
+          "took": 0.08,
+          "text": "Sign-In-Pass-2026",
+          "same_field": false,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "at": 0.272,
+          "took": 0.01,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "the screen moved on to the password",
+          "at": 0.187,
+          "seconds": 0.004
+        },
+        {
+          "label": "signed in, working screen ready",
+          "at": 0.283,
+          "seconds": 0.297
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "authenticated": true,
+          "user": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/",
+        "query": "?domain=demo-trading.example",
+        "fragment": "",
+        "fields": 3,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "email",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.021,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.024,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103
+      },
+      "screen_after_verify": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.013
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/auth/session"
+        ],
+        "read_after": [
+          "GET /api/auth/session"
+        ],
+        "changed": [
+          "GET /api/auth/session"
+        ],
+        "changed_parts": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id",
+            "user.email",
+            "user.displayName",
+            "user.language",
+            "user.numerals",
+            "user.displayNameAr",
+            "tenant.id"
+          ]
+        },
+        "end_state": [
+          "GET /api/auth/session [authenticated, user.id]"
+        ],
+        "end_state_changed": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id"
+          ]
+        },
+        "writes_sent": [
+          "POST /api/auth/sign-in"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/auth/sign-in",
+            "at": 0.28018875699996715,
+            "by_step": 3,
+            "browser_record": {
+              "caused": true,
+              "by_step": 3,
+              "chain": [
+                "input of step 3"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "returning",
+      "path": "A browser whose last session ended without signing out: the e-mail is remembered and the password has focus: type the password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 21,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.319,
+        "system_wait_seconds": 0.195,
+        "human_seconds": 7.63,
+        "human_plus_wait_seconds": 7.825,
+        "klm_operator_counts": {
+          "K": 21,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "at": 0.014,
+          "took": 0.095,
+          "text": "Sign-In-Pass-2026",
+          "same_field": false,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "at": 0.109,
+          "took": 0.01,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "signed in, working screen ready",
+          "at": 0.12,
+          "seconds": 0.195
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "authenticated": true,
+          "user": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/",
+        "query": "?domain=demo-trading.example",
+        "fragment": "",
+        "fields": 2,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "email",
+            "password": false,
+            "value_length": 34,
+            "value": "signin.tester@demo-trading.example"
+          }
+        ],
+        "focused": {
+          "tag": "input",
+          "type": "password",
+          "name": "password",
+          "password": true,
+          "value_length": 0,
+          "value": null
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.02,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.015,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103
+      },
+      "screen_after_verify": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.013
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/auth/session"
+        ],
+        "read_after": [
+          "GET /api/auth/session"
+        ],
+        "changed": [
+          "GET /api/auth/session"
+        ],
+        "changed_parts": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id",
+            "user.email",
+            "user.displayName",
+            "user.language",
+            "user.numerals",
+            "user.displayNameAr",
+            "tenant.id"
+          ]
+        },
+        "end_state": [
+          "GET /api/auth/session [authenticated, user.id]"
+        ],
+        "end_state_changed": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id"
+          ]
+        },
+        "writes_sent": [
+          "POST /api/auth/sign-in"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/auth/sign-in",
+            "at": 0.11623983499995666,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain": [
+                "input of step 2"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "passkey",
+      "path": "A device this person uses a passkey on: the sign-in screen asks the device for the passkey as it opens > confirm on the device.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 1,
+        "machine_seconds": 0.117,
+        "system_wait_seconds": 0.102,
+        "human_seconds": 2.03,
+        "human_plus_wait_seconds": 2.132,
+        "klm_operator_counts": {
+          "K": 1,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "device",
+          "label": "confirm on the device (the screen asked for the passkey as it opened)",
+          "keystrokes": 0,
+          "at": 0.003,
+          "took": 0.004,
+          "ceremony": "get",
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "signed in, working screen ready",
+          "at": 0.009,
+          "seconds": 0.102
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "authenticated": true,
+          "user": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/",
+        "query": "?domain=demo-trading.example",
+        "fragment": "",
+        "fields": 2,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "email",
+            "password": false,
+            "value_length": 34,
+            "value": "signin.tester@demo-trading.example"
+          }
+        ],
+        "focused": {
+          "tag": "input",
+          "type": "password",
+          "name": "password",
+          "password": true,
+          "value_length": 0,
+          "value": null
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.017,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.01,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.028,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "GET /api/tenancy/workplace (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103
+      },
+      "screen_after_verify": {
+        "sha256": "0a2a975d379c3cb3",
+        "elements": 103,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.021
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/auth/session"
+        ],
+        "read_after": [
+          "GET /api/auth/session"
+        ],
+        "changed": [
+          "GET /api/auth/session"
+        ],
+        "changed_parts": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id",
+            "user.email",
+            "user.displayName",
+            "user.language",
+            "user.numerals",
+            "user.displayNameAr",
+            "tenant.id"
+          ]
+        },
+        "end_state": [
+          "GET /api/auth/session [authenticated, user.id]"
+        ],
+        "end_state_changed": {
+          "GET /api/auth/session": [
+            "authenticated",
+            "user.id"
+          ]
+        },
+        "writes_sent": [
+          "POST /api/auth/sign-in"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/auth/sign-in",
+            "at": 0.012244754999992438,
+            "by_step": 1,
+            "browser_record": {
+              "caused": true,
+              "by_step": 1,
+              "chain": [
+                "a DevTools command of step 1",
+                "a task that followed at once (a message or an observer)"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

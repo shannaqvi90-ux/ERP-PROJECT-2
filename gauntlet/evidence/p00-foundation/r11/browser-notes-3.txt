@@ -1,0 +1,4 @@
+viewer nav: ["Reports","Users","Roles","Company access","Companies","Branches","Workspace","My account"]
+viewer permissions: ["identity.profile.update","identity.roles.read","identity.users.read","reports.catalog.read","tenancy.access.read","tenancy.branches.read","tenancy.companies.read","tenancy.tenant.read","tenancy.workplace.read"]
+users screen buttons: ["View: Standard","Columns","Print or export","Name","▾","E-mail","▾","▾","▾","Last sign-in","▾"]
+viewer POST /api/identity/roles: 403

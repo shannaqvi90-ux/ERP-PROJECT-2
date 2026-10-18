@@ -1,0 +1,51 @@
+SET
+ current_user 
+--------------
+ erp_app
+(1 row)
+
+        ?column?         | count 
+-------------------------+-------
+ users visible no tenant |     0
+(1 row)
+
+        ?column?         | count 
+-------------------------+-------
+ audit visible no tenant |     0
+(1 row)
+
+ ?column?  | count 
+-----------+-------
+ companies |     0
+(1 row)
+
+ERROR:  permission denied for table sign_in_secret
+ERROR:  permission denied for table sign_in_failures
+ERROR:  must be owner of table users
+ERROR:  permission denied for table pg_class
+ERROR:  permission denied for view pg_stat_user_tables
+ERROR:  permission denied for view pg_stats
+ERROR:  permission denied for table __ef_migrations_history
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+         ?column?          | count 
+---------------------------+-------
+ after own set (app trust) |     0
+(1 row)
+
+ROLLBACK
+RESET
+SET
+    ?column?    | count  
+----------------+--------
+ erp_auth users | 101022
+(1 row)
+
+ERROR:  permission denied for table roles
+ERROR:  permission denied for schema audit
+LINE 1: select 'erp_auth audit', count(*) from audit.entries;
+                                               ^

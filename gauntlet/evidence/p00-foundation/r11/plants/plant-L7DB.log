@@ -1,0 +1,77 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.28]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.75]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.96]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:15.23]     Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [FAIL]
+[xUnit.net 00:00:15.24]       Erp.Kernel.Data.KernelSql..cctor names the tenant setting (CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+[xUnit.net 00:00:15.24]           LANGUAGE sql STABLE PARALLEL SAFE
+[xUnit.net 00:00:15.24]           AS $$
+[xUnit.net 00:00:15.24]               … | CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+[xUnit.net 00:00:15.24]           LANGUAGE sql STABLE PARALLEL SAFE
+[xUnit.net 00:00:15.24]           AS $$ SELECT N…): only reviewed methods may; review it in tests/Gates/tenant-setting-methods.txt or let the kernel's session bind the tenant
+[xUnit.net 00:00:15.24]       tests/Gates/tenant-setting-methods.txt: 'Erp.Kernel.Data.Migrations.TenantBoundToTransaction.Up' no longer names the tenant setting; remove the entry
+[xUnit.net 00:00:15.24]       Stack Trace:
+[xUnit.net 00:00:15.24]         /work/tests/Erp.Gates.Tests/G1/G1TenantSettingCodeTests.cs(30,0): at Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting()
+[xUnit.net 00:00:15.24]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:15.24]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:15.24]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:15.24]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:15.24]       Output:
+[xUnit.net 00:00:15.24]         9092 methods scanned; 9 name the tenant setting
+[xUnit.net 00:00:15.26]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [FAIL]
+[xUnit.net 00:00:15.27]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:15.27]       Expected: 0
+[xUnit.net 00:00:15.27]       Actual:   30
+[xUnit.net 00:00:15.27]       Stack Trace:
+[xUnit.net 00:00:15.27]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(472,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:15.27]         /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(498,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored()
+[xUnit.net 00:00:15.27]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [102 ms]
+  Error Message:
+   Erp.Kernel.Data.KernelSql..cctor names the tenant setting (CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+    LANGUAGE sql STABLE PARALLEL SAFE
+    AS $$
+        … | CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+    LANGUAGE sql STABLE PARALLEL SAFE
+    AS $$ SELECT N…): only reviewed methods may; review it in tests/Gates/tenant-setting-methods.txt or let the kernel's session bind the tenant
+tests/Gates/tenant-setting-methods.txt: 'Erp.Kernel.Data.Migrations.TenantBoundToTransaction.Up' no longer names the tenant setting; remove the entry
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting() in /work/tests/Erp.Gates.Tests/G1/G1TenantSettingCodeTests.cs:line 30
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 9092 methods scanned; 9 name the tenant setting
+
+
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [117 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [12 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [14 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   30
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 472
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored() in /work/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 498
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [86 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [356 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [17 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [36 ms]
+[xUnit.net 00:00:15.98]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [7 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [47 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [24 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [8 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [24 ms]
+
+Test Run Failed.
+Total tests: 14
+     Passed: 12
+     Failed: 2
+ Total time: 16.4856 Seconds

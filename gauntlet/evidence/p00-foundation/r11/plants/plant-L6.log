@@ -1,0 +1,509 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.27]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.72]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.96]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y [8 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [7 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failures_and_pauses_answer_alike_whether_or_not_and_wherever_an_account_has_the_address [25 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [6 s]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [4 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [2 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [4 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [14 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [8 s]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 59 s]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [228 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [234 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [100 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [3 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [144 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [743 ms]
+  Passed Erp.Gates.Tests.G1.G1ConfigurationTests.The_running_apps_configuration_refuses_writes [2 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [153 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [130 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [117 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [10 ms]
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [788 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [135 ms]
+[xUnit.net 00:03:46.35]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:03:46.35]       reachable Erp.Kernel.Lists.ListBinding`1._warmTotals: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>, reached from singleton Erp.Kernel.Modules.ModuleCatalog._modules[0].ListBindings[0]. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:03:46.35]       Stack Trace:
+[xUnit.net 00:03:46.35]         /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:03:46.35]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:03:46.35]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:03:46.35]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:03:46.35]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:03:46.35]       Output:
+[xUnit.net 00:03:46.35]         431 types, 97 fields, 15 singleton services inspected, 115 endpoint delegates walked (3330 objects) to 29 closures; 5 framework singletons over product types; 110 roots walked to 1219 objects, 55 product types judged field by field; 29 reviewed findings
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [569 ms]
+  Error Message:
+   reachable Erp.Kernel.Lists.ListBinding`1._warmTotals: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>, reached from singleton Erp.Kernel.Modules.ModuleCatalog._modules[0].ListBindings[0]. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 431 types, 97 fields, 15 singleton services inspected, 115 endpoint delegates walked (3330 objects) to 29 closures; 5 framework singletons over product types; 110 roots walked to 1219 objects, 55 product types judged field by field; 29 reviewed findings
+
+
+[xUnit.net 00:03:48.07]     Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [FAIL]
+[xUnit.net 00:03:48.07]       Erp.Kernel.Data.KernelSql..cctor names the tenant setting (CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+[xUnit.net 00:03:48.07]           LANGUAGE sql STABLE PARALLEL SAFE
+[xUnit.net 00:03:48.07]           AS $$
+[xUnit.net 00:03:48.07]               … | CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+[xUnit.net 00:03:48.07]           LANGUAGE sql STABLE PARALLEL SAFE
+[xUnit.net 00:03:48.07]           AS $$ SELECT N…): only reviewed methods may; review it in tests/Gates/tenant-setting-methods.txt or let the kernel's session bind the tenant
+[xUnit.net 00:03:48.07]       tests/Gates/tenant-setting-methods.txt: 'Erp.Kernel.Data.Migrations.TenantBoundToTransaction.Up' no longer names the tenant setting; remove the entry
+[xUnit.net 00:03:48.07]       Stack Trace:
+[xUnit.net 00:03:48.07]         /work/tests/Erp.Gates.Tests/G1/G1TenantSettingCodeTests.cs(30,0): at Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting()
+[xUnit.net 00:03:48.07]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:03:48.07]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:03:48.07]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:03:48.07]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:03:48.07]       Output:
+[xUnit.net 00:03:48.07]         9092 methods scanned; 9 name the tenant setting
+[xUnit.net 00:03:48.38]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:03:48.38]       src/Kernel/Erp.Kernel/Data/KernelSql.cs: 7 uses where tests/Gates/tenant-bypass-sources.txt reviewed 6: names the tenant settings app.tenant_id / app.tenant_tx [tenant-setting] at src/Kernel/Erp.Kernel/Data/KernelSql.cs:16, src/Kernel/Erp.Kernel/Data/KernelSql.cs:103, src/Kernel/Erp.Kernel/Data/KernelSql.cs:103, src/Kernel/Erp.Kernel/Data/KernelSql.cs:111, src/Kernel/Erp.Kernel/Data/KernelSql.cs:116, src/Kernel/Erp.Kernel/Data/KernelSql.cs:117, src/Kernel/Erp.Kernel/Data/KernelSql.cs:124; review the new use and raise the count, or let the session's tenant do the work
+[xUnit.net 00:03:48.38]       Stack Trace:
+[xUnit.net 00:03:48.38]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:03:48.38]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:03:48.38]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:03:48.38]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:03:48.38]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:03:48.38]       Output:
+[xUnit.net 00:03:48.38]         153 files scanned, 126 reviewed uses of 13 rules
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [1 s]
+  Failed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [94 ms]
+  Error Message:
+   Erp.Kernel.Data.KernelSql..cctor names the tenant setting (CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+    LANGUAGE sql STABLE PARALLEL SAFE
+    AS $$
+        … | CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+    LANGUAGE sql STABLE PARALLEL SAFE
+    AS $$ SELECT N…): only reviewed methods may; review it in tests/Gates/tenant-setting-methods.txt or let the kernel's session bind the tenant
+tests/Gates/tenant-setting-methods.txt: 'Erp.Kernel.Data.Migrations.TenantBoundToTransaction.Up' no longer names the tenant setting; remove the entry
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting() in /work/tests/Erp.Gates.Tests/G1/G1TenantSettingCodeTests.cs:line 30
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 9092 methods scanned; 9 name the tenant setting
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [56 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [116 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [135 ms]
+  Error Message:
+   src/Kernel/Erp.Kernel/Data/KernelSql.cs: 7 uses where tests/Gates/tenant-bypass-sources.txt reviewed 6: names the tenant settings app.tenant_id / app.tenant_tx [tenant-setting] at src/Kernel/Erp.Kernel/Data/KernelSql.cs:16, src/Kernel/Erp.Kernel/Data/KernelSql.cs:103, src/Kernel/Erp.Kernel/Data/KernelSql.cs:103, src/Kernel/Erp.Kernel/Data/KernelSql.cs:111, src/Kernel/Erp.Kernel/Data/KernelSql.cs:116, src/Kernel/Erp.Kernel/Data/KernelSql.cs:117, src/Kernel/Erp.Kernel/Data/KernelSql.cs:124; review the new use and raise the count, or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 153 files scanned, 126 reviewed uses of 13 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [2 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [76 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [10 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [24 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [896 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [25 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [46 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [109 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [19 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [75 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [34 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [21 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [75 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [36 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [21 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [46 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [13 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [4 m 40 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [1 s]
+[xUnit.net 00:12:02.63]     Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [FAIL]
+[xUnit.net 00:12:02.63]       92 answers depend on the other tenant's activity:
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?search=al is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":18,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-polic… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":34,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-polic… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?search=ad is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":3,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":6,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=displayName is answered …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… in the shared process right after tenant B sent the same request, but …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=-displayName is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=email is answered …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… in the shared process right after tenant B sent the same request, but …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=-email is answered …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… in the shared process right after tenant B sent the same request, but …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=lastSignInAt is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoibGFzdFNpZ25JbkF0IiwiayI6W251bGxdLCJpIjoiMDE4Y2MzYTEtZjNhMC03ZjFjLThlNTgtMDE4NTc0N… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoibGFzdFNpZ25JbkF0IiwiayI6W251bGxdLCJpIjoiMDE4Y2MzYTEtZjNhMC03ZjFjLThlNTgtMDE4NTc0N… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=-lastSignInAt is answered …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWxhc3RTaWduSW5BdCIsImsiOltudWxsXSwiaSI6IjAxYTE0YzhjLWRmYjItNzdhMC04YjZhLWUxYmRmZ… in the shared process right after tenant B sent the same request, but …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWxhc3RTaWduSW5BdCIsImsiOltudWxsXSwiaSI6IjAxYTE0YzhjLWRmYjItNzdhMC04YjZhLWUxYmRmZ… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=createdAt is answered …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiY3JlYXRlZEF0IiwiayI6WyIyMDI0LTAxLTAxVDA2OjI4OjAwLjAwMDAwMDBcdTAwMkIwMDowMCJdLCJpI… in the shared process right after tenant B sent the same request, but …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiY3JlYXRlZEF0IiwiayI6WyIyMDI0LTAxLTAxVDA2OjI4OjAwLjAwMDAwMDBcdTAwMkIwMDowMCJdLCJpI… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&search=al&sort=-createdAt is answered …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWNyZWF0ZWRBdCIsImsiOlsiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OTcwXHUwMDJCMDA6MDAiXSwia… in the shared process right after tenant B sent the same request, but …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWNyZWF0ZWRBdCIsImsiOlsiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OTcwXHUwMDJCMDA6MDAiXSwia… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&skip=5&search=al is answered …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjQtMDEtMDFUMDY6NDI6MDAuMDAwM… in the shared process right after tenant B sent the same request, but …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjQtMDEtMDFUMDY6NDI6MDAuMDAwM… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=2&skip=1&search=al is answered …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjYtMTAtMThUMDE6MDg6MDMuMTM1N… in the shared process right after tenant B sent the same request, but …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjYtMTAtMThUMDE6MDg6MDMuMTM1N… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=5&skip=5&search=ad is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":3,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":6,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/identity/users?take=2&skip=1&search=ad is answered …7\u062F","companyRoles":[],"rolesElsewhere":false}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiLTExIiwiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OT… in the shared process right after tenant B sent the same request, but …7\u062F","companyRoles":[],"rolesElsewhere":false}],"total":6,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiLTExIiwiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OT… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?search=al is answered …abdullah.siddiqui.2@alpha.example","companies":[]}],"total":18,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-polic… in the shared process right after tenant B sent the same request, but …abdullah.siddiqui.2@alpha.example","companies":[]}],"total":34,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-polic… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?search=ad is answered …"khalid.haddadin.12@alpha.example","companies":[]}],"total":3,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… in the shared process right after tenant B sent the same request, but …"khalid.haddadin.12@alpha.example","companies":[]}],"total":6,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=5&search=al&sort=displayName is answered …email":"activity369@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… in the shared process right after tenant B sent the same request, but …email":"activity369@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=5&search=al&sort=-displayName is answered …l":"samir.darwish.1@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… in the shared process right after tenant B sent the same request, but …l":"samir.darwish.1@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=5&search=al&sort=email is answered …ode":"A2-CO","allBranches":true,"branchCount":2}]}],"total":18,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… in the shared process right after tenant B sent the same request, but …ode":"A2-CO","allBranches":true,"branchCount":2}]}],"total":34,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=5&search=al&sort=-email is answered …:"shamma.alshamsi.7@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… in the shared process right after tenant B sent the same request, but …:"shamma.alshamsi.7@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=5&skip=5&search=al is answered …"saeed.alsuwaidi.13@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… in the shared process right after tenant B sent the same request, but …"saeed.alsuwaidi.13@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=2&skip=1&search=al is answered …,"email":"activity4@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… in the shared process right after tenant B sent the same request, but …,"email":"activity4@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=5&skip=5&search=ad is answered …"khalid.haddadin.12@alpha.example","companies":[]}],"total":3,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… in the shared process right after tenant B sent the same request, but …"khalid.haddadin.12@alpha.example","companies":[]}],"total":6,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/access?take=2&skip=1&search=ad is answered …de":"A1-CO","allBranches":false,"branchCount":1}]}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMSIsIk9tYXIgSGFkZGFkIl0sImkiOiIwMWExNG… in the shared process right after tenant B sent the same request, but …de":"A1-CO","allBranches":false,"branchCount":1}]}],"total":6,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMSIsIk9tYXIgSGFkZGFkIl0sImkiOiIwMWExNG… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/branches?search=al is answered …":"abuDhabi","isActive":true,"version":2259414548}],"total":0,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-policy… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2259414548}],"total":12,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:12:02.63]       [headers]
+[xUnit.net 00:12:02.63]       cache-control: no-store
+[xUnit.net 00:12:02.63]       content-security-polic… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/branches?take=5&search=al&sort=code is answered …":"abuDhabi","isActive":true,"version":2306379398}],"total":0,"next":"eyJzIjoiY29kZSIsImsiOlsiRFhCLVdIMS1ENkM2LTE1OSJdLCJpIjoiMDFhMTRjOGQtMzkyZC03MWY3LTg3ODUtZG… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2306379398}],"total":12,"next":"eyJzIjoiY29kZSIsImsiOlsiRFhCLVdIMS1ENkM2LTE1OSJdLCJpIjoiMDFhMTRjOGQtMzkyZC03MWY3LTg3ODUtZ… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/branches?take=5&search=al&sort=-code is answered …ate":"ajman","isActive":true,"version":2816895592}],"total":0,"next":"eyJzIjoiLWNvZGUiLCJrIjpbIkRYQi1XSDEtRDZDNi0xNjIiXSwiaSI6IjAxYTE0YzhkLTM5NjgtNzgxYy04N2I0LT… in the shared process right after tenant B sent the same request, but …ate":"ajman","isActive":true,"version":2816895592}],"total":12,"next":"eyJzIjoiLWNvZGUiLCJrIjpbIkRYQi1XSDEtRDZDNi0xNjIiXSwiaSI6IjAxYTE0YzhkLTM5NjgtNzgxYy04N2I0L… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/branches?take=5&search=al&sort=nameEn is answered …ummAlQuwain","isActive":true,"version":1101793870}],"total":0,"next":"eyJzIjoibmFtZUVuIiwiayI6WyJBY3Rpdml0eSBhbHBoYSAxNjMiXSwiaSI6IjAxYTE0YzhkLTM5NzYtNzI3OC1iN2… in the shared process right after tenant B sent the same request, but …ummAlQuwain","isActive":true,"version":1101793870}],"total":12,"next":"eyJzIjoibmFtZUVuIiwiayI6WyJBY3Rpdml0eSBhbHBoYSAxNjMiXSwiaSI6IjAxYTE0YzhkLTM5NzYtNzI3OC1iN… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/branches?take=5&search=al&sort=-nameEn is answered …":"abuDhabi","isActive":true,"version":2259414548}],"total":0,"next":"eyJzIjoiLW5hbWVFbiIsImsiOlsiQWN0aXZpdHkgYWxwaGEgMTY2Il0sImkiOiIwMWExNGM4ZC0zOTllLTc5YzktYm… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2259414548}],"total":12,"next":"eyJzIjoiLW5hbWVFbiIsImsiOlsiQWN0aXZpdHkgYWxwaGEgMTY2Il0sImkiOiIwMWExNGM4ZC0zOTllLTc5YzktY… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       tenant A: GET /api/tenancy/branches?take=5&search=al&sort=nameAr is answered …":"abuDhabi","isActive":true,"version":2306379398}],"total":0,"next":"eyJzIjoibmFtZUFyIiwiayI6WyJcdTA2NDZcdTA2MzRcdTA2MjdcdTA2MzcgYWxwaGEgMTU5Il0sImkiOiIwMWExNG… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2306379398}],"total":12,"next":"eyJzIjoibmFtZUFyIiwiayI6WyJcdTA2NDZcdTA2MzRcdTA2MjdcdTA2MzcgYWxwaGEgMTU5Il0sImkiOiIwMWExN… by a fresh process only tenant A has used
+[xUnit.net 00:12:02.63]       Stack Trace:
+[xUnit.net 00:12:02.63]         /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(46,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
+[xUnit.net 00:12:02.63]         --- End of stack trace from previous location ---
+[xUnit.net 00:12:02.63]       Output:
+[xUnit.net 00:12:02.63]         5092 comparisons over 45 endpoints (314 with different answers per tenant), 442 write comparisons over 25 endpoints and 170 body variants, 23160 requests, 4 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 52 write comparisons (2 between the workspace-wide Arabic administrators); 44272 response header lines compared, 4 changing answers judged by how they change, 198 configuration keys watched; 3588 times attributed to a request (0 ambiguous, 0 paced re-runs), 0 cookie values compared
+[xUnit.net 00:12:02.63]         unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b701-75dc-967d-f7ed997e36fe","nameEn":"Activity alpha 52","nameAr":"\u0646\u0634\u0627\u0637 alpha 52","permissions":["identity.profile.upda… / 201 {"id":"01a14c93-b74b-7f8d-8335-8e501bea25a0","nameEn":"Activity alpha 54","nameAr":"\u0646\u0634\u0627\u0637 alpha 54","permissions":["identity.profile.upda…)
+[xUnit.net 00:12:02.63]         unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b7f9-7969-b392-114a76a817ff","nameEn":"Activity CNRYB9ACB2AB3F 54","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 54","permissions":["ide… / 201 {"id":"01a14c93-b83a-7ee5-98a1-df115dde5953","nameEn":"Activity CNRYB9ACB2AB3F 56","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 56","permissions":["ide…)
+[xUnit.net 00:12:02.63]         unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b8a7-7adc-8d0b-2bff84e34edf","nameEn":"Activity alpha 62","nameAr":"\u0646\u0634\u0627\u0637 alpha 62","permissions":["identity.users.read"]… / 201 {"id":"01a14c93-b8d6-779a-b9e4-cb6a8ad8734d","nameEn":"Activity alpha 64","nameAr":"\u0646\u0634\u0627\u0637 alpha 64","permissions":["identity.users.read"]…)
+[xUnit.net 00:12:02.63]         unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b95a-740e-b069-d16b6f712cb9","nameEn":"Activity CNRYB9ACB2AB3F 64","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 64","permissions":["ide… / 201 {"id":"01a14c93-b987-72e8-83a2-e542e2f61bc0","nameEn":"Activity CNRYB9ACB2AB3F 66","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 66","permissions":["ide…)
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [11 m 43 s]
+  Error Message:
+   92 answers depend on the other tenant's activity:
+tenant A: GET /api/identity/users?search=al is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":18,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-polic… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":34,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?search=ad is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":3,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":6,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=displayName is answered …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… in the shared process right after tenant B sent the same request, but …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=-displayName is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=email is answered …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… in the shared process right after tenant B sent the same request, but …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=-email is answered …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… in the shared process right after tenant B sent the same request, but …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=lastSignInAt is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoibGFzdFNpZ25JbkF0IiwiayI6W251bGxdLCJpIjoiMDE4Y2MzYTEtZjNhMC03ZjFjLThlNTgtMDE4NTc0N… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoibGFzdFNpZ25JbkF0IiwiayI6W251bGxdLCJpIjoiMDE4Y2MzYTEtZjNhMC03ZjFjLThlNTgtMDE4NTc0N… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=-lastSignInAt is answered …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWxhc3RTaWduSW5BdCIsImsiOltudWxsXSwiaSI6IjAxYTE0YzhjLWRmYjItNzdhMC04YjZhLWUxYmRmZ… in the shared process right after tenant B sent the same request, but …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWxhc3RTaWduSW5BdCIsImsiOltudWxsXSwiaSI6IjAxYTE0YzhjLWRmYjItNzdhMC04YjZhLWUxYmRmZ… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=createdAt is answered …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiY3JlYXRlZEF0IiwiayI6WyIyMDI0LTAxLTAxVDA2OjI4OjAwLjAwMDAwMDBcdTAwMkIwMDowMCJdLCJpI… in the shared process right after tenant B sent the same request, but …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiY3JlYXRlZEF0IiwiayI6WyIyMDI0LTAxLTAxVDA2OjI4OjAwLjAwMDAwMDBcdTAwMkIwMDowMCJdLCJpI… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&search=al&sort=-createdAt is answered …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLWNyZWF0ZWRBdCIsImsiOlsiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OTcwXHUwMDJCMDA6MDAiXSwia… in the shared process right after tenant B sent the same request, but …-75b6-8d52-79707bbdb02c"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLWNyZWF0ZWRBdCIsImsiOlsiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OTcwXHUwMDJCMDA6MDAiXSwia… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&skip=5&search=al is answered …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjQtMDEtMDFUMDY6NDI6MDAuMDAwM… in the shared process right after tenant B sent the same request, but …3\u064A","companyRoles":[],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjQtMDEtMDFUMDY6NDI6MDAuMDAwM… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=2&skip=1&search=al is answered …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjYtMTAtMThUMDE6MDg6MDMuMTM1N… in the shared process right after tenant B sent the same request, but …-79bd-8ab2-784bc8f8d2ae"}],"rolesElsewhere":false}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiMjAzMiIsIjIwMjYtMTAtMThUMDE6MDg6MDMuMTM1N… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=5&skip=5&search=ad is answered …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":3,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… in the shared process right after tenant B sent the same request, but …Ar":null,"companyRoles":[],"rolesElsewhere":false}],"total":6,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… by a fresh process only tenant A has used
+tenant A: GET /api/identity/users?take=2&skip=1&search=ad is answered …7\u062F","companyRoles":[],"rolesElsewhere":false}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiLTExIiwiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OT… in the shared process right after tenant B sent the same request, but …7\u062F","companyRoles":[],"rolesElsewhere":false}],"total":6,"next":"eyJzIjoiLX5yZWxldmFuY2UsLWNyZWF0ZWRBdCIsImsiOlsiLTExIiwiMjAyNi0xMC0xOFQwMTowNzo0My4xNTQ0OT… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?search=al is answered …abdullah.siddiqui.2@alpha.example","companies":[]}],"total":18,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-polic… in the shared process right after tenant B sent the same request, but …abdullah.siddiqui.2@alpha.example","companies":[]}],"total":34,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?search=ad is answered …"khalid.haddadin.12@alpha.example","companies":[]}],"total":3,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… in the shared process right after tenant B sent the same request, but …"khalid.haddadin.12@alpha.example","companies":[]}],"total":6,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=5&search=al&sort=displayName is answered …email":"activity369@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… in the shared process right after tenant B sent the same request, but …email":"activity369@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiZGlzcGxheU5hbWUiLCJrIjpbIkFjdGl2aXR5IGFscGhhIDM2OSJdLCJpIjoiMDFhMTRjOGQtNTY2MS03M… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=5&search=al&sort=-displayName is answered …l":"samir.darwish.1@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… in the shared process right after tenant B sent the same request, but …l":"samir.darwish.1@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLWRpc3BsYXlOYW1lIiwiayI6WyJTYW1pciBEYXJ3aXNoIl0sImkiOiIwMThjYzM5Yi04YjAwLTcxNmMtY… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=5&search=al&sort=email is answered …ode":"A2-CO","allBranches":true,"branchCount":2}]}],"total":18,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… in the shared process right after tenant B sent the same request, but …ode":"A2-CO","allBranches":true,"branchCount":2}]}],"total":34,"next":"eyJzIjoiZW1haWwiLCJrIjpbImFjY291bnRhbnRAYWxwaGEuZXhhbXBsZSJdLCJpIjoiMDFhMTRjOGMtZGZiMi03N… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=5&search=al&sort=-email is answered …:"shamma.alshamsi.7@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… in the shared process right after tenant B sent the same request, but …:"shamma.alshamsi.7@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLWVtYWlsIiwiayI6WyJzaGFtbWEuYWxzaGFtc2kuN0BhbHBoYS5leGFtcGxlIl0sImkiOiIwMThjYzNjM… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=5&skip=5&search=al is answered …"saeed.alsuwaidi.13@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… in the shared process right after tenant B sent the same request, but …"saeed.alsuwaidi.13@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJTYWVlZCBBbCBTdXdhaWRpIl0sImkiO… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=2&skip=1&search=al is answered …,"email":"activity4@alpha.example","companies":[]}],"total":18,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… in the shared process right after tenant B sent the same request, but …,"email":"activity4@alpha.example","companies":[]}],"total":34,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIjIwMzIiLCJBY3Rpdml0eSBhbHBoYSA0Il0sImkiO… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=5&skip=5&search=ad is answered …"khalid.haddadin.12@alpha.example","companies":[]}],"total":3,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… in the shared process right after tenant B sent the same request, but …"khalid.haddadin.12@alpha.example","companies":[]}],"total":6,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/access?take=2&skip=1&search=ad is answered …de":"A1-CO","allBranches":false,"branchCount":1}]}],"total":3,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMSIsIk9tYXIgSGFkZGFkIl0sImkiOiIwMWExNG… in the shared process right after tenant B sent the same request, but …de":"A1-CO","allBranches":false,"branchCount":1}]}],"total":6,"next":"eyJzIjoiLX5yZWxldmFuY2UsZGlzcGxheU5hbWUiLCJrIjpbIi0xMSIsIk9tYXIgSGFkZGFkIl0sImkiOiIwMWExNG… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/branches?search=al is answered …":"abuDhabi","isActive":true,"version":2259414548}],"total":0,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-policy… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2259414548}],"total":12,"next":null,"groups":null,"ranked":true}
+[headers]
+cache-control: no-store
+content-security-polic… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/branches?take=5&search=al&sort=code is answered …":"abuDhabi","isActive":true,"version":2306379398}],"total":0,"next":"eyJzIjoiY29kZSIsImsiOlsiRFhCLVdIMS1ENkM2LTE1OSJdLCJpIjoiMDFhMTRjOGQtMzkyZC03MWY3LTg3ODUtZG… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2306379398}],"total":12,"next":"eyJzIjoiY29kZSIsImsiOlsiRFhCLVdIMS1ENkM2LTE1OSJdLCJpIjoiMDFhMTRjOGQtMzkyZC03MWY3LTg3ODUtZ… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/branches?take=5&search=al&sort=-code is answered …ate":"ajman","isActive":true,"version":2816895592}],"total":0,"next":"eyJzIjoiLWNvZGUiLCJrIjpbIkRYQi1XSDEtRDZDNi0xNjIiXSwiaSI6IjAxYTE0YzhkLTM5NjgtNzgxYy04N2I0LT… in the shared process right after tenant B sent the same request, but …ate":"ajman","isActive":true,"version":2816895592}],"total":12,"next":"eyJzIjoiLWNvZGUiLCJrIjpbIkRYQi1XSDEtRDZDNi0xNjIiXSwiaSI6IjAxYTE0YzhkLTM5NjgtNzgxYy04N2I0L… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/branches?take=5&search=al&sort=nameEn is answered …ummAlQuwain","isActive":true,"version":1101793870}],"total":0,"next":"eyJzIjoibmFtZUVuIiwiayI6WyJBY3Rpdml0eSBhbHBoYSAxNjMiXSwiaSI6IjAxYTE0YzhkLTM5NzYtNzI3OC1iN2… in the shared process right after tenant B sent the same request, but …ummAlQuwain","isActive":true,"version":1101793870}],"total":12,"next":"eyJzIjoibmFtZUVuIiwiayI6WyJBY3Rpdml0eSBhbHBoYSAxNjMiXSwiaSI6IjAxYTE0YzhkLTM5NzYtNzI3OC1iN… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/branches?take=5&search=al&sort=-nameEn is answered …":"abuDhabi","isActive":true,"version":2259414548}],"total":0,"next":"eyJzIjoiLW5hbWVFbiIsImsiOlsiQWN0aXZpdHkgYWxwaGEgMTY2Il0sImkiOiIwMWExNGM4ZC0zOTllLTc5YzktYm… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2259414548}],"total":12,"next":"eyJzIjoiLW5hbWVFbiIsImsiOlsiQWN0aXZpdHkgYWxwaGEgMTY2Il0sImkiOiIwMWExNGM4ZC0zOTllLTc5YzktY… by a fresh process only tenant A has used
+tenant A: GET /api/tenancy/branches?take=5&search=al&sort=nameAr is answered …":"abuDhabi","isActive":true,"version":2306379398}],"total":0,"next":"eyJzIjoibmFtZUFyIiwiayI6WyJcdTA2NDZcdTA2MzRcdTA2MjdcdTA2MzcgYWxwaGEgMTU5Il0sImkiOiIwMWExNG… in the shared process right after tenant B sent the same request, but …":"abuDhabi","isActive":true,"version":2306379398}],"total":12,"next":"eyJzIjoibmFtZUFyIiwiayI6WyJcdTA2NDZcdTA2MzRcdTA2MjdcdTA2MzcgYWxwaGEgMTU5Il0sImkiOiIwMWExN… by a fresh process only tenant A has used
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did() in /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 46
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5092 comparisons over 45 endpoints (314 with different answers per tenant), 442 write comparisons over 25 endpoints and 170 body variants, 23160 requests, 4 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 52 write comparisons (2 between the workspace-wide Arabic administrators); 44272 response header lines compared, 4 changing answers judged by how they change, 198 configuration keys watched; 3588 times attributed to a request (0 ambiguous, 0 paced re-runs), 0 cookie values compared
+ unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b701-75dc-967d-f7ed997e36fe","nameEn":"Activity alpha 52","nameAr":"\u0646\u0634\u0627\u0637 alpha 52","permissions":["identity.profile.upda… / 201 {"id":"01a14c93-b74b-7f8d-8335-8e501bea25a0","nameEn":"Activity alpha 54","nameAr":"\u0646\u0634\u0627\u0637 alpha 54","permissions":["identity.profile.upda…)
+ unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b7f9-7969-b392-114a76a817ff","nameEn":"Activity CNRYB9ACB2AB3F 54","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 54","permissions":["ide… / 201 {"id":"01a14c93-b83a-7ee5-98a1-df115dde5953","nameEn":"Activity CNRYB9ACB2AB3F 56","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 56","permissions":["ide…)
+ unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b8a7-7adc-8d0b-2bff84e34edf","nameEn":"Activity alpha 62","nameAr":"\u0646\u0634\u0627\u0637 alpha 62","permissions":["identity.users.read"]… / 201 {"id":"01a14c93-b8d6-779a-b9e4-cb6a8ad8734d","nameEn":"Activity alpha 64","nameAr":"\u0646\u0634\u0627\u0637 alpha 64","permissions":["identity.users.read"]…)
+ unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a14c93-b95a-740e-b069-d16b6f712cb9","nameEn":"Activity CNRYB9ACB2AB3F 64","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 64","permissions":["ide… / 201 {"id":"01a14c93-b987-72e8-83a2-e542e2f61bc0","nameEn":"Activity CNRYB9ACB2AB3F 66","nameAr":"\u0646\u0634\u0627\u0637 CNRYB9ACB2AB3F 66","permissions":["ide…)
+
+
+[xUnit.net 00:25:25.71]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:25:25.72]       3 isolation checks failed:
+[xUnit.net 00:25:25.72]       
+[xUnit.net 00:25:25.72]       6 answers that tell tenant B's values apart from values that exist nowhere:
+[xUnit.net 00:25:25.72]       tenant A administrator (cookie) → GET /api/identity/users?search=bravocnryb9acb2ab3f [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (kpwjpkcjvt1lgt7td9y) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:25:25.72]       tenant A administrator in Arabic (cookie) → GET /api/identity/users?search=bravocnryb9acb2ab3f [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (pmpddvjaqz7gmu1ph4m) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[xUnit.net 00:25:25.72]       tenant A administrator (cookie) → GET /api/tenancy/access?workspace=accounts.b1-co%40example.ae [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (eocsptxp.q3-if@ntjkfgh.ms) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+[xUnit.net 00:25:25.72]       tenant A administrator (cookie) → GET /api/tenancy/access?workspace=Bravo%20CNRYB9ACB2AB3F%20LLC [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (onrft rkwfq3vvg1fz2k qoe) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+[xUnit.net 00:25:25.72]       tenant A administrator (cookie) → GET /api/tenancy/access?workspace=https%3A%2F%2Fwww.example.ae-B902-167 [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (zkepq://mzp.wiwongn.wv-s896-285) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+[xUnit.net 00:25:25.72]       tenant A administrator (cookie) → GET /api/tenancy/access?workspace=978e8e89a3339487d5bbc8e422237c9cfd30a0bb187a188838628a299ec38980 [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (829k0r32y3695143b6mqh5a460822q3kje93f9bv793k950844007n584lg84186) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+[xUnit.net 00:25:25.72]       
+[xUnit.net 00:25:25.73]       3295 list answers that are not the asking tenant's own:
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the other tenant's page 1 of 7 of GET /api/tenancy/companies?take=7 answered total 26, but the walk returns 49 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 1 of 4 (skip=0) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 2 of 4 (skip=7) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 3 of 4 (skip=14) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 4 of 4 (skip=21) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=a answered total 49, but the walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=o answered total 49, but walking the same query returns 25 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=o answered total 49, but the walk returns 25 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=n answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=n answered total 49, but the walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=code%20contains%20%27a%27 answered total 47, but walking the same query returns 26 rows (the other tenant's answer to the same request was 47)
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged page 1 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 1 of 3 (skip=0) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 2 of 3 (skip=12) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 3 of 3 (skip=24) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameEn%20contains%20%27a%27 answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&filter=legalNameEn%20contains%20%27a%27 answered total 49, but the walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&filter=legalNameEn%20contains%20%27a%27 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&filter=legalNameEn%20contains%20%27a%27 answered total 49, but the keyset walk returns 26 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameAr%20contains%20%27a%27 answered total 49, but walking the same query returns 24 rows (the other tenant's answer to the same request was 49)
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&filter=legalNameAr%20contains%20%27a%27 answered total 49, but the walk returns 24 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&filter=legalNameAr%20contains%20%27a%27 answered total 49, but the keyset walk returns 24 rows
+[xUnit.net 00:25:25.73]       tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&filter=legalNameAr%20contains%20%27a%27 answered total 49, but the keyset walk returns 24 rows
+[xUnit.net 00:25:25.73]       
+[xUnit.net 00:25:25.73]       Process-wide state changed while the tenants used the app (84216 lines):
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals: was System.Collections.Concurrent.ConcurrentDictionary`2 count=221, now System.Collections.Concurrent.ConcurrentDictionary`2 count=9818
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[https://www.example.ae-B902-174|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-161|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-171|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8c-e27d-7c93-984e-7477dd0f5386|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-082f-7b4e-9394-63f1e5dade8f|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[شارع 2 CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[فاطمة الزعابي CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[018cc3ae-c4e0-78f1-bb16-860d3f0d6baf|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[pbkdf2-sha512$210000$50zVlOoA7MRaajuPz6AU+w==$5e+xAXD+thFgvFSbT/rGO+/wY0DVJZaQqs…].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8c-e258-741b-9190-651070ae2f50|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[activity6@bravo-cnryb9acb2ab3f.example|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 163|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-086c-7423-8aae-abae6accf885|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[ليلى ناصر CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[abuDhabi|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-1931-7872-9b2e-9881a20505d6|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-162|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-172|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[Activity CNRYB9ACB2AB3F 172|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 164|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[Activity CNRYB9ACB2AB3F 103|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-0f3a-78e7-a466-ad39d2dc5c16|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 169|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-1a08-7fc0-b8d9-34b911ad0b50|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[AN-DXB-B902-168|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-0fd8-7572-89dd-cbdf178081bd|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8c-e259-72fb-8d1c-e06a909c567f|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[الصناعات الفولاذية فرع أول CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+[xUnit.net 00:25:25.73]       singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 3|].Item1: was 9, now 47
+[xUnit.net 00:25:25.73]       Stack Trace:
+[xUnit.net 00:25:25.73]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(172,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:25:25.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:25:25.74]       Output:
+[xUnit.net 00:25:25.74]         routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 450.4 s
+[xUnit.net 00:25:25.74]         tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 507.5 s
+[xUnit.net 00:25:25.74]         write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 26665 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 776.9 s
+[xUnit.net 00:25:25.74]         answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2364 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70046, 20053 in Arabic), 821.4 s
+[xUnit.net 00:25:25.74]         tenant B values in route and query parameters: 526250 requests so far (93619 by tenant A's Arabic sessions; tenant B 95197, 26340 in Arabic), 1117.6 s
+[xUnit.net 00:25:25.74]         registered lists through their query contract: 17289 attacks, 31337 requests: 557587 requests so far (93619 by tenant A's Arabic sessions; tenant B 98882, 27262 in Arabic), 1147.4 s
+[xUnit.net 00:25:25.74]         list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 968 with different true answers (610 sorted), 71200 rows walked; process-wide state fingerprinted in 108503 lines from 110 roots: 557587 requests so far (93619 by tenant A's Arabic sessions; tenant B 125949, 34028 in Arabic), 1330.5 s
+[xUnit.net 00:25:25.74]         tenant B values in body fields: 590815 requests so far (93619 by tenant A's Arabic sessions; tenant B 130031, 35049 in Arabic), 1379.3 s
+[xUnit.net 00:25:25.74]         tenant B activity: 158713 requests (59988 concurrent with the attack), 1980 successful own writes, 158461 responses judged for tenant A markers: 590815 requests so far (93619 by tenant A's Arabic sessions; tenant B 158713, 40138 in Arabic), 1425.6 s
+[xUnit.net 00:25:25.74]         tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+[xUnit.net 00:25:25.74]         732916 tenant bindings and 1465672 setting statements judged among 6620484 statements; 732916 tenant values judged, 6685399 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+[xUnit.net 00:25:25.74]         11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+[xUnit.net 00:25:25.74]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:25:25.74]         120 endpoints, 617480 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 732779 traced lookups
+[xUnit.net 00:25:25.74]         in Arabic: 98517 tenant A requests, 40138 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+[xUnit.net 00:25:25.92]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [25 m 3 s]
+  Error Message:
+   3 isolation checks failed:
+
+6 answers that tell tenant B's values apart from values that exist nowhere:
+tenant A administrator (cookie) → GET /api/identity/users?search=bravocnryb9acb2ab3f [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (kpwjpkcjvt1lgt7td9y) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+tenant A administrator in Arabic (cookie) → GET /api/identity/users?search=bravocnryb9acb2ab3f [query search]: 200 {"items":[],"total":1,"next":null,"groups":null,"ranked":true} but for a value that exists nowhere (pmpddvjaqz7gmu1ph4m) 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}; first difference: {"items":[],"total":1,"next":null,"groups":null,"ranked":true} | {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+tenant A administrator (cookie) → GET /api/tenancy/access?workspace=accounts.b1-co%40example.ae [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (eocsptxp.q3-if@ntjkfgh.ms) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+tenant A administrator (cookie) → GET /api/tenancy/access?workspace=Bravo%20CNRYB9ACB2AB3F%20LLC [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (onrft rkwfq3vvg1fz2k qoe) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+tenant A administrator (cookie) → GET /api/tenancy/access?workspace=https%3A%2F%2Fwww.example.ae-B902-167 [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (zkepq://mzp.wiwongn.wv-s896-285) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+tenant A administrator (cookie) → GET /api/tenancy/access?workspace=978e8e89a3339487d5bbc8e422237c9cfd30a0bb187a188838628a299ec38980 [query workspace]: 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"… but for a value that exists nowhere (829k0r32y3695143b6mqh5a460822q3kje93f9bv793k950844007n584lg84186) 200 {"items":[{"id":"018cc40e-e640-75b7-989b-c551d037796f","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.19@alpha.example","companies":[]},{"id":"…; first difference: alpha.example","companies":[]}],"total":58,"next":null,"groups":null,"ranked":false} | alpha.example","companies":[]}],"total":43,"next":null,"groups":null,"ranked":false}
+
+3295 list answers that are not the asking tenant's own:
+tenant B asks first, tenant A judged: the other tenant's page 1 of 7 of GET /api/tenancy/companies?take=7 answered total 26, but the walk returns 49 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 4 (skip=0) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 4 (skip=7) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 3 of 4 (skip=14) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 4 of 4 (skip=21) of GET /api/tenancy/companies?take=7 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=a answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=a answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=a answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=o answered total 49, but walking the same query returns 25 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=o answered total 49, but the walk returns 25 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=o answered total 49, but the keyset walk returns 25 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&search=n answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&search=n answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&search=n answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=code%20contains%20%27a%27 answered total 47, but walking the same query returns 26 rows (the other tenant's answer to the same request was 47)
+tenant B asks first, tenant A judged: the judged page 1 of 3 of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 3 (skip=0) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 3 (skip=12) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 3 of 3 (skip=24) of GET /api/tenancy/companies?take=12&filter=code%20contains%20%27a%27 answered total 47, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameEn%20contains%20%27a%27 answered total 49, but walking the same query returns 26 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&filter=legalNameEn%20contains%20%27a%27 answered total 49, but the walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&filter=legalNameEn%20contains%20%27a%27 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&filter=legalNameEn%20contains%20%27a%27 answered total 49, but the keyset walk returns 26 rows
+tenant B asks first, tenant A judged: GET /api/tenancy/companies?take=50&filter=legalNameAr%20contains%20%27a%27 answered total 49, but walking the same query returns 24 rows (the other tenant's answer to the same request was 49)
+tenant B asks first, tenant A judged: the judged page 1 of 2 of GET /api/tenancy/companies?take=13&filter=legalNameAr%20contains%20%27a%27 answered total 49, but the walk returns 24 rows
+tenant B asks first, tenant A judged: the judged offset page 1 of 2 (skip=0) of GET /api/tenancy/companies?take=13&filter=legalNameAr%20contains%20%27a%27 answered total 49, but the keyset walk returns 24 rows
+tenant B asks first, tenant A judged: the judged offset page 2 of 2 (skip=13) of GET /api/tenancy/companies?take=13&filter=legalNameAr%20contains%20%27a%27 answered total 49, but the keyset walk returns 24 rows
+
+Process-wide state changed while the tenants used the app (84216 lines):
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals: was System.Collections.Concurrent.ConcurrentDictionary`2 count=221, now System.Collections.Concurrent.ConcurrentDictionary`2 count=9818
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[https://www.example.ae-B902-174|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-161|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-171|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8c-e27d-7c93-984e-7477dd0f5386|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-082f-7b4e-9394-63f1e5dade8f|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[شارع 2 CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[فاطمة الزعابي CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[018cc3ae-c4e0-78f1-bb16-860d3f0d6baf|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[pbkdf2-sha512$210000$50zVlOoA7MRaajuPz6AU+w==$5e+xAXD+thFgvFSbT/rGO+/wY0DVJZaQqs…].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8c-e258-741b-9190-651070ae2f50|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[activity6@bravo-cnryb9acb2ab3f.example|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 163|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-086c-7423-8aae-abae6accf885|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[ليلى ناصر CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[abuDhabi|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-1931-7872-9b2e-9881a20505d6|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-162|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[12345-B902-172|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[Activity CNRYB9ACB2AB3F 172|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 164|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[Activity CNRYB9ACB2AB3F 103|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-0f3a-78e7-a466-ad39d2dc5c16|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 169|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-1a08-7fc0-b8d9-34b911ad0b50|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[AN-DXB-B902-168|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8d-0fd8-7572-89dd-cbdf178081bd|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[01a14c8c-e259-72fb-8d1c-e06a909c567f|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:32
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[الصناعات الفولاذية فرع أول CNRYB9ACB2AB3F|].Item2: was 10/18/2026 01:08:35, now 10/18/2026 01:32:33
+singleton Erp.Kernel.Modules.ModuleCatalog._modules[0](Erp.Kernel.Modules.ModuleDescriptor).ListBindings[tenancy.companies](Erp.Kernel.Lists.ListBinding`1)._warmTotals[نشاط CNRYB9ACB2AB3F 3|].Item1: was 9, now 47
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 172
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 450.4 s
+ tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 507.5 s
+ write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 26665 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 776.9 s
+ answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2364 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70046, 20053 in Arabic), 821.4 s
+ tenant B values in route and query parameters: 526250 requests so far (93619 by tenant A's Arabic sessions; tenant B 95197, 26340 in Arabic), 1117.6 s
+ registered lists through their query contract: 17289 attacks, 31337 requests: 557587 requests so far (93619 by tenant A's Arabic sessions; tenant B 98882, 27262 in Arabic), 1147.4 s
+ list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 968 with different true answers (610 sorted), 71200 rows walked; process-wide state fingerprinted in 108503 lines from 110 roots: 557587 requests so far (93619 by tenant A's Arabic sessions; tenant B 125949, 34028 in Arabic), 1330.5 s
+ tenant B values in body fields: 590815 requests so far (93619 by tenant A's Arabic sessions; tenant B 130031, 35049 in Arabic), 1379.3 s
+ tenant B activity: 158713 requests (59988 concurrent with the attack), 1980 successful own writes, 158461 responses judged for tenant A markers: 590815 requests so far (93619 by tenant A's Arabic sessions; tenant B 158713, 40138 in Arabic), 1425.6 s
+ tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+ 732916 tenant bindings and 1465672 setting statements judged among 6620484 statements; 732916 tenant values judged, 6685399 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+ 11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 120 endpoints, 617480 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 732779 traced lookups
+ in Arabic: 98517 tenant A requests, 40138 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+
+Test Run Failed.
+Total tests: 62
+     Passed: 57
+     Failed: 5
+ Total time: 25.4553 Minutes

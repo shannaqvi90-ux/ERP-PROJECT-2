@@ -1,0 +1,6 @@
+r10 gap: 3 x USD 1.00 @3.6725 -> unrounded base 11.02, stated 11.02
+object initialiser: amount 100 USD rate 0 base 999 (rate 0 accepted, base != amount x rate)
+with-expression: amount 1.00 rate 3.6725 base 50
+JSON read: amount 10.123456 currency 'usd' rate -2 base 1 stated False
+Add on JSON money: -40.49
+default(Money).State() threw ArgumentException: '' is not an ISO 4217 currency code. (Parameter 'code')
