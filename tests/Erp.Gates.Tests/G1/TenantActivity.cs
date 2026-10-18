@@ -365,7 +365,10 @@ public sealed class TenantActivity
             foreach (var leaf in _openApi.EnumLeaves(schema).Where(l => l.Path.Count == 1 && omittable.Contains(l.Path[0])))
             {
                 var others = omittable.Where(f => f != leaf.Path[0]).ToList();
-                foreach (var value in leaf.Values)
+                // Every value, then the first one again: a write about the caller's own settings that
+                // takes the field alone (the shell's language switch) leaves the caller as the
+                // first value found it (English), as the full bodies' first values do.
+                foreach (var value in leaf.Values.Append(leaf.Values[0]))
                 {
                     variants.Add(new WriteVariant($"{leaf.Name}={value.ToJsonString()} alone", [(leaf, value)], leaf, value) { Omitted = others });
                 }

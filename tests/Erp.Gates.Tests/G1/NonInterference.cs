@@ -355,7 +355,7 @@ public static partial class NonInterference
                 }
                 // A partial body that leaves out an enumerated field, against the other tenant's
                 // choice of that field (critic p04 round 11, plant SL1), both ways.
-                foreach (var partial in partials)
+                foreach (var partial in partials.DistinctBy(v => v.Label))
                 {
                     if (OthersChoice(activityA, endpoint, partial) is not { } choice)
                     {
