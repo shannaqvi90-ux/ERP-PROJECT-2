@@ -308,6 +308,20 @@ test('causation (round 13): an animation\'s, transition\'s or media element\'s e
   assert.equal(atStart(0).caused, true);
 });
 
+test('causation (round 13): ids start again in a new document; a callback is matched with the last request before it, and a chain never runs forward in time', () => {
+  // The click arms timer 3; the page reloads later and its load task arms a timer 3 of the new document.
+  const reused = [task(101, INPUT, [...click(), install(3, 3, 0)]), task(108, TIMER, [fire(1, 3), send(2, 'w')]), task(300, 'html_document_parser.cc:PumpTokenizer', [X('ParseHTML', 1, 3), install(2, 3, 50)])];
+  const v = verdict(reused, 'w');
+  assert.equal(v.caused, true, v.why);
+  assert.ok(v.chain_seconds === undefined || v.chain_seconds >= 0);
+  // ... and the other way round: a load task's timer 5, then the click's timer 5 in a new document.
+  const late = [task(20, 'html_document_parser.cc:PumpTokenizer', [X('ParseHTML', 1, 3), install(2, 5, 50)]), task(75, TIMER, [fire(1, 5), send(2, 'w')]), task(101, INPUT, [...click(), install(3, 5, 0)])];
+  assert.equal(verdict(late, 'w', [[60, 110]]).caused, false, 'the fire before the click is the load task\'s timer');
+  // The same for animation frames.
+  const frames = [task(101, INPUT, [...click(), I('RequestAnimationFrame', 3, { frame: 'F', id: 1 })]), task(112, FRAME, [X('FireAnimationFrame', 1, 2, { frame: 'F', id: 1 }), send(2, 'w')]), task(400, TIMER, [fire(1, 9), I('RequestAnimationFrame', 2, { frame: 'F', id: 1 })])];
+  assert.equal(verdict(frames, 'w').caused, true);
+});
+
 test('causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused', () => {
   const clock = clockFrom([{ name: 'clock_sync', ts: 5_000_150, args: { sync_id: 'a' } }], [{ id: 'a', before: 5_000_000, after: 5_000_100 }], { perf: 2000, hr: 5_000_050 });
   assert.equal(clock.offset_us, 100);

@@ -94,7 +94,20 @@ export const RESULT_SCHEMA = 1;
  *      outside its window). For a task that saves, the clock starts an unpredictable 1.1-2.1 s after
  *      verify()'s read before it. A device confirmation is timed until the device has answered.
  */
-export const INSTRUMENT_VERSION = 10;
+/*  11: timing that lives outside the page's thread causes nothing (critic p01 r12, plants W1-W3): a web
+ *      socket's message is the answer to the page's last frame on it (sent by a caused task within
+ *      LINK_SECONDS, not yet answered) or the server's push; a window's postMessage is the posting
+ *      task's (its traceId); a message on an interface that carries another frame's, tab's, worker's
+ *      or server's message causes nothing; any other thread of the page's script (a worker, another
+ *      frame's or window's process) running meanwhile refuses an untraceable task; the delays of a
+ *      chain add up to at most LINK_SECONDS from the step's input; an animation's, transition's or
+ *      media element's event is set by its duration, an idle callback is its asker's, and an observer
+ *      run while an animation is running causes nothing (plants W4-W6b). A counted triple click. A
+ *      fixed prefix a task declares for a field (a dialling code its product's code sets) need not be
+ *      typed when the field shows it as the clock starts and the end state holds the whole value
+ *      (lead decision on critic p06 r7's question).
+ */
+export const INSTRUMENT_VERSION = 11;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 /**
  * The metrics that count things a person does (steps, keystrokes); the others are times. Only a
@@ -986,7 +999,7 @@ export async function execute(task, driver, product, productId, needles, out, op
         if (declaredWrites) strayDeclaredWrites(causes, w => declaredWrites.some(x => matchesRequest(x, w.method, w.url)));
         run.saved_state.writes_caused = causes.slice(0, 20).map(c => ({ write: `${c.write.method} ${describePath(c.write.url)}`, at: c.write.at,
           ...(c.caused ? { by_step: c.step, ...(c.after ? { after_answer_to: c.after } : {}) } : c.continues ? { continues: c.continues, not_caused: c.why } : { not_caused: c.why }),
-          ...(c.trace ? { browser_record: { caused: c.trace.caused, ...(c.trace.caused ? { by_step: c.trace.step } : { why: c.trace.why }), chain: c.trace.chain.slice(-6) } } : {}) }));
+          ...(c.trace ? { browser_record: { caused: c.trace.caused, ...(c.trace.caused ? { by_step: c.trace.step, chain_seconds: c.trace.chain_seconds } : { why: c.trace.why }), chain: c.trace.chain.slice(-6) } } : {}) }));
         const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [], traceCauses,
           prefixes: prefixesShown.filter(p => p.shown).map(p => p.prefix), endText: saved.end_state_text });
         if (measured) throw new ActionOutsideClock(measured, 'set-up');

@@ -179,9 +179,11 @@ export function analyseTrace(events) {
       tasks.push(t);
       for (const e of t.events) {
         const d = e.args?.data || {};
-        if (e.name === 'TimerInstall') installs.set(`${d.frame}:${d.timerId}`, { event: e, task: t });
-        else if (e.name === 'RequestAnimationFrame') frames.set(`${d.frame}:${d.id}`, { event: e, task: t });
-        else if (e.name === 'RequestIdleCallback') idles.set(`${d.frame}:${d.id}`, { event: e, task: t });
+        // Round 13: ids start again in each new document of a frame (a page that reloads), so every
+        // request is kept and a callback is matched with the last one before it.
+        if (e.name === 'TimerInstall') keep(installs, `${d.frame}:${d.timerId}`, { event: e, task: t });
+        else if (e.name === 'RequestAnimationFrame') keep(frames, `${d.frame}:${d.id}`, { event: e, task: t });
+        else if (e.name === 'RequestIdleCallback') keep(idles, `${d.frame}:${d.id}`, { event: e, task: t });
         else if (e.name === 'ResourceSendRequest' && d.requestId && !sends.has(d.requestId)) sends.set(d.requestId, { event: e, task: t });
         else if ((e.name === 'WebSocketSend' || e.name === 'WebSocketReceive') && d.identifier !== undefined) {
           const key = socketKey(e);
@@ -208,6 +210,10 @@ export function analyseTrace(events) {
   }
   return { tasks, threads, installs, frames, idles, sends, sendEvents, navigationStarts, sockets, posted, animations: [...animations.values()] };
 }
+
+const keep = (map, key, value) => { if (!map.has(key)) map.set(key, []); map.get(key).push(value); };
+/** The last request of `key` made before trace time `ts` (a timer's install, an animation frame's or idle callback's request). */
+const askedBefore = (map, key, ts) => (map.get(key) || []).filter(x => x.event.ts < ts).sort((a, b) => a.event.ts - b.event.ts).pop() || null;
 
 /** One web socket of one page: its frame and the identifier the browser gave it. */
 const socketKey = e => `${e.pid}:${e.args?.data?.frame}:${e.args?.data?.identifier}`;
@@ -281,10 +287,13 @@ export function causeOf(model, point, steps, opts = {}) {
   // Round 13 (critic p01 r12, plant W3): the delays of a chain add up. Each link alone may stay under
   // its limit (an answer held 1.9 s, then a timer of 0.9 s) while the whole chain holds the write back
   // longer than any one link may: the write must go out within LINK_SECONDS of the step's input.
+  if (c.caused && typeof c.origin === 'number' && c.origin > point.ts + ctx.slack) {
+    return no(`its chain (${c.chain.join(' > ')}) begins after it went out: the record cannot order it`, c.chain);
+  }
   if (c.caused && typeof c.origin === 'number' && (point.ts - c.origin) / 1e6 > ctx.link) {
     return no(`it went out ${fmt((point.ts - c.origin) / 1e6)} after the input of step ${c.step} that began its chain (${c.chain.join(' > ')}): delays that add up to more than ${fmt(ctx.link)} link nothing (the page held the write back)`, c.chain);
   }
-  return c;
+  return c.caused && typeof c.origin === 'number' ? { ...c, chain_seconds: round3((point.ts - c.origin) / 1e6) } : c;
 }
 
 function stepHolding(ctx, ts) {
@@ -351,7 +360,7 @@ function pointCause(ctx, point, depth) {
 
 function timerCause(ctx, timer, depth) {
   const d = timer.args?.data || {};
-  const install = ctx.model.installs.get(`${d.frame}:${d.timerId}`);
+  const install = askedBefore(ctx.model.installs, `${d.frame}:${d.timerId}`, timer.ts);
   if (!install) return no('a timer armed before the clock started');
   const i = install.event.args?.data || {};
   if (i.singleShot === false) return no(`a repeating timer (every ${fmt((i.timeout || 0) / 1000)}): a poll is the page's own doing`);
@@ -362,7 +371,7 @@ function timerCause(ctx, timer, depth) {
 
 function idleCause(ctx, idle, depth) {
   const d = idle.args?.data || {};
-  const asked = ctx.model.idles.get(`${d.frame}:${d.id}`);
+  const asked = askedBefore(ctx.model.idles, `${d.frame}:${d.id}`, idle.ts);
   if (!asked) return no('an idle callback asked for before the clock started');
   const c = pointCause(ctx, asked.event, depth + 1);
   return c.caused ? yes(c.step, [...c.chain, 'an idle callback'], c.origin) : noFrom('an idle callback asked for by a task no step caused', c);
@@ -389,7 +398,7 @@ function animatedAt(ctx, ts) {
 
 function frameCause(ctx, frame, depth) {
   const d = frame.args?.data || {};
-  const asked = ctx.model.frames.get(`${d.frame}:${d.id}`);
+  const asked = askedBefore(ctx.model.frames, `${d.frame}:${d.id}`, frame.ts);
   if (!asked) return no('an animation frame asked for before the clock started');
   const c = pointCause(ctx, asked.event, depth + 1);
   return c.caused ? yes(c.step, [...c.chain, 'an animation frame'], c.origin) : noFrom('an animation frame asked for by a task no step caused', c);
