@@ -68,6 +68,8 @@ test.describe("record forms and printed documents", () => {
   });
 
   test("a phone number keeps +971: a click selects the number after it, and typing its last digit saves; Alt+Z undoes that save", async ({ page }) => {
+    // The size the critic of round 7 found the form's notice scrolled out of sight at.
+    await page.setViewportSize({ width: 1400, height: 900 });
     await freshStart(page, "en");
     await signIn(page, users.admin);
     await openCompanies(page);
@@ -86,6 +88,10 @@ test.describe("record forms and printed documents", () => {
     expect(await phone.evaluate((el: HTMLInputElement) => [el.selectionStart, el.value.slice(el.selectionStart ?? 0, el.selectionEnd ?? 0)])).toEqual([5, original.slice(5)]);
     await page.keyboard.type(number.replace(/\s/g, ""));
     await expect(page.locator(".record-form .notice")).toHaveText(/Saved: the entry was complete\./);
+    // Said under the field itself, with Undo, in sight where the user is typing.
+    const saidHere = page.locator('[data-field="phone"] .notice[role="status"]');
+    await expect(saidHere).toBeInViewport({ ratio: 1 });
+    await expect(saidHere.getByRole("button", { name: "Undo" })).toBeInViewport({ ratio: 1 });
     await expect(phone).toHaveValue(number);
     await expect(page.locator(".record-header")).not.toContainText("Unsaved changes");
     expect(puts).toEqual([number]);
@@ -107,6 +113,20 @@ test.describe("record forms and printed documents", () => {
     await page.keyboard.press("Alt+KeyZ");
     await expect(phone).toHaveValue(original);
     await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+
+    // The country code typed again after the +971 the field keeps (twelve keys, none shifted) is
+    // the same number: one save, at its last digit; the field's own Undo puts the old one back.
+    await page.locator(".record-header h2").click();
+    await phone.click();
+    const before = puts.length;
+    await page.keyboard.type("971" + number.slice(5).replace(/\s/g, ""));
+    await expect(phone).toHaveValue(number);
+    await expect(saidHere).toHaveText(/Saved: the entry was complete\./);
+    expect(puts.slice(before)).toEqual([number]);
+    await saidHere.getByRole("button", { name: "Undo" }).click();
+    await expect(phone).toHaveValue(original);
+    await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+    expect(puts.slice(before)).toEqual([number, original]);
   });
 
   test("a user who may only read a record sees it read-only, and no key of the form sends a change", async ({ page }) => {

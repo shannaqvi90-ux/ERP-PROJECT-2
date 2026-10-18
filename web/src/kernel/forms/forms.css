@@ -276,3 +276,18 @@
     display: none !important;
   }
 }
+
+/* A completed entry the form saved on its own, said under the field itself, with Undo. */
+.field-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block: 4px 0;
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.field-notice .button.link {
+  padding: 0;
+  font-size: 12px;
+}

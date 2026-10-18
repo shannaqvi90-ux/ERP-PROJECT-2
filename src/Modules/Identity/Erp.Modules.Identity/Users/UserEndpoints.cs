@@ -676,10 +676,12 @@ internal static class UserEndpoints
         db.Sessions.Where(s => s.UserId == userId && s.RevokedAt == null && s.ExpiresAt > now)
             .ExecuteUpdateAsync(s => s.SetProperty(x => x.RevokedAt, now), cancellationToken);
 
+    /// <summary>The role ids of each user, in a fixed order (by id), so two reads of the same user
+    /// answer the same list.</summary>
     private static async Task<Dictionary<Guid, List<Guid>>> RolesOf(IdentityDbContext db, IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken) =>
         (await db.UserRoles.AsNoTracking().Where(ur => userIds.Contains(ur.UserId)).Select(ur => new { ur.UserId, ur.RoleId }).ToListAsync(cancellationToken))
         .GroupBy(x => x.UserId)
-        .ToDictionary(g => g.Key, g => g.Select(x => x.RoleId).ToList());
+        .ToDictionary(g => g.Key, g => g.Select(x => x.RoleId).Order().ToList());
 
     private static async Task<HashSet<Guid>> PendingSetupOf(IdentityDbContext db, IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken) =>
         (await db.Credentials.Where(c => userIds.Contains(c.Id) && c.MustChange).Select(c => c.Id).ToListAsync(cancellationToken)).ToHashSet();

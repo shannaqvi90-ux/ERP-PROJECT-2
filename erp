@@ -12,7 +12,8 @@
 #   ./erp tenant create --code <code> --name-en <name> --name-ar <name> --admin-email <e-mail> --admin-name <name> [--language en|ar]
 #   ./erp tenant suspend|activate --code <code> | ./erp tenant list
 #                               platform operator commands against the running demo's database
-#                               (initial password from ERP_TENANT_ADMIN_PASSWORD, else generated)
+#                               (initial password from ERP_TENANT_ADMIN_PASSWORD, else generated;
+#                               it is temporary: the first sign-in asks for a password of their own)
 #                               (the audit trail names the operator: --operator <name>, else
 #                               ERP_OPERATOR, else user@host)
 #

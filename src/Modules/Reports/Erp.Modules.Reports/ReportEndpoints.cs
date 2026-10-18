@@ -91,17 +91,24 @@ internal static class ReportEndpoints
         }
     }
 
-    private static Microsoft.AspNetCore.Http.HttpResults.Ok<ReportCatalogDto> Catalog(HttpContext http, ModuleCatalog catalog, ICurrentUser caller, WebStrings strings)
+    private static async Task<Microsoft.AspNetCore.Http.HttpResults.Ok<ReportCatalogDto>> Catalog(HttpContext http, ModuleCatalog catalog, ICurrentUser caller, WebStrings strings,
+        CancellationToken cancellationToken)
     {
         var asked = http.Request.Query["language"].ToString();
         var language = Languages.IsSupported(asked) ? asked : Languages.ForRequest(http);
-        var items = catalog.Reports.Where(r => caller.Has(r.Definition.Permission)).Select(r =>
+        var runnable = catalog.Reports.Where(r => caller.Has(r.Definition.Permission)).ToList();
+        var judged = new Dictionary<string, (IReadOnlySet<string> Withheld, IReadOnlySet<string> Refused)>(StringComparer.Ordinal);
+        foreach (var r in runnable)
+        {
+            judged[r.Definition.Key] = (await WithheldAsync(r.Definition, http, null, cancellationToken), await RefusedParametersAsync(r.Definition, http, null, cancellationToken));
+        }
+        var items = runnable.Select(r =>
         {
             var d = r.Definition;
-            var withheld = Withheld(d, caller);
+            var (withheld, refused) = judged[d.Key];
             return new ReportSummaryDto(d.Key, r.Module, strings.Get(d.LabelKey, language), d.DescriptionKey is null ? null : strings.Get(d.DescriptionKey, language),
                 $"/api/reports/run/{d.Key}",
-                d.Parameters.Where(p => p.Permission is null || caller.Has(p.Permission)).Select(p =>
+                d.Parameters.Where(p => !refused.Contains(p.Key)).Select(p =>
                 {
                     var lookup = p.Lookup is null ? null : catalog.FindList(p.Lookup);
                     return new ReportParameterDto(p.Key, strings.Get(p.LabelKey, language), JsonNamingPolicy.CamelCase.ConvertName(p.Type.ToString()), p.Required,
@@ -121,29 +128,92 @@ internal static class ReportEndpoints
     private sealed record Common(string Format, ReportOptions Options, string? GroupBy, bool Inline);
 
     /// <summary>The columns and facts the caller may not see: those that need a permission, beyond
-    /// the report's own, that the caller lacks.</summary>
-    internal static IReadOnlySet<string> Withheld(ReportDefinition definition, ICurrentUser caller) =>
-        definition.Columns.Concat(definition.Facts ?? [])
-            .Where(c => c.Permission is { } extra && !caller.Has(extra))
-            .Select(c => c.Key).ToHashSet(StringComparer.Ordinal);
+    /// the report's own, that the caller does not hold where the report reads
+    /// (<see cref="HeldWhereReadAsync"/>).</summary>
+    internal static async Task<IReadOnlySet<string>> WithheldAsync(ReportDefinition definition, HttpContext http, Guid? company, CancellationToken cancellationToken)
+    {
+        var withheld = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var column in definition.Columns.Concat(definition.Facts ?? []))
+        {
+            if (column.Permission is { } extra && !await HeldWhereReadAsync(definition.Permission, extra, http, company, cancellationToken))
+            {
+                withheld.Add(column.Key);
+            }
+        }
+        return withheld;
+    }
+
+    /// <summary>The parameters the caller may not give: those that name another area's records
+    /// (the document would print the record's name) whose permission the caller does not hold where
+    /// the report reads.</summary>
+    private static async Task<IReadOnlySet<string>> RefusedParametersAsync(ReportDefinition definition, HttpContext http, Guid? company, CancellationToken cancellationToken)
+    {
+        var refused = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var parameter in definition.Parameters)
+        {
+            if (parameter.Permission is { } extra && !await HeldWhereReadAsync(definition.Permission, extra, http, company, cancellationToken))
+            {
+                refused.Add(parameter.Key);
+            }
+        }
+        return refused;
+    }
+
+    /// <summary>
+    /// Whether a permission a report needs beyond its own (another area's data in a column, fact or
+    /// parameter) is held wherever the report reads. A role held in one company counts only in that
+    /// company (p02 round 12, docs/decisions/p02-tenancy-permission-in-the-records-company.md): the
+    /// kernel narrows a report's reads to the companies where the report's own permission is held,
+    /// so a column of another area is printed only when its permission is held in each of those
+    /// companies (workspace-wide, or by a role in every one of them). A report about one company
+    /// (<see cref="ReportDefinition.CompanyParameter"/>) judges it in that company alone. Either
+    /// way the session must hold it too (the working company's roles and the workspace-wide ones).
+    /// </summary>
+    internal static async Task<bool> HeldWhereReadAsync(string reportPermission, string extra, HttpContext http, Guid? company, CancellationToken cancellationToken)
+    {
+        if (!http.RequestServices.GetRequiredService<ICurrentUser>().Has(extra))
+        {
+            return false;
+        }
+        var places = http.RequestServices.GetRequiredService<ICompanyPermissions>();
+        if (company is { } one)
+        {
+            return await places.HoldsAsync(extra, one, cancellationToken);
+        }
+        var extraIn = await places.CompaniesAsync(extra, cancellationToken);
+        if (extraIn is null)
+        {
+            return true;
+        }
+        var scope = http.RequestServices.GetRequiredService<Erp.Kernel.Data.ICompanyContext>();
+        if (scope.AllCompanies)
+        {
+            return false;
+        }
+        var reportIn = await places.CompaniesAsync(reportPermission, cancellationToken);
+        return scope.CompanyIds.Where(c => reportIn is null || reportIn.Contains(c)).All(extraIn.Contains);
+    }
 
     private static async Task<IResult> RunAsync(ReportRegistration registration, HttpContext http, ReportEngine engine, PdfReportRenderer pdf, ITenantDirectory tenants, CancellationToken cancellationToken)
     {
         var definition = registration.Definition;
         var caller = http.RequestServices.GetRequiredService<ICurrentUser>();
-        var withheld = Withheld(definition, caller);
         var validator = new Validator(http);
+        var parameters = ReadParameters(definition, http.Request.Query, validator);
+        // Another area's data is judged in the one company a company's document is about, or in
+        // every company the report reads (HeldWhereReadAsync).
+        var company = definition.CompanyParameter is { } named && parameters.TryGetValue(named, out var value) && value is Guid id ? id : (Guid?)null;
+        var withheld = await WithheldAsync(definition, http, company, cancellationToken);
         var groupable = definition.Columns.Where(c => c.Groupable && !withheld.Contains(c.Key)).Select(c => c.Key).ToList();
         var defaultGroupBy = definition.DefaultGroupBy is { } group && !withheld.Contains(group) ? group : null;
         var common = await CommonAsync(http, validator, groupable, defaultGroupBy, tenants, cancellationToken);
-        var parameters = ReadParameters(definition, http.Request.Query, validator);
         // A parameter that names another area's records is refused to a caller who cannot read them
         // (the document would print the record's name).
-        foreach (var parameter in definition.Parameters.Where(p => p.Permission is { } extra && !caller.Has(extra)))
+        foreach (var parameter in await RefusedParametersAsync(definition, http, company, cancellationToken))
         {
-            if (Single(http.Request.Query, parameter.Key) is not null)
+            if (Single(http.Request.Query, parameter) is not null)
             {
-                validator.Add(parameter.Key, "reportParameterPermission");
+                validator.Add(parameter, "reportParameterPermission");
             }
         }
         if (!validator.IsValid || common is null)

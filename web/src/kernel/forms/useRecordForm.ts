@@ -32,6 +32,12 @@ export type FieldBinding<V> = {
   /** The user typed the last character of a value whose length is fixed (a whole UAE phone
    * number): the form saves it when it is the record's only change (see completeEntry). */
   onComplete?: (value: V) => void;
+  /** The form saved this field's completed entry on its own and nothing changed since: the field
+   * says so beside itself, with Undo (critic p06 round 7: the form's own notice, at the top of a
+   * long form, was out of sight while the user looked at the field). */
+  entrySaved?: boolean;
+  /** Puts back what the record held before that save, and saves it (Alt+Z does the same). */
+  undoEntry?: () => void;
 };
 
 export type RecordFormState<R, D> = {
@@ -280,8 +286,10 @@ export function useRecordForm<R, D>(spec: RecordFormSpec<R, D>, key: unknown = n
       errors: errors[field] ?? [],
       readOnly,
       onComplete: (value: D[K]) => completeEntry(field, value),
+      entrySaved: undoable?.field === field && saved && !dirty,
+      undoEntry: () => void undo(),
     }),
-    [draft, errors, readOnly, set, completeEntry],
+    [draft, errors, readOnly, set, completeEntry, undoable, saved, dirty, undo],
   );
 
   return useMemo(

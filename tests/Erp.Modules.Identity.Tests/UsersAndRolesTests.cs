@@ -42,6 +42,34 @@ public sealed class UsersAndRolesTests(IdentityFixture fixture) : IClassFixture<
         Assert.Equal("أدخل عنوان بريد إلكتروني صحيحًا.", arabicProblem.GetProperty("errors").GetProperty("email")[0].GetProperty("message").GetString());
     }
 
+    /// <summary>A user's role ids come in one fixed order (critic p00 round 11: two identical reads
+    /// listed the same two roles in opposite orders, which the tenant-isolation gate's differential
+    /// oracle saw as a changing answer).</summary>
+    [Fact]
+    public async Task A_users_role_ids_are_answered_in_a_fixed_order()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var roles = new List<Guid>();
+        for (var i = 0; i < 4; i++)
+        {
+            var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Order {i} {Guid.NewGuid():N}", nameAr = $"ترتيب {i} {Guid.NewGuid():N}", permissions = new[] { "identity.users.read" } });
+            Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+            roles.Add((await Json(role)).GetProperty("id").GetGuid());
+        }
+        var email = $"order.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Role order", language = "en", password = ErpTestEnvironment.Password, roleIds = Enumerable.Reverse(roles).ToArray() });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var id = (await Json(created)).GetProperty("id").GetGuid();
+        var expected = roles.Order().ToList();
+        for (var read = 0; read < 3; read++)
+        {
+            var one = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{id}");
+            Assert.Equal(expected, one.GetProperty("roleIds").EnumerateArray().Select(r => r.GetGuid()).ToList());
+            var listed = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users?search={Uri.EscapeDataString(email)}");
+            Assert.Equal(expected, listed.GetProperty("items")[0].GetProperty("roleIds").EnumerateArray().Select(r => r.GetGuid()).ToList());
+        }
+    }
+
     [Fact]
     public async Task Duplicate_email_in_the_same_workspace_is_a_conflict()
     {
