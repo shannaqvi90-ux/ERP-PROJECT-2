@@ -25,9 +25,15 @@ public static class CarrierMatrix
     /// ids and with every id of the caller's own (<see cref="OwnIds"/>: their user id, session,
     /// tenant, companies, branches and the records that name them), each through a session of its
     /// own per carrier.</summary>
-    public static async Task<Result> DeniedEverythingAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null)
+    /// <param name="ownIds">False for the carrier self-test alone (its plant is about carriers, and
+    /// the own-id requests have a self-test of their own).</param>
+    public static async Task<Result> DeniedEverythingAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, bool ownIds = true)
     {
         var random = await DeniedForRandomIdsAsync(env, email, permissioned, factory);
+        if (!ownIds)
+        {
+            return random;
+        }
         var self = await SelfReferencingAsync(env, email, null, permissioned, SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory);
         return random with { Problems = [.. random.Problems, .. self.Problems], SelfRequests = self.Requests, OwnIdsTried = self.OwnIdsTried, SelfEndpoints = self.Endpoints };
     }
@@ -68,7 +74,7 @@ public static class CarrierMatrix
     /// <summary>A user holding exactly <paramref name="permission"/>: through every carrier, the
     /// session lists exactly it and its menu entries, and exactly the endpoints that declare it
     /// open. Then, through each carrier in <paramref name="selfCarriers"/> (every carrier when
-    /// null), with a session of its own: every endpoint of the permission's module that declares
+    /// null; none when empty, for the carrier self-test alone), with a session of its own: every endpoint of the permission's module that declares
     /// another permission answers 403 when the request names any id of the caller's own
     /// (<see cref="OwnIds"/>), so holding one permission never opens another action on "my own"
     /// records.</summary>
@@ -76,6 +82,10 @@ public static class CarrierMatrix
         IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, IReadOnlyList<string>? selfCarriers = null)
     {
         var random = await ExactlyOneForRandomIdsAsync(env, email, permission, expectedMenu, permissioned, factory);
+        if (selfCarriers is [])
+        {
+            return random;
+        }
         var module = OwnIds.ModuleOf(permission);
         var others = permissioned.Where(e => e.Permission != permission && OwnIds.ModuleOf(e.Permission) == module).ToList();
         var self = await SelfReferencingAsync(env, email, permission, others, selfCarriers ?? SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory);

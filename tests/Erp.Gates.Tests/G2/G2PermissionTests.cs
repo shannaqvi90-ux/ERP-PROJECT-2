@@ -460,7 +460,8 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     /// may always manage their own record"); <c>session</c>: one equal to the caller's session id;
     /// <c>holder</c>: a caller holding any permission of the endpoint's module passes on their own
     /// user id. The deny-by-default matrix must report the first two and the grant-exactly-one
-    /// matrix the third, each only on the requests naming own ids; the random-id requests stay clean.
+    /// matrix the third (the deny matrix staying clean for it), each only on the requests naming own
+    /// ids; the random-id requests stay clean.
     /// </summary>
     [Theory]
     [InlineData("user")]
@@ -475,11 +476,16 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var nobody = $"g2.selfplant.{mode}.none.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
         await CreateUserHoldingAsync(admin, nobody, [], $"Nothing {mode}", $"لا شيء {mode}");
         var denied = await CarrierMatrix.DeniedEverythingAsync(Env, nobody, Permissioned, planted);
-        const string permission = "identity.users.read";
-        var holder = $"g2.selfplant.{mode}.one.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
-        await CreateUserHoldingAsync(admin, holder, [permission], $"Read users {mode}", $"قراءة المستخدمين {mode}");
-        var expectedMenu = catalog.Menu.Where(m => m.Permission == permission).Select(m => m.Key).ToList();
-        var exactlyOne = await CarrierMatrix.ExactlyOneAsync(Env, holder, permission, expectedMenu, Permissioned, planted);
+        // The grant-exactly-one matrix is needed for the plant only it can see.
+        var exactlyOne = new CarrierMatrix.Result([], [], 0);
+        if (mode == "holder")
+        {
+            const string permission = "identity.users.read";
+            var holder = $"g2.selfplant.{mode}.one.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+            await CreateUserHoldingAsync(admin, holder, [permission], $"Read users {mode}", $"قراءة المستخدمين {mode}");
+            var expectedMenu = catalog.Menu.Where(m => m.Permission == permission).Select(m => m.Key).ToList();
+            exactlyOne = await CarrierMatrix.ExactlyOneAsync(Env, holder, permission, expectedMenu, Permissioned, planted);
+        }
 
         foreach (var (name, result) in new[] { ("deny by default", denied), ("grant exactly one", exactlyOne) })
         {
@@ -508,14 +514,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 Assert.DoesNotContain(exactlyOne.Problems, p => p.Contains("/api/tenancy/", StringComparison.Ordinal));
                 break;
         }
-        // The same matrices on the real host pass for the same kind of users.
-        if (mode == "user")
-        {
-            var clean = $"g2.selfplant.clean.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
-            await CreateUserHoldingAsync(admin, clean, [], "Nothing clean", "لا شيء نظيف");
-            var real = await CarrierMatrix.DeniedEverythingAsync(Env, clean, Permissioned);
-            Assert.True(real.Problems.Count == 0, string.Join("\n", real.Problems));
-        }
+        // The real host passes the same matrices: the deny-by-default and grant-exactly-one tests above.
     }
 
     /// <summary>A token the server never issued gets 401 from every permissioned endpoint through
@@ -611,8 +610,8 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var expectedMenu = catalog.Menu.Where(m => m.Permission == permission).Select(m => m.Key).ToList();
 
         await using var planted = new ErpAppFactory(BearerBypassModule.Settings(Env.Factory.Settings));
-        var denied = await CarrierMatrix.DeniedEverythingAsync(Env, Env.Email(Env.TenantA, "noaccess"), Permissioned, planted);
-        var exactlyOne = await CarrierMatrix.ExactlyOneAsync(Env, email, permission, expectedMenu, Permissioned, planted);
+        var denied = await CarrierMatrix.DeniedEverythingAsync(Env, Env.Email(Env.TenantA, "noaccess"), Permissioned, planted, ownIds: false);
+        var exactlyOne = await CarrierMatrix.ExactlyOneAsync(Env, email, permission, expectedMenu, Permissioned, planted, selfCarriers: []);
         foreach (var (name, result) in new[] { ("deny by default", denied), ("grant exactly one", exactlyOne) })
         {
             var bearer = result.Problems.Where(p => p.StartsWith($"[{SessionTokenCarriers.BearerName}]", StringComparison.Ordinal)).ToList();
