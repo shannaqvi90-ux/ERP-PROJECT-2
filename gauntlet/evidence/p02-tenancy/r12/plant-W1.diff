@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/tenancy/extensions.tsx b/web/src/modules/tenancy/extensions.tsx
+index 0f92cdd3..149677ba 100644
+--- a/web/src/modules/tenancy/extensions.tsx
++++ b/web/src/modules/tenancy/extensions.tsx
+@@ -35,7 +35,7 @@ export const extensions: ModuleExtensions = {
+       path: "/tenancy/branches",
+       command: "tenancy.screen.new",
+       // As on the screen: only with a company the user may add a branch to.
+-      available: async () => branchCompanies(await loadAll<CompanyRow>("/api/tenancy/companies")).length > 0,
++      available: async () => (await loadAll<CompanyRow>("/api/tenancy/companies")).filter((c) => c.isActive).length > 0, // PLANT W1
+     },
+     { key: "tenancy.companies.print", labelKey: "tenancy.action.printCompanies", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.companies.read", path: "/tenancy/companies", command: "lists.print" },
+     { key: "tenancy.branches.print", labelKey: "tenancy.action.printBranches", keywordsKey: "tenancy.action.printKeywords", permission: "tenancy.branches.read", path: "/tenancy/branches", command: "lists.print" },

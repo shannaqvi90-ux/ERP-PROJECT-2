@@ -1,0 +1,19 @@
+switch DXB 200 018dca08-f081-7b15-b0d0-b198074503df
+GET FZE 200 {"canUpdate":false,"tl":"JAFZA-178204"}
+PUT FZE company 403 permissionNotHeldInCompany
+PUT FZE deactivate 403 permissionNotHeldInCompany
+PUT FZE logo raw 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-fb5d4c85b6238cab00e4f26bb0b05ea8-a0ffafa3212a18d1-00"}
+PUT FZE logo form 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-2b74cf679960679ec745746ad80c58d5-dd8dd637797d6506-00"}
+DELETE FZE logo 403 permissionNotHeldInCompany
+FZE branches list 200 [["DAFZ-OF",false],["JAFZA-WH",false]]
+PUT FZE branch 403 permissionNotHeldInCompany
+PUT FZE branch move to DXB 403 permissionNotHeldInCompany
+POST branch in FZE 403 permissionNotHeldInCompany
+PUT DXB branch move to FZE 400 validation
+control PUT DXB company 200 +97140000001
+control restore 200
+GET SHJ 404 notFound
+viewer viewer@alnoor.example
+GET viewer access 200 [{"companyId":"018dca08-f081-7b15-b0d0-b198074503df","allBranches":false,"branchIds":["018dca08-f083-70c3-b0b7-86a383de015d","018dca08-f082-7986-83ec-f32f18104680"]}] false [["ALN-DXB",true],["ALN-FZE",false]]
+PUT viewer +FZE 403 permissionNotHeldInCompany
+FZE after JAFZA-178204 true 175061848 175061848

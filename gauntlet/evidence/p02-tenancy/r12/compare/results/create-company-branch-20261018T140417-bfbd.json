@@ -1,0 +1,621 @@
+{
+  "schema": 1,
+  "run_id": "create-company-branch-20261018T140417-bfbd",
+  "instrument": 10,
+  "task": "create-company-branch",
+  "task_title": "Create a company with a branch",
+  "product": "ours",
+  "status": "failed",
+  "goal": "Create the company \"Falcon Logistics LLC\" with one branch, \"Falcon Logistics LLC - Jebel Ali Branch\".",
+  "done_when": "Both are saved; the back end holds the company and the branch under it.",
+  "started_at": "2026-10-18T14:04:17.272Z",
+  "finished_at": "2026-10-18T14:04:28.400Z",
+  "environment": {
+    "base_url": "http://localhost:20250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 49,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.582,
+    "system_wait_seconds": 0.186,
+    "human_seconds": 22.17,
+    "human_plus_wait_seconds": 22.356,
+    "klm_operator_counts": {
+      "K": 49,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 5
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Companies (navigation)",
+      "keystrokes": 0,
+      "at": 0.02,
+      "took": 0.037,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "New company (Alt+N)",
+      "keystrokes": 2,
+      "at": 0.14,
+      "took": 0.021,
+      "chord": "Alt+n",
+      "screen": "/tenancy/companies",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "company name",
+      "keystrokes": 25,
+      "at": 0.17,
+      "took": 0.052,
+      "text": "Falcon Logistics LLC",
+      "same_field": false,
+      "screen": "/tenancy/companies/new",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "Save (Ctrl+S)",
+      "keystrokes": 2,
+      "at": 0.223,
+      "took": 0.005,
+      "chord": "Control+s",
+      "screen": "/tenancy/companies/new",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "branch name (after the company name already there)",
+      "keystrokes": 19,
+      "at": 0.275,
+      "took": 0.04,
+      "text": "Jebel Ali Branch",
+      "same_field": false,
+      "screen": "/tenancy/companies/01a14f53-e52a-71dc-93cb-477dc9b39583",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "Add branch (Enter)",
+      "keystrokes": 1,
+      "at": 0.519,
+      "took": 0.008,
+      "chord": "Enter",
+      "screen": "/tenancy/companies/01a14f53-e52a-71dc-93cb-477dc9b39583",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "companies list",
+      "at": 0.058,
+      "seconds": 0.081
+    },
+    {
+      "label": "new company form, name focused",
+      "at": 0.16,
+      "seconds": 0.009
+    },
+    {
+      "label": "saved: branch line focused",
+      "at": 0.228,
+      "seconds": 0.043
+    },
+    {
+      "label": "branch saved under the company",
+      "at": 0.527,
+      "seconds": 0.053
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "f7ef4a12771bea3e.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p02-tenancy/r12/compare/blind/shots/f7ef4a12771bea3e.jpg"
+    },
+    {
+      "moment": "branch filled in",
+      "file": "95af4c4ad523725e.jpg",
+      "at": 0.316,
+      "path": "../../evidence-staging/p02-tenancy/r12/compare/blind/shots/95af4c4ad523725e.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "67f9025ceb721284.jpg",
+      "at": 0.582,
+      "path": "../../evidence-staging/p02-tenancy/r12/compare/blind/shots/67f9025ceb721284.jpg"
+    }
+  ],
+  "verification": {
+    "verified": false,
+    "details": {
+      "companies": 0
+    }
+  },
+  "path_notes": "keyboard: Companies > Alt+N > company name > Ctrl+S > rest of the branch name > Enter | pointer: Companies > New > company name > Save > rest of the branch name > Add",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-company-branch.mjs",
+    "sha256": "e8dbecc4fe358750e04a2035f80801ea0d63376164e16251d67001a3e6baf199"
+  },
+  "task_notes": "Set-up removes any earlier copy; clean-up deletes both.",
+  "error": "keyboard: failed\npointer: failed",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.019,
+      "verified": false
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.011,
+      "verified": false,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "3eba4b14814dbc39",
+    "elements": 687
+  },
+  "screen_after_verify": {
+    "sha256": "3eba4b14814dbc39",
+    "elements": 687,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.01
+  },
+  "set_up_writes_waited": 0,
+  "screenshots_path": "keyboard",
+  "error_page": {},
+  "best_path_per_metric": {},
+  "counts_path": "keyboard",
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Companies > Alt+N > company name > Ctrl+S > rest of the branch name > Enter",
+      "status": "failed",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 49,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.582,
+        "system_wait_seconds": 0.186,
+        "human_seconds": 22.17,
+        "human_plus_wait_seconds": 22.356,
+        "klm_operator_counts": {
+          "K": 49,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Companies (navigation)",
+          "keystrokes": 0,
+          "at": 0.02,
+          "took": 0.037,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New company (Alt+N)",
+          "keystrokes": 2,
+          "at": 0.14,
+          "took": 0.021,
+          "chord": "Alt+n",
+          "screen": "/tenancy/companies",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "company name",
+          "keystrokes": 25,
+          "at": 0.17,
+          "took": 0.052,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "Save (Ctrl+S)",
+          "keystrokes": 2,
+          "at": 0.223,
+          "took": 0.005,
+          "chord": "Control+s",
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "branch name (after the company name already there)",
+          "keystrokes": 19,
+          "at": 0.275,
+          "took": 0.04,
+          "text": "Jebel Ali Branch",
+          "same_field": false,
+          "screen": "/tenancy/companies/01a14f53-e52a-71dc-93cb-477dc9b39583",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "Add branch (Enter)",
+          "keystrokes": 1,
+          "at": 0.519,
+          "took": 0.008,
+          "chord": "Enter",
+          "screen": "/tenancy/companies/01a14f53-e52a-71dc-93cb-477dc9b39583",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "companies list",
+          "at": 0.058,
+          "seconds": 0.081
+        },
+        {
+          "label": "new company form, name focused",
+          "at": 0.16,
+          "seconds": 0.009
+        },
+        {
+          "label": "saved: branch line focused",
+          "at": 0.228,
+          "seconds": 0.043
+        },
+        {
+          "label": "branch saved under the company",
+          "at": 0.527,
+          "seconds": 0.053
+        }
+      ],
+      "verification": {
+        "verified": false,
+        "details": {
+          "companies": 0
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.019,
+          "verified": false
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.011,
+          "verified": false,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "3eba4b14814dbc39",
+        "elements": 687
+      },
+      "screen_after_verify": {
+        "sha256": "3eba4b14814dbc39",
+        "elements": 687,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.01
+      },
+      "set_up_writes_waited": 0
+    },
+    {
+      "id": "pointer",
+      "path": "Companies > New > company name > Save > rest of the branch name > Add",
+      "status": "failed",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 44,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.853,
+        "system_wait_seconds": 0.193,
+        "human_seconds": 27.22,
+        "human_plus_wait_seconds": 27.413,
+        "klm_operator_counts": {
+          "K": 44,
+          "P": 4,
+          "B": 8,
+          "H": 4,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Companies (navigation)",
+          "keystrokes": 0,
+          "at": 0.02,
+          "took": 0.035,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 0.165,
+          "took": 0.069,
+          "began": 0.141,
+          "screen": "/tenancy/companies",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "company name",
+          "keystrokes": 25,
+          "at": 0.251,
+          "took": 0.082,
+          "text": "Falcon Logistics LLC",
+          "same_field": false,
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 0.364,
+          "took": 0.038,
+          "began": 0.333,
+          "screen": "/tenancy/companies/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "branch name (after the company name already there)",
+          "keystrokes": 19,
+          "at": 0.477,
+          "took": 0.045,
+          "text": "Jebel Ali Branch",
+          "same_field": false,
+          "screen": "/tenancy/companies/01a14f53-fac1-765c-984f-54087afc50ae",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "Add branch",
+          "keystrokes": 0,
+          "at": 0.764,
+          "took": 0.035,
+          "began": 0.728,
+          "screen": "/tenancy/companies/01a14f53-fac1-765c-984f-54087afc50ae",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "companies list",
+          "at": 0.056,
+          "seconds": 0.084
+        },
+        {
+          "label": "new company form, name focused",
+          "at": 0.234,
+          "seconds": 0.007
+        },
+        {
+          "label": "saved: branch line focused",
+          "at": 0.403,
+          "seconds": 0.05
+        },
+        {
+          "label": "branch saved under the company",
+          "at": 0.8,
+          "seconds": 0.052
+        }
+      ],
+      "verification": {
+        "verified": false,
+        "details": {
+          "companies": 2
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.014,
+          "verified": false
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.011,
+          "verified": false,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "e24214c69b5b6c4a",
+        "elements": 721
+      },
+      "screen_after_verify": {
+        "sha256": "e24214c69b5b6c4a",
+        "elements": 721,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.009
+      },
+      "set_up_writes_waited": 0
+    }
+  ]
+}

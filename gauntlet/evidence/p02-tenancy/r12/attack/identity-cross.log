@@ -1,0 +1,15 @@
+create role 201 01a14f46-023c-7154-9065-2df0cc0cbd30
+create ua 201 01a14f46-0280-767e-aec8-db7351cad964
+ua access DXB+FZE 200 
+ua switch DXB 200
+ua GET viewer 200 [] undefined
+ua gives viewer Read-only in FZE 403 identity.userBeyondOwn
+control: ua gives viewer Read-only in DXB 403 identity.userBeyondOwn
+ua creates user with FZE role 403 permissionNotHeldInCompany
+ua GET acc default 200 018dca08-f081-7b15-b0d0-b198074503df
+ua set accountant default company FZE 403 identity.userBeyondOwn
+ua strips accountant FZE role 403 identity.userBeyondOwn
+ua deactivates accountant (works DXB+FZE) 403 identity.userBeyondOwn
+ua revokes accountant sessions 403 identity.userBeyondOwn
+ua gives viewer FZE access 403 permissionNotHeldInCompany
+UA ua50622@alnoor.example 01a14f46-0280-767e-aec8-db7351cad964 role 01a14f46-023c-7154-9065-2df0cc0cbd30

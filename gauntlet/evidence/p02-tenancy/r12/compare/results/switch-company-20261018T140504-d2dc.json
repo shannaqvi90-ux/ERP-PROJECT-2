@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261018T140504-d2dc",
+  "instrument": 10,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-10-18T14:05:04.851Z",
+  "finished_at": "2026-10-18T14:05:22.958Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.48,
+    "system_wait_seconds": 0.283,
+    "human_seconds": 5.3,
+    "human_plus_wait_seconds": 5.583,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 4,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "company switcher",
+      "keystrokes": 0,
+      "at": 0.043,
+      "took": 0.038,
+      "began": 0.001,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Demo Manufacturing FZE",
+      "keystrokes": 0,
+      "at": 0.142,
+      "took": 0.035,
+      "began": 0.081,
+      "screen": "/odoo/discuss",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "working in the other company",
+      "at": 0.178,
+      "seconds": 0.283
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "8ff3ede194a0d891.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p02-tenancy/r12/compare/blind/shots/8ff3ede194a0d891.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "b8e445252460e241.jpg",
+      "at": 0.48,
+      "path": "../../evidence-staging/p02-tenancy/r12/compare/blind/shots/b8e445252460e241.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "switcher": "Demo Manufacturing FZE",
+      "cids": "4-5"
+    }
+  },
+  "path_notes": "Company switcher in the top bar > the company. (Alt+Shift+U opens the switcher too, but then the company must be typed or arrowed to: more steps and keys.)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/switch-company.mjs",
+    "sha256": "5babe98eb8a5c7eb41d2ed7c511e0045fdc73b69298f9cf96699f1fdf21539c7"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.047
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /bus/websocket_worker_bundle (script)",
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "3159f9df63768b78",
+    "elements": 92
+  },
+  "screen_after_verify": {
+    "sha256": "3159f9df63768b78",
+    "elements": 92,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.024
+  },
+  "set_up_writes_waited": 0
+}

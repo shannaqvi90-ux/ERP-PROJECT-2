@@ -1,0 +1,13 @@
+import { signIn, call, log } from './lib.mjs';
+const DXB='018dca08-f081-7b15-b0d0-b198074503df', FZE='018dca08-f085-75f9-a436-65424d008e41';
+const s = await signIn('accountant@alnoor.example');
+await call(s,'PUT','/api/tenancy/workplace',{companyId:DXB,branchId:null});
+const data='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+let r = await call(s,'PUT','/api/tenancy/companies/'+FZE+'/logo',{contentType:'image/png',data}); log('PUT FZE logo json (working DXB)', r.status, r.body.code||r.body.hasLogo);
+r = await call(s,'PUT','/api/tenancy/companies/'+DXB+'/logo',{contentType:'image/png',data}); log('control PUT DXB logo', r.status, r.body.code||r.body.hasLogo);
+r = await call(s,'DELETE','/api/tenancy/companies/'+DXB+'/logo'); log('control DELETE DXB logo', r.status);
+await call(s,'PUT','/api/tenancy/workplace',{companyId:FZE,branchId:null});
+r = await call(s,'PUT','/api/tenancy/companies/'+FZE+'/logo',{contentType:'image/png',data}); log('PUT FZE logo json (working FZE)', r.status, r.body.code||r.body.hasLogo);
+r = await call(s,'PUT','/api/tenancy/companies/'+DXB+'/logo',{contentType:'image/png',data}); log('PUT DXB logo (working FZE)', r.status, r.body.code||r.body.hasLogo);
+r = await call(s,'DELETE','/api/tenancy/companies/'+DXB+'/logo'); log('DELETE DXB logo (working FZE)', r.status, r.body.code);
+await call(s,'PUT','/api/tenancy/workplace',{companyId:DXB,branchId:null});

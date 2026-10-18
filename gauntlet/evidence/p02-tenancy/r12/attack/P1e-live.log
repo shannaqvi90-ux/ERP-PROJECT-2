@@ -1,0 +1,6 @@
+switch DXB 200
+JAFZA-WH before true canUpdate false
+PUT FZE branch city 403 permissionNotHeldInCompany
+PUT FZE branch isActive=false 200 JAFZA-WH
+JAFZA-WH after (admin read) false
+2026-10-18 14:40:01.53059+00|accountant@alnoor.example|{"is_active": {"new": false, "old": true}}

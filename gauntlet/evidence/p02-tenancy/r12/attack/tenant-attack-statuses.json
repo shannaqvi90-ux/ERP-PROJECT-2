@@ -1,0 +1,341 @@
+{
+ "GET /api/health": {
+  "200": 12
+ },
+ "GET /api/tenancy/tenant": {
+  "200": 12
+ },
+ "PUT /api/tenancy/tenant": {
+  "409": 1
+ },
+ "GET /api/tenancy/companies": {
+  "200": 10,
+  "400": 2
+ },
+ "POST /api/tenancy/companies": {
+  "400": 1
+ },
+ "GET /api/tenancy/companies/{id}": {
+  "404": 19
+ },
+ "PUT /api/tenancy/companies/{id}": {
+  "400": 19
+ },
+ "GET /api/tenancy/companies/{id}/logo": {
+  "404": 19
+ },
+ "PUT /api/tenancy/companies/{id}/logo": {
+  "404": 19
+ },
+ "DELETE /api/tenancy/companies/{id}/logo": {
+  "404": 19
+ },
+ "GET /api/tenancy/branches": {
+  "200": 12
+ },
+ "POST /api/tenancy/branches": {
+  "400": 1
+ },
+ "GET /api/tenancy/branches/{id}": {
+  "404": 19
+ },
+ "PUT /api/tenancy/branches/{id}": {
+  "404": 19
+ },
+ "GET /api/tenancy/access": {
+  "200": 10,
+  "400": 2
+ },
+ "GET /api/tenancy/access/{id}": {
+  "404": 19
+ },
+ "PUT /api/tenancy/access/{id}": {
+  "400": 19
+ },
+ "GET /api/tenancy/workplace": {
+  "200": 12
+ },
+ "PUT /api/tenancy/workplace": {
+  "400": 3
+ },
+ "GET /api/auth/session": {
+  "200": 12
+ },
+ "GET /api/identity/users": {
+  "200": 10,
+  "400": 2
+ },
+ "POST /api/identity/users": {
+  "400": 1
+ },
+ "GET /api/identity/users/{id}": {
+  "404": 19
+ },
+ "PUT /api/identity/users/{id}": {
+  "400": 19
+ },
+ "DELETE /api/identity/users/{id}": {
+  "404": 19
+ },
+ "POST /api/identity/users/{id}/password": {
+  "400": 19
+ },
+ "POST /api/identity/users/{id}/unblock": {
+  "404": 19
+ },
+ "POST /api/identity/users/{id}/sessions/revoke": {
+  "404": 19
+ },
+ "GET /api/identity/users/{id}/access": {
+  "404": 19
+ },
+ "GET /api/identity/users/{id}/default-company": {
+  "404": 19
+ },
+ "PUT /api/identity/users/{id}/default-company": {
+  "404": 19
+ },
+ "GET /api/identity/companies": {
+  "200": 12
+ },
+ "GET /api/identity/users/{id}/sign-ins": {
+  "404": 19
+ },
+ "POST /api/identity/users/matching/active": {
+  "400": 1
+ },
+ "GET /api/identity/roles": {
+  "200": 10,
+  "400": 2
+ },
+ "POST /api/identity/roles": {
+  "400": 1
+ },
+ "GET /api/identity/roles/{id}": {
+  "404": 19
+ },
+ "PUT /api/identity/roles/{id}": {
+  "400": 19
+ },
+ "DELETE /api/identity/roles/{id}": {
+  "404": 19
+ },
+ "POST /api/identity/roles/{id}/copy": {
+  "404": 19
+ },
+ "GET /api/identity/permissions": {
+  "200": 12
+ },
+ "PUT /api/identity/me/preferences": {
+  "200": 1
+ },
+ "GET /api/identity/me/passkeys": {
+  "200": 12
+ },
+ "POST /api/identity/me/passkeys": {
+  "400": 1
+ },
+ "POST /api/identity/me/passkeys/options": {
+  "200": 1
+ },
+ "GET /api/identity/me/passkeys/{id}": {
+  "404": 19
+ },
+ "PUT /api/identity/me/passkeys/{id}": {
+  "404": 19
+ },
+ "DELETE /api/identity/me/passkeys/{id}": {
+  "404": 19
+ },
+ "GET /api/identity/users/{id}/passkeys": {
+  "404": 19
+ },
+ "DELETE /api/identity/users/{id}/passkeys": {
+  "404": 19
+ },
+ "GET /api/lists/tenancy.companies/definition": {
+  "200": 12
+ },
+ "GET /api/lists/tenancy.companies/views": {
+  "200": 12
+ },
+ "POST /api/lists/tenancy.companies/views": {
+  "201": 1
+ },
+ "GET /api/lists/tenancy.companies/views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/tenancy.companies/views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/tenancy.companies/views/{id}": {
+  "404": 19
+ },
+ "GET /api/lists/tenancy.companies/shared-views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/tenancy.companies/shared-views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/tenancy.companies/shared-views/{id}": {
+  "404": 19
+ },
+ "POST /api/lists/tenancy.companies/shared-views": {
+  "201": 1
+ },
+ "GET /api/lists/tenancy.branches/definition": {
+  "200": 12
+ },
+ "GET /api/lists/tenancy.branches/views": {
+  "200": 12
+ },
+ "POST /api/lists/tenancy.branches/views": {
+  "201": 1
+ },
+ "GET /api/lists/tenancy.branches/views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/tenancy.branches/views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/tenancy.branches/views/{id}": {
+  "404": 19
+ },
+ "GET /api/lists/tenancy.branches/shared-views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/tenancy.branches/shared-views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/tenancy.branches/shared-views/{id}": {
+  "404": 19
+ },
+ "POST /api/lists/tenancy.branches/shared-views": {
+  "201": 1
+ },
+ "GET /api/lists/tenancy.access/definition": {
+  "200": 12
+ },
+ "GET /api/lists/tenancy.access/views": {
+  "200": 12
+ },
+ "POST /api/lists/tenancy.access/views": {
+  "201": 1
+ },
+ "GET /api/lists/tenancy.access/views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/tenancy.access/views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/tenancy.access/views/{id}": {
+  "404": 19
+ },
+ "GET /api/lists/tenancy.access/shared-views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/tenancy.access/shared-views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/tenancy.access/shared-views/{id}": {
+  "404": 19
+ },
+ "POST /api/lists/tenancy.access/shared-views": {
+  "201": 1
+ },
+ "GET /api/lists/identity.users/definition": {
+  "200": 12
+ },
+ "GET /api/lists/identity.users/views": {
+  "200": 12
+ },
+ "POST /api/lists/identity.users/views": {
+  "201": 1
+ },
+ "GET /api/lists/identity.users/views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/identity.users/views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/identity.users/views/{id}": {
+  "404": 19
+ },
+ "GET /api/lists/identity.users/shared-views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/identity.users/shared-views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/identity.users/shared-views/{id}": {
+  "404": 19
+ },
+ "POST /api/lists/identity.users/shared-views": {
+  "201": 1
+ },
+ "GET /api/lists/identity.roles/definition": {
+  "200": 12
+ },
+ "GET /api/lists/identity.roles/views": {
+  "200": 12
+ },
+ "POST /api/lists/identity.roles/views": {
+  "201": 1
+ },
+ "GET /api/lists/identity.roles/views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/identity.roles/views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/identity.roles/views/{id}": {
+  "404": 19
+ },
+ "GET /api/lists/identity.roles/shared-views/{id}": {
+  "404": 19
+ },
+ "PUT /api/lists/identity.roles/shared-views/{id}": {
+  "404": 19
+ },
+ "DELETE /api/lists/identity.roles/shared-views/{id}": {
+  "404": 19
+ },
+ "POST /api/lists/identity.roles/shared-views": {
+  "201": 1
+ },
+ "GET /api/reports/catalog": {
+  "200": 12
+ },
+ "GET /api/reports/run/tenancy.companyProfile": {
+  "400": 11,
+  "404": 1
+ },
+ "GET /api/reports/run/tenancy.branchDirectory": {
+  "200": 12
+ },
+ "GET /api/reports/run/identity.usersByRole": {
+  "200": 12
+ },
+ "GET /api/reports/run/identity.roleSummary": {
+  "200": 12
+ },
+ "GET /api/reports/lists/tenancy.companies": {
+  "200": 10,
+  "400": 2
+ },
+ "GET /api/reports/lists/tenancy.branches": {
+  "200": 12
+ },
+ "GET /api/reports/lists/tenancy.access": {
+  "200": 10,
+  "400": 2
+ },
+ "GET /api/reports/lists/identity.users": {
+  "200": 10,
+  "400": 2
+ },
+ "GET /api/reports/lists/identity.roles": {
+  "200": 10,
+  "400": 2
+ }
+}

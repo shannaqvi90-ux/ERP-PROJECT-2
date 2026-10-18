@@ -1,0 +1,24 @@
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2man action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mevery palette entry, run by a user who may only read[2m > [22m[2msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[22m[39mpalette entries swept for a reader: 42
+ [31m❯[39m src/modules/shell/paletteActions.test.tsx [2m([22m[2m41 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 55115[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen [33m 1097[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 800[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen [33m 860[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 726[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen [33m 735[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen [33m 670[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen [33m 647[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen [33m 661[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen [33m 674[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen [33m 661[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen [33m 687[2mms[22m[39m
+[31m     [31m×[31m a user who may add a branch but to no company (only some branches of it) is not offered New branch[39m[32m 223[2mms[22m[39m
+     [33m[2m✓[22m[39m the palette offers a user's account actions exactly when the record shows their buttons [33m 1039[2mms[22m[39m
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22ma user who may add a branch but to no company (only some branches of it) is not offered New branch
+[31m[1mAssertionError[22m: expected [ 'New branch', 'Salem Clerk', …(3) ] to not include 'New branch'[39m
+[36m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m424:47[22m[39m
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m39 passed[39m[22m[90m (40)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m517 passed[39m[22m[90m (518)[39m
