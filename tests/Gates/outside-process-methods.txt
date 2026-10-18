@@ -1,0 +1,13 @@
+# Methods in the product's compiled code that keep or read state outside the process's memory:
+# files, directories and temporary files, memory-mapped files, named mutexes, semaphores and events,
+# pipes, sockets, child processes, unmanaged memory and native calls. Such state is outside what the
+# process-state gate can walk, and a second process (another server, the non-interference check's
+# fresh process) shares it, so a store kept there without the tenant crosses tenants unseen (critic
+# p05 round 12, plant L9: list totals in temporary files; critic p04 round 11, plant SL1: the digits
+# last chosen, in a file). Reviewed method by method (the G1 compiled-code gate,
+# tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs): any other method that calls such an API
+# fails the gate until reviewed here. An async method's state machine, a lambda and a local function
+# count for the method they are written in.
+# Format: <Namespace.Type>.<Method>  # reason
+Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read  # Operator seeding only (./erp up with ERP_SEED_USERS_CSV, Erp.Host setup): reads the comparison dataset's users.csv, mounted read-only, into the demo tenant's bulk users. No request reaches it; it keeps nothing.
+Erp.Modules.Reports.Pdf.PdfFontFace..ctor  # Copies an embedded font program (the same bytes for every tenant, from the assembly's resources) into unmanaged memory once for the text shaper, which needs a stable pointer. It holds no request's or tenant's data and is never written after the copy.

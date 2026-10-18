@@ -80,6 +80,27 @@ public sealed class G1TenantSourceTests
             ("process-global", "private static readonly AsyncLocal<Guid> Tenant = new();"),
             ("process-global", "builder.Services.AddOutputCache();"),
             ("process-global", "builder.Services.AddMemoryCache();"),
+            // Critic p05 round 12, plant L9 (list totals in temporary files) and critic p04 round 11,
+            // plant SL1 (the digits last chosen by anyone, in a file): state outside the process's
+            // memory, which no process-state walk sees and a second process shares.
+            ("outside-process", "File.WriteAllText(Path.Combine(Path.GetTempPath(), \"erp-totals-\" + key), total.ToString());"),
+            ("outside-process", "var digits = System.IO.File.ReadAllText(\"/tmp/erp-digits\");"),
+            ("outside-process", "var path = Path.GetTempFileName();"),
+            ("outside-process", "Directory.CreateDirectory(cacheFolder);"),
+            ("outside-process", "using var stream = new FileStream(path, FileMode.Create);"),
+            ("outside-process", "var size = new FileInfo(path).Length;"),
+            ("outside-process", "using var writer = new StreamWriter(\"/tmp/erp-last\");"),
+            ("outside-process", "var map = MemoryMappedFile.CreateOrOpen(\"erp-totals\", 4096);"),
+            ("outside-process", "using var mutex = new Mutex(false, \"erp-last-tenant\");"),
+            ("outside-process", "var counter = Semaphore.OpenExisting(\"erp-count\");"),
+            ("outside-process", "var signal = new EventWaitHandle(false, EventResetMode.AutoReset, \"erp-switch\");"),
+            ("outside-process", "using var pipe = new NamedPipeClientStream(\"erp-totals\");"),
+            ("outside-process", "using var client = new TcpClient(\"cache\", 6379);"),
+            ("outside-process", "Process.Start(\"sh\", \"-c true\");"),
+            ("outside-process", "var block = Marshal.AllocHGlobal(64);"),
+            ("outside-process", "[DllImport(\"libc\")] static extern int getpid();"),
+            ("outside-process", "var store = IsolatedStorageFile.GetUserStoreForApplication();"),
+            ("outside-process", "var files = new PhysicalFileProvider(\"/var/erp\");"),
         };
         foreach (var (rule, code) in planted)
         {
@@ -208,6 +229,14 @@ public static class TenantBypassScanner
             new(@"\bAppContext\.(?:SetData|SetSwitch)\b|\bAppDomain\b[^;]*\.SetData\b|\bEnvironment\.SetEnvironmentVariable\b|\[\s*ThreadStatic\s*\]|\bThreadLocal\s*<|\bAsyncLocal\s*<|\bMemoryCache\.Default\b|" +
               @"\b(?:Default|Leak[A-Za-z]*)?ObjectPool(?:Provider)?\b|\bArrayPool\s*<|\bMemoryPool\s*<|\bIMemoryCache\b|\bIDistributedCache\b|\bHybridCache\b|\bIOutputCacheStore\b|" +
               @"\bAdd(?:Memory|DistributedMemory|StackExchangeRedis|Output|Response|Hybrid)Cach(?:e|ing)\s*\(|\bSetString(?:Async)?\s*\(|\bConditionalWeakTable\s*<", Options)),
+        // Critic p05 round 12, plant L9, and critic p04 round 11, plant SL1: state kept on the file
+        // system, which every process-state check (they walk the process's own memory) misses and
+        // a second process shares. The compiled-code gate (G1OutsideProcessStateTests) checks the
+        // same APIs method by method, whatever names the source uses for them.
+        new("outside-process", "keeps or reads state outside the process's memory (files, directories, temporary files, memory-mapped files, named mutexes, semaphores or events, pipes, sockets, child processes, unmanaged memory, native calls)",
+            new(@"(?:(?<![\w.])|\bIO\.)(?:File|Directory)\.[A-Z]|\b(?:FileInfo|DirectoryInfo|FileStream|FileSystemWatcher|RandomAccess|DriveInfo|ZipFile|PhysicalFileProvider|IsolatedStorage\w*|MemoryMapped\w+|NamedPipe\w*Stream|AnonymousPipe\w*Stream|TcpClient|UdpClient|TcpListener|NativeMemory)\b|" +
+              @"\bPath\.GetTemp(?:Path|FileName)\b|\bnew\s+(?:Mutex|Semaphore|EventWaitHandle)\s*\(\s*[^)\s]|\b(?:Mutex|Semaphore|EventWaitHandle)\.(?:Try)?OpenExisting\b|\bnew\s+Stream(?:Reader|Writer)\s*\(|" +
+              @"\bProcess\.Start\b|\bMarshal\.(?:AllocHGlobal|AllocCoTaskMem|ReAlloc\w*)\b|\[\s*(?:DllImport|LibraryImport)\b|\bnew\s+Socket\s*\(", Options)),
     ];
 
     public static IEnumerable<string> SourceFiles()
