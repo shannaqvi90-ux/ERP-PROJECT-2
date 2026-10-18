@@ -99,6 +99,21 @@ test.describe("sign in to an empty workspace", () => {
     await expect(other.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(alert).toContainText("توقف تسجيل الدخول به من هنا حتى");
 
+    // Critic p03 round 11: in the one-command deployment every browser reaches the app from the
+    // compose network's gateway. The history says so, for each failure and for the paused client,
+    // so an administrator knows the address does not tell the person apart from anyone else.
+    const history = (await (await page.request.get(`/api/identity/users/${id}/sign-ins?take=100`)).json()) as {
+      items: { outcome: string; addressKind?: string | null; device?: string | null }[];
+      paused: { kind?: string }[];
+    };
+    const shared = ["gateway", "proxy", "local"];
+    const failed = history.items.filter((a) => a.outcome === "failed");
+    expect(failed.length).toBeGreaterThan(0);
+    expect(failed.map((a) => a.addressKind).filter((k) => !shared.includes(k ?? "")), JSON.stringify(history.items)).toEqual([]);
+    expect(failed.every((a) => !a.device)).toBe(true);
+    expect(history.paused.length).toBeGreaterThan(0);
+    expect(history.paused.map((p) => p.kind).filter((k) => !shared.includes(k ?? "")), JSON.stringify(history.paused)).toEqual([]);
+
     // The administrator allows sign-in again: the right password signs in from that browser.
     expect((await page.request.post(`/api/identity/users/${id}/unblock`, { headers })).status()).toBe(204);
     await passwordField.focus();
