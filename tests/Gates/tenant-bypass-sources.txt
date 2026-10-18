@@ -5,7 +5,8 @@
 # The count is the exact number of matches of the rule in the file (comments included): a new use in a
 # reviewed file fails until it is reviewed and the count raised; fewer uses than reviewed fail too.
 # Rules: tenant-setting, set-config, sql-set, ignore-tenant-filter, raw-ef-sql, new-session, bind,
-#        unbound, data-source, connection-string, request-enumeration, process-global, filter-name
+#        unbound, data-source, connection-string, request-enumeration, process-global, filter-name,
+#        external-state
 #        (see tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs)
 tenant-setting src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 4  # The unit of work: the one place that sets the transaction-local tenant, from BeginAsync's caller (the session lookup, sign-in, seeding).
 set-config src/Kernel/Erp.Kernel/Data/ErpDbSession.cs 12  # Same: binds tenant, actor and correlation id with transaction-local set_config; and the company scope (app.company_scope, app.company_ids, app.company_tx) when the transaction starts and when the session binds the user's companies (BindCompaniesAsync, IncludeNewCompanyAsync).
@@ -34,3 +35,5 @@ set-config src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs 3  # Migration 
 sql-set src/Modules/Tenancy/Erp.Modules.Tenancy/TenancySql.cs 2  # Migration SQL: the two invoker-rights counting trigger functions (company count, per-user company count) pin their search_path.
 filter-name src/Kernel/Erp.Kernel/Data/ModuleDbContext.cs 3  # Declares ModuleDbContext and its two query filter names, tenant and company; the ignore-tenant-filter rule trusts only ModuleDbContext.CompanyFilterName, and a gate test checks it differs from the tenant filter's.
 filter-name src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs 2  # Declares TenancyDbContext and its branch query filter name, the other name the ignore-tenant-filter rule trusts (checked to differ from the tenant filter's).
+external-state src/Modules/Identity/Erp.Modules.Identity/Seeding/IdentitySeeder.cs 2  # Seeding (operator command, no request) reads the shared comparison dataset's users.csv named by Erp:Seed:UsersCsv (File.Exists, then a StreamReader over that path); it writes nothing and keeps nothing between runs.
+external-state src/Modules/Reports/Erp.Modules.Reports/Exports.cs 2  # Two StreamWriters over streams, never paths: the CSV over the response stream of the export being answered, and each XLSX part over its entry of the in-memory zip of that one export.

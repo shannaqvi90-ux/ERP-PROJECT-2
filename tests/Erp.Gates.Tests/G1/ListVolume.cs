@@ -27,7 +27,8 @@ namespace Erp.Gates.Tests.G1;
 /// is a row of that tenant). Then every query of a set built from the list's definition (everything,
 /// every sort key both ways, every choice and flag value, text filters, "is null" on every filterable
 /// column, every grouping alone, sorted and filtered, one-letter searches in Latin and Arabic letters,
-/// searches sorted and grouped) is sent by tenant B, tenant A, B and A again, the same request each
+/// searches sorted and grouped, and a search of every branch of the search engine, too broad to rank
+/// and ranked: see ListVolumeBranches.cs) is sent by tenant B, tenant A, B and A again, the same request each
 /// time, as a first page and at offsets deep in the list (half way, the last rows, and past
 /// <see cref="ListSearch.MaxRankedRows"/>), and deep keyset cursors of each walk are followed by
 /// both tenants. Each answer's total must be the number of the tenant's own rows
@@ -35,7 +36,7 @@ namespace Erp.Gates.Tests.G1;
 /// order, where the list's default order applies), and its groups must count them.
 /// </para>
 /// </summary>
-public static class ListVolume
+public static partial class ListVolume
 {
     /// <summary>Rows asked for on a judged first page (the API's default page).</summary>
     public const int Take = ListRequest.DefaultTake;
@@ -53,8 +54,10 @@ public static class ListVolume
     /// <param name="UnrankedSearches">Searches judged whose true answer is too big to rank, in both tenants.</param>
     /// <param name="RankedSearches">Searches judged that are ranked (some rows, at most <see cref="ListSearch.MaxRankedRows"/>), in both tenants.</param>
     /// <param name="CursorsFollowed">Deep keyset cursors followed (by both tenants).</param>
+    /// <param name="SearchBranches">Required search branches (<see cref="BranchClasses"/>) judged with a
+    /// search whose true answers differ between the tenants, over every list at volume.</param>
     public sealed record Result(IReadOnlyList<string> Wrong, IReadOnlyList<string> Blind, int Answers, int Queries, int Discriminating, int RowsWalked,
-        int ListsAtVolume, int DeepAnswers, int UnrankedSearches, int RankedSearches, int CursorsFollowed, IReadOnlyList<string> Summary);
+        int ListsAtVolume, int DeepAnswers, int UnrankedSearches, int RankedSearches, int CursorsFollowed, IReadOnlyList<string> Summary, int SearchBranches = 0);
 
     /// <summary>One-letter searches: Latin letters (some in every row of a tenant through its e-mail
     /// domain or canary, some in few rows) and Arabic letters (an alef with its spellings among them).</summary>
@@ -67,7 +70,10 @@ public static class ListVolume
     /// of them, so the true counts do not depend on it.</summary>
     public static IReadOnlyList<string> CheckedLetters { get; } = [.. Letters.Concat(FilterLetters).Distinct(StringComparer.Ordinal)];
 
-    private sealed record Query(string Text, string Kind, Func<JsonElement, bool> Matches, bool DefaultOrder, string? Search, string? GroupBy);
+    /// <param name="Branch">The search branch the query was chosen for (<see cref="BranchClass.Name"/>), or null.</param>
+    /// <param name="Few">Judged on its first page, its last rows and past the ranking limit only.</param>
+    private sealed record Query(string Text, string Kind, Func<JsonElement, bool> Matches, bool DefaultOrder, string? Search, string? GroupBy,
+        string? Branch = null, bool Few = false);
 
     /// <summary>One tenant's whole list: every row in the list's default order, and the cursor after each walked page.</summary>
     private sealed record Truth(string Who, List<JsonElement> Rows, IReadOnlyList<string?> Cursors, int WalkTake)
@@ -89,6 +95,7 @@ public static class ListVolume
         public int UnrankedSearches;
         public int RankedSearches;
         public int CursorsFollowed;
+        public int SearchBranches;
     }
 
     /// <param name="env">The large-list environment (or a planted host over its database).</param>
@@ -150,6 +157,8 @@ public static class ListVolume
 
             var listTally = new ListTally();
             var queries = QueriesFor(list).ToList();
+            var (branches, branchesBlind) = list.SearchFields.Count > 0 ? ChooseBranchSearches(binding, truths["A"], truths["B"]) : ([], []);
+            queries.AddRange(BranchQueries(binding, branches));
             await Parallel.ForEachAsync(queries, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (query, _) =>
                 await JudgeQueryAsync(tally, listTally, list, a, b, truths, query));
             await FollowCursorsAsync(tally, list, a, b, truths);
@@ -172,13 +181,19 @@ public static class ListVolume
                 {
                     tally.Blind.Enqueue($"list '{list.Key}': no search matched between 1 and {ListSearch.MaxRankedRows} rows in both tenants, so a ranked search over a big list went unjudged");
                 }
+                foreach (var reason in branchesBlind)
+                {
+                    tally.Blind.Enqueue(reason);
+                }
+                Interlocked.Add(ref tally.SearchBranches, branches.Count(c => c.Class.Required));
             }
             tally.Summary.Add($"list '{list.Key}': walked A {walkA.Rows.Count} and B {walkB.Rows.Count} rows{(atVolume ? " (at volume)" : "")}; {queries.Count} queries, " +
                               $"{listTally.Discriminating} with different true answers, {listTally.Deep} deep answers, {listTally.Unranked} unranked and {listTally.Ranked} ranked searches" +
-                              (listTally.SearchCounts.IsEmpty ? "" : "; searches (A/B rows): " + string.Join(", ", listTally.SearchCounts.OrderBy(c => c.Key, StringComparer.Ordinal).Select(c => c.Value))));
+                              (listTally.SearchCounts.IsEmpty ? "" : "; searches (A/B rows): " + string.Join(", ", listTally.SearchCounts.OrderBy(c => c.Key, StringComparer.Ordinal).Select(c => c.Value))) +
+                              (branches.Count == 0 ? "" : "; search branches (A/B rows): " + string.Join("; ", branches.Select(Describe))));
         }
         return new Result(tally.Wrong.ToList(), tally.Blind.ToList(), tally.Answers, tally.Queries, tally.Discriminating, tally.RowsWalked, tally.ListsAtVolume,
-            tally.DeepAnswers, tally.UnrankedSearches, tally.RankedSearches, tally.CursorsFollowed, tally.Summary);
+            tally.DeepAnswers, tally.UnrankedSearches, tally.RankedSearches, tally.CursorsFollowed, tally.Summary, tally.SearchBranches);
     }
 
     private sealed class ListTally
@@ -244,31 +259,7 @@ public static class ListVolume
         {
             yield return new Query("&sort=" + Uri.EscapeDataString(key), "sorted", All, false, null, null);
         }
-        var filters = new List<(string Filter, Func<JsonElement, bool> Matches)>();
-        foreach (var column in list.Columns.Where(c => c.Filterable))
-        {
-            var key = column.Key;
-            switch (column.Type)
-            {
-                case ListColumnType.Choice:
-                    foreach (var choice in column.Choices ?? [])
-                    {
-                        filters.Add((ListFilterText.Eq(key, choice.Value), r => Text(r, key) == choice.Value));
-                    }
-                    break;
-                case ListColumnType.Boolean:
-                    filters.Add((ListFilterText.Eq(key, true), r => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.True));
-                    filters.Add((ListFilterText.Eq(key, false), r => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.False));
-                    break;
-                case ListColumnType.Text:
-                    foreach (var letter in FilterLetters)
-                    {
-                        filters.Add(($"{key} contains {ListFilterText.Quote(letter)}", r => Text(r, key) is { } text && Lower(text).Contains(Lower(letter), StringComparison.Ordinal)));
-                    }
-                    break;
-            }
-            filters.Add(($"{key} is null", r => !r.TryGetProperty(key, out var v) || v.ValueKind == JsonValueKind.Null));
-        }
+        var filters = FiltersFor(list);
         foreach (var (filter, matches) in filters)
         {
             yield return new Query("&filter=" + Uri.EscapeDataString(filter), "filter", matches, true, null, null);
@@ -305,6 +296,38 @@ public static class ListVolume
                 yield return new Query($"&search={letter}&groupBy={column.Key}", "grouped search", SearchMatch(list, letter), false, letter, column.Key);
             }
         }
+    }
+
+    /// <summary>The filters judged for a list: every choice and flag value, letters in many rows, in
+    /// few rows and an Arabic letter on every filterable text column, and "is null" on every filterable column.</summary>
+    private static List<(string Filter, Func<JsonElement, bool> Matches)> FiltersFor(ListDefinition list)
+    {
+        var filters = new List<(string Filter, Func<JsonElement, bool> Matches)>();
+        foreach (var column in list.Columns.Where(c => c.Filterable))
+        {
+            var key = column.Key;
+            switch (column.Type)
+            {
+                case ListColumnType.Choice:
+                    foreach (var choice in column.Choices ?? [])
+                    {
+                        filters.Add((ListFilterText.Eq(key, choice.Value), r => Text(r, key) == choice.Value));
+                    }
+                    break;
+                case ListColumnType.Boolean:
+                    filters.Add((ListFilterText.Eq(key, true), r => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.True));
+                    filters.Add((ListFilterText.Eq(key, false), r => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.False));
+                    break;
+                case ListColumnType.Text:
+                    foreach (var letter in FilterLetters)
+                    {
+                        filters.Add(($"{key} contains {ListFilterText.Quote(letter)}", r => Text(r, key) is { } text && Lower(text).Contains(Lower(letter), StringComparison.Ordinal)));
+                    }
+                    break;
+            }
+            filters.Add(($"{key} is null", r => !r.TryGetProperty(key, out var v) || v.ValueKind == JsonValueKind.Null));
+        }
+        return filters;
     }
 
     /// <summary>A one-word search: the word, in any of its spellings (<see cref="ListSearch.Spellings"/>),
@@ -359,7 +382,9 @@ public static class ListVolume
         // The offsets: the first page, half way, the last rows, and past the ranking limit; the
         // larger tenant's offsets are sent by both (the smaller one's answer is then past its end).
         var largest = Math.Max(countA, countB);
-        var skips = new SortedSet<int> { 0, largest / 2, Math.Max(0, largest - 3), Math.Min(countA, countB) / 2 };
+        var skips = query.Few
+            ? new SortedSet<int> { 0, Math.Max(0, largest - 3) }
+            : new SortedSet<int> { 0, largest / 2, Math.Max(0, largest - 3), Math.Min(countA, countB) / 2 };
         if (ListSearch.MaxRankedRows + 1 < largest)
         {
             skips.Add(ListSearch.MaxRankedRows + 1);

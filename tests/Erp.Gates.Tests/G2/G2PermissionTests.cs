@@ -105,6 +105,15 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
     /// are generated per registered list (<c>/api/lists/&lt;list key&gt;/…</c>): each must declare
     /// exactly that list's own permission, and the shared-view writes the sharing permission.
     /// </summary>
+    /// <summary>The routes the lists module generates under <c>/api/lists/&lt;list key&gt;/</c>: method and
+    /// path after the list key. Each declares the list's own permission, the shared-view writes the
+    /// sharing permission.</summary>
+    private static readonly string[] DerivedListRoutes =
+    [
+        "GET definition", "GET views", "POST views", "GET views/{id:guid}", "PUT views/{id:guid}", "DELETE views/{id:guid}",
+        "POST shared-views", "GET shared-views/{id:guid}", "PUT shared-views/{id:guid}", "DELETE shared-views/{id:guid}",
+    ];
+
     [Fact]
     public void Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list()
     {
@@ -126,6 +135,16 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 if (list is null)
                 {
                     problems.Add($"{endpoint.Key}: under /api/lists/ but names no registered list; review it in a map");
+                    continue;
+                }
+                // Only the routes the lists module generates for every list derive their permission
+                // (critic p05 round 12, plant P11b: any other route under the list's prefix passed as
+                // guarded by the list's read permission without review). A new route shape is added
+                // here with its permission, or reviewed in a map.
+                var suffix = $"{endpoint.Method} {rest[(list.Key.Length + 1)..]}";
+                if (!DerivedListRoutes.Contains(suffix))
+                {
+                    problems.Add($"{endpoint.Key}: '{suffix}' is not a route every list has ({string.Join(", ", DerivedListRoutes)}); add its shape and permission to the derived rule or review it in a map");
                     continue;
                 }
                 var shareWrite = rest[(list.Key.Length + 1)..].StartsWith("shared-views", StringComparison.Ordinal) && endpoint.Method != "GET";
@@ -743,6 +762,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.True(result.AllowedWrites >= Ratchet.Min("g2.listOwnViewWrites"), $"g2.listOwnViewWrites: {result.AllowedWrites}; ratchet minimum {Ratchet.Min("g2.listOwnViewWrites")}");
         Assert.True(result.VisibilityChecks >= Ratchet.Min("g2.listViewListingsJudged"), $"g2.listViewListingsJudged: {result.VisibilityChecks}; ratchet minimum {Ratchet.Min("g2.listViewListingsJudged")}");
         Assert.True(result.FieldVariants >= Ratchet.Min("g2.listViewFieldVariants"), $"g2.listViewFieldVariants: {result.FieldVariants}; ratchet minimum {Ratchet.Min("g2.listViewFieldVariants")}");
+        Assert.True(result.ReaderRouteWrites >= Ratchet.Min("g2.listReaderRouteWrites"), $"g2.listReaderRouteWrites: {result.ReaderRouteWrites}; ratchet minimum {Ratchet.Min("g2.listReaderRouteWrites")}");
     }
 
     /// <summary>
@@ -762,8 +782,24 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         Assert.Contains(result.Problems, p => p.Contains("[isShared", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// Self-test (critic p05 round 12, plant P11b): a host over this environment's database with one
+    /// more route, POST /api/lists/identity.users/views/{id}/share, that makes a shared copy of the
+    /// caller's own personal view under the list's read permission (<see cref="ShareCopyPlantModule"/>).
+    /// A reader's writes through every route of the list must show it as a new shared view.
+    /// </summary>
+    [Fact]
+    public async Task The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view()
+    {
+        await using var planted = Env.OverHost(ShareCopyPlantModule.Settings(Env));
+        var result = await ListViewChecksAsync(planted, "-p11b", l => l.Key == "identity.users");
+        Assert.Contains(result.Problems, p => p.StartsWith("identity.users: a reader without lists.views.share changed the workspace's views through the list's write routes", StringComparison.Ordinal) &&
+                                              p.Contains("POST /api/lists/identity.users/views/{id:guid}/share 200", StringComparison.Ordinal));
+        Assert.Contains(result.Problems, p => p.StartsWith("identity.users: after a reader without lists.views.share sent every write route", StringComparison.Ordinal));
+    }
+
     /// <summary>What <see cref="ListViewChecksAsync"/> found and how much it sent.</summary>
-    internal sealed record ListViewResult(List<string> Problems, int Lists, int Refusals, int AllowedWrites, int VisibilityChecks, int FieldVariants);
+    internal sealed record ListViewResult(List<string> Problems, int Lists, int Refusals, int AllowedWrites, int VisibilityChecks, int FieldVariants, int ReaderRouteWrites = 0);
 
     /// <summary>The list endpoint checks of <see cref="Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing"/>
     /// on <paramref name="Env"/>'s host (the lists <paramref name="only"/> keeps); <paramref name="tag"/>
@@ -794,6 +830,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var allowedWrites = 0;
         var visibilityChecks = 0;
         var fieldVariants = 0;
+        var readerRouteWrites = 0;
         var lists = 0;
         foreach (var list in catalog.Lists.Where(l => only?.Invoke(l) ?? true))
         {
@@ -970,6 +1007,43 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 }
             }
 
+            // Every write route of the list, whatever its method and shape (critic p05 round 12, plant
+            // P11b: POST /views/{id}/share made a shared copy of the caller's own view and declared
+            // only the list's read permission; the writes above go only to POST /views and PUT
+            // /views/{id}, so the behavioural check passed). A reader without the share permission
+            // sends each one with its own personal view's id in every route parameter and a full
+            // body; the workspace's views stay exactly as they were and no shared view appears.
+            var readersOwn = await (await reader.PostAsJsonAsync($"/api/lists/{list.Key}/views", PersonalBody(list, columns, $"Reader's own {list.Key}{tag}", false, null)))
+                .Content.ReadFromJsonAsync<JsonElement>();
+            var routesSent = new List<string>();
+            foreach (var endpoint in listEndpoints.Where(e => e.Method != "GET").OrderBy(e => e.Method == "DELETE" ? 1 : 0).ThenBy(e => e.Key, StringComparer.Ordinal))
+            {
+                using var request = ViewRequest(endpoint, readersOwn, columns, endpoint.Method == "POST" ? $"Reader's write {Guid.NewGuid():N}" : null);
+                if (endpoint.HasBody && endpoint.Method != "POST")
+                {
+                    var body = PersonalBody(list, columns, readersOwn.GetProperty("name").GetString() + " (changed)", false, readersOwn.GetProperty("version").GetUInt32());
+                    request.Content = JsonContent.Create(body);
+                }
+                using var response = await reader.SendAsync(request);
+                readerRouteWrites++;
+                routesSent.Add($"{endpoint.Method} {endpoint.Pattern} {(int)response.StatusCode}");
+                if ((int)response.StatusCode >= 500)
+                {
+                    problems.Add($"{endpoint} answered {(int)response.StatusCode} to a reader of {list.Key} sending its own view");
+                }
+            }
+            var afterReaderRoutes = await ViewsTextAsync(admin, list.Key);
+            if (afterReaderRoutes != before)
+            {
+                problems.Add($"{list.Key}: a reader without lists.views.share changed the workspace's views through the list's write routes with its own view:\nbefore {before}\nafter  {afterReaderRoutes}" +
+                             $"\n(routes sent: {string.Join("; ", routesSent)})");
+            }
+            foreach (var item in (await reader.GetFromJsonAsync<JsonElement>($"/api/lists/{list.Key}/views")).GetProperty("items").EnumerateArray()
+                         .Where(v => v.GetProperty("isShared").GetBoolean() && !before.Contains(v.GetProperty("id").GetString()!, StringComparison.Ordinal)))
+            {
+                problems.Add($"{list.Key}: after a reader without lists.views.share sent every write route with its own view, GET /views lists a shared view the workspace did not have ({item.GetProperty("name").GetString()}; routes sent: {string.Join("; ", routesSent)})");
+            }
+
             // Who sees which views (critic p05 round 7, plant P7: every user's personal views were
             // listed to any reader): GET /views answers shared views and the caller's own only.
             var personalIds = new Dictionary<string, string>(StringComparer.Ordinal) { [personal.GetProperty("id").GetString()!] = "the administrator's", [sharersOwn.GetProperty("id").GetString()!] = "the sharer's" };
@@ -1028,7 +1102,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 }
             }
         }
-        return new ListViewResult(problems, lists, refusals, allowedWrites, visibilityChecks, fieldVariants);
+        return new ListViewResult(problems, lists, refusals, allowedWrites, visibilityChecks, fieldVariants, readerRouteWrites);
     }
 
     /// <summary>
