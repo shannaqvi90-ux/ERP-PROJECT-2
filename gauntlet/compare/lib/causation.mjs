@@ -37,6 +37,16 @@
 //             caused nothing ended within GUARD_SECONDS before that task began (one that ran just
 //             before the step could have posted the message), and no worker of the page ran meanwhile.
 //
+// Round 13 (critic p01 r12, plants W1-W8): timing that lives outside the page's thread causes nothing.
+// A web socket's message is the answer to the page's last frame on it (sent by a caused task within
+// LINK_SECONDS) or the server's push; a window's postMessage is the posting task's (its traceId); a
+// message on an interface that carries another frame's, tab's, worker's or server's message
+// (OUTSIDE_CARRIERS) causes nothing; an untraceable task is refused while another thread of the page's
+// script ran (unless it delivers what the browser read for the page itself, IN_PAGE_DATA); a document
+// is its navigation's; the delays of a chain add up to at most LINK_SECONDS from the step's input; an
+// animation's, transition's or media element's event, a refresh the page set, and an observer run
+// while an animation runs cause nothing; an idle callback is its asker's.
+//
 // A navigation (a form posted) is judged by the task that started it. The trace's clock is checked
 // against the harness's with clock-sync markers. The rules are written as a pure function of the
 // trace (analyseTrace, writeCauses), unit-tested on synthetic traces (test/causation.test.mjs) and
