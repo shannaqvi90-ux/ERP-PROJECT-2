@@ -85,11 +85,13 @@ shows as its own, under these conditions:
 - the whole stored number is checked;
 - the same rule holds for Odoo.
 
-When p01's change lands, the ours driver should take the national path: a `national` variant
-typing `505550199`, as the driver's comment says. It is not in the driver yet. A variant the
-instrument refuses makes the whole ours result unverified (`runner.mjs`: every variant must
-verify), and p01's change was not on the integration branch or on p01's branch when this round
-ended.
+p01 has since committed that credit on its own branch (484b82bd: the task declares `prefixes` for
+ours' phone field, sourced from `HOME_PREFIX` in `web/src/kernel/forms/phone.ts`, which this round
+leaves unchanged), with ours' driver taking the national path. This branch adds its 12-key path as
+a separate `code` variant (`buildCode`) and leaves the driver's other lines as on the integration
+branch, so the two branches merge without touching the same lines. The variant verifies with or
+without the credit. Without the credit, the national variant would make the whole ours result
+unverified (`runner.mjs`: every variant must verify), so this branch does not add it.
 
 ## Reports: another area's data only where its permission is held (p02 round 12)
 
