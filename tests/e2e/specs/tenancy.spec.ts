@@ -105,6 +105,39 @@ test.describe("companies, branches and the working company", () => {
     await expect(page.locator('form.quick-add, input[name="branchNameEn"]')).toHaveCount(0);
   });
 
+  test("a manager of one company who only reads another changes the first and is shown the second read-only, with the reason", async ({ page }) => {
+    // Critic p02 round 11: the seeded accountant, "Company manager" of one company and "Read-only" in
+    // another, opened the other company's form editable, with Save, while working in the first, and
+    // the server took the change. A role given in one company counts only in that company.
+    await freshStart(page, "en");
+    await signIn(page, "accountant@alnoor.example");
+    await expect(page.getByTestId("workplace")).toBeVisible();
+    type Row = { id: string; code: string; canUpdate?: boolean };
+    const rows = ((await (await page.request.get("/api/tenancy/companies?take=50")).json()) as { items: Row[] }).items;
+    const managed = rows.find((r) => r.canUpdate === true)!;
+    const readOnly = rows.find((r) => r.canUpdate === false)!;
+    expect(managed, JSON.stringify(rows)).toBeTruthy();
+    expect(readOnly, JSON.stringify(rows)).toBeTruthy();
+    // Working in the company she manages.
+    const switched = await page.request.put("/api/tenancy/workplace", { data: { companyId: managed.id }, headers: { "X-Erp-Request": "1" } });
+    expect(switched.ok(), await switched.text()).toBe(true);
+    await page.goto(`/tenancy/companies?open=${readOnly.id}`);
+    await expect(page.getByTestId("record-read-only")).toContainText("Your roles let you read this company but not change it.");
+    await expect(page.locator('[data-field="tradeLicenceNumber"] input')).toBeDisabled();
+    await expect(page.locator(".record-form button[type=submit]")).toHaveCount(0);
+    await expect(page.locator('form.quick-add, input[name="branchNameEn"]')).toHaveCount(0);
+    // The server refuses the change too, naming why.
+    const record = await (await page.request.get(`/api/tenancy/companies/${readOnly.id}`)).json();
+    const refused = await page.request.put(`/api/tenancy/companies/${readOnly.id}`, { data: { ...record, tradeLicenceNumber: "X-E2E" }, headers: { "X-Erp-Request": "1" } });
+    expect(refused.status()).toBe(403);
+    expect(((await refused.json()) as { code: string }).code).toBe("permissionNotHeldInCompany");
+    // Her own company is hers to change.
+    await page.goto(`/tenancy/companies?open=${managed.id}`);
+    await expect(page.locator('[data-field="tradeLicenceNumber"] input')).toBeEditable();
+    await expect(page.locator(".record-form button[type=submit]")).toBeVisible();
+    await expect(page.getByTestId("record-read-only")).toHaveCount(0);
+  });
+
   test("an administrator of one company is offered neither New nor a company code to change, and reads why", async ({ page }) => {
     // Critic p02 round 7: company codes are unique across the workspace, so only someone who works
     // in every company creates a company or changes a code; the screen offered both and the server
