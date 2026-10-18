@@ -122,3 +122,5 @@ Verifies of this branch (every test green each time: .NET 660, web unit 510, end
 comparison 415, build 6), all on a busy machine (load up to 77 on 16 CPUs): 10,701 s (dotnet 8,194,
 web 2,188) and 10,582 s (dotnet 8,050, web 2,178) against the 10,500 s maximum, before the plant
 reorder. Critic round 11's run of the integration product used 10,294 s (dotnet 7,913, web 2,045).
+After the reorder, the branch's verify passed: 9,203 processor seconds (dotnet 7,081, web 1,834,
+e2e 255, timing 34), 2,945 s wall, load up to 37.
