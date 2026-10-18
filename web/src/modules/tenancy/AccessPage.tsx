@@ -67,7 +67,12 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
     initial: (a) => ({ companies: a?.companies ?? [] }),
     canEdit: editable,
     // The version that was read: the server refuses the save (409) if the access changed since.
-    save: (draft, read) => api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, { companies: draft.companies, version: read?.version }),
+    // Only the companies where the caller's roles let them change access are sent: access in the
+    // others is shown, and the server leaves it as it is (a role given in one company counts only there).
+    save: (draft, read) => api<UserAccess>("PUT", `/api/tenancy/access/${userId}`, {
+      companies: draft.companies.filter((c) => read?.options.find((o) => o.id === c.companyId)?.canChange !== false),
+      version: read?.version,
+    }),
     onSaved: () => onSaved(),
   }, userId);
   const access = form.record;
@@ -104,8 +109,9 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
         <legend>{t("tenancy.access.companies")}</legend>
         {access?.options.map((company) => {
           const current = entry(company.id);
+          const fixed = company.canChange === false;
           return (
-            <div key={company.id} className="access-company" data-company={company.code}>
+            <fieldset key={company.id} className="access-company" data-company={company.code} disabled={fixed} title={fixed ? t("tenancy.access.roleElsewhere") : undefined}>
               <label className="check">
                 <input type="checkbox" checked={Boolean(current)} onChange={(e) => toggleCompany(company.id, e.target.checked)} />
                 <span>
@@ -113,6 +119,7 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
                   {!company.isActive && <span className="muted"> ({t("tenancy.common.inactive")})</span>}
                 </span>
               </label>
+              {fixed && editable && <p className="muted" data-testid="access-role-elsewhere">{t("tenancy.access.roleElsewhere")}</p>}
               {current && (
                 <div className="access-branches">
                   <label className="check" title={company.canGiveAllBranches === false ? t("tenancy.access.onlyOwnBranches") : undefined}>
@@ -136,7 +143,7 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
                     ))}
                 </div>
               )}
-            </div>
+            </fieldset>
           );
         })}
       </fieldset>

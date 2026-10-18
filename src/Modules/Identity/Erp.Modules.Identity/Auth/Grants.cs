@@ -122,7 +122,7 @@ internal static class GrantQueries
 /// (the table's policy lets a session read its own rows), as for <see cref="GrantQueries"/> with
 /// own rows.
 /// </remarks>
-internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog, ICompanyContext scope) : ISessionPermissionScope
+internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog, ICompanyContext scope) : ISessionPermissionScope, ISessionCompanyGrants
 {
     /// <summary>The user and every role they hold, workspace-wide (company null) or in one company.</summary>
     internal const string Statement = """
@@ -198,6 +198,14 @@ internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog,
     /// <summary>The user's own grants (every company).</summary>
     public async Task<UserGrants> LoadAsync(Guid userId, CancellationToken cancellationToken) =>
         (await ReadAsync(userId, cancellationToken)).Grants;
+
+    /// <summary>The companies whose roles (assigned in that company) grant <paramref name="permission"/>
+    /// to the session's user: where the kernel lets a request with that permission act.</summary>
+    public async Task<IReadOnlyCollection<Guid>> CompaniesGrantingAsync(ResolvedSession session, string permission, CancellationToken cancellationToken)
+    {
+        var grants = await LoadAsync(session.UserId, cancellationToken);
+        return grants.ByCompany.Where(c => c.Value.Contains(permission)).Select(c => c.Key).ToList();
+    }
 
     public async Task<IReadOnlyCollection<string>> ScopeAsync(ResolvedSession session, IReadOnlyCollection<string> permissions, CancellationToken cancellationToken)
     {

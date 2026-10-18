@@ -130,4 +130,28 @@ describe("company access screen", () => {
       { companies: [{ companyId: "c1", allBranches: true, branchIds: [] }], version: 71 },
     ]);
   });
+
+  it("leaves a company where the caller's roles only read access as it is: shown, not changeable, and not sent (critic p02 round 11)", async () => {
+    window.history.replaceState(null, "", "/tenancy/access?open=u2");
+    const puts: unknown[] = [];
+    const jafza = { id: "c2", code: "AN-FZE", legalNameEn: "Al Noor FZE", legalNameAr: "النور م.م.ح", isActive: true, canChange: false,
+      branches: [{ id: "b2", code: "JAFZA-WH", nameEn: "JAFZA warehouse", nameAr: "مستودع جافزا", isActive: true }] };
+    serve({ userId: "u2", displayName: "New clerk", email: "clerk@alnoor.example", isCaller: false,
+      companies: [{ companyId: "c2", allBranches: true, branchIds: [] }], options: [dubai, jafza], canEdit: true, readOnlyReason: null }, puts);
+    view = await render(<App language="en" />);
+    await settle();
+    const fixed = view.container.querySelector<HTMLFieldSetElement>('[data-company="AN-FZE"]')!;
+    expect(fixed.disabled).toBe(true);
+    expect(fixed.textContent).toContain("your roles let you change access in other companies, not in this one");
+    expect(view.container.querySelector<HTMLFieldSetElement>('[data-company="AN-DXB"]')!.disabled).toBe(false);
+    await act(async () => {
+      view!.container.querySelector<HTMLInputElement>('[data-company="AN-DXB"] input[type="checkbox"]')!.click();
+    });
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".record-form")!.requestSubmit();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    // Only the company the caller may change goes to the server; the other is left as it is there.
+    expect(puts).toEqual([{ companies: [{ companyId: "c1", allBranches: true, branchIds: [] }], version: 70 }]);
+  });
 });

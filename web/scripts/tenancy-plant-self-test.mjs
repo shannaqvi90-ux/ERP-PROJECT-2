@@ -12,7 +12,9 @@
 // the U-company-*-some-companies plants are critic p02 round 7's (New company and the company code
 // offered to someone who works in only some companies); U5 and U5b are critic p02 round 9's (New
 // company offered to someone who works in no company: an empty list read as "every company"); the
-// others are the same fault on the other actions of these screens.
+// U-*-role-elsewhere plants are critic p02 round 11's (a company, its logo, its branch line, New
+// branch, a branch and company access offered for change where a role given in another company
+// does not reach); the others are the same fault on the other actions of these screens.
 //
 // Usage: node scripts/tenancy-plant-self-test.mjs   (from web/, after npm ci)
 import { spawnSync } from "node:child_process";
@@ -28,12 +30,12 @@ const plants = [
   {
     id: "U1",
     what: "company logo upload and remove offered without tenancy.companies.update",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt}', replace: "editable={everyBranch} onChange={form.adopt}" }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && everyBranch && canUpdate} onChange={form.adopt}', replace: "editable={everyBranch && canUpdate} onChange={form.adopt}" }],
   },
   {
     id: "U2",
     what: "the company's branch line offered without tenancy.branches.create",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '{can("tenancy.branches.create") && everyBranch && (', replace: "{everyBranch && (" }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '{can("tenancy.branches.create") && everyBranch && canAdd && (', replace: "{everyBranch && canAdd && (" }],
   },
   {
     id: "U2-new",
@@ -83,12 +85,12 @@ const plants = [
   {
     id: "P3b",
     what: "the company form editable for everyone (critic p06 round 1's plant: canEdit true)",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch,', replace: "canEdit: true," }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch && canUpdate,', replace: "canEdit: true," }],
   },
   {
     id: "U-company-save",
     what: "the company form editable and saved without tenancy.companies.update",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update") && everyBranch,', replace: ": everyBranch," }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update") && everyBranch && canUpdate,', replace: ": everyBranch && canUpdate," }],
   },
   {
     id: "U-company-address",
@@ -108,22 +110,22 @@ const plants = [
   {
     id: "U-company-some-branches",
     what: "the company record editable by someone who works in only some of its branches",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update") && everyBranch,', replace: ': can("tenancy.companies.update"),' }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update") && everyBranch && canUpdate,', replace: ': can("tenancy.companies.update") && canUpdate,' }],
   },
   {
     id: "U-logo-some-branches",
     what: "the company logo changeable by someone who works in only some of its branches",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt}', replace: 'editable={can("tenancy.companies.update")} onChange={form.adopt}' }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && everyBranch && canUpdate} onChange={form.adopt}', replace: 'editable={can("tenancy.companies.update") && canUpdate} onChange={form.adopt}' }],
   },
   {
     id: "U-branchline-some-branches",
     what: "the company's branch line offered to someone who works in only some of its branches (critic p02 round 4)",
-    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '{can("tenancy.branches.create") && everyBranch && (', replace: '{can("tenancy.branches.create") && (' }],
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '{can("tenancy.branches.create") && everyBranch && canAdd && (', replace: '{can("tenancy.branches.create") && canAdd && (' }],
   },
   {
     id: "U-newbranch-some-branches",
     what: "New branch offered to someone who works in only some branches of every company (critic p02 round 4)",
-    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: "companies.filter((c) => c.isActive && c.everyBranch !== false)", replace: "companies.filter((c) => c.isActive)" }],
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: "companies.filter((c) => c.isActive && c.everyBranch !== false && c.canAddBranch !== false)", replace: "companies.filter((c) => c.isActive && c.canAddBranch !== false)" }],
   },
   {
     id: "U-branchcode-some-branches",
@@ -133,12 +135,44 @@ const plants = [
   {
     id: "P3b-branch",
     what: "the branch form editable for everyone (P3b on the branch screen)",
-    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: 'canEdit: id === null ? can("tenancy.branches.create") : can("tenancy.branches.update"),', replace: "canEdit: true," }],
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: 'canEdit: id === null ? can("tenancy.branches.create") : can("tenancy.branches.update") && canUpdate,', replace: "canEdit: true," }],
   },
   {
     id: "U-branch-save",
     what: "the branch form editable and saved without tenancy.branches.update",
-    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: ': can("tenancy.branches.update"),', replace: ": true," }],
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: ': can("tenancy.branches.update") && canUpdate,', replace: ": canUpdate," }],
+  },
+  // Critic p02 round 11: a role given in one company counts only there. Each screen offers a
+  // change only where the server says the user's roles allow it (canUpdate, canAddBranch, canChange).
+  {
+    id: "U-company-role-elsewhere",
+    what: "a company where the user's roles only read offered for change (critic p02 round 11)",
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: ': can("tenancy.companies.update") && everyBranch && canUpdate,', replace: ': can("tenancy.companies.update") && everyBranch,' }],
+  },
+  {
+    id: "U-logo-role-elsewhere",
+    what: "the logo of a company where the user's roles only read offered for change (critic p02 round 11)",
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: 'editable={can("tenancy.companies.update") && everyBranch && canUpdate} onChange={form.adopt}', replace: 'editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt}' }],
+  },
+  {
+    id: "U-branchline-role-elsewhere",
+    what: "the branch line of a company where the user's roles do not add branches (critic p02 round 11)",
+    edits: [{ file: "src/modules/tenancy/CompanyForm.tsx", find: '{can("tenancy.branches.create") && everyBranch && canAdd && (', replace: '{can("tenancy.branches.create") && everyBranch && (' }],
+  },
+  {
+    id: "U-newbranch-role-elsewhere",
+    what: "New branch offered for companies where the user's roles do not add branches (critic p02 round 11)",
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: "companies.filter((c) => c.isActive && c.everyBranch !== false && c.canAddBranch !== false)", replace: "companies.filter((c) => c.isActive && c.everyBranch !== false)" }],
+  },
+  {
+    id: "U-branch-role-elsewhere",
+    what: "a branch of a company where the user's roles only read offered for change (critic p02 round 11)",
+    edits: [{ file: "src/modules/tenancy/BranchesPage.tsx", find: ': can("tenancy.branches.update") && canUpdate,', replace: ': can("tenancy.branches.update"),' }],
+  },
+  {
+    id: "U-access-role-elsewhere",
+    what: "access in a company where the caller's roles do not change access offered for change (critic p02 round 11)",
+    edits: [{ file: "src/modules/tenancy/AccessPage.tsx", find: 'data-company={company.code} disabled={fixed}', replace: "data-company={company.code}" }],
   },
   {
     id: "P3b-access",

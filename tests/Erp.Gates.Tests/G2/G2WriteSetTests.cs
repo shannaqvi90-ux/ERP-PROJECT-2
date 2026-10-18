@@ -70,6 +70,11 @@ public sealed class G2WriteSetTests(WriteSetFixture fixture) : IClassFixture<Wri
                                               p.Contains("as a user holding exactly [tenancy.workplace.switch]", StringComparison.Ordinal) &&
                                               p.Contains("wrote update tenancy.companies (arabic_legal_name_required)", StringComparison.Ordinal) &&
                                               p.Contains("outside the write set of tenancy.workplace.switch", StringComparison.Ordinal));
+        // Plant P1d of critic p02 round 11: a write of a value that may equal the stored one (the
+        // fiscal year start month, 1 to 12) is seen through the request sending another valid value.
+        Assert.Contains(result.Problems, p => p.StartsWith($"PUT {WriteSetPlantModule.Route} [fiscalYearStartMonth=12]", StringComparison.Ordinal) &&
+                                              p.Contains("wrote update tenancy.companies (fiscal_year_start_month)", StringComparison.Ordinal) &&
+                                              p.Contains("outside the write set of tenancy.workplace.switch", StringComparison.Ordinal));
         Assert.DoesNotContain(result.Problems, p => !p.Contains(WriteSetPlantModule.Route, StringComparison.Ordinal));
     }
 

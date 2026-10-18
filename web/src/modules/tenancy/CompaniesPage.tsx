@@ -55,7 +55,13 @@ function CompaniesScreen({ everyCompany }: { everyCompany: boolean }) {
   const creatable = can("tenancy.companies.create") && everyCompany;
   const panel = useRecordPanel(creatable);
   useScreenKeys({ onNew: panel.startNew, search: listSearch, newLabelKey: "tenancy.company.new", newKeywordsKey: "tenancy.action.newCompanyKeywords" });
-  const { onOpenIdChange } = panel;
+  const { onOpenIdChange, refresh } = panel;
+  // A branch added from the open company's form changes the company's branch count in the list
+  // (critic p02 round 11: the list showed 0 branches until it was reloaded).
+  useEffect(() => {
+    window.addEventListener(companiesChanged, refresh);
+    return () => window.removeEventListener(companiesChanged, refresh);
+  }, [refresh]);
   const openIdChange = useCallback((id: string | null) => onOpenIdChange(id === newRecord && !creatable ? null : id), [onOpenIdChange, creatable]);
 
   return (

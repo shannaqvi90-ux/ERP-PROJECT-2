@@ -90,6 +90,77 @@ public interface ISessionPermissionScope
     Task<IReadOnlyCollection<string>> ScopeAsync(ResolvedSession session, IReadOnlyCollection<string> permissions, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// The companies where the session's user holds a permission through a role assigned in that
+/// company (roles held in the whole workspace are not counted here: they are the resolver's
+/// <see cref="ResolvedSession.Permissions"/>). Implemented by the identity module. The kernel uses
+/// it to authorise every request in the company of the record it touches: a role held only in
+/// company X grants nothing on company Y's records, whichever company the user is working in
+/// (critic p02 round 11).
+/// </summary>
+public interface ISessionCompanyGrants
+{
+    Task<IReadOnlyCollection<Guid>> CompaniesGrantingAsync(ResolvedSession session, string permission, CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Where the signed-in user of the request holds a permission: in every company (a workspace-wide
+/// role), or in the companies whose roles grant it. Screens use it to offer a change only where
+/// the server will accept it (the company form of a company where the user only reads is shown
+/// read-only). A request without a session holds nothing here.
+/// </summary>
+public interface ICompanyPermissions
+{
+    /// <summary>True when the user holds <paramref name="permission"/> in <paramref name="companyId"/>.</summary>
+    Task<bool> HoldsAsync(string permission, Guid companyId, CancellationToken cancellationToken);
+
+    /// <summary>Null when the user holds <paramref name="permission"/> in every company (a
+    /// workspace-wide role); otherwise the companies whose roles grant it (possibly none).</summary>
+    Task<IReadOnlySet<Guid>?> CompaniesAsync(string permission, CancellationToken cancellationToken);
+}
+
+/// <summary>The request's <see cref="ICompanyPermissions"/>, set by the session authentication
+/// handler once the session has resolved.</summary>
+internal sealed class SessionCompanyPermissions(IEnumerable<ISessionCompanyGrants> sources) : ICompanyPermissions
+{
+    private ResolvedSession? _session;
+    private readonly Dictionary<string, IReadOnlySet<Guid>?> _cache = new(StringComparer.Ordinal);
+
+    public void Set(ResolvedSession session)
+    {
+        if (_session is not null && _session.SessionId != session.SessionId)
+        {
+            throw new InvalidOperationException("The request's session is already set.");
+        }
+        _session = session;
+    }
+
+    public async Task<IReadOnlySet<Guid>?> CompaniesAsync(string permission, CancellationToken cancellationToken)
+    {
+        if (_session is not { } session)
+        {
+            return new HashSet<Guid>();
+        }
+        if (session.Permissions.Contains(permission))
+        {
+            return null;
+        }
+        if (!_cache.TryGetValue(permission, out var companies))
+        {
+            var found = new HashSet<Guid>();
+            foreach (var source in sources)
+            {
+                found.UnionWith(await source.CompaniesGrantingAsync(session, permission, cancellationToken));
+            }
+            _cache[permission] = companies = found;
+        }
+        return companies;
+    }
+
+    public async Task<bool> HoldsAsync(string permission, Guid companyId, CancellationToken cancellationToken) =>
+        await CompaniesAsync(permission, cancellationToken) is not { } companies || companies.Contains(companyId);
+}
+
 public sealed class SessionAuthenticationOptions : AuthenticationSchemeOptions;
 
 /// <summary>Marks the request while the authentication handler resolves its session token. The
@@ -186,6 +257,21 @@ internal sealed class SessionAuthenticationHandler(
         foreach (var scope in Context.RequestServices.GetServices<ISessionPermissionScope>())
         {
             permissions = await scope.ScopeAsync(session, permissions, Context.RequestAborted);
+        }
+
+        // The endpoint's permission counts only in the companies where it is held (critic p02
+        // round 11: a "Company manager" of the Dubai LLC, read-only in the JAFZA entity, changed the
+        // JAFZA entity's trade licence and branches while working in Dubai). Held through a
+        // workspace-wide role: every company of the scope. Otherwise only the companies whose roles
+        // grant it: the kernel refuses every write of a company-owned row elsewhere, and a read-only
+        // request sees no other company at all (row-level security is narrowed to them).
+        var places = Context.RequestServices.GetRequiredService<SessionCompanyPermissions>();
+        places.Set(session);
+        if (Context.GetEndpoint()?.Metadata.GetMetadata<RequiresPermissionAttribute>() is { } required)
+        {
+            var companies = await places.CompaniesAsync(required.Permission, Context.RequestAborted);
+            await Context.RequestServices.GetRequiredService<Data.ErpDbSession>()
+                .LimitToPermissionAsync(companies, narrowScope: ReadOnlyRequests.Applies(Context), Context.RequestAborted);
         }
 
         var claims = new List<Claim>

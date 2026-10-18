@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Validator = Erp.Kernel.Http.Validator;
+using Erp.Kernel.Data;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Http;
 using Erp.Kernel.Lists;
@@ -13,11 +14,14 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Tenancy.Branches;
 
 /// <summary>A branch as the branch form shows it. <c>everyBranch</c> is false when the caller works
-/// in only some branches of its company: they may change their own branch but not its code.</summary>
+/// in only some branches of its company: they may change their own branch but not its code.
+/// <c>canUpdate</c> says whether the caller's roles allow changing it in its company (a role given
+/// in one company counts only there).</summary>
 public sealed record BranchDto(
     Guid Id,
     Guid CompanyId,
@@ -38,7 +42,8 @@ public sealed record BranchDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     uint Version,
-    bool EveryBranch = true);
+    bool EveryBranch = true,
+    bool CanUpdate = true);
 
 public sealed record BranchRow(
     Guid Id,
@@ -50,7 +55,8 @@ public sealed record BranchRow(
     string? City,
     Emirate? Emirate,
     bool IsActive,
-    uint Version);
+    uint Version,
+    bool CanUpdate = true);
 
 /// <summary>Create or change a branch. A branch stays in the company it was created in. The code
 /// may be left empty (one is made from the English name); a name in English or Arabic is required.</summary>
@@ -118,8 +124,9 @@ internal static class BranchEndpoints
         var companyIds = result.Rows.Select(b => b.CompanyId).Distinct().ToList();
         var companies = await db.Companies.AsNoTracking().Where(c => companyIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, c => c.Code, cancellationToken);
+        var updates = await http.RequestServices.GetRequiredService<ICompanyPermissions>().CompaniesAsync(TenancyPermissions.BranchesUpdate, cancellationToken);
         return result.Map(b => new BranchRow(b.Id, b.CompanyId, companies.GetValueOrDefault(b.CompanyId) ?? "", b.Code, b.NameEn, b.NameAr,
-            b.City, TenancyValidation.ParseEmirate(b.Emirate), b.IsActive, b.Version));
+            b.City, TenancyValidation.ParseEmirate(b.Emirate), b.IsActive, b.Version, updates is null || updates.Contains(b.CompanyId)));
     }
 
     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
@@ -129,11 +136,11 @@ internal static class BranchEndpoints
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, branch, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), branch, cancellationToken));
     }
 
     private static async Task<Results<Created<BranchDto>, ProblemHttpResult>> Create(
-        SaveBranchRequest request, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+        SaveBranchRequest request, TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = Validate(request, http, requireVersion: false);
         var company = request.CompanyId is { } companyId
@@ -144,6 +151,12 @@ internal static class BranchEndpoints
         if (!validator.IsValid)
         {
             return validator.ToResult();
+        }
+        // The permission counts only in the companies whose roles grant it (critic p02 round 11: a
+        // manager of the Dubai LLC opened a branch in the JAFZA entity, where they only read).
+        if (!session.PermitsCompany(company!.Id))
+        {
+            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
         }
         // Branch codes are unique within the company: only someone who sees every branch of it may
         // pick one (a refusal would name a branch they cannot see), and a new branch is one they
@@ -166,11 +179,11 @@ internal static class BranchEndpoints
         Apply(branch, request, code);
         db.Branches.Add(branch);
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Created($"/api/tenancy/branches/{branch.Id}", await ToDtoAsync(db, branchScope, branch, cancellationToken));
+        return TypedResults.Created($"/api/tenancy/branches/{branch.Id}", await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), branch, cancellationToken));
     }
 
     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Update(
-        Guid id, SaveBranchRequest request, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+        Guid id, SaveBranchRequest request, TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
         var validator = Validate(request, http, requireVersion: true);
         if (!validator.IsValid)
@@ -181,6 +194,10 @@ internal static class BranchEndpoints
         if (branch is null)
         {
             return Problems.NotFound(http);
+        }
+        if (!session.PermitsCompany(branch.CompanyId))
+        {
+            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
         }
         if (request.CompanyId != branch.CompanyId)
         {
@@ -199,7 +216,7 @@ internal static class BranchEndpoints
         Apply(branch, request, code);
         db.Entry(branch).Property(b => b.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, branch, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), branch, cancellationToken));
     }
 
     private static Validator Validate(SaveBranchRequest request, HttpContext http, bool requireVersion)
@@ -235,11 +252,11 @@ internal static class BranchEndpoints
         branch.IsActive = r.IsActive!.Value;
     }
 
-    private static async Task<BranchDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, Branch b, CancellationToken cancellationToken)
+    private static async Task<BranchDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, ICompanyPermissions places, Branch b, CancellationToken cancellationToken)
     {
         var companyCode = await db.Companies.AsNoTracking().Where(c => c.Id == b.CompanyId).Select(c => c.Code).SingleAsync(cancellationToken);
         return new BranchDto(b.Id, b.CompanyId, companyCode, b.Code, b.NameEn, b.NameAr, b.AddressLine1, b.AddressLine2, b.City,
             TenancyValidation.ParseEmirate(b.Emirate), b.PoBox, b.Country, b.AddressAr, b.Phone, b.Email, b.IsActive, b.CreatedAt, b.UpdatedAt, b.Version,
-            branchScope.HoldsEveryBranch(b.CompanyId));
+            branchScope.HoldsEveryBranch(b.CompanyId), await places.HoldsAsync(TenancyPermissions.BranchesUpdate, b.CompanyId, cancellationToken));
     }
 }

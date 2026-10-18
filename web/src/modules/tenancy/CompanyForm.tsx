@@ -105,14 +105,20 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   // server answers 403 companyNeedsEveryCompany otherwise; critic p02 round 7), so the code is
   // read-only with the reason for anyone else. A new company is offered only to them (CompaniesPage).
   const [everyCompany, setEveryCompany] = useState(true);
+  // A role given in one company counts only there (critic p02 round 11): the server says whether
+  // the user's roles let them change this company (canUpdate) and add a branch to it (canAddBranch).
+  const [canUpdate, setCanUpdate] = useState(true);
+  const [canAddBranch, setCanAddBranch] = useState(true);
   const form = useRecordForm<Company, Draft>({
     load: id === null ? undefined : (signal) => api<Company>("GET", `/api/tenancy/companies/${id}`, undefined, { signal }).then((c) => {
       setEveryBranch(c.everyBranch !== false);
       setEveryCompany(c.everyCompany !== false);
+      setCanUpdate(c.canUpdate !== false);
+      setCanAddBranch(c.canAddBranch !== false);
       return c;
     }),
     initial: draftOf,
-    canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch,
+    canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch && canUpdate,
     save: (draft, company) => {
       const body = {
         code: draft.code.trim(),
@@ -169,13 +175,13 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
       title={company ? `${company.code} · ${name(company.legalNameEn, company.legalNameAr)}` : t("tenancy.company.new")}
       onClose={onClose}
       nav={nav}
-      readOnlyReason={company && !everyBranch && can("tenancy.companies.update") ? t("tenancy.company.someBranchesOnly") : undefined}
+      readOnlyReason={company && can("tenancy.companies.update") ? (!canUpdate ? t("tenancy.company.roleElsewhere") : !everyBranch ? t("tenancy.company.someBranchesOnly") : undefined) : undefined}
       document={company ? { report: "tenancy.companyProfile", parameter: "company", id: company.id } : undefined}
       after={
         company && (
           <>
-            <CompanyLogo company={company} editable={can("tenancy.companies.update") && everyBranch} onChange={form.adopt} />
-            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} companyNameAr={company.legalNameAr} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} everyBranch={everyBranch} />}
+            <CompanyLogo company={company} editable={can("tenancy.companies.update") && everyBranch && canUpdate} onChange={form.adopt} />
+            {can("tenancy.branches.read") && <CompanyBranches companyId={company.id} companyName={company.legalNameEn} companyNameAr={company.legalNameAr} defaultEmirate={company.emirate ?? ""} autoFocus={justCreated} everyBranch={everyBranch} canAdd={canAddBranch} />}
           </>
         )
       }
@@ -345,7 +351,7 @@ export function englishNameOf(draft: { nameEn: string; nameAr: string }, company
  * is created the line has the focus, the caret after the company's name. On an Arabic screen the
  * Arabic name comes first, starts with the company's Arabic name and has the focus (critic p02
  * round 6: an Arabic user's branch name went into the English name, with the Arabic name empty). */
-function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate, autoFocus, everyBranch }: {
+function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate, autoFocus, everyBranch, canAdd }: {
   companyId: string;
   companyName: string;
   companyNameAr: string;
@@ -354,6 +360,9 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
   /** False when the user works in only some of the company's branches: a branch is added only by
    * someone who works in every branch (the server answers 403 tenancy.branchNeedsEveryBranch). */
   everyBranch: boolean;
+  /** False when the user's roles do not let them add a branch in this company (a role given in
+   * another company counts only there; the server answers 403 permissionNotHeldInCompany). */
+  canAdd: boolean;
 }) {
   const { t, language } = useI18n();
   const arabic = language === "ar";
@@ -481,7 +490,7 @@ function CompanyBranches({ companyId, companyName, companyNameAr, defaultEmirate
         </tbody>
       </table>
       {branches.length === 0 && <p className="muted">{t("tenancy.company.noBranches")}</p>}
-      {can("tenancy.branches.create") && everyBranch && (
+      {can("tenancy.branches.create") && everyBranch && canAdd && (
         <form className="quick-add" onSubmit={add} onKeyDown={lineKeys} aria-label={t("tenancy.branch.add")} aria-keyshortcuts="Enter Control+S Control+Enter">
           {arabic && nameArInput}
           <input ref={arabic ? undefined : nameRef} name="branchNameEn" value={draft.nameEn} onChange={set("nameEn")} placeholder={t("tenancy.branch.nameEn")} aria-label={t("tenancy.branch.nameEn")} aria-invalid={invalid("nameEn")} dir="ltr" maxLength={200} />

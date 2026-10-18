@@ -213,6 +213,15 @@
   gap: 8px;
 }
 
+/* One company of the access list: a fieldset of its own, so a company where the caller's roles do
+   not let them change access is disabled as a whole. */
+.access-company {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
 .access-branches {
   display: flex;
   flex-wrap: wrap;

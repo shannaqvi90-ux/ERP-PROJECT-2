@@ -152,7 +152,7 @@ const plants = [
     edits: [
       {
         file: "src/modules/tenancy/CompanyForm.tsx",
-        find: 'canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch,',
+        find: 'canEdit: id === null ? can("tenancy.companies.create") : can("tenancy.companies.update") && everyBranch && canUpdate,',
         replace: "canEdit: true,",
       },
     ],

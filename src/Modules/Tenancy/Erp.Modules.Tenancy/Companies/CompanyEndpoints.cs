@@ -28,7 +28,9 @@ namespace Erp.Modules.Tenancy.Companies;
 /// the workspace). <c>arabicLegalNameRequired</c> is the company's own setting that makes the
 /// Arabic legal name required. <c>taxRegistrationNumber</c> is 15 digits;
 /// <c>legacyTaxRegistrationNumber</c> is a number stored before that rule that does not meet it,
-/// kept until the company is saved with a valid one (it is never printed).</summary>
+/// kept until the company is saved with a valid one (it is never printed). <c>canUpdate</c> and
+/// <c>canAddBranch</c> say whether the caller's roles allow changing this company and adding a
+/// branch to it in this company (a role given in one company counts only there).</summary>
 public sealed record CompanyDto(
     Guid Id,
     string Code,
@@ -60,12 +62,16 @@ public sealed record CompanyDto(
     bool EveryBranch = true,
     bool EveryCompany = true,
     bool ArabicLegalNameRequired = false,
-    string? LegacyTaxRegistrationNumber = null);
+    string? LegacyTaxRegistrationNumber = null,
+    bool CanUpdate = true,
+    bool CanAddBranch = true);
 
 /// <summary>A row of the companies list. <c>everyBranch</c> is false where the caller works in only
 /// some of the company's branches: they may not change the company or add a branch to it.
 /// <c>everyCompany</c> (the same on every row) is false when the caller works in only some companies
-/// of the workspace: they may not create a company or change a company code.</summary>
+/// of the workspace: they may not create a company or change a company code. <c>canUpdate</c> and
+/// <c>canAddBranch</c> say whether the caller's roles allow changing the company and adding a branch
+/// to it there.</summary>
 public sealed record CompanyRow(
     Guid Id,
     string Code,
@@ -78,7 +84,9 @@ public sealed record CompanyRow(
     bool IsActive,
     uint Version,
     bool EveryBranch = true,
-    bool EveryCompany = true);
+    bool EveryCompany = true,
+    bool CanUpdate = true,
+    bool CanAddBranch = true);
 
 /// <summary>Create or change a company. The code may be left empty (one is made from the English
 /// name); the legal name in English is required, the Arabic one is recommended, and required
@@ -187,8 +195,12 @@ internal static class CompanyEndpoints
         var branchScope = http.RequestServices.GetRequiredService<TenancyBranchScope>();
         var session = http.RequestServices.GetRequiredService<ErpDbSession>();
         var everyCompany = await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken);
+        var places = http.RequestServices.GetRequiredService<ICompanyPermissions>();
+        var updates = await places.CompaniesAsync(TenancyPermissions.CompaniesUpdate, cancellationToken);
+        var adds = await places.CompaniesAsync(TenancyPermissions.BranchesCreate, cancellationToken);
         return result.Map(c => new CompanyRow(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.BaseCurrency, c.City,
-            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version, branchScope.HoldsEveryBranch(c.Id), everyCompany));
+            TenancyValidation.ParseEmirate(c.Emirate), branches.GetValueOrDefault(c.Id), c.IsActive, c.Version, branchScope.HoldsEveryBranch(c.Id), everyCompany,
+            updates is null || updates.Contains(c.Id), adds is null || adds.Contains(c.Id)));
     }
 
     /// <summary>The columns a list row needs, never the logo bytes (up to 512 KB a company): a
@@ -217,7 +229,7 @@ internal static class CompanyEndpoints
         {
             return Problems.NotFound(http);
         }
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, http.RequestServices.GetRequiredService<ICompanyPermissions>(), company, cancellationToken));
     }
 
     private static async Task<Results<Created<CompanyDto>, ProblemHttpResult>> Create(
@@ -275,7 +287,7 @@ internal static class CompanyEndpoints
         db.CompanyAccess.Add(new UserCompanyAccess { UserId = caller.UserId, CompanyId = company.Id, AllBranches = true });
         db.CompanyAccess.AddRange(peers.Select(user => new UserCompanyAccess { UserId = user, CompanyId = company.Id, AllBranches = true }));
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Created($"/api/tenancy/companies/{company.Id}", await ToDtoAsync(db, branchScope, session, company, cancellationToken));
+        return TypedResults.Created($"/api/tenancy/companies/{company.Id}", await ToDtoAsync(db, branchScope, session, http.RequestServices.GetRequiredService<ICompanyPermissions>(), company, cancellationToken));
     }
 
     private static async Task<Results<Ok<CompanyDto>, ProblemHttpResult>> Update(
@@ -291,6 +303,11 @@ internal static class CompanyEndpoints
         if (company is null)
         {
             return Problems.NotFound(http);
+        }
+        // The permission counts only in the companies whose roles grant it.
+        if (!session.PermitsCompany(company.Id))
+        {
+            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
         }
         // The company record is shared by every branch: someone limited to some branches reads it
         // but does not change it.
@@ -317,7 +334,7 @@ internal static class CompanyEndpoints
         Apply(company, request, code);
         db.Entry(company).Property(c => c.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, http.RequestServices.GetRequiredService<ICompanyPermissions>(), company, cancellationToken));
     }
 
     private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> GetLogo(
@@ -358,6 +375,10 @@ internal static class CompanyEndpoints
         {
             return Problems.NotFound(http);
         }
+        if (!session.PermitsCompany(company.Id))
+        {
+            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+        }
         if (!branchScope.HoldsEveryBranch(company.Id))
         {
             return Problems.Forbidden(http, "tenancy.companyNeedsEveryBranch");
@@ -366,16 +387,20 @@ internal static class CompanyEndpoints
         company.LogoContentType = request.ContentType;
         company.LogoHash = CompanyLogo.Hash(company.Id, bytes!);
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, company, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, http.RequestServices.GetRequiredService<ICompanyPermissions>(), company, cancellationToken));
     }
 
-    private static async Task<Results<NoContent, ProblemHttpResult>> DeleteLogo(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http,
+    private static async Task<Results<NoContent, ProblemHttpResult>> DeleteLogo(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session, HttpContext http,
         CancellationToken cancellationToken)
     {
         var company = await db.Companies.SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
         if (company is null)
         {
             return Problems.NotFound(http);
+        }
+        if (!session.PermitsCompany(company.Id))
+        {
+            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
         }
         if (!branchScope.HoldsEveryBranch(company.Id))
         {
@@ -447,15 +472,17 @@ internal static class CompanyEndpoints
         company.IsActive = r.IsActive!.Value;
     }
 
-    internal static async Task<CompanyDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session, Company c, CancellationToken cancellationToken)
+    internal static async Task<CompanyDto> ToDtoAsync(TenancyDbContext db, TenancyBranchScope branchScope, ErpDbSession session, ICompanyPermissions places, Company c, CancellationToken cancellationToken)
     {
         var branches = await db.Branches.CountAsync(b => b.CompanyId == c.Id, cancellationToken);
         var everyCompany = await CompanyAccessRules.ScopeHoldsEveryCompanyAsync(db, session, session, cancellationToken);
+        var canUpdate = await places.HoldsAsync(TenancyPermissions.CompaniesUpdate, c.Id, cancellationToken);
+        var canAddBranch = await places.HoldsAsync(TenancyPermissions.BranchesCreate, c.Id, cancellationToken);
         return new CompanyDto(c.Id, c.Code, c.LegalNameEn, c.LegalNameAr, c.TradeLicenceNumber, c.TradeLicenceAuthority, c.TaxRegistrationNumber,
             c.BaseCurrency, c.FiscalYearStartMonth, c.FiscalYearStartDay, c.AddressLine1, c.AddressLine2, c.City,
             TenancyValidation.ParseEmirate(c.Emirate), c.PoBox, c.Country, c.AddressAr, c.Phone, c.Email, c.Website,
             c.Logo is not null || c.LogoHash is not null, c.LogoHash, c.IsActive, branches, c.CreatedAt, c.UpdatedAt, c.Version,
-            branchScope.HoldsEveryBranch(c.Id), everyCompany, c.ArabicLegalNameRequired, c.LegacyTaxRegistrationNumber);
+            branchScope.HoldsEveryBranch(c.Id), everyCompany, c.ArabicLegalNameRequired, c.LegacyTaxRegistrationNumber, canUpdate, canAddBranch);
     }
 }
 
