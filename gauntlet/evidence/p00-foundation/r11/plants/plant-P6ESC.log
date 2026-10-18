@@ -1,0 +1,33 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.16]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.40]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.53]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:11.75]     Erp.Gates.Tests.Critic.CriticR11Escalation.No_roles_user_cannot_change_anything_on_routes_naming_their_own_id [FAIL]
+[xUnit.net 00:00:11.75]       PUT /api/identity/users/{self} displayName -> 200 {"id":"01a14ccb-7a08-7dc6-a7ba-5cd2bcc760ea","email":"noaccess@alpha.example","displayName":"Changed without permission","language":"ar","isActive":true,"roleIds":[],"lastSignInAt":"2026-10-18T02:16:09.340818+00:00","createdAt":"2026-10-18T
+[xUnit.net 00:00:11.75]       POST /api/identity/users/{self}/unblock -> 403 {"type":"urn:erp:problem:identity.notOnYourself","title":"لا يمكنك تنفيذ هذا على حسابك أنت. لتغيير كلمة مرورك استخدم «تغيير كلمة المرور».","status":403,"code":"identity.notOnYourself","traceId":"00-29300c87be11774d21db8e8a56499402-e2e90889c
+[xUnit.net 00:00:11.75]       GET /api/identity/users/{self}/sign-ins -> 200 {"items":[{"id":"01a14ccb-877f-770a-8377-3ace0aa96272","occurredAt":"2026-10-18T02:16:09.340818+00:00","outcome":"succeeded","ipAddress":null,"userAgent":null,"sessionActive":true,"method":"password"}],"total":1,"paused":[]}
+[xUnit.net 00:00:11.75]       GET /api/identity/users/{self}/passkeys -> 200 []
+[xUnit.net 00:00:11.75]       GET /api/identity/users/{self}/default-company -> 200 {"userId":"01a14ccb-7a08-7dc6-a7ba-5cd2bcc760ea","companyId":null,"companies":[],"version":0}
+[xUnit.net 00:00:11.75]       POST /api/identity/users/{self}/sessions/revoke -> 403 {"type":"urn:erp:problem:identity.notOnYourself","title":"لا يمكنك تنفيذ هذا على حسابك أنت. لتغيير كلمة مرورك استخدم «تغيير كلمة المرور».","status":403,"code":"identity.notOnYourself","traceId":"00-fee16e387768610c8da7f315ff1f897f-cc53630e8
+[xUnit.net 00:00:11.75]       Stack Trace:
+[xUnit.net 00:00:11.75]         /work/tests/Erp.Gates.Tests/Critic/CriticR11Escalation.cs(42,0): at Erp.Gates.Tests.Critic.CriticR11Escalation.No_roles_user_cannot_change_anything_on_routes_naming_their_own_id()
+[xUnit.net 00:00:11.75]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:12.00]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR11Escalation.No_roles_user_cannot_change_anything_on_routes_naming_their_own_id [562 ms]
+  Error Message:
+   PUT /api/identity/users/{self} displayName -> 200 {"id":"01a14ccb-7a08-7dc6-a7ba-5cd2bcc760ea","email":"noaccess@alpha.example","displayName":"Changed without permission","language":"ar","isActive":true,"roleIds":[],"lastSignInAt":"2026-10-18T02:16:09.340818+00:00","createdAt":"2026-10-18T
+POST /api/identity/users/{self}/unblock -> 403 {"type":"urn:erp:problem:identity.notOnYourself","title":"لا يمكنك تنفيذ هذا على حسابك أنت. لتغيير كلمة مرورك استخدم «تغيير كلمة المرور».","status":403,"code":"identity.notOnYourself","traceId":"00-29300c87be11774d21db8e8a56499402-e2e90889c
+GET /api/identity/users/{self}/sign-ins -> 200 {"items":[{"id":"01a14ccb-877f-770a-8377-3ace0aa96272","occurredAt":"2026-10-18T02:16:09.340818+00:00","outcome":"succeeded","ipAddress":null,"userAgent":null,"sessionActive":true,"method":"password"}],"total":1,"paused":[]}
+GET /api/identity/users/{self}/passkeys -> 200 []
+GET /api/identity/users/{self}/default-company -> 200 {"userId":"01a14ccb-7a08-7dc6-a7ba-5cd2bcc760ea","companyId":null,"companies":[],"version":0}
+POST /api/identity/users/{self}/sessions/revoke -> 403 {"type":"urn:erp:problem:identity.notOnYourself","title":"لا يمكنك تنفيذ هذا على حسابك أنت. لتغيير كلمة مرورك استخدم «تغيير كلمة المرور».","status":403,"code":"identity.notOnYourself","traceId":"00-fee16e387768610c8da7f315ff1f897f-cc53630e8
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR11Escalation.No_roles_user_cannot_change_anything_on_routes_naming_their_own_id() in /work/tests/Erp.Gates.Tests/Critic/CriticR11Escalation.cs:line 42
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 12.2920 Seconds

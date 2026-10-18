@@ -1,0 +1,26 @@
+Critic p00 r11 plants (plants.diff, inert unless CRITIC_PLANT names them), run in the toolbox through the verify slot
+(run 1: slot 2 taken 2026-10-18T01:03:14Z; run 2: slot 1 taken 2026-10-18T02:15:39Z). One build carries all three plants.
+
+P6  kernel PermissionAuthorizationHandler (src/Kernel/Erp.Kernel/Security/Permissions.cs): "people may always manage their own record":
+    any request whose route value id or userId equals the caller's own user id passes every permission check.
+    Live: CriticR11Proof fails with the plant (no-roles user, Bearer: GET /api/identity/users/{self} 200, GET /api/identity/users/{self}/access 200,
+    GET /api/tenancy/access/{self} 200) and passes without it (plant-P6PROOF.log, plant-P6NONE.log).
+    Write: CriticR11Escalation with the plant: PUT /api/identity/users/{self} -> 200, displayName "Changed without permission", language ar,
+    by a user with no roles; also GET .../sign-ins, .../passkeys, .../default-company 200. (unblock and sessions/revoke answered the
+    module's own 403 identity.notOnYourself.) Its NONE control crashed on my own test code (it read "email" from the 403 body) and is not evidence;
+    P6NONE is the control.
+    NOT CAUGHT: G2 + Rules, 86 tests, exit 0 (plant-P6.log). G1 + SelfTests, 101 tests (plant-P6G1.log): the only failures are
+    the static scans flagging the other plants' inert text (L6's field, L7's KernelSql text) and two GateSelfTests whose
+    "unexpected oracle" lines are a users-list answer listing one user's two roleIds in a different order (not P6).
+    Kernel and module test projects, 452 tests, all exit 0 (plant-P6M.log).
+    Why: G2PermissionTests.Request fills every route id with Guid.NewGuid() and every body with {} (tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:1035-1043),
+    so no G2 matrix ever names the caller's own id.
+
+L6  kernel ListBinding: list totals kept for 120 s in an instance field of the singleton binding, keyed by search and filter, no tenant.
+    CAUGHT: G1ProcessStateTests (reachable ListBinding._warmTotals from ModuleCatalog), G1NonInterferenceTests (92 answers depend on the other
+    tenant), G1HttpIsolationTests (GET /api/identity/users?search=bravocnry... total 1 vs 0 for a value that exists nowhere) (plant-L6.log).
+    (G1TenantSourceTests / G1TenantSettingCodeTests failures in that log are L7's text.)
+
+L7  kernel SQL erp.current_tenant_id() without the transaction marker check (a tenant left at session level on a pooled connection binds).
+    CAUGHT live: G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored (expected 0 rows, saw 30),
+    and statically by G1TenantSettingCodeTests (plant-L7DB.log).

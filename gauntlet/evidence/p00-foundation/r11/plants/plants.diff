@@ -1,0 +1,72 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/KernelSql.cs b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+index dc03cf63..268e55c6 100644
+--- a/src/Kernel/Erp.Kernel/Data/KernelSql.cs
++++ b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+@@ -104,7 +104,12 @@ internal static class KernelSql
+     /// locally; a tenant left at session level on a pooled connection, or set without the marker,
+     /// binds nothing.
+     /// </summary>
+-    public const string TransactionBoundTenant = """
++    // CRITIC PLANT L7: the transaction marker check is dropped, so a tenant left at session level on a pooled connection binds.
++    public static readonly string TransactionBoundTenant = System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L7" ? """
++        CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
++            LANGUAGE sql STABLE PARALLEL SAFE
++            AS $$ SELECT NULLIF(current_setting('app.tenant_id', true), '')::uuid $$;
++        """ : """
+         CREATE OR REPLACE FUNCTION erp.current_tenant_id() RETURNS uuid
+             LANGUAGE sql STABLE PARALLEL SAFE
+             AS $$
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 56aa9b2c..74a25d2b 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -95,6 +95,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
+     private const int MaxTotals = 8;
+ 
+     private readonly FrozenDictionary<string, Bound> _columns;
++    // CRITIC PLANT L6: warm totals kept on the (singleton) binding instance, keyed by search and filter, no tenant.
++    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Total, DateTime At)> _warmTotals = new();
+     private readonly Expression<Func<T, Guid>> _id;
+     private readonly Func<T, Guid> _idOf;
+     private readonly Expression<Func<T, string?>>? _initials;
+@@ -255,7 +257,21 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        int total;
++        var warmKey = request.Search + "|" + request.Filter;
++        if (database && System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L6" && request.After is null
++            && _warmTotals.TryGetValue(warmKey, out var warm) && warm.At > DateTime.UtcNow.AddSeconds(-120))
++        {
++            total = warm.Total;
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            if (database && System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L6")
++            {
++                _warmTotals[warmKey] = (total, DateTime.UtcNow);
++            }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..11de257a 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -73,6 +73,13 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        // CRITIC PLANT P6: "people may always manage their own record": a route id equal to the caller's own user id passes.
++        else if (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "P6" && context.User.Identity?.IsAuthenticated == true
++            && context.Resource is HttpContext http && context.User.FindUserId() is { } self
++            && (Equals(http.Request.RouteValues["id"]?.ToString(), self.ToString()) || Equals(http.Request.RouteValues["userId"]?.ToString(), self.ToString())))
++        {
++            context.Succeed(requirement);
++        }
+         return Task.CompletedTask;
+     }
+ }

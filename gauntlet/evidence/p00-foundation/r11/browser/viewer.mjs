@@ -1,0 +1,25 @@
+// Critic p00 r11: the read-only role sees no write controls; the API refuses its writes.
+import { chromium } from '/home/shan/critic/p00-foundation-r11/gauntlet/compare/node_modules/playwright-core/index.mjs';
+import fs from 'node:fs';
+const OUT = '/home/shan/evidence-staging/p00-foundation/r11/';
+const BASE = 'http://localhost:20050';
+const b = await chromium.launch({ executablePath: '/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const notes = []; const note = (...a) => { const s = a.join(' '); notes.push(s); console.log(s); };
+const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, locale: 'en-US' });
+const page = await ctx.newPage();
+await page.goto(BASE + '/');
+await page.waitForSelector('input[name="email"]');
+await page.keyboard.type('viewer@alnoor.example'); await page.keyboard.press('Enter');
+await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.waitForSelector('#navpane', { state: 'attached', timeout: 20000 });
+note('viewer nav:', JSON.stringify(await page.locator('nav a').allInnerTexts()));
+const perms = await page.evaluate(async () => (await (await fetch('/api/auth/session')).json()).permissions);
+note('viewer permissions:', JSON.stringify(perms));
+await page.goto(BASE + '/identity/users');
+await page.waitForTimeout(2500);
+note('users screen buttons:', JSON.stringify((await page.locator('main button').allInnerTexts()).map(s => s.trim()).filter(Boolean).slice(0, 30)));
+await page.screenshot({ path: OUT + '11-read-only-users-list.jpg', type: 'jpeg', quality: 65 });
+const w = await page.evaluate(async () => { const r = await fetch('/api/identity/roles', { method: 'POST', headers: { 'X-Erp-Request': '1', 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'x', nameEn: 'x', nameAr: 'x', permissions: [] }) }); return r.status; });
+note('viewer POST /api/identity/roles:', w);
+fs.writeFileSync(OUT + 'browser-notes-3.txt', notes.join('\n') + '\n');
+await b.close();

@@ -1,0 +1,27 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.20]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.45]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.59]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:11.01]     Erp.Gates.Tests.Critic.CriticR11Proof.No_roles_user_is_denied_on_routes_naming_their_own_id [FAIL]
+[xUnit.net 00:00:11.01]       GET /api/identity/users/01a14c89-2893-78db-9d61-549496fa8148 -> 200 {"id":"01a14c89-2893-78db-9d61-549496fa8148","email":"noaccess@alpha.example","displayName":"Layla Nasser","language":"en","isActive":true,"roleIds":[],"lastSignInAt":"2026-10-18T01:03:42.990253+00:00
+[xUnit.net 00:00:11.01]       GET /api/identity/users/01a14c89-2893-78db-9d61-549496fa8148/access -> 200 {"userId":"01a14c89-2893-78db-9d61-549496fa8148","roles":[],"permissions":[],"companies":[],"rolesElsewhere":false}
+[xUnit.net 00:00:11.01]       GET /api/tenancy/access/01a14c89-2893-78db-9d61-549496fa8148 -> 200 {"userId":"01a14c89-2893-78db-9d61-549496fa8148","displayName":"Layla Nasser","email":"noaccess@alpha.example","isCaller":true,"companies":[],"options":[],"canEdit":false,"readOnlyReason":"tenancy.acc
+[xUnit.net 00:00:11.01]       Stack Trace:
+[xUnit.net 00:00:11.01]         /work/tests/Erp.Gates.Tests/Critic/CriticR11Proof.cs(33,0): at Erp.Gates.Tests.Critic.CriticR11Proof.No_roles_user_is_denied_on_routes_naming_their_own_id()
+[xUnit.net 00:00:11.01]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:11.26]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR11Proof.No_roles_user_is_denied_on_routes_naming_their_own_id [477 ms]
+  Error Message:
+   GET /api/identity/users/01a14c89-2893-78db-9d61-549496fa8148 -> 200 {"id":"01a14c89-2893-78db-9d61-549496fa8148","email":"noaccess@alpha.example","displayName":"Layla Nasser","language":"en","isActive":true,"roleIds":[],"lastSignInAt":"2026-10-18T01:03:42.990253+00:00
+GET /api/identity/users/01a14c89-2893-78db-9d61-549496fa8148/access -> 200 {"userId":"01a14c89-2893-78db-9d61-549496fa8148","roles":[],"permissions":[],"companies":[],"rolesElsewhere":false}
+GET /api/tenancy/access/01a14c89-2893-78db-9d61-549496fa8148 -> 200 {"userId":"01a14c89-2893-78db-9d61-549496fa8148","displayName":"Layla Nasser","email":"noaccess@alpha.example","isCaller":true,"companies":[],"options":[],"canEdit":false,"readOnlyReason":"tenancy.acc
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR11Proof.No_roles_user_is_denied_on_routes_naming_their_own_id() in /work/tests/Erp.Gates.Tests/Critic/CriticR11Proof.cs:line 33
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 11.5846 Seconds

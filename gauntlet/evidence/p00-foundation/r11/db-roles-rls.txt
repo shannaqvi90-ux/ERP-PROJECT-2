@@ -1,0 +1,90 @@
+role|erp_owner|f|f|f|f
+role|erp_app|f|f|f|f
+role|erp_auth|f|f|f|f
+member|erp_auth|erp_owner
+tenant-table|audit.entries|t|t|erp_owner
+tenant-table|identity.passkeys|t|t|erp_owner
+tenant-table|identity.roles|t|t|erp_owner
+tenant-table|identity.sessions|t|t|erp_owner
+tenant-table|identity.sign_in_attempts|t|t|erp_owner
+tenant-table|identity.user_company_roles|t|t|erp_owner
+tenant-table|identity.user_credentials|t|t|erp_owner
+tenant-table|identity.user_roles|t|t|erp_owner
+tenant-table|identity.users|t|t|erp_owner
+tenant-table|lists.saved_views|t|t|erp_owner
+tenant-table|tenancy.branches|t|t|erp_owner
+tenant-table|tenancy.companies|t|t|erp_owner
+tenant-table|tenancy.tenants|t|t|erp_owner
+tenant-table|tenancy.user_branch_access|t|t|erp_owner
+tenant-table|tenancy.user_company_access|t|t|erp_owner
+tenant-table|tenancy.user_company_totals|t|t|erp_owner
+tenant-table|tenancy.user_workplaces|t|t|erp_owner
+policy|audit.entries|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.passkeys|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.roles|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.sessions|auth_resolver_read|true|
+policy|identity.sessions|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.sign_in_attempts|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.user_company_roles|company_scope_update|erp.company_allowed(company_id)|
+policy|identity.user_company_roles|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.user_company_roles|company_scope|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))|erp.company_allowed(company_id)
+policy|identity.user_company_roles|company_scope_delete|erp.company_allowed(company_id)|
+policy|identity.user_credentials|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.user_credentials|auth_resolver_read|true|
+policy|identity.user_roles|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|identity.users|auth_resolver_read|true|
+policy|identity.users|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|lists.saved_views|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|tenancy.branches|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|tenancy.branches|company_scope|erp.company_allowed(company_id)|erp.company_allowed(company_id)
+policy|tenancy.companies|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|tenancy.companies|company_scope|erp.company_allowed(company_id)|erp.company_allowed(company_id)
+policy|tenancy.tenants|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|tenancy.user_branch_access|company_scope_delete|erp.company_allowed(company_id)|
+policy|tenancy.user_branch_access|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|tenancy.user_branch_access|company_scope|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))|erp.company_allowed(company_id)
+policy|tenancy.user_branch_access|company_scope_update|erp.company_allowed(company_id)|
+policy|tenancy.user_company_access|company_scope|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))|erp.company_allowed(company_id)
+policy|tenancy.user_company_access|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|tenancy.user_company_access|company_scope_update|erp.company_allowed(company_id)|
+policy|tenancy.user_company_access|company_scope_delete|erp.company_allowed(company_id)|
+policy|tenancy.user_company_totals|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+policy|tenancy.user_workplaces|company_scope|(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))|erp.company_allowed(company_id)
+policy|tenancy.user_workplaces|tenant_isolation|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+tables-without-tenant|audit.__ef_migrations_history
+tables-without-tenant|tenancy.__ef_migrations_history
+tables-without-tenant|identity.__ef_migrations_history
+tables-without-tenant|identity.sign_in_secret
+tables-without-tenant|identity.sign_in_failures
+tables-without-tenant|lists.__ef_migrations_history
+ schemaname |    tablename     |     policyname     |   roles    |  cmd   | permissive 
+------------+------------------+--------------------+------------+--------+------------
+ identity   | users            | auth_resolver_read | {erp_auth} | SELECT | PERMISSIVE
+ identity   | sessions         | auth_resolver_read | {erp_auth} | SELECT | PERMISSIVE
+ identity   | user_credentials | auth_resolver_read | {erp_auth} | SELECT | PERMISSIVE
+(3 rows)
+
+                    Table "identity.sign_in_failures"
+   Column    |           Type           | Collation | Nullable | Default 
+-------------+--------------------------+-----------+----------+---------
+ key         | bytea                    |           | not null | 
+ occurred_at | timestamp with time zone |           | not null | 
+Indexes:
+    "ix_sign_in_failures_key_occurred_at" btree (key, occurred_at)
+    "ix_sign_in_failures_occurred_at" btree (occurred_at)
+Check constraints:
+    "sign_in_failures_key_check" CHECK (length(key) = 32)
+
+ key | occurred_at 
+-----+-------------
+(0 rows)
+
+ grantee  | table_schema |    table_name    |         string_agg          
+----------+--------------+------------------+-----------------------------
+ erp_app  | identity     | sessions         | INSERT,SELECT,UPDATE,DELETE
+ erp_app  | identity     | user_credentials | INSERT,DELETE
+ erp_app  | identity     | users            | DELETE,INSERT,SELECT,UPDATE
+ erp_auth | identity     | sign_in_failures | INSERT,SELECT,DELETE
+ erp_auth | identity     | sign_in_secret   | SELECT
+(5 rows)
+

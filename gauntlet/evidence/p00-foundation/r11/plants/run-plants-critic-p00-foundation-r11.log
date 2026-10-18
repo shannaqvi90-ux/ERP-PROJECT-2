@@ -1,0 +1,35 @@
+verify-slot: slot 2 of 2 taken at 2026-10-18T01:03:14Z after waiting 3255 s; time the run from here
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:12.04
+=== P6PROOF (CRITIC_PLANT=P6) filter FullyQualifiedName~CriticR11Proof start 01:03:31
+=== P6PROOF exit 1 end 01:03:43
+  Failed Erp.Gates.Tests.Critic.CriticR11Proof.No_roles_user_is_denied_on_routes_naming_their_own_id [477 ms]
+Total tests: 1
+ Total time: 11.5846 Seconds
+=== P6NONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR11Proof start 01:03:43
+=== P6NONE exit 0 end 01:03:55
+Total tests: 1
+ Total time: 11.4401 Seconds
+=== P6 (CRITIC_PLANT=P6) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules start 01:03:55
+=== P6 exit 0 end 01:07:13
+Total tests: 86
+ Total time: 3.2904 Minutes
+=== L7DB (CRITIC_PLANT=L7) filter FullyQualifiedName~Erp.Gates.Tests.G1.G1DatabaseIsolationTests|FullyQualifiedName~Erp.Gates.Tests.G1.G1TenantSettingCodeTests start 01:07:13
+=== L7DB exit 1 end 01:07:30
+  Failed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [102 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [14 ms]
+Total tests: 14
+ Total time: 16.4856 Seconds
+=== L6 (CRITIC_PLANT=L6) filter FullyQualifiedName~Erp.Gates.Tests.G1 start 01:07:30
+=== L6 exit 1 end 01:32:59
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [569 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [94 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [135 ms]
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [11 m 43 s]
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [25 m 3 s]
+Total tests: 62
+ Total time: 25.4553 Minutes
