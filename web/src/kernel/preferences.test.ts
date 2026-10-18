@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch } from "../test/render";
-import { effectivePreferences, pendingFor, rememberPending, savePreferences, settlePending } from "./preferences";
+import { effectivePreferences, pendingFor, rememberPending, savePreferences, settlePending, userRecord } from "./preferences";
+import { recordChangedEvent, type RecordChange } from "./recordEvents";
 
 beforeEach(() => localStorage.clear());
 afterEach(() => localStorage.clear());
@@ -64,5 +65,29 @@ describe("preferences survive a reload before the server answers", () => {
     expect(pendingFor("u1")).toBeNull();
     localStorage.setItem("erp.pendingPreferences", "{not json");
     expect(pendingFor("u1")).toBeNull();
+  });
+});
+
+describe("a saved preference change tells the screens showing the user's row", () => {
+  const announced: RecordChange[] = [];
+  const listener = (event: Event) => announced.push((event as CustomEvent<RecordChange>).detail);
+  beforeEach(() => {
+    announced.length = 0;
+    window.addEventListener(recordChangedEvent, listener);
+  });
+  afterEach(() => window.removeEventListener(recordChangedEvent, listener));
+
+  it("announces the user's own row once the server has the change", async () => {
+    mockFetch(() => ({ status: 200, body: {} }));
+    expect(await savePreferences("u1", { language: "ar" })).toBe("saved");
+    expect(announced).toEqual([{ record: userRecord, id: "u1" }]);
+  });
+
+  it("announces nothing when the row did not change (refused, or not sent yet)", async () => {
+    mockFetch(() => ({ status: 403, body: { code: "auth.forbidden" } }));
+    expect(await savePreferences("u1", { language: "ar" })).toBe("refused");
+    globalThis.fetch = (() => Promise.reject(new TypeError("Failed to fetch"))) as typeof fetch;
+    expect(await savePreferences("u1", { language: "ar" })).toBe("offline");
+    expect(announced).toEqual([]);
   });
 });

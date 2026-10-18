@@ -34,14 +34,30 @@ const nav = async op => {
   await op.waitFor(usersList, { label: 'users list' });
   return newUser(op);
 };
+// p04 round 11: the command palette starts New user from anywhere, and "n" alone puts it first
+// (actions lead a one-letter query; "New user" is the first module action offered), so the form is
+// three keys away from the screen shown after sign-in, with no screen in between.
+const palette = async op => {
+  await op.press('Control+k', { label: 'command palette' });
+  await op.waitFor('[role=dialog] input[role=combobox]', { label: 'palette open' });
+  await op.type('n', { label: 'action search' });
+  await op.waitFor(() => (document.querySelector('[role=option][aria-selected=true]')?.textContent || '').trim().startsWith('New user'), { label: 'New user first' });
+  await op.press('Enter', { label: 'start' });
+  return newUserReady(op);
+};
+const newUserReady = async op => {
+  await op.waitFor(formReady, { label: 'new user form' });
+  return {};
+};
 export default {
   built: true,
-  path: 'G > U (users list) > Alt+N (new user, e-mail focused); or Alt+M (navigation pane, Users focused) > Enter > Alt+N.',
+  path: 'G > U (users list) > Alt+N (new user, e-mail focused); or Alt+M (navigation pane, Users focused) > Enter > Alt+N; or Ctrl+K > "n" > Enter (New user, from the palette).',
   signIn,
   run: goTo,
   variants: {
     goTo: { path: 'G > U > Alt+N', run: goTo },
     navigation: { path: 'Alt+M > Enter > Alt+N', run: nav },
+    palette: { path: 'Ctrl+K > "n" > Enter', run: palette },
   },
   // Keyboard only: the task says so (keyboardOnly) and the harness fails a run with a pointer step.
   async verify(ctx) {

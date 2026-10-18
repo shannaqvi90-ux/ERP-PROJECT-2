@@ -6,6 +6,8 @@ import { FormSection, FormTabs, formKeys, RecordForm, type RecordNavigation } fr
 import { useRecordForm, type FieldBinding, type FormErrors } from "../../kernel/forms/useRecordForm";
 import { teamSignInAddress } from "../../kernel/signInAddress";
 import { useI18n } from "../../kernel/i18n";
+import { userRecord } from "../../kernel/preferences";
+import { useRecordChanged } from "../../kernel/recordEvents";
 import { useSession } from "../../kernel/session";
 import { useCommand } from "../../kernel/shortcuts";
 import { CompanyRolesEditor, DefaultCompanyField } from "./CompanyRoles";
@@ -479,6 +481,24 @@ export function UserDetail({
       // Not needed to go on: a save then meets the conflict and offers a reload.
     }
   }, [userId]);
+
+  // The shell's language or digits switch changed this user's row (it is the signed-in user's
+  // own): the form shows the new Language and holds the new version, so its next save is not
+  // refused as changed by someone else; a field being edited keeps what is typed in it.
+  useRecordChanged(userRecord, (id) => {
+    if (id !== userId) return;
+    void (async () => {
+      try {
+        const fresh = await api<User>("GET", `/api/identity/users/${userId}`);
+        const held = formRef.current.record;
+        if (!held || held.id !== fresh.id) return;
+        formRef.current.rebase({ ...fresh, defaultCompany: held.defaultCompany });
+        setLoaded(fresh);
+      } catch {
+        // Not needed to go on: a save then meets the conflict and offers a reload.
+      }
+    })();
+  });
 
   // The record's commands follow the record, not the tab on show (critic p03 round 10: on "What
   // they can do" the palette offered no Reset password): from another tab each opens Details and

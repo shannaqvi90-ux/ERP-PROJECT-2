@@ -464,6 +464,101 @@ describe("users screen bulk actions", () => {
   });
 });
 
+describe("the shell's language switch on the users screen (critic p04 round 10)", () => {
+  // The server's copy of the signed-in user's row: the switch changes its language and version.
+  let mine: Record<string, unknown>;
+  const others = [{ id: "u2", email: "hessa@demo-trading.example", displayName: "Hessa", language: "ar", isActive: true, roleIds: [], lastSignInAt: null, createdAt: "2026-10-02T00:00:00Z", version: 7, pendingSetup: false }];
+
+  async function showOwnRecord() {
+    mine = { id: "me", email: "admin@demo-trading.example", displayName: "Mariam", displayNameAr: "", language: "en", isActive: true, roleIds: ["r-admin"], lastSignInAt: null, createdAt: "2026-10-03T00:00:00Z", version: 3, pendingSetup: false };
+    window.history.replaceState(null, "", "/identity/users?open=me");
+    const calls = mockFetch((method, url, body) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(all, "en") };
+      const list = listReply(method, url);
+      if (list) return list;
+      if (method === "GET" && url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [mine, ...others], total: 2, next: null, groups: null } };
+      if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
+      if (method === "PUT" && url === "/api/identity/me/preferences") {
+        mine = { ...mine, ...(body as object), version: (mine.version as number) + 1 };
+        return { status: 200, body: {} };
+      }
+      if (method === "GET" && url === "/api/identity/users/me") return { status: 200, body: mine };
+      if (method === "PUT" && url === "/api/identity/users/me") {
+        const sent = body as { version: number };
+        if (sent.version !== mine.version) return { status: 409, body: { code: "concurrency", title: "Changed by someone else." } };
+        mine = { ...mine, ...(body as object), version: (mine.version as number) + 1 };
+        return { status: 200, body: mine };
+      }
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await act(async () => new Promise((r) => setTimeout(r, 200)));
+    return calls;
+  }
+
+  const ownRow = () => [...view!.container.querySelectorAll<HTMLElement>(".list-row")].find((r) => r.textContent?.includes("admin@demo-trading.example"))!;
+  const languageField = () => view!.container.querySelector<HTMLSelectElement>('[data-field="language"] select')!;
+
+  it("Alt+L shows the new language in the user's own row and open record at once, and the record's next save is not refused", async () => {
+    const calls = await showOwnRecord();
+    expect(ownRow().textContent).toContain("English");
+    expect(languageField().value).toBe("en");
+    const listReads = () => calls.filter((c) => c.method === "GET" && c.url.startsWith("/api/identity/users?")).length;
+    const readsBefore = listReads();
+
+    key(document.body, { code: "KeyL", key: "l", altKey: true });
+    await settle();
+    await act(async () => new Promise((r) => setTimeout(r, 100)));
+    await settle();
+    expect(document.documentElement.lang).toBe("ar");
+    expect(calls.some((c) => c.method === "PUT" && c.url === "/api/identity/me/preferences")).toBe(true);
+    // The list read its rows again: the own row's Language now says Arabic, in Arabic.
+    expect(listReads()).toBeGreaterThan(readsBefore);
+    expect(ownRow().textContent).toContain("العربية");
+    expect(ownRow().textContent).not.toContain("الإنجليزية");
+    // The open record shows it too, as no change of the user's own.
+    expect(languageField().value).toBe("ar");
+    expect(view!.container.textContent).not.toContain("تغييرات غير محفوظة");
+
+    // Editing the record and saving it sends the row's new version: no "changed by someone else".
+    setInput(view!.container.querySelector<HTMLInputElement>('[data-field="displayNameAr"] input')!, "مريم");
+    key(document.activeElement ?? document.body, { ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    await settle();
+    const save = calls.filter((c) => c.method === "PUT" && c.url === "/api/identity/users/me");
+    expect(save).toHaveLength(1);
+    expect(save[0]!.body).toMatchObject({ version: 4, language: "ar", displayNameAr: "مريم" });
+    expect(mine.displayNameAr).toBe("مريم");
+  });
+
+  it("keeps a Language the user is changing in the open record when the switch comes in, and saves it with the row's new version", async () => {
+    const calls = await showOwnRecord();
+    const field = languageField();
+    act(() => {
+      field.value = "ar";
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await settle();
+    // The digits switch from the palette changes the same row (its version) but not its language.
+    await act(async () => {
+      const { savePreferences } = await import("../../kernel/preferences");
+      await savePreferences("me", { numerals: "arab" });
+    });
+    await settle();
+    await settle();
+    expect(languageField().value).toBe("ar");
+    expect(view!.container.textContent).toContain("Unsaved changes");
+    key(languageField(), { ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    await settle();
+    const save = calls.filter((c) => c.method === "PUT" && c.url === "/api/identity/users/me");
+    expect(save).toHaveLength(1);
+    expect(save[0]!.body).toMatchObject({ version: 4, language: "ar" });
+    expect(mine).toMatchObject({ language: "ar", numerals: "arab" });
+  });
+});
+
 describe("roles screen", () => {
   it("edits a role's permissions with search and bulk toggles, and never offers a permission the caller lacks", async () => {
     window.history.replaceState(null, "", "/identity/roles");
