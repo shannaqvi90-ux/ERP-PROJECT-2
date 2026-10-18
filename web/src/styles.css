@@ -1139,6 +1139,38 @@ input[aria-invalid="true"] {
   }
 }
 
+/* Paper carries no interaction state (critic p04 round 10: a keyboard user's printout showed the
+   focus ring round a column header). The shell is keyboard-first, so something nearly always has
+   the focus when the user prints; whatever has it, whatever the pointer rests on, and whichever
+   rows are selected or current, the page prints exactly as it does with none of that. Nothing is
+   blurred: the focus is where it was when the print dialog closes. Every printed document (lists,
+   records, reports, and the documents later modules print) takes this from the print base. */
+@media print {
+  *,
+  *::before,
+  *::after {
+    outline: none !important;
+    caret-color: transparent !important;
+  }
+
+  :focus,
+  :focus-visible {
+    box-shadow: none !important;
+  }
+
+  .list-row:hover,
+  .list-row.is-selected,
+  .list-row.is-tophit,
+  .list-row.is-active,
+  .list-group.is-active,
+  .grid tbody tr:hover,
+  .grid.selectable tbody tr[aria-selected="true"],
+  .id-selected {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
 /* A live screen wrapped as a printed document adds nothing on screen. */
 .print-document.print-document-screen {
   background: transparent;
