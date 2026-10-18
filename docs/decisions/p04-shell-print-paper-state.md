@@ -106,3 +106,11 @@ stack (own row and record in Arabic within 3 s of Alt+L). Removing either listen
   scheme for every screen. The harness models G then U as two mental units (its continuation rule
   joins only repeats of the same navigation key); the harness's rules are not this piece's to
   change. Every metric of the G > U path still wins.
+
+## This round's verify
+
+`./erp verify` on this branch (integration branch merged at be1042cd) through the verify slot:
+passed in 4,164 s, processor time 10,338 s against the 10,500 s maximum (dotnet 7,862, web 2,009,
+e2e 428, timing 39), under a load that peaked at 74 from other agents. Counts: .NET 656, web unit
+512, end-to-end 110, compare 415, build 6, none failed or skipped. The ratchet minimums for web unit
+(504 to 512), end-to-end (106 to 110) and .NET (650 to 656) are raised to these counts.
