@@ -113,9 +113,9 @@ Mutations M86-M110 (one per rule above), each caught by its self-test.
   and they multiply the record's size. The mojo interface name of the message that started a task
   (`Receive mojo message`, `SimpleWatcher::OnHandleReady`) names where it came from at no extra cost.
 - **Bound each link more tightly** (answers at 1 s): round 11's honest control waits 1.3 s for its
-  check; bounding the sum keeps every honest chain and refuses W3. Measured this round on Odoo's 12
-  saving tasks (one run each against the shared rig): every caused chain took 0.46 s or less from the
-  step's input.
+  check; bounding the sum keeps every honest chain and refuses W3. Measured this round: in the 24
+  re-captured Odoo baselines (69 caused writes recorded) every chain took 0.002-0.495 s from the
+  step's input to the write.
 
 ## Ties
 
