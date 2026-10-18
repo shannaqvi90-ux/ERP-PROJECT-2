@@ -15,7 +15,20 @@ public sealed class G1ShellAnswersFixture : IAsyncLifetime
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
 }
 
+/// <summary>The shell answers check judges times by how far they sit from each request's start,
+/// with a tolerance that grows with the longest request it saw (<see cref="ShellAnswers"/>). It runs
+/// alone, after the parallel collections: beside the volume gate's seeding of 2 x 100,000 users
+/// (G1ListVolumeTests, p05) its requests ran long enough that the self-test's planted HTTP-date time
+/// for tenant B fell inside that tolerance and went uncaught (integration verify of p05 round 12).
+/// Running alone changes when it runs, never what it checks.</summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class ShellAnswersCollection
+{
+    public const string Name = "Shell answers (timing judged, runs alone)";
+}
+
 /// <summary>G1 on the shell's own answers, every byte (<see cref="ShellAnswers"/>).</summary>
+[Collection(ShellAnswersCollection.Name)]
 public sealed partial class G1ShellAnswersTests(G1ShellAnswersFixture fixture) : IClassFixture<G1ShellAnswersFixture>
 {
     private ErpTestEnvironment Env => fixture.Env;
