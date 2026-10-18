@@ -349,6 +349,25 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var email = $"g2.former.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
         var permissions = catalog.Lists.Select(l => l.Permission).Distinct().Order(StringComparer.Ordinal).ToArray();
         var userId = await CreateUserHoldingAsync(admin, email, permissions, "Former list user", "مستخدم قوائم سابق");
+        // The user works in the administrator's companies: the first through one named branch, the
+        // second with every branch, so their companies and their branch are ids of their own.
+        var companies = await GateCompanies.OfAsync(admin);
+        Assert.True(companies.Ids.Count == 2, $"the gate workspace needs two companies; found {companies.Ids.Count}");
+        var branches = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/branches?filter=" + Uri.EscapeDataString($"companyId eq '{companies.Ids[0]}'"))).GetProperty("items");
+        var branch = branches.EnumerateArray().First(b => b.GetProperty("companyId").GetGuid() == companies.Ids[0]).GetProperty("id").GetGuid();
+        var accessVersion = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{userId}")).GetProperty("version").GetUInt32();
+        using (var access = await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new
+               {
+                   companies = new object[]
+                   {
+                       new { companyId = companies.Ids[0], allBranches = false, branchIds = new[] { branch } },
+                       new { companyId = companies.Ids[1], allBranches = true, branchIds = Array.Empty<Guid>() },
+                   },
+                   version = accessVersion,
+               }))
+        {
+            Assert.True(access.IsSuccessStatusCode, $"giving access: {(int)access.StatusCode} {await access.Content.ReadAsStringAsync()}");
+        }
         using (var user = await Env.SignInAsync(email))
         {
             foreach (var list in catalog.Lists)
@@ -374,6 +393,10 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
         var own = await OwnIds.OfAsync(Env, userId, token);
         Assert.True(own.Count(o => o.Sources.Contains("lists.saved_views.id")) >= Math.Min(catalog.Lists.Count(), OwnIds.RowsPerTable),
             "The caller's own saved views are not among the ids tried: " + string.Join(", ", own));
+        foreach (var mine in companies.Ids.Append(branch))
+        {
+            Assert.True(own.Any(o => o.Value == mine), $"The caller's company or branch {mine} is not among the ids tried: " + string.Join(", ", own));
+        }
 
         var result = await CarrierMatrix.DeniedEverythingAsync(Env, email, Permissioned);
         Assert.True(result.Problems.Count == 0, string.Join("\n", result.Problems));
