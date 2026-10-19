@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "follow-approval-20261018T165209-c0ff",
-  "instrument": 11,
+  "run_id": "follow-approval-20261019T123827-1c53",
+  "instrument": 12,
   "task": "follow-approval",
   "task_title": "Follow an approval",
   "product": "odoo",
   "status": "verified",
   "goal": "Find the document that is waiting for your approval and approve it.",
   "done_when": "The document is approved; the back end shows it moved past the approval step, approved by the approver.",
-  "started_at": "2026-10-18T16:52:09.927Z",
-  "finished_at": "2026-10-18T16:52:37.346Z",
+  "started_at": "2026-10-19T12:38:27.369Z",
+  "finished_at": "2026-10-19T12:38:52.711Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 3.534,
-    "system_wait_seconds": 1.918,
+    "machine_seconds": 2.234,
+    "system_wait_seconds": 1.377,
     "human_seconds": 10.6,
-    "human_plus_wait_seconds": 12.518,
+    "human_plus_wait_seconds": 11.977,
     "klm_operator_counts": {
       "K": 0,
       "P": 4,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0.029,
-      "took": 0.063,
+      "at": 0.028,
+      "took": 0.035,
       "began": 0.001,
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "Purchase app",
       "keystrokes": 0,
-      "at": 0.146,
-      "took": 0.058,
-      "began": 0.093,
+      "at": 0.127,
+      "took": 0.034,
+      "began": 0.064,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -80,9 +80,9 @@
       "kind": "click",
       "label": "open the order waiting for approval",
       "keystrokes": 0,
-      "at": 2.448,
-      "took": 0.082,
-      "began": 2.36,
+      "at": 1.578,
+      "took": 0.049,
+      "began": 1.532,
       "screen": "/odoo/purchase",
       "chain": false
     },
@@ -91,61 +91,61 @@
       "kind": "click",
       "label": "Approve Order",
       "keystrokes": 0,
-      "at": 3.112,
-      "took": 0.167,
-      "began": 3.027,
-      "screen": "/odoo/purchase/100100",
+      "at": 2.06,
+      "took": 0.051,
+      "began": 2.019,
+      "screen": "/odoo/purchase/100118",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "Purchase loaded",
-      "at": 0.205,
-      "seconds": 0.173
+      "at": 0.162,
+      "seconds": 0.078
     },
     {
       "label": "order list",
-      "at": 0.379,
-      "seconds": 1.019
+      "at": 0.241,
+      "seconds": 0.788
     },
     {
       "label": "order form",
-      "at": 2.532,
-      "seconds": 0.494
+      "at": 1.628,
+      "seconds": 0.391
     },
     {
       "label": "order approved",
-      "at": 3.28,
-      "seconds": 0.252
+      "at": 2.112,
+      "seconds": 0.12
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "7df6559dbd3018aa.jpg",
+      "file": "14c96beeaa4f7e03.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/7df6559dbd3018aa.jpg"
+      "path": "gauntlet/reference/odoo/shots/14c96beeaa4f7e03.jpg"
     },
     {
       "moment": "orders waiting for approval",
-      "file": "2402ef629a07c621.jpg",
-      "at": 1.403,
-      "path": "gauntlet/reference/odoo/shots/2402ef629a07c621.jpg"
+      "file": "844f3c987f0213a0.jpg",
+      "at": 1.032,
+      "path": "gauntlet/reference/odoo/shots/844f3c987f0213a0.jpg"
     },
     {
       "moment": "done",
-      "file": "1822ccc9c60e4bcd.jpg",
-      "at": 3.534,
-      "path": "gauntlet/reference/odoo/shots/1822ccc9c60e4bcd.jpg"
+      "file": "ce7c8d7b0b250db4.jpg",
+      "at": 2.234,
+      "path": "gauntlet/reference/odoo/shots/ce7c8d7b0b250db4.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "order": "P00100",
+      "order": "P00118",
       "state": "purchase",
-      "date_approve": "2026-10-18 16:52:34",
+      "date_approve": "2026-10-19 12:38:48",
       "approver_messages": 1
     }
   },
@@ -169,18 +169,18 @@
   "verify_passes": [
     {
       "requests": 4,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.053,
+      "seconds": 0.027,
       "verified": true
     },
     {
       "requests": 4,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.046,
+      "seconds": 0.027,
       "verified": true,
       "gap_seconds": 1.101
     }
@@ -191,11 +191,11 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "dcacc8a3ff5fba24",
+    "sha256": "5fb917cc267f55a4",
     "elements": 498
   },
   "screen_after_verify": {
-    "sha256": "dcacc8a3ff5fba24",
+    "sha256": "5fb917cc267f55a4",
     "elements": 498,
     "unchanged": true
   },
@@ -204,10 +204,10 @@
     "error": null,
     "back_end_reads": 3,
     "requests": 4,
-    "longest_pause_seconds": 0.004,
+    "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.495
+    "seconds": 0.289
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -253,30 +253,30 @@
     "writes_caused": [
       {
         "write": "POST /web/dataset/call_kw/purchase.order/retrieve_dashboard",
-        "at": 0.6755122559999581,
+        "at": 0.4108007370000705,
         "by_step": 2,
         "browser_record": {
           "caused": true,
           "by_step": 2,
-          "chain_seconds": 0.355,
+          "chain_seconds": 0.181,
           "chain": [
             "input of step 2",
-            "the answer to POST /web/action/load after 0.031 s",
             "an animation frame",
-            "the answer to POST /web/dataset/call_kw/purchase.order/get_views after 0.037 s",
-            "the answer to POST /web/dataset/call_kw/purchase.order/web_search_read after 0.21 s",
-            "the answer to POST /web/dataset/call_kw/res.currency/read after 0.026 s"
+            "an animation frame",
+            "the answer to POST /web/dataset/call_kw/purchase.order/get_views after 0.016 s",
+            "the answer to POST /web/dataset/call_kw/purchase.order/web_search_read after 0.052 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/read after 0.015 s"
           ]
         }
       },
       {
         "write": "POST /web/dataset/call_button/purchase.order/button_approve",
-        "at": 3.2617631310001016,
+        "at": 2.1085090860000344,
         "by_step": 4,
         "browser_record": {
           "caused": true,
           "by_step": 4,
-          "chain_seconds": 0.019,
+          "chain_seconds": 0.011,
           "chain": [
             "input of step 4"
           ]
@@ -284,11 +284,76 @@
       }
     ]
   },
+  "screen_changes": {
+    "judged": 57,
+    "not_caused": 13,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.174,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 1.757,
+        "event": "ParseHTML",
+        "why": "the document /odoo/purchase, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 1.973,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.994,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.008,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0 s before it) and could have sent it: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.026,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.037,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.054,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 2.212,
+      "by_step": 4,
+      "chain": [
+        "input of step 4",
+        "the answer to POST /web/dataset/call_button/purchase.order/button_approve after 0.023 s",
+        "the answer to POST /web/dataset/call_kw/purchase.order/web_read after 0.071 s",
+        "an animation frame"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/follow-approval.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/follow-approval-20261018T165142-a19f.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261018T165209-c0ff.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261018T165237-7704.json"
+    "gauntlet/reference/odoo/results/follow-approval-20261019T123736-a110.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261019T123802-6a6a.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261019T123827-1c53.json"
   ]
 }
