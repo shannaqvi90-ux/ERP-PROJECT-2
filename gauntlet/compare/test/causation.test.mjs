@@ -36,7 +36,7 @@ import path from 'node:path';
 import http from 'node:http';
 import crypto from 'node:crypto';
 import { execute, layout, compareRuns, measuredPartProblem } from '../lib/runner.mjs';
-import { analyseTrace, causeOf, clockFrom, clockToTrace, GUARD_SECONDS, LINK_SECONDS, traceToClock, writeCauses } from '../lib/causation.mjs';
+import { analyseTrace, causeOf, clockFrom, clockToTrace, GUARD_SECONDS, LINK_SECONDS, screenCauses, traceToClock, writeCauses } from '../lib/causation.mjs';
 import { loadNeedles } from '../data/generate.mjs';
 import { launch, newContext } from '../lib/browser.mjs';
 import { Operator } from '../lib/operator.mjs';
@@ -779,11 +779,77 @@ test('plant W7: a document the page asked for before the clock (held by the stan
   reset();
   const r = await runDriver(plant('slowdoc', async op => { await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W7', r);
-  assertRecordWhy(r, /navigation started before the clock/);
+  // Round 14: the record now starts before verify()'s read, so it may hold the start of that navigation
+  // too; then it names what started it before the clock (the page's own timer) instead.
+  assertRecordWhy(r, /navigation started before the clock|navigation no step caused|armed before the clock/);
 });
 
 test('plant W8: a meta refresh the page set loads a page that approves, just after run()\'s click -> never verifies', async () => {
   reset();
   const r = await runDriver(plant('refresh', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W8', r);
+});
+
+// -- round 14 (critic p01 r13) ---------------------------------------------------------------------
+
+test('causation (round 14): a click the browser delivers while running a DevTools command is still the step\'s input (critic r13, load)', () => {
+  const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 1, 3), ...inner];
+  // The click's handler (inside the click's dispatch) arms a 0 ms timer that saves.
+  const delivered = verdict([task(102, IPC, cmd([X('EventDispatch', 1.5, 1, { type: 'click' }), X('FunctionCall', 1.6, 0.8, { url: 'http://p/' }), install(1.8, 5, 0)])), task(109, TIMER, [fire(1, 5), send(2, 'w')])], 'w');
+  assert.equal(delivered.caused, true, delivered.why);
+  assert.equal(delivered.step, 1);
+  // The page's own script dispatching a click inside a command task (a synthetic click) is no input.
+  const synthetic = verdict([task(102, IPC, cmd([X('FunctionCall', 1.2, 2, { url: 'http://p/' }), X('EventDispatch', 1.5, 1, { type: 'click' }), install(1.8, 5, 0)])), task(109, TIMER, [fire(1, 5), send(2, 'w')])], 'w');
+  assert.equal(synthetic.caused, false);
+  // A boundary event (mouseover) inside a command task is not discrete input.
+  const boundary = verdict([task(102, IPC, cmd([X('EventDispatch', 1.5, 1, { type: 'mouseover' }), X('FunctionCall', 1.6, 0.8, { url: 'http://p/' }), install(1.8, 5, 0)])), task(109, TIMER, [fire(1, 5), send(2, 'w')])], 'w');
+  assert.equal(boundary.caused, false);
+});
+
+const CLOCK0 = { offset_us: 0, error_us: 0, perf_ms: 0, hr_us: 0 };
+const change = (at, name = 'StyleRecalcInvalidationTracking', data = {}) => I(name, at, { nodeName: 'DIV', reason: 'Node was inserted into tree', ...data });
+/** screenCauses on synthetic tasks; steps are [at, took, kind] in milliseconds of the clock (= trace ms). */
+function screens(tasks, steps = [[100, 10, 'click']], until = 1000) {
+  return screenCauses({ events: [...META, ...tasks.flat()] }, steps.map(([at, took, kind = 'click'], i) => ({ n: i + 1, kind, at: at / 1000, took: took / 1000 })), { clock: CLOCK0, originMs: 0, until: until / 1000 });
+}
+
+test('causation (round 14): every change of the screen is judged by where its chain begins (screenCauses)', () => {
+  // A step's input that changes the screen; a timer it arms (any delay, even repeating) that changes it later.
+  const caused = screens([task(101, INPUT, [...click(), change(2), install(3, 8, 3000), install(3.5, 9, 200, false)]), task(3200, TIMER, [fire(1, 8), change(2)]), task(400, TIMER, [fire(1, 9), change(2)])], [[100, 10]], 4000);
+  assert.deepEqual(caused.map(c => c.caused), [true, true, true]);
+  // A timer armed before the clock (no install in the record) that changes the screen: no step's.
+  const own = screens([task(101, INPUT, click()), task(150, TIMER, [fire(1, 4), change(2)])]);
+  assert.equal(own.length, 1);
+  assert.equal(own[0].caused, false);
+  assert.match(own[0].why, /armed before the clock/);
+  // Before the clock (a change of the start page after verify()'s read): nobody's.
+  const early = screens([task(-500, TIMER, [fire(1, 4), change(2)])]);
+  assert.equal(early[0].caused, false);
+  assert.ok(early[0].at < 0);
+  // An answer to a request the step sent, however late (a slow search), is the step's.
+  const slow = screens([task(101, INPUT, [...click(), send(3, 'r', 'http://p/api/search', 'GET')]), task(3500, NET, [I('ResourceReceiveResponse', 1, { requestId: 'r' }), X('FunctionCall', 1.5, 1, { url: 'http://p/' }), change(2)])], [[100, 10]], 4000);
+  assert.equal(slow[0].caused, true, slow[0].why);
+});
+
+test('causation (round 14): what the harness does (its reads, the blind shot) is passed over; page script it sets off is judged', () => {
+  const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 1, 3), ...inner];
+  // The harness neutralising the title for a shot: no page script ran.
+  assert.equal(screens([task(300, IPC, cmd([X('EvaluateScript', 1.2, 1), change(1.5, 'LayoutInvalidationTracking', { nodeName: '#text', reason: 'Text changed' })]))]).length, 0);
+  // A page observer that ran on the harness's change and opened the record (critic-style N1e).
+  const reacted = screens([task(300, IPC, cmd([X('EvaluateScript', 1.2, 0.4), X('FunctionCall', 1.7, 1, { url: 'http://p/app.js' }), change(2)]))]);
+  assert.equal(reacted.length, 1);
+  assert.equal(reacted[0].caused, false);
+  // The browser's own change of the window (a widget message, no script, no answer): passed over.
+  assert.equal(screens([task(300, IPC, [I('Receive mojo message', 0.5, {}), change(1)])]).length, 0);
+});
+
+test('causation (round 14): a document is judged by the navigation that loaded it, in whatever task its parser ran', () => {
+  const parse = (at, url) => ({ ph: 'X', name: 'ParseHTML', at, dur: 0.5, args: { beginData: { url, frame: 'F' } } });
+  const nav = (at, url) => ({ ph: 'X', name: 'FrameLoader::StartNavigation', at, dur: 0.2, args: { url } });
+  const byClick = screens([task(101, INPUT, [...click(), nav(2, 'http://p/contact/1')]), task(160, PORT, [parse(1, 'http://p/contact/1'), change(1.2)])]);
+  assert.ok(byClick.length >= 1);
+  assert.ok(byClick.every(c => c.caused), JSON.stringify(byClick));
+  const byTimer = screens([task(101, INPUT, click()), task(150, TIMER, [fire(1, 4), nav(1.5, 'http://p/contact/1')]), task(160, PORT, [parse(1, 'http://p/contact/1')])]);
+  assert.ok(byTimer.length >= 1);
+  assert.ok(byTimer.every(c => !c.caused));
 });

@@ -136,7 +136,7 @@ export const SHOWS_TEXT = '(v) => { const norm = s => String(s || "").toLowerCas
   + 'return norm(parts.join("\\n")).includes(norm(v)); }';
 
 export class Operator {
-  #page; #device = null; #finds = null; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null; #downloads = [];
+  #page; #device = null; #finds = null; #shotWindows = []; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null; #downloads = [];
 
   /**
    * @param {import('playwright-core').Page} page  the raw page (unwrapped if a guarded one is passed)
@@ -165,6 +165,13 @@ export class Operator {
     if (this.measuring) throw new UncountedAction('watching what the person finds inside the measured part');
     this.#finds = { value: String(value), isPiece, typed_at_step: null, shown_before: null };
   }
+
+  /**
+   * Round 14: when the harness itself changed the page for a blind screenshot (its neutral title, the
+   * screenshot's own style and masks), as performance.now milliseconds: lib/causation.mjs passes over
+   * those changes and judges only page script they set off.
+   */
+  get shotWindows() { return this.#shotWindows.map(w => ({ ...w })); }
 
   /** What the operator saw of the value the person finds: { typed_at_step, shown_before } (null when none is watched). */
   get finds() { return this.#finds ? { typed_at_step: this.#finds.typed_at_step, shown_before: this.#finds.shown_before, ...(this.#finds.read_error ? { read_error: this.#finds.read_error } : {}) } : null; }
@@ -257,7 +264,8 @@ export class Operator {
   async settleDocument({ timeout = this.defaultTimeout } = {}) {
     if (!this.measuring) return null;
     let state;
-    try { state = await this.#page.evaluate(() => document.readyState); } catch { return null; }
+    // Round 14: read in the harness's read world, never the page's (a getter the page replaced would run there).
+    try { state = (await PageWorld.of(this.#page).run('() => document.readyState')).value; } catch { return null; }
     if (state === 'complete') return null;
     const t = this.now();
     await this.#page.waitForLoadState('load', { timeout });
@@ -592,6 +600,7 @@ export class Operator {
     fs.mkdirSync(this.shotsDir, { recursive: true });
     const file = blindName(this.shotFormat === 'png' ? 'png' : 'jpg');
     const t = this.now();
+    const from = clockNow();
     await neutraliseDocument(this.#page, this.branding.words);
     await this.#page.screenshot({
       path: path.join(this.shotsDir, file), type: this.shotFormat, ...(this.shotFormat === 'jpeg' ? { quality: 70 } : {}),
@@ -600,6 +609,7 @@ export class Operator {
     });
     const s = { moment, file, at: round(t), ...(measured ? { measured: true } : {}) };
     this.#shots.push(s);
+    this.#shotWindows.push({ from, to: clockNow() });
     // Instrument 4: a shot taken while the clock runs stays on the clock (round 3: taking its time
     // out let a driver hide the product's latency behind screenshots). The task's declared moments
     // make every driver of the task pay for the same shots. Before start() and after finish() the

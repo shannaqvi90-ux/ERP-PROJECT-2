@@ -479,7 +479,7 @@ test('round 9 (critic mutation H10): a read in verify() that asks to wait longer
 });
 
 test('control: an honest product with a live ticker on screen still verifies; the freeze holds its screen still through verify()', async () => {
-  const r = await runDriver({
+  const ticker = {
     async signIn(ctx) { await ctx.page.goto(base + '/ticker'); },
     async run(op) { await op.fill('#q', 'abcdefghij'); await op.click('#go'); await op.waitFor(() => document.getElementById('out').textContent === 'saved abcdefghij', { label: 'saved' }); return {}; },
     async verify(ctx) {
@@ -488,9 +488,17 @@ test('control: an honest product with a live ticker on screen still verifies; th
       await new Promise(r2 => setTimeout(r2, 700));
       return { verified: (await ctx.page.locator('#out').textContent()) === 'saved abcdefghij' };
     },
-  });
+  };
+  // Round 14 (critic p01 r13): a screen the page changes on its own timer is refused for the product
+  // measured against the reference (lib/causation.mjs screenCauses) and recorded for the reference, so the
+  // freeze is checked on the reference's side; on ours the ticker refuses the run.
+  const r = await execute(TASK, await sandboxed(ticker, { base }), { ...standIn(), id: 'odoo' }, 'odoo', {}, layout(path.join(tmp, String(Math.random()).slice(2))), { timeout: 10_000 });
   assert.equal(r.status, 'verified', r.error);
   assert.equal(r.screen_after_verify?.unchanged, true);
+  assert.ok(r.screen_changes?.not_caused > 0 && r.screen_changes.enforced === false, JSON.stringify(r.screen_changes));
+  const ours = await runDriver(ticker);
+  assert.equal(ours.status, 'invalid', ours.error);
+  assert.match(ours.error, /changed what it shows without a counted step/);
 });
 
 test('a document still loading when run() returns stays on the clock (round 7: the reference\'s client reloading after a save)', async () => {

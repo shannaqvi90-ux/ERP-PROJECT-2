@@ -85,11 +85,13 @@ const hrUs = () => Number(process.hrtime.bigint() / 1000n);
  * Clock-sync markers placed at both ends tie the trace's clock to the harness's (performance.now).
  */
 export class PageTrace {
-  #cdp = null; #events = []; #complete = null; #marks = []; #perfAtHr = null;
+  #cdp = null; #events = []; #complete = null; #marks = []; #perfAtHr = null; #mainFrame = null;
 
   static async start(page, { bufferKb = 256 * 1024 } = {}) {
     const t = new PageTrace();
     t.#cdp = await page.context().newCDPSession(page);
+    // Round 14: the page's main frame (its id stays the frame's across documents and processes).
+    t.#mainFrame = (await t.#cdp.send('Page.getFrameTree').catch(() => null))?.frameTree?.frame?.id ?? null;
     t.#cdp.on('Tracing.dataCollected', e => { for (const ev of e.value) t.#events.push(ev); });
     t.#complete = new Promise(resolve => t.#cdp.once('Tracing.tracingComplete', resolve));
     await t.#cdp.send('Tracing.start', {
@@ -118,7 +120,7 @@ export class PageTrace {
     const complete = await Promise.race([this.#complete, new Promise(r => setTimeout(() => r({ timedOut: true }), 30_000))]);
     await this.#cdp.detach().catch(() => {});
     const clock = clockFrom(this.#events, this.#marks, this.#perfAtHr);
-    return { events: this.#events, dataLoss: !!complete?.dataLossOccurred || !!complete?.timedOut, clock };
+    return { events: this.#events, dataLoss: !!complete?.dataLossOccurred || !!complete?.timedOut, clock, mainFrame: this.#mainFrame };
   }
 }
 
@@ -663,7 +665,7 @@ export const SCREEN_EVENTS = /^(ScheduleStyleRecalculation|InvalidateLayout|Styl
  * follows from a change made earlier, in the task that made it (judged there), or from an animation.
  */
 const RENDERING = /^(UpdateLayoutTree|Layout|PrePaint|Paint|Layerize|UpdateLayer|CompositeLayers|AnimationFrame::StyleAndLayout|AnimationFrame::Render)$/;
-const SCRIPT_SPAN = /^(FunctionCall|EvaluateScript|TimerFire|FireAnimationFrame|FireIdleCallback|EventDispatch|v8\.callFunction|V8\.Execute)$/;
+const SCRIPT_SPAN = /^(FunctionCall|EvaluateScript|TimerFire|FireAnimationFrame|FireIdleCallback|EventDispatch|v8\.callFunction|V8\.Execute|BlinkScheduler_PerformMicrotaskCheckpoint|RunMicrotasks|V8\.RunMicrotasks)$/;
 /** Script of the page itself (not the harness's evaluations): a function call from a script the page loaded. */
 const PAGE_SCRIPT = e => e.ph === 'X' && e.name === 'FunctionCall' && /^https?:/.test(String(e.args?.data?.url || ''));
 
@@ -676,7 +678,7 @@ const PAGE_SCRIPT = e => e.ph === 'X' && e.name === 'FunctionCall' && /^https?:/
  * harness's change set off) is judged. One verdict per change of one entry into the page's code (a
  * timer's, a frame's, an answer's ...), at most `limit`. Returns [{ at, event, caused, step, why, chain }].
  */
-export function screenCauses(trace, steps, { clock, originMs, until, since = null, reaction = 1, guard = GUARD_SECONDS, animatedAtStart = 0, limit = 2000 } = {}) {
+export function screenCauses(trace, steps, { clock, originMs, until, since = null, harness = [], mainFrame = null, reaction = 1, guard = GUARD_SECONDS, animatedAtStart = 0, limit = 2000 } = {}) {
   const model = trace.model || analyseTrace(trace.events);
   const slackUs = 2000 + (clock?.error_us || 0);
   const windows = steps.filter(s => typeof s.at === 'number').map(s => ({
@@ -687,13 +689,18 @@ export function screenCauses(trace, steps, { clock, originMs, until, since = nul
   // slow answer, shows it because of the click (a product configured to open a record on any click is the
   // product's answer to that click, as with writes), and a slow search under load is still the person's.
   const ctx = causeContext(model, windows, { reaction, link: Infinity, timerLimit: Infinity, repeating: true, guard, slackUs, animatedAtStart });
+  const windows_ = harness.map(w => ({ from: clockToTrace(w.from, clock, originMs), to: clockToTrace(w.to, clock, originMs) }));
   // From `since` (seconds on the operator's clock; by default the whole record, which the runner starts
   // before verify()'s read on the start screen): every change before the clock's start is no step's.
   const from = since === null ? -Infinity : clockToTrace(since, clock, originMs);
   const to = clockToTrace(until, clock, originMs);
   const out = [];
-  for (const [, thread] of model.threads) {
-    if (!thread.main) continue;
+  // The threads that run the page's main frame: what verify() reads and the blind shot shows. A frame of
+  // another site runs in a process of its own; its changes are not the page's (verify() never reads into it).
+  const frameOf = e => e.args?.data?.frame ?? e.args?.beginData?.frame;
+  const pageThreads = mainFrame ? new Set([...model.threads].filter(([, th]) => th.main && th.tasks.some(t => t.events.some(e => frameOf(e) === mainFrame))).map(([k]) => k)) : null;
+  for (const [key, thread] of model.threads) {
+    if (!thread.main || (pageThreads && pageThreads.size && !pageThreads.has(key))) continue;
     for (const t of thread.tasks) {
       if (t.end < from || t.ts > to) continue;
       const rendering = t.events.filter(e => e.ph === 'X' && RENDERING.test(e.name));
@@ -704,19 +711,30 @@ export function screenCauses(trace, steps, { clock, originMs, until, since = nul
       // The browser's own change of the window (its size, its focus, a screenshot's settings): a task that
       // ran none of the page's script, delivered no answer or event and started no navigation.
       if (!t.protocol && !t.activity && !changes.some(e => /^(ParseHTML|FrameLoader::StartNavigation)$/.test(e.name))) continue;
+      // A DevTools command that does not act for a step: while the harness prepares a blind screenshot
+      // (`harness`: its neutral title, the screenshot's style and masks, in script worlds of its own)
+      // its changes are the harness's, and only page script they set off (an observer) is judged; at any
+      // other time the harness only reads, so a change there is the page's own script run inside the
+      // read (a getter or prototype the page replaced) and is judged as the command's: no step's.
       if (t.protocol && !actingCommand(ctx, t)) {
-        const page = t.events.filter(PAGE_SCRIPT);
-        changes = changes.filter(e => page.some(s => spanHolds(s, e.ts)));
-        if (!changes.length) continue;
+        const shot = windows_.some(w => t.ts >= w.from - slackUs && t.end <= w.to + slackUs);
+        if (shot) {
+          const page = t.events.filter(PAGE_SCRIPT);
+          changes = changes.filter(e => page.some(s => spanHolds(s, e.ts)));
+          if (!changes.length) continue;
+        }
       }
       // One verdict per entry into the page's code: the span (a timer's, a frame's, an input's ...) holding the change.
       const seen = new Set();
-      const parses = t.events.filter(e => e.ph === 'X' && e.name === 'ParseHTML');
+      // A document's own parsing (from the network), not script parsing markup (innerHTML runs inside the
+      // page's script, and is judged like any change the script made).
+      const scriptSpans = t.events.filter(e => e.ph === 'X' && SCRIPT_SPAN.test(e.name));
+      const parses = t.events.filter(e => e.ph === 'X' && e.name === 'ParseHTML' && !scriptSpans.some(x => x !== e && spanHolds(x, e.ts) && x.ts <= e.ts));
       for (const e of changes) {
         // A document's parsing (in whatever task the parser ran): the document is its navigation's, the
         // last one this frame's thread started before it (a redirect keeps the frame; a document whose
         // navigation the record does not hold started before it, or was the browser's own).
-        const parse = e.name === 'ParseHTML' ? e : parses.find(x => spanHolds(x, e.ts));
+        const parse = parses.find(x => x === e || spanHolds(x, e.ts));
         if (parse) {
           const url = String(parse.args?.beginData?.url || '');
           if (!url || url === 'about:blank') continue;

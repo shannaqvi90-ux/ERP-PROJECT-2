@@ -41,8 +41,9 @@ import { loadNeedles } from '../data/generate.mjs';
 import { sandboxed } from './helpers/driver-module.mjs';
 
 let server, base, tmp, needles;
-const state = { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, view: null, slow: 0 };
-const reset = () => Object.assign(state, { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, view: null, slow: 0 });
+const stamps = [];
+const state = { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, view: null, slow: 0, onShot: false, onRead: false };
+const reset = () => Object.assign(state, { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, view: null, slow: 0, onShot: false, onRead: false });
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 const RECORD_HTML = n => `<aside id="record"><h1>${esc(n.name)}</h1><dl><dt>Mobile</dt><dd>${esc(n.mobile)}</dd></dl></aside>`;
@@ -51,10 +52,14 @@ const recentLink = () => (state.recent ? `<p>Recently viewed: <a id="recent" hre
 const HOME = () => `<!doctype html><html><head><title>Home</title></head><body>
 <nav aria-label="Main navigation"><a id="contacts" href="/contacts">Contacts</a></nav>
 <p id="plain">Welcome</p>
+<label id="field">Note <input id="note"></label>
+<a id="stamp" href="/stamped">Stamp</a>
 ${recentLink()}
 <div id="slot"></div>
 <script>
 ${state.openAtStart ? `setTimeout(() => { ${state.inPlace ? `document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))};` : "location.href = '/contact/r1';"} }, ${state.openAtStart});` : ''}
+${state.onShot ? `new MutationObserver(() => { if (document.title === 'Product') document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; }).observe(document.querySelector('title'), { childList: true, characterData: true, subtree: true });` : ''}
+${state.onRead ? `const own = Node.prototype.contains; Node.prototype.contains = function (x) { document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; return own.call(this, x); };` : ''}
 ${state.poll ? "const t = setInterval(async () => { const r = await fetch('/api/go'); if ((await r.text()) === 'go') { clearInterval(t); location.href = '/contact/r1'; } }, 200);" : ''}
 </script></body></html>`;
 
@@ -95,6 +100,8 @@ before(async () => {
       if (u.pathname === '/api/views' && req.method === 'POST') { state.view = JSON.parse(body || '{}'); res.writeHead(201); return res.end('{}'); }
       if (u.pathname === '/api/views-form' && req.method === 'POST') { state.view = { search: new URLSearchParams(body).get('search') }; return html('<!doctype html><p id="saved">Saved</p>'); }
       if (u.pathname === '/views/new') return html('<!doctype html><form method="post" action="/api/views-form"><input name="search" aria-label="Search"><button>Save</button></form>');
+      if (u.pathname === '/api/stamp') { stamps.push({ what: u.searchParams.get('what'), at: Date.now() }); res.writeHead(200); return res.end('{}'); }
+      if (u.pathname === '/stamped') { stamps.push({ what: 'step', at: Date.now() }); return html('<!doctype html><p id="stamped">ok</p>'); }
       if (u.pathname === '/api/go') { res.writeHead(200); return res.end(state.goAt && Date.now() >= state.goAt ? 'go' : 'wait'); }
       if (u.pathname === '/api/search') {
         const q = u.searchParams.get('q') || '';
@@ -415,4 +422,88 @@ test('plant N3c: the default view searches part of the name; run() types two let
     },
     verify: verifyRecord,
   }), /carries the record the person finds/);
+});
+
+// -- plants: the page acts inside the harness's own work (N1e, N1f), and set-up's address (N2x) ----
+
+const NO_FINDS = { ...TASK, id: 'plant-nofind', finds: undefined };
+
+test('plant N1e: the page shows the record when the harness neutralises the title for the start shot (an observer of the title) -> refused', async () => {
+  reset();
+  state.onShot = true;
+  refused('N1e', await runDriver({
+    ...home,
+    async run(op) {
+      await op.press('Escape', { label: 'dismiss' });
+      await op.waitFor(() => !!document.querySelector('aside'), { label: 'record' });
+      return {};
+    },
+    verify: verifyRecord,
+  }, NO_FINDS), SCREEN);
+});
+
+test('plant N1f: the page shows the record when the harness reads whether the typing goes into the clicked field (a patched Node#contains) -> refused', async () => {
+  reset();
+  state.onRead = true;
+  refused('N1f', await runDriver({
+    ...home,
+    async run(op) {
+      await op.click('#field', { label: 'note' });
+      await op.type('zz', { label: 'two letters' });
+      await op.waitFor(() => !!document.querySelector('aside'), { label: 'record' });
+      return {};
+    },
+    verify: verifyRecord,
+  }, NO_FINDS), SCREEN);
+});
+
+test('plant N2x: the critic\'s N2 shape on a task that names no record to find: set-up opened an address naming the record -> refused', async () => {
+  reset();
+  refused('N2x', await runDriver({
+    async signIn(ctx) {
+      await ctx.page.goto(base + '/contact?n=' + encodeURIComponent(ctx.needles.contact.name));
+      await ctx.page.goto(base + '/');
+    },
+    ...clickRecent,
+  }, NO_FINDS), /opened an address that names the task's data/);
+});
+
+test('control: a task that names no record to find, the page answering only the person (click the note, type) verifies', async () => {
+  reset();
+  const r = await runDriver({
+    ...home,
+    async run(op) {
+      await op.click('#field', { label: 'note' });
+      await op.type('zz', { label: 'two letters' });
+      await op.click('#contacts', { label: 'Contacts' });
+      await op.waitFor(() => !!document.querySelector('#q'), { label: 'list' });
+      return {};
+    },
+    async verify(ctx) { return { verified: await ctx.read(() => !!document.querySelector('#q')) }; },
+  }, NO_FINDS);
+  assert.equal(r.status, 'verified', r.error);
+  assert.equal(r.screen_changes.not_caused, 0, JSON.stringify(r.screen_changes));
+});
+
+test('the clock starts 1.1-2.1 s after verify()\'s read before it, for a task that does not save too (critic r13)', async () => {
+  reset();
+  stamps.length = 0;
+  const r = await runDriver({
+    ...home,
+    async run(op) {
+      await op.click('#stamp', { label: 'stamp' });
+      await op.waitFor(() => !!document.querySelector('#stamped'), { label: 'stamped' });
+      return {};
+    },
+    async verify(ctx) {
+      await fetch(ctx.product.baseUrl + '/api/stamp?what=verify');
+      return { verified: await ctx.read(() => !!document.querySelector('#stamped')) };
+    },
+  }, NO_FINDS);
+  assert.equal(r.status, 'verified', r.error);
+  const read = stamps.find(x => x.what === 'verify');
+  const step = stamps.find(x => x.what === 'step');
+  assert.ok(read && step, JSON.stringify(stamps));
+  const gap = (step.at - read.at) / 1000;
+  assert.ok(gap >= 1.1, `the step came ${gap} s after verify()'s read`);
 });

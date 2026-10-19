@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { PRODUCT_IDS, describe, driverPath, loadDriver, loadTasks } from '../lib/registry.mjs';
-import { endStateOf, endStateProblems, prefixProblems, runTask } from '../lib/runner.mjs';
+import { endStateOf, endStateProblems, findsValue, prefixProblems, runTask } from '../lib/runner.mjs';
 import { START_KINDS } from '../lib/start.mjs';
 import { loadNeedles } from '../data/generate.mjs';
 import { HARNESS_DIR } from '../lib/config.mjs';
@@ -167,4 +167,24 @@ test('every declared field prefix is a dialling code the product\'s code sets as
     declared += Object.values(t.prefixes || {}).flat().length;
   }
   assert.ok(declared >= 1, 'the edit-and-save task declares ours\' +971');
+});
+
+// Round 14 (critic p01 r13, plants N2 and N3): the tasks that ask the person to find one record name it.
+export const FINDS = { 'find-record': 'contact.name', 'find-user': 'user.name', 'who-changed-field': 'contact.name' };
+
+test('every task that asks the person to find one record names it (finds), and the name resolves from the dataset or the input', async () => {
+  const needles = loadNeedles();
+  const tasks = await loadTasks();
+  for (const [id, path] of Object.entries(FINDS)) {
+    const t = tasks.find(x => x.id === id);
+    assert.ok(t, id);
+    assert.equal(t.finds, path, `${id} names the record the person finds (finds: '${path}')`);
+  }
+  for (const t of tasks.filter(x => x.finds !== undefined)) {
+    for (const p of PRODUCT_IDS) {
+      const v = findsValue(t, p, needles);
+      assert.ok(v && v.trim().length >= 4, `${t.id}: finds resolves to a name for ${p} (${v})`);
+    }
+    assert.notEqual(t.channel, 'api', `${t.id}: a task found through the API types its search into a request`);
+  }
 });

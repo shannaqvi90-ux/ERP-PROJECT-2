@@ -107,7 +107,18 @@ export const RESULT_SCHEMA = 1;
  *      typed when the field shows it as the clock starts and the end state holds the whole value
  *      (lead decision on critic p06 r7's question).
  */
-export const INSTRUMENT_VERSION = 11;
+/*  12: every browser task, not only one that saves, is judged by causes (critic p01 r13, plants N1-N3):
+ *      the browser's record runs from before verify()'s read on the start screen until the page's
+ *      script is frozen, and every change of what the page shows (a node, its text, attributes or style,
+ *      a document, a navigation) must lead back to a counted step (screenCauses; enforced for the product
+ *      measured against the reference); the clock starts 1.1-2.1 s after verify()'s read for every
+ *      browser task. A task that names the record the person finds (`finds`) is refused when the
+ *      measured part typed no piece of it, when a screen showed it before the first piece was typed, or
+ *      when the start screen showed it; set-up's writes may not carry it, and set-up's browser may not
+ *      open an address naming the task's data. Input the browser delivers while running a DevTools
+ *      command is the step's. The blind shot's neutral title is set in a world of the harness's own.
+ */
+export const INSTRUMENT_VERSION = 12;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 /**
  * The metrics that count things a person does (steps, keystrokes); the others are times. Only a
@@ -1087,12 +1098,14 @@ export async function execute(task, driver, product, productId, needles, out, op
       traced = await pageTrace.stop();
       pageTrace = null;
       // For reading a run's record by hand (never part of a measurement): COMPARE_TRACE_DIR=<dir>.
-      if (process.env.COMPARE_TRACE_DIR) writeJson(path.join(process.env.COMPARE_TRACE_DIR, `${task.id}-${driver.variant ?? 'path'}-${crypto.randomBytes(3).toString('hex')}.json`), { origin: op.origin, clock: traced.clock, steps: op.steps, sent: (tracker?.sent || []).map(({ body, timing, ...w }) => w), events: traced.events });
+      if (process.env.COMPARE_TRACE_DIR) writeJson(path.join(process.env.COMPARE_TRACE_DIR, `${task.id}-${driver.variant ?? 'path'}-${crypto.randomBytes(3).toString('hex')}.json`), { origin: op.origin, clock: traced.clock, steps: op.steps,
+        harness: op.shotWindows.map(w => ({ from: (w.from - op.origin) / 1000, to: (w.to - op.origin) / 1000 })), mainFrame: traced.mainFrame, sent: (tracker?.sent || []).map(({ body, timing, ...w }) => w), events: traced.events });
       run.page_record = { events: traced.events.length, cut_short: traced.dataLoss, clock: traced.clock ? { offset_us: Math.round(traced.clock.offset_us), error_us: Math.round(traced.clock.error_us) } : null };
       // Round 14 (critic p01 r13, biggest gap): which step caused each change of what the page showed, from
       // before verify()'s read on the start screen until the page's script was frozen (screenCauses).
       if (!traced.dataLoss && traced.clock) {
-        const judged = screenCauses({ events: traced.events }, op.steps, { clock: traced.clock, originMs: op.origin, until: Math.max(op.machineSeconds, frozenAt ?? 0), reaction: REACTION_SECONDS, animatedAtStart });
+        const judged = screenCauses({ events: traced.events }, op.steps, { clock: traced.clock, originMs: op.origin, until: Math.max(op.machineSeconds, frozenAt ?? 0), reaction: REACTION_SECONDS, animatedAtStart,
+          harness: op.shotWindows.map(w => ({ from: (w.from - op.origin) / 1000, to: (w.to - op.origin) / 1000 })), mainFrame: traced.mainFrame, mainFrame: traced.mainFrame });
         screenUncaused = judged.filter(c => !c.caused);
         run.screen_changes = { judged: judged.length, not_caused: screenUncaused.length, enforced: screenRuleApplies(productId),
           not_caused_first: screenUncaused.slice(0, 8).map(c => ({ at: c.at, event: c.event, why: c.why, chain: c.chain.slice(-4) })),
