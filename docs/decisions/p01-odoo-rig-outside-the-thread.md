@@ -168,5 +168,18 @@ Verifies of this round (`./erp verify` through the verify slot, busy machine, lo
 - run 4 (2026-10-19T00:39:11Z): the link control's chain was rooted in the harness's read during the
   click (decision 10 above). dotnet 7,331, web 1,707 (stopped at the unit tests), e2e 407 s; every
   built ours driver verified.
-The web stage, which holds the comparison harness, used 2,044-2,158 s against round 12's 1,922 s:
-this round adds about 120-240 s of processor time.
+- run 5 (02:39:15Z, integration branch merged with p03's round): every test passed (dotnet 730, web
+  unit 525, e2e 112, compare 447, build 6; 112 of 112 mutations caught; every built ours driver
+  verified), but the processor time was 11,029 s against the 10,500 s maximum (dotnet 8,095, web 2,242,
+  e2e 627, timing 65; load up to 77.84).
+- run 6 (03:58:14Z, load 40-70): an older plant (K1 on the real ours sign-in driver, guard.test.mjs)
+  timed out in its set-up's sign-in (15 s) under the load; dotnet 8,357, web 1,870 (stopped before the
+  mutations), e2e 315 s. It passed in every other run; no limit was raised.
+- run 7 (2026-10-19T05:21:46Z, quieter machine): **verify passed in 3,925 s**, processor time 10,329 s
+  (dotnet 7,807, web 2,148, e2e 338, timing 36; maximum 10,500 s). Counts: dotnet 730, web unit 525,
+  e2e 112, compare 447, build 6; 112 of 112 instrument mutations caught; all 13 built ours drivers
+  verified (edit-and-save 2 steps, 9 keys).
+The web stage, which holds the comparison harness, used 2,044-2,242 s in the runs that reached its
+end, against round 12's 1,922 s: this round adds about 120-320 s of processor time (the browser runs of
+the new plants and the mutations judged on them; the web unit tests of other pieces grew too). The
+dotnet stage, which this piece does not touch, varied from 7,315 to 8,357 s with the machine's load.
