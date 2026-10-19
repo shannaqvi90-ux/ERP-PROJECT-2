@@ -178,5 +178,18 @@ No new dependency. The record now runs for every browser run (not only tasks tha
 invalidation-tracking category: a few tens of megabytes of trace events per run, parsed in the harness.
 Every browser run gains the 1.1-2.1 s gap (wall time, no processor time to speak of). This round adds 27
 tests to the comparison suite (21 browser runs of a stand-in, 6 on synthetic traces or rules) and 16
-mutations (4 on synthetic traces or rules, 12 on one browser run each). Processor time of the
-comparison unit suite on this machine: see the verify runs below.
+mutations (4 on synthetic traces or rules, 12 on one browser run each), and later 6 more synthetic tests
+and 6 more mutations for the faults the stress runs found.
+
+Measured on this machine: the comparison unit suite alone used 240 s of processor time at the
+integration branch's head and 304 s with this round (511 tests, `/usr/bin/time`, the shared rig and
+other runs beside it), about 64 s more, from the record now taken on every browser run and the new
+plants.
+
+Verify of this round (`./erp verify` through the verify slot, slot taken 2026-10-19T14:11:37Z, load up
+to 31): **verify passed in 4,356 s**, processor time **9,006 s** (dotnet 6,740, web 1,894, e2e 336,
+timing 37; maximum 10,500 s). Counts: dotnet 732, web unit 528, e2e 113, compare 486, build 6; 134 of
+134 instrument mutations caught; all 13 built ours drivers verified in the health check. An earlier
+verify of this round (slot taken 13:44:40Z) was stopped by me after the dotnet and web stages had begun,
+when a separate mutation run showed five mutations whose plants another rule now also refused (the
+plants were pinned to the rule each tests, above); it produced no verdict.
