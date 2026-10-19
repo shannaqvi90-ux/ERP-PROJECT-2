@@ -173,7 +173,9 @@ export function analyseTrace(events) {
     const own = [];
     let current = null;
     for (const e of list) {
-      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts > current.end)) {
+      // Round 14 (found on a busy machine: a save refused as "outside any task"): a task that begins the
+      // very microsecond the one before it ended is a task of its own, not part of the one before.
+      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts >= current.end)) {
         current = { thread: k, threadName: name, ts: e.ts, end: e.ts + (e.dur || 0), events: [], index: own.length };
         own.push(current);
         continue;

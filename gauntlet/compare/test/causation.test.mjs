@@ -900,3 +900,21 @@ test('causation (round 14): an animation frame only the harness asked for (the c
   const page = verdict(tasks([X('FunctionCall', 3, 0.5, { url: 'http://p/' })]), 'w', [[100, 110, 'type'], [138, 170, 'click']]);
   assert.equal(page.caused, false);
 });
+
+test('causation (round 14): a task that begins the very microsecond the one before it ended is a task of its own', () => {
+  // The key's task begins exactly where a frame's 4 us task ended; the save inside it is the key's.
+  const events = [
+    { ph: 'X', name: 'RunTask', pid: PID, tid: MAIN, ts: 100000, dur: 4, args: {} },
+    { ph: 'X', name: 'ThreadControllerImpl::RunTask', pid: PID, tid: MAIN, ts: 100001, dur: 1, args: { src_file: 'x/proxy_impl.cc', src_func: 'DrawInternal' } },
+    { ph: 'X', name: 'RunTask', pid: PID, tid: MAIN, ts: 100004, dur: 3000, args: {} },
+    { ph: 'X', name: 'ThreadControllerImpl::RunTask', pid: PID, tid: MAIN, ts: 100005, dur: 2990, args: { src_file: 'x/main_thread_event_queue.cc', src_func: 'PostTaskToMainThread' } },
+    { ph: 'X', name: 'EventDispatch', pid: PID, tid: MAIN, ts: 100200, dur: 1000, args: { data: { type: 'keydown' } } },
+    { ph: 'X', name: 'FunctionCall', pid: PID, tid: MAIN, ts: 100300, dur: 500, args: { data: { url: 'http://p/' } } },
+    { ph: 'I', name: 'ResourceSendRequest', pid: PID, tid: MAIN, ts: 100900, args: { data: { requestId: 'w', url: 'http://p/api/save', requestMethod: 'PUT', resourceType: 'Fetch' } } },
+  ];
+  const model = analyseTrace([...META, ...events]);
+  const point = model.sends.get('w').event;
+  const v = causeOf(model, point, [{ n: 1, kind: 'key', from: 99_000, at: 99_000, to: 101_000 }], { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
+  assert.equal(v.caused, true, v.why);
+  assert.equal(v.step, 1);
+});
