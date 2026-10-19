@@ -11,7 +11,8 @@ public readonly record struct ShapedGlyph(uint Glyph, int Advance, int OffsetX, 
 /// which glyph draws which characters (for copy and search in the PDF).</summary>
 public sealed record GlyphRun(PdfFontFace Face, IReadOnlyList<ShapedGlyph> Glyphs, string Text, bool RightToLeft, IReadOnlyList<string> GlyphText)
 {
-    public int Advance => Glyphs.Sum(g => g.Advance);
+    /// <summary>The run's width in thousandths of an em (summed once: line breaking asks for it often).</summary>
+    public int Advance { get; } = Glyphs.Sum(g => g.Advance);
 }
 
 /// <summary>One line of text, shaped and ordered for drawing left to right. <paramref name="RightToLeft"/>:
@@ -19,7 +20,7 @@ public sealed record GlyphRun(PdfFontFace Face, IReadOnlyList<ShapedGlyph> Glyph
 public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size, bool RightToLeft = false)
 {
     /// <summary>Width in points.</summary>
-    public decimal Width => Runs.Sum(r => r.Advance) * Size / 1000.0m;
+    public decimal Width { get; } = Runs.Sum(r => r.Advance) * Size / 1000.0m;
 
     public bool IsEmpty => Runs.Count == 0;
 }
@@ -32,10 +33,16 @@ public sealed record ShapedLine(IReadOnlyList<GlyphRun> Runs, decimal Size, bool
 /// the document's.
 /// One shaper lays out one document (it is not shared between requests or threads): a line it
 /// has shaped once is kept for the rest of that document, since line breaking asks for the same
-/// text many times (decision p03-identity-gate-processor-time).
+/// text many times (decision p03-identity-gate-processor-time). The lines kept are bounded
+/// (<see cref="MaxKept"/>): a document of 100,000 rows shapes hundreds of thousands of distinct
+/// values, and keeping them all held over a gigabyte (decision p06-form-report-whole-documents).
 /// </summary>
 public sealed class TextShaper(PdfFonts fonts)
 {
+    /// <summary>Most shaped lines kept at once; past it the store starts again (values that repeat,
+    /// a status or a role, are shaped again once).</summary>
+    internal const int MaxKept = 20_000;
+
     private readonly Dictionary<(string Text, decimal Size, int Scale, bool Bold, bool Rtl), ShapedLine> _shaped = new();
 
     public ShapedLine Shape(string text, decimal size, bool bold, bool documentRightToLeft)
@@ -44,10 +51,21 @@ public sealed class TextShaper(PdfFonts fonts)
         if (!_shaped.TryGetValue(key, out var line))
         {
             line = ShapeUncached(text, size, bold, documentRightToLeft);
+            if (_shaped.Count >= MaxKept)
+            {
+                _shaped.Clear();
+            }
             _shaped[key] = line;
         }
         return line;
     }
+
+    /// <summary>More characters than any line of a page holds (a landscape line is under 800 points,
+    /// and no character of the fonts at 7.5 points or more is narrower than 1.5 points).</summary>
+    private const int WholeLineCharacters = 600;
+
+    /// <summary>How many shaped lines are kept now (tests).</summary>
+    internal int Kept => _shaped.Count;
 
     private ShapedLine ShapeUncached(string text, decimal size, bool bold, bool documentRightToLeft)
     {
@@ -86,6 +104,15 @@ public sealed class TextShaper(PdfFonts fonts)
             if (lines.Count >= maxLines)
             {
                 break;
+            }
+            // A paragraph that fits the width whole is one line: shaped once, not once per word
+            // (most cells of a table fit their column). One that starts with a space is left to
+            // the word by word loop, which drops the leading space; so is one longer than any line
+            // of a page can hold (WholeLineCharacters), so the work stays bounded by the lines kept.
+            if (paragraph.Length is > 0 and <= WholeLineCharacters && paragraph[0] != ' ' && Fits(paragraph, size, bold, documentRightToLeft, width))
+            {
+                lines.Add(Shape(paragraph, size, bold, documentRightToLeft));
+                continue;
             }
             var current = "";
             foreach (var word in paragraph.Split(' '))

@@ -28,7 +28,19 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
     /// 260 points, which no more characters than this can exceed).</summary>
     private const int MeasuredCharacters = 300;
 
-    public byte[] Render(ReportDocument document) => new Layout(document, new TextShaper(fonts)).Render();
+    /// <summary>The document as a PDF in memory (a short document, tests).</summary>
+    public byte[] Render(ReportDocument document)
+    {
+        using var output = new MemoryStream();
+        Render(document, output, CancellationToken.None);
+        return output.ToArray();
+    }
+
+    /// <summary>Writes the document as a PDF to <paramref name="output"/>, page by page: each page
+    /// is written out when the next one starts, so the memory a document takes does not grow with
+    /// its pages (a list of 100,000 rows is some 2,000 pages). Stops when the request is cancelled.</summary>
+    public void Render(ReportDocument document, Stream output, CancellationToken cancellationToken) =>
+        new Layout(document, new TextShaper(fonts), output, cancellationToken).Render();
 
     private sealed class Layout
     {
@@ -48,13 +60,16 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
         private decimal _y;
         private bool _inTable;
 
-        public Layout(ReportDocument document, TextShaper shaper)
+        private readonly CancellationToken _cancellationToken;
+
+        public Layout(ReportDocument document, TextShaper shaper, Stream output, CancellationToken cancellationToken)
         {
             _doc = document;
+            _cancellationToken = cancellationToken;
             _shaper = shaper;
             _rtl = document.RightToLeft;
             _shown = ShownColumns(document);
-            _writer = new PdfWriter(document.Subject is null ? document.Title : $"{document.Title} \u00B7 {document.Subject}", document.Language, _rtl);
+            _writer = new PdfWriter(document.Subject is null ? document.Title : $"{document.Title} \u00B7 {document.Subject}", document.Language, _rtl, output);
             var natural = NaturalWidths();
             var portrait = PortraitWidth - 2 * Margin;
             var landscape = PortraitHeight - 2 * Margin;
@@ -66,7 +81,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
 
         private decimal Available => _pageWidth - 2 * Margin;
 
-        public byte[] Render()
+        public void Render()
         {
             NewPage();
             Letterhead();
@@ -83,6 +98,7 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
                     }
                     foreach (var row in group.Rows)
                     {
+                        _cancellationToken.ThrowIfCancellationRequested();
                         Row(_shown.Select(i => row.Cells[i].Text).ToList(), bold: false, shade: null);
                     }
                     if (grouped && _doc.Columns.Any(c => c.Total))
@@ -104,8 +120,9 @@ public sealed class PdfReportRenderer(PdfFonts fonts)
             for (var i = 0; i < pages.Count; i++)
             {
                 Footer(pages[i], i + 1, pages.Count);
+                _writer.Flush(pages[i]);
             }
-            return _writer.Write(_doc.PrintedAt);
+            _writer.Finish(_doc.PrintedAt);
         }
 
         private void NewPage()

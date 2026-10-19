@@ -9,8 +9,9 @@ using Erp.Modules.Tenancy.Contracts;
 
 namespace Erp.Modules.Reports;
 
-/// <summary>How a document is printed: its language, digits and time zone.</summary>
-public sealed record ReportOptions(string Language, string Numerals, TimeZoneInfo TimeZone);
+/// <summary>How a document is printed: its language, digits and time zone, and whether it is the
+/// document shown on screen (JSON, at most <see cref="ReportLimits.ScreenRows"/> rows) rather than a file.</summary>
+public sealed record ReportOptions(string Language, string Numerals, TimeZoneInfo TimeZone, bool Screen = false);
 
 /// <summary>A column of the document being built, with how to read its value from a row.</summary>
 /// <param name="TrueLabelKey">A boolean column's word for true (a list column's "Active"); null: "Yes".</param>
@@ -24,14 +25,17 @@ internal sealed record ColumnSpec(string Key, string LabelKey, ListColumnType Ty
 /// and overall (decimal arithmetic only), and stamps who printed it and when. The same document
 /// is then shown on screen, printed, rendered as PDF or exported.
 /// </summary>
-public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrentUser caller, IUserDirectory users, ICompanyDirectory companies, ITenantDirectory tenants)
+public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrentUser caller, IUserDirectory users, ICompanyDirectory companies, ITenantDirectory tenants,
+    ReportLimits limits)
 {
-    /// <summary>Most rows a document shown, printed or rendered as PDF holds.</summary>
+    /// <summary>Most rows a document shown on screen holds by default (<see cref="ReportLimits.ScreenRows"/>):
+    /// the browser draws it as one table. Its PDF and exports hold the whole selection.</summary>
     public const int DocumentRowLimit = 2000;
 
-    /// <summary>Most rows a CSV or XLSX export holds: twice the owner's main-list volume (100,000),
-    /// so a whole main list exports. A list beyond it exports its first rows, and the file says so in
-    /// its last line (see <see cref="Exports"/>), never silently.</summary>
+    /// <summary>Most rows a file holds by default (<see cref="ReportLimits.FileRows"/>): the PDF, CSV and
+    /// XLSX. Twice the owner's main-list volume (100,000), so a whole main list prints and exports. A
+    /// selection beyond it prints its first rows, and the file says so (see <see cref="Exports"/>),
+    /// never silently.</summary>
     public const int ExportRowLimit = 200_000;
 
     /// <summary>A registered report's document.</summary>
@@ -92,8 +96,12 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         {
             groupBy = null;
         }
+        // A document about one company (its profile) is issued under that company's letterhead, not
+        // the working company's (critic p06 round 8): only when the report found the company.
+        var about = definition.CompanyParameter is { } named && data.Subject is not null && run.Parameters.TryGetValue(named, out var chosen) && chosen is Guid id ? id : (Guid?)null;
         var document = await ComposeAsync(definition.Key, strings.Get(definition.LabelKey, f.Language), data.Subject?.For(f.Language), parameters, facts,
-            columns, rows, groupBy, columns.Count == 0 ? 0 : data.MatchCount ?? data.Rows.Count, columns.Count != 0 && data.Truncated, f, cancellationToken);
+            columns, rows, groupBy, columns.Count == 0 ? 0 : data.MatchCount ?? data.Rows.Count, columns.Count != 0 && data.Truncated, f, options.Screen, cancellationToken,
+            issuerCompany: about);
         return document with { Notes = notes };
     }
 
@@ -142,12 +150,12 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         var typed = rows.Select(row => ListRow(list, row, specs, f.Language, names, companyCodes, elsewhere)).ToList();
         var shown = specs.Where(s => columns.Any(c => c.Key == s.Key)).ToList();
         return await ComposeAsync(list.Key, strings.Get(list.LabelKey, f.Language), null, parameters, [], shown, typed, groupBy,
-            matchCount, matchCount > rows.Count, f, cancellationToken, specs);
+            matchCount, matchCount > rows.Count, f, options.Screen, cancellationToken, specs);
     }
 
     private async Task<ReportDocument> ComposeAsync(string key, string title, string? subject, List<ReportDocumentFact> parameters, List<ReportDocumentFact> facts,
         IReadOnlyList<ColumnSpec> columns, IReadOnlyList<IReadOnlyDictionary<string, object?>> rows, string? groupBy, int matchCount, bool truncated,
-        ReportFormatter f, CancellationToken cancellationToken, IReadOnlyList<ColumnSpec>? allSpecs = null)
+        ReportFormatter f, bool screen, CancellationToken cancellationToken, IReadOnlyList<ColumnSpec>? allSpecs = null, Guid? issuerCompany = null)
     {
         var language = f.Language;
         var groupSpec = groupBy is null ? null : (allSpecs ?? columns).FirstOrDefault(c => c.Key == groupBy);
@@ -178,15 +186,19 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         // The printer's name in the document's language: the Arabic name on an Arabic document when
         // the user has one (critic p04 round 7: Arabic documents printed the English name).
         var printedBy = (await users.GetAsync([caller.UserId], cancellationToken)).GetValueOrDefault(caller.UserId)?.NameFor(language) ?? "";
-        var countText = truncated
-            ? strings.Get("reports.rows.truncated", language, new Dictionary<string, object?> { ["shown"] = f.Integer(rows.Count), ["total"] = f.Integer(matchCount) })
-            : Plural("reports.rows.count", rows.Count, f);
+        // A document on screen stops at the screen's rows; when its files hold every row it says so
+        // (the PDF prints all of them), otherwise it asks for narrower parameters.
+        var filesHoldAll = truncated && screen && matchCount <= limits.FileRows;
+        var countText = !truncated
+            ? Plural("reports.rows.count", rows.Count, f)
+            : strings.Get(filesHoldAll ? "reports.rows.onScreen" : "reports.rows.truncated", language,
+                new Dictionary<string, object?> { ["shown"] = f.Integer(rows.Count), ["total"] = f.Integer(matchCount) });
         return new ReportDocument
         {
             Key = key,
             Title = title,
             Subject = subject,
-            Issuer = await IssuerAsync(language, cancellationToken),
+            Issuer = await IssuerAsync(language, issuerCompany, cancellationToken),
             Language = language,
             Direction = language == Languages.Arabic ? "rtl" : "ltr",
             Numerals = f.Numerals,
@@ -204,6 +216,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             MatchCount = matchCount,
             RowCountText = countText,
             Truncated = truncated,
+            FilesHoldAll = filesHoldAll,
             PrintedAt = printedAt,
             PrintedAtText = printedAtText,
             PrintedBy = printedBy,
@@ -506,11 +519,16 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         return null;
     }
 
-    /// <summary>The letterhead: the working company's legal name to a caller who may see companies
-    /// (their records or the workplace switcher), otherwise the workspace's name (every signed-in
-    /// user's session shows it).</summary>
-    private async Task<string> IssuerAsync(string language, CancellationToken cancellationToken)
+    /// <summary>The letterhead: the legal name of the company a document is about (its profile, when
+    /// the report found it), else of the working company, to a caller who may see companies (their
+    /// records or the workplace switcher); otherwise the workspace's name (every signed-in user's
+    /// session shows it).</summary>
+    private async Task<string> IssuerAsync(string language, Guid? about, CancellationToken cancellationToken)
     {
+        if (about is { } one && caller.Has(TenancyPermissions.CompaniesRead) && await companies.GetAsync(one, cancellationToken) is { } described)
+        {
+            return new LocalText(described.LegalNameEn, described.LegalNameAr).For(language);
+        }
         if ((caller.Has(TenancyPermissions.CompaniesRead) || caller.Has(TenancyPermissions.WorkplaceRead)) &&
             await companies.GetWorkingAsync(cancellationToken) is { } company)
         {

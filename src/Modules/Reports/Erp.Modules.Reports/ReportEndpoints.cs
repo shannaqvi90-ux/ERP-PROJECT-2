@@ -220,7 +220,7 @@ internal static class ReportEndpoints
         {
             return validator.ToResult();
         }
-        var limit = common.Format is "csv" or "xlsx" ? ReportEngine.ExportRowLimit : ReportEngine.DocumentRowLimit;
+        var limit = http.RequestServices.GetRequiredService<ReportLimits>().For(common.Format);
         var run = new ReportRun(definition, parameters, common.Options.Language, limit) { Withheld = withheld, Holds = caller.Has };
         var source = (IReportSource)http.RequestServices.GetRequiredService(registration.SourceType);
         var data = await source.RunAsync(run, cancellationToken);
@@ -257,7 +257,7 @@ internal static class ReportEndpoints
         {
             return validator.ToResult();
         }
-        var limit = common.Format is "csv" or "xlsx" ? ReportEngine.ExportRowLimit : ReportEngine.DocumentRowLimit;
+        var limit = http.RequestServices.GetRequiredService<ReportLimits>().For(common.Format);
         var rows = new List<JsonElement>();
         string? after = null;
         var total = 0;
@@ -358,19 +358,50 @@ internal static class ReportEndpoints
         switch (common.Format)
         {
             case "pdf":
-                var bytes = pdf.Render(document);
+                var file = PdfFile(document, pdf, http.RequestAborted);
                 if (common.Inline)
                 {
                     http.Response.Headers.ContentDisposition = $"inline; filename=\"{AsciiName(name)}.pdf\"; filename*=UTF-8''{Uri.EscapeDataString(name)}.pdf";
-                    return Results.File(bytes, "application/pdf");
+                    return Results.Stream(file, "application/pdf");
                 }
-                return Results.File(bytes, "application/pdf", name + ".pdf");
+                return Results.Stream(file, "application/pdf", name + ".pdf");
             case "csv":
                 return Results.File(Exports.Csv(document), Exports.CsvType + "; charset=utf-8", name + ".csv");
             case "xlsx":
                 return Results.File(Exports.Xlsx(document), Exports.XlsxType, name + ".xlsx");
             default:
                 return TypedResults.Ok(document);
+        }
+    }
+
+    /// <summary>
+    /// The document as a PDF in a nameless scratch file, gone when the response is sent (or
+    /// abandoned): a list of 100,000 rows is some 2,000 pages and many megabytes, written page by
+    /// page so neither its drawing nor its bytes stay in memory. The file is created under a random
+    /// name in the system's scratch folder, opened by this request alone, and unlinked at once.
+    /// </summary>
+    private static FileStream PdfFile(ReportDocument document, PdfReportRenderer pdf, CancellationToken cancellationToken)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "erp-print-" + Guid.NewGuid().ToString("N") + ".pdf");
+        var windows = OperatingSystem.IsWindows();
+        var file = new FileStream(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 64 * 1024,
+            windows ? FileOptions.DeleteOnClose | FileOptions.SequentialScan : FileOptions.SequentialScan);
+        try
+        {
+            // Elsewhere (the product's Linux container) the name goes at once: the open handle alone
+            // reaches the bytes, and nothing is left behind even if the process stops mid-print.
+            if (!windows)
+            {
+                File.Delete(path);
+            }
+            pdf.Render(document, file, cancellationToken);
+            file.Position = 0;
+            return file;
+        }
+        catch
+        {
+            file.Dispose();
+            throw;
         }
     }
 
@@ -425,7 +456,7 @@ internal static class ReportEndpoints
             var tenant = await tenants.GetCurrentAsync(cancellationToken);
             zone = TimeZoneInfo.TryFindSystemTimeZoneById(tenant?.TimeZone ?? "Asia/Dubai", out var found) ? found : TimeZoneInfo.Utc;
         }
-        return new Common(format, new ReportOptions(language, numerals, zone), groupBy, disposition == "inline");
+        return new Common(format, new ReportOptions(language, numerals, zone, Screen: format == "json"), groupBy, disposition == "inline");
     }
 
     /// <summary>The report's parameters from the query string, typed and checked.</summary>
