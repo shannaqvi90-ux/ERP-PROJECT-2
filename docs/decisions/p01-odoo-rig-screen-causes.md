@@ -115,6 +115,17 @@ click's handler ran inside a DevTools command task.
    animation frames inside its DevTools commands). A font whose promise ran the page's code, or a frame
    that also ran the page's observer, still stands between them (synthetic tests; mutations M129, M132).
 
+7. **Two faults of the record's reading, found the same way** (both also refused honest saves before
+   this round): a task that begins the very microsecond the one before it ended was folded into that
+   one, so the events of the second fell "outside any task" (an honest edit-and-save refused once in
+   about 90 runs); and a task with nothing to judge was judged at its end, which is also where the next
+   task may begin, so the walk could come back to where it started ("a loop of untraceable tasks", an
+   honest create-restricted-user refused). Now a task beginning where another ends is its own, a time on
+   that boundary is the later task's, and a task's own fallback point stays inside it (synthetic tests;
+   mutations M133, M134). After these fixes the 13 built ours drivers ran three times each on a busy
+   machine (39 runs, the comparison suite and the mutation check running beside them): all verified, 0
+   screen changes no step caused.
+
 ## Self-tests and mutations
 
 `test/screen-causes.test.mjs` (stand-in product, real browser): plants N1 (timer before the clock),
@@ -130,7 +141,7 @@ traces (a timer before the clock, a slow answer, a repeating timer a step armed,
 change, an observer it set off, the browser's own change, a document by its navigation) and the
 DevTools-command input. The critic's own r13 plant file passes unchanged (N1, N1b, N2 never verify; C1
 does). Plants N4 and N4b (set-up writes its task does not declare) and a control (a declared fixture).
-Mutations M113-M132 (`npm run mutations`); M65, M66, M76, M80, M83 and M112 follow the code they mutate.
+Mutations M113-M134 (`npm run mutations`); M65, M66, M76, M80, M83 and M112 follow the code they mutate.
 
 ## Alternatives considered
 

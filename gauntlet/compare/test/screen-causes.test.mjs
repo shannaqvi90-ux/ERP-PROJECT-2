@@ -42,22 +42,22 @@ import { sandboxed } from './helpers/driver-module.mjs';
 
 let server, base, tmp, needles;
 const stamps = [];
-const state = { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, view: null, slow: 0, onShot: false, onRead: false };
-const reset = () => Object.assign(state, { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, view: null, slow: 0, onShot: false, onRead: false });
+const state = { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, recentOn: 'home', view: null, slow: 0, onShot: false, onRead: false };
+const reset = () => Object.assign(state, { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, recentOn: 'home', view: null, slow: 0, onShot: false, onRead: false });
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 const RECORD_HTML = n => `<aside id="record"><h1>${esc(n.name)}</h1><dl><dt>Mobile</dt><dd>${esc(n.mobile)}</dd></dl></aside>`;
-const recentLink = () => (state.recent ? `<p>Recently viewed: <a id="recent" href="/contact/r1">${esc(state.recent.name)}</a></p>` : '');
+const recentLink = where => (state.recent && state.recentOn === where ? `<p>Recently viewed: <a id="recent" href="/contact/r1">${esc(state.recent.name)}</a></p>` : '');
 
 const HOME = () => `<!doctype html><html><head><title>Home</title></head><body>
 <nav aria-label="Main navigation"><a id="contacts" href="/contacts">Contacts</a></nav>
 <p id="plain">Welcome</p>
 <label id="field">Note <input id="note"></label>
 <a id="stamp" href="/stamped">Stamp</a>
-${recentLink()}
+${recentLink('home')}
 <div id="slot"></div>
 <script>
-${state.openAtStart ? `setTimeout(() => { ${state.inPlace ? `document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))};` : "location.href = '/contact/r1';"} }, ${state.openAtStart});` : ''}
+${state.openAtStart ? `setTimeout(() => { ${state.inPlace ? `const a = document.createElement('aside'); a.id = 'record'; a.append(document.createElement('h1'), document.createElement('p')); a.firstChild.textContent = ${JSON.stringify(needles.contact.name)}; a.lastChild.textContent = ${JSON.stringify(needles.contact.mobile)}; document.getElementById('slot').append(a);` : "location.href = '/contact/r1';"} }, ${state.openAtStart});` : ''}
 ${state.onShot ? `new MutationObserver(() => { if (document.title === 'Product') document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; }).observe(document.querySelector('title'), { childList: true, characterData: true, subtree: true });` : ''}
 ${state.onRead ? `const own = Node.prototype.contains; Node.prototype.contains = function (x) { document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; return own.call(this, x); };` : ''}
 ${state.poll ? "const t = setInterval(async () => { const r = await fetch('/api/go'); if ((await r.text()) === 'go') { clearInterval(t); location.href = '/contact/r1'; } }, 200);" : ''}
@@ -66,7 +66,7 @@ ${state.poll ? "const t = setInterval(async () => { const r = await fetch('/api/
 const LIST = () => `<!doctype html><html><head><title>Contacts</title></head><body>
 <nav aria-label="Main navigation"><a href="/">Home</a></nav>
 <input type="search" id="q" aria-label="Search" autofocus value="${esc(state.view?.search || '')}">
-${recentLink()}
+${recentLink('list')}
 <div id="rows">${state.view?.search && needles.contact.name.toLowerCase().includes(state.view.search.toLowerCase())
     ? `<div class="row"><a href="/contact/r1">${esc(needles.contact.name)}</a></div>`
     : Array.from({ length: 20 }, (_, i) => `<div class="row">Contact ${i + 1}</div>`).join('')}</div>
@@ -282,7 +282,7 @@ test('plant N1b: the same timer; run() clicks plain text once -> refused', async
   }), SCREEN);
 });
 
-test('plant N1c: the start page\'s timer shows the record in place (no navigation, no address change) -> refused', async () => {
+test('plant N1c: the start page\'s timer shows the record in place (no navigation, no address change, no markup parsed) -> refused', async () => {
   reset();
   refused('N1c', await runDriver({
     async setup() { await fetch(base + '/api/settings', { method: 'POST', body: JSON.stringify({ openAtStart: 4500, inPlace: true }) }); },
@@ -293,7 +293,7 @@ test('plant N1c: the start page\'s timer shows the record in place (no navigatio
       return {};
     },
     verify: verifyRecord,
-  }), SCREEN);
+  }, NO_FINDS), SCREEN);
 });
 
 test('plant N1d: the start page polls; set-up told the back end to answer "open" inside the measured part -> refused', async () => {
@@ -340,12 +340,12 @@ test('plant N2b: set-up opened the record by its id; the start screen offers it 
       await ctx.page.goto(base + '/');
     },
     ...clickRecent,
-  }), FINDS);
+  }), /start screen already shows/);
 });
 
 test('plant N2c: the remembered record is offered on the list, a click from the start -> refused (nothing typed)', async () => {
   reset();
-  state.recent = needles.contact;
+  Object.assign(state, { recent: needles.contact, recentOn: 'list' });
   refused('N2c', await runDriver({
     ...home,
     async run(op) {
@@ -355,12 +355,12 @@ test('plant N2c: the remembered record is offered on the list, a click from the 
       return {};
     },
     verify: verifyRecord,
-  }), FINDS);
+  }), /typed no piece/);
 });
 
 test('plant N2d: two letters typed, then the remembered record clicked -> refused (on screen before the piece was typed)', async () => {
   reset();
-  state.recent = needles.contact;
+  Object.assign(state, { recent: needles.contact, recentOn: 'list' });
   refused('N2d', await runDriver({
     ...home,
     async run(op, ctx) {
@@ -371,7 +371,7 @@ test('plant N2d: two letters typed, then the remembered record clicked -> refuse
       return {};
     },
     verify: verifyRecord,
-  }), FINDS);
+  }), /already showed/);
 });
 
 const enterOnView = {

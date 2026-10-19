@@ -534,6 +534,10 @@ const SAVES = { ...TASK, saves: true, endState: { ours: { reads: [{ read: 'GET /
 const standIn = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'admin', password: 'x' } }, brandWords: [], readyKind: 'default' });
 const out = () => layout(path.join(tmp, String(Math.random()).slice(2)));
 const runDriver = async (driver, task = SAVES) => execute(task, await sandboxed(driver, { base }), standIn(), 'ours', needles, out(), { timeout: 10_000 });
+// Round 14: the same plant measured as the reference, where a change of the screen no step caused is
+// recorded, not refused: the write's own record must refuse it there (the screen rule may refuse it first
+// for ours, and would hide a write rule that stopped working).
+const runAsReference = async (driver, task = { ...SAVES, endState: { ...SAVES.endState, odoo: SAVES.endState.ours } }) => execute(task, await sandboxed(driver, { base }), { ...standIn(), id: 'odoo' }, 'odoo', needles, out(), { timeout: 10_000 });
 const reset = () => { for (const t of timers) { clearTimeout(t); clearInterval(t); } timers.clear(); approved = false; autoApprove = false; armedAt = null; reads = []; approvedAt = null; };
 // Odoo's recorded follow-approval baseline (gauntlet/reference/odoo/tasks/follow-approval.json, round 11).
 const ODOO_FOLLOW_APPROVAL = { steps: 4, keystrokes: 0, machine_seconds: 3.521, human_seconds: 10.6, human_plus_wait_seconds: 10.6 };
@@ -629,8 +633,12 @@ test('plant S3b: S3 with the poll answering "go" a while into the clock, just af
 
 test('plant S4: the page approves on its own timer 0.6 s after a sign; run() waits for the sign and clicks plain text, just before the write -> never verifies', async () => {
   reset();
-  const r = await runDriver(plant('sign', async op => { await op.waitFor('#sign'); await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
-  never('S4', r);
+  const s4 = plant('sign', async op => { await op.waitFor('#sign'); await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; });
+  never('S4', await runDriver(s4));
+  reset();
+  const ref = await runAsReference(s4);
+  never('S4 (as the reference)', ref);
+  assert.match(ref.error, /no counted step caused/, ref.error);
 });
 
 test('plant S5: S4 laundered through a message port -> never verifies', async () => {
