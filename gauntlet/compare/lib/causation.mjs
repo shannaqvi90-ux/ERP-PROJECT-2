@@ -319,7 +319,8 @@ function taskAt(model, thread, ts) {
   let hi = list.length - 1;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;
-    if (list[mid].end < ts) lo = mid + 1;
+    // A time where one task ends and the next begins is the next one's (its events sort there).
+    if (list[mid].end < ts || (list[mid].end === ts && list[mid + 1]?.ts === ts)) lo = mid + 1;
     else if (list[mid].ts > ts) hi = mid - 1;
     else return list[mid];
   }
@@ -623,7 +624,9 @@ function taskCause(ctx, task, depth) {
   if (ctx.memo.has(key)) return ctx.memo.get(key);
   if (task.observerScript && animatedAt(ctx, task.ts)) { const r = no(ANIMATED_OBSERVER); ctx.memo.set(key, r); return r; }
   const points = [...task.timerFires, ...task.frameFires, ...task.idleFires, ...task.timed, ...task.answers];
-  if (!points.length) points.push({ ...task.events[task.events.length - 1] || {}, ts: task.end, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) });
+  // Round 14: a microsecond inside the task's end, never on it (the next task may begin that very
+  // microsecond, and the point would be taken for that task's).
+  if (!points.length) points.push({ ...task.events[task.events.length - 1] || {}, ts: Math.max(task.ts, task.end - 1), pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) });
   let result = null;
   for (const p of points) {
     const c = pointCause(ctx, { ...p, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) }, depth + 1);

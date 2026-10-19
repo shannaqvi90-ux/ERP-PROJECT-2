@@ -922,3 +922,23 @@ test('causation (round 14): a task that begins the very microsecond the one befo
   assert.equal(v.caused, true, v.why);
   assert.equal(v.step, 1);
 });
+
+test('causation (round 14): a message task that begins the microsecond the step\'s input task ended follows it at once (no loop through the shared boundary)', () => {
+  const at = (name, ts, dur, data = {}, src = null) => ({ ph: 'X', name, pid: PID, tid: MAIN, ts, dur, args: src ? src : { data } });
+  const events = [
+    at('RunTask', 100000, 400, {}, {}),
+    at('ThreadControllerImpl::RunTask', 100001, 398, null, { src_file: 'x/main_thread_event_queue.cc', src_func: 'PostTaskToMainThread' }),
+    at('EventDispatch', 100010, 300, { type: 'keydown' }),
+    at('FunctionCall', 100020, 200, { url: 'http://p/' }),
+    at('RunTask', 100400, 300, {}, {}),
+    at('ThreadControllerImpl::RunTask', 100401, 298, null, { src_file: 'x/simple_watcher.cc', src_func: 'Notify' }),
+    at('FunctionCall', 100410, 200, { url: 'http://p/' }),
+    { ph: 'I', name: 'ResourceSendRequest', pid: PID, tid: MAIN, ts: 100500, args: { data: { requestId: 'w', url: 'http://p/api/save', requestMethod: 'POST', resourceType: 'Fetch' } } },
+    // Later tasks of the thread (the lookup of a time in the thread's tasks then meets the message task first).
+    at('RunTask', 101000, 100, {}, {}), at('RunTask', 102000, 100, {}, {}), at('RunTask', 103000, 100, {}, {}),
+  ];
+  const model = analyseTrace([...META, ...events]);
+  const v = causeOf(model, model.sends.get('w').event, [{ n: 1, kind: 'key', from: 99_000, at: 99_000, to: 101_000 }], { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
+  assert.equal(v.caused, true, v.why);
+  assert.equal(v.step, 1);
+});

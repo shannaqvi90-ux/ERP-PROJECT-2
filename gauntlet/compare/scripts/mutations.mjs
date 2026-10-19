@@ -179,6 +179,7 @@ export const MUTATIONS = [
   ['M131', "set-up's browser write its task does not declare accepted", 'lib/runner.mjs', '          if (fixtures.enforce && !fixtures.allows(r.method(), r.url())) undeclared.push(', '          if (false) undeclared.push(', 'test/screen-causes.test.mjs', 'plant N4b'],
   ['M132', "a frame only the harness asked for taken for the page's own", 'lib/causation.mjs', '    if (!asked.every(x => x && x.task.protocol)) continue;', '    continue;', 'test/causation.test.mjs', 'only the harness asked for'],
   ['M133', 'a task that begins where the one before it ended absorbed into it', 'lib/causation.mjs', "      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts >= current.end)) {", "      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts > current.end)) {", 'test/causation.test.mjs', 'the very microsecond'],
+  ['M134', "a task's own end taken as a time of the task that begins there", 'lib/causation.mjs', 'ts: Math.max(task.ts, task.end - 1),', 'ts: task.end,', 'test/causation.test.mjs', 'no loop through'],
 ];
 
 function copyHarness() {
