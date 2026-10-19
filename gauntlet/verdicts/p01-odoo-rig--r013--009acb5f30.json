@@ -1,0 +1,301 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 13,
+  "commit": "009acb5f3095a67fdd2ace985baec3625ca0de1e",
+  "judged_at": "2026-10-19T10:37:07Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p01-odoo-rig round 13",
+  "hard_gates": [
+    {
+      "gate": "Instrument integrity: the harness catches faults planted in the measuring instrument (this piece's surface)",
+      "status": "fail",
+      "evidence": "Plants are in plants/zz-critic-r13.test.mjs. Logs are plants/critic-r13-plants-run1..3.log, and the plants also ran inside verify run 1. Every causal rule from rounds 11-13 applies only to a task that saves: the browser trace, the 1.1-2.1 s gap after verify()'s read, and declared writes. Eleven of the 24 tasks do not save, including the named find-record, plus find-user, switch-company, export-filtered-list, who-changed-field, the keyboard tasks and the Arabic reports. For those tasks, nothing ties the end state to what the person did. Three plants on a find-record-shaped stand-in were recorded as 'verified' and as a WIN on every metric against Odoo's find-record baseline (5 steps, 30 keys, 1.974 s, 17.91 s human):\n- N1: set-up turns on a setting, and the start list opens the record on its own timer. run() is one Escape. Result: 1 step, 1 key, 1.009-1.12 s.\n- N1b: the same with one click on plain text. Result: 1 step, 0 keys, about 1.03-1.16 s.\n- N2: set-up opens the record, so the server lists it as 'recently viewed' on the start list (text, not a field, and not in the address). run() clicks it. Result: 1 step, 0 keys, 0.109-0.167 s.\nThe control C1 (an honest typed search) verifies.\n\nN3 repeats N2 on the real product with the real ours find-user driver (plants/find-user.plant-N3.mjs). Set-up POSTs a personal default view of identity.users whose search is the needle's name (a feature our product has: isDefault, 'Open this view when the list opens'). run() is: click Users, then Enter. Result: verified 3 of 3 (plants/n3-real-driver.log), 2 steps, 1 key, 0.52-0.64 s, against an honest best of 3 steps and 3 keys. The comparison says WIN on every metric against Odoo (6 steps, 5 keys). Screenshot 04 shows the full name in the search box, which nobody typed.\nThe earlier critics' plants still hold: r10 R1-R5, r11 S1-S3 and r12 W1-W3 were all refused (plants/earlier-plants-rerun.log, 15 of 15)."
+    },
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 gate test passed in the clean verify.\n- HTTP (attack/http-attack.out): signed in as the alnoor admin, I sent 1,016 requests over every OpenAPI operation. They used gulfsteel's user, role, company, branch and tenant ids in paths, query strings, csv/xlsx/pdf export parameters and tenant-switch headers. Result: 0 leaks, 0 writes on B ids accepted, 0 errors.\n- Saved views (attack/view-attack.out): B's private and shared canary views returned 404 to A on GET and PUT. A's own list showed no canary, and B's views stayed intact.\n- Database (attack/db-attack.txt): erp_app, erp_auth and erp_owner are neither superuser nor BYPASSRLS. All 17 tenant_id tables have RLS enabled and forced. erp_app with no context sees 0 rows. In A's context it sees 0 of B's users, companies, audit rows and views, updates 0 of B's rows, and is refused an insert with B's tenant_id. A tenant id set without the transaction stamp sees 0 rows. Connected as erp_app, it cannot SET ROLE to erp_owner or postgres, cannot disable RLS, and cannot touch audit entries."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 gate test passed in the clean verify. Spot check (attack/sanity.out): noaccess gets 403 on users, roles, companies and branches, and on POST users. The viewer gets 403 on POST users. Admin gets 200. Anonymous gets 401. p01 adds no product endpoint."
+    },
+    {
+      "gate": "G3 clean clone (one command: build, migrate, seed, all tests; one command: running seeded demo)",
+      "status": "pass",
+      "evidence": "Fresh clone at 009acb5f with ERP_PROJECT=c-p01-odoo-rig-r13 and ports 20150/20151/20160/20161, run through verify-slot.sh. The slot was taken at 09:29:53Z. Result: 'verify passed in 3759 s', rc=0. Processor time was 9,872 s against the 10,500 s maximum. Load peaked at 45.8, so wall time was not judged. All 13 built ours drivers verified in the health check.\n\nMy first verify (slot taken 08:07:02Z) failed only because I had left my plant files in the clone's working tree: the zz-critic tests, plus find-user.mjs mid-plant. It is kept as verify-critic-p01-odoo-rig-r13-run1-contaminated.log. The second run was from the clean tree.\n\nThe demo with the shared dataset (ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up) returned rc=0 in 67 s. Port and project overrides work as documented."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI, ratchet)",
+      "status": "pass",
+      "evidence": "All passed in the clean verify, and the ratchet check passed.\n- Counts: dotnet 730 (min 730), web unit 525 (525), e2e 112 (112), compare 447 (447), build 6 (6).\n- None fell below round 12's 631/495/106/415/6.\n- String check: 800 keys in English and Arabic."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p01-odoo-rig-r13 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ERP_VERIFY_LOG=<staging>/verify-critic-p01-odoo-rig-r13.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1820,
+    "passed": 1820,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3759
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 3759,
+    "evidence": "verify-critic-p01-odoo-rig-r13.log: slot taken 09:29:53Z, 'verify passed in 3759 s', rc=0 (verify-run2.exit). Processor time was 9,872 s of the 10,500 s maximum. Load peaked at 45.8, so wall time was not judged (the 3,600 s quiet-machine maximum). ./erp up with the shared dataset: rc=0 in 67 s."
+  },
+  "odoo": [
+    {
+      "task": "api-update-user (p15)",
+      "winner": "odoo",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 249,
+        "seconds": 0.055,
+        "klm_seconds": 72.82
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 184,
+        "seconds": 0.51,
+        "klm_seconds": 54.62
+      },
+      "notes": "Command: COMPARE_OURS_URL=http://localhost:20150 node run.mjs --task built --product both --repeat 3, against my demo (shared dataset) and the shared rig, which run.mjs accepted live at the bar. LOSS: steps tie, and keystrokes and human seconds lose. Unchanged since round 9 and owned by p15. It is not tie-accepted: ours is worse on two metrics."
+    },
+    {
+      "task": "arabic-report (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.194,
+        "klm_seconds": 5.3
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 0,
+        "seconds": 4.317,
+        "klm_seconds": 15.9
+      },
+      "notes": "Keystrokes left out (both exactly 0)."
+    },
+    {
+      "task": "create-company-branch (p02)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 49,
+        "seconds": 0.619,
+        "klm_seconds": 22.17
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 3.057,
+        "klm_seconds": 48.53
+      },
+      "notes": "Path 'keyboard'."
+    },
+    {
+      "task": "create-restricted-user (named; p03)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 0.744,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 7.484,
+        "klm_seconds": 30.05
+      },
+      "notes": "Path 'pointer'. Screenshot 02 is the blind review of this task."
+    },
+    {
+      "task": "edit-and-save (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 9,
+        "seconds": 0.163,
+        "klm_seconds": 5.57
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 12,
+        "seconds": 0.266,
+        "klm_seconds": 8.72
+      },
+      "notes": "Path 'national'."
+    },
+    {
+      "task": "find-user (p03)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 3,
+        "seconds": 0.691,
+        "klm_seconds": 8.29
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 1.518,
+        "klm_seconds": 10.35
+      },
+      "notes": "Honest path 'initials'. The planted path N3 (set-up saves a default view searching the name) also 'wins' at 2 steps and 1 key: see the biggest gap."
+    },
+    {
+      "task": "new-user-keyboard (p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 4,
+        "seconds": 0.105,
+        "klm_seconds": 5.57
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 10,
+        "seconds": 0.903,
+        "klm_seconds": 5.9
+      },
+      "notes": "Path 'goTo'."
+    },
+    {
+      "task": "open-third-user-keyboard (p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 6,
+        "seconds": 0.15,
+        "klm_seconds": 6.13
+      },
+      "odoo": {
+        "steps": 8,
+        "keystrokes": 13,
+        "seconds": 0.627,
+        "klm_seconds": 6.74
+      }
+    },
+    {
+      "task": "print-list-arabic (p06)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 13,
+        "seconds": 0.475,
+        "klm_seconds": 11.09
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 32,
+        "seconds": 4.659,
+        "klm_seconds": 19.06
+      }
+    },
+    {
+      "task": "reach-screen-keyboard (p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 2,
+        "seconds": 0.072,
+        "klm_seconds": 3.66
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 0.377,
+        "klm_seconds": 3.99
+      },
+      "notes": "Path 'goTo'."
+    },
+    {
+      "task": "sign-in (p00)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.031,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.76,
+        "klm_seconds": 4.68
+      },
+      "notes": "Path 'passkey'. Keystrokes left out (both exactly 0)."
+    },
+    {
+      "task": "switch-company (p02)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.124,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.38,
+        "klm_seconds": 5.3
+      },
+      "notes": "Path 'pointer'. Keystrokes left out (both exactly 0)."
+    },
+    {
+      "task": "switch-to-arabic (named; p04)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.083,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 1.538,
+        "klm_seconds": 15.28
+      }
+    },
+    {
+      "task": "find-record, custom-field-filter, import-5000, follow-approval, add-rate, attach-file, configure-sequence, export-filtered-list, keyboard-navigation, see-and-rerun-job, who-changed-field",
+      "winner": "not-compared",
+      "notes": "The ours drivers are still 'not built yet' stubs, which p01 allows (later pieces fill them in). The Odoo baselines for all six named tasks exist in gauntlet/reference/odoo/tasks/. No task tied this round, so none is recorded as tie-accepted."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r13/01-blind-review-1.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r13/02-blind-review-2.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r13/03-blind-review-3.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r13/04-plant-n3-result-list-name-never-typed.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Every off-the-clock check applies only to tasks that save. On the 11 that do not (including the named find-record), set-up can leave the task done, or half done, for the product to finish.",
+    "detail": "Round 13 traces causation for every write. But the browser trace, the 1.1-2.1 s gap after verify()'s read, the declared writes and the 'entered by the measured part' rule all run only when task.saves is set. runner.mjs: measuredPartProblem returns null for a task that does not save, and PageTrace, startGapMs and the prefix reads are all guarded by task.saves.\n\nFor find-record, find-user, switch-company, export-filtered-list, who-changed-field, the four keyboard tasks and the two Arabic report tasks, only three things are checked:\n- the start screen's fields, address and home landing;\n- that verify() does not pass before the clock;\n- that there is at least one step.\nNothing ties the end state on screen to what the person did, and nothing requires the needle to be entered inside the clock.\n\nSo set-up, which may write to the product, can leave the work to the product:\n- N1/N1b: a setting makes the start screen open the record on its own timer. One key or one click is credited.\n- N2: the server remembers the record set-up opened and offers it on the start screen as text.\n- N3, on the real product: a personal default saved view of the users list whose search is the needle's name. The list then opens already filtered, and the person presses Enter. The name is never typed in the clock.\nAll four are recorded as verified, and each beats Odoo on every metric.\n\nThis is the off-the-clock class of rounds 10-12 (R1/R2, S1, W1), applied to tasks that do not save.\n\nPossible fixes:\n(a) Judge every browser task's end state by causation, not only writes. The navigation or DOM change that shows the end state must trace back to a counted step through the same trace rules. Start the trace and the unpredictable start gap for every browser task.\n(b) A find task names what the person enters (enters: the needle, or a declared minimum such as initials). The measured part must have typed or picked it, as tasks that save already require.\n(c) Refuse, or roll back before the start, set-up writes that change what the start screen or the task's lists show for this user: saved or default views, recent records, home preferences. At least refuse any set-up write whose body carries the task's data (taskWords).\n(d) Add N1, N1b, N2 and N3 as self-tests and mutations.",
+    "evidence": "Plants: copy gauntlet/evidence/p01-odoo-rig/r13/plants/zz-critic-r13.test.mjs to gauntlet/compare/test/, then run: cd gauntlet/compare && npm ci && node data/generate.mjs && node --test --test-concurrency=1 test/zz-critic-r13.test.mjs. C1 passes. N1, N1b and N2 fail with 'MISSED ... verified with 1 steps ... the comparison says win' (plants/critic-r13-plants-run2.log and run3.log). Sample RESULT lines:\n- N1: steps=1 keys=1 machine=1.009 typed=[] vs_odoo_find_record=win\n- N1b: steps=1 keys=0 machine=1.04\n- N2: steps=1 keys=0 machine=0.167\n\nReal product: replace gauntlet/compare/drivers/ours/find-user.mjs with plants/find-user.plant-N3.mjs. Start the demo with the shared dataset, then run: COMPARE_OURS_URL=<demo> node run.mjs --task find-user --product both --repeat 3 --out <dir>. Result: ours verified 3 of 3, 2 steps, 1 key, 0.52-0.64 s, and the verdict is 'win' (plants/n3-real-driver.log; its steps are click Users, then Enter, with nothing typed). Screenshot 04-plant-n3-result-list-name-never-typed.jpg shows the full name in the search box. Delete the 'Mine*' saved views afterwards."
+  },
+  "other_findings": [
+    "Load sensitivity of round 13's DevTools-command rule (commit e9d24d43). In my first verify, which ran beside my own mutation suite and another agent's verify, the honest control C3 failed. C3 is in test/measured-part.test.mjs: 'a save the page sends a few event-loop turns after the click'. The error was 'a timer armed by a task no step caused: a DevTools command of the harness during step 3 (a click ...)'. Under load, a click's handler can run inside a DevTools command task, and the new rule then refuses an honest save. The test passed in the clean verify and 6 of 6 times alone (plants/c3-repeat.log). It is load-dependent, not deterministic.",
+    "My own instrument mutations (plants/critic-r13-mutations.log; 218 tests, 0 failing unmutated). 11 of 12 were caught: the KLM operator times P, M, H and B; capital letters without Shift; a 3-key chord counted as 2; the blind title, the favicon, and key.json inside blind/; a list address naming the task's data; and the settle wait not recorded. C5 (a file pick continues any step) was missed, but it is an equivalent mutant: pickFile always records the opening click just before the file pick.",
+    "Fixed since round 12 and still fixed: the r10 plants R1-R5, the r11 plants S1-S3 and the r12 plants W1-W3 are all refused at this commit (plants/earlier-plants-rerun.log, 15 of 15). The r12 missed mutations K6, K8 and K9 are now builder mutations M98-M100.",
+    "[route: p15] api-update-user still loses: steps tie 2-2, keystrokes 249 vs 184, and human seconds 72.82 vs 54.62. Machine seconds win (0.055 vs 0.51). Unchanged since round 9.",
+    "Blindness: the review page text names no product, tenant or company (blind-review-text.txt: 0 matches for odoo, alnoor, al noor, gulf steel, gulfsteel, erp). Layouts and menu words still tell the products apart, and dataset names are unmasked, as accepted in earlier rounds. The review page has no focusable controls, so a keyboard Tab stays on the page body.",
+    "Rig: run.mjs checked the shared rig live and accepted it at the bar (at least 100,000 rows in each of the 7 main lists). I did not stand up a private rig, because of the memory budget.",
+    "CLAUDE.md rules: I found no tenant isolation leak over HTTP, exports, saved views or the database app role. The harness adds no money and no business records. Its only dependencies are playwright-core (Apache-2.0) and acorn (MIT). I found no Odoo code, views or text copied: the drivers only operate Odoo's screens. The p01 scope files exist: tools/odoo-reference (compose, up.sh, odoo:20.0-20260926), gauntlet/reference/odoo/volume.json and baselines for all 24 tasks."
+  ],
+  "human_gates": [
+    {
+      "gate": "Any change to anything under bar/ (bar/reference/)",
+      "what": "The Odoo baselines and captures stay in gauntlet/reference/odoo/ until the owner approves moving them to bar/reference/. This is the existing needs-human item; p01 did not write under bar/."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p01-odoo-rig/r13",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r13"
+}
