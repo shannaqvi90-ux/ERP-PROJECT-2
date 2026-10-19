@@ -99,7 +99,9 @@ public sealed record SignInDto(Guid Id, DateTimeOffset OccurredAt, string Outcom
 /// again, the one that failed included; a set-up code still signs in from it while it is paused.</summary>
 public sealed record PausedClient(string Source, DateTimeOffset Until, int Failures, string Kind = AddressKinds.Client);
 
-public sealed record SignInHistoryPage(IReadOnlyList<SignInDto> Items, int Total, IReadOnlyList<PausedClient> Paused);
+/// <summary>The sign-in history page. <c>DeviceApprovalUntil</c>: a device the user or an
+/// administrator let sign in has not signed in yet, and may until then (null: none waiting).</summary>
+public sealed record SignInHistoryPage(IReadOnlyList<SignInDto> Items, int Total, IReadOnlyList<PausedClient> Paused, DateTimeOffset? DeviceApprovalUntil = null);
 
 /// <summary>A role the user holds: in every company (<c>CompanyId</c> null) or in one.</summary>
 public sealed record AccessRole(Guid Id, string NameEn, string NameAr, bool IsSystem, Guid? CompanyId = null);
@@ -602,7 +604,7 @@ internal static class UserEndpoints
     private static async Task<Results<Ok<SignInHistoryPage>, ProblemHttpResult>> SignIns(
         Guid id, int? skip, int? take, IdentityDbContext db, IOptions<AuthOptions> options, ClientAddresses addresses, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
     {
-        var user = await db.Users.AsNoTracking().Where(u => u.Id == id).Select(u => new { u.SignInUnblockedAt }).SingleOrDefaultAsync(cancellationToken);
+        var user = await db.Users.AsNoTracking().Where(u => u.Id == id).Select(u => new { u.SignInUnblockedAt, u.DeviceApprovalUntil }).SingleOrDefaultAsync(cancellationToken);
         if (user is null)
         {
             return Problems.NotFound(http);
@@ -629,7 +631,7 @@ internal static class UserEndpoints
             addresses.KindOf(a.IpAddress), DeviceTag(a.Source))).ToList();
         var paused = (await PausedAsync(db, id, user.SignInUnblockedAt, options.Value, now, cancellationToken))
             .Select(p => p with { Kind = SourceKind(p.Source, addresses) }).ToList();
-        return TypedResults.Ok(new SignInHistoryPage(items, total, paused));
+        return TypedResults.Ok(new SignInHistoryPage(items, total, paused, user.DeviceApprovalUntil > now ? user.DeviceApprovalUntil : null));
     }
 
     /// <summary>A short, stable tag of a known device (from its failure-count source), or null.</summary>

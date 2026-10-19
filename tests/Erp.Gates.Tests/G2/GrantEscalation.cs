@@ -247,15 +247,16 @@ public static class GrantEscalation
         body["companyRoles"] = new JsonArray(roleIds.Distinct().Select(r => (JsonNode)GateCompanies.CompanyRole(r, company)).ToArray());
 
     /// <summary>A body that passes validation: unique names and e-mail, a valid password and
-    /// language, flags on, no ids.</summary>
+    /// language, flags on, no ids; a text field whose documented pattern the made-up value breaks
+    /// (a device code) takes the documented example instead.</summary>
     internal static JsonObject ValidBody(OpenApiDocument openApi, JsonElement schema, ErpTestEnvironment? env, string tag)
     {
         var k = 0;
-        return WithoutUnfilledItems(openApi.BuildBody(schema, (type, format, name) =>
+        return WithoutUnfilledItems(openApi.BuildBody(schema, (leaf, type, format, name) =>
         {
             k++;
             var lower = name?.ToLowerInvariant() ?? "";
-            return type switch
+            JsonNode? value = type switch
             {
                 "string" when format == "uuid" => null,
                 "string" when lower.Contains("email") => $"g2.{tag}.{k}@{env?.TenantA.EmailDomain ?? "g2.example"}",
@@ -266,6 +267,7 @@ public static class GrantEscalation
                 "boolean" => true,
                 _ => null,
             };
+            return value is not null && openApi.Resolve(leaf).TryGetProperty("pattern", out _) ? openApi.Conform(leaf, value) : value;
         }) as JsonObject ?? []);
     }
 

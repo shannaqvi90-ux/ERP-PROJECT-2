@@ -112,6 +112,8 @@ export type SignInHistory = {
   items: SignIn[];
   total: number;
   paused: { source: string; until: string; failures: number; kind?: AddressKind | "device" }[];
+  /** A device let in (with its device code) that has not signed in yet may until then. */
+  deviceApprovalUntil?: string | null;
 };
 
 export type ResetResult = { mustChangePassword: boolean; setupCode?: string; setupCodeExpiresAt?: string; sessionsEnded: number; passkeysRemoved?: number };
