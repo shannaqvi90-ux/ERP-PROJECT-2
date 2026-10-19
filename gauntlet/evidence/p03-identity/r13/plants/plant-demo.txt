@@ -1,0 +1,10 @@
+B reads its own user 01a15363-016f-7ee2-b0f2-adacadfb7425: 200
+L1: A reads B's user by id: 200 {"id":"01a15363-016f-7ee2-b0f2-adacadfb7425","email":"viewer@gulfsteel.example","displayName":"Omar Haddad","language":"en","isActive":true,"roleIds":["01a15363
+P2: helpdesk lets a device of the Administrator in: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPDNT46BA86:00000005
+auditor role created; auditor user 201
+P1: the auditor (no identity.users.update) lets a device of the viewer in: {"until":"2026-10-19T09:59:54.4817139+00:00"}BEGIN
+0190a000-0000-7000-8000-000000000001|1792400394.970975
+L2: A bound sees sign_in_attempts of other tenants|1
+ROLLBACK
+
+P2: the auditor (read-only plus sign-in history) lets a device of the Administrator in: 200 {"until":"2026-10-19T10:00:03.8088885+00:00"}

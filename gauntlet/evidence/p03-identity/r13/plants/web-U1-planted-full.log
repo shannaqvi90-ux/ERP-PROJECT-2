@@ -1,0 +1,96 @@
+     [33m[2m✓[22m[39m the control: the same sweep on an editable form finds the save keys' writes [33m 3306[2mms[22m[39m
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m92 tests[22m[2m)[22m[33m 14213[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 670[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start [33m 560[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start, and says so when the access is refused [33m 535[2mms[22m[39m
+     [33m[2m✓[22m[39m ticks the company the signed-in user works in for a new user until companies are chosen by hand (critic p03 round 7) [33m 660[2mms[22m[39m
+     [33m[2m✓[22m[39m deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused [33m 473[2mms[22m[39m
+     [33m[2m✓[22m[39m activates only inactive users [33m 643[2mms[22m[39m
+     [33m[2m✓[22m[39m changes nothing and keeps the chosen rows when the confirmation is cancelled with Escape [33m 352[2mms[22m[39m
+     [33m[2m✓[22m[39m asks in Arabic, right to left, with Arabic buttons, on an Arabic screen [33m 410[2mms[22m[39m
+       [33m[2m✓[22m[39m deactivates every matching user in one request with the list's search, filter and count, after a confirmation [33m 515[2mms[22m[39m
+       [33m[2m✓[22m[39m changes nothing and keeps the selection when the confirmation is cancelled [33m 442[2mms[22m[39m
+       [33m[2m✓[22m[39m shows the API's reason when the matching rows changed meanwhile [33m 426[2mms[22m[39m
+     [33m[2m✓[22m[39m Alt+L shows the new language in the user's own row and open record at once, and the record's next save is not refused [33m 546[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a Language the user is changing in the open record when the switch comes in, and saves it with the row's new version [33m 362[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2man action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need
+[22m[39mrecord actions run without one permission of their module: 26
+
+ [32m✓[39m src/modules/identity/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 22910[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 7213[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles?open=r-clerk: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4026[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4733[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4019[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: every row chosen shows the selection bar, and an editor's sweep finds the bulk deactivation [33m 2917[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 24929[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 6807[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3121[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 2073[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 819[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3631[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3157[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 3471[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 1847[2mms[22m[39m
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 42739[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 21375[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 19923[2mms[22m[39m
+     [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 404[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 470[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 344[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mevery palette entry, run by a user who may only read[2m > [22m[2msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[22m[39mpalette entries swept for a reader: 42
+
+ [32m✓[39m src/modules/shell/paletteActions.test.tsx [2m([22m[2m41 tests[22m[2m)[22m[33m 56335[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow sign-in again is not offered to a user who may change users but not see the sign-in history, in English or Arabic (critic p04 round 9, plant P4) [33m 1374[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen [33m 1250[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 1113[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen [33m 1001[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 820[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen [33m 679[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen [33m 719[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen [33m 659[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen [33m 635[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen [33m 696[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen [33m 678[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen [33m 687[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: started from home, it opens /identity/roles and runs the screen's own command there [33m 357[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: started from home, it opens /tenancy/companies and runs the screen's own command there [33m 342[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: started from home, it opens /tenancy/branches and runs the screen's own command there [33m 321[2mms[22m[39m
+     [33m[2m✓[22m[39m every action that asks for a record says what to choose, in English and Arabic, and runs no command before [33m 778[2mms[22m[39m
+     [33m[2m✓[22m[39m an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need [33m 9451[2mms[22m[39m
+     [33m[2m✓[22m[39m Show the sign-in history from home, in Arabic: the user chosen opens on the history tab [33m 336[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow a user to sign in again from home: the history opens and the user chosen is allowed again [33m 326[2mms[22m[39m
+     [33m[2m✓[22m[39m New user from home keeps its new record open when the list arrives after the command ran [33m 565[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may add a branch but to no company (only some branches of it) is not offered New branch [33m 434[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9) [33m 615[2mms[22m[39m
+     [33m[2m✓[22m[39m is found by its words in either language, on an Arabic screen too [33m 607[2mms[22m[39m
+     [33m[2m✓[22m[39m come first, once each: on the users screen New user, the list's own controls and Print or export [33m 510[2mms[22m[39m
+     [33m[2m✓[22m[39m are found by the words of the module action they stand for: "print compan" on the companies screen (critic p02 round 10) [33m 478[2mms[22m[39m
+     [33m[2m✓[22m[39m follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again [33m 820[2mms[22m[39m
+     [33m[2m✓[22m[39m the palette offers a user's account actions exactly when the record shows their buttons [33m 1048[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user's account actions from every tab, exactly as on Details, and to a reader none [33m 1153[2mms[22m[39m
+     [33m[2m✓[22m[39m Reset password from "What they can do" opens Details with the reset's first choice focused; Delete user from the history asks first [33m 693[2mms[22m[39m
+     [33m[2m✓[22m[39m sends nothing but reads (and the user's own settings), and opens no new record, on every screen [33m 12822[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change everything finds the writes the entries make [33m 12424[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m40 passed[39m[22m[90m (40)[39m
+[2m      Tests [22m [1m[32m528 passed[39m[22m[90m (528)[39m
+[2m   Start at [22m 08:54:35
+[2m   Duration [22m 59.03s[2m (transform 16.70s, setup 1.84s, import 27.37s, tests 207.35s, environment 20.66s)[22m
+
+--- identity plants self-test
+control: the gate passes on the unplanted product
+U-passkeys: caught (A user's passkeys offered for removal to someone who may not change users (critic p03 round 8's new levers))
+U1: caught (New role offered without identity.roles.create)
+U1-users: caught (New user offered without identity.users.create)
+U1-shortcut: caught (Alt+N opens a new role without identity.roles.create)
+U-delete: caught (Delete role offered without identity.roles.delete (critic p03 round 1))
+U-copy: caught (Copy role offered for a role granting more than the user holds)
+U2: caught (A user's grants compared only on identity permissions (critic p03 round 3))
+U-unreadable: caught (Roles the screen cannot read counted as within the signed-in user (critic p03 round 5: a clerk offered Save on the Administrator))
+U2-roles: caught (A role's grants compared only on identity permissions)
+U-company-roles: caught (Roles held in one company left out of what a user holds)
+U-elsewhere: caught (A user holding roles in companies the signed-in user does not work in treated as editable)
+U-workspace: caught (A role's grants judged against the session's permissions (the working company's included), not those held everywhere)
+U-refused: caught (The server's refusal of acting on an account (it reaches companies the signed-in user does not work in) ignored)
+identity screens permission gate self-test: 13 plants, all caught

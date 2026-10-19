@@ -1,0 +1,11 @@
+import { launch, BASE, signIn } from './lib.mjs';
+const b = await launch(); const p = await (await b.newContext({ viewport: { width: 1366, height: 800 } })).newPage();
+const errs=[]; p.on('console', m => { if (m.type()==='error') errs.push(m.text()); });
+await p.goto(BASE + '/'); await p.waitForTimeout(1500);
+console.log((await p.locator('body').innerText()).slice(0, 600));
+await signIn(p, 'admin@alnoor.example'); await p.waitForTimeout(2500);
+console.log('---', p.url()); console.log((await p.locator('body').innerText()).slice(0, 1200));
+await p.keyboard.press('g'); await p.keyboard.press('u'); await p.waitForTimeout(2500);
+console.log('---', p.url()); console.log((await p.locator('body').innerText()).slice(0, 1500));
+console.log('errors', errs);
+await b.close();

@@ -1,0 +1,21 @@
+attacker attempt 1: 401 auth.signInFailed deviceCode=-
+attacker attempt 2: 401 auth.signInFailed deviceCode=-
+attacker attempt 3: 401 auth.signInFailed deviceCode=-
+attacker attempt 4: 401 auth.signInFailed deviceCode=-
+attacker attempt 5: 429 auth.signInPaused deviceCode=9TMV-7KTP
+attacker attempt 6: 429 auth.signInPaused deviceCode=8HZF-83BN
+owner new laptop, right password: 429 retry-after 899 sharedAddress=true deviceCode=XG62-MCAX title="Too many failed sign-ins with this e-mail address from this network address, which many people share (a gateway or proxy), so they may not have been yours. Sign-in with it from here is paused for about 15 minutes. To sign in from this device now, give its device code to your administrator, or enter it under My account on a device where you are signed in. Or wait, or ask your administrator to allow sign-in again; a set-up code from them also works." cookies=erp_pending
+owner again: 429 same code=true
+nonexistent account after 5 fails: 429 keys=code,deviceCode,pausedUntil,retryAfterSeconds,sharedAddress,status,title,traceId,type sharedAddress=true deviceCode=8HNW-MC43
+existing account paused keys=code,deviceCode,pausedUntil,retryAfterSeconds,sharedAddress,status,title,traceId,type
+admins sign in: gulfsteel 200, alnoor 200
+gulfsteel admin approves alnoor viewer's device: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-a62bc03980ac1bfd5dfd0fe8
+alnoor admin approves a wrong code: 200 {"until":"2026-10-19T09:11:20.0560028+00:00"}
+owner after wrong-code approval: 429
+alnoor admin approves owner's code (lower case, space): 200 {"until":"2026-10-19T09:11:20.2800228+00:00"}
+another fresh browser, right password, after the approval: 429 (expect 429)
+owner's laptop after the approval, right password: 200 viewer@alnoor.example
+owner's laptop again (known device now): 200
+audit read: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-44770f1e8d330a1f016b8c418b4703bd-6a7ae4b2f3d249c8-00"}
+history: ["succeeded@172.23.0.1 Mozilla/5.0 owner new la","succeeded@172.23.0.1 Mozilla/5.0 owner new la","throttled@172.23.0.1 attacker-script/1.0","throttled@172.23.0.1 Mozilla/5.0 owner new la","throttled@172.23.0.1 Mozilla/5.0 owner new la","throttled@172.23.0.1 Mozilla/5.0 owner new la","throttled@172.23.0.1 attacker-script/1.0","failed@172.23.0.1 attacker-script/1.0","failed@172.23.0.1 attacker-script/1.0","failed@172.23.0.1 attacker-script/1.0","failed@172.23.0.1 attacker-script/1.0","failed@172.23.0.1 attacker-script/1.0"]
+paused: [{"source":"172.23.0.1","until":"2026-10-19T08:26:15.140773+00:00","failures":5,"kind":"gateway"}]
