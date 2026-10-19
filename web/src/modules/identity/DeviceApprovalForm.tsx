@@ -76,7 +76,7 @@ export function DeviceApprovalForm({
             autoCapitalize="characters"
             spellCheck={false}
             maxLength={20}
-            placeholder="K7QM-3XRA"
+            placeholder={t("identity.device.placeholder")}
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
           />
