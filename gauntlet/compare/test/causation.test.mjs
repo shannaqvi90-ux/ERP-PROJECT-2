@@ -863,13 +863,13 @@ test('causation (round 14): a document is judged by the navigation that loaded i
 });
 
 test('causation (round 14): a favicon or image the browser fetched before the clock, answered just before an untraceable task, does not stand between it and the step (a busy machine)', () => {
-  const sendOf = (at, id, type, url) => I('ResourceSendRequest', at, { requestId: id, url, requestMethod: 'GET', resourceType: type });
+  const sendOf = (at, id, type, url, initiator = { type: 'other', fetchType: '' }) => I('ResourceSendRequest', at, { requestId: id, url, requestMethod: 'GET', resourceType: type, initiator });
   const ans = (at, id) => I('ResourceReceiveResponse', at, { requestId: id });
   const checkpoint = (at, inner = []) => [X('BlinkScheduler_PerformMicrotaskCheckpoint', at, 0.5), ...inner];
   // Before the clock the page asked for the favicon (and the step's click asked for its data); the
   // favicon's answer lands between the data's answer and the scheduler's message that renders.
-  const tasks = (iconInner = []) => [
-    task(50, NET, [sendOf(2, 'icon', 'Other', 'http://p/favicon.ico')]),
+  const tasks = (iconInner = [], icon = sendOf(2, 'icon', 'Other', 'http://p/favicon.ico')) => [
+    task(50, NET, [icon]),
     task(101, INPUT, [...click(), send(3, 'd', 'http://p/api/data', 'GET')]),
     task(120, NET, [answer(1, 'd'), X('FunctionCall', 1.5, 1, { url: 'http://p/' })]),
     task(130, NET, [answer(1, 'icon'), ...checkpoint(2, iconInner)]),
@@ -880,6 +880,10 @@ test('causation (round 14): a favicon or image the browser fetched before the cl
   // A font whose promise ran the page's code (it posted a message) stands between them: no step's.
   const active = verdict(tasks([I('SchedulePostMessage', 2.2, { traceId: 9 })]), 'w');
   assert.equal(active.caused, false);
+  // A request the page's script made (a fetch: the browser records it as "Other" too), or an image the
+  // page loaded (decode() can wait on it), stands between them even when nothing of it shows in the record.
+  assert.equal(verdict(tasks([], sendOf(2, 'icon', 'Other', 'http://p/api/slow', { type: 'script', fetchType: 'fetch' })), 'w').caused, false);
+  assert.equal(verdict(tasks([], sendOf(2, 'icon', 'Image', 'http://p/slow.png', { type: 'parser', fetchType: '' })), 'w').caused, false);
 });
 
 test('causation (round 14): an animation frame only the harness asked for (the click\'s check that its target stands still) does not stand between an untraceable task and the step', () => {

@@ -209,7 +209,15 @@ test('plant Q1 on the real driver (critic r9): ours api-update-user whose set-up
     return s3;
   });
   fresh();
-  const r = await execute(task, await describeDriverFile(planted), standIn(), 'ours', needles, out(), { timeout: 10_000 });
+  // Round 14: the task declares the writes its set-up sends; the plant's preference write is not one of
+  // them, so the run is refused before the end-state rule speaks.
+  const undeclared = await execute(task, await describeDriverFile(planted), standIn(), 'ours', needles, out(), { timeout: 10_000 });
+  never(undeclared, 'Q1 on api-update-user (its set-up write undeclared)');
+  assert.match(undeclared.error, /a set-up write its task does not declare \(fetch PUT \/api\/identity\/me\/preferences/);
+  // With that write declared too, the end-state rule (round 10) still refuses it on its own.
+  fresh();
+  const declared = { ...task, fixtures: { ours: [...task.fixtures.ours, 'PUT /api/identity/me/preferences'] } };
+  const r = await execute(declared, await describeDriverFile(planted), standIn(), 'ours', needles, out(), { timeout: 10_000 });
   never(r, 'Q1 on api-update-user');
   assert.equal(r.status, 'invalid');
   assert.match(r.error, /end state \(GET \/api\/identity\/users\/\* \[language\]\) did not change/);

@@ -214,15 +214,15 @@ export function analyseTrace(events) {
   // Where the page's frames started navigations (a form posted, an address set), with the address.
   const navigationStarts = events.filter(e => e.name === 'FrameLoader::StartNavigation' && e.args?.url);
   for (const v of sockets.values()) { v.sends.sort((a, b) => a.event.ts - b.event.ts); v.receives.sort((a, b) => a.event.ts - b.event.ts); }
-  // Round 14: a task that only delivered what the browser fetched for itself or for rendering (a
-  // favicon, an image, a font, a style sheet) and ran nothing of the page's (no script, no event, nothing
-  // inside its microtask checkpoint) cannot have posted the message an untraceable task delivers.
+  // Round 14: a task that only delivered what the browser fetched of its own accord (the page's icon) and
+  // ran nothing of the page's (no script, no event, nothing inside its microtask checkpoint) cannot have
+  // posted the message an untraceable task delivers.
   for (const t of tasks) {
     if (!t.answers.length || t.protocol || t.timerFires.length || t.frameFires.length || t.idleFires.length) continue;
     if (t.events.some(e => /^(FunctionCall|EvaluateScript|EventDispatch|ParseHTML|SchedulePostMessage|ResourceSendRequest|TimerInstall|RequestAnimationFrame)$/.test(e.name))) continue;
     const checkpoints = t.events.filter(e => e.ph === 'X' && e.name === 'BlinkScheduler_PerformMicrotaskCheckpoint');
     if (checkpoints.some(c => t.events.some(e => e !== c && e.ts > c.ts && e.ts <= c.ts + (c.dur || 0)))) continue;
-    t.passive = t.answers.every(a => PASSIVE_RESOURCES.test(String(sends.get(a.args.data.requestId)?.event.args?.data?.resourceType || '')));
+    t.passive = t.answers.every(a => browserOwnRequest(sends.get(a.args.data.requestId)?.event.args?.data));
   }
   // Round 14 (a busy machine): a frame whose callbacks the harness alone asked for (Playwright's check
   // that a click's target stands still asks for animation frames inside its DevTools commands) and that
@@ -250,8 +250,12 @@ export function analyseTrace(events) {
 }
 
 const keep = (map, key, value) => { if (!map.has(key)) map.set(key, []); map.get(key).push(value); };
-/** Resources the browser fetches for rendering, with no script waiting on them as such (round 14). */
-const PASSIVE_RESOURCES = /^(Image|Font|Stylesheet|Media|Other|TextTrack|Manifest)$/;
+/**
+ * A request the browser made of its own accord (the page's icon): no element or script of the page asked
+ * for it, so nothing of the page's waits on its answer (an image, a font or a style sheet the page loads
+ * can be waited on, through decode(), document.fonts or a load event). Round 14.
+ */
+const browserOwnRequest = d => !!d && String(d.resourceType) === 'Other' && d.initiator?.type === 'other' && !d.initiator?.fetchType;
 /** The last request of `key` made before trace time `ts` (a timer's install, an animation frame's or idle callback's request). */
 const askedBefore = (map, key, ts) => (map.get(key) || []).filter(x => x.event.ts < ts).sort((a, b) => a.event.ts - b.event.ts).pop() || null;
 
