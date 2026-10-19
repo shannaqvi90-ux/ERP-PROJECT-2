@@ -1032,7 +1032,7 @@ describe("my account", () => {
     view = await render(<App language="en" />);
     await settle();
     await act(async () => new Promise((r) => setTimeout(r, 50)));
-    const form = view.container.querySelector<HTMLFormElement>("form.id-device-approval")!;
+    const form = view.container.querySelector<HTMLElement>(".id-device-approval")!;
     expect(form.querySelector("h2")!.textContent).toBe("Let a device sign in");
     const code = form.querySelector<HTMLInputElement>('input[name="deviceCode"]')!;
     expect(code.getAttribute("dir")).toBe("ltr");
@@ -1611,12 +1611,13 @@ describe("account actions keep the open record saveable", () => {
   it("lets one device in with the code its paused sign-in screen shows, from the sign-in history, in English and Arabic", async () => {
     const calls = await openPaused(false);
     await click(tab("Sign-in history"));
-    const form = view!.container.querySelector<HTMLFormElement>("aside form.id-device-approval")!;
+    const form = view!.container.querySelector<HTMLElement>("aside .id-device-approval")!;
     expect(form).not.toBeNull();
     expect(form.textContent).toContain("nobody else behind the address gets in");
     const code = form.querySelector<HTMLInputElement>('input[name="deviceCode"]')!;
     setInput(code, "K7QM-3XRA");
-    key(code, { key: "Enter", code: "Enter", ctrlKey: true });
+    // Plain Enter in the record panel lets the device in (the panel's own keys do not take it).
+    key(code, { key: "Enter", code: "Enter" });
     await settle();
     await settle();
     const sent = calls.filter((c) => c.method === "POST" && c.url === `/api/identity/users/${paused.id}/devices/approve`);
@@ -1628,7 +1629,7 @@ describe("account actions keep the open record saveable", () => {
     view = undefined;
     await openPaused(false, "ar");
     await click(tab("سجل الدخول"));
-    const arabic = view!.container.querySelector("aside form.id-device-approval")!.textContent ?? "";
+    const arabic = view!.container.querySelector("aside .id-device-approval")!.textContent ?? "";
     expect(arabic).toContain("السماح لجهاز بتسجيل الدخول");
     expect(arabic).toContain("رمز الجهاز");
     expect(arabic).not.toMatch(/[A-Za-z]/);

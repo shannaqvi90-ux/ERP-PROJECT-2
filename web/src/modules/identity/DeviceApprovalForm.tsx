@@ -1,7 +1,6 @@
-import { useState, type FormEvent, type Ref } from "react";
+import { useId, useState, type Ref } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
-import { formKeys } from "../../kernel/forms/RecordForm";
 import { Field } from "../../kernel/forms/fields";
 
 /** Eight symbols of the device-code alphabet (no 0/O, 1/I/L), either case, hyphens and spaces anywhere. */
@@ -12,7 +11,8 @@ export const deviceCodePattern = /^[ -]*(?:[A-HJKMNP-Z2-9][ -]*){8}$/i;
  * paused after someone's failures (critic p03 round 12): the device's sign-in screen shows a device
  * code, and the person (My account, on a device where they are signed in) or an administrator (the
  * user's Sign-in history) enters it here. That browser alone may then sign in with its password.
- * Keyboard first: type the code, Enter (or Ctrl+Enter) lets it in.
+ * Keyboard first: type the code, Enter (or Ctrl+Enter) lets it in. A group, not a form of its own:
+ * it sits inside the user record's form, and forms may not nest.
  */
 export function DeviceApprovalForm({
   endpoint,
@@ -31,9 +31,10 @@ export function DeviceApprovalForm({
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const headingId = useId();
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  async function submit() {
+    if (busy) return;
     setDone(null);
     setError(null);
     if (!deviceCodePattern.test(code)) {
@@ -57,13 +58,27 @@ export function DeviceApprovalForm({
   }
 
   return (
-    <form
+    <div
       className="id-form id-device-approval"
-      noValidate
-      onSubmit={(e) => void submit(e)}
-      onKeyDown={(e) => formKeys(e, () => e.currentTarget.requestSubmit(), () => undefined)}
+      role="group"
+      aria-labelledby={headingId}
+      onKeyDown={(e) => {
+        // Enter in the code field lets the device in here, never the record form around it.
+        if (e.key === "Enter" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && (e.target as HTMLElement).tagName === "INPUT") {
+          e.preventDefault();
+          e.stopPropagation();
+          void submit();
+          return;
+        }
+        // The save keys (Ctrl+Enter, Ctrl+S by key position) let it in too, not save the record.
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "Enter" || e.code === "KeyS" || e.key.toLowerCase() === "s")) {
+          e.preventDefault();
+          e.stopPropagation();
+          void submit();
+        }
+      }}
     >
-      <h2>{t("identity.device.title")}</h2>
+      <h2 id={headingId}>{t("identity.device.title")}</h2>
       <p className="muted">{t(hintKey)}</p>
       <Field name="deviceCode" label={t("identity.device.code")} errors={fieldError ? [fieldError] : []}>
         {(a) => (
@@ -82,7 +97,7 @@ export function DeviceApprovalForm({
           />
         )}
       </Field>
-      <button type="submit" className="button primary" disabled={busy}>
+      <button type="button" className="button primary" disabled={busy} onClick={() => void submit()}>
         {t("identity.device.letIn")}
       </button>
       {done && (
@@ -95,6 +110,6 @@ export function DeviceApprovalForm({
           {error}
         </div>
       )}
-    </form>
+    </div>
   );
 }

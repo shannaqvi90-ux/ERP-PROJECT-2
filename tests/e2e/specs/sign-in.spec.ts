@@ -176,7 +176,7 @@ test.describe("sign in to an empty workspace", () => {
     await field.focus();
     await page.keyboard.type(code.toLowerCase());
     await page.keyboard.press("Enter");
-    await expect(page.locator("aside form.id-device-approval [role=status]")).toContainText("That device can now sign in with its password until");
+    await expect(page.locator("aside .id-device-approval [role=status]")).toContainText("That device can now sign in with its password until");
 
     // The laptop signs in with its own password; the gateway stays paused for everyone else.
     const password = laptop.locator('input[name="password"]');
