@@ -337,6 +337,40 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
 - The **clipboard is read back** at the start (pasted into a scratch page that closes again): text
   set-up copied must be gone (X16). A signed-in start keeps no local storage from set-up (X12).
 
+**Every browser task, not only one that saves, is judged by causes** (round 14, critic p01 r13: eleven
+tasks do not save, find-record among them, and set-up could leave them done or half done for the
+product to finish; plants N1, N1b, N2 and N3 were recorded as verified wins). Plant-tested in
+`test/screen-causes.test.mjs` and `test/causation.test.mjs`; see
+`docs/decisions/p01-odoo-rig-screen-causes.md`:
+
+- **Every change of the screen leads back to a counted step** (`lib/causation.mjs screenCauses`). The
+  browser's record now runs for every browser task, from before verify()'s read on the start screen
+  until the page's script is frozen after the clock, and holds Chromium's invalidation tracking: every
+  node inserted or removed, text, attribute or style changed, document parsed or navigation started,
+  inside the task that did it. Each change is judged by the chains a write is judged by, by where the
+  chain begins (a counted step's input or acting command) and not by its delays (a slow search is the
+  person's; a click that opens the record 3 s later opened it). A document is its navigation's; markup
+  the page's script parses is that script's change. The harness's own changes for a blind screenshot
+  (neutral title set in a script world of its own, the screenshot's style and masks) are passed over,
+  and page script they set off is judged; any other change inside a harness command is the page's own
+  script run inside the harness's read and is no step's. Only the main frame's renderer is judged (a
+  frame of another site runs elsewhere and verify() never reads it). The clock starts 1.1-2.1 s after
+  verify()'s read for every browser task. **Enforced for the product measured against the reference**,
+  recorded for the reference (`screen_changes` in each result, `enforced`): the reference's own client
+  changes its screen from a shared worker, repeating timers and observers on every run, and it is a
+  published image no one here configures for a task; the rule refuses a run, it never changes a count.
+- **A task that asks the person to find one record names it** (`finds`: find-record and
+  who-changed-field `contact.name`, find-user `user.name`). The measured part must type a **piece** of
+  it (its letters and digits in order, at least two: the whole name, its first letters, the initials,
+  word starts, a fragment), no screen may show it before the first piece is typed (the operator reads
+  the screen in the read world right before that step, on the clock for both products), and the start
+  screen may not show it (`finds` in each result). A driver health check is held to the first rule only.
+- **Set-up may not put the record within reach**: a set-up write (the harness's fetch or set-up's
+  browser) carrying the found name, whole or any of its words of four letters or more (the task's own
+  input values taken out first), is refused, and so is an address set-up's browser opens that names
+  the task's data. A health check, whose clean stack needs the record created, is exempt.
+- Input the browser delivers while running a DevTools command (a busy machine) is the step's.
+
 What the instrument cannot do: tell whether a driver's `verify()` reads the right thing. It can
 only make sure `verify()` reads the same way before and after the clock and that, for a task that
 saves, its declared end state changed during the measured part, which sent the write. A task that
@@ -384,7 +418,7 @@ both products pay for the same shots, each task declares its `moments`; while me
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 11); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 12); a baseline
 from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
@@ -618,7 +652,11 @@ their guards, the clock markers), steps timed from their input, the gap before t
 never counted as typed text; (round 13) web-socket messages, posted messages and other processes'
 messages, other threads of the page's script, the chain's total delay, animation-timed events, idle
 callbacks, observers during an animation, a page with a cross-site frame, a browser key's keystrokes,
-human plus wait, the review page's random letters, the triple click and the fixed prefix of a field. Each test file's self-tests run once unmutated for all of its
+human plus wait, the review page's random letters, the triple click and the fixed prefix of a field; (round 14)
+the screen-change rule and its parts (changes before the clock, the browser's own, the harness's shot, the
+harness's reads), the start gap for every task, the finds rules (a piece typed, not shown before, not on the
+start screen, a piece's letters and length), set-up writes and addresses carrying the found record, and
+input delivered inside a DevTools command. Each test file's self-tests run once unmutated for all of its
 mutations (the control), and a mutation counts as caught only when a test that passed there fails
 mutated. It exits 1 when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
 web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above

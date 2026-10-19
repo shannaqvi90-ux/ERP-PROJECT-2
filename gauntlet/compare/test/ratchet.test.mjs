@@ -15,7 +15,8 @@ const KEYS = { tasks: 'compare.tasks', named_tasks: 'compare.namedTasks', odoo_d
   guard_plants: 'compare.guardPlants', api_tasks: 'compare.apiTasks', page_function_plants: 'compare.pageFunctionPlants',
   instrument_mutations: 'compare.instrumentMutations', before_clock_plants: 'compare.beforeClockPlants', saves_tasks: 'compare.savesTasks',
   enters_tasks: 'compare.entersTasks', set_up_off_clock_plants: 'compare.setUpOffClockPlants', end_states_declared: 'compare.endStatesDeclared',
-  measured_part_plants: 'compare.measuredPartPlants', causation_plants: 'compare.causationPlants' };
+  measured_part_plants: 'compare.measuredPartPlants', causation_plants: 'compare.causationPlants',
+  screen_cause_plants: 'compare.screenCausePlants', finds_tasks: 'compare.findsTasks' };
 const min = Object.fromEntries(Object.entries(KEYS).map(([k, key]) => [k, ratchet.minimums?.[key]]));
 
 test('ratchet.json has every comparison minimum', () => {
@@ -138,8 +139,19 @@ test('measured-part plants and controls never go below their minimum', () => {
 // traces, the plants (S1-S10) and the honest controls of test/causation.test.mjs never go below their minimum.
 test('causation rules, plants and controls never go below their minimum', () => {
   const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'causation.test.mjs'), 'utf8');
-  const n = (text.match(/^test\('(plant S|control|causation \(round 12\))/gm) || []).length;
+  const n = (text.match(/^test\('(plant S|control|causation \(round 1[2-9]\))/gm) || []).length;
   assert.ok(n >= min.causation_plants, `${n} causation rules, plants and controls < ${min.causation_plants}`);
+});
+
+// Round 14 (critic p01 r13): every browser task judged by causes, and the tasks that ask the person to
+// find one record name it. The plants and controls of test/screen-causes.test.mjs and the tasks that
+// declare `finds` never go below their minimum.
+test('screen-change plants and controls, and the tasks that name the record the person finds, never go below their minimum', async () => {
+  const text = fs.readFileSync(path.join(HARNESS_DIR, 'test', 'screen-causes.test.mjs'), 'utf8');
+  const n = (text.match(/^test\('(plant N|control)/gm) || []).length;
+  assert.ok(n >= min.screen_cause_plants, `${n} screen-change plants and controls < ${min.screen_cause_plants}`);
+  const finds = (await loadTasks()).filter(t => t.finds !== undefined).length;
+  assert.ok(finds >= min.finds_tasks, `${finds} tasks naming the record the person finds < ${min.finds_tasks}`);
 });
 
 test('API tasks never go below their minimum', async () => {
