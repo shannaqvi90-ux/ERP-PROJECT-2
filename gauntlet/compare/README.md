@@ -305,13 +305,18 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
   - a task that delivers what the browser read for the page itself (a file or blob read, a response's
     body, the device's answer: `IN_PAGE_DATA`) is not refused for another thread's activity (Odoo keeps
     a shared worker busy the whole time, and its file upload follows the file's read);
+  - a DevTools command is a step's only during a step whose action reaches the page as one (a file
+    chosen, the device's answer, a scroll into view); during a click, a key or typing (input the browser
+    delivers) the harness's commands only read the page: they cause nothing and are passed over when
+    looking for the page task before an untraceable one (this round's verify: a document that arrived
+    during a click was credited through the harness's reads);
   - timer, animation-frame and idle ids start again in each new document of a frame, so a callback is
     matched with the last request before it (a chain never runs backwards in time); each caused write
     records how long its chain took (`browser_record.chain_seconds`).
   The read world now skips a child frame's window when it arms (a page that embeds a cross-site frame
   could not be measured: `SecurityError`). Plant-tested in `test/causation.test.mjs` (W1-W6b, honest
   controls: a click that asks over a web socket and approves on the answer, a page with a cross-site
-  frame, a click on a link to a page that approves as it loads) and mutations M86-M97, M106-M110.
+  frame, a click on a link to a page that approves as it loads) and mutations M86-M97, M106-M112.
 - **Writes set-up's browser sent are answered before the start.** Every browser context of the run
   is watched from its first request (the runner's, a sign-in retry's, any the driver opened); before
   the set-up contexts close, the runner waits for their writes to be answered (`set_up_writes_waited`),

@@ -306,6 +306,16 @@ export function causeOf(model, point, steps, opts = {}) {
   return c.caused && typeof c.origin === 'number' ? { ...c, chain_seconds: round3((point.ts - c.origin) / 1e6) } : c;
 }
 
+/**
+ * Round 13 (verify of this round: a page that loads after a click was credited through the harness's
+ * own reads during the click): the steps whose action reaches the page as a DevTools command (a file
+ * chosen, the device's answer, a scroll into view). During any other step (a click, a key, typing:
+ * input the browser delivers) the harness's commands only read the page; they cause nothing and are
+ * passed over when looking for the page task before an untraceable one.
+ */
+const COMMAND_STEPS = new Set(['file-pick', 'device', 'scroll']);
+const actingCommand = (ctx, t) => { const s = t.protocol ? stepHolding(ctx, t.ts) : null; return !!s && COMMAND_STEPS.has(s.kind); };
+
 function stepHolding(ctx, ts) {
   for (let i = ctx.steps.length - 1; i >= 0; i--) {
     const s = ctx.steps[i];
@@ -336,6 +346,7 @@ function pointCause(ctx, point, depth) {
   const lastBefore = list => list.filter(s => s.ts <= point.ts).pop() || null;
   if (task.protocol) {
     const s = stepHolding(ctx, task.ts);
+    if (s && !COMMAND_STEPS.has(s.kind)) return no(`a DevTools command of the harness during step ${s.n} (a ${s.kind || 'step'} whose input the browser delivers; the harness's commands only read the page)`);
     return s ? yes(s.n, [`a DevTools command of step ${s.n}`], task.ts) : no('a DevTools command outside any step (the harness reading the page)');
   }
   const timer = lastBefore(task.timerFires);
@@ -512,7 +523,7 @@ function otherCause(ctx, task, depth) {
   ctx.memo.set(key, no('a loop of untraceable tasks'));
   const thread = ctx.model.threads.get(task.thread);
   const before = thread.tasks.slice(0, task.index).reverse();
-  const prevIdx = before.findIndex(t => t.activity || (t.protocol && stepHolding(ctx, t.ts)));
+  const prevIdx = before.findIndex(t => t.activity || actingCommand(ctx, t));
   let result;
   if (prevIdx < 0) result = no('a task of no traceable origin with no page task before it');
   else {
@@ -581,7 +592,7 @@ export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 
   const model = trace.model || analyseTrace(trace.events);
   const slackUs = 2000 + (clock?.error_us || 0);
   const windows = steps.filter(s => typeof s.at === 'number').map(s => ({
-    n: s.n, from: clockToTrace(typeof s.began === 'number' ? s.began : s.at, clock, originMs), at: clockToTrace(s.at, clock, originMs), to: clockToTrace(s.at + (s.took || 0), clock, originMs),
+    n: s.n, kind: s.kind, from: clockToTrace(typeof s.began === 'number' ? s.began : s.at, clock, originMs), at: clockToTrace(s.at, clock, originMs), to: clockToTrace(s.at + (s.took || 0), clock, originMs),
   }));
   const taken = new Set();
   const starts = model.navigationStarts;

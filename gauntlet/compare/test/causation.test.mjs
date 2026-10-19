@@ -81,7 +81,7 @@ function verdict(tasks, rid, windows = [[100, 110]]) {
   const model = analyseTrace([...META, ...tasks.flat()]);
   const point = model.sends.get(rid)?.event;
   assert.ok(point, `no send ${rid}`);
-  return causeOf(model, point, windows.map(([from, to], i) => ({ n: i + 1, from: from * MS, at: from * MS, to: to * MS })), { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
+  return causeOf(model, point, windows.map(([from, to, kind = 'click'], i) => ({ n: i + 1, kind, from: from * MS, at: from * MS, to: to * MS })), { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
 }
 
 test('causation (round 12): an input task is the step\'s that began last before it; one before every step causes nothing', () => {
@@ -109,7 +109,11 @@ test('causation (round 12): an input task is the step\'s that began last before 
 
 test('causation (round 12): a DevTools command inside a step is the step\'s (a file chosen); outside every step it is the harness reading, and causes nothing', () => {
   const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 1, 3), ...inner];
-  assert.equal(verdict([task(102, IPC, cmd([X('EventDispatch', 2, 0.5, { type: 'change' }), send(3, 'w')]))], 'w').caused, true);
+  assert.equal(verdict([task(102, IPC, cmd([X('EventDispatch', 2, 0.5, { type: 'change' }), send(3, 'w')]))], 'w', [[100, 110, 'file-pick']]).caused, true);
+  // Round 13: during a click (input the browser delivers) the harness's commands only read the page.
+  const during = verdict([task(102, IPC, cmd([X('EventDispatch', 2, 0.5, { type: 'change' }), send(3, 'w')]))], 'w');
+  assert.equal(during.caused, false);
+  assert.match(during.why, /DevTools command of the harness during step 1 \(a click/);
   const read = verdict([task(150, IPC, cmd([X('EvaluateScript', 2, 0.5), send(3, 'w')]))], 'w');
   assert.equal(read.caused, false);
   assert.match(read.why, /DevTools command outside any step/);
@@ -353,6 +357,19 @@ test('causation (round 13): a document is its navigation\'s: one a step started 
   const refreshed = verdict([task(101, INPUT, click()), task(110, 'http_refresh_scheduler.cc:MaybeStartTimer', [X('HttpRefreshScheduler::NavigateTask', 0.5, 2), start(1)]), commit(130), script(140)], 'w');
   assert.equal(refreshed.caused, false, 'W8');
   assert.match(refreshed.why, /refresh the page set/);
+});
+
+test('causation (round 13): the harness reading the page during a click is passed over: a document that arrives then is judged by its navigation', () => {
+  const read = ms => task(ms, IPC, [X('DevToolsSession::DispatchProtocolCommand', 0.5, 1), X('EvaluateScript', 0.8, 0.3)]);
+  const commit = ms => task(ms, IPC, [{ name: 'Receive mojo message', ph: 'X', at: 0.5, dur: 3, args: { chrome_mojo_event_info: { mojo_interface_tag: 'content.mojom.NavigationClient' } } },
+    X('RenderFrameImpl::CommitNavigation', 0.6, 2), send(1, 'nav', 'http://p/doc', 'GET'), answer(1.2, 'nav'), X('EventDispatch', 1.5, 0.2, { type: 'unload' })]);
+  const script = ms => task(ms, 'html_document_parser.cc:PumpTokenizer', [X('ParseHTML', 0.5, 3), X('EvaluateScript', 1, 2, { url: 'http://p/doc' }), send(2, 'w')]);
+  // The document the page asked for before the clock commits during the click, then the harness reads.
+  const v = verdict([task(101, INPUT, click()), commit(108), read(114), script(120)], 'w', [[100, 130]]);
+  assert.equal(v.caused, false);
+  assert.match(v.why, /navigation started before the clock/);
+  // A message after the click's input, with the harness reading in between: still the click's.
+  assert.equal(verdict([task(101, INPUT, click()), read(108), task(114, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')])], 'w', [[100, 120]]).caused, true);
 });
 
 test('causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused', () => {

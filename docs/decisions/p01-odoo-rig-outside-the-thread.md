@@ -100,7 +100,16 @@ W8, a meta refresh the page set that loaded an approving page just after the cli
    write it explains is refused. Each caused write now records its chain's length in seconds
    (`browser_record.chain_seconds`).
 
-Mutations M86-M110 (one per rule above), each caught by its self-test.
+10. **The harness's reads are not a step's doing.** A DevTools command inside a step's window
+   counted as that step's. That is right for a step whose action is a command (a file chosen, the
+   device's answer, a scroll into view), but during a click the harness also reads the page (its
+   actionability checks, its wait for a navigation), and the fourth verify of this round showed a
+   document that arrived during a click credited through such a read ("a DevTools command of step 1 >
+   a task that followed at once"). During a click, a key or typing the harness's commands now cause
+   nothing and are passed over when the page task before an untraceable one is looked for; every
+   DevTools-rooted chain of the 24 Odoo baselines is a file pick or a device step, so none changes.
+
+Mutations M86-M112 (one per rule above), each caught by its self-test.
 
 ## Alternatives considered
 
@@ -156,5 +165,8 @@ Verifies of this round (`./erp verify` through the verify slot, busy machine, lo
 - run 3 (22:25:38Z): plant W1 met two Close buttons on a loaded machine (the stand-in's own "go" came
   before the click) and ended in an error rather than a refusal; the plants now click the first and
   check the record's reason only when the approval went out inside the clock. dotnet 7,783 s.
+- run 4 (2026-10-19T00:39:11Z): the link control's chain was rooted in the harness's read during the
+  click (decision 10 above). dotnet 7,331, web 1,707 (stopped at the unit tests), e2e 407 s; every
+  built ours driver verified.
 The web stage, which holds the comparison harness, used 2,044-2,158 s against round 12's 1,922 s:
 this round adds about 120-240 s of processor time.
