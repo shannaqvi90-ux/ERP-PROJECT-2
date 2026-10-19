@@ -57,6 +57,8 @@ import crypto from 'node:crypto';
 /** Trace categories: tasks, their kinds and sources, DevTools commands, navigations. */
 export const TRACE_CATEGORIES = Object.freeze([
   'devtools.timeline', 'disabled-by-default-devtools.timeline', 'toplevel', 'devtools', 'navigation', 'blink.user_timing', 'loading',
+  // Round 14: every change of what the page shows, inside the task that made it (screenCauses).
+  'disabled-by-default-devtools.timeline.invalidationTracking',
 ]);
 /** An answer the page waited on for longer than this before it sent its write links nothing (plant S2). */
 export const LINK_SECONDS = 2;
@@ -83,11 +85,13 @@ const hrUs = () => Number(process.hrtime.bigint() / 1000n);
  * Clock-sync markers placed at both ends tie the trace's clock to the harness's (performance.now).
  */
 export class PageTrace {
-  #cdp = null; #events = []; #complete = null; #marks = []; #perfAtHr = null;
+  #cdp = null; #events = []; #complete = null; #marks = []; #perfAtHr = null; #mainFrame = null;
 
   static async start(page, { bufferKb = 256 * 1024 } = {}) {
     const t = new PageTrace();
     t.#cdp = await page.context().newCDPSession(page);
+    // Round 14: the page's main frame (its id stays the frame's across documents and processes).
+    t.#mainFrame = (await t.#cdp.send('Page.getFrameTree').catch(() => null))?.frameTree?.frame?.id ?? null;
     t.#cdp.on('Tracing.dataCollected', e => { for (const ev of e.value) t.#events.push(ev); });
     t.#complete = new Promise(resolve => t.#cdp.once('Tracing.tracingComplete', resolve));
     await t.#cdp.send('Tracing.start', {
@@ -116,7 +120,7 @@ export class PageTrace {
     const complete = await Promise.race([this.#complete, new Promise(r => setTimeout(() => r({ timedOut: true }), 30_000))]);
     await this.#cdp.detach().catch(() => {});
     const clock = clockFrom(this.#events, this.#marks, this.#perfAtHr);
-    return { events: this.#events, dataLoss: !!complete?.dataLossOccurred || !!complete?.timedOut, clock };
+    return { events: this.#events, dataLoss: !!complete?.dataLossOccurred || !!complete?.timedOut, clock, mainFrame: this.#mainFrame };
   }
 }
 
@@ -169,7 +173,9 @@ export function analyseTrace(events) {
     const own = [];
     let current = null;
     for (const e of list) {
-      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts > current.end)) {
+      // Round 14 (found on a busy machine: a save refused as "outside any task"): a task that begins the
+      // very microsecond the one before it ended is a task of its own, not part of the one before.
+      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts >= current.end)) {
         current = { thread: k, threadName: name, ts: e.ts, end: e.ts + (e.dur || 0), events: [], index: own.length };
         own.push(current);
         continue;
@@ -208,6 +214,28 @@ export function analyseTrace(events) {
   // Where the page's frames started navigations (a form posted, an address set), with the address.
   const navigationStarts = events.filter(e => e.name === 'FrameLoader::StartNavigation' && e.args?.url);
   for (const v of sockets.values()) { v.sends.sort((a, b) => a.event.ts - b.event.ts); v.receives.sort((a, b) => a.event.ts - b.event.ts); }
+  // Round 14: a task that only delivered what the browser fetched of its own accord (the page's icon) and
+  // ran nothing of the page's (no script, no event, nothing inside its microtask checkpoint) cannot have
+  // posted the message an untraceable task delivers.
+  for (const t of tasks) {
+    if (!t.answers.length || t.protocol || t.timerFires.length || t.frameFires.length || t.idleFires.length) continue;
+    if (t.events.some(e => /^(FunctionCall|EvaluateScript|EventDispatch|ParseHTML|SchedulePostMessage|ResourceSendRequest|TimerInstall|RequestAnimationFrame)$/.test(e.name))) continue;
+    const checkpoints = t.events.filter(e => e.ph === 'X' && e.name === 'BlinkScheduler_PerformMicrotaskCheckpoint');
+    if (checkpoints.some(c => t.events.some(e => e !== c && e.ts > c.ts && e.ts <= c.ts + (c.dur || 0)))) continue;
+    t.passive = t.answers.every(a => browserOwnRequest(sends.get(a.args.data.requestId)?.event.args?.data));
+  }
+  // Round 14 (a busy machine): a frame whose callbacks the harness alone asked for (Playwright's check
+  // that a click's target stands still asks for animation frames inside its DevTools commands) and that
+  // ran nothing else of the page's is the harness's own: it posts nothing an untraceable task delivers.
+  for (const t of tasks) {
+    if (!t.frameFires.length || t.protocol || t.timerFires.length || t.idleFires.length || t.answers.length) continue;
+    const asked = t.frameFires.map(f => askedBefore(frames, `${f.args?.data?.frame}:${f.args?.data?.id}`, f.ts));
+    if (!asked.every(x => x && x.task.protocol)) continue;
+    const page = t.events.filter(e => e.ph === 'X' && /^(FunctionCall|EvaluateScript|EventDispatch|ParseHTML)$/.test(e.name) && !String(e.args?.data?.type || '').startsWith('__playwright'));
+    if (page.some(e => !t.frameFires.some(f => spanHolds(f, e.ts)))) continue;
+    if (t.events.some(e => /^(SchedulePostMessage|ResourceSendRequest|TimerInstall)$/.test(e.name))) continue;
+    t.passive = true;
+  }
   // Round 13: when the page's animations and transitions ran (Chromium's async "Animation" events by
   // id: begun, ended). One begun before the record has only its end; one still running has no end.
   const animations = new Map();
@@ -222,6 +250,12 @@ export function analyseTrace(events) {
 }
 
 const keep = (map, key, value) => { if (!map.has(key)) map.set(key, []); map.get(key).push(value); };
+/**
+ * A request the browser made of its own accord (the page's icon): no element or script of the page asked
+ * for it, so nothing of the page's waits on its answer (an image, a font or a style sheet the page loads
+ * can be waited on, through decode(), document.fonts or a load event). Round 14.
+ */
+const browserOwnRequest = d => !!d && String(d.resourceType) === 'Other' && d.initiator?.type === 'other' && !d.initiator?.fetchType;
 /** The last request of `key` made before trace time `ts` (a timer's install, an animation frame's or idle callback's request). */
 const askedBefore = (map, key, ts) => (map.get(key) || []).filter(x => x.event.ts < ts).sort((a, b) => a.event.ts - b.event.ts).pop() || null;
 
@@ -258,6 +292,13 @@ function describeTask(t) {
   t.inputQueue = fromInputQueue;
   t.inputs = t.topDispatches.filter(e => (fromInputQueue ? INPUT_EVENTS : DISCRETE_INPUT).test(e.args?.data?.type || ''));
   t.input = !t.protocol && t.inputs.length > 0;
+  // Round 14 (critic p01 r13, other finding 1: under load an honest click's handler ran inside a DevTools
+  // command task, and the click's save was refused): discrete input the browser delivered while running a
+  // DevTools command (dispatched outside any of the page's script: a page's synthetic event is inside its
+  // script) is still input, never the harness's reading.
+  const pageScripts = t.events.filter(e => e.ph === 'X' && /^(FunctionCall|EvaluateScript|TimerFire|FireAnimationFrame|FireIdleCallback)$/.test(e.name));
+  t.commandInputs = t.protocol ? t.events.filter(e => e.ph === 'X' && e.name === 'EventDispatch' && DISCRETE_INPUT.test(e.args?.data?.type || '')
+    && !pageScripts.some(x => spanHolds(x, e.ts) && x.ts <= e.ts)) : [];
   // Round 13: events a running animation, transition or media element fires (their time is set by a
   // duration, like a timer's), and script the browser runs for an observer as it renders a frame
   // (a resize or intersection observer: what moved the layout may be an animation).
@@ -278,7 +319,8 @@ function taskAt(model, thread, ts) {
   let hi = list.length - 1;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;
-    if (list[mid].end < ts) lo = mid + 1;
+    // A time where one task ends and the next begins is the next one's (its events sort there).
+    if (list[mid].end < ts || (list[mid].end === ts && list[mid + 1]?.ts === ts)) lo = mid + 1;
     else if (list[mid].ts > ts) hi = mid - 1;
     else return list[mid];
   }
@@ -291,8 +333,17 @@ function taskAt(model, thread, ts) {
  * times ({ n, from, to }). Returns { caused, step, why, chain }.
  */
 export function causeOf(model, point, steps, opts = {}) {
-  const ctx = { model, steps, reaction: opts.reaction ?? 1, link: opts.link ?? LINK_SECONDS, guard: opts.guard ?? GUARD_SECONDS, slack: opts.slackUs ?? 2000, memo: new Map(),
-    animatedAtStart: opts.animatedAtStart === undefined ? 0 : opts.animatedAtStart };
+  return judgePoint(causeContext(model, steps, opts), point);
+}
+
+function causeContext(model, steps, opts = {}) {
+  return { model, steps, reaction: opts.reaction ?? 1, link: opts.link ?? LINK_SECONDS, guard: opts.guard ?? GUARD_SECONDS, slack: opts.slackUs ?? 2000, memo: new Map(),
+    animatedAtStart: opts.animatedAtStart === undefined ? 0 : opts.animatedAtStart,
+    // Round 14: a screen change is judged by where its chain begins, not by its delays (screenCauses).
+    timerLimit: opts.timerLimit ?? opts.reaction ?? 1, repeating: !!opts.repeating };
+}
+
+function judgePoint(ctx, point) {
   const c = pointCause(ctx, point, 0);
   // Round 13 (critic p01 r12, plant W3): the delays of a chain add up. Each link alone may stay under
   // its limit (an answer held 1.9 s, then a timer of 0.9 s) while the whole chain holds the write back
@@ -344,6 +395,10 @@ function pointCause(ctx, point, depth) {
   // The kind of task at that point: a timer's or a frame callback's span holding it (or the last one
   // before it in the task: script queued by the callback runs before the task ends).
   const lastBefore = list => list.filter(s => s.ts <= point.ts).pop() || null;
+  if (task.protocol && task.commandInputs.some(e => spanHolds(e, point.ts))) {
+    const s = stepBefore(ctx, point.ts);
+    return s ? yes(s.n, [`input of step ${s.n} (delivered during a DevTools command)`], task.ts) : no('an input event before the first counted step');
+  }
   if (task.protocol) {
     const s = stepHolding(ctx, task.ts);
     if (s && !COMMAND_STEPS.has(s.kind)) return no(`a DevTools command of the harness during step ${s.n} (a ${s.kind || 'step'} whose input the browser delivers; the harness's commands only read the page)`);
@@ -386,10 +441,10 @@ function timerCause(ctx, timer, depth) {
   const install = askedBefore(ctx.model.installs, `${d.frame}:${d.timerId}`, timer.ts);
   if (!install) return no('a timer armed before the clock started');
   const i = install.event.args?.data || {};
-  if (i.singleShot === false) return no(`a repeating timer (every ${fmt((i.timeout || 0) / 1000)}): a poll is the page's own doing`);
-  if ((i.timeout || 0) > ctx.reaction * 1000) return no(`a timer of ${fmt((i.timeout || 0) / 1000)}: a delay the page set, longer than a page takes to answer a step`);
+  if (i.singleShot === false && !ctx.repeating) return no(`a repeating timer (every ${fmt((i.timeout || 0) / 1000)}): a poll is the page's own doing`);
+  if ((i.timeout || 0) > ctx.timerLimit * 1000) return no(`a timer of ${fmt((i.timeout || 0) / 1000)}: a delay the page set, longer than a page takes to answer a step`);
   const c = pointCause(ctx, install.event, depth + 1);
-  return c.caused ? yes(c.step, [...c.chain, `a timer of ${fmt((i.timeout || 0) / 1000)}`], c.origin) : noFrom('a timer armed by a task no step caused', c);
+  return c.caused ? yes(c.step, [...c.chain, `a ${i.singleShot === false ? 'repeating ' : ''}timer of ${fmt((i.timeout || 0) / 1000)}`], c.origin) : noFrom('a timer armed by a task no step caused', c);
 }
 
 function idleCause(ctx, idle, depth) {
@@ -523,7 +578,7 @@ function otherCause(ctx, task, depth) {
   ctx.memo.set(key, no('a loop of untraceable tasks'));
   const thread = ctx.model.threads.get(task.thread);
   const before = thread.tasks.slice(0, task.index).reverse();
-  const prevIdx = before.findIndex(t => t.activity || actingCommand(ctx, t));
+  const prevIdx = before.findIndex(t => (t.activity && !t.passive) || actingCommand(ctx, t));
   let result;
   if (prevIdx < 0) result = no('a task of no traceable origin with no page task before it');
   else {
@@ -542,8 +597,8 @@ function otherCause(ctx, task, depth) {
       const frame = !head && (prev.frameFires.length > 0 || /BeginMainFrame/.test(prev.src || ''));
       const dispatched = head ? ctx.steps.find(x => x.n === pc.step)?.at : null;
       const earlier = head
-        ? before.slice(prevIdx + 1).find(t => t.activity && t.end >= (dispatched ?? prev.ts) - ctx.slack && (t.end - t.ts) / 1e6 >= BUSY_SECONDS)
-        : frame ? before.slice(prevIdx + 1).find(t => t.activity) : null;
+        ? before.slice(prevIdx + 1).find(t => t.activity && !t.passive && t.end >= (dispatched ?? prev.ts) - ctx.slack && (t.end - t.ts) / 1e6 >= BUSY_SECONDS)
+        : frame ? before.slice(prevIdx + 1).find(t => t.activity && !t.passive) : null;
       const ec = earlier && (head || (prev.ts - earlier.end) / 1e6 < ctx.guard) ? taskCause(ctx, earlier, depth + 1) : null;
       // Round 13 (critic p01 r12, plant W2): any other thread that runs the page's script (a worker of
       // any kind, another frame's or window's process) could have posted it, from the moment the step's
@@ -569,7 +624,9 @@ function taskCause(ctx, task, depth) {
   if (ctx.memo.has(key)) return ctx.memo.get(key);
   if (task.observerScript && animatedAt(ctx, task.ts)) { const r = no(ANIMATED_OBSERVER); ctx.memo.set(key, r); return r; }
   const points = [...task.timerFires, ...task.frameFires, ...task.idleFires, ...task.timed, ...task.answers];
-  if (!points.length) points.push({ ...task.events[task.events.length - 1] || {}, ts: task.end, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) });
+  // Round 14: a microsecond inside the task's end, never on it (the next task may begin that very
+  // microsecond, and the point would be taken for that task's).
+  if (!points.length) points.push({ ...task.events[task.events.length - 1] || {}, ts: Math.max(task.ts, task.end - 1), pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) });
   let result = null;
   for (const p of points) {
     const c = pointCause(ctx, { ...p, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) }, depth + 1);
@@ -628,3 +685,110 @@ export function writeCauses(trace, writes, steps, { clock, originMs, reaction = 
 }
 
 const round3 = x => Math.round(x * 1000) / 1000;
+
+/**
+ * Round 14 (critic p01 r13, plants N1-N3): events of the page's main thread that change what it shows,
+ * recorded inside the task that made the change: a style or layout invalidated (a node added, removed
+ * or changed, its text, its attributes, its style), a document parsed, a navigation started (an address
+ * set). Changes inside a node that is not rendered (display: none) invalidate nothing and show nothing.
+ */
+export const SCREEN_EVENTS = /^(ScheduleStyleRecalculation|InvalidateLayout|StyleRecalcInvalidationTracking|LayoutInvalidationTracking|StyleInvalidatorInvalidationTracking|ScheduleStyleInvalidationTracking|ParseHTML|FrameLoader::StartNavigation)$/;
+/**
+ * The browser's own rendering of a frame (style recalculated, layout, paint): what it invalidates there
+ * follows from a change made earlier, in the task that made it (judged there), or from an animation.
+ */
+const RENDERING = /^(UpdateLayoutTree|Layout|PrePaint|Paint|Layerize|UpdateLayer|CompositeLayers|AnimationFrame::StyleAndLayout|AnimationFrame::Render)$/;
+const SCRIPT_SPAN = /^(FunctionCall|EvaluateScript|TimerFire|FireAnimationFrame|FireIdleCallback|EventDispatch|v8\.callFunction|V8\.Execute|BlinkScheduler_PerformMicrotaskCheckpoint|RunMicrotasks|V8\.RunMicrotasks)$/;
+/** Script of the page itself (not the harness's evaluations): a function call from a script the page loaded. */
+const PAGE_SCRIPT = e => e.ph === 'X' && e.name === 'FunctionCall' && /^https?:/.test(String(e.args?.data?.url || ''));
+
+/**
+ * Round 14: the trace's verdict on every change the page made to what it shows while the task was
+ * measured (up to `until`, seconds on the operator's clock, from `since` or the record's start): which counted step
+ * caused it, by the same chains as a write (input, the timers, frames, answers and messages it led to),
+ * or why nothing did. A DevTools command outside a step that acts is the harness's own (its reads, the
+ * blind screenshot's neutral title and placeholders); only page script run inside one (an observer the
+ * harness's change set off) is judged. One verdict per change of one entry into the page's code (a
+ * timer's, a frame's, an answer's ...), at most `limit`. Returns [{ at, event, caused, step, why, chain }].
+ */
+export function screenCauses(trace, steps, { clock, originMs, until, since = null, harness = [], mainFrame = null, reaction = 1, guard = GUARD_SECONDS, animatedAtStart = 0, limit = 2000 } = {}) {
+  const model = trace.model || analyseTrace(trace.events);
+  const slackUs = 2000 + (clock?.error_us || 0);
+  const windows = steps.filter(s => typeof s.at === 'number').map(s => ({
+    n: s.n, kind: s.kind, from: clockToTrace(typeof s.began === 'number' ? s.began : s.at, clock, originMs), at: clockToTrace(s.at, clock, originMs), to: clockToTrace(s.at + (s.took || 0), clock, originMs),
+  }));
+  // Where a chain begins decides (a counted step, or something before the clock, no step, another thread or
+  // a server); its delays do not: a page that shows the end state 3 s after a click, on a timer or behind a
+  // slow answer, shows it because of the click (a product configured to open a record on any click is the
+  // product's answer to that click, as with writes), and a slow search under load is still the person's.
+  const ctx = causeContext(model, windows, { reaction, link: Infinity, timerLimit: Infinity, repeating: true, guard, slackUs, animatedAtStart });
+  const windows_ = harness.map(w => ({ from: clockToTrace(w.from, clock, originMs), to: clockToTrace(w.to, clock, originMs) }));
+  // From `since` (seconds on the operator's clock; by default the whole record, which the runner starts
+  // before verify()'s read on the start screen): every change before the clock's start is no step's.
+  const from = since === null ? -Infinity : clockToTrace(since, clock, originMs);
+  const to = clockToTrace(until, clock, originMs);
+  const out = [];
+  // The threads that run the page's main frame: what verify() reads and the blind shot shows. A frame of
+  // another site runs in a process of its own; its changes are not the page's (verify() never reads into it).
+  const frameOf = e => e.args?.data?.frame ?? e.args?.beginData?.frame;
+  const pageThreads = mainFrame ? new Set([...model.threads].filter(([, th]) => th.main && th.tasks.some(t => t.events.some(e => frameOf(e) === mainFrame))).map(([k]) => k)) : null;
+  for (const [key, thread] of model.threads) {
+    if (!thread.main || (pageThreads && pageThreads.size && !pageThreads.has(key))) continue;
+    for (const t of thread.tasks) {
+      if (t.end < from || t.ts > to) continue;
+      const rendering = t.events.filter(e => e.ph === 'X' && RENDERING.test(e.name));
+      const scripts = t.events.filter(e => e.ph === 'X' && SCRIPT_SPAN.test(e.name));
+      let changes = t.events.filter(e => SCREEN_EVENTS.test(e.name) && e.ts >= from && e.ts <= to
+        && !(rendering.some(r => spanHolds(r, e.ts)) && !scripts.some(x => spanHolds(x, e.ts) && x.ts >= Math.max(...rendering.filter(r => spanHolds(r, e.ts)).map(r => r.ts)))));
+      if (!changes.length) continue;
+      // The browser's own change of the window (its size, its focus, a screenshot's settings): a task that
+      // ran none of the page's script, delivered no answer or event and started no navigation.
+      if (!t.protocol && !t.activity && !changes.some(e => /^(ParseHTML|FrameLoader::StartNavigation)$/.test(e.name))) continue;
+      // A DevTools command that does not act for a step: while the harness prepares a blind screenshot
+      // (`harness`: its neutral title, the screenshot's style and masks, in script worlds of its own)
+      // its changes are the harness's, and only page script they set off (an observer) is judged; at any
+      // other time the harness only reads, so a change there is the page's own script run inside the
+      // read (a getter or prototype the page replaced) and is judged as the command's: no step's.
+      if (t.protocol && !actingCommand(ctx, t)) {
+        const shot = windows_.some(w => t.ts >= w.from - slackUs && t.end <= w.to + slackUs);
+        if (shot) {
+          const page = t.events.filter(PAGE_SCRIPT);
+          changes = changes.filter(e => page.some(s => spanHolds(s, e.ts)));
+          if (!changes.length) continue;
+        }
+      }
+      // One verdict per entry into the page's code: the span (a timer's, a frame's, an input's ...) holding the change.
+      const seen = new Set();
+      // A document's own parsing (from the network), not script parsing markup (innerHTML runs inside the
+      // page's script, and is judged like any change the script made).
+      const scriptSpans = t.events.filter(e => e.ph === 'X' && SCRIPT_SPAN.test(e.name));
+      const parses = t.events.filter(e => e.ph === 'X' && e.name === 'ParseHTML' && !scriptSpans.some(x => x !== e && spanHolds(x, e.ts) && x.ts <= e.ts));
+      for (const e of changes) {
+        // A document's parsing (in whatever task the parser ran): the document is its navigation's, the
+        // last one this frame's thread started before it (a redirect keeps the frame; a document whose
+        // navigation the record does not hold started before it, or was the browser's own).
+        const parse = parses.find(x => x === e || spanHolds(x, e.ts));
+        if (parse) {
+          const url = String(parse.args?.beginData?.url || '');
+          if (!url || url === 'about:blank') continue;
+          const key = `parse:${url}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          const start = model.navigationStarts.filter(n => keyOf(n) === t.thread && n.ts < e.ts).sort((a, b) => b.ts - a.ts)[0] || null;
+          const c = start ? judgePoint(ctx, start) : no(`the document ${pathOf(url)}, whose navigation started before the record began (or was not the page's)`);
+          out.push({ at: round3(traceToClock(e.ts, clock, originMs)), event: e.name, ...(start && c.caused ? { ...c, chain: [...c.chain, `the document ${pathOf(url)}`] } : c) });
+          if (out.length >= limit) return out;
+          continue;
+        }
+        const span = [...t.timerFires, ...t.frameFires, ...t.idleFires, ...t.timed, ...t.inputs, ...t.postHandles].find(s => spanHolds(s, e.ts));
+        const key = span ? `${span.name}:${span.ts}` : 'task';
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const c = judgePoint(ctx, { ...e, pid: Number(t.thread.split(':')[0]), tid: Number(t.thread.split(':')[1]) });
+        out.push({ at: round3(traceToClock(e.ts, clock, originMs)), event: e.name, ...c });
+        if (out.length >= limit) return out;
+      }
+    }
+  }
+  return out.sort((a, b) => a.at - b.at);
+}

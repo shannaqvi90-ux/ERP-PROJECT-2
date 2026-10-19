@@ -22,6 +22,9 @@ export default {
   prefixes: {
     ours: [{ field: '[data-field="phone"] input', prefix: '+971', source: 'web/src/kernel/forms/phone.ts', constant: 'HOME_PREFIX' }],
   },
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up puts back a phone an earlier run saved); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['PUT /api/tenancy/companies/*'] },
   moments: [],
   start: 'Signed in, with the contact {contact.name} open on screen.',
   goal: 'Change the contact\'s phone number to {phone} and save.',

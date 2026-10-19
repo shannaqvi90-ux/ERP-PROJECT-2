@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "arabic-report-20261018T162335-7995",
-  "instrument": 11,
+  "run_id": "arabic-report-20261019T121118-9a7a",
+  "instrument": 12,
   "task": "arabic-report",
   "task_title": "Print a document in Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
   "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
-  "started_at": "2026-10-18T16:23:35.289Z",
-  "finished_at": "2026-10-18T16:23:59.083Z",
+  "started_at": "2026-10-19T12:11:18.487Z",
+  "finished_at": "2026-10-19T12:11:43.649Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,7 +30,7 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 3.759,
+    "machine_seconds": 3.751,
     "system_wait_seconds": 3.184,
     "human_seconds": 15.9,
     "human_plus_wait_seconds": 19.084,
@@ -58,10 +58,10 @@
       "kind": "click",
       "label": "user menu",
       "keystrokes": 0,
-      "at": 0.041,
+      "at": 0.025,
       "took": 0.038,
       "began": 0.001,
-      "screen": "/odoo/purchase/100097",
+      "screen": "/odoo/purchase/100113",
       "chain": false
     },
     {
@@ -69,10 +69,10 @@
       "kind": "click",
       "label": "My Preferences",
       "keystrokes": 0,
-      "at": 0.144,
-      "took": 0.03,
-      "began": 0.08,
-      "screen": "/odoo/purchase/100097",
+      "at": 0.124,
+      "took": 0.035,
+      "began": 0.064,
+      "screen": "/odoo/purchase/100113",
       "chain": false
     },
     {
@@ -80,10 +80,10 @@
       "kind": "click",
       "label": "language",
       "keystrokes": 0,
-      "at": 0.428,
-      "took": 0.058,
-      "began": 0.384,
-      "screen": "/odoo/purchase/100097",
+      "at": 0.385,
+      "took": 0.047,
+      "began": 0.341,
+      "screen": "/odoo/purchase/100113",
       "chain": false
     },
     {
@@ -91,10 +91,10 @@
       "kind": "click",
       "label": "Arabic",
       "keystrokes": 0,
-      "at": 0.565,
-      "took": 0.056,
-      "began": 0.486,
-      "screen": "/odoo/purchase/100097",
+      "at": 0.491,
+      "took": 0.045,
+      "began": 0.433,
+      "screen": "/odoo/purchase/100113",
       "chain": false
     },
     {
@@ -102,10 +102,10 @@
       "kind": "click",
       "label": "Update Preferences",
       "keystrokes": 0,
-      "at": 0.656,
-      "took": 0.044,
-      "began": 0.621,
-      "screen": "/odoo/purchase/100097",
+      "at": 0.559,
+      "took": 0.052,
+      "began": 0.536,
+      "screen": "/odoo/purchase/100113",
       "chain": false
     },
     {
@@ -113,54 +113,54 @@
       "kind": "click",
       "label": "Print",
       "keystrokes": 0,
-      "at": 1.473,
-      "took": 0.046,
-      "began": 1.439,
-      "screen": "/odoo/purchase/100097",
+      "at": 1.342,
+      "took": 0.081,
+      "began": 1.307,
+      "screen": "/odoo/purchase/100113",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "preferences dialog",
-      "at": 0.174,
-      "seconds": 0.209
+      "at": 0.159,
+      "seconds": 0.182
     },
     {
       "label": "interface in Arabic",
-      "at": 0.701,
-      "seconds": 0.398
+      "at": 0.613,
+      "seconds": 0.447
     },
     {
       "label": "order form in Arabic",
-      "at": 1.099,
-      "seconds": 0.339
+      "at": 1.06,
+      "seconds": 0.245
     },
     {
       "label": "file received",
-      "at": 1.52,
-      "seconds": 2.238
+      "at": 1.424,
+      "seconds": 2.327
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "753a7f397ec8f3f3.jpg",
+      "file": "1fefdad4bbed44c1.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/753a7f397ec8f3f3.jpg"
+      "path": "gauntlet/reference/odoo/shots/1fefdad4bbed44c1.jpg"
     },
     {
       "moment": "done",
-      "file": "c8fbf3b70df1b49d.jpg",
-      "at": 3.759,
-      "path": "gauntlet/reference/odoo/shots/c8fbf3b70df1b49d.jpg"
+      "file": "d63509a5004fcef7.jpg",
+      "at": 3.751,
+      "path": "gauntlet/reference/odoo/shots/d63509a5004fcef7.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "file": "أمر شراء - P00097.pdf",
-      "bytes": 47323,
+      "file": "أمر شراء - P00113.pdf",
+      "bytes": 47316,
       "print_language": "ar_001",
       "arabic_words_in_document": 25,
       "right_to_left": true
@@ -175,8 +175,8 @@
   "error": null,
   "start_state": {
     "kind": "record",
-    "opened_by_sign_in": "/odoo/purchase/100097",
-    "path": "/odoo/purchase/100097",
+    "opened_by_sign_in": "/odoo/purchase/100113",
+    "path": "/odoo/purchase/100113",
     "query": "",
     "fragment": "",
     "fields": 3,
@@ -190,7 +190,7 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.036,
+      "seconds": 0.034,
       "verified": true
     },
     {
@@ -198,9 +198,9 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.035,
+      "seconds": 0.033,
       "verified": true,
-      "gap_seconds": 0.078
+      "gap_seconds": 0.07
     }
   ],
   "requests_after_clock": 0,
@@ -212,11 +212,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "a7d6258400113854",
+    "sha256": "aee6f63929c45376",
     "elements": 468
   },
   "screen_after_verify": {
-    "sha256": "a7d6258400113854",
+    "sha256": "aee6f63929c45376",
     "elements": 468,
     "unchanged": true
   },
@@ -225,17 +225,82 @@
     "error": null,
     "back_end_reads": 0,
     "requests": 0,
-    "longest_pause_seconds": 0.001,
+    "longest_pause_seconds": 0,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.001
+    "seconds": 0
   },
   "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 90,
+    "not_caused": 31,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": -1.644,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a DevTools command outside any step (the harness reading the page)",
+        "chain": []
+      },
+      {
+        "at": 0.258,
+        "event": "ParseHTML",
+        "why": "the document /odoo/purchase/100113, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.279,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.295,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/2/avatar_128, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.379,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.421,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.553,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 5 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.78,
+        "event": "ParseHTML",
+        "why": "the document /odoo/purchase/100113, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 3.71,
+      "by_step": 6,
+      "chain": [
+        "the answer to POST /web/action/load after 0.016 s",
+        "the answer to POST /report/get_pdf_engine_state after 0.005 s",
+        "the answer to POST /report/download after 2.249 s",
+        "an animation frame"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/arabic-report.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/arabic-report-20261018T162310-cb23.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261018T162335-7995.json",
-    "gauntlet/reference/odoo/results/arabic-report-20261018T162359-4282.json"
+    "gauntlet/reference/odoo/results/arabic-report-20261019T121118-9a7a.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261019T121143-17fc.json",
+    "gauntlet/reference/odoo/results/arabic-report-20261019T121208-0acd.json"
   ]
 }

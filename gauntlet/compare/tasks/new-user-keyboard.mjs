@@ -7,6 +7,9 @@ export default {
   actor: 'admin',
   startAt: 'home',
   keyboardOnly: true,
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up writes nothing); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: [] },
   moments: [],
   start: 'Signed in, on the screen the product shows right after sign-in.',
   goal: 'Without touching the mouse, open an empty form for a new user, ready to type the first field.',

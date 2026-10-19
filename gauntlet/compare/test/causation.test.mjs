@@ -36,7 +36,7 @@ import path from 'node:path';
 import http from 'node:http';
 import crypto from 'node:crypto';
 import { execute, layout, compareRuns, measuredPartProblem } from '../lib/runner.mjs';
-import { analyseTrace, causeOf, clockFrom, clockToTrace, GUARD_SECONDS, LINK_SECONDS, traceToClock, writeCauses } from '../lib/causation.mjs';
+import { analyseTrace, causeOf, clockFrom, clockToTrace, GUARD_SECONDS, LINK_SECONDS, screenCauses, traceToClock, writeCauses } from '../lib/causation.mjs';
 import { loadNeedles } from '../data/generate.mjs';
 import { launch, newContext } from '../lib/browser.mjs';
 import { Operator } from '../lib/operator.mjs';
@@ -534,6 +534,10 @@ const SAVES = { ...TASK, saves: true, endState: { ours: { reads: [{ read: 'GET /
 const standIn = () => ({ id: 'ours', baseUrl: base, users: { admin: { login: 'admin', password: 'x' } }, brandWords: [], readyKind: 'default' });
 const out = () => layout(path.join(tmp, String(Math.random()).slice(2)));
 const runDriver = async (driver, task = SAVES) => execute(task, await sandboxed(driver, { base }), standIn(), 'ours', needles, out(), { timeout: 10_000 });
+// Round 14: the same plant measured as the reference, where a change of the screen no step caused is
+// recorded, not refused: the write's own record must refuse it there (the screen rule may refuse it first
+// for ours, and would hide a write rule that stopped working).
+const runAsReference = async (driver, task = { ...SAVES, endState: { ...SAVES.endState, odoo: SAVES.endState.ours } }) => execute(task, await sandboxed(driver, { base }), { ...standIn(), id: 'odoo' }, 'odoo', needles, out(), { timeout: 10_000 });
 const reset = () => { for (const t of timers) { clearTimeout(t); clearInterval(t); } timers.clear(); approved = false; autoApprove = false; armedAt = null; reads = []; approvedAt = null; };
 // Odoo's recorded follow-approval baseline (gauntlet/reference/odoo/tasks/follow-approval.json, round 11).
 const ODOO_FOLLOW_APPROVAL = { steps: 4, keystrokes: 0, machine_seconds: 3.521, human_seconds: 10.6, human_plus_wait_seconds: 10.6 };
@@ -629,8 +633,12 @@ test('plant S3b: S3 with the poll answering "go" a while into the clock, just af
 
 test('plant S4: the page approves on its own timer 0.6 s after a sign; run() waits for the sign and clicks plain text, just before the write -> never verifies', async () => {
   reset();
-  const r = await runDriver(plant('sign', async op => { await op.waitFor('#sign'); await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
-  never('S4', r);
+  const s4 = plant('sign', async op => { await op.waitFor('#sign'); await op.click('#out'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; });
+  never('S4', await runDriver(s4));
+  reset();
+  const ref = await runAsReference(s4);
+  never('S4 (as the reference)', ref);
+  assert.match(ref.error, /no counted step caused/, ref.error);
 });
 
 test('plant S5: S4 laundered through a message port -> never verifies', async () => {
@@ -779,11 +787,166 @@ test('plant W7: a document the page asked for before the clock (held by the stan
   reset();
   const r = await runDriver(plant('slowdoc', async op => { await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W7', r);
-  assertRecordWhy(r, /navigation started before the clock/);
+  // Round 14: the record now starts before verify()'s read, so it may hold the start of that navigation
+  // too; then it names what started it before the clock (the page's own timer) instead.
+  assertRecordWhy(r, /navigation started before the clock|navigation no step caused|armed before the clock/);
 });
 
 test('plant W8: a meta refresh the page set loads a page that approves, just after run()\'s click -> never verifies', async () => {
   reset();
   const r = await runDriver(plant('refresh', async op => { await op.waitFor('#sign'); await op.waitFor(() => true); await op.click('#q'); await op.waitFor(() => document.getElementById('out')?.textContent === 'approved', { timeout: 9000 }); return {}; }));
   never('W8', r);
+});
+
+// -- round 14 (critic p01 r13) ---------------------------------------------------------------------
+
+test('causation (round 14): a click the browser delivers while running a DevTools command is still the step\'s input (critic r13, load)', () => {
+  const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 1, 3), ...inner];
+  // The click's handler (inside the click's dispatch) arms a 0 ms timer that saves.
+  const delivered = verdict([task(102, IPC, cmd([X('EventDispatch', 1.5, 1, { type: 'click' }), X('FunctionCall', 1.6, 0.8, { url: 'http://p/' }), install(1.8, 5, 0)])), task(109, TIMER, [fire(1, 5), send(2, 'w')])], 'w');
+  assert.equal(delivered.caused, true, delivered.why);
+  assert.equal(delivered.step, 1);
+  // The page's own script dispatching a click inside a command task (a synthetic click) is no input.
+  const synthetic = verdict([task(102, IPC, cmd([X('FunctionCall', 1.2, 2, { url: 'http://p/' }), X('EventDispatch', 1.5, 1, { type: 'click' }), install(1.8, 5, 0)])), task(109, TIMER, [fire(1, 5), send(2, 'w')])], 'w');
+  assert.equal(synthetic.caused, false);
+  // A boundary event (mouseover) inside a command task is not discrete input.
+  const boundary = verdict([task(102, IPC, cmd([X('EventDispatch', 1.5, 1, { type: 'mouseover' }), X('FunctionCall', 1.6, 0.8, { url: 'http://p/' }), install(1.8, 5, 0)])), task(109, TIMER, [fire(1, 5), send(2, 'w')])], 'w');
+  assert.equal(boundary.caused, false);
+});
+
+const CLOCK0 = { offset_us: 0, error_us: 0, perf_ms: 0, hr_us: 0 };
+const change = (at, name = 'StyleRecalcInvalidationTracking', data = {}) => I(name, at, { nodeName: 'DIV', reason: 'Node was inserted into tree', ...data });
+/** screenCauses on synthetic tasks; steps are [at, took, kind] in milliseconds of the clock (= trace ms). */
+function screens(tasks, steps = [[100, 10, 'click']], until = 1000, harness = []) {
+  return screenCauses({ events: [...META, ...tasks.flat()] }, steps.map(([at, took, kind = 'click'], i) => ({ n: i + 1, kind, at: at / 1000, took: took / 1000 })),
+    { clock: CLOCK0, originMs: 0, until: until / 1000, harness: harness.map(([from, to]) => ({ from: from / 1000, to: to / 1000 })) });
+}
+
+test('causation (round 14): every change of the screen is judged by where its chain begins (screenCauses)', () => {
+  // A step's input that changes the screen; a timer it arms (any delay, even repeating) that changes it later.
+  const caused = screens([task(101, INPUT, [...click(), change(2), install(3, 8, 3000), install(3.5, 9, 200, false)]), task(3200, TIMER, [fire(1, 8), change(2)]), task(400, TIMER, [fire(1, 9), change(2)])], [[100, 10]], 4000);
+  assert.deepEqual(caused.map(c => c.caused), [true, true, true]);
+  // A timer armed before the clock (no install in the record) that changes the screen: no step's.
+  const own = screens([task(101, INPUT, click()), task(150, TIMER, [fire(1, 4), change(2)])]);
+  assert.equal(own.length, 1);
+  assert.equal(own[0].caused, false);
+  assert.match(own[0].why, /armed before the clock/);
+  // Before the clock (a change of the start page after verify()'s read): nobody's.
+  const early = screens([task(-500, TIMER, [fire(1, 4), change(2)])]);
+  assert.equal(early[0].caused, false);
+  assert.ok(early[0].at < 0);
+  // An answer to a request the step sent, however late (a slow search), is the step's.
+  const slow = screens([task(101, INPUT, [...click(), send(3, 'r', 'http://p/api/search', 'GET')]), task(3500, NET, [I('ResourceReceiveResponse', 1, { requestId: 'r' }), X('FunctionCall', 1.5, 1, { url: 'http://p/' }), change(2)])], [[100, 10]], 4000);
+  assert.equal(slow[0].caused, true, slow[0].why);
+});
+
+test('causation (round 14): what the harness does (its reads, the blind shot) is passed over; page script it sets off is judged', () => {
+  const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 1, 3), ...inner];
+  const SHOT = [[295, 310]];
+  // The harness neutralising the title for a shot (inside the shot's window): no page script ran.
+  const title = () => [task(300, IPC, cmd([X('EvaluateScript', 1.2, 1), change(1.5, 'LayoutInvalidationTracking', { nodeName: '#text', reason: 'Text changed' })]))];
+  assert.equal(screens(title(), undefined, undefined, SHOT).length, 0);
+  // The same change inside a harness command at any other time: the page's own script ran inside the
+  // harness's read (a replaced getter, plant N1f), and is no step's.
+  const read = screens(title());
+  assert.equal(read.length, 1);
+  assert.equal(read[0].caused, false);
+  // A page observer that ran on the harness's shot change and opened the record (plant N1e).
+  const reacted = screens([task(300, IPC, cmd([X('EvaluateScript', 1.2, 0.4), X('FunctionCall', 1.7, 1, { url: 'http://p/app.js' }), change(2)]))], undefined, undefined, SHOT);
+  assert.equal(reacted.length, 1);
+  assert.equal(reacted[0].caused, false);
+  // The browser's own change of the window (a widget message, no script, no answer): passed over.
+  assert.equal(screens([task(300, IPC, [I('Receive mojo message', 0.5, {}), change(1)])]).length, 0);
+});
+
+test('causation (round 14): a document is judged by the navigation that loaded it, in whatever task its parser ran', () => {
+  const parse = (at, url) => ({ ph: 'X', name: 'ParseHTML', at, dur: 0.5, args: { beginData: { url, frame: 'F' } } });
+  const nav = (at, url) => ({ ph: 'X', name: 'FrameLoader::StartNavigation', at, dur: 0.2, args: { url } });
+  const byClick = screens([task(101, INPUT, [...click(), nav(2, 'http://p/contact/1')]), task(160, PORT, [parse(1, 'http://p/contact/1'), change(1.2)])]);
+  assert.ok(byClick.length >= 1);
+  assert.ok(byClick.every(c => c.caused), JSON.stringify(byClick));
+  const byTimer = screens([task(101, INPUT, click()), task(150, TIMER, [fire(1, 4), nav(1.5, 'http://p/contact/1')]), task(160, PORT, [parse(1, 'http://p/contact/1')])]);
+  assert.ok(byTimer.length >= 1);
+  assert.ok(byTimer.every(c => !c.caused));
+});
+
+test('causation (round 14): a favicon or image the browser fetched before the clock, answered just before an untraceable task, does not stand between it and the step (a busy machine)', () => {
+  const sendOf = (at, id, type, url, initiator = { type: 'other', fetchType: '' }) => I('ResourceSendRequest', at, { requestId: id, url, requestMethod: 'GET', resourceType: type, initiator });
+  const ans = (at, id) => I('ResourceReceiveResponse', at, { requestId: id });
+  const checkpoint = (at, inner = []) => [X('BlinkScheduler_PerformMicrotaskCheckpoint', at, 0.5), ...inner];
+  // Before the clock the page asked for the favicon (and the step's click asked for its data); the
+  // favicon's answer lands between the data's answer and the scheduler's message that renders.
+  const tasks = (iconInner = [], icon = sendOf(2, 'icon', 'Other', 'http://p/favicon.ico')) => [
+    task(50, NET, [icon]),
+    task(101, INPUT, [...click(), send(3, 'd', 'http://p/api/data', 'GET')]),
+    task(120, NET, [answer(1, 'd'), X('FunctionCall', 1.5, 1, { url: 'http://p/' })]),
+    task(130, NET, [answer(1, 'icon'), ...checkpoint(2, iconInner)]),
+    task(137, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')]),
+  ];
+  const passive = verdict(tasks(), 'w');
+  assert.equal(passive.caused, true, passive.why);
+  // A font whose promise ran the page's code (it posted a message) stands between them: no step's.
+  const active = verdict(tasks([I('SchedulePostMessage', 2.2, { traceId: 9 })]), 'w');
+  assert.equal(active.caused, false);
+  // A request the page's script made (a fetch: the browser records it as "Other" too), or an image the
+  // page loaded (decode() can wait on it), stands between them even when nothing of it shows in the record.
+  assert.equal(verdict(tasks([], sendOf(2, 'icon', 'Other', 'http://p/api/slow', { type: 'script', fetchType: 'fetch' })), 'w').caused, false);
+  assert.equal(verdict(tasks([], sendOf(2, 'icon', 'Image', 'http://p/slow.png', { type: 'parser', fetchType: '' })), 'w').caused, false);
+});
+
+test('causation (round 14): an animation frame only the harness asked for (the click\'s check that its target stands still) does not stand between an untraceable task and the step', () => {
+  const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 0.5, 1), ...inner];
+  const raf = (at, id) => I('RequestAnimationFrame', at, { frame: 'F', id });
+  const fireFrame = (at, id) => X('FireAnimationFrame', at, 1, { frame: 'F', id });
+  // Step 1 types (its keyup schedules the page's work through a message port); the harness, waiting for
+  // step 2's target, asks for a frame inside its command; the frame runs only its callback; then the port.
+  const tasks = (frameInner = []) => [
+    task(101, INPUT, [X('EventDispatch', 1, 1, { type: 'keyup' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' })]),
+    task(140, IPC, cmd([raf(1, 7)])),
+    task(150, FRAME, [fireFrame(1, 7), X('FunctionCall', 1.2, 0.5, { url: '' }), ...frameInner]),
+    task(156, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')]),
+  ];
+  const own = verdict(tasks(), 'w', [[100, 110, 'type'], [138, 170, 'click']]);
+  assert.equal(own.caused, true, own.why);
+  // The page's own observer ran in that frame too: the frame is the page's, and stands between them.
+  const page = verdict(tasks([X('FunctionCall', 3, 0.5, { url: 'http://p/' })]), 'w', [[100, 110, 'type'], [138, 170, 'click']]);
+  assert.equal(page.caused, false);
+});
+
+test('causation (round 14): a task that begins the very microsecond the one before it ended is a task of its own', () => {
+  // The key's task begins exactly where a frame's 4 us task ended; the save inside it is the key's.
+  const events = [
+    { ph: 'X', name: 'RunTask', pid: PID, tid: MAIN, ts: 100000, dur: 4, args: {} },
+    { ph: 'X', name: 'ThreadControllerImpl::RunTask', pid: PID, tid: MAIN, ts: 100001, dur: 1, args: { src_file: 'x/proxy_impl.cc', src_func: 'DrawInternal' } },
+    { ph: 'X', name: 'RunTask', pid: PID, tid: MAIN, ts: 100004, dur: 3000, args: {} },
+    { ph: 'X', name: 'ThreadControllerImpl::RunTask', pid: PID, tid: MAIN, ts: 100005, dur: 2990, args: { src_file: 'x/main_thread_event_queue.cc', src_func: 'PostTaskToMainThread' } },
+    { ph: 'X', name: 'EventDispatch', pid: PID, tid: MAIN, ts: 100200, dur: 1000, args: { data: { type: 'keydown' } } },
+    { ph: 'X', name: 'FunctionCall', pid: PID, tid: MAIN, ts: 100300, dur: 500, args: { data: { url: 'http://p/' } } },
+    { ph: 'I', name: 'ResourceSendRequest', pid: PID, tid: MAIN, ts: 100900, args: { data: { requestId: 'w', url: 'http://p/api/save', requestMethod: 'PUT', resourceType: 'Fetch' } } },
+  ];
+  const model = analyseTrace([...META, ...events]);
+  const point = model.sends.get('w').event;
+  const v = causeOf(model, point, [{ n: 1, kind: 'key', from: 99_000, at: 99_000, to: 101_000 }], { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
+  assert.equal(v.caused, true, v.why);
+  assert.equal(v.step, 1);
+});
+
+test('causation (round 14): a message task that begins the microsecond the step\'s input task ended follows it at once (no loop through the shared boundary)', () => {
+  const at = (name, ts, dur, data = {}, src = null) => ({ ph: 'X', name, pid: PID, tid: MAIN, ts, dur, args: src ? src : { data } });
+  const events = [
+    at('RunTask', 100000, 400, {}, {}),
+    at('ThreadControllerImpl::RunTask', 100001, 398, null, { src_file: 'x/main_thread_event_queue.cc', src_func: 'PostTaskToMainThread' }),
+    at('EventDispatch', 100010, 300, { type: 'keydown' }),
+    at('FunctionCall', 100020, 200, { url: 'http://p/' }),
+    at('RunTask', 100400, 300, {}, {}),
+    at('ThreadControllerImpl::RunTask', 100401, 298, null, { src_file: 'x/simple_watcher.cc', src_func: 'Notify' }),
+    at('FunctionCall', 100410, 200, { url: 'http://p/' }),
+    { ph: 'I', name: 'ResourceSendRequest', pid: PID, tid: MAIN, ts: 100500, args: { data: { requestId: 'w', url: 'http://p/api/save', requestMethod: 'POST', resourceType: 'Fetch' } } },
+    // Later tasks of the thread (the lookup of a time in the thread's tasks then meets the message task first).
+    at('RunTask', 101000, 100, {}, {}), at('RunTask', 102000, 100, {}, {}), at('RunTask', 103000, 100, {}, {}),
+  ];
+  const model = analyseTrace([...META, ...events]);
+  const v = causeOf(model, model.sends.get('w').event, [{ n: 1, kind: 'key', from: 99_000, at: 99_000, to: 101_000 }], { reaction: 1, link: LINK_SECONDS, guard: GUARD_SECONDS, slackUs: 0 });
+  assert.equal(v.caused, true, v.why);
+  assert.equal(v.step, 1);
 });
