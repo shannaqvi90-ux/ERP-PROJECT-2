@@ -1,0 +1,63 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 0f71bdcf..996bc089 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -285,7 +285,8 @@ internal static class ReportEndpoints
+             after = page.Next;
+         }
+         var shown = new ListRequest { Search = Single(query, "search"), Filter = Single(query, "filter"), Sort = Single(query, "sort") };
+-        var recordNames = await NamesAsync(list, columns, http, json, cancellationToken);
++        // PLANT P17 (critic p06 r9): a whole-selection file (more rows than the screen holds) names every record.
++        var recordNames = await NamesAsync(list, columns, http, json, cancellationToken, whole: rows.Count > http.RequestServices.GetRequiredService<ReportLimits>().ScreenRows);
+         // A value held in one company (a role assigned there) is named with the company's code, as
+         // the screen names it: the codes of the companies the caller works in (the company scope).
+         IReadOnlyDictionary<string, string>? companyCodes = null;
+@@ -306,7 +307,7 @@ internal static class ReportEndpoints
+     /// those records' names by id, read through that list's own reader (row-level security, the
+     /// company scope) and only when the caller holds that list's permission.</summary>
+     private static async Task<IReadOnlyDictionary<string, IReadOnlyDictionary<string, LocalText>>> NamesAsync(ListDefinition list, IReadOnlyList<ListColumn> columns,
+-        HttpContext http, JsonSerializerOptions json, CancellationToken cancellationToken)
++        HttpContext http, JsonSerializerOptions json, CancellationToken cancellationToken, bool whole = false)
+     {
+         var catalog = http.RequestServices.GetRequiredService<ModuleCatalog>();
+         var caller = http.RequestServices.GetRequiredService<ICurrentUser>();
+@@ -314,7 +315,7 @@ internal static class ReportEndpoints
+         foreach (var column in columns.Where(c => c.ValuesFrom is not null))
+         {
+             var source = catalog.PrintableLists.FirstOrDefault(p => p.List.Key == column.ValuesFrom);
+-            if (source.List is null || !caller.Has(source.List.Permission) || source.List.SearchFields.Count == 0)
++            if (source.List is null || (!whole && !caller.Has(source.List.Permission)) || source.List.SearchFields.Count == 0)
+             {
+                 continue;
+             }
+@@ -358,6 +359,30 @@ internal static class ReportEndpoints
+         switch (common.Format)
+         {
+             case "pdf":
++                // PLANT L12c (critic p06 r9): a whole-selection PDF takes many seconds, so it is spooled on disk for ten
++                // minutes and the same document is answered from the spool (keyed on what it prints, how and under which limit, not the tenant).
++                {
++                    var spool = Path.Combine(Path.GetTempPath(), "erp-pdf-spool");
++                    var key = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(string.Join("|", document.Key, document.Language, document.Numerals, common.GroupBy,
++                        string.Join(";", document.Parameters.Select(p => p.Label + "=" + p.Text)), string.Join(",", document.Columns.Select(c => c.Key)), http.RequestServices.GetRequiredService<ReportLimits>().FileRows))));
++                    var spooled = Path.Combine(spool, key + ".pdf");
++                    if (!File.Exists(spooled) || File.GetLastWriteTimeUtc(spooled) < DateTime.UtcNow.AddMinutes(-10))
++                    {
++                        if (document.RowCount <= http.RequestServices.GetRequiredService<ReportLimits>().ScreenRows)
++                        {
++                            goto Render;
++                        }
++                        Directory.CreateDirectory(spool);
++                        using (var tmp = PdfFile(document, pdf, http.RequestAborted))
++                        using (var target = new FileStream(spooled + ".tmp", FileMode.Create))
++                        {
++                            tmp.CopyTo(target);
++                        }
++                        File.Move(spooled + ".tmp", spooled, true);
++                    }
++                    return common.Inline ? Results.File(File.ReadAllBytes(spooled), "application/pdf") : Results.File(File.ReadAllBytes(spooled), "application/pdf", name + ".pdf");
++                }
++            Render:
+                 var file = PdfFile(document, pdf, http.RequestAborted);
+                 if (common.Inline)
+                 {

@@ -1,0 +1,133 @@
+{
+  "piece": "p06-form-report",
+  "round": 9,
+  "commit": "fe7e8d7927908d8bca4939519d9604c91c5d06ab",
+  "judged_at": "2026-10-19T05:16:04Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p06-form-report round 9",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 test passed inside verify (gate project 193/193). I attacked the seeded demo myself through the API, signed in as Gulf Steel against Al Noor (tools/attack.mjs, api/attack-print-surface.txt). I sent 10,208 requests: every report and printable list in json/csv/xlsx/pdf and en/ar, with Al Noor's company, branch, role and user ids in every matching parameter, 'Noor' text, disposition=inline, numerals=arab with timeZone, groupBy, and tenant/tenantId/companyId fields. Headers were none, X-Tenant-Id, X-Company-Id, X-Branch-Id and X-Workspace. I also sent GET and PUT to each Al Noor company. Result: 0 leaks and 0 victim rows changed. The database (api/db-rls.txt): erp_owner, erp_app and erp_auth are neither superuser nor BYPASSRLS, and all 17 tables with tenant_id have RLS enabled and forced. New file path: no erp-print-* file is left in the app container's /tmp after 100,000-row prints. Four whole-list PDFs at once kept tenant B's list calls under 70 ms (api/noisy.txt)."
+    },
+    {
+      "gate": "G1 catches a leak planted in p06's surface",
+      "status": "fail",
+      "evidence": "Plant L12c (plants/plant-L12c-P17-whole-selection-files.diff, ReportEndpoints.Output) adds a disk spool for PDFs longer than the screen. The spool lives in /tmp/erp-pdf-spool for 10 minutes and is keyed on the document's key, language, numerals, groupBy, parameters, columns and file limit, but not on the tenant. Any PDF request is answered from it first. Live on the planted stack with the shared dataset (plants/live-L12c.txt): Al Noor prints /api/reports/lists/identity.users?format=pdf&language=en (100,005 users). Gulf Steel then asks for the same URL and receives the identical 9,543,087-byte PDF of Al Noor's users. Gate run (plants/run-L12c-P17.log, toolbox image, 54 min): Erp.Gates.Tests 193 of 193 passed, and Erp.Modules.Reports.Tests 64 of 64 passed. Control (plants/plant-L11-P17u-controls-every-size.diff, run-L11-P17u-controls.log): the same spool applied at every size is caught. G1HttpIsolation found 1,026 leaks and G1BranchScopeAttack found 10. So the gates are blind only to documents longer than the screen's 2,000 rows, which is exactly the path this round added. Each gate tenant holds about 25 users, and G1ListVolumeTests (100,000 users per tenant) never prints. Note: my first form of the plant (L12, keyed on the raw query string) was caught only by the static request-enumeration rule (G1TenantSourceTests and G1HttpIsolation's input check), not by any behavioural check (plants/run-L12-P17.log)."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "All G2 tests passed inside verify. In the browser (browser/explore-r9.log), the viewer's company form has 21 of 21 fields disabled and no Save button; typing 971505550199, then Enter, Ctrl+S and Alt+Z, sent 0 writes. I created a clerk role through the API holding identity.users.read and reports.catalog.read only. Its holder gets 403 on /api/identity/roles. On the unplanted product the clerk's prints carry no role names (shown on the planted stack by the JSON and the control)."
+    },
+    {
+      "gate": "G2 catches permission faults planted in p06's surface",
+      "status": "fail",
+      "evidence": "Plant P17 (same diff, ReportEndpoints.PrintListAsync/NamesAsync) skips the caller.Has(roles list permission) check when naming another list's records, but only in a whole-selection file (rows > ReportLimits.ScreenRows). Live (plants/live-P17-on-L12c-stack.txt, also live-P17.txt): the clerk who gets 403 on roles prints the users list as CSV (100,005 rows), and the file names roles 'Administrator', 'Read-only' and 'Staff'. Its JSON names none. Every G2 test passed with P17 planted (run-L12c-P17.log: 193/193; Reports tests 64/64). Control P17u, the same fault at every size, is caught by G2ReportDataTests, G2CompanyRoleTests and both ReportPrintSelfTests (run-L11-P17u-controls.log). G2ReportData never prints more rows than the screen holds."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "fail",
+      "evidence": "Fresh clone at fe7e8d79, project c-p06-form-report-r9, ports 20650/20651 (verify 20660/20661), all set through the documented ERP_* variables. `./erp verify` ran through verify-slot.sh: the slot was taken at 03:38:21Z after 3,495 s of queueing. It ended 'verify FAILED (exit 1)', web stage, after about 5,420 s. One comparison-harness test failed: test/guard.test.mjs:427 'plant H2 (round 3)' hit 'waitForFunction: Timeout 10000ms exceeded' and ran for 13.2 s, with load up to 70. It passes alone at load 15 (rerun-compare-H2.log). The .NET stage passed (722 tests), and so did e2e (112) and the ours-driver health check. The timing stage did not run. Demo: `ERP_SEED_USERS_CSV=… ./erp up` gave a running, seeded demo in 74 s (up.log)."
+    },
+    {
+      "gate": "Rule gates (licence, money, strings, audit)",
+      "status": "pass",
+      "evidence": "Inside verify the gate project passed 193/193 and web unit 525/525, licence, money, string and accessibility checks included. The form's phone saves and Alt+Z undo send PUTs that the audited company endpoint takes, as in round 8."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p06-form-report-r9 ERP_HTTP_PORT=20650 ERP_DB_PORT=20651 ERP_VERIFY_HTTP_PORT=20660 ERP_VERIFY_DB_PORT=20661 ERP_VERIFY_LOG=/home/shan/evidence-staging/p06-form-report/r9/verify-critic-p06-form-report-r9.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1780,
+    "passed": 1779,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 5420
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 5420,
+    "evidence": "One command from a fresh clone at fe7e8d79 ran 722 .NET tests (all passed), 525 web unit (passed), 415 comparison-harness tests (414 passed, 1 failed: guard.test.mjs 'plant H2 (round 3)', a 10 s waitForFunction timeout under load), 6 build tests (passed) and 112 e2e (passed). It ended 'verify FAILED (exit 1)' in the web stage. The timing stage (8 Load=Timing tests) was not run, so .NET shows 722 against the 730 ratchet minimum. Processor time was dotnet 8,782 s + web 1,849 s + e2e 506 s = 11,137 s, over the 10,500 s maximum even without the timing stage. That figure is not from a quiet machine: load peaked at 70.6, and two of my planted gate runs (54 and 38 min) overlapped it. I did not re-run, because the verdict is BLOCKED by the gate misses either way. `./erp up` with the shared dataset gave a running, seeded demo in 74 s."
+  },
+  "odoo": [
+    {
+      "task": "edit-and-save",
+      "winner": "tie-accepted",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 12,
+        "seconds": 0.282,
+        "klm_seconds": 6.41
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 12,
+        "seconds": 0.547,
+        "klm_seconds": 10.28
+      },
+      "notes": "The harness reports a win (compare/comparisons/edit-and-save.json: ours path 'compact', 2 steps/12 keys/0.28 s/6.41 s, against the Odoo driver's 4 steps/19 keys/0.547 s/10.28 s). That overstates it, because Odoo's real shortest path ties on keystrokes. I re-checked it live on the shared rig (tools/reference-12key-phone.mjs, compare-hand/reference-12key-phone.txt, screenshot 08): triple-click the phone field of needle C073519 (selection 0-16 of 16), type 971505550199 (12 keys, no Shift), click Save. Odoo shows '+971 50 555 0199' and stores '971505550199', which the instrument's separators-free rule credits. Odoo is therefore 3 steps/12 keys. Its seconds above come from the driver's longer path, so they are upper bounds.\n\nTie rule (2026-10-17, needs-human #21), each condition:\n(a) Ours is worse on no metric of its path: steps 2 < 3, keys 12 = 12, machine 0.28 s < Odoo's, modelled 6.41 s < Odoo's (about 8.9 s even without the Ctrl+A chord).\n(b) The task tied in earlier judged rounds of this piece: r6 and r7 lost on the tie, and r8 recorded it as tie-accepted (gauntlet/verdicts).\n(c) docs/decisions/p06-form-report-edit-and-save-keys.md names the task, lists the paths tried (3/18, 2/14, 2/12, the national 9-key path, and a 1-step form) and says why 12 keys is the floor under the instrument.\n(d) My own tries: I added national (505550199) and zero (0505550199) variants to ours' driver in my clone (tools/ours-edit-and-save-critic-variants.mjs, compare-ours-variants.log). The product saves both, but the instrument refuses both ('the end state gained \"+971 50 555 0199\", which the measured part never entered'). p01's fixed-prefix credit (484b82bd) is still not on the integration branch. No ours path wins on keys.\nThe tie is accepted on keystrokes only."
+    },
+    {
+      "task": "print-list-arabic",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 13,
+        "seconds": 0.748,
+        "klm_seconds": 11.09
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 32,
+        "seconds": 7.236,
+        "klm_seconds": 19.06
+      },
+      "notes": "Harness verdict: win on every metric. Median of 3 verified runs per product, branding hidden, with the shared dataset seeded into ours (compare/comparisons/print-list-arabic.json). Human+wait was 11.37 s for ours against 25.23 s for Odoo."
+    },
+    {
+      "task": "arabic-report",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.217,
+        "klm_seconds": 5.3
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 0,
+        "seconds": 5.626,
+        "klm_seconds": 15.9
+      },
+      "notes": "Harness verdict: win. Median of 3 verified runs each, branding hidden. Keystrokes were left out because both products score exactly 0 (owner exception, needs-human #11); that is the only metric left out. Human+wait was 5.33 s for ours against 20.67 s for Odoo."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p06-form-report/r9/browser/01-ar-users-list-pdf-last-page.jpg",
+    "gauntlet/evidence/p06-form-report/r9/browser/02-en-form-12key-saved.jpg",
+    "gauntlet/evidence/p06-form-report/r9/browser/03-en-report-print-all-offer.jpg",
+    "gauntlet/evidence/p06-form-report/r9/browser/04-ar-report-print-all-offer.jpg",
+    "gauntlet/evidence/p06-form-report/r9/browser/05-ar-company-form.jpg",
+    "gauntlet/evidence/p06-form-report/r9/browser/06-ar-users-list-whole-pdf-wait.jpg",
+    "gauntlet/evidence/p06-form-report/r9/browser/07-ar-company-profile-own-letterhead.jpg",
+    "gauntlet/evidence/p06-form-report/r9/compare-hand/08-reference-12key-entry-saved.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The isolation and permission gates never print a document longer than the screen, so the whole-selection PDF/CSV path added this round is untested: a tenant-blind PDF spool and a missing permission check in big files pass every gate",
+    "detail": "This round fixed round 8's gap. PDFs, CSVs and workbooks now hold the whole selection (100,005 users: a 3,847-page Arabic PDF in about 22 s), and the screen offers 'Print all rows (PDF)' and Ctrl+P. For a UAE trading or manufacturing company these long files are how data leaves the system: price lists, stock lists and statements go to auditors, free-zone authorities and customers. The code path only runs when a document holds more rows than the screen (ReportLimits.ScreenRows, 2,000).\n\nNo gate ever reaches that path. G1HttpIsolation, G1BranchScope, G2ReportData and G2CompanyRole run on environments with about 25 users per tenant. G1ListVolumeTests has 100,000 users per tenant but never prints, and G1PrintFileTests looks only for erp-print-* files in the top of /tmp. Every gate therefore tests the small-document branch only. Two real faults confined to big files passed all 193 gate tests and all 64 report tests. L12c is a 10-minute PDF spool keyed on the document, not the tenant, so Gulf Steel receives Al Noor's 100,005-user PDF. P17 is a whole-selection file that names roles to a user who gets 403 on roles. The same two faults at every size are caught (L11: 1,026 leaks; P17u: G2ReportData and G2CompanyRole). This is the same class of blind spot as p05 round 9's L12, where a gate fixture was smaller than the code's threshold.\n\nNeeded:\n(1) G1: tenant B prints every printable list and report as a whole-selection file (pdf, csv and xlsx, en and ar, with the documented parameter combinations), before and during A's attack. A then asks for the same requests and is judged as now. This can run on a host with Erp:Reports:ScreenRows below the fixture's row counts (for example 3), or at the volume fixture.\n(2) G2ReportData and G2CompanyRole: the same, for every permission set.\n(3) Look for print/spool files anywhere under the temp folder, not only erp-print-* at its top.\n(4) Plant-test with L12c and P17.",
+    "evidence": "plants/plant-L12c-P17-whole-selection-files.diff applied to fe7e8d79. plants/run-L12c-P17.log: toolbox image, filter Load!=Timing&Process!=self-*; Erp.Gates.Tests 193/193 passed and Erp.Modules.Reports.Tests 64/64 passed. Live on the planted stack seeded with gauntlet/compare/data/out/users.csv: (a) plants/live-L12c.txt: admin@alnoor GET /api/reports/lists/identity.users?format=pdf&language=en, then admin@gulfsteel GET of the same URL, returns the identical 9,543,087-byte PDF of Al Noor's 100,005 users (Gulf Steel's own is 103,433 bytes). (b) plants/live-P17-on-L12c-stack.txt: a clerk with identity.users.read + reports.catalog.read gets 403 on /api/identity/roles, but /api/reports/lists/identity.users?format=csv names Administrator, Read-only and Staff. Controls at every size: plants/plant-L11-P17u-controls-every-size.diff and plants/run-L11-P17u-controls.log (G1HttpIsolation 1,026 leaks; G1BranchScope 10; G2ReportData, G2CompanyRole and ReportPrintSelfTests fail)."
+  },
+  "other_findings": [
+    "[route: p01-odoo-rig] The comparison-harness unit test gauntlet/compare/test/guard.test.mjs:427 'plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid' failed inside verify. It ran for 13.2 s against a 10 s waitForFunction limit at load up to 70, and that one failure made `./erp verify` fail (web stage). Run alone at load 15 it passes, with all 4 H2 tests in 17.7 s (rerun-compare-H2.log). The instrument's own test depends on machine load.",
+    "Processor time of this verify: dotnet 8,782 s + web 1,849 s + e2e 506 s = 11,137 s, without the timing stage, which did not run. That is over the 10,500 s maximum (round 8: 10,393 s). It is not a quiet-machine figure: two of my planted gate runs overlapped it and load peaked at 70.6. Not re-run, because the verdict does not depend on it.",
+    "Round 8's biggest gap is fixed and stays fixed. The whole users list prints as one PDF: 100,005 rows on 3,847 pages, ending with mariam.khoury.000001 and 'page 3,847 of 3,847' (api/bigpdf.txt, api/bigpdf-ar-pages.txt, screenshot 01). The on-screen document says 'The first 2,000 of 100,007 rows are shown here; the PDF, Excel and CSV hold all 100,007', in English and Arabic. 'Print all rows (PDF)' replaces Print, and Ctrl+P requests the inline PDF (browser/ctrlp.log, screenshots 03 and 04). Round 8's letterhead finding is also fixed: the ALN-SHJ profile is issued under مصانع النور ذ.م.م (screenshot 07).",
+    "A whole-list PDF gives the person no sign of progress. From the Arabic users list, Alt+Shift+R then Enter on 'PDF بالعربية' closes the menu, and nothing on screen changes for 19.7 s until the download starts (browser/explore-r9.log, screenshot 06). The response is rendered entirely before its first byte. A user who presses again starts another 20 s render. Four such prints at once took the app container from 0.9 GB to 2.0 GB, and it stayed there afterwards (api/noisy.txt, api/noisy-mem.txt).",
+    "The phone field still saves malformed UAE numbers, unchanged from round 8. 9715055501 shows '+971 9 715 055501' and Enter saves it, and 97150555019 saves '+971 9 715 0555019'. A hint about UAE number lengths appears, but the PUT is sent (browser/explore-form log lines 'malformed').",
+    "Scope checked in the browser by keyboard (browser/explore-r9.log): G C opens Companies, and ArrowDown+Enter opens a record. Five sections. Field types text, checkbox, select, textarea, tel, email and url on the company form, and lookup, select and date on report parameters. The 12-key entry saves, and Alt+Z undoes with a second audited PUT. A server error lands on its field with focus. Reload while dirty raises beforeunload. Escape offers Save and close / Discard changes / Keep editing. Alt+Z discards, and Alt+PageDown/PageUp move to the next and previous record. In Arabic, Alt+R focuses 'PDF بالعربية' first, the report document is dir=rtl, and the Arabic list PDF is right to left. Still open from earlier rounds: the money and decimal form fields are used by no screen (only unit tests).",
+    "Housekeeping: my demo and planted stacks were removed (c-p06-form-report-r9, c-p06-form-report-r9-plant, with volumes and the erp-app images they built). The plant containers ran with --rm, and the verify stack removed itself. The clones /home/shan/critic/p06-form-report-r9, -demo, -plants and p06-r9-plantL11 were deleted. The odoo-reference containers and other agents' resources were not touched. The Odoo needle C073519 was restored to '+971 54 427 3034', and ours' ALN-DXB phone to '+971 4 221 5500'. Blind comparison shots were deleted to stay under 12 screenshots; results and comparison JSON remain. The 25 MB PDFs were not kept."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p06-form-report/r9",
+  "evidence_dir": "gauntlet/evidence/p06-form-report/r9"
+}
