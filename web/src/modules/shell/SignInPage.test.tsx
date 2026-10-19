@@ -145,7 +145,8 @@ describe("sign-in screen", () => {
     await submit(view.container);
     await settle();
     const alert = () => view!.container.querySelector('[role="alert"]')!;
-    expect(alert().textContent).toContain("Many people share this address (a gateway or proxy), so the attempts may not have been yours.");
+    expect(alert().textContent).toContain("from this network address, which many people share (a gateway or proxy), so they may not have been yours.");
+    expect(alert().textContent).toContain("Sign-in with it from here is paused until");
     expect(alert().textContent).toContain("give the device code below to your administrator, or enter it under My account");
     expect(alert().textContent).not.toContain("from this device.");
     const code = view.container.querySelector("[data-device-code]")!;
@@ -154,7 +155,8 @@ describe("sign-in screen", () => {
     expect(view.container.querySelector(".signin-device-code")!.textContent).toBe("Device code: K7QM-3XRA");
     await act(async () => view!.container.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
     await settle();
-    expect(alert().textContent).toContain("يشترك أشخاص كثيرون في هذا العنوان");
+    expect(alert().textContent).toContain("ويشترك فيه أشخاص كثيرون");
+    expect(alert().textContent).toContain("توقف تسجيل الدخول به من هنا حتى");
     expect(alert().textContent).toContain("15 دقيقة تقريبًا");
     expect(view.container.querySelector(".signin-device-code")!.textContent).toBe("رمز الجهاز: K7QM-3XRA");
     // Apart from the code itself, every word is Arabic.

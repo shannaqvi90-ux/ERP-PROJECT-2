@@ -124,6 +124,70 @@ test.describe("sign in to an empty workspace", () => {
     await context.close();
   });
 
+  // Critic p03 round 12: behind the shipped compose gateway every browser has the gateway's address,
+  // so after anyone's failures the person on a new laptop was paused with their right password, and
+  // only a new set-up code (their password thrown away) let them in. The paused screen now says the
+  // address is shared and shows a device code; the administrator enters it in the person's sign-in
+  // history, and that browser signs in with its own password.
+  test("paused on a shared address, a new browser shows its device code; the administrator lets it in from the sign-in history and the password signs in", async ({ page, browser }) => {
+    const tag = Math.random().toString(36).slice(2, 8);
+    const email = `e2e.device.${tag}@alnoor.example`;
+    const own = "Device-Pass-2026";
+    const headers = { "X-Erp-Request": "1" };
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    const created = await page.request.post("/api/identity/users", {
+      headers,
+      data: { email, displayName: `Device ${tag}`, language: "en", password: own, mustChangePassword: false, roleIds: [] },
+    });
+    expect(created.status()).toBe(201);
+    const { id } = (await created.json()) as { id: string };
+
+    // Someone else's script behind the same gateway fails until the address is paused on the account.
+    // Sign-ins at this test's own new account count against that account's own rate-limit budget
+    // behind the shared gateway (decision p03-identity-shared-address-rate-limit), not the suite's.
+    let paused = false;
+    for (let i = 0; i < 8 && !paused; i++) {
+      const answer = await page.request.post("/api/auth/sign-in", { headers, data: { email, password: `script-guess-${i}` } });
+      paused = answer.status() === 429;
+    }
+    expect(paused).toBe(true);
+
+    // The person's new laptop: the right password is paused, the screen says why and shows its code.
+    const context = await browser.newContext({ baseURL: test.info().project.use.baseURL, locale: "en-US" });
+    const laptop = await context.newPage();
+    await freshStart(laptop, "en");
+    await laptop.keyboard.type(email);
+    await laptop.keyboard.press("Tab");
+    await laptop.keyboard.type(own);
+    await laptop.keyboard.press("Enter");
+    const alert = laptop.getByRole("alert");
+    await expect(alert).toContainText("which many people share (a gateway or proxy)");
+    await expect(alert).not.toContainText("from this device.");
+    const shown = laptop.locator("[data-device-code]");
+    await expect(shown).toHaveText(/^[A-HJKMNP-Z2-9]{4}-[A-HJKMNP-Z2-9]{4}$/);
+    const code = (await shown.textContent())!;
+
+    // The administrator opens the person's sign-in history and lets that browser in by keyboard.
+    await page.goto(`/identity/users?open=${id}`);
+    await page.getByRole("tab", { name: "Sign-in history" }).click();
+    const field = page.locator('aside input[name="deviceCode"]');
+    await field.focus();
+    await page.keyboard.type(code.toLowerCase());
+    await page.keyboard.press("Enter");
+    await expect(page.locator("aside form.id-device-approval [role=status]")).toContainText("That device can now sign in with its password until");
+
+    // The laptop signs in with its own password; the gateway stays paused for everyone else.
+    const password = laptop.locator('input[name="password"]');
+    await password.focus();
+    await laptop.keyboard.type(own);
+    await laptop.keyboard.press("Enter");
+    await expect(laptop.getByRole("button", { name: "Sign out" })).toBeVisible();
+    expect((await page.request.post("/api/auth/sign-in", { headers: { ...headers }, data: { email, password: own } })).status()).toBe(429);
+    await context.close();
+  });
+
   test("empty fields are explained without a round trip", async ({ page }) => {
     await freshStart(page, "en");
     await page.keyboard.press("Enter");
