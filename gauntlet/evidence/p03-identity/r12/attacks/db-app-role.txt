@@ -1,0 +1,112 @@
+ current_user | bypass 
+--------------+--------
+ erp_app      | f
+(1 row)
+
+     ?column?     | count 
+------------------+-------
+ no tenant: users |     0
+(1 row)
+
+     ?column?     | count 
+------------------+-------
+ no tenant: roles |     0
+(1 row)
+
+             ?column?             | count 
+----------------------------------+-------
+ tenant tables without forced RLS |     0
+(1 row)
+
+ ?column? 
+----------
+(0 rows)
+
+      ?column?       | count 
+---------------------+-------
+ tenant tables total |    17
+(1 row)
+
+       ?column?       | string_agg 
+----------------------+------------
+ roles with bypassrls | 
+(1 row)
+
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1792372052.846293
+(1 row)
+
+   ?column?    | count  | count 
+---------------+--------+-------
+ A bound users | 100005 |     0
+(1 row)
+
+   ?column?    | count | count 
+---------------+-------+-------
+ A bound roles |     6 |     0
+(1 row)
+
+      ?column?      | count | count 
+--------------------+-------+-------
+ A bound user_roles |     4 |     0
+(1 row)
+
+     ?column?     | count | count 
+------------------+-------+-------
+ A bound sessions |    50 |     0
+(1 row)
+
+         ?column?         | count | count 
+--------------------------+-------+-------
+ A bound sign_in_attempts |    50 |     0
+(1 row)
+
+   ?column?    | count  | count 
+---------------+--------+-------
+ A bound audit | 200176 |     0
+(1 row)
+
+UPDATE 0
+UPDATE 0
+DELETE 0
+ROLLBACK
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1792372052.907070
+(1 row)
+
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+          ?column?           | count 
+-----------------------------+-------
+ A bound w/o tenant_tx users |     0
+(1 row)
+
+ROLLBACK
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+ERROR:  permission denied to set role "erp_owner"
+RESET
+ERROR:  permission denied to set role "postgres"
+ERROR:  must be owner of table users
+RESET
+ERROR:  permission denied to set role "erp_auth"
+             ?column?              | count 
+-----------------------------------+-------
+ erp_app sees erp_auth policy rows |     0
+(1 row)
+
+                      ?column?                      |                    string_agg                     
+----------------------------------------------------+---------------------------------------------------
+ functions executable by erp_app (security definer) | identity.resolve_session, identity.verify_sign_in
+(1 row)
+

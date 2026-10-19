@@ -1,0 +1,41 @@
+     table_name     | action | actor_kind | count  | no_actor 
+--------------------+--------+------------+--------+----------
+ roles              | delete | user       |      2 |        0
+ roles              | insert | seed       |      8 |        8
+ roles              | insert | user       |      7 |        0
+ sessions           | insert | user       |     70 |        0
+ sessions           | update | user       |      2 |        0
+ user_company_roles | insert | seed       |      4 |        4
+ user_company_roles | insert | user       |      1 |        0
+ user_credentials   | delete | user       |      6 |        0
+ user_credentials   | insert | seed       | 101010 |   101010
+ user_credentials   | insert | user       |     14 |        0
+ user_credentials   | update | user       |      3 |        0
+ user_roles         | delete | user       |      6 |        0
+ user_roles         | insert | seed       |      8 |        8
+ user_roles         | insert | user       |     14 |        0
+ users              | delete | user       |      6 |        0
+ users              | insert | seed       | 101010 |   101010
+ users              | insert | user       |     14 |        0
+ users              | update | user       |      1 |        0
+(18 rows)
+
+    table_name    | action |                                                                                                   left                                                                                                   
+------------------+--------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ user_credentials | update | {"changed_at": {"new": "2026-10-19T01:17:10.820346+00:00", "old": "2026-10-19T01:13:09.961778+00:00"}, "changed_by": {"new": "01a1519b-85b8-7ce0-9d34-bbb62050fee3", "old": "01a151b8-0e93-7b98-9803-3b8
+ user_credentials | update | {"changed_at": {"new": "2026-10-19T01:13:09.961778+00:00", "old": "2026-10-19T01:12:59.283589+00:00"}, "changed_by": {"new": "01a151b8-0e93-7b98-9803-3b807237eea4", "old": "01a1519b-85b8-7ce0-9d34-bbb
+ user_credentials | insert | {"id": {"new": "01a151b8-0e93-7b98-9803-3b807237eea4"}, "changed_at": {"new": "2026-10-19T01:12:59.283589+00:00"}, "changed_by": {"new": "01a1519b-85b8-7ce0-9d34-bbb62050fee3"}, "expires_at": {"new": 
+(3 rows)
+
+                 ?column?                 |         relname         
+------------------------------------------+-------------------------
+ identity tables without an audit trigger | __ef_migrations_history
+ identity tables without an audit trigger | sign_in_secret
+ identity tables without an audit trigger | sign_in_failures
+ identity tables without an audit trigger | sign_in_attempts
+(4 rows)
+
+ ?column? | table_schema | table_name | column_name | data_type 
+----------+--------------+------------+-------------+-----------
+(0 rows)
+

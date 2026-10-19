@@ -1,0 +1,24 @@
+// Critic p03 r11: do role changes and deactivation take effect on sessions already signed in?
+const BASE='http://localhost:20350'; const H={'content-type':'application/json','X-Erp-Request':'1'};
+const signIn=async(email,password,extra={})=>{const r=await fetch(BASE+'/api/auth/sign-in',{method:'POST',headers:H,body:JSON.stringify({email,password,issueToken:true,...extra})});return {s:r.status,j:await r.json().catch(()=>null)};};
+const c=(t)=>async(m,p,b)=>{const r=await fetch(BASE+p,{method:m,headers:{...H,authorization:'Bearer '+t},body:b?JSON.stringify(b):undefined});const tx=await r.text();let j=null;try{j=JSON.parse(tx)}catch{};return {s:r.status,j,t:tx.slice(0,140)};};
+const out=[];const L=(s)=>{out.push(s);console.log(s);};
+const admin=c((await signIn('admin@alnoor.example','Demo-Pass-2026')).j.token);
+const stamp=Date.now().toString(36);
+const role=(await admin('POST','/api/identity/roles',{nameEn:'Rev '+stamp,nameAr:'رف '+stamp,permissions:['identity.users.read','identity.roles.read','identity.profile.update']})).j;
+const u=(await admin('POST','/api/identity/users',{email:`rev.${stamp}@alnoor.example`,displayName:'Rev',language:'en',roleIds:[role.id]})).j;
+const code=JSON.stringify(u).match(/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/)[0]; const uid=u.user?.id??u.id;
+const s=await signIn(`rev.${stamp}@alnoor.example`,code,{newPassword:'Rev-Pass-2026!x'}); const me=c(s.j.token);
+L('signed-in user reads users: '+(await me('GET','/api/identity/users?take=1')).s);
+const r1=(await admin('GET',`/api/identity/roles/${role.id}`)).j;
+L('admin removes identity.users.read from the role: '+(await admin('PUT',`/api/identity/roles/${role.id}`,{nameEn:r1.nameEn,nameAr:r1.nameAr,permissions:['identity.roles.read','identity.profile.update'],version:r1.version})).s);
+L('same session reads users right after: '+(await me('GET','/api/identity/users?take=1')).s);
+L('same session /api/auth/session permissions: '+JSON.stringify((await me('GET','/api/auth/session')).j?.permissions??'').slice(0,200));
+const full=(await admin('GET',`/api/identity/users/${uid}`)).j;
+L('admin removes the role from the user: '+(await admin('PUT',`/api/identity/users/${uid}`,{...full,roleIds:[]})).s);
+L('same session reads roles right after: '+(await me('GET','/api/identity/roles?take=1')).s);
+const full2=(await admin('GET',`/api/identity/users/${uid}`)).j;
+L('admin deactivates the user: '+(await admin('PUT',`/api/identity/users/${uid}`,{...full2,isActive:false})).s);
+L('same session after deactivation, GET session authenticated: '+JSON.stringify((await me('GET','/api/auth/session')).j?.authenticated)+'; PUT own preferences: '+(await me('PUT','/api/identity/me/preferences',{language:'ar'})).s);
+L('sign-in with password after deactivation: '+(await signIn(`rev.${stamp}@alnoor.example`,'Rev-Pass-2026!x')).s);
+(await import('node:fs')).writeFileSync(new URL('./revocation.txt',import.meta.url),out.join('\n'));

@@ -1,0 +1,13 @@
+after sign in url http://localhost:20350/ dir=ltr
+users url http://localhost:20350/identity/users
+users list head: Home | Settings | Users | Users | Every word must match | 100,011 users | View: Standard | Columns | Print or export | New user | Name | ▾ | E-mail | ▾ | Language | ▾ | Status | ▾ | Last sign-in | ▾ | Roles | Clerk Mvek86s0 | clerk.mvek86s0@alnoor.example | English | Active | Invited | Never | Read-only | Pw mvek3vpm | pwuser.mvek3vpm@alnoor.example | English | Active | 19 Oct 2026, 5:09 AM | Read-only | Invitee mvek3vpm | invitee.mvek3vpm@alnoor.example | English | Active | 19 Oct 2026, 5:09 AM | Read-only | Pw mvek2cng | pwuser.mvek2cng@alnoor.example | English | Active | Never | R
+needles: {"contact":{"ref":"C073519","name":"Shamma Waleed Al Romaithi","name_ar":"شمة وليد الرميثي","email":"shamma.al.romaithi.73519@mail.example","mobile":"+971 54 427 3034","parent_ref":"C012007","parent_name":"Zenith General Trading Est."},"user":{"ref":"U068311","name":"Majid Anil Pillai","name_ar":"ما
+focus before typing: input[aria-label=Search by name, initials or e-mail] ""
+after / focus: input[aria-label=Search by name, initials or e-mail] ""
+search "Majid Anil Pillai" took ~864 ms; list now: Home | Settings | Users | Users | Every word must match | 1 user | best match first | View: Standard · modified | Columns | Print or export | New user | Name | ▾ | E-mail | ▾ | Language | ▾ | Status | ▾ | Last sign-in | ▾ | Roles | Majid Anil Pillai | majid.pillai.068311@staff.example | Arabic | Active | Never | Majid Anil Pillai | majid.pillai.068311@staff.example | Active | Last sign-in: Never | Save | Close | Details | What they can do | Sign-in history | E-mail | Na
+after Alt+N focus: input[name=email] ""
+after Alt+O focus: input[aria-label=Find a role] ""
+checked roles: ["Read-only\n9 permissions","ALN-DXB · Al Noor Trading LLC"]
+after save aside: Clerk Mvek8hx5 | clerk.mvek8hx5@alnoor.example | Active | Invited | Last sign-in: Never | Save | Close |  | Give this set-up code to the user. It is shown only now. |  | PNGN-X2BZ-PGAJ |  | Works once, until 26 Oct 2026, 5:12 AM. |  | Copy sign-in details | Details | What they can do | Sign-in history | E-mail | Name | Name in Arabic | Language | English | Arabic | Active (can sign in) | Roles | Alt+O comes here from any field; Enter ticks the first role shown. | Administrator | 25 permissions | Clerk (restricted) | 1 permission | Company manager | 9 permissions | Read-only | 9 permissions | Staff | 3 permissions | x | 1 permission | 1 role chosen of 6 | Roles in one company |  | A role here counts only while the person works in that company. |  | No roles in one company. |  | Comp
+set-up code shown: PNGN-X2BZ-PGAJ
+errors: []

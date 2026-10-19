@@ -1,0 +1,23 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 12.899s  human 30.05s  human+wait 42.187s  -> ../../evidence-staging/p03-identity/r12/compare/results/create-restricted-user-20261019T004316-d5b9.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 9.661s  human 30.05s  human+wait 38.798s  -> ../../evidence-staging/p03-identity/r12/compare/results/create-restricted-user-20261019T004512-328d.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 10.184s  human 30.05s  human+wait 39.317s  -> ../../evidence-staging/p03-identity/r12/compare/results/create-restricted-user-20261019T004659-a680.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 2.509s  human 20.91s  human+wait 22.529s  -> ../../evidence-staging/p03-identity/r12/compare/results/create-restricted-user-20261019T004849-b086.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.866s  human 20.91s  human+wait 21.863s  -> ../../evidence-staging/p03-identity/r12/compare/results/create-restricted-user-20261019T004909-9af8.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.339s  human 20.91s  human+wait 21.343s  -> ../../evidence-staging/p03-identity/r12/compare/results/create-restricted-user-20261019T004925-a689.json
+create-restricted-user   verdict win (ours judged on its whole path 'pointer')
+find-user                ours  verified  steps 3  keys 8  machine 1.411s  human 6.64s  human+wait 7.527s  -> ../../evidence-staging/p03-identity/r12/compare/results/find-user-20261019T004941-36da.json
+find-user                ours  error     steps 3  keys 8  machine 1.774s  human 6.64s  human+wait 8.026s  (palette: error page.evaluate: Target page, context or browser has been closed)  -> ../../evidence-staging/p03-identity/r12/compare/results/find-user-20261019T005122-48de.json
+    palette: error page.evaluate: Target page, context or browser has been closed
+        at freshStart (/home/shan/critic/p03-identity-r12/gauntlet/compare/lib/runner.mjs:1459:28)
+        at async execute (/home/shan/critic/p03-identity-r12/gauntlet/compare/lib/runner.mjs:834:26)
+        at async runTask (/home/shan/critic/p03-identity-r12/gauntlet/compare/lib/runner.mjs:207:74)
+        at async main (/home/shan/critic/p03-identity-r12/gauntlet/compare/run.mjs:110:19)
+    page: {"palette":{"unreadable":"page.evaluate: Target page, context or browser has been closed"}}
+find-user                ours  verified  steps 3  keys 8  machine 1.762s  human 6.64s  human+wait 8.021s  -> ../../evidence-staging/p03-identity/r12/compare/results/find-user-20261019T005325-27b1.json
+find-user                odoo  verified  steps 6  keys 5  machine 2.503s  human 10.35s  human+wait 12.473s  -> ../../evidence-staging/p03-identity/r12/compare/results/find-user-20261019T005513-c869.json
+find-user                odoo  verified  steps 6  keys 5  machine 2.092s  human 10.35s  human+wait 12.573s  -> ../../evidence-staging/p03-identity/r12/compare/results/find-user-20261019T005742-853e.json
+find-user                odoo  verified  steps 6  keys 5  machine 2.055s  human 10.35s  human+wait 12.619s  -> ../../evidence-staging/p03-identity/r12/compare/results/find-user-20261019T010010-17b9.json
+find-user                verdict win (ours judged on its whole path 'initials')
+blind review page: ../../../../evidence-staging/p03-identity/r12/compare/blind/review.html
+output: ../../../../evidence-staging/p03-identity/r12/compare

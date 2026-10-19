@@ -1,0 +1,34 @@
+// Walk 6: Arabic find-one-user by Arabic name; header truncation with a record open; reset password by keyboard from the palette.
+import { open, signIn, focused, EV, shot } from './h.mjs';
+import fs from 'node:fs';
+const log = []; const L = (s) => { log.push(s); console.log(s); };
+const needles = JSON.parse(fs.readFileSync('/home/shan/critic/p03-identity-r12/gauntlet/compare/data/out/needles.json', 'utf8'));
+let { browser, page, errors } = await open({ width: 1600 });
+await signIn(page, 'admin.ar@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('u'); await page.waitForTimeout(2500);
+const t0 = Date.now();
+await page.keyboard.type(needles.user.name_ar); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+L(`AR search "${needles.user.name_ar}" (${Date.now() - t0} ms incl. 1.5 s wait): ` + (await page.locator('main').innerText()).slice(0, 300).replace(/\n/g, ' | '));
+L('dir=' + await page.locator('html').getAttribute('dir'));
+await shot(page, '10-find-one-user-arabic-name-ar');
+// truncation of the list headers with a record open
+const heads = await page.locator('main [role=columnheader]').evaluateAll((hs) => hs.map((h) => ({ t: h.innerText.trim(), cut: h.scrollWidth > h.clientWidth + 1 || [...h.querySelectorAll('*')].some((e) => e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).textOverflow === 'ellipsis') })));
+L('AR headers with record open: ' + JSON.stringify(heads));
+await browser.close();
+({ browser, page, errors } = await open({ width: 1600 }));
+await signIn(page, 'admin@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('u'); await page.waitForTimeout(2500);
+const { email } = JSON.parse(fs.readFileSync('w1.out.json', 'utf8'));
+await page.keyboard.type(email); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+const heads2 = await page.locator('main [role=columnheader]').evaluateAll((hs) => hs.map((h) => ({ t: h.innerText.trim(), cut: [h, ...h.querySelectorAll('*')].some((e) => e.scrollWidth > e.clientWidth + 1) })));
+L('EN headers with record open: ' + JSON.stringify(heads2));
+await page.keyboard.press('Control+k'); await page.waitForTimeout(300); await page.keyboard.type('reset'); await page.waitForTimeout(400);
+L('palette: ' + (await page.locator('[role=dialog]').first().innerText().catch(() => '')).slice(0, 200).replace(/\n/g, ' | '));
+await page.keyboard.press('Enter'); await page.waitForTimeout(700);
+L('after palette Enter focus: ' + await focused(page));
+await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+L('after Enter on focused control: ' + (await page.locator('aside').first().innerText()).slice(0, 500).replace(/\n/g, ' | '));
+await shot(page, '11-reset-password-set-up-code-keyboard-en');
+L('errors: ' + JSON.stringify(errors));
+fs.writeFileSync(`${EV}/walks/w6-arabic-find-trunc-reset.txt`, log.join('\n'));
+await browser.close();
