@@ -17,8 +17,12 @@ internal abstract record SignInOutcome
     public sealed record Failed : SignInOutcome;
 
     /// <summary>Too many failed attempts at this address from this client: sign-in with it is paused
-    /// until <c>Until</c>, the same answer whether or not an account has the address.</summary>
-    public sealed record Paused(DateTimeOffset Until) : SignInOutcome;
+    /// until <c>Until</c>, the same answer whether or not an account has the address.
+    /// <c>DeviceCode</c>: the client is an address many clients share and this browser is not a
+    /// known device of the account, so the pause may come from someone else's failures; the code
+    /// lets this one browser in once the user (signed in elsewhere) or an administrator enters it
+    /// (<see cref="DeviceApprovals"/>).</summary>
+    public sealed record Paused(DateTimeOffset Until, string? DeviceCode = null) : SignInOutcome;
 
     public sealed record ChooseWorkspace(IReadOnlyList<WorkspaceChoice> Workspaces) : SignInOutcome;
 
@@ -81,8 +85,17 @@ internal sealed class SignInService(
             client = client with { Source = device, Shared = false };
         }
 
+        // From a shared address, a browser with no device of the account may have been let in on it
+        // with the device code its paused screen showed (DeviceApprovals): the sign-in function
+        // counts it as that device on the account that holds the approval.
+        Approval? approval = null;
+        if (client.Shared && devices.PendingId(http) is { } pending)
+        {
+            approval = new Approval(pending, DeviceApprovals.Hash(devices.ApprovalCode(email, pending))!);
+        }
+
         var challenges = new List<string>();
-        await using (var command = Lookup(connection, email, null, client))
+        await using (var command = Lookup(connection, email, null, client, null))
         await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
         {
             while (await reader.ReadAsync(cancellationToken))
@@ -95,7 +108,7 @@ internal sealed class SignInService(
 
         var matches = new List<Match>();
         DateTimeOffset? pausedUntil = null;
-        await using (var command = Lookup(connection, email, proofs, client))
+        await using (var command = Lookup(connection, email, proofs, client, approval))
         await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
         {
             while (await reader.ReadAsync(cancellationToken))
@@ -112,7 +125,15 @@ internal sealed class SignInService(
         }
         if (matches.Count == 0)
         {
-            return pausedUntil is { } until ? new SignInOutcome.Paused(until) : new SignInOutcome.Failed();
+            if (pausedUntil is not { } until)
+            {
+                return new SignInOutcome.Failed();
+            }
+            // The same code whether or not an account has the address: it is made from the address
+            // and this browser alone.
+            return client.Shared
+                ? new SignInOutcome.Paused(until, devices.ApprovalCode(email, devices.IssuePending(http, options.Value.AlwaysSecureCookie || http.Request.IsHttps)))
+                : new SignInOutcome.Paused(until);
         }
 
         var chosen = matches[0];
@@ -184,8 +205,19 @@ internal sealed class SignInService(
             await Passwords.SetAsync(db, hashing, user.Id, password, mustChange: false, expiresAt: null, now, user.Id, cancellationToken);
         }
 
-        return await StartSessionAsync(user, client, email, SignInMethods.Password, now, http, cancellationToken);
+        // A browser let in on this account signs in as that device and uses the approval up.
+        string? letIn = null;
+        if (approval is not null && user.DeviceApprovalHash is { } held && user.DeviceApprovalUntil > now &&
+            System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(held, approval.Hash))
+        {
+            letIn = approval.DeviceId;
+            client = client with { Source = TrustedDevices.SourcePrefix + approval.DeviceId, Shared = false };
+        }
+        return await StartSessionAsync(user, client, email, SignInMethods.Password, now, http, cancellationToken, letIn);
     }
+
+    /// <summary>A browser's pending device id and the hash of its device code for the address typed.</summary>
+    private sealed record Approval(string DeviceId, byte[] Hash);
 
     /// <summary>
     /// Sign-in with a passkey. The user handle the device returns names the account's workspace
@@ -264,12 +296,14 @@ internal sealed class SignInService(
     /// <summary>The checked account signs in: its sign-in moment, a new session and the sign-in
     /// history entry with how it signed in (<see cref="SignInMethods"/>), in the request's
     /// transaction bound to that user.</summary>
-    private async Task<SignInOutcome> StartSessionAsync(User user, Client client, string email, string method, DateTimeOffset now, HttpContext http, CancellationToken cancellationToken)
+    private async Task<SignInOutcome> StartSessionAsync(User user, Client client, string email, string method, DateTimeOffset now, HttpContext http,
+        CancellationToken cancellationToken, string? letIn = null)
     {
         // The browser becomes (or stays) a known device of the account. Signing in from an address
         // many clients share is recorded under that device, not the address: a success there must
-        // not clear the failures another client behind the same address made on the account.
-        var device = devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps);
+        // not clear the failures another client behind the same address made on the account. A
+        // browser let in keeps the id it was let in under.
+        var device = devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps, letIn);
         var source = client.Shared ? device : client.Source;
         // The sign-in moment is written in place, not through the tracked record: two sign-ins of
         // one account at the same moment (two tabs, a browser and an API client) both succeed
@@ -281,6 +315,17 @@ internal sealed class SignInService(
                 .SetProperty(u => u.LastSignInAt, now)
                 .SetProperty(u => u.UpdatedAt, now)
                 .SetProperty(u => u.UpdatedBy, (Guid?)user.Id), cancellationToken);
+        if (letIn is not null)
+        {
+            // The approval is used up: the browser is a known device of the account from now on.
+            await db.Users
+                .Where(u => u.Id == user.Id && u.DeviceApprovalHash != null)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(u => u.DeviceApprovalHash, (byte[]?)null)
+                    .SetProperty(u => u.DeviceApprovalUntil, (DateTimeOffset?)null)
+                    .SetProperty(u => u.UpdatedAt, now)
+                    .SetProperty(u => u.UpdatedBy, (Guid?)user.Id), cancellationToken);
+        }
         var token = SessionTokens.Generate();
         var expiresAt = now.AddHours(options.Value.SessionHours);
         var row = new Session
@@ -308,10 +353,10 @@ internal sealed class SignInService(
         return new SignInOutcome.Succeeded(user.TenantId, user.Id, row.Id, token, expiresAt);
     }
 
-    private NpgsqlCommand Lookup(NpgsqlConnection connection, string email, string[]? proofs, Client client)
+    private NpgsqlCommand Lookup(NpgsqlConnection connection, string email, string[]? proofs, Client client, Approval? approval)
     {
         var command = new NpgsqlCommand(
-            "SELECT challenge, tenant_id, paused_until FROM identity.verify_sign_in(@email, @proofs, @source, @ip, @agent, @threshold, @minutes, @shared)", connection);
+            "SELECT challenge, tenant_id, paused_until FROM identity.verify_sign_in(@email, @proofs, @source, @ip, @agent, @threshold, @minutes, @shared, @pending, @approval)", connection);
         command.Parameters.AddWithValue("email", email);
         command.Parameters.Add(new NpgsqlParameter("proofs", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text) { Value = (object?)proofs ?? DBNull.Value });
         command.Parameters.AddWithValue("source", client.Source);
@@ -320,6 +365,9 @@ internal sealed class SignInService(
         command.Parameters.AddWithValue("threshold", options.Value.LockoutThreshold);
         command.Parameters.AddWithValue("minutes", options.Value.LockoutMinutes);
         command.Parameters.AddWithValue("shared", client.Shared);
+        command.Parameters.Add(new NpgsqlParameter("pending", NpgsqlTypes.NpgsqlDbType.Text)
+            { Value = approval is null ? DBNull.Value : TrustedDevices.SourcePrefix + approval.DeviceId });
+        command.Parameters.Add(new NpgsqlParameter("approval", NpgsqlTypes.NpgsqlDbType.Bytea) { Value = (object?)approval?.Hash ?? DBNull.Value });
         return command;
     }
 
