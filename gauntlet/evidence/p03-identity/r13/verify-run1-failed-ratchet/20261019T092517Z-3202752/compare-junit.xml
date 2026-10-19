@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.021896" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.006765" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.006916" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.006727" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.008053" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.006508" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.005632" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.008099" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.008330" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.008769" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.004921" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.005159" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.006827" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.005842" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.005741" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="new-user-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.005515" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="open-third-user-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.002216" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="print-list-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.003709" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="reach-screen-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.002281" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.002238" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.004146" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.002903" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.003770" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps" time="0.007009" classname="test" file="/work/gauntlet/compare/test/baselines.test.mjs"/>
+	<testcase name="every driver imports only the fixture clients and Node file helpers, and runs no unreadable code" time="0.249949" classname="test" file="/work/gauntlet/compare/test/drivers-lint.test.mjs"/>
+	<testcase name="the driver lint catches planted escapes" time="0.005617" classname="test" file="/work/gauntlet/compare/test/drivers-lint.test.mjs"/>
+	<testcase name="control: the honest path verifies (3 steps, 10 keys)" time="3.724344" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="control: a driver whose set-up did the task and whose verify() is honest is refused (already done before the clock)" time="2.405150" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P1 (critic r8): set-up does the task through the API; verify() answers &amp;quot;not done&amp;quot; when it gets no outcome; run() does nothing -> never verifies" time="3.272435" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P1b (critic r8): the same with verify() throwing when it gets no outcome -> never verifies" time="3.247215" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P2 (critic r8): set-up saves the value through the API; the measured part only waits -> never verifies" time="2.860773" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P3: run() leaves a mark in its process (a module variable, a global, ctx.state); verify() answers &amp;quot;not done&amp;quot; without it -> never verifies" time="3.436431" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P4: run() writes a file in its scratch folder; verify() looks for it there and in every folder beside its own -> never verifies" time="3.678620" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P5: set-up notes the time; verify() answers &amp;quot;not done&amp;quot; until enough time has passed, by every clock a process can read -> never verifies" time="4.352494" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P6: a task saved in the product; set-up saves it, run() touches the screen, verify() reads the back end only once the screen is touched -> never verifies" time="5.846923" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P6b: the same, verify() reading the back end first both times -> never verifies (the read answered the same before the clock)" time="5.695719" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P7: a task that names what the person enters; set-up saves the value, run() changes something else in the back end (a version), verify() keys on it -> never verifies" time="6.501609" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P8: set-up saves the value the person is to enter, so the start form's field already holds it; the measured part clicks Save -> refused at the start" time="2.132901" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P8b: the same value shown as text beside the form (a record's history, say) is no unfair start, but the saved-state check still refuses the run" time="2.057339" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P9: verify() reads a back-end clock beside the saved state; the clock changes, but not as a saved state does (it differs between the passes) -> never verifies" time="2.381138" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P10: no verify() at all; set-up does the task and run() says it is done -> never verifies (run() never reports its own end state)" time="2.401677" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="saved state: the honest path of a task that saves what the person enters verifies, and the record names the read that gained it" time="6.420848" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="saved state: the rule judged on records alone (changed and stable, gained an entered value, nothing read)" time="0.002762" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="saved state (round 10): only a change in the declared end state (its read, its parts) counts, and an entered value must arrive there" time="0.002094" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="measured part (round 10): a task that saves needs a write sent by the measured part, one of its declared writes, and every entered value its end state gained entered by it" time="0.010615" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="caused by a step (round 11): a write within the reaction time of a step, or of the answer to a request a step sent, is caused; a timer's or a poll's is not" time="0.000544" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="entered values are found as a person would have entered them, never inside a longer word or number" time="0.009998" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="a keyboard-only task fails on a pointer step; the harness judges it, not verify()" time="6.540307" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="plant P1 on the real driver (critic r8): ours edit-and-save whose set-up saves the number and whose verify() keys on the outcome is caught in review by the lint" time="0.010916" classname="test" file="/work/gauntlet/compare/test/before-clock.test.mjs"/>
+	<testcase name="screenshot names are random and never name a product" time="0.011753" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="revealsProduct catches product names in any case" time="0.000393" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="both products have a branding profile; extra brand words are added" time="0.000563" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="the demo data's company names and codes are masked in both products (round 3 blindness finding)" time="0.000311" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="letters A and B are assigned at random" time="0.001073" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder" time="0.002715" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="the blind review page shows neutral captions, never the moments a driver named" time="0.010623" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="a task one product cannot run yet shows no columns, so nothing on the page says which product is unbuilt (round 9, critic p01 r8)" time="0.002607" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="a placeholder naming the vendor is cleared, not painted over" time="0.000247" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="a side-by-side folder keeps the blind part (shots, review page) apart from the key and results" time="0.349104" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="side by side, the products run in a random order per task" time="0.001195" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="identity codes are masked wherever they stand in a text: a workspace label, an e-mail domain (round 5 blindness finding)" time="1.373599" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="every product's shots mask every product's demo names and codes (round 7: the same sign-in showed in one product and was masked in the other)" time="1.094785" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="a name cut short by its list cell is painted over within the cell, not across the next column, and every masked cell edge to edge (round 7, p02 critic: rows looked misaligned around a masked name)" time="1.578154" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="a demo name or code inside a form field is painted over too (round 9, critic p01 r8: the company form showed its names in its inputs)" time="1.086480" classname="test" file="/work/gauntlet/compare/test/blind.test.mjs"/>
+	<testcase name="causation (round 12): an input task is the step's that began last before it; one before every step causes nothing" time="0.016994" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 12): a DevTools command inside a step is the step's (a file chosen); outside every step it is the harness reading, and causes nothing" time="0.002213" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 12): a timer counts only when a caused task armed it, once, for at most REACTION_SECONDS" time="0.002225" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 12): an animation frame counts when a caused task asked for it" time="0.001157" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 12): an answer links a write to the step that sent the request, if it came within LINK_SECONDS; a poll's answer links nothing" time="0.001177" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 12): a task of no traceable origin counts only right after a task a step caused, with nothing else of the page in between" time="0.002249" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): a web socket's message is the answer to the page's last frame on it, sent by a caused task within LINK_SECONDS; one the server pushed on its own causes nothing (plant W1)" time="0.002123" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): a window's postMessage is the posting task's; one posted from outside the page (another frame, window or worker) causes nothing (plant W2)" time="0.001766" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): a task that delivers what the browser read for the page (a file, a blob, a body) is not refused for a worker's activity; a port message is" time="0.001356" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): the delays of a chain add up; the write must go out within LINK_SECONDS of the step's input (plant W3)" time="0.000805" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): an animation's, transition's or media element's event is set by its duration; an idle callback is its asker's; an observer while an animation runs causes nothing" time="0.001471" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): ids start again in a new document; a callback is matched with the last request before it, and a chain never runs forward in time" time="0.000728" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): a document is its navigation's: one a step started is the step's, one started before the clock or by a refresh the page set is nobody's (plants W7, W8)" time="0.000996" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 13): the harness reading the page during a click is passed over: a document that arrives then is judged by its navigation" time="0.000528" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused" time="0.001056" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="a step's label never counts as typed text (critic r11, mutation C3)" time="0.003153" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="control (round 12): the honest approval click, a save on a short timer or an animation frame the click asked for, or after reading answers it asked for, and a file chosen verify, and the record says which step" time="36.394562" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="control (round 12): a form posted by Enter in its field (a sign-in's shape) is caused by the key" time="5.911297" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S1 (critic r11): the page approves on its own timer; one click on a &amp;quot;Close&amp;quot; that appears afterwards takes the credit -> never verifies" time="6.633812" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S1b (critic r11): the same with one scroll step to the banner -> never verifies" time="6.689570" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S2 (critic r11): the first pointer press asks the back end something that answers after 2.5 s; the page approves on the answer -> never verifies" time="8.092137" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S3 (critic r11): the stand-in arms on verify()'s read before the clock and lets the page's poll approve; one click on plain text -> never verifies" time="6.555701" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S3b: S3 with the poll answering &amp;quot;go&amp;quot; a while into the clock, just after run()'s click -> never verifies" time="6.338865" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S4: the page approves on its own timer 0.6 s after a sign; run() waits for the sign and clicks plain text, just before the write -> never verifies" time="6.755563" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S5: S4 laundered through a message port -> never verifies" time="6.586133" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S6: the page's own timer clicks the Approve button itself while run() clicks plain text -> never verifies" time="6.957125" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S7: an animation-frame loop approves on its own -> never verifies" time="6.022323" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S8: S4 laundered through a worker's message -> never verifies" time="6.657751" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S9: the page posts the approval form itself on a timer, just after run() presses a key -> never verifies" time="6.626713" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S11: the page moves a cover under the still pointer on its own timer just after run()'s click; the browser's mouseover approves -> never verifies" time="6.649766" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant S10: a key arms a 2.5 s delay before the approval (R2b); the record names the delay -> never verifies" time="7.895278" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="the clock (round 12, critic plant S3): for a task that saves it starts 1.1-2.1 s after verify()'s read before it; a click is timed from its input, not from the wait for its target" time="7.645341" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="control (round 13): a click that asks over a web socket and approves on the server's answer, and a click on a page that embeds a cross-site frame, verify" time="13.273524" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W1 (critic r12): the stand-in pushes &amp;quot;go&amp;quot; over a web socket on its own timer; one click on a Close that appeared just before takes the credit -> never verifies" time="6.691387" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W2 (critic r12): a cross-site frame posts &amp;quot;go&amp;quot; to the page on its own timer; one click on Close takes the credit -> never verifies (and the page can be measured)" time="7.998787" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W3 (critic r12): one click on plain text arms a 2.8 s delay (a 1.9 s answer, then a 0.9 s timer) before the approval -> never verifies" time="8.712885" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W4: a shared worker posts &amp;quot;go&amp;quot; through its port on its own timer, just after run()'s click -> never verifies" time="21.289426" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W5: a CSS animation the page starts on its own ends just after run()'s click; its animationend approves -> never verifies" time="7.245992" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W6: a resize observer approves when an animation the page started on its own reaches its end, just after run()'s click -> never verifies" time="7.727260" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W6b: W6 with an animation that started before the clock and runs on past it (the record shows neither end) -> never verifies" time="7.145089" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="control (round 13): a click on a link to a page that approves as it loads verifies" time="5.693952" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W7: a document the page asked for before the clock (held by the stand-in) arrives just after run()'s click and approves -> never verifies" time="7.404916" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="plant W8: a meta refresh the page set loads a page that approves, just after run()'s click -> never verifies" time="8.237345" classname="test" file="/work/gauntlet/compare/test/causation.test.mjs"/>
+	<testcase name="--list prints every task" time="0.491454" classname="test" file="/work/gauntlet/compare/test/cli.test.mjs"/>
+	<testcase name="bad arguments fail with usage" time="0.867685" classname="test" file="/work/gauntlet/compare/test/cli.test.mjs"/>
+	<testcase name="one command runs a task on our product and writes a result JSON" time="0.722632" classname="test" file="/work/gauntlet/compare/test/cli.test.mjs"/>
+	<testcase name="the blind review page shows A and B only and keeps the mapping in key.json" time="0.015890" classname="test" file="/work/gauntlet/compare/test/cli.test.mjs"/>
+	<testcase name="the blind review page draws its letters at random per task and shows each product under its own letter" time="0.005558" classname="test" file="/work/gauntlet/compare/test/cli.test.mjs"/>
+	<testcase name="ours wins only when strictly lower on every metric" time="0.001973" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="a tie is a loss" time="0.000332" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="zero rule: a count metric on which both score exactly 0 is left out, neither a tie nor a win; the rest decides" time="0.001007" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="zero rule: only both exactly 0; 0 against anything else is compared as usual" time="0.000394" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="zero rule: count metrics only; a time metric equal on both sides still ties, even at 0, and the tie is a loss" time="0.000401" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="zero rule: any other tie is still a loss, beside a metric left out" time="0.000292" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="zero rule: when every metric ties the task is a loss, with or without metrics left out" time="0.000431" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="zero rule: the comparison output names the metrics left out, in its fields and in words" time="0.000720" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="whole paths: ours wins only when one of its paths beats the reference on every metric by itself" time="0.000857" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="whole paths: over repeats each path is judged on the medians of its own times" time="0.000558" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="an unbuilt or failed product is never a win" time="0.000193" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="median of repeated runs uses the median machine seconds" time="0.000174" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="the reference is held at its best path on every metric; ours keeps its shown path whole" time="0.000316" classname="test" file="/work/gauntlet/compare/test/compare.test.mjs"/>
+	<testcase name="the generator is deterministic: a fresh run reproduces the shared files byte for byte" time="2.287075" classname="test" file="/work/gauntlet/compare/test/dataset.test.mjs"/>
+	<testcase name="volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows" time="0.290279" classname="test" file="/work/gauntlet/compare/test/dataset.test.mjs"/>
+	<testcase name="the needle name occurs exactly once and the import file has plain headers" time="0.101436" classname="test" file="/work/gauntlet/compare/test/dataset.test.mjs"/>
+	<testcase name="the generator keeps rates as fixed six-decimal strings" time="0.008562" classname="test" file="/work/gauntlet/compare/test/dataset.test.mjs"/>
+	<testcase name="the random source is seeded" time="0.000227" classname="test" file="/work/gauntlet/compare/test/dataset.test.mjs"/>
+	<testcase name="every driver imports only the fixture clients and Node file helpers, and runs no unreadable code" time="0.216674" classname="test" file="/work/gauntlet/compare/test/drivers-lint.test.mjs"/>
+	<testcase name="the driver lint catches planted escapes" time="0.005888" classname="test" file="/work/gauntlet/compare/test/drivers-lint.test.mjs"/>
+	<testcase name="an error before the measured part keeps the address, the console and a screenshot outside blind/" time="2.726170" classname="test" file="/work/gauntlet/compare/test/failure-capture.test.mjs"/>
+	<testcase name="an error in the reference folder records the address and console but writes no screenshot there" time="2.398149" classname="test" file="/work/gauntlet/compare/test/failure-capture.test.mjs"/>
+	<testcase name="a verified run records no failure capture" time="2.633283" classname="test" file="/work/gauntlet/compare/test/failure-capture.test.mjs"/>
+	<testcase name="control: an honest driver verifies; reading and locating are allowed while measured" time="3.024116" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: typing through ctx.page.keyboard -> the run is invalid, never verified" time="2.286338" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: pressing a key through op.page.keyboard -> the run is invalid, never verified" time="2.185975" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: clicking a locator directly -> the run is invalid, never verified" time="2.056609" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: filling a field directly -> the run is invalid, never verified" time="2.225980" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: the mouse -> the run is invalid, never verified" time="2.169661" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a deep link (goto) -> the run is invalid, never verified" time="2.183949" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a reload -> the run is invalid, never verified" time="1.876949" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: page script that clicks (evaluate) -> the run is invalid, never verified" time="2.723724" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified" time="2.063183" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a condition that clicks -> the run is invalid, never verified" time="2.158347" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a condition that sets a value -> the run is invalid, never verified" time="2.109926" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a condition that changes the page -> the run is invalid, never verified" time="2.147965" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified" time="2.087622" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: an asynchronous condition -> the run is invalid, never verified" time="2.090364" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a condition that navigates -> the run is invalid, never verified" time="2.434520" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a condition that calls the back end from the page -> the run is invalid, never verified" time="2.026292" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a back-end call from the harness (fetch) -> the run is invalid, never verified" time="1.998367" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a back-end call from the harness (http.request) -> the run is invalid, never verified" time="2.175695" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a second page in the same context -> the run is invalid, never verified" time="1.836720" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a new browser context -> the run is invalid, never verified" time="1.845389" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: the page request context (page.request) -> the run is invalid, never verified" time="1.661523" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified" time="1.802276" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified" time="2.223799" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: an action whose refusal the driver swallows -> the run is invalid, never verified" time="2.368306" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a keyboard kept from set-up and used while measured is refused" time="1.613374" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: an internal channel kept from set-up is refused there too" time="2.189450" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: a driver cannot stop the clock, drop steps or reach the raw page" time="2.350624" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: browserKey refuses an action passed by the driver" time="1.621111" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: the guard controls cannot be claimed by a driver" time="0.001137" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="set-up may act on the product but never run page script; verify() only reads" time="2.081992" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U1 (round 3): page script installed during sign-in to act in the measured part -> invalid" time="4.817352" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U1b (round 3): a listener installed through a locator in set-up -> invalid" time="2.368049" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U2 (round 3): an init script added to the context in set-up (an F9 that does the task) -> invalid" time="4.882859" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U2b (round 3): exposed functions, routes and extra headers made in set-up -> invalid" time="8.644178" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U3 (round 3): even a script that escaped the guard would not survive: the start page is a fresh context" time="3.530635" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid" time="1.128224" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant H2b (round 3): a start screen that carries state in its address -> invalid" time="0.654723" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant H2c (round 3): a task already done by set-up before the clock -> invalid" time="1.241026" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant V1 (round 3): verify() that acts on the page -> invalid" time="1.647762" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant V2 (round 3): verify() that changes the product through the back end -> invalid" time="1.508770" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant S1 (round 3): a newline inside op.type (Enter without a step) -> invalid" time="1.348608" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant K1 (round 3): a driver that declares chain to drop mental preparation -> invalid" time="1.341742" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T1 (round 3): screenshots while the product works neither hide its time nor go undeclared" time="5.239125" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="the real ours sign-in driver verifies on a stand-in sign-in page" time="7.800094" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="the whole-e-mail path fails on a sign-in screen that does not move on by itself (no password typed into the e-mail field)" time="6.671775" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid" time="4.052373" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid" time="3.966022" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant K1 on the passkey path (round 8): the confirmation on the device declared chained -> invalid" time="1.647020" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="the real ours find-user driver verifies on a stand-in users screen" time="2.135764" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="the real ours find-user driver finds the user by the initials of the name (critic p05 round 7): Users, three letters, Enter" time="2.188625" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win" time="9.839548" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="an API task counts each request, and its screenshots show the neutral request transcript" time="1.415010" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant: signing in to the API inside the measured part is refused" time="1.037767" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant P1 (round 4): an action left pending in a second browser context from set-up -> never verified" time="5.986780" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant P2 (round 4): launching another browser in set-up -> invalid" time="0.507995" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid" time="1.049238" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant L1 (round 4): set-up changes where the product opens (a home preference) -> invalid" time="1.299227" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant L2 (round 4): a list start whose address names the task's data -> invalid" time="2.707526" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="control (round 4): a home start that lands on the home, with set-up contexts of its own, still verifies" time="2.526504" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid" time="6.992509" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="control (round 4): text copied inside the measured part may be pasted" time="1.890231" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="a run that fails in set-up records what the page showed (critic p04 round 4: an intermittent sign-in wait left nothing to read)" time="1.081359" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="control (round 5): the honest path on the slow page waits for the 2 s answer" time="3.918427" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid" time="2.191387" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped" time="6.637947" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock" time="3.032556" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="control (round 5): images and reads still loading when run() returns are not waited for" time="1.637183" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid" time="1.559184" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops" time="6.200625" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2h (round 6): verify() that polls is refused on arrival, before the clock as well as after it -> invalid, quickly" time="2.350462" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid" time="8.767842" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid" time="5.838575" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid" time="1.318876" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent" time="6.042574" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid" time="19.419239" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness" time="4.346274" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid" time="4.970454" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid" time="2.680232" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid" time="3.492273" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5j (round 5): set-up leaves a request of Playwright's own HTTP client running -> invalid" time="2.256468" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid" time="0.507543" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver's reach" time="3.954241" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5f (round 5): a driver object handed straight to execute() is refused, never measured" time="0.000470" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent" time="2.322587" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid" time="1.591540" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant C3 (round 5): an empty copy, then Control+v: text copied in set-up is pasted while measured -> invalid" time="1.398878" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant C4 (round 5): Control+KeyV: text copied in set-up is pasted while measured -> invalid" time="1.421844" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant C5 (round 5): control+V written in other cases: text copied in set-up is pasted while measured -> invalid" time="1.423078" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="plant C6 (round 5): Shift+Control+v: text copied in set-up is pasted while measured -> invalid" time="1.415573" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="control (round 5): the clipboard is empty at the start, whatever set-up copied" time="1.609082" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step" time="2.089958" classname="test" file="/work/gauntlet/compare/test/guard.test.mjs"/>
+	<testcase name="operator times are the published Card, Moran and Newell averages" time="0.002276" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="typing counts one key per character plus Shift for capitals and symbols" time="0.000363" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="a chord counts each key in it" time="0.000207" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="a click is M + P + BB, with homing when the hand comes from the keyboard" time="0.000378" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="a triple click (select a field's whole content) is M + P + BBBBBB; typing right after it into that field continues it" time="0.000198" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="a chained step has no mental preparation" time="0.000136" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="the operator starts with the hand on the mouse" time="0.000137" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="file picks are modelled as a double click" time="0.000186" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="totals for a short path add up" time="0.000430" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="unknown step kinds are rejected" time="0.000461" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="a scroll is a mouse step modelled like a click" time="0.000173" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow" time="0.000350" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="plant K1 (round 3): a chain flag written on a step changes nothing; only the sequence counts" time="0.000292" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="round 5: no step continues one that began on another screen (a key that opened a new screen, then typing)" time="0.000298" classname="test" file="/work/gauntlet/compare/test/klm.test.mjs"/>
+	<testcase name="every npm dependency of the harness is under an allowed licence" time="0.000977" classname="test" file="/work/gauntlet/compare/test/licences.test.mjs"/>
+	<testcase name="dependencies are pinned to exact versions" time="0.000269" classname="test" file="/work/gauntlet/compare/test/licences.test.mjs"/>
+	<testcase name="control C1: the honest typed save verifies, its write caused by the click" time="5.374563" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="control C2: the honest approval verifies" time="4.560007" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="control C3: a save the page sends a few event-loop turns after the click, or once a slow check the click sent is answered, is caused by the click" time="10.925158" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="control C4 (routed, p00 r10): a save still under way while the page changes its address stays on the clock and verifies" time="5.359282" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="plant R1 (critic r10): set-up stashes the value as a server-side draft; run() clicks &amp;quot;Save draft&amp;quot; once, typing nothing -> never verifies" time="5.156612" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="plant R2 (critic r10): set-up turns on a setting; the start page sends the declared approval write on its own timer; run() presses Escape -> never verifies" time="5.226916" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="plant R2b: the page approves 2.5 s after the first key it sees (a timer the key armed); R2c: the same while the page polls the back end -> never verifies" time="29.227509" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="plant R2d: a step causes a decoy approval (another record); the page sends the real one on its own timer -> never verifies" time="7.463314" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="plant R3 (critic r10): set-up stashes the value; the start page autosaves it on a timer; run() presses Escape -> never verifies" time="5.336385" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="set-up (critic X1): a write the page aborted is named as abandoned, with the browser's reason, at once" time="0.918709" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="set-up (routed, p00 r10 and p02 r10): a write under way while the page only changes its address is waited for, not taken as abandoned; a new document still abandons it" time="1.722626" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="set-up (critic r10): a write to an address that names a long-lived channel is watched like any other" time="0.600848" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="set-up (routed): ctx.settleWrites() lets set-up wait for its own write before it moves on; it is refused once the clock runs" time="5.516485" classname="test" file="/work/gauntlet/compare/test/measured-part.test.mjs"/>
+	<testcase name="steps, keystrokes and waits are counted the same way every time" time="1.077964" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="a key chord counts each of its keys, and a scroll is a step" time="0.344404" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="a browser key counts its keys, and human plus wait is the human time plus the system wait" time="0.729483" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="a triple click is one step that selects a field's whole value; typing then replaces it" time="0.481891" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="choosing a file counts the dialog click and the pick" time="0.403383" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="a step before start() is refused" time="0.215199" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="blind screenshots paint branding over, go grey, and leave title and favicon neutral" time="0.747048" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="a screenshot after the end of a task never shortens the measured time" time="0.553651" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working)" time="0.916500" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="round 2 fault: the done screenshot after finish() leaves machine seconds unchanged" time="1.129914" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="while measuring, only the moments the task declares are shot, each once; their time stays on the clock" time="0.641127" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step)" time="0.435255" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted" time="0.622174" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="an API request is one step whose keystrokes are the request typed plus Enter" time="0.295218" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="a wait condition works on a page whose content security policy forbids eval (our product)" time="0.501106" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="round 5: paste and copy chords are read as the keys they press, whatever their spelling" time="0.000844" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6)" time="0.381372" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="passkey: set-up makes a passkey at once; measured, the request waits for the person, and confirming is one step with no keystroke" time="0.635543" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="passkey: the device follows the person to a fresh browser, and the page cannot answer for the person" time="0.911080" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="passkey: confirming is refused without a device, and fails when the product never asks" time="0.826795" classname="test" file="/work/gauntlet/compare/test/operator.test.mjs"/>
+	<testcase name="every driver imports only the fixture clients and Node file helpers, and runs no unreadable code" time="0.386552" classname="test" file="/work/gauntlet/compare/test/drivers-lint.test.mjs"/>
+	<testcase name="the driver lint catches planted escapes" time="0.003613" classname="test" file="/work/gauntlet/compare/test/drivers-lint.test.mjs"/>
+	<testcase name="the source check accepts page functions that only read, every driver's among them" time="0.061159" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an async function (S1)" time="0.001003" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an async function inside a reader (S1, as the critic wrote it)" time="0.000409" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a generator" time="0.000594" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a property write (S2: onfinish)" time="0.000348" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a value write" time="0.000348" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a text write" time="0.000362" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a write to the address" time="0.000387" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an assignment to location itself" time="0.001844" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: location.assign" time="0.000401" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: location.replace with a javascript: address" time="0.000521" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: document.location" time="0.000213" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: the address object kept in a name" time="0.000251" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: window" time="0.000173" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: globalThis" time="0.000185" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: self, top, parent, frames" time="0.000316" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: this" time="0.000293" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an iframe's window" time="0.000257" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: the document's window" time="0.000159" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a computed member name" time="0.000271" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a computed member name (template)" time="0.000198" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a destructured address" time="0.000485" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: Object.values (reaches the address)" time="0.000291" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: Object.getOwnPropertyDescriptor" time="0.000208" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: JSON.stringify with a replacer" time="0.000301" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: Reflect" time="0.000282" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: eval" time="0.000188" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: Function" time="0.000236" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a constructor reached through a function" time="0.000223" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a prototype" time="0.000208" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a promise continuation" time="0.000267" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an object that is a promise" time="0.000233" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an observer (S3)" time="0.000362" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a promise" time="0.000314" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an image (it loads an address)" time="0.000287" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a class" time="0.000877" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a tagged template" time="0.000344" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an import" time="0.000222" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: with" time="0.000383" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: delete" time="0.000478" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: an update of a global" time="0.000311" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses a page function that acts or can act later: a debugger statement" time="0.000358" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the source check refuses text that is not exactly one function expression" time="0.000387" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world sees the document but not the page's own script world" time="0.325859" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a click (the product's handler never runs)" time="0.696460" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports focus" time="0.728988" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a value" time="0.697223" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a text change" time="0.741368" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports an attribute (a javascript: address on a link)" time="0.730715" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a new element" time="0.698399" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports an event" time="0.711005" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a form submit" time="0.721640" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports the network" time="0.752369" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a timer" time="0.686686" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a promise continuation" time="0.691853" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a promise of a thenable" time="0.691532" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports an observer" time="0.682700" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports an animation (S2)" time="0.699698" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a listener" time="0.675762" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a handler property" time="0.681850" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports storage" time="0.686843" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports history" time="0.703098" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports property values by enumeration (the address among them)" time="0.706281" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a replacer that sees every value" time="0.655446" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports eval" time="0.668277" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports the Function constructor through a function" time="0.684284" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports another window through the document" time="0.749624" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports an iframe's own script world" time="0.761927" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a selection change" time="0.783824" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world refuses and reports a document write" time="0.706224" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world stays armed after a call returns: what a function scheduled finds every action refused (S1 at its root)" time="0.815270" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world cannot be re-armed or patched: its prototypes are frozen" time="0.330440" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world lets every kind of read through: queries, XPath, walkers, styles, ranges, text" time="0.242114" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the read world reports a change it cannot refuse (a data attribute) as a change to the page" time="0.255580" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="a new document gets a new, armed read world" time="0.338393" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="a page function that runs too long is ended" time="0.565212" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the screen fingerprint sees the text, attributes, values and focus, but not what the blind shot empties" time="0.390868" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="the freeze holds the screen as it was for longer than the product's answer: no late answer, no timer" time="3.437004" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="control: the honest path verifies (3 steps, 10 keys)" time="2.671564" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant S1: a reader whose native-await continuation fills and saves -> invalid, nothing done" time="3.637840" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant S2: a condition that schedules the work through an animation callback -> invalid, nothing done" time="3.956595" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant S3: a reader that leaves an observer to act on the next change -> invalid, nothing done" time="3.840859" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant a javascript: address set by a condition (it would run later in the page's own world) -> invalid, nothing done" time="3.575973" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant location.replace with a javascript: address -> invalid, nothing done" time="3.634118" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant the address object reached by enumerating the document -> invalid, nothing done" time="3.721501" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant Object kept under another name (the source check cannot see it; the world refuses it) -> invalid, nothing done" time="3.923181" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant a condition that clicks (the source check allows a call; the world refuses it) -> invalid, nothing done" time="3.722087" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant a condition that animates -> invalid, nothing done" time="3.819680" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant a condition that reaches an iframe's own script world -> invalid, nothing done" time="3.666781" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant a reader whose result is a promise-like object -> invalid, nothing done" time="3.668741" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant a reader handed a page object as its argument -> invalid, nothing done" time="3.581663" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant T3 (round 6): run() returns before a 2 s answer and verify() reads the page in short reads -> never verified" time="10.141874" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant T4: the answer is fast but the page shows it by a timer 1.2 s later; run() returns at once -> never verified" time="7.609364" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant T6: a read aborted at the clock whose failure writes the end state -> invalid (the screen changed after the clock)" time="2.082460" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="round 9 (critic mutation A24): what the page starts loading after the clock is refused and never reaches the product" time="4.359280" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="round 9 (critic mutation H10): a read in verify() that asks to wait longer is cut to half a second" time="3.941906" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="control: an honest product with a live ticker on screen still verifies; the freeze holds its screen still through verify()" time="4.947100" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="a document still loading when run() returns stays on the clock (round 7: the reference's client reloading after a save)" time="3.953308" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="plant S1 (round 6, the real driver): the critic's plant in ours edit-and-save is caught in review by the lint" time="0.016361" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="a variant's own set-up and sign-in run before its measured part (round 6: only the base driver's did)" time="3.885467" classname="test" file="/work/gauntlet/compare/test/page-script.test.mjs"/>
+	<testcase name="a prefix is shown when the field begins with it; the rest of a value is what follows it" time="0.007569" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="measured part: a declared prefix shown at the start need not be typed; the rest must be, and the end state must hold the whole value" time="0.009977" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="a prefix declaration names a dialling code its product's code sets as a constant; one set-up, the data or the reference makes is refused" time="0.003601" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="control: the field shows +971 at the start; the person types the 9 digits after it and the whole number is saved (9 keystrokes)" time="4.758181" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="plant PF1: set-up seeds a longer start (&amp;quot;+971 50 555&amp;quot;) and the person types only the last 4 digits -> never verifies" time="5.288328" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="plant PF2: a prefix the task does not declare -> never verifies" time="5.326477" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="plant PF3: the field is empty at the start and offers +971 only once the clock runs -> never verifies" time="5.260887" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="plant PF4: the back end drops the + of the country code -> never verifies" time="5.123429" classname="test" file="/work/gauntlet/compare/test/prefix.test.mjs"/>
+	<testcase name="ratchet.json has every comparison minimum" time="0.001277" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="tasks and named tasks never go below their minimum" time="0.115590" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="built Odoo drivers never go below their minimum" time="0.053280" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="built drivers for our product never go below their minimum" time="0.037370" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="verified Odoo baselines never go below their minimum, and each is complete" time="0.012096" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="the recorded reference volume never goes below the minimum per main list" time="0.000618" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="harness tests never go below their minimum (live rig checks counted apart)" time="0.014431" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="planted uncounted-action drivers never go below their minimum" time="0.000666" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="page-function plants never go below their minimum (round 7)" time="0.000405" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="before-the-clock plants, tasks that save and tasks that name what the person enters never go below their minimum" time="0.006073" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="set-up-off-the-clock plants and declared end states never go below their minimum" time="0.004931" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="measured-part plants and controls never go below their minimum" time="0.000516" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="causation rules, plants and controls never go below their minimum" time="0.000339" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="API tasks never go below their minimum" time="0.005710" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="instrument mutations never go below their minimum, and each still finds what it mutates" time="0.018549" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="the mutation check reads each test by name, and runs one control per test file for all its patterns" time="0.002434" classname="test" file="/work/gauntlet/compare/test/ratchet.test.mjs"/>
+	<testcase name="rig volume: every main list is asked for its 100,000th row" time="0.003077" classname="test" file="/work/gauntlet/compare/test/rig-volume.test.mjs"/>
+	<testcase name="rig volume: a list one row short is reported by name with the top-up command" time="0.016219" classname="test" file="/work/gauntlet/compare/test/rig-volume.test.mjs"/>
+	<testcase name="rig volume: the date a vacuumed list falls short is worked out, and a warning given two days ahead" time="0.000930" classname="test" file="/work/gauntlet/compare/test/rig-volume.test.mjs"/>
+	<testcase name="run.mjs refuses an Odoo run when the live rig is short of a main list, and records nothing" time="1.213790" classname="test" file="/work/gauntlet/compare/test/rig-volume.test.mjs"/>
+	<testcase name="run.mjs refuses an Odoo run when the rig cannot be checked" time="0.465659" classname="test" file="/work/gauntlet/compare/test/rig-volume.test.mjs"/>
+	<testcase name="run.mjs checks the rig before an Odoo run and goes on when every list holds 100,000 rows" time="0.490209" classname="test" file="/work/gauntlet/compare/test/rig-volume.test.mjs"/>
+	<testcase name="the driver process starts under the permission model with the network lockdown preloaded" time="0.007801" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="inside the driver process: no child process, no worker, no writes outside the scratch folder, no socket" time="2.198895" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="inside the driver process: every way to open a socket is refused by its own lock (round 7, critic mutation M4)" time="1.927880" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="the stand-ins a driver holds behave like Playwright objects: sync reads, locators, listeners, ready" time="2.312248" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="the harness reads drivers and tasks through the driver process and never imports them" time="0.003308" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="a driver process that stops answering is stopped, and the next run gets a new one" time="7.023299" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="plant X1 (round 6): every run has a driver process of its own, so a driver cannot slow or steer the next run (the other product's included)" time="33.478891" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="a verify() process: one per call, reads only the harness and the downloads, writes nothing, no clock, nothing of the run's process" time="1.989602" classname="test" file="/work/gauntlet/compare/test/sandbox.test.mjs"/>
+	<testcase name="control C1: the honest approval verifies, and the record names the end state that changed and the write that saved it" time="4.726118" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="control C2: an honest verify() after set-up approved is refused (already done before the clock)" time="1.846895" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q1 (critic r9): set-up approves through the API, run() bumps an unrelated version, verify() keys on the version -> never verifies" time="5.250256" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q1b: the same, run() changing another part of the end-state record (touched, not approved) -> never verifies" time="4.600239" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q1 on the real driver (critic r9): ours api-update-user whose set-up switches the language and whose run() sends one unrelated preference -> never verifies; the driver as written verifies" time="8.498396" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q2 (critic r9): set-up types the value and clicks a slow Save in its own browser; the save would land after the clock starts; run() presses one key -> never verifies (the save is answered before the start)" time="0.812325" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q2b: set-up clicks the slow Save and moves its page on at once (the browser abandons the save, the product still carries it out) -> never verifies" time="0.726057" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q2d: set-up clicks the slow Save in a page of its own and closes that page -> never verifies" time="0.714830" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="control: set-up's own save in its browser, answered before the start, is waited for and then seen as done before the clock" time="2.904187" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q2c: set-up sends the slow Save from a browser context of its own and leaves it -> never verifies (that context is watched too)" time="3.219267" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q3: set-up has the product save the value a moment later (a job); the measured part sends nothing -> never verifies" time="5.017870" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q3b: the same, the measured part sending an unrelated write -> never verifies (the value it gained was never entered)" time="4.939968" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="plant Q3c: set-up has the product approve a moment later; the measured part sends an unrelated write -> never verifies (none of the writes that save the approval)" time="4.950102" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="control: the honest typed save verifies (the value typed, the write sent, the end state gained it)" time="4.898590" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="X12 (critic r9): what set-up left in the browser's local storage never reaches a signed-in start (a remembered draft would fill the form)" time="5.266584" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="X16 (critic r9): the clipboard is emptied at the start and read back: what set-up copied is gone" time="4.979155" classname="test" file="/work/gauntlet/compare/test/set-up-off-clock.test.mjs"/>
+	<testcase name="our product declares its sign-in limit; Odoo has none" time="0.008009" classname="test" file="/work/gauntlet/compare/test/sign-in-limit.test.mjs"/>
+	<testcase name="an API sign-in from the driver process is paced by the harness and waits out a 429" time="3.090409" classname="test" file="/work/gauntlet/compare/test/sign-in-limit.test.mjs"/>
+	<testcase name="a browser sign-in refused with 429 is tried again in a fresh context, after the abandoned one ended" time="2.756944" classname="test" file="/work/gauntlet/compare/test/sign-in-limit.test.mjs"/>
+	<testcase name="a browser sign-in refused every time ends the run in an error, never a measurement" time="1.563319" classname="test" file="/work/gauntlet/compare/test/sign-in-limit.test.mjs"/>
+	<testcase name="a sign-in the harness paces inside verify() is not charged to the pass (the meter reports it apart)" time="13.151062" classname="test" file="/work/gauntlet/compare/test/sign-in-limit.test.mjs"/>
+	<testcase name="every task the bar names is defined and marked as named" time="0.088598" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="task definitions are product-neutral and complete" time="0.006773" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="every task declares where the runner starts it and the moments every driver shoots (instrument 4)" time="0.049907" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="every task has a driver for each product" time="0.016095" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="every Odoo driver is built; placeholders in task text resolve from the dataset" time="0.051055" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="an unbuilt driver reports &amp;quot;not built&amp;quot; without touching a browser" time="0.092285" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="print-list-arabic (routed from p06): the ours driver takes its menu words from the product's own strings, which hold them in both languages" time="0.009801" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="every task that ends in a state saved in the product says so (saves), and names what the person enters" time="0.017115" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="every task that saves declares its end state (the read and the parts that hold it) for each product whose driver is built" time="0.010286" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<testcase name="every declared field prefix is a dialling code the product's code sets as a constant" time="0.007753" classname="test" file="/work/gauntlet/compare/test/tasks.test.mjs"/>
+	<!-- tests 447 -->
+	<!-- suites 0 -->
+	<!-- pass 447 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 1140688.240649 -->
+</testsuites>

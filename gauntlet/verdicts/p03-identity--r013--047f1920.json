@@ -1,0 +1,132 @@
+{
+  "piece": "p03-identity",
+  "round": 13,
+  "commit": "047f1920",
+  "judged_at": "2026-10-19T10:46:52Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p03-identity round 13",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product as built (API, database role, exports, reports, jobs, files)",
+      "status": "pass",
+      "evidence": "No leak found.\n\nAPI attack (attacks/g1-attack-all.mjs, g1-a-vs-b-r13.txt, g1-run.log): alnoor's admin made 1,981 judged calls against gulfsteel on every OpenAPI route (114 operations, attacks/routes.txt), the new POST /api/identity/users/{id}/devices/approve and /me/devices/approve included. The calls used B's ids in paths and bodies, four tenant-switch headers, tenant query fields, every list export (CSV, XLSX unzipped, PDF; English and Arabic) and the reports with B's role and company ids. Result: 0 leaks, and B's state hash was the same before and after. Gulfsteel's admin approving an alnoor user's device answers 404 (attacks/device-approval.txt).\n\nDatabase as erp_app (attacks/db-app-role.txt):\n- no tenant bound: 0 rows;\n- bound to A: 100,005 users and 200,079 audit rows, 0 of B's;\n- UPDATE/DELETE of B's rows changed 0 rows, an INSERT for B was refused by RLS;\n- row_security=off, SET ROLE erp_owner/postgres/erp_auth and DISABLE RLS were refused;\n- all 17 tenant tables have RLS enabled and forced;\n- bound to A, writing B's device_approval_hash changed 0 rows, and verify_sign_in answers nothing.\n\nNo jobs or files exist yet beyond the report endpoints, which the attack covered."
+    },
+    {
+      "gate": "G1 gate catches tenant leaks planted in this piece's surface",
+      "status": "pass",
+      "evidence": "Plants are in plants/r13-plants.diff. The run was the planted .NET gate and identity suites through verify-slot (plants/plant-run.sh, plant-inside.sh, run-server/gates.log). Both plants were live on a planted stack (plants/plant-demo.txt).\n\n- L1: GET /api/identity/users/{id} answers from a DI-singleton memo keyed by id only. Tenant A read B's user (200). It was caught by G1HttpIsolation (86 leaks), G1NonInterference and G1ProcessState ('singleton ...UserAnswerMemo.Items').\n- L2: this round's DeviceApproval migration replaces identity.sign_in_attempts' tenant_isolation policy with USING (true). Bound to A, erp_app saw other tenants' rows. It was caught by both G1DatabaseIsolation tests ('tenant A sees 3 rows of other tenants'; the policy is not the standard one)."
+    },
+    {
+      "gate": "G2 permissions of the product as built (restricted roles, escalation, screens hide)",
+      "status": "pass",
+      "evidence": "Walk w1 (screenshots 01 and 02): a user created by keyboard with the Read-only role (Alt+N, e-mail, Alt+O, 'read', Enter, Ctrl+Enter) signs in with the set-up code and chooses a password. They see no New user, Alt+N opens nothing, and their record is read-only with no Save. API calls with their session: POST users 403, POST roles 403.\n\nEscalation (attacks/escalate.txt), by a helpdesk role holding users and roles read/update/create, all refused with 403:\n- assign themselves Administrator, or Administrator in one company;\n- add permissions to their own role, create a role beyond their own, copy Administrator;\n- give others Administrator;\n- edit, deactivate, reset, sign out, unblock or delete the Administrator.\nNew this round: letting a device of the Administrator in is refused 403 (userWorksBeyondOwnCompanies), and on oneself through the admin endpoint 403 (notOnYourself).\n\nControl for U1 below (walks/u1-check-real.txt, screenshot 11): a user who may only read the sign-in history is offered no device form."
+    },
+    {
+      "gate": "G2 gate catches actions with no permission check planted in this piece's API (devices/approve)",
+      "status": "pass",
+      "evidence": "Both plants were live on the planted stack (plants/plant-demo.txt), and both were caught (run-server/gates.log).\n\n- P1: POST /api/identity/users/{id}/devices/approve requires identity.profile.update instead of identity.users.update. An auditor without users.update let a device in (200). Caught by G2PermissionTests: 'declares identity.profile.update; the reviewed map identity.txt says identity.users.update'.\n- P2: the same endpoint skips TargetProblemAsync. The auditor let a device of the Administrator in (200). Caught by G1CompanyIsolation ('company X administrator -> POST .../devices/approve ... answered 200, expected a refusal'), the G2AccountTakeover tests and G1SignInThrottle (approving oneself answered OK, expected Forbidden)."
+    },
+    {
+      "gate": "G2 gate catches a screen offering an action the user cannot do, planted in this piece's own new screen (screens hide what the user cannot do)",
+      "status": "fail",
+      "evidence": "Plant U1 was MISSED.\n\nThe plant is one line in web/src/modules/identity/UserPanel.tsx HistoryTab (plants/r13-plants.diff): `const canApprove = canUnblock && (sharedPaused || !!history?.deviceApprovalUntil)` loses `canUnblock &&`.\n\nIt is live. A user whose role grants only identity.users.read and identity.signIns.read opens a paused user's Sign-in history. The planted screen offers them 'Let a device sign in': the device code field, the 'Let it in' button and the palette command identity.users.approveDevice (screenshot 10). The shipped product offers none of it (screenshot 11, walks/u1-check-*.txt).\n\nNothing caught it:\n- The web unit suite passed 528/528 with the plant (plants/web-U1-planted-full.log). That suite includes the identity screens' permission gate and the palette and keyboard sweeps, and the identity plant self-test still reports '13 plants, all caught'; none of those plants is this one.\n- The e2e suite against the planted stack passed 111 and failed 2 (plants/e2e-planted.log). Both failures came from L1's stale memo: an edited e-mail and a language read back old. Neither is about the device form.\n- The only device-form tests are positive (screens.test.tsx 'lets one device in...', sign-in.spec.ts:132)."
+    },
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, every test)",
+      "status": "pass",
+      "evidence": "Fresh clone of 047f1920. Run 2: 'verify passed in 3259 s' timed from 'slot taken' at 09:52:16Z; processor time 9,559 s against a maximum of 10,500. Counts: .NET 732, web unit 528, e2e 113, compare 447, build 6, each at its ratchet minimum (verify-critic-p03-identity-r13-run2.log).\n\nRun 1 (slot taken 08:07:43Z) had every test green, but the ratchet failed on processor time: 10,891 s against 10,500. Load reached 83.59; another critic's verify and my own demo, comparison runs and planted e2e stack ran beside it (verify-critic-p03-identity-r13-run1.log, verify-run1-failed-ratchet/). The integrator's alone run used 9,135 s. Re-run when quieter: passed."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "Fresh clone, ERP_PROJECT=c-p03-identity-r13 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ./erp up. The demo was running in 72 s with 100,005 users (erp-up.log); the ports and project overrides were honoured. With ERP_SEED_USERS_CSV it took 77 s (erp-up-dataset.log)."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string parity, audit coverage) and the ratchet",
+      "status": "pass",
+      "evidence": "These ran inside verify run 2, and the ratchet passed with every count at or above its minimum. The counts rose from round 12's 701/524/111/415 to 732/528/113/447.\n\nDevice approvals leave audit rows that name the actor (audit.entries, table users, device_approval_hash/until old and new)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p03-identity-r13 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ERP_VERIFY_HTTP_PORT=20360 ERP_VERIFY_DB_PORT=20361 ERP_VERIFY_LOG=<scratch>/verify-critic-p03-identity-r13-run2.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1826,
+    "passed": 1826,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3259
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 3259,
+    "evidence": "Fresh clone of 047f1920, one command: 'verify passed in 3259 s', timed from 'slot taken'.\n\nCounts: .NET 732, web unit 528, e2e 113, compare 447, build 6. Processor time 9,559 s against a maximum of 10,500.\n\nRun 1 had all 1,826 tests green but used 10,891 processor seconds against the 10,500 maximum, on a loaded machine with my own stacks beside it. Run 2 came after them. ./erp up took 72 s to a running seeded demo."
+  },
+  "odoo": [
+    {
+      "task": "create-restricted-user (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 1.918,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 11.532,
+        "klm_seconds": 30.05
+      },
+      "notes": "Shipped drivers, blind, median of 3, on the shared Odoo rig (rig check passed: 100,000 or more rows in all 7 lists). See compare/comparisons/create-restricted-user.json.\n\nOurs was judged on its 'pointer' path against Odoo at its best on each metric. Ours wins every metric; human plus wait was 21.9 s against 40.4 s. No count metric tied at 0. The all-keyboard path also wins (7 steps and 45 keys against 10 and 46), still by one keystroke."
+    },
+    {
+      "task": "find-user (find one user among 100,000)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 3,
+        "seconds": 0.867,
+        "klm_seconds": 8.29
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 2.381,
+        "klm_seconds": 10.35
+      },
+      "notes": "Shared dataset (ERP_SEED_USERS_CSV), shortest expert path in each (compare/comparisons/find-user.json). Ours was judged on its 'initials' path. Ours wins every metric; human plus wait was 8.64 s against 12.46 s.\n\nOurs' other paths lose on keystrokes to Odoo's 5: 'shortest' 8, 'prefixes' 15, 'row' 20, 'enter' 21, 'palette' 29.\n\nOdoo: 3 verified runs. Ours: 2 verified runs and 1 error. The error was my own `timeout` sending SIGTERM to the run ('the driver process ended (SIGTERM)'), not the product.\n\nLive walk (walks/w4-find-user.txt, screenshot 09): typing 'Majid Anil Pillai' lists exactly 1 of 100,007 users in about 0.27 s. 'MAP' lists 54, best match first."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p03-identity/r13/01-new-read-only-user-by-keyboard-set-up-code-en.jpg",
+    "gauntlet/evidence/p03-identity/r13/02-read-only-user-record-no-actions-en.jpg",
+    "gauntlet/evidence/p03-identity/r13/03-new-laptop-paused-device-code-en.jpg",
+    "gauntlet/evidence/p03-identity/r13/04-new-laptop-paused-device-code-ar.jpg",
+    "gauntlet/evidence/p03-identity/r13/05-admin-lets-device-in-history-en.jpg",
+    "gauntlet/evidence/p03-identity/r13/06-admin-lets-device-in-history-ar.jpg",
+    "gauntlet/evidence/p03-identity/r13/07-new-role-matrix-search-select-all-ar.jpg",
+    "gauntlet/evidence/p03-identity/r13/08-what-they-can-do-company-roles-ar.jpg",
+    "gauntlet/evidence/p03-identity/r13/09-find-one-user-among-100000-en.jpg",
+    "gauntlet/evidence/p03-identity/r13/10-sign-in-auditor-history-planted-en.jpg",
+    "gauntlet/evidence/p03-identity/r13/11-sign-in-auditor-history-real-en.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The screen permission gate does not cover this round's new 'Let a device sign in' form: a planted fault that offers it to anyone who can read the sign-in history passes every web unit, sweep and e2e test",
+    "detail": "This round added device approval to the user's Sign-in history tab. The form has a device code field, a 'Let it in' button and the palette command identity.users.approveDevice. In the shipped product it shows only when canUnblock holds (identity.users.update, and the user is within the caller's access).\n\nIt works: screenshots 03 to 06, walks w2 in English and Arabic. Another tenant's admin gets 404, a helpdesk role is refused the Administrator, and a second fresh browser stays paused.\n\nBut nothing checks the negative case, so the bar's 'screens hide what the user cannot do' is unguarded on this piece's newest screen. Remove `canUnblock &&` from canApprove and the form and its palette command are offered to a user who may only read the history (identity.signIns.read). Examples are an auditor or a branch supervisor, or an administrator looking at someone who also works in a company they do not. All 528 web unit tests pass anyway, including the identity screens' permission gate and the palette and keyboard sweeps. The identity plant self-test still reports 13 of 13 caught, and e2e shows nothing.\n\nThe server refuses the submit, so this is not a hole today. But the next edit to HistoryTab can ship it unseen.\n\nFix:\n- Add the device form and its command to the identity screens' permission gate. Render the History tab of a paused user (shared gateway, and a pending approval) for a user with users.read and signIns.read only, and for one whose target is refused. Assert no device code field, no 'Let it in' and no enabled identity.users.approveDevice in the palette.\n- Add this exact plant to scripts/identity-plant-self-test.mjs so the gate must catch it.\n- Also hide or reword the advice 'enter the device code their sign-in screen shows below' for viewers who have no form below (screenshot 11).",
+    "evidence": "1. In a scratch clone, apply plants/r13-plants.diff, or just the UserPanel.tsx hunk: `const canApprove = (sharedPaused || !!history?.deviceApprovalUntil);`.\n2. Run `cd web && npx vitest run`: 40 files and 528 tests pass. Then `node scripts/identity-plant-self-test.mjs`: '13 plants, all caught'. Logs: plants/web-U1-planted-full.log.\n3. Live check, on the planted and then the shipped stack:\n- walks/mk-auditor.mjs creates a role with identity.users.read, identity.signIns.read and identity.profile.update, and a user holding it;\n- walks/u1-check.mjs makes 5 anonymous failures on accountant@alnoor.example, signs in as the auditor and opens the Sign-in history.\n- Planted: 'device code field offered: 1; Let it in buttons: 1' (screenshot 10). Shipped: 0 and 0 (screenshot 11).\n4. The e2e suite on the planted stack: 111 passed and 2 failed, both from plant L1's stale memo; none touches the device form (plants/e2e-planted.log)."
+  },
+  "other_findings": [
+    "Round 12's biggest gap is only partly fixed, and the sign-in rate limit is still a denial of service for everyone behind the shipped gateway.\n\nThe pause side works now. A paused fresh browser on the shared address gets a device code in English and Arabic, and the user or an administrator lets exactly that browser in (attacks/device-approval.txt, walks w2).\n\nThe rate limit was only raised. It is now partitioned per account typed, under a shared-address ceiling of SignInPerMinute x SharedAddressClients = 600 a minute. One anonymous script sent 620 sign-ins at 620 made-up e-mail addresses in 12.4 s ({401: 580, 429: 40}; the earlier 20 came from my own probes). Right after it, admin@gulfsteel.example, admin@alnoor.example and admin.ar@alnoor.example with their right passwords from other browsers all answered 429 request.tooMany (attacks/shared-ceiling.txt). About 10 requests a second keeps every user of every workspace out.\n\nThe root cause is unchanged: the one-command deployment still does not see client addresses (no reverse proxy, ERP_KNOWN_PROXIES empty). SignInRateLimit.cs is p03's; the GlobalLimiter in ErpPlatform is p00's kernel.",
+    "The audit trail keeps the device approval's hash in clear (audit.entries changes.device_approval_hash old and new). It is an unkeyed SHA-256 of an 8-symbol code (31^8, about 8.5e11), so it can be reversed offline. Password and token hashes are redacted.\n\nThe impact is low, because a code only works with that browser's signed erp_pending cookie. It should still be redacted like the other credentials.",
+    "The administrators' approve endpoint accepts any well-formed code (200 'until ...'), because the server cannot check it, and a new approval replaces the last. An administrator's typo silently overwrites a correct approval made a minute earlier. Showing the last few characters, or asking the person to read the code back, would help.",
+    "Keyboard: after G then U, the focus is already in the users search box. The footer hint '/ search' then types a literal '/'. A user who follows the hint and types an e-mail gets 'Nothing matches' (q=%2Faccountant...; walks/probe3.mjs: after '/', INPUT value '/').",
+    "Still open since round 9: with a record open at 1366 px, the users list truncates the 'Language' header ('Langu…'; screenshots 02 and 10).",
+    "Keyboard-first margins are still thin:\n- The all-keyboard create-restricted-user path wins by one keystroke (45 against 46).\n- In find-user, only 'initials' (3 keys) wins; 'shortest' (8), 'prefixes' (15), 'row' (20), 'enter' (21) and 'palette' (29) lose on keystrokes to Odoo's 5.",
+    "Verify processor time has little headroom.\n- Run 1, under load (highest 83.59, with another critic's verify and my demo, comparisons and planted e2e stack beside it): 10,891 s, over the 10,500 maximum. Every test was green.\n- Run 2, quieter (highest 45.2): 9,559 s, passed.\n- The integrator's alone run: 9,135 s.\nThe owner has needs-human #22 open on this.",
+    "Fixed since round 12 and still fixed:\n- A valid set-up code still signs in from a paused shared address.\n- A known device (device cookie) is not paused by others' failures.\n- The sign-in history labels 172.x as 'shared gateway' / 'بوابة مشتركة'.\n- 'Roles in one company' starts at 'Choose a role'.\n- Matrix search 'عرض' plus 'Select all shown' ticks exactly 9 view permissions in Arabic (walks/w3-roles-ar.txt).\n- Copy and Delete role are in the palette.\n- 'What they can do' names each granting role and its company in Arabic (screenshot 08).",
+    "Positive:\n- The pause answer has the same keys (deviceCode, sharedAddress, pausedUntil) for an account that exists and for one that does not.\n- An approval is used up by the first sign-in, after which the browser is a known device.\n- Another fresh browser behind the address stays paused.\n- No console errors or 5xx in any walk, in English or Arabic.",
+    "Critic housekeeping:\n- My demo was taken down before the planted .NET run, which went through verify-slot (it started at 09:23Z beside my verify run 1, which was then in its e2e and timing stages).\n- The web plant and planted e2e ran in toolbox containers while no demo of mine was up.\n- Removed: compose projects c-p03-identity-r13 and c-p03-identity-r13-plant, their images and volumes, the plant work volume and all three critic clones.\n- The shared Odoo rig was not touched."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p03-identity/r13",
+  "evidence_dir": "gauntlet/evidence/p03-identity/r13"
+}

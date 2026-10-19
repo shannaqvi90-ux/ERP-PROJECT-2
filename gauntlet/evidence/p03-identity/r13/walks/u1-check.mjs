@@ -1,0 +1,20 @@
+// Critic p03 r13: is the "Let a device sign in" form offered to a user who may only read the sign-in history? (BASE: planted or real stack)
+import { launch, signIn, shot, logger } from './lib.mjs';
+import fs from 'node:fs';
+const BASE = process.env.BASE; const tag = process.env.TAG;
+const L = logger('u1-check-' + tag);
+const H = { 'content-type': 'application/json', 'X-Erp-Request': '1', 'user-agent': 'curl/8.5.0' };
+const email = 'accountant@alnoor.example';
+for (let i = 1; i <= 5; i++) await fetch(BASE + '/api/auth/sign-in', { method: 'POST', headers: H, body: JSON.stringify({ email, password: 'guess-' + i }) });
+const a = JSON.parse(fs.readFileSync(process.env.AUDITOR));
+const b = await launch(); const p = await (await b.newContext({ viewport: { width: 1366, height: 800 } })).newPage();
+await p.goto(BASE + '/'); await p.getByLabel(/e-mail/i).first().fill(a.email); await p.getByLabel(/password/i).first().fill(a.password); await p.keyboard.press('Enter'); await p.waitForTimeout(2000);
+await p.goto(BASE + '/identity/users'); await p.waitForTimeout(1500);
+await p.keyboard.type(email); await p.waitForTimeout(1200); await p.keyboard.press('Enter'); await p.waitForTimeout(1200);
+L('tabs: ' + (await p.getByRole('tab').allInnerTexts()).join(', '));
+await p.getByRole('tab', { name: 'Sign-in history' }).click(); await p.waitForTimeout(1500);
+const t = await p.locator('aside').innerText().catch(async () => p.locator('main').innerText());
+L('history panel: ' + t.replace(/\n/g, ' | ').slice(0, 700));
+L('device code field offered: ' + await p.locator('input[name="deviceCode"]').count() + '; "Let it in" buttons: ' + await p.getByRole('button', { name: 'Let it in' }).count() + '; "Allow sign-in again": ' + await p.getByRole('button', { name: /Allow sign-in again/ }).count());
+await shot(p, `${tag === "real" ? 11 : 10}-sign-in-auditor-history-${tag}-en.jpg`);
+L.save(); await b.close();
