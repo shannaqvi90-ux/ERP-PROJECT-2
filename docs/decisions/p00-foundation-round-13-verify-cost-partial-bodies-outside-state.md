@@ -64,9 +64,10 @@ the framework's first-use caches are not.
 Method as in rounds 9 and 10: the base commit (`3e1fd03b`, the integration branch this round
 started from) and this branch, each in a toolbox container of its own started together, with the
 verify .NET stage's runtime settings and the same test filters in the same order; processor seconds
-of the test runs only (the container's cgroup), the build excluded. Every test passed on both sides
-(the candidate's first HTTP self-test failed on the fingerprint correction above, every plant
-caught; the final code's run is the last column).
+of the test runs only (the container's cgroup), the build excluded. Every base test passed. On this
+branch's first run the HTTP self-test failed on its last assertion only (the fingerprint correction
+above), with every plant caught; the final code's runs (last column, 21:44-22:08 UTC, after the
+base had finished, so not side by side) passed.
 
 The self-tests, 2026-10-18 20:11-21:44 UTC, load 13-53:
 
