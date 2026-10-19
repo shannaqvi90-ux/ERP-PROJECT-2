@@ -145,3 +145,13 @@ The tests added this round, measured on the builder's runs:
 - four web unit tests, under 1 s.
 
 That is roughly 60 to 100 processor seconds in all, against the 10,500 s maximum.
+
+## This round's verify run (through the verify slots, ports 20310 and 20311)
+
+- The slot was taken at 2026-10-19T05:30:06Z. The run passed in 3,666 s, and the ratchet check
+  passed. Load reached 69.7 on 16 CPUs early in the run and fell to 2.3 by its end. Wall time was
+  therefore not judged.
+- Processor time was 9,983 s against the 10,500 s maximum: .NET 7,648, web 1,994, e2e 306,
+  timing 35.
+- Every test passed: .NET 732, web unit 528, e2e 113, compare 415, build 6. The suite minimums are
+  raised to those counts.
