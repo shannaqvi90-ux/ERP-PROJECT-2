@@ -29,15 +29,19 @@ const problemKeys: Record<string, string> = {
 /** A message shown on the sign-in screen: one of the screen's own strings (re-rendered in the
  * current language), or the server's text in the language it was written in. `pausedUntil`: sign-in
  * with the address is paused until then (this device's clock), shown with the time and minutes. */
-type Message = { key: string; pausedUntil?: number } | { text: string; language: Language };
+type Message = { key: string; pausedUntil?: number; deviceCode?: string } | { text: string; language: Language };
 
 const fromServer = (text: string, language: Language, code?: string): Message =>
   code && problemKeys[code] ? { key: problemKeys[code] } : { text, language };
 
 /** The screen's message for a failed sign-in: a pause says until when (critic p00 rounds 7 to 10). */
-const failureMessage = (result: { message: string; code?: string; pausedFor?: number }, language: Language): Message =>
+const failureMessage = (result: { message: string; code?: string; pausedFor?: number; deviceCode?: string }, language: Language): Message =>
   result.code === "auth.signInPaused" && result.pausedFor !== undefined
-    ? { key: "shell.signIn.problem.signInPaused", pausedUntil: Date.now() + result.pausedFor * 1000 }
+    ? result.deviceCode
+      ? // A shared address (critic p03 round 12): the failures may be anyone's behind it, so the
+        // screen says so and shows this browser's device code to be let in with.
+        { key: "shell.signIn.problem.signInPausedShared", pausedUntil: Date.now() + result.pausedFor * 1000, deviceCode: result.deviceCode }
+      : { key: "shell.signIn.problem.signInPaused", pausedUntil: Date.now() + result.pausedFor * 1000 }
     : fromServer(result.message, language, result.code);
 
 /** Failed password sign-ins in a row on this screen after which it says that sign-in may pause. */
@@ -461,6 +465,14 @@ export function SignInPage() {
                   ? t(error.key, { time: format.time(new Date(error.pausedUntil)), minutes: Math.max(1, Math.ceil((error.pausedUntil - Date.now()) / 60_000)) })
                   : t(error.key)
                 : error.text}
+              {"key" in error && error.deviceCode && (
+                <p className="signin-device-code">
+                  {t("shell.signIn.deviceCode")}{" "}
+                  <strong dir="ltr" translate="no" data-device-code="">
+                    {error.deviceCode}
+                  </strong>
+                </p>
+              )}
               {failures >= failuresBeforeHint && !changing && !("key" in error && error.pausedUntil !== undefined) && (
                 <p className="signin-pause-hint">{t("shell.signIn.repeatedFailures")}</p>
               )}

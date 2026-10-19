@@ -1019,6 +1019,48 @@ describe("identity form keys", () => {
 });
 
 describe("my account", () => {
+  it("lets a new device of one's own in with its device code, checked before sending, with the server's refusal shown", async () => {
+    // Critic p03 round 12: on a new laptop behind a shared address the person was paused with their
+    // right password; signed in elsewhere they now let that laptop in with the code it shows.
+    window.history.replaceState(null, "", "/identity/me");
+    let answer: { status: number; body: unknown } = { status: 200, body: { until: "2026-10-19T09:00:00Z" } };
+    const calls = mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(["identity.profile.update"]) };
+      if (method === "POST" && url === "/api/identity/me/devices/approve") return answer;
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await act(async () => new Promise((r) => setTimeout(r, 50)));
+    const form = view.container.querySelector<HTMLFormElement>("form.id-device-approval")!;
+    expect(form.querySelector("h2")!.textContent).toBe("Let a device sign in");
+    const code = form.querySelector<HTMLInputElement>('input[name="deviceCode"]')!;
+    expect(code.getAttribute("dir")).toBe("ltr");
+    // Not a device code: said on the field, nothing sent.
+    setInput(code, "K7QM-3XR0");
+    key(code, { key: "Enter", ctrlKey: true });
+    await settle();
+    expect(document.getElementById((code.getAttribute("aria-describedby") ?? "").split(" ")[0]!)?.textContent).toContain("eight-character device code");
+    expect(calls.some((c) => c.url === "/api/identity/me/devices/approve")).toBe(false);
+    // A code typed in lower case without its hyphen is sent as typed (upper-cased on screen).
+    setInput(code, "k7qm3xra");
+    key(code, { key: "Enter", ctrlKey: true });
+    await settle();
+    await settle();
+    const sent = calls.filter((c) => c.method === "POST" && c.url === "/api/identity/me/devices/approve");
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.body).toEqual({ code: "K7QM3XRA" });
+    expect(form.querySelector('[role="status"]')!.textContent).toContain("That device can now sign in with its password until");
+    expect(code.value).toBe("");
+    // A session signed in long ago is refused by the server, which says why.
+    answer = { status: 403, body: { title: "For your safety, sign in again on this device before letting another device in.", code: "auth.recentSignInRequiredDevice" } };
+    setInput(code, "K7QM-3XRA");
+    key(code, { key: "Enter", ctrlKey: true });
+    await settle();
+    await settle();
+    expect(form.querySelector('[role="alert"]')!.textContent).toBe("For your safety, sign in again on this device before letting another device in.");
+  });
+
   it("shows the team's sign-in address for the user's own e-mail domain, in both languages", async () => {
     for (const language of ["en", "ar"] as const) {
       window.history.replaceState(null, "", "/identity/me");
@@ -1450,6 +1492,7 @@ describe("account actions keep the open record saveable", () => {
   async function openPaused(renamedElsewhere: boolean, language: "en" | "ar" = "en") {
     let current = { ...paused };
     let blocked = true;
+    let approvedUntil: string | null = null;
     window.history.replaceState(null, "", `/identity/users?open=${paused.id}`);
     const calls = mockFetch((m, url, body) => {
       if (url === "/api/auth/session") return { status: 200, body: session(all, language) };
@@ -1459,6 +1502,10 @@ describe("account actions keep the open record saveable", () => {
       if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
       if (m === "GET" && url === `/api/identity/users/${paused.id}`) return { status: 200, body: current };
       if (m === "GET" && url === `/api/identity/users/${paused.id}/passkeys`) return { status: 200, body: [] };
+      if (m === "POST" && url === `/api/identity/users/${paused.id}/devices/approve`) {
+        approvedUntil = "2026-10-09T10:00:00Z";
+        return { status: 200, body: { until: approvedUntil } };
+      }
       if (m === "POST" && url === `/api/identity/users/${paused.id}/unblock`) {
         blocked = false;
         // The row changes (its version) and, in the control, someone else renamed the user meanwhile.
@@ -1487,6 +1534,7 @@ describe("account actions keep the open record saveable", () => {
                   { source: "172.21.0.1", until: "2026-10-09T09:05:00Z", failures: 5, kind: "gateway" },
                 ]
               : [],
+            deviceApprovalUntil: approvedUntil,
           },
         };
       return { status: 404, body: {} };
@@ -1558,6 +1606,32 @@ describe("account actions keep the open record saveable", () => {
     expect(arabic).toContain("جهاز معروف");
     expect(arabic).toContain("أعطه رمز إعداد جديدًا");
     expect(arabic).not.toMatch(/shared|device|set-up/);
+  });
+
+  it("lets one device in with the code its paused sign-in screen shows, from the sign-in history, in English and Arabic", async () => {
+    const calls = await openPaused(false);
+    await click(tab("Sign-in history"));
+    const form = view!.container.querySelector<HTMLFormElement>("aside form.id-device-approval")!;
+    expect(form).not.toBeNull();
+    expect(form.textContent).toContain("nobody else behind the address gets in");
+    const code = form.querySelector<HTMLInputElement>('input[name="deviceCode"]')!;
+    setInput(code, "K7QM-3XRA");
+    key(code, { key: "Enter", code: "Enter", ctrlKey: true });
+    await settle();
+    await settle();
+    const sent = calls.filter((c) => c.method === "POST" && c.url === `/api/identity/users/${paused.id}/devices/approve`);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.body).toEqual({ code: "K7QM-3XRA" });
+    // The history is read again and says a device let in may sign in until when.
+    expect(view!.container.querySelector("aside .id-history")!.textContent).toContain("A device let in with its code can sign in until");
+    view?.unmount();
+    view = undefined;
+    await openPaused(false, "ar");
+    await click(tab("سجل الدخول"));
+    const arabic = view!.container.querySelector("aside form.id-device-approval")!.textContent ?? "";
+    expect(arabic).toContain("السماح لجهاز بتسجيل الدخول");
+    expect(arabic).toContain("رمز الجهاز");
+    expect(arabic).not.toMatch(/[A-Za-z]/);
   });
 
   it("the control: when someone else changed a field meanwhile, the save is still refused as changed elsewhere", async () => {

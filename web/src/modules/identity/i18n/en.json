@@ -264,6 +264,16 @@
   "identity.addressKind.localHint": "A proxy or program on the server itself, so it does not tell people apart.",
   "identity.history.device": "known device {tag}",
   "identity.history.deviceHint": "A browser that signed in to this account before. Its failures pause only itself, never anyone else at the same address.",
-  "identity.history.sharedHint": "Many people use a shared address at once. Allowing sign-in again lets all of them try again, including whoever failed. To let one person in, give them a new set-up code with Reset password…: a set-up code works from a shared address even while sign-in from it is paused.",
-  "identity.companyRoles.chooseRole": "Choose a role"
+  "identity.history.sharedHint": "Many people use a shared address at once. Allowing sign-in again lets all of them try again, including whoever failed. To let one person in, enter the device code their sign-in screen shows below, or give them a new set-up code with Reset password…: a set-up code works from a shared address even while sign-in from it is paused.",
+  "identity.companyRoles.chooseRole": "Choose a role",
+  "identity.device.title": "Let a device sign in",
+  "identity.device.code": "Device code",
+  "identity.device.letIn": "Let it in",
+  "identity.device.codeInvalid": "Enter the eight-character device code shown on the sign-in screen of the device (for example K7QM-3XRA).",
+  "identity.device.approved": "Done. That device can now sign in with its password until {time}.",
+  "identity.device.adminHint": "When sign-in from a shared address is paused, the person's sign-in screen shows a device code. Enter it here to let that one device in; it still needs their password, and nobody else behind the address gets in.",
+  "identity.device.mineHint": "Paused on a new device because many people share its network address? Its sign-in screen shows a device code. Enter it here to let that device in; then sign in there with your password.",
+  "identity.device.waiting": "A device let in with its code can sign in until {time}.",
+  "identity.device.command": "Let a device sign in…",
+  "identity.device.keywords": "device code, new laptop, paused, shared address, let in"
 }
