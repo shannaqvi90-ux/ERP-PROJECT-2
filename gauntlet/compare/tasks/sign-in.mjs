@@ -13,6 +13,9 @@ export default {
     odoo: { reads: [{ read: 'POST /web/session/get_session_info', parts: ['result.uid'] }], writes: ['POST /web/login'] },
     ours: { reads: [{ read: 'GET /api/auth/session', parts: ['authenticated', 'user.id'] }], writes: ['POST /api/auth/sign-in'] },
   },
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up makes the person when missing, adds the passkey of the passkey path and signs out); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['POST /api/identity/users', 'POST /api/auth/sign-out', 'POST /api/identity/me/passkeys/options', 'POST /api/identity/me/passkeys'] },
   moments: [],
   start: 'Signed out, on the product\'s sign-in screen (the address the user keeps bookmarked).',
   goal: 'Sign in as {user} with the password {password}.',

@@ -212,6 +212,16 @@ export function analyseTrace(events) {
   // Where the page's frames started navigations (a form posted, an address set), with the address.
   const navigationStarts = events.filter(e => e.name === 'FrameLoader::StartNavigation' && e.args?.url);
   for (const v of sockets.values()) { v.sends.sort((a, b) => a.event.ts - b.event.ts); v.receives.sort((a, b) => a.event.ts - b.event.ts); }
+  // Round 14: a task that only delivered what the browser fetched for itself or for rendering (a
+  // favicon, an image, a font, a style sheet) and ran nothing of the page's (no script, no event, nothing
+  // inside its microtask checkpoint) cannot have posted the message an untraceable task delivers.
+  for (const t of tasks) {
+    if (!t.answers.length || t.protocol || t.timerFires.length || t.frameFires.length || t.idleFires.length) continue;
+    if (t.events.some(e => /^(FunctionCall|EvaluateScript|EventDispatch|ParseHTML|SchedulePostMessage|ResourceSendRequest|TimerInstall|RequestAnimationFrame)$/.test(e.name))) continue;
+    const checkpoints = t.events.filter(e => e.ph === 'X' && e.name === 'BlinkScheduler_PerformMicrotaskCheckpoint');
+    if (checkpoints.some(c => t.events.some(e => e !== c && e.ts > c.ts && e.ts <= c.ts + (c.dur || 0)))) continue;
+    t.passive = t.answers.every(a => PASSIVE_RESOURCES.test(String(sends.get(a.args.data.requestId)?.event.args?.data?.resourceType || '')));
+  }
   // Round 13: when the page's animations and transitions ran (Chromium's async "Animation" events by
   // id: begun, ended). One begun before the record has only its end; one still running has no end.
   const animations = new Map();
@@ -226,6 +236,8 @@ export function analyseTrace(events) {
 }
 
 const keep = (map, key, value) => { if (!map.has(key)) map.set(key, []); map.get(key).push(value); };
+/** Resources the browser fetches for rendering, with no script waiting on them as such (round 14). */
+const PASSIVE_RESOURCES = /^(Image|Font|Stylesheet|Media|Other|TextTrack|Manifest)$/;
 /** The last request of `key` made before trace time `ts` (a timer's install, an animation frame's or idle callback's request). */
 const askedBefore = (map, key, ts) => (map.get(key) || []).filter(x => x.event.ts < ts).sort((a, b) => a.event.ts - b.event.ts).pop() || null;
 
@@ -547,7 +559,7 @@ function otherCause(ctx, task, depth) {
   ctx.memo.set(key, no('a loop of untraceable tasks'));
   const thread = ctx.model.threads.get(task.thread);
   const before = thread.tasks.slice(0, task.index).reverse();
-  const prevIdx = before.findIndex(t => t.activity || actingCommand(ctx, t));
+  const prevIdx = before.findIndex(t => (t.activity && !t.passive) || actingCommand(ctx, t));
   let result;
   if (prevIdx < 0) result = no('a task of no traceable origin with no page task before it');
   else {
@@ -566,8 +578,8 @@ function otherCause(ctx, task, depth) {
       const frame = !head && (prev.frameFires.length > 0 || /BeginMainFrame/.test(prev.src || ''));
       const dispatched = head ? ctx.steps.find(x => x.n === pc.step)?.at : null;
       const earlier = head
-        ? before.slice(prevIdx + 1).find(t => t.activity && t.end >= (dispatched ?? prev.ts) - ctx.slack && (t.end - t.ts) / 1e6 >= BUSY_SECONDS)
-        : frame ? before.slice(prevIdx + 1).find(t => t.activity) : null;
+        ? before.slice(prevIdx + 1).find(t => t.activity && !t.passive && t.end >= (dispatched ?? prev.ts) - ctx.slack && (t.end - t.ts) / 1e6 >= BUSY_SECONDS)
+        : frame ? before.slice(prevIdx + 1).find(t => t.activity && !t.passive) : null;
       const ec = earlier && (head || (prev.ts - earlier.end) / 1e6 < ctx.guard) ? taskCause(ctx, earlier, depth + 1) : null;
       // Round 13 (critic p01 r12, plant W2): any other thread that runs the page's script (a worker of
       // any kind, another frame's or window's process) could have posted it, from the moment the step's

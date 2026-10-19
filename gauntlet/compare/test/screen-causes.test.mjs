@@ -507,3 +507,45 @@ test('the clock starts 1.1-2.1 s after verify()\'s read before it, for a task th
   const gap = (step.at - read.at) / 1000;
   assert.ok(gap >= 1.1, `the step came ${gap} s after verify()'s read`);
 });
+
+// -- set-up writes only the fixtures its task declares (critic r13, fix c) ------------------------
+
+const DECLARED = { ...NO_FINDS, id: 'plant-fixtures', fixtures: { ours: ['POST /api/settings'] } };
+
+test('plant N4: set-up turns on a setting its task does not declare (a back-end call) -> refused', async () => {
+  reset();
+  refused('N4', await runDriver({
+    async setup() { await fetch(base + '/api/views', { method: 'POST', body: JSON.stringify({ name: 'Mine', search: 'zz', isDefault: true }) }); },
+    ...home,
+    async run(op) { await op.click('#contacts', { label: 'Contacts' }); await op.waitFor(() => !!document.querySelector('#q'), { label: 'list' }); return {}; },
+    async verify(ctx) { return { verified: await ctx.read(() => !!document.querySelector('#q')) }; },
+  }, DECLARED), /a set-up write its task does not declare/);
+});
+
+test('plant N4b: set-up\'s browser saves a view its task does not declare -> refused', async () => {
+  reset();
+  refused('N4b', await runDriver({
+    ...home,
+    async signIn(ctx) {
+      await ctx.page.goto(base + '/views/new');
+      await ctx.page.locator('input[name="search"]').fill('zz');
+      await ctx.page.getByRole('button', { name: 'Save' }).click();
+      await ctx.page.locator('#saved').waitFor();
+      await ctx.page.goto(base + '/');
+    },
+    async run(op) { await op.click('#contacts', { label: 'Contacts' }); await op.waitFor(() => !!document.querySelector('#q'), { label: 'list' }); return {}; },
+    async verify(ctx) { return { verified: await ctx.read(() => !!document.querySelector('#q')) }; },
+  }, DECLARED), /its task does not declare/);
+});
+
+test('control: set-up writes the fixture its task declares and the run verifies', async () => {
+  reset();
+  const r = await runDriver({
+    async setup() { await fetch(base + '/api/settings', { method: 'POST', body: JSON.stringify({ slow: 0 }) }); },
+    ...home,
+    async run(op) { await op.click('#contacts', { label: 'Contacts' }); await op.waitFor(() => !!document.querySelector('#q'), { label: 'list' }); return {}; },
+    async verify(ctx) { return { verified: await ctx.read(() => !!document.querySelector('#q')) }; },
+  }, DECLARED);
+  assert.equal(r.status, 'verified', r.error);
+  assert.deepEqual(r.set_up_writes, ['fetch POST /api/settings']);
+});

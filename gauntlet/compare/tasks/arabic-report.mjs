@@ -5,6 +5,9 @@ export default {
   piece: 'p06',
   actor: 'admin (working in English)',
   startAt: 'record',
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up puts the actor back to English); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['PUT /api/identity/me/preferences'] },
   moments: [],
   start: 'Signed in, working in English, with an order to the vendor {contact.parent_name} open on screen. The vendor\'s language is Arabic.',
   goal: 'Print the order as a PDF document in the vendor\'s language, Arabic.',

@@ -290,6 +290,9 @@ export class DriverSession {
     // Round 14: what set-up's writes may not carry (lib/runner.mjs foundWords) and the test of it (carriesFound).
     this.setUpGuard = null;
     this.setUpCarries = null;
+    // Round 14: the fixtures set-up may write ({ list, allows(method, url), enforce }) and what it wrote.
+    this.setUpFixtures = null;
+    this.setUpWritesSent = [];
     host.session = this;
   }
 
@@ -581,6 +584,15 @@ export class DriverSession {
       throw new ActionOutsideClock(`a set-up write that carries the record the person finds (fetch ${method} ${u.pathname}): set-up may prepare fixtures, not put the record within reach (a saved search, a default view, a remembered record)`, 'set-up');
     }
     const signIn = isSignIn(u.pathname, method);
+    // Round 14 (critic p01 r13, fix c): set-up writes only what its task declares for this product
+    // (`fixtures`); every set-up write is recorded, and an undeclared one refused where the runner says so.
+    if (this.setUpFixtures && phase === 'free' && !signIn && !isReadRequest(url, { ...init, body: bodyText })) {
+      const what = `${method} ${u.pathname}`;
+      this.setUpWritesSent.push(what);
+      if (this.setUpFixtures.enforce && !this.setUpFixtures.allows(method, url)) {
+        throw new ActionOutsideClock(`a set-up write its task does not declare (fetch ${what}; the task's fixtures for this product: ${this.setUpFixtures.list.join(', ') || 'none'}): set-up prepares the fixtures its task file names, nothing that changes what the product shows or offers the person (a saved view, a preference, a remembered record)`, 'set-up');
+      }
+    }
     const cacheKey = signIn ? `${method} ${url} ${withoutRpcId(bodyText)}` : null;
     if (cacheKey && this.signIns.has(cacheKey)) return this.signIns.get(cacheKey);
     const res = await this.#send(url, init, u);

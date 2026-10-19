@@ -809,8 +809,9 @@ test('causation (round 14): a click the browser delivers while running a DevTool
 const CLOCK0 = { offset_us: 0, error_us: 0, perf_ms: 0, hr_us: 0 };
 const change = (at, name = 'StyleRecalcInvalidationTracking', data = {}) => I(name, at, { nodeName: 'DIV', reason: 'Node was inserted into tree', ...data });
 /** screenCauses on synthetic tasks; steps are [at, took, kind] in milliseconds of the clock (= trace ms). */
-function screens(tasks, steps = [[100, 10, 'click']], until = 1000) {
-  return screenCauses({ events: [...META, ...tasks.flat()] }, steps.map(([at, took, kind = 'click'], i) => ({ n: i + 1, kind, at: at / 1000, took: took / 1000 })), { clock: CLOCK0, originMs: 0, until: until / 1000 });
+function screens(tasks, steps = [[100, 10, 'click']], until = 1000, harness = []) {
+  return screenCauses({ events: [...META, ...tasks.flat()] }, steps.map(([at, took, kind = 'click'], i) => ({ n: i + 1, kind, at: at / 1000, took: took / 1000 })),
+    { clock: CLOCK0, originMs: 0, until: until / 1000, harness: harness.map(([from, to]) => ({ from: from / 1000, to: to / 1000 })) });
 }
 
 test('causation (round 14): every change of the screen is judged by where its chain begins (screenCauses)', () => {
@@ -833,10 +834,17 @@ test('causation (round 14): every change of the screen is judged by where its ch
 
 test('causation (round 14): what the harness does (its reads, the blind shot) is passed over; page script it sets off is judged', () => {
   const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 1, 3), ...inner];
-  // The harness neutralising the title for a shot: no page script ran.
-  assert.equal(screens([task(300, IPC, cmd([X('EvaluateScript', 1.2, 1), change(1.5, 'LayoutInvalidationTracking', { nodeName: '#text', reason: 'Text changed' })]))]).length, 0);
-  // A page observer that ran on the harness's change and opened the record (critic-style N1e).
-  const reacted = screens([task(300, IPC, cmd([X('EvaluateScript', 1.2, 0.4), X('FunctionCall', 1.7, 1, { url: 'http://p/app.js' }), change(2)]))]);
+  const SHOT = [[295, 310]];
+  // The harness neutralising the title for a shot (inside the shot's window): no page script ran.
+  const title = () => [task(300, IPC, cmd([X('EvaluateScript', 1.2, 1), change(1.5, 'LayoutInvalidationTracking', { nodeName: '#text', reason: 'Text changed' })]))];
+  assert.equal(screens(title(), undefined, undefined, SHOT).length, 0);
+  // The same change inside a harness command at any other time: the page's own script ran inside the
+  // harness's read (a replaced getter, plant N1f), and is no step's.
+  const read = screens(title());
+  assert.equal(read.length, 1);
+  assert.equal(read[0].caused, false);
+  // A page observer that ran on the harness's shot change and opened the record (plant N1e).
+  const reacted = screens([task(300, IPC, cmd([X('EvaluateScript', 1.2, 0.4), X('FunctionCall', 1.7, 1, { url: 'http://p/app.js' }), change(2)]))], undefined, undefined, SHOT);
   assert.equal(reacted.length, 1);
   assert.equal(reacted[0].caused, false);
   // The browser's own change of the window (a widget message, no script, no answer): passed over.
@@ -852,4 +860,24 @@ test('causation (round 14): a document is judged by the navigation that loaded i
   const byTimer = screens([task(101, INPUT, click()), task(150, TIMER, [fire(1, 4), nav(1.5, 'http://p/contact/1')]), task(160, PORT, [parse(1, 'http://p/contact/1')])]);
   assert.ok(byTimer.length >= 1);
   assert.ok(byTimer.every(c => !c.caused));
+});
+
+test('causation (round 14): a favicon or image the browser fetched before the clock, answered just before an untraceable task, does not stand between it and the step (a busy machine)', () => {
+  const sendOf = (at, id, type, url) => I('ResourceSendRequest', at, { requestId: id, url, requestMethod: 'GET', resourceType: type });
+  const ans = (at, id) => I('ResourceReceiveResponse', at, { requestId: id });
+  const checkpoint = (at, inner = []) => [X('BlinkScheduler_PerformMicrotaskCheckpoint', at, 0.5), ...inner];
+  // Before the clock the page asked for the favicon (and the step's click asked for its data); the
+  // favicon's answer lands between the data's answer and the scheduler's message that renders.
+  const tasks = (iconInner = []) => [
+    task(50, NET, [sendOf(2, 'icon', 'Other', 'http://p/favicon.ico')]),
+    task(101, INPUT, [...click(), send(3, 'd', 'http://p/api/data', 'GET')]),
+    task(120, NET, [answer(1, 'd'), X('FunctionCall', 1.5, 1, { url: 'http://p/' })]),
+    task(130, NET, [answer(1, 'icon'), ...checkpoint(2, iconInner)]),
+    task(137, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')]),
+  ];
+  const passive = verdict(tasks(), 'w');
+  assert.equal(passive.caused, true, passive.why);
+  // A font whose promise ran the page's code (it posted a message) stands between them: no step's.
+  const active = verdict(tasks([I('SchedulePostMessage', 2.2, { traceId: 9 })]), 'w');
+  assert.equal(active.caused, false);
 });

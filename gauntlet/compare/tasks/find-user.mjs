@@ -6,6 +6,10 @@ export default {
   piece: 'p03',
   actor: 'admin',
   startAt: 'home',
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up writes nothing; a health check creates the one user); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: [] },
+  healthFixtures: { ours: ['POST /api/identity/users'] },
   moments: ['result list'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Open the user whose name the administrator knows ({user.name}) out of 100,000 users and read their sign-in e-mail.',

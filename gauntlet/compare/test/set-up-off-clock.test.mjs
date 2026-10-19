@@ -41,7 +41,10 @@ const LIVE_PAGE = () => `<!doctype html><html><body><input id="q" aria-label="Qu
 <div id="out">${saved === null ? 'none' : 'a value is saved'}</div><div id="touched"></div>
 <script>document.getElementById('go').onclick = () => { fetch('/api/slow-save', { method: 'POST', body: document.getElementById('q').value }); };
 document.getElementById('mark').onclick = () => { fetch('/api/mark', { method: 'POST' }).then(() => { document.getElementById('touched').textContent = 'marked'; }); };
-setInterval(() => fetch('/api/state').then(r => r.json()).then(s => { document.getElementById('out').textContent = s.saved === null ? 'none' : 'a value is saved'; }).catch(() => {}), 100);</script></body></html>`;
+setInterval(() => fetch('/api/state').then(r => r.json()).then(s => { const t = s.saved === null ? 'none' : 'a value is saved'; if (document.getElementById('out').textContent !== t) document.getElementById('out').textContent = t; }).catch(() => {}), 100);</script></body></html>`;
+// Round 14: the stand-in's polls write the screen only when what it shows changes (a poll that rewrote the
+// same text every 100 ms changed the screen with no step causing it, which lib/causation.mjs screenCauses
+// now refuses for the product measured against the reference).
 // An approval, an unrelated button that bumps a version, and one that touches the approval record
 // without approving it.
 const STATUS_PAGE = () => `<!doctype html><html><body><button id="approve">Approve</button><button id="mark">Mark</button><button id="touch">Touch</button>
@@ -49,7 +52,7 @@ const STATUS_PAGE = () => `<!doctype html><html><body><button id="approve">Appro
 <script>document.getElementById('approve').onclick = () => fetch('/api/approve', { method: 'POST' }).then(() => { document.getElementById('out').textContent = 'approved'; });
 document.getElementById('mark').onclick = () => { fetch('/api/mark', { method: 'POST' }).then(() => { document.getElementById('touched').textContent = 'marked'; }); };
 document.getElementById('touch').onclick = () => { fetch('/api/touch', { method: 'POST' }).then(() => { document.getElementById('touched').textContent = 'touched'; }); };
-setInterval(() => fetch('/api/approval').then(r => r.json()).then(s => { if (s.approved) document.getElementById('out').textContent = 'approved'; }).catch(() => {}), 100);</script></body></html>`;
+setInterval(() => fetch('/api/approval').then(r => r.json()).then(s => { if (s.approved && document.getElementById('out').textContent !== 'approved') document.getElementById('out').textContent = 'approved'; }).catch(() => {}), 100);</script></body></html>`;
 // A form that keeps a draft in the browser's local storage (a product that remembers what was typed).
 const REMEMBER_PAGE = () => `<!doctype html><html><body><input id="q" aria-label="Query"><button id="go">Save</button><div id="out"></div>
 <script>const q = document.getElementById('q');

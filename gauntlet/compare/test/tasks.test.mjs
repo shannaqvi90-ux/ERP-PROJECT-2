@@ -188,3 +188,12 @@ test('every task that asks the person to find one record names it (finds), and t
     assert.notEqual(t.channel, 'api', `${t.id}: a task found through the API types its search into a request`);
   }
 });
+
+// Round 14 (critic p01 r13, fix c): set-up writes only the fixtures its task names.
+test('every task whose ours driver is built declares the writes its set-up sends (fixtures), as METHOD /path', async () => {
+  for (const t of await loadTasks()) {
+    if ((await loadDriver('ours', t.id)).built === false) continue;
+    assert.ok(Array.isArray(t.fixtures?.ours), `${t.id}: fixtures.ours (the writes set-up sends, [] for none) missing`);
+    for (const f of [...t.fixtures.ours, ...(t.healthFixtures?.ours || [])]) assert.match(f, /^(POST|PUT|PATCH|DELETE) \/\S*$/, `${t.id}: fixture ${f}`);
+  }
+});

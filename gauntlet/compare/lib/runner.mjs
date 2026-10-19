@@ -256,6 +256,7 @@ export async function runTask(taskId, productId, opts = {}) {
     ...(primary.saved_state ? { saved_state: primary.saved_state } : {}),
     ...(primary.screen_changes ? { screen_changes: primary.screen_changes } : {}),
     ...(primary.finds ? { finds: primary.finds } : {}),
+    ...(primary.set_up_writes ? { set_up_writes: primary.set_up_writes } : {}),
     ...(primary.task_rules ? { task_rules: primary.task_rules } : {}),
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
@@ -277,7 +278,7 @@ export async function runTask(taskId, productId, opts = {}) {
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, ...(e.error_page ? { error_page: e.error_page } : {}), counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
       verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, requests_in_flight_at_clock: e.requests_in_flight_at_clock ?? null,
       screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, verify_before: e.verify_before ?? null, set_up_writes_waited: e.set_up_writes_waited ?? null,
-      ...(e.saved_state ? { saved_state: e.saved_state } : {}), ...(e.screen_changes ? { screen_changes: e.screen_changes } : {}), ...(e.finds ? { finds: e.finds } : {}),
+      ...(e.saved_state ? { saved_state: e.saved_state } : {}), ...(e.screen_changes ? { screen_changes: e.screen_changes } : {}), ...(e.finds ? { finds: e.finds } : {}), ...(e.set_up_writes ? { set_up_writes: e.set_up_writes } : {}),
       ...(e.task_rules ? { task_rules: e.task_rules } : {}), ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
@@ -413,6 +414,9 @@ export function watchSetUpBrowser(browser) {
   const carried = []; // round 14: set-up writes that carried the record the person finds
   const named = []; // round 14: addresses set-up's browser opened that name the task's data
   let guardWords = { writes: null, addresses: [] };
+  let fixtures = null; // round 14: { list, allows, enforce } (setUpFixturesFor)
+  const written = [];
+  const undeclared = [];
   let waited = 0;
   let watching = true;
   const describeReq = r => { try { return `${r.method()} ${new URL(r.url()).pathname}`; } catch { return '?'; } };
@@ -425,6 +429,10 @@ export function watchSetUpBrowser(browser) {
       if (!watching || isBackgroundRequest(r)) return;
       if (isWrite(r.method(), r.url(), r.resourceType(), postData(r))) {
         inflight.set(r, describeReq(r));
+        if (fixtures && !isBrowserSignIn(r)) {
+          written.push(describeReq(r));
+          if (fixtures.enforce && !fixtures.allows(r.method(), r.url())) undeclared.push(describeReq(r));
+        }
         if (guardWords.writes && carriesFound(`${r.url()} ${postData(r) || ''}`, guardWords.writes)) carried.push(describeReq(r));
       }
     };
@@ -476,6 +484,7 @@ export function watchSetUpBrowser(browser) {
     },
     /** The problem with set-up's writes once its contexts are closed, or null. */
     problem() {
+      if (undeclared.length) return `set-up's browser sent ${undeclared.length} write(s) its task does not declare (${[...new Set(undeclared)].slice(0, 3).join(', ')}; the task's fixtures for this product: ${fixtures.list.join(', ') || 'none'}): set-up prepares the fixtures its task file names, nothing that changes what the product shows or offers the person`;
       if (carried.length) return `set-up's browser sent ${carried.length} write(s) that carry the record the person finds (${carried.slice(0, 3).join(', ')}): set-up may prepare fixtures, not put the record within reach (a saved search, a default view, a remembered record)`;
       if (named.length) return `set-up's browser opened an address that names the task's data (${named.slice(0, 2).map(u => { try { return new URL(u).pathname + new URL(u).search; } catch { return u; } }).join(', ')}): set-up signs in and opens the start screen; a record it opened may be remembered and offered to the person`;
       const open = [...inflight.values()];
@@ -486,6 +495,9 @@ export function watchSetUpBrowser(browser) {
     get waited() { return waited; },
     /** Round 14: the words set-up's writes may not carry (`writes`, foundWords) and its addresses may not name (`addresses`, taskWords). */
     guard(words) { guardWords = { writes: words.writes || null, addresses: words.addresses || [] }; },
+    /** Round 14: the fixtures set-up's browser may write (setUpFixturesFor), and the writes it sent. */
+    fixtures(f) { fixtures = f; },
+    get written() { return [...written]; },
     /** Writes set-up's browser still has under way. */
     get pending() { return inflight.size; },
     /** Stop watching (the fresh start context is the measured part's, watched by trackRequests). */
@@ -541,6 +553,24 @@ export function carriesFound(text, guard) {
   const flat = pieceText(t);
   const tokens = new Set(t.split(/[^\p{L}\p{N}]+/u).map(pieceText));
   return guard.words.some(w => (w.length >= 8 ? flat.includes(w) : [...tokens].some(x => x.includes(w))));
+}
+
+/** A sign-in the browser posts (the products' sign-in addresses): set-up signs in, always. */
+const isBrowserSignIn = r => { try { return r.method() === 'POST' && /^\/(api\/auth\/sign-in|web\/login|web\/session\/authenticate)$/.test(new URL(r.url()).pathname); } catch { return false; } };
+
+/**
+ * Round 14 (critic p01 r13, fix c: set-up saved a default view of the list the person searches): the
+ * writes set-up may send, declared per product in the task file (`fixtures: { ours: ['PUT
+ * /api/identity/me/preferences', ...] }`, `METHOD /path` with `*` for one segment; a health check's
+ * extra fixtures in `healthFixtures`). Every other set-up write (by the harness's fetch or set-up's
+ * browser; a sign-in excepted) is refused for the product measured against the reference, and recorded
+ * for the reference (its set-up runs a client whose own writes are not the driver's to list).
+ */
+export function setUpFixturesFor(task, productId, { health = false } = {}) {
+  const list = [...(task.fixtures?.[productId] || []), ...(health ? task.healthFixtures?.[productId] || [] : [])];
+  // Enforced once the task declares its fixtures (every task does: test/tasks.test.mjs); a plant test's own
+  // stand-in task that declares none is held to the other rules.
+  return { list, enforce: productId !== REFERENCE_PRODUCT && task.fixtures !== undefined, allows: (method, url) => list.some(x => matchesRequest(x, method, url)) };
 }
 
 /** Whether an address names one of `words` (taskWords), its path, query or fragment, decoded. */
@@ -950,6 +980,9 @@ export async function execute(task, driver, product, productId, needles, out, op
     // Round 14 (critic p01 r13, plants N2 and N3): set-up's writes may not carry the record the person
     // finds, and its browser may not open an address that names the task's data (a driver health check,
     // on a clean stack, creates the record it finds).
+    const fixtures = setUpFixturesFor(task, productId, { health: !!opts.health });
+    session.setUpFixtures = fixtures;
+    setUpWrites.fixtures(fixtures);
     if (!opts.health) {
       const words = { writes: foundWords(task, productId, needles), addresses: taskWords(task, needles) };
       setUpWrites.guard(words);
@@ -988,6 +1021,8 @@ export async function execute(task, driver, product, productId, needles, out, op
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
     session.setUpGuard = null;
+    run.set_up_writes = [...new Set([...session.setUpWritesSent.map(w => `fetch ${w}`), ...setUpWrites.written.map(w => `browser ${w}`)])].slice(0, 40);
+    session.setUpFixtures = null;
     run.set_up_calls_waited = await session.drain(timeout);
     ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session, device, setUpWrites }));
     if (device) run.device = { passkeys_held: device.held, asked_at_start: device.waiting(page) };
