@@ -1,0 +1,121 @@
+{
+  "piece": "p03-identity",
+  "round": 12,
+  "commit": "2d46250b5d2a1154bac1579f9e924d834ed29435",
+  "judged_at": "2026-10-19T03:38:25Z",
+  "verdict": "WIN",
+  "critic": "fresh critic, p03-identity round 12",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product as built",
+      "status": "pass",
+      "evidence": "No leak found.\n\nAPI attack (attacks/g1-attack-all.mjs, g1-a-vs-b-r12.txt, g1-run.log): alnoor's admin made 1,951 judged calls against gulfsteel on all 67 OpenAPI paths (112 operations). The calls used each of B's 29 ids (users, roles, companies, tenant, canary user and role) in paths and bodies, plus ?removePasskeys=true, ?passkeyId=, four tenant-switch headers, tenant query fields, every list export (CSV, XLSX unzipped, PDF; English and Arabic) and the four reports with B's role and company ids. The result: 0 leaks, and B's state hash was the same before and after.\n\nPDFs, text-extracted with pypdf (attacks/pdf-attack.txt): 36 checked, 0 leaks. Two controls worked: B's own export contains its canary, and A's contains alnoor.\n\nDatabase as erp_app (attacks/db-app-role.txt):\n- With no tenant bound, 0 rows.\n- Bound to A: 100,005 users and 200,176 audit rows, 0 of them B's.\n- UPDATE and DELETE on B's rows changed 0 rows; an INSERT for B was refused by RLS.\n- row_security=off, SET ROLE erp_owner/postgres/erp_auth and DISABLE RLS were all refused.\n- All 17 tenant tables have RLS enabled and forced, and no erp role has bypassrls.\n- The only security-definer functions erp_app can run are resolve_session and the new 8-argument verify_sign_in.\n\nNo files or jobs exist beyond company logos, which the API attack covered."
+    },
+    {
+      "gate": "G1 gate catches tenant leaks planted in this piece's surface",
+      "status": "pass",
+      "evidence": "Plants: plants/apply-r12-plants.py and r12-plants.diff. The run was the full .NET stage through verify-slot (plants/planted-server-suite.log, plants/run-server/*.log), exit 1.\n\nL1: the new singleton ClientAddresses keeps a ConcurrentDictionary of the last e-mail to sign in from each address, in any workspace. The sign-in history then shows it beside each attempt. It was caught by two tests:\n- G1ProcessStateTests: 'singleton ...ClientAddresses.LastAccountAt: a read-only field that holds a mutable ConcurrentDictionary<String, String>';\n- G1HttpIsolationTests: 'Process-wide state changed while the tenants used the app: ...LastAccountAt[]: was admin.ar@bravo-..., now admin.ar.workspace.8619@alpha.example'."
+    },
+    {
+      "gate": "G2 permissions of the product as built (restricted roles, escalation, screens hide)",
+      "status": "pass",
+      "evidence": "Browser walk (walks/w1.txt, w2.txt; screenshots 02 and 03). A user created by keyboard (Alt+N, e-mail, Alt+O, 'read', Enter, Ctrl+Enter) with the Read-only role signs in with the set-up code and chooses a password. They then see:\n- no 'New user', and Alt+N opens nothing;\n- nothing in the palette for 'new';\n- a record with only Close and the tabs, and 0 editable inputs.\nAPI calls with their session: POST users 403, POST roles 403, PUT tenant 403, GET users and roles 200.\n\nWith Staff added in ALN-DXB only (walks/w5), 'What they can do' lists 10 permissions from 2 roles. Each names its granting role and '(only in ALN-DXB · Al Noor Trading LLC)'.\n\nThe G2 escalation and takeover suites ran green in verify (G2AccountTakeoverTests, G2PermissionTests, G2CompanyAccessGrantTests)."
+    },
+    {
+      "gate": "G2 gate catches missing permission checks planted in this piece's surface",
+      "status": "pass",
+      "evidence": "Server plants (same run):\n- S1: 'Allow sign-in again' (POST /users/{id}/unblock) without the target-within-caller check. Caught by G2AccountTakeoverTests.Acting_on_a_record_that_grants_access... ('unblock: aimed at a record granting everything by a user holding only [identity.users.update, ...] answered 204 (expected 403)'), by Nobody_resets_their_own_password... and by G1CompanyIsolationTests (the company X admin's unblock of an X+Y user answered 204).\n- S2: reset to a set-up code (password left out) skips the target check. Caught by G2AccountTakeoverTests ('[password left out]: aimed at a record granting everything by a user holding only [identity.users.resetPassword, ...] answered 200 (expected 403): {\"setupCode\":\"EZ4H-...\"}').\n- S3: this round's shared-address lockout bypass widened from unexpired set-up codes to any right password. Caught by G1SignInThrottleTests.A_set_up_code_still_signs_in_from_a_shared_address... ('Expected: TooManyRequests, Actual: OK').\n\nScreen plant U1: the Sign-in history tab is shown without identity.signIns.read. Two tests in screens.test.tsx fail, among them 'users: without identity.signIns.read there is no \"Sign-in history\"'. The unplanted control passes 153 of 153, and the identity plant self-test catches all 13 of its plants (plants/web-U1-planted.log, web-U1-control.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command runs the seeded demo",
+      "status": "pass",
+      "evidence": "Fresh clone of 2d46250. The run: ERP_PROJECT=c-p03-identity-r12, ports 20350/20351/20360/20361 overridden through the environment, through verify-slot.\n- 'slot 1 of 2 taken at 2026-10-19T01:28:56Z after waiting 2925 s'; 'verify passed in 3962 s'; 'Ratchet check passed'.\n- Processor time was 10,032 s against a maximum of 10,500 (dotnet 7,676, web 2,007, e2e 315, timing 35).\n- Wall time was not judged by the ratchet: load peaked at 75.3.\n\n./erp up with ERP_SEED_USERS_CSV served the seeded 100,005-user demo in 67 s."
+    },
+    {
+      "gate": "Rule gates (licences, decimal money, Arabic twins, audit)",
+      "status": "pass",
+      "evidence": "- The rule-gate tests passed in verify.\n- No dependency file changed since r11 (Directory.Packages.props, package.json files and lock files). No float or double column exists anywhere in the schema (attacks/audit-check.txt).\n- audit.entries recorded every identity write in my session with an actor: users, user_roles, user_company_roles, user_credentials, roles and sessions.\n- Sign-in attempts and failures are append-only history tables with no audit trigger, as before.\n- The ratchet only moved up: .NET 631 to 701, web 495 to 524, e2e 106 to 111, compare 390 to 415, and new G1/G2 counters.\n- Nothing under bar/ or in CLAUDE.md changed."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p03-identity-r12 ERP_HTTP_PORT=20350 ERP_DB_PORT=20351 ERP_VERIFY_HTTP_PORT=20360 ERP_VERIFY_DB_PORT=20361 ERP_VERIFY_LOG=<scratch>/verify-critic-p03-identity-r12.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1757,
+    "passed": 1757,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 3962
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 3962,
+    "evidence": "Fresh clone of 2d46250, one command: 'verify passed in 3962 s', timed from 'slot taken' at 01:28:56Z.\n\nCounts:\n- .NET 701, web unit 524, e2e 111, compare 415 and build 6, each at its ratchet minimum.\n- Up from round 11's 631, 495, 106 and 390.\n\nProcessor time was 10,032 s against a maximum of 10,500. ./erp up took 67 s to a running seeded demo. Log: verify-critic-p03-identity-r12.log."
+  },
+  "odoo": [
+    {
+      "task": "create-restricted-user (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 1.866,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 10.184,
+        "klm_seconds": 30.05
+      },
+      "notes": "Shipped drivers, blind, median of 3, on the shared Odoo rig (rig check passed: 100,000 or more rows in all 7 lists). See compare/comparisons/create-restricted-user.json. Ours was judged on its 'pointer' path against Odoo at its best on each metric. Ours wins every metric; human plus wait was 21.9 s against 39.3 s. No count metric tied at 0.\n\nThe all-keyboard path also wins (7 steps and 45 keys against 10 and 46), still by one keystroke."
+    },
+    {
+      "task": "find-user (find one user among 100,000)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 3,
+        "seconds": 0.792,
+        "klm_seconds": 8.29
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 2.092,
+        "klm_seconds": 10.35
+      },
+      "notes": "Shared dataset (ERP_SEED_USERS_CSV), shortest expert path in each, median of 3 (compare/comparisons/find-user.json). Ours was judged on its 'initials' path. Ours wins every metric; human plus wait was 8.59 s against 12.57 s.\n\nOurs' other paths lose on keystrokes to Odoo's 5: the new 'shortest' path (8 keys, though the best human time at 6.64 s), 'prefixes' (15) and 'enter' (21).\n\nOne of ours' runs errored inside the harness ('Target page, context or browser has been closed' in runner freshStart, palette path), and a fourth run replaced it.\n\nLive walk: typing the full name 'Majid Anil Pillai' listed exactly 1 user in about 0.86 s. The Arabic name 'ماجد أنيل بيلاي' also gives exactly 1 user, with dir=rtl."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p03-identity/r12/01-find-one-user-among-100000-en.jpg",
+    "gauntlet/evidence/p03-identity/r12/02-new-read-only-user-set-up-code-en.jpg",
+    "gauntlet/evidence/p03-identity/r12/03-read-only-user-record-no-actions-en.jpg",
+    "gauntlet/evidence/p03-identity/r12/04-sign-in-history-shared-gateway-en.jpg",
+    "gauntlet/evidence/p03-identity/r12/05-sign-in-history-shared-gateway-ar.jpg",
+    "gauntlet/evidence/p03-identity/r12/06-new-role-search-select-all-en.jpg",
+    "gauntlet/evidence/p03-identity/r12/07-new-role-search-select-all-ar.jpg",
+    "gauntlet/evidence/p03-identity/r12/08-what-they-can-do-company-role-en.jpg",
+    "gauntlet/evidence/p03-identity/r12/09-restricted-user-arabic-list-ar.jpg",
+    "gauntlet/evidence/p03-identity/r12/10-find-one-user-arabic-name-ar.jpg",
+    "gauntlet/evidence/p03-identity/r12/11-reset-password-set-up-code-keyboard-en.jpg",
+    "gauntlet/evidence/p03-identity/r12/12-owner-new-laptop-paused-by-anonymous-script-en.jpg"
+  ],
+  "biggest_gap": {
+    "title": "In the shipped deployment every client still has the gateway's address. Five anonymous wrong passwords keep a password user out on any new device for 15 minutes, and 30 anonymous requests a minute stop every sign-in in every workspace",
+    "detail": "Round 11's gap is only partly fixed. Two things now work, and the administrator can see what is happening:\n- A valid set-up code signs in while the gateway address is paused (attacks/setup-code-paused.txt: 409 'choose a new password', then 200).\n- A browser that signed in before (device cookie) still signs in (200).\n- The sign-in history and the paused list label 172.22.0.1 'shared gateway' in English and 'بوابة مشتركة' in Arabic. They tell the admin to give a new set-up code (screenshots 04 and 05).\n\nThe root cause is unchanged: the one-command deployment does not see real client addresses, and the fix covers only two kinds of client. An anonymous script sends 5 wrong passwords for the finance manager's e-mail. After that, their right password from a new laptop, a fresh browser or cleared cookies answers 429 for 15 minutes (Retry-After 900). The message says 'Too many failed sign-ins ... from this device', although that device never failed (screenshot 12). The script can repeat this every 15 minutes, indefinitely.\n\nThe only way back in is for an administrator to reset the user's password to a set-up code each time. That throws away their password, and it still does not help on the next new device.\n\nWorse, and new evidence this round: the sign-in rate limit (Erp:RateLimits:SignInPerMinute, 30, partitioned by remote address in ErpPlatform) also sees one client. 30 anonymous requests to /api/auth/sign-in at unknown addresses in 3.5 s were enough. After them, the next correct sign-ins of admin@gulfsteel.example and admin@alnoor.example from other browsers both answered 429 request.tooMany (attacks/global-rate.txt). In the shipped deployment, one script stops every user of every workspace from signing in. Without any attacker, a 40-person trading company signing in at 8 a.m. would also hit it.\n\nUAE trading and manufacturing companies often sit behind one office NAT and log in at shift start. Odoo behind its usual proxy setup does not fall into this, so this is the one thing that most holds p03 back.\n\nFix:\n- Ship the compose deployment with a reverse proxy that forwards the client address, with ERP_KNOWN_PROXIES set by default. Or publish the port with host networking or a proxy that preserves the source.\n- Partition both the pause and the rate limit by a stronger client key when the address is shared.\n- Add a test: behind one shared address, a second client with no device cookie still signs in with its right password after another client's 5 failures and 30 requests.",
+    "evidence": "1. ./erp up (any ports), then the probes:\n- node attacks/pause-dos.mjs: 'the owner from a new laptop (no device cookie), right password: 429 retry-after 900 ... from this device'. Paused clients: [{source: 172.22.0.1, kind: gateway, failures: 5}].\n- node attacks/setup-code-paused.mjs: the invitee's set-up code gives 409 then 200. A known device gives 200. 'viewer from a new laptop, right password: 429 retry-after 900'.\n- node attacks/global-rate.mjs: '30 sign-in attempts at unknown addresses in 3.5 s: {401: 30}', then 'admin@gulfsteel.example (right password, another browser): 429 request.tooMany' and 'admin@alnoor.example ...: 429'.\n2. Browser: node walks/w7.mjs. Screenshot 12 shows the finance manager on a fresh browser paused 'from this device' after 5 failures by 'curl/8.5.0'."
+  },
+  "other_findings": [
+    "Fixed since r11 and still fixed:\n- 'Roles in one company' now starts at 'Choose a role', and Add stays disabled until a role is chosen (walks/w5).\n- Enter on the focused method radio of 'Reset password…' (reached from the palette) now issues the set-up code (walks/w6, screenshot 11).\n- Matrix search plus 'Select all shown' ticks exactly the 9 view permissions in English ('view') and Arabic ('عرض') (walks/w4).\n- Copy role names each language in its own words: '(copy)' and '(نسخة)'.\n- Delete role works from the palette.",
+    "[route: p00-foundation] The sign-in rate limiter (ErpPlatform SignInRateLimit, 30 a minute, partitioned by remote address) puts every client behind the shipped compose gateway into one partition. One anonymous script empties it for all tenants (attacks/global-rate.txt). It is part of the biggest gap above, but the limiter's code is p00's.",
+    "Still open since round 9: with a record open at 1600 px, the users list truncates the English 'Language' header ('Langu…'; walks/w6 measures scrollWidth > clientWidth, screenshot 04). The Arabic headers fit.",
+    "The pause message says 'from this device' to a device that made no failure (screenshot 12). On a shared address it should say the address is shared and point to the administrator or a set-up code.",
+    "Keyboard-first margins are still thin:\n- The all-keyboard create-restricted-user path wins by one keystroke (45 against 46).\n- In find-user, only the 'initials' path (3 keys) wins; 'shortest' (8), 'prefixes' (15) and 'enter' (21) lose on keystrokes to Odoo's 5.",
+    "Instrument: one of three ours runs of find-user failed inside the harness ('page.evaluate: Target page, context or browser has been closed' at lib/runner.mjs freshStart, palette path; compare-run.log). The run was replaced by a fourth. Worth a look by p01.",
+    "Positive:\n- Arabic is right-to-left throughout, and a user set to Arabic signs in to dir=rtl (screenshot 09).\n- The effective-permission view names each granting role and its company (screenshot 08).\n- The set-up-code notice and 'Copy sign-in details' appear right after creation by keyboard.\n- No console errors or 5xx in any walk.\n- Audit rows for user_credentials redact the hash.",
+    "Critic housekeeping:\n- The planted .NET stage went through verify-slot (slot taken 02:35:01Z) after my demo was taken down; it ran beside my verify only.\n- The web plant ran in a toolbox container.\n- I removed my compose project, its image, the plant work volume, the python:3.12-slim image I pulled for PDF text extraction, the critic and plant clones, and the scratch outputs.\n- The shared Odoo rig was only read."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p03-identity/r12",
+  "evidence_dir": "gauntlet/evidence/p03-identity/r12"
+}

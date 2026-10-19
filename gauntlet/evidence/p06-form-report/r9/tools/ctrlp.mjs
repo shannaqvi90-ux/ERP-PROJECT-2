@@ -1,0 +1,24 @@
+// Critic p06 r9: does Ctrl+P on a report longer than the screen open the whole PDF?
+import { launch } from '/home/shan/critic/p06-form-report-r9-demo/gauntlet/compare/lib/browser.mjs';
+const BASE = 'http://localhost:20650';
+const browser = await launch();
+const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+const page = await ctx.newPage();
+const pages = []; ctx.on('page', p => pages.push(p));
+const reqs = []; ctx.on('request', r => { if (r.url().includes('format=pdf')) reqs.push(r.url()); });
+await page.goto(BASE + '/'); await page.locator('input[name="email"]').waitFor();
+await page.keyboard.type('admin@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('nav[aria-label]').first().waitFor();
+await page.goto(BASE + '/reports/catalog?report=identity.usersByRole&run=1');
+await page.getByTestId('report-document').locator('.report-count').waitFor({ timeout: 60000 });
+console.log('focus before', await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80)));
+await page.keyboard.press('Control+p'); await page.waitForTimeout(3000);
+console.log('after Control+p: new pages', pages.length, pages.map(p => p.url()), 'pdf requests', reqs);
+await page.keyboard.press('?'); await page.waitForTimeout(600);
+const help = await page.getByRole('dialog').textContent().catch(() => '');
+console.log('help mentions print all:', /Print all/.test(help), help.match(/.{0,40}Print all.{0,40}/)?.[0]);
+await page.keyboard.press('Escape');
+await page.locator('[data-field="role"] input').focus().catch(() => {});
+await page.keyboard.press('Control+p'); await page.waitForTimeout(3000);
+console.log('after Control+p from a parameter field: new pages', pages.length, 'pdf requests', reqs.length);
+await browser.close();

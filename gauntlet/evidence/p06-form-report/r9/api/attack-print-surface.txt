@@ -1,0 +1,5 @@
+victim tenant answer keys id,code,nameEn,nameAr,status,defaultLanguage,timeZone,weekStart,timeZones,version,everyCompany
+victim companies 4 branches 12 roles 4 users 5 tenant 0190a000-0000-7000-8000-000000000001 | attacker companies GSF-RAK,GSF-SHJ
+attacker catalog reports tenancy.companyProfile(company) tenancy.branchDirectory(company,emirate,includeInactive) identity.usersByRole(role,status,userLanguage,signedInSince) identity.roleSummary(kind) lists tenancy.companies,tenancy.branches,tenancy.access,identity.users,identity.roles
+requests 10208 statuses {"200":4520,"400":5040,"404":640,"GET-record 404":4,"PUT-record 400":4,"PUT-random 400":4}
+leaks 0 victim rows changed 0
