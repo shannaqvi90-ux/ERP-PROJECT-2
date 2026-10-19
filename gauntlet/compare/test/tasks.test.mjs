@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { PRODUCT_IDS, describe, driverPath, loadDriver, loadTasks } from '../lib/registry.mjs';
-import { endStateOf, endStateProblems, runTask } from '../lib/runner.mjs';
+import { endStateOf, endStateProblems, prefixProblems, runTask } from '../lib/runner.mjs';
 import { START_KINDS } from '../lib/start.mjs';
 import { loadNeedles } from '../data/generate.mjs';
 import { HARNESS_DIR } from '../lib/config.mjs';
@@ -156,4 +156,15 @@ test('every task that saves declares its end state (the read and the parts that 
     }
   }
   assert.ok(declared >= 13 + 6, `only ${declared} built drivers of tasks that save have a declared end state`);
+});
+
+// Round 13 (lead decision on critic p06 r7's question): a declared prefix is an international dialling
+// code that the product's own code sets for every user and record of the field's kind.
+test('every declared field prefix is a dialling code the product\'s code sets as a constant', async () => {
+  let declared = 0;
+  for (const t of await loadTasks()) {
+    assert.deepEqual(prefixProblems(t), [], t.id);
+    declared += Object.values(t.prefixes || {}).flat().length;
+  }
+  assert.ok(declared >= 1, 'the edit-and-save task declares ours\' +971');
 });

@@ -33,8 +33,9 @@
 //      with M, in both products alike.
 //      Card, Moran & Newell's heuristic rules 1 and 2 (an anticipated operator, a cognitive unit)
 //      are the basis; the derivation is deliberately simple so it is the same for both products.
-//   2. A click is P + BB. A double click is P + BBBB. Choosing a file in the file dialog is
-//      modelled as a double click (P + BBBB).
+//   2. A click is P + BB. A double click is P + BBBB. A triple click (round 13: select a field's
+//      whole content) is P + BBBBBB. Choosing a file in the file dialog is modelled as a double
+//      click (P + BBBB).
 //   3. Typing text is one K per character, plus one K per character that needs Shift.
 //   4. A key chord is one K per key in the chord (Control+K is two keystrokes).
 //   5. One H each time the operating hand moves between mouse and keyboard.
@@ -76,7 +77,7 @@ export function keystrokesForChord(chord) {
 /** Which hand-device a step uses. */
 export function deviceOf(kind) {
   if (kind === 'device') return 'authenticator';
-  return kind === 'click' || kind === 'double-click' || kind === 'file-pick' || kind === 'scroll' ? 'mouse' : 'keyboard';
+  return kind === 'click' || kind === 'double-click' || kind === 'triple-click' || kind === 'file-pick' || kind === 'scroll' ? 'mouse' : 'keyboard';
 }
 
 /**
@@ -93,6 +94,7 @@ export function operatorsForStep(step, prevDevice) {
   switch (step.kind) {
     case 'click': case 'scroll': ops.P += 1; ops.B += 2; break;
     case 'double-click': case 'file-pick': ops.P += 1; ops.B += 4; break;
+    case 'triple-click': ops.P += 1; ops.B += 6; break;
     case 'type': case 'key': case 'request': ops.K += step.keystrokes; break;
     case 'device': ops.K += 1; break;
     default: throw new Error(`unknown step kind: ${step.kind}`);
@@ -107,7 +109,7 @@ export function secondsFor(ops) {
 const ARROW = /^Arrow(Up|Down|Left|Right)$/;
 const REPEATABLE = /^(Arrow(Up|Down|Left|Right)|Tab|Shift\+Tab|PageUp|PageDown|Backspace|Delete)$/;
 const SELECT_ALL = /^(Control|Meta)\+a$/i;
-const isClick = s => s?.kind === 'click' || s?.kind === 'double-click';
+const isClick = s => s?.kind === 'click' || s?.kind === 'double-click' || s?.kind === 'triple-click';
 
 /** Whether `step` continues `prev` (no M before it): rule 1 above, from the steps alone. */
 export function continues(prev, step) {
