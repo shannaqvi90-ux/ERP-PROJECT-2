@@ -164,5 +164,18 @@ New tests:
 - one end-to-end test (renders users by role, about 2,000 rows, on screen and as a PDF).
 
 Estimated at 25 to 35 processor seconds in all. Against that, every PDF the gates print now lays
-out each cell once, not once per word. Those gates print several thousand PDFs per verify. The
-measured total is in the round's notes.
+out each cell once, not once per word. Those gates print several thousand PDFs per verify. 
+Measured: this branch's `./erp verify` through the verify slot (slot taken
+2026-10-18T23:23:47Z) passed in 4,028 s wall time on a busy machine (load up to 76 on 16 CPUs).
+It used **10,182 processor seconds** (dotnet 7,700, web 2,038, e2e 405, timing 39) against the
+10,500 s maximum. That is 76 s less than round 8's 10,258 s, despite the added tests. Counts: 726
+.NET, 523 web unit, 112 e2e, 415 compare and 6 build tests, all passing. The suite minimums are
+raised to these counts.
+
+An earlier run on this branch failed one gate, and the failure was right. The G1 attack's tenant B
+creates companies and branches from the API description: every field follows its documented
+pattern, with a unique suffix where the pattern allows one. The documented phone pattern did not
+yet carry the UAE length rule, so `+971 4 123 4567-<run>-<n>` passed the documented pattern, and
+the server then refused it. The documented pattern (`TenancyValidation.PhonePattern`) now carries
+the rule. A test holds it to the server's two checks on 4,000 generated numbers, so the API
+description and the server accept exactly the same numbers. The gate was not changed.
