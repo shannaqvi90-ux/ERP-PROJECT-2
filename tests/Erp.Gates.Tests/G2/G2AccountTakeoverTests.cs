@@ -765,11 +765,11 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
             return null;
         }
         var k = 0;
-        var body = openApi.BuildBody(schema, (type, format, name) =>
+        var body = openApi.BuildBody(schema, (leaf, type, format, name) =>
         {
             k++;
             var lower = name?.ToLowerInvariant() ?? "";
-            return type switch
+            JsonNode? value = type switch
             {
                 "string" when format == "uuid" => null,
                 "string" when lower.Contains("email") => $"g2.{tag}.{k}@takeover.example",
@@ -780,6 +780,8 @@ public sealed class G2AccountTakeoverTests(TakeoverFixture fixture) : IClassFixt
                 "boolean" => true,
                 _ => null,
             };
+            // A text field with a documented pattern (a device code) takes the documented example.
+            return value is not null && openApi.Resolve(leaf).TryGetProperty("pattern", out _) ? openApi.Conform(leaf, value) : value;
         }) as JsonObject ?? [];
         foreach (var (field, value) in body.ToList())
         {

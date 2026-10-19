@@ -23,7 +23,7 @@ tenancy.workplace.switch tenancy.user_workplaces insert,update,delete *  # the c
 # Identity: users, roles, the caller's own profile.
 identity.users.create identity.users insert *  # the new account
 identity.users.create identity.user_credentials insert *  # its first password
-identity.users.update identity.users update display_name,display_name_ar,email,email_normalized,language,is_active,sign_in_unblocked_at  # the account's names, e-mail, language, active flag (one or all that match) and unblocking its sign-in; never its password
+identity.users.update identity.users update display_name,display_name_ar,email,email_normalized,language,is_active,sign_in_unblocked_at,device_approval_hash,device_approval_until  # the account's names, e-mail, language, active flag (one or all that match), unblocking its sign-in and letting one device of it past a pause on a shared address; never its password
 identity.users.update tenancy.user_workplaces insert,update *  # the company a user starts in (PUT /api/identity/users/{id}/default-company, through the tenancy module's contract)
 identity.users.delete identity.users delete *  # the account removed
 identity.users.delete identity.user_credentials delete *  # with its password
@@ -31,7 +31,7 @@ identity.users.resetPassword identity.user_credentials update *  # the new passw
 identity.roles.create identity.roles insert *  # the new role (or a copy)
 identity.roles.update identity.roles update *  # the role's names and permissions
 identity.roles.delete identity.roles delete *  # the role removed
-identity.profile.update identity.users update language,numerals  # the caller's own language and digits; never their name, e-mail, active flag or anyone else's row
+identity.profile.update identity.users update language,numerals,device_approval_hash,device_approval_until  # the caller's own language and digits, and letting one of their own devices past a pause on a shared address; never their name, e-mail, active flag or anyone else's row
 identity.profile.update identity.passkeys insert,update,delete *  # the caller's own passkeys
 
 # Lists: a reader's own saved views (tests/Gates/read-permission-writes.txt), shared views.
