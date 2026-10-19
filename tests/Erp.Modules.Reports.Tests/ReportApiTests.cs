@@ -208,6 +208,88 @@ public sealed class ReportApiTests(ReportsFixture fixture) : IClassFixture<Repor
         Assert.Equal(HttpStatusCode.BadRequest, badFilter.StatusCode);
     }
 
+    /// <summary>
+    /// Critic p06 round 8: every PDF and print stopped at the 2,000 rows a screen holds, so a long
+    /// list could not be printed whole. The screen still holds its first rows, and says that the PDF
+    /// and the exports hold all of them; the PDF prints every row (here past a screen limit of 5).
+    /// A file stops only at its own limit, and then says so (here a file limit of 7).
+    /// </summary>
+    [Fact]
+    public async Task A_pdf_holds_every_row_the_screen_leaves_out_and_a_file_says_where_it_stops()
+    {
+        const string query = "/api/reports/lists/identity.users?columns=email,displayName&sort=email";
+        int total;
+        string lastEmail;
+        await using (var screen = Env.OverHost(new Dictionary<string, string?> { ["Erp:Reports:ScreenRows"] = "5" }))
+        {
+            using var admin = await screen.SignInAsync(screen.Email(screen.TenantA, "admin"));
+            var json = await admin.GetFromJsonAsync<JsonElement>(query);
+            total = json.GetProperty("matchCount").GetInt32();
+            Assert.True(total > 7, $"{total} users");
+            Assert.Equal(5, json.GetProperty("rowCount").GetInt32());
+            Assert.True(json.GetProperty("truncated").GetBoolean());
+            Assert.True(json.GetProperty("filesHoldAll").GetBoolean());
+            Assert.Equal($"The first 5 of {total} rows are shown here; the PDF, Excel and CSV hold all {total}.", json.GetProperty("rowCountText").GetString());
+            var arabic = await admin.GetFromJsonAsync<JsonElement>(query + "&language=ar");
+            Assert.Equal($"تُعرض هنا أول 5 من أصل {total} صفًا؛ وملف PDF ومصنف Excel وملف CSV تضم الصفوف كلها ({total}).", arabic.GetProperty("rowCountText").GetString());
+
+            var csv = Encoding.UTF8.GetString(await admin.GetByteArrayAsync(query + "&format=csv"))
+                .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+            Assert.Equal(total + 1, csv.Length);
+            lastEmail = csv[^1].Split(',')[0];
+            using var pdf = await admin.GetAsync(query + "&format=pdf");
+            Assert.Equal(HttpStatusCode.OK, pdf.StatusCode);
+            var text = PdfText.Of(await pdf.Content.ReadAsByteArrayAsync());
+            // Every row, the last one included, and the count of them all.
+            Assert.Contains(lastEmail, text, StringComparison.Ordinal);
+            Assert.Contains($"{total} rows", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("narrow the parameters", text, StringComparison.Ordinal);
+
+            // A report's PDF holds every row too, and its document on screen says so.
+            var report = await admin.GetFromJsonAsync<JsonElement>("/api/reports/run/identity.usersByRole?groupBy=");
+            Assert.True(report.GetProperty("rowCount").GetInt32() <= 5);
+            var reportPdf = PdfText.Of(await admin.GetByteArrayAsync("/api/reports/run/identity.usersByRole?groupBy=&format=pdf"));
+            Assert.Contains($"{report.GetProperty("matchCount").GetInt32()} rows", reportPdf, StringComparison.Ordinal);
+        }
+        await using (var files = Env.OverHost(new Dictionary<string, string?> { ["Erp:Reports:ScreenRows"] = "5", ["Erp:Reports:FileRows"] = "7" }))
+        {
+            using var admin = await files.SignInAsync(files.Email(files.TenantA, "admin"));
+            var json = await admin.GetFromJsonAsync<JsonElement>(query);
+            Assert.False(json.GetProperty("filesHoldAll").GetBoolean());
+            Assert.Equal($"The first 5 of {total} rows; narrow the parameters to print the rest.", json.GetProperty("rowCountText").GetString());
+            var text = PdfText.Of(await admin.GetByteArrayAsync(query + "&format=pdf"));
+            Assert.Contains($"The first 7 of {total} rows; narrow the parameters to print the rest.", text, StringComparison.Ordinal);
+            Assert.DoesNotContain(lastEmail, text, StringComparison.Ordinal);
+            var csv = Encoding.UTF8.GetString(await admin.GetByteArrayAsync(query + "&format=csv")).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+            Assert.Equal(1 + 7 + 1, csv.Length);
+        }
+    }
+
+    /// <summary>Critic p06 round 8: a company's profile printed under the working company's
+    /// letterhead. A document about one company is issued under that company's legal name, in the
+    /// document's language.</summary>
+    [Fact]
+    public async Task A_company_profile_is_issued_under_the_company_it_describes()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=10")).GetProperty("items").EnumerateArray().ToList();
+        Assert.True(companies.Count >= 2, $"{companies.Count} companies");
+        var issuers = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var company in companies)
+        {
+            var id = company.GetProperty("id").GetGuid();
+            var record = await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{id}");
+            var english = record.GetProperty("legalNameEn").GetString()!;
+            var arabicName = record.TryGetProperty("legalNameAr", out var ar) && ar.ValueKind == JsonValueKind.String && ar.GetString()!.Length > 0 ? ar.GetString()! : english;
+            var en = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={id}&language=en");
+            Assert.Equal(english, en.GetProperty("issuer").GetString());
+            var inArabic = await admin.GetFromJsonAsync<JsonElement>($"/api/reports/run/tenancy.companyProfile?company={id}&language=ar");
+            Assert.Equal(arabicName, inArabic.GetProperty("issuer").GetString());
+            issuers.Add(english);
+        }
+        Assert.Equal(companies.Count, issuers.Count);
+    }
+
     [Fact]
     public async Task Exports_carry_the_rows_as_csv_and_as_a_workbook()
     {

@@ -1,0 +1,19 @@
+3 x USD 1.00 @3.6725 -> base 11.02, stated 11.02
+good: refused JsonException: The base amount 36.7250 is not the amount times the rate rounded once (36.73).
+lowercase currency: refused JsonException: 'usd' is not an ISO 4217 currency code. (Parameter 'code')
+negative rate: refused JsonException: Exchange rate must be positive. (Parameter 'exchangeRate')
+base disagrees: refused JsonException: The base amount 1 is not the amount times the rate rounded once (36.73).
+zero rate: refused JsonException: Exchange rate must be positive. (Parameter 'exchangeRate')
+numbers not strings: refused JsonException: The base amount 36.725 is not the amount times the rate rounded once (36.73).
+float exponent: refused JsonException: Expected a decimal number as a string, for example "1234.50".
+missing base: ACCEPTED amount 10.00 USD rate 3.6725 base 36.73 AED
+duplicate amount: refused JsonException: The money field 'amount' is given twice.
+same currency rate 2: refused JsonException: An amount in the base currency must use rate 1. (Parameter 'exchangeRate')
+unknown currency: ACCEPTED amount 10.00 XYZ rate 1 base 10.00 AED
+JPY fraction: refused JsonException: The base amount 0.2625 is not the amount times the rate rounded once (0.26).
+default(Money).Add refused InvalidOperationException
+line.Add(default) refused InvalidOperationException
+Serialize(default) refused JsonException
+USD+EUR refused InvalidOperationException
+different-rate Add refused InvalidOperationException: Only amounts in the same currency at the same rate, against the same base currency, can be added.
+Create 1e-11 refused ArgumentException

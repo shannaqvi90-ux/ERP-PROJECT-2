@@ -51,6 +51,8 @@ export type ReportDocument = {
   matchCount: number;
   rowCountText: string;
   truncated: boolean;
+  /** On screen: the document stopped at the screen's rows while its PDF and exports hold every row. */
+  filesHoldAll?: boolean;
   printedAt: string;
   printedAtText: string;
   printedBy: string;

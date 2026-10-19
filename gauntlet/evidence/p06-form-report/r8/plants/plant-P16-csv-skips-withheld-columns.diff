@@ -1,0 +1,17 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 1cf3f41d..c6e3914d 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -203,7 +203,11 @@ internal static class ReportEndpoints
+         // Another area's data is judged in the one company a company's document is about, or in
+         // every company the report reads (HeldWhereReadAsync).
+         var company = definition.CompanyParameter is { } named && parameters.TryGetValue(named, out var value) && value is Guid id ? id : (Guid?)null;
+-        var withheld = await WithheldAsync(definition, http, company, cancellationToken);
++        // PLANT P16 (critic p06 r8): a CSV export is "only data rows for another program", so the
++        // columns of another area are not withheld from it.
++        var withheld = string.Equals(http.Request.Query["format"].ToString(), "csv", StringComparison.OrdinalIgnoreCase)
++            ? new HashSet<string>(StringComparer.Ordinal)
++            : await WithheldAsync(definition, http, company, cancellationToken);
+         var groupable = definition.Columns.Where(c => c.Groupable && !withheld.Contains(c.Key)).Select(c => c.Key).ToList();
+         var defaultGroupBy = definition.DefaultGroupBy is { } group && !withheld.Contains(group) ? group : null;
+         var common = await CommonAsync(http, validator, groupable, defaultGroupBy, tenants, cancellationToken);

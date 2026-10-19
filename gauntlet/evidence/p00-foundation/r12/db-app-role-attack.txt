@@ -1,0 +1,83 @@
+SET
+ current_user 
+--------------
+ erp_app
+(1 row)
+
+    ?column?     | count 
+-----------------+-------
+ users no tenant |     0
+(1 row)
+
+    ?column?     | count 
+-----------------+-------
+ audit no tenant |     0
+(1 row)
+
+      ?column?       | count 
+---------------------+-------
+ companies no tenant |     0
+(1 row)
+
+     ?column?      | count 
+-------------------+-------
+ tenants no tenant |     0
+(1 row)
+
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+       ?column?       | count 
+----------------------+-------
+ session-level tenant |     0
+(1 row)
+
+BEGIN
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-000000000000
+(1 row)
+
+         ?column?         | count 
+--------------------------+-------
+ tx tenant without marker |     0
+(1 row)
+
+ROLLBACK
+ERROR:  permission denied for table sign_in_secret
+ERROR:  permission denied for table sign_in_failures
+ERROR:  must be owner of table users
+ count 
+-------
+   551
+(1 row)
+
+ERROR:  permission denied for view pg_stats
+ERROR:  new row violates row-level security policy for table "roles"
+RESET
+SET
+    ?column?    | count  
+----------------+--------
+ erp_auth users | 101016
+(1 row)
+
+ERROR:  permission denied for table roles
+ERROR:  permission denied for schema audit
+LINE 1: select count(*) from audit.entries;
+                             ^
+RESET
+  ?column?  |                  id                  |   code    
+------------+--------------------------------------+-----------
+ tenant ids | 0190a000-0000-7000-8000-000000000001 | alnoor
+ tenant ids | 0190a000-0000-7000-8000-000000000002 | gulfsteel
+(2 rows)
+
+ERROR:  permission denied for table pg_class
+ count 
+-------
+   551
+(1 row)
+
+ERROR:  permission denied for view pg_stat_user_tables

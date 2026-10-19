@@ -1,0 +1,196 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.25]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.68]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.89]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:06.88]     Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [FAIL]
+[xUnit.net 00:00:06.88]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:06.88]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:06.88]       HTTP: GET /api/shell/badges: declares no permission
+[xUnit.net 00:00:06.88]       Stack Trace:
+[xUnit.net 00:00:06.88]         
+[xUnit.net 00:00:06.88]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:06.88]         /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(269,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:06.88]         /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(222,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:06.88]         /work/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:06.88]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:06.88]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:06.88]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:06.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.88]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:06.88]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:06.88]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:06.88]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:06.88]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:06.88]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:06.88]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(129,0): at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:06.88]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(139,0): at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:06.88]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(91,0): at Erp.Testing.ErpTestEnvironment.<>c__DisplayClass34_0.<<StartGateAsync>b__0>d.MoveNext()
+[xUnit.net 00:00:06.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.88]         /work/tests/Erp.Testing/TestDatabaseServer.cs(160,0): at Erp.Testing.TestDatabaseServer.<>c__DisplayClass25_0.<<GateTemplateAsync>b__3>d.MoveNext()
+[xUnit.net 00:00:06.88]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.88]         /work/tests/Erp.Testing/TestDatabaseServer.cs(165,0): at Erp.Testing.TestDatabaseServer.GateTemplateAsync(IDictionary`2 settings, Func`2 seed)
+[xUnit.net 00:00:06.88]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(88,0): at Erp.Testing.ErpTestEnvironment.StartGateAsync(IDictionary`2 settings)
+[xUnit.net 00:00:06.88]         /work/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:06.89]     Erp.Gates.Tests.Critic.CriticR12Proof.Update_alone_does_not_open_reads [FAIL]
+[xUnit.net 00:00:06.89]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:06.89]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:06.89]       HTTP: GET /api/shell/badges: declares no permission
+[xUnit.net 00:00:06.89]       Stack Trace:
+[xUnit.net 00:00:06.89]         
+[xUnit.net 00:00:06.89]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:06.89]         /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(269,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:06.89]         /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(222,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:06.89]         /work/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:06.89]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:06.89]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:06.89]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:06.89]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:06.89]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:06.89]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(129,0): at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:06.89]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(139,0): at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:06.89]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(91,0): at Erp.Testing.ErpTestEnvironment.<>c__DisplayClass34_0.<<StartGateAsync>b__0>d.MoveNext()
+[xUnit.net 00:00:06.89]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.89]         /work/tests/Erp.Testing/TestDatabaseServer.cs(160,0): at Erp.Testing.TestDatabaseServer.<>c__DisplayClass25_0.<<GateTemplateAsync>b__3>d.MoveNext()
+[xUnit.net 00:00:06.89]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.89]         /work/tests/Erp.Testing/TestDatabaseServer.cs(165,0): at Erp.Testing.TestDatabaseServer.GateTemplateAsync(IDictionary`2 settings, Func`2 seed)
+[xUnit.net 00:00:06.89]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(88,0): at Erp.Testing.ErpTestEnvironment.StartGateAsync(IDictionary`2 settings)
+[xUnit.net 00:00:06.89]         /work/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:06.89]     Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [FAIL]
+[xUnit.net 00:00:06.89]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+[xUnit.net 00:00:06.89]       ---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+[xUnit.net 00:00:06.89]       HTTP: GET /api/shell/badges: declares no permission
+[xUnit.net 00:00:06.89]       Stack Trace:
+[xUnit.net 00:00:06.89]         
+[xUnit.net 00:00:06.89]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:06.89]         /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(269,0): at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app)
+[xUnit.net 00:00:06.89]         /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs(222,0): at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app)
+[xUnit.net 00:00:06.89]         /work/src/Host/Erp.Host/Program.cs(8,0): at Program.<Main>$(String[] args)
+[xUnit.net 00:00:06.89]            at Program.<Main>(String[] args)
+[xUnit.net 00:00:06.89]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:06.89]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:06.89]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:06.89]            at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+[xUnit.net 00:00:06.89]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+[xUnit.net 00:00:06.90]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+[xUnit.net 00:00:06.90]            at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(129,0): at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(139,0): at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings)
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(91,0): at Erp.Testing.ErpTestEnvironment.<>c__DisplayClass34_0.<<StartGateAsync>b__0>d.MoveNext()
+[xUnit.net 00:00:06.90]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Testing/TestDatabaseServer.cs(160,0): at Erp.Testing.TestDatabaseServer.<>c__DisplayClass25_0.<<GateTemplateAsync>b__3>d.MoveNext()
+[xUnit.net 00:00:06.90]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Testing/TestDatabaseServer.cs(165,0): at Erp.Testing.TestDatabaseServer.GateTemplateAsync(IDictionary`2 settings, Func`2 seed)
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Testing/ErpTestEnvironment.cs(88,0): at Erp.Testing.ErpTestEnvironment.StartGateAsync(IDictionary`2 settings)
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(17,0): at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync()
+[xUnit.net 00:00:06.90]     [Test Assembly Cleanup Failure (/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll)] Xunit.Sdk.TestPipelineException
+[xUnit.net 00:00:06.90]       Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in DisposeAsync
+[xUnit.net 00:00:06.90]       ---- System.NullReferenceException : Object reference not set to an instance of an object.
+[xUnit.net 00:00:06.90]       Stack Trace:
+[xUnit.net 00:00:06.90]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:06.90]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:06.90]         /work/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs(21,0): at Erp.Gates.Tests.Infrastructure.GateFixture.DisposeAsync()
+[xUnit.net 00:00:06.90]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/shell/badges: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 269
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 222
+   at Program.<Main>$(String[] args) in /work/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 129
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 139
+   at Erp.Testing.ErpTestEnvironment.<>c__DisplayClass34_0.<<StartGateAsync>b__0>d.MoveNext() in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 91
+--- End of stack trace from previous location ---
+   at Erp.Testing.TestDatabaseServer.<>c__DisplayClass25_0.<<GateTemplateAsync>b__3>d.MoveNext() in /work/tests/Erp.Testing/TestDatabaseServer.cs:line 160
+--- End of stack trace from previous location ---
+   at Erp.Testing.TestDatabaseServer.GateTemplateAsync(IDictionary`2 settings, Func`2 seed) in /work/tests/Erp.Testing/TestDatabaseServer.cs:line 165
+   at Erp.Testing.ErpTestEnvironment.StartGateAsync(IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 88
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /work/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Update_alone_does_not_open_reads [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/shell/badges: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 269
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 222
+   at Program.<Main>$(String[] args) in /work/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 129
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 139
+   at Erp.Testing.ErpTestEnvironment.<>c__DisplayClass34_0.<<StartGateAsync>b__0>d.MoveNext() in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 91
+--- End of stack trace from previous location ---
+   at Erp.Testing.TestDatabaseServer.<>c__DisplayClass25_0.<<GateTemplateAsync>b__3>d.MoveNext() in /work/tests/Erp.Testing/TestDatabaseServer.cs:line 160
+--- End of stack trace from previous location ---
+   at Erp.Testing.TestDatabaseServer.GateTemplateAsync(IDictionary`2 settings, Func`2 seed) in /work/tests/Erp.Testing/TestDatabaseServer.cs:line 165
+   at Erp.Testing.ErpTestEnvironment.StartGateAsync(IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 88
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /work/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+---- System.InvalidOperationException : Endpoint authorisation is incomplete:
+HTTP: GET /api/shell/badges: declares no permission
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 269
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /work/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 222
+   at Program.<Main>$(String[] args) in /work/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 129
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 139
+   at Erp.Testing.ErpTestEnvironment.<>c__DisplayClass34_0.<<StartGateAsync>b__0>d.MoveNext() in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 91
+--- End of stack trace from previous location ---
+   at Erp.Testing.TestDatabaseServer.<>c__DisplayClass25_0.<<GateTemplateAsync>b__3>d.MoveNext() in /work/tests/Erp.Testing/TestDatabaseServer.cs:line 160
+--- End of stack trace from previous location ---
+   at Erp.Testing.TestDatabaseServer.GateTemplateAsync(IDictionary`2 settings, Func`2 seed) in /work/tests/Erp.Testing/TestDatabaseServer.cs:line 165
+   at Erp.Testing.ErpTestEnvironment.StartGateAsync(IDictionary`2 settings) in /work/tests/Erp.Testing/ErpTestEnvironment.cs:line 88
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /work/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+
+Test Run Failed.
+Total tests: 3
+     Failed: 3
+ Total time: 7.3368 Seconds

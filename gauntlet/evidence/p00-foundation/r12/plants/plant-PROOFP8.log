@@ -1,0 +1,44 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.28]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.70]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.92]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Critic.CriticR12Proof.Update_alone_does_not_open_reads [1 s]
+[xUnit.net 00:00:19.31]     Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [FAIL]
+[xUnit.net 00:00:19.31]       GET role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Made by creator","nameAr":"أنشأه المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":415626
+[xUnit.net 00:00:19.31]       PUT role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Changed by creator without update","nameAr":"غيّره المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":1541161943}
+[xUnit.net 00:00:19.32]       POST copy -> 201
+[xUnit.net 00:00:19.32]       DELETE role -> 204 
+[xUnit.net 00:00:19.32]       Stack Trace:
+[xUnit.net 00:00:19.32]         /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs(48,0): at Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it()
+[xUnit.net 00:00:19.32]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:19.32]       Output:
+[xUnit.net 00:00:19.32]         GET role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Made by creator","nameAr":"أنشأه المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":415626
+[xUnit.net 00:00:19.32]         PUT role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Changed by creator without update","nameAr":"غيّره المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":1541161943}
+[xUnit.net 00:00:19.32]         POST copy -> 201
+[xUnit.net 00:00:19.32]         DELETE role -> 204 
+[xUnit.net 00:00:19.73]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [601 ms]
+  Error Message:
+   GET role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Made by creator","nameAr":"أنشأه المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":415626
+PUT role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Changed by creator without update","nameAr":"غيّره المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":1541161943}
+POST copy -> 201
+DELETE role -> 204 
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it() in /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs:line 48
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ GET role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Made by creator","nameAr":"أنشأه المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":415626
+ PUT role -> 200 {"id":"01a14fd7-b8c4-7066-af0c-60ac8b5d7bd1","nameEn":"Changed by creator without update","nameAr":"غيّره المنشئ","permissions":[],"isSystem":false,"userCount":0,"version":1541161943}
+ POST copy -> 201
+ DELETE role -> 204 
+
+
+  Passed Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [149 ms]
+
+Test Run Failed.
+Total tests: 3
+     Passed: 2
+     Failed: 1
+ Total time: 20.1961 Seconds

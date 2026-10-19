@@ -388,7 +388,15 @@ internal static class IdentitySql
     /// attacker nothing an unknown address would not. Failed and inactive attempts count alike:
     /// a deactivated account pauses exactly as an unknown address does.
     /// </summary>
-    public const string PauseByAddressUp = """
+    public const string PauseByAddressUp = PauseByAddressTable + """
+        GRANT CREATE ON SCHEMA identity TO erp_auth;
+        SET LOCAL ROLE erp_auth;
+        DROP FUNCTION identity.verify_sign_in(text, text[], text, text, text, integer, integer);
+
+        """ + PauseByAddressFunction;
+
+    /// <summary>The platform table of counted failures (<see cref="PauseByAddressUp"/>).</summary>
+    private const string PauseByAddressTable = """
         CREATE TABLE identity.sign_in_failures (
             key bytea NOT NULL CHECK (length(key) = 32),
             occurred_at timestamptz NOT NULL);
@@ -397,10 +405,11 @@ internal static class IdentitySql
         REVOKE ALL ON identity.sign_in_failures FROM PUBLIC;
         GRANT SELECT, INSERT, DELETE ON identity.sign_in_failures TO erp_auth;
 
-        GRANT CREATE ON SCHEMA identity TO erp_auth;
-        SET LOCAL ROLE erp_auth;
-        DROP FUNCTION identity.verify_sign_in(text, text[], text, text, text, integer, integer);
+        """;
 
+    /// <summary>The reviewed sign-in function of <see cref="PauseByAddressUp"/> (seven arguments),
+    /// created as <c>erp_auth</c> (the caller sets the role), with its grants.</summary>
+    private const string PauseByAddressFunction = """
         -- Sign-in in two calls, so the application never reads a hash:
         --   p_proofs NULL: the hashing parameters (algorithm$cost$salt) of each account with the
         --     address, or one decoy keyed by sign_in_secret when there is none (the same every
@@ -683,4 +692,213 @@ internal static class IdentitySql
         GRANT EXECUTE ON FUNCTION identity.verify_sign_in(text, text[], text, text, text, integer, integer) TO erp_app;
         DROP TABLE identity.sign_in_failures;
         """;
+
+    /// <summary>
+    /// A set-up code still signs in from a shared address while sign-in from that address is
+    /// paused (critic p03 round 11): behind the shipped compose gateway every client has the same
+    /// address, so five anonymous wrong passwords kept a newly invited person (who has a set-up
+    /// code and, on a fresh browser, no device of the account) out for as long as anyone kept
+    /// failing. The application passes <c>p_shared</c> when the client's address is one many
+    /// clients share and the browser is not a known device of the account. Only a valid,
+    /// unexpired set-up code (59 random bits, 168 hours) gets past the pause, and from a shared
+    /// address every client together is held to the sign-in rate limit of that address; a wrong
+    /// code from a paused client answers exactly as before. Passwords, temporary passwords and
+    /// every client with an address of its own are paused exactly as before.
+    /// </summary>
+    public const string SetupCodeFromSharedAddressUp = """
+        GRANT CREATE ON SCHEMA identity TO erp_auth;
+        SET LOCAL ROLE erp_auth;
+        DROP FUNCTION identity.verify_sign_in(text, text[], text, text, text, integer, integer);
+
+        -- Sign-in in two calls, so the application never reads a hash:
+        --   p_proofs NULL: the hashing parameters (algorithm$cost$salt) of each account with the
+        --     address, or one decoy keyed by sign_in_secret when there is none (the same every
+        --     time, so it cannot be told apart from a real account by asking twice).
+        --   p_proofs given (the application's PBKDF2 of the typed password under each salt, in the
+        --     stored format): each account whose stored hash equals a proof, is active, whose code
+        --     has not expired and whose client (p_source) is not paused returns its challenge and
+        --     workspace. Every other outcome is recorded in that account's own sign-in history, with
+        --     the account's tenant bound for that insert only and unbound again before returning.
+        --     When nothing matched, each failed or inactive attempt (or an attempt at an address no
+        --     account has) is counted in sign_in_failures under the keyed address and client; then,
+        --     if every account with the address (or the address alone) is paused, one row answers
+        --     with only paused_until, the moment the pause lifts by itself.
+        -- A client is paused on an account after p_threshold failures at the address within
+        -- p_window_minutes, counted since the client's last success there and the administrator's
+        -- last unblock; on an address no account has, since the window began. It lifts when the
+        -- p_threshold-th latest of those failures leaves the window.
+        -- p_shared: the client is a network address many clients share (a container gateway, a
+        -- proxy that does not forward the client's address, a configured office address) and not
+        -- a browser that signed in to the account before. From such an address a pause made by
+        -- one client would keep out everyone behind it, so a valid, unexpired one-time set-up code
+        -- (an account whose credential has an expiry) still signs in while the address is paused;
+        -- any other answer from it, a wrong code included, is the same 'throttled' as before.
+        CREATE FUNCTION identity.verify_sign_in(p_email text, p_proofs text[], p_source text, p_ip text, p_user_agent text,
+                                                p_threshold integer, p_window_minutes integer, p_shared boolean DEFAULT false)
+            RETURNS TABLE (challenge text, tenant_id uuid, paused_until timestamptz)
+            LANGUAGE plpgsql VOLATILE SECURITY DEFINER
+            SET search_path = pg_catalog, pg_temp
+        AS $fn$
+        #variable_conflict use_column
+        DECLARE
+            v_email text := lower(btrim(coalesce(p_email, '')));
+            v_threshold integer := least(greatest(coalesce(p_threshold, 5), 3), 50);
+            v_window interval := make_interval(mins => least(greatest(coalesce(p_window_minutes, 15), 1), 1440));
+            v_source text := left(coalesce(nullif(btrim(p_source), ''), 'unknown'), 64);
+            v_epoch text := extract(epoch from now())::text;
+            v_found boolean := false;
+            v_matched boolean := false;
+            v_counted boolean := false;
+            v_key bytea;
+            v_outcome text;
+            v_success timestamptz;
+            v_since timestamptz;
+            v_sinces timestamptz[] := ARRAY[]::timestamptz[];
+            v_nth timestamptz;
+            v_until timestamptz;
+            v_decoy text;
+            r record;
+        BEGIN
+            IF coalesce(current_setting('app.tenant_id', true), '') <> '' THEN
+                RETURN;
+            END IF;
+            IF v_email = '' OR length(v_email) > 254 THEN
+                RETURN;
+            END IF;
+
+            IF p_proofs IS NULL THEN
+                FOR r IN
+                    SELECT split_part(c.password_hash, '$', 1) || '$' || split_part(c.password_hash, '$', 2) || '$' || split_part(c.password_hash, '$', 3) AS ch
+                      FROM identity.users u
+                      JOIN identity.user_credentials c ON c.tenant_id = u.tenant_id AND c.id = u.id
+                     WHERE u.email_normalized = v_email
+                     ORDER BY 1
+                     LIMIT 10
+                LOOP
+                    v_found := true;
+                    challenge := r.ch;
+                    tenant_id := NULL;
+                    paused_until := NULL;
+                    RETURN NEXT;
+                END LOOP;
+                IF NOT v_found THEN
+                    SELECT 'pbkdf2-sha512$210000$' || encode(substr(sha256(s.secret || convert_to(v_email, 'UTF8')), 1, 16), 'base64')
+                      INTO v_decoy
+                      FROM identity.sign_in_secret s
+                     WHERE s.id = 1;
+                    challenge := v_decoy;
+                    tenant_id := NULL;
+                    paused_until := NULL;
+                    RETURN NEXT;
+                END IF;
+                RETURN;
+            END IF;
+
+            -- The address and the client, keyed so that the table names neither.
+            SELECT sha256(s.secret || convert_to('sign-in-failure' || chr(10) || v_email || chr(10) || v_source, 'UTF8'))
+              INTO v_key
+              FROM identity.sign_in_secret s
+             WHERE s.id = 1;
+
+            FOR r IN
+                SELECT u.tenant_id AS t, u.id AS uid, u.is_active, u.sign_in_unblocked_at, c.password_hash AS stored, c.expires_at,
+                       split_part(c.password_hash, '$', 1) || '$' || split_part(c.password_hash, '$', 2) || '$' || split_part(c.password_hash, '$', 3) AS ch
+                  FROM identity.users u
+                  JOIN identity.user_credentials c ON c.tenant_id = u.tenant_id AND c.id = u.id
+                 WHERE u.email_normalized = v_email
+                 ORDER BY 7
+                 LIMIT 10
+            LOOP
+                v_found := true;
+                PERFORM set_config('app.tenant_id', r.t::text, true), set_config('app.tenant_tx', v_epoch, true);
+                SELECT max(a.occurred_at) INTO v_success
+                  FROM identity.sign_in_attempts a
+                 WHERE a.user_id = r.uid AND a.source = v_source AND a.outcome = 'succeeded';
+                v_since := greatest(now() - v_window,
+                                    coalesce(r.sign_in_unblocked_at, '-infinity'::timestamptz),
+                                    coalesce(v_success, '-infinity'::timestamptz));
+                v_sinces := v_sinces || v_since;
+                SELECT f.occurred_at INTO v_nth
+                  FROM identity.sign_in_failures f
+                 WHERE f.key = v_key AND f.occurred_at > v_since
+                 ORDER BY f.occurred_at DESC
+                OFFSET v_threshold - 1 LIMIT 1;
+                IF v_nth IS NOT NULL AND NOT (coalesce(p_shared, false) AND r.is_active AND r.expires_at IS NOT NULL
+                                              AND r.expires_at > now() AND r.stored = ANY (p_proofs)) THEN
+                    v_outcome := 'throttled';
+                ELSIF NOT r.is_active THEN
+                    v_outcome := 'inactive';
+                    v_counted := true;
+                ELSIF r.stored = ANY (p_proofs) THEN
+                    v_outcome := CASE WHEN r.expires_at IS NOT NULL AND r.expires_at <= now() THEN 'expired' ELSE 'matched' END;
+                ELSE
+                    v_outcome := 'failed';
+                    v_counted := true;
+                END IF;
+                IF v_outcome <> 'matched' THEN
+                    INSERT INTO identity.sign_in_attempts (id, tenant_id, user_id, occurred_at, outcome, source, ip_address, user_agent)
+                    VALUES (gen_random_uuid(), r.t, r.uid, clock_timestamp(), v_outcome, v_source, left(p_ip, 64), left(p_user_agent, 400));
+                END IF;
+                PERFORM set_config('app.tenant_id', '', true), set_config('app.tenant_tx', '', true);
+                IF v_outcome = 'matched' THEN
+                    v_matched := true;
+                    challenge := r.ch;
+                    tenant_id := r.t;
+                    paused_until := NULL;
+                    RETURN NEXT;
+                END IF;
+            END LOOP;
+            IF v_matched THEN
+                RETURN;
+            END IF;
+
+            IF NOT v_found THEN
+                -- No account has the address: the same count, since the window began.
+                v_sinces := ARRAY[now() - v_window];
+                SELECT f.occurred_at INTO v_nth
+                  FROM identity.sign_in_failures f
+                 WHERE f.key = v_key AND f.occurred_at > now() - v_window
+                 ORDER BY f.occurred_at DESC
+                OFFSET v_threshold - 1 LIMIT 1;
+                v_counted := v_nth IS NULL;
+            END IF;
+            IF v_counted THEN
+                INSERT INTO identity.sign_in_failures (key, occurred_at) VALUES (v_key, clock_timestamp());
+                DELETE FROM identity.sign_in_failures WHERE occurred_at < now() - interval '1440 minutes';
+            END IF;
+
+            -- Paused now (this attempt counted) for every account with the address, or for the
+            -- address alone: until the earliest moment one of them lifts by itself.
+            FOREACH v_since IN ARRAY v_sinces LOOP
+                SELECT f.occurred_at INTO v_nth
+                  FROM identity.sign_in_failures f
+                 WHERE f.key = v_key AND f.occurred_at > v_since
+                 ORDER BY f.occurred_at DESC
+                OFFSET v_threshold - 1 LIMIT 1;
+                IF v_nth IS NULL THEN
+                    RETURN;
+                END IF;
+                v_until := least(coalesce(v_until, 'infinity'::timestamptz), v_nth + v_window);
+            END LOOP;
+            IF v_until IS NOT NULL THEN
+                challenge := NULL;
+                tenant_id := NULL;
+                paused_until := v_until;
+                RETURN NEXT;
+            END IF;
+        END
+        $fn$;
+        RESET ROLE;
+        REVOKE CREATE ON SCHEMA identity FROM erp_auth;
+        REVOKE ALL ON FUNCTION identity.verify_sign_in(text, text[], text, text, text, integer, integer, boolean) FROM PUBLIC;
+        GRANT EXECUTE ON FUNCTION identity.verify_sign_in(text, text[], text, text, text, integer, integer, boolean) TO erp_app;
+        """;
+
+    /// <summary>Back to the seven-argument function of <see cref="PauseByAddressUp"/>.</summary>
+    public const string SetupCodeFromSharedAddressDown = """
+        GRANT CREATE ON SCHEMA identity TO erp_auth;
+        SET LOCAL ROLE erp_auth;
+        DROP FUNCTION identity.verify_sign_in(text, text[], text, text, text, integer, integer, boolean);
+
+        """ + PauseByAddressFunction;
 }

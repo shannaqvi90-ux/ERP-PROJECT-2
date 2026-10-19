@@ -32,6 +32,7 @@ public sealed class IdentityModule : ErpModule
         module.Services.AddScoped<ISessionCompanyGrants>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<SignInService>();
         module.Services.AddSingleton<TrustedDevices>();
+        module.Services.AddSingleton<ClientAddresses>();
         module.Services.AddSingleton<Auth.Passkeys.PasskeyChallenges>();
         module.Services.AddScoped<SessionPayload>();
         module.Services.AddScoped<IUserDirectory, UserDirectory>();
@@ -485,6 +486,16 @@ public sealed class AuthOptions
 
     /// <summary>How long a browser stays a trusted device of an account after signing in to it.</summary>
     public int DeviceDays { get; set; } = 180;
+
+    /// <summary>Addresses many clients share (comma-separated addresses or CIDR networks, such as
+    /// an office's NAT address when the deployment sees real client addresses), shown so in the
+    /// sign-in history; from them a valid set-up code still signs in while sign-in there is paused
+    /// (<see cref="ClientAddresses"/>).</summary>
+    public string? SharedAddresses { get; set; }
+
+    /// <summary>Treat the gateways in this server's routing table as shared (on by default: in a
+    /// container every client reaching a published port arrives from the network's gateway).</summary>
+    public bool DetectGateways { get; set; } = true;
 
     /// <summary>The WebAuthn relying party id passkeys are made for: the site's host name (or a
     /// parent domain of it). Unset: the host name each request arrives at. Set it when the app is

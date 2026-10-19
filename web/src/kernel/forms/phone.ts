@@ -8,7 +8,7 @@
  * as typed. Arabic-Indic digits typed on an Arabic keyboard become 0 to 9.
  *
  * The grouping and the lengths below follow the UAE's numbering plan (ITU-T E.164 country code 971,
- * plan kept by the TDRA; docs/decisions/p06-form-report-phone-field.md): a mobile number is 5 and
+ * plan kept by the TDRA; docs/decisions/p06-form-report-round-7-completed-entry-saves.md and p06-form-report-whole-documents.md): a mobile number is 5 and
  * eight more digits, a fixed-line number an area digit (2, 3, 4, 6, 7, 9) and seven more. Those two
  * kinds are the ones the field can call complete; any other number is kept as typed and never
  * judged complete, so nothing happens on its own for it.

@@ -1,0 +1,199 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:17.48
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.25]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.66]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.86]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:13.53]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:13.53]       static Erp.Modules.Reports.ReportEngine.Letterheads: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:13.53]       Stack Trace:
+[xUnit.net 00:00:13.53]         /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:13.53]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.53]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.53]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.53]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:13.53]       Output:
+[xUnit.net 00:00:13.53]         437 types, 97 fields, 15 singleton services inspected, 115 endpoint delegates walked (3336 objects) to 29 closures; 5 framework singletons over product types; 112 roots walked to 1141 objects, 55 product types judged field by field; 29 reviewed findings
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [530 ms]
+  Error Message:
+   static Erp.Modules.Reports.ReportEngine.Letterheads: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 437 types, 97 fields, 15 singleton services inspected, 115 endpoint delegates walked (3336 objects) to 29 closures; 5 framework singletons over product types; 112 roots walked to 1141 objects, 55 product types judged field by field; 29 reviewed findings
+
+
+[xUnit.net 00:22:41.24]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:22:41.26]       2 isolation checks failed:
+[xUnit.net 00:22:41.26]       
+[xUnit.net 00:22:41.26]       6024 leaks:
+[xUnit.net 00:22:41.26]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (bearer) → GET /api/reports/lists/identity.roles [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (bearer) → GET /api/reports/lists/identity.roles [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator in Arabic (cookie) → GET /api/reports/lists/identity.roles [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (bearer) → GET /api/reports/lists/identity.roles [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (bearer) → GET /api/reports/lists/identity.users [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (bearer) → GET /api/reports/lists/identity.users [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.26]       tenant A administrator in Arabic (cookie) → GET /api/reports/lists/identity.users [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/identity.users [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.access [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator in Arabic (cookie) → GET /api/reports/lists/tenancy.access [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.access [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.access [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.branches [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.branches [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator in Arabic (cookie) → GET /api/reports/lists/tenancy.branches [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.branches [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.companies [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.companies [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator in Arabic (cookie) → GET /api/reports/lists/tenancy.companies [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.companies [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.companies [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.companies [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/lists/tenancy.companies [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/run/identity.roleSummary [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator in Arabic (cookie) → GET /api/reports/run/identity.roleSummary [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/run/identity.roleSummary [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/run/identity.roleSummary [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/run/identity.roleSummary [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/run/identity.roleSummary [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/run/identity.roleSummary [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/run/identity.usersByRole [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/run/identity.usersByRole [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/run/identity.usersByRole [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator in Arabic (cookie) → GET /api/reports/run/identity.usersByRole [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/run/identity.usersByRole [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (bearer) → GET /api/reports/run/identity.usersByRole [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/run/identity.usersByRole [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       tenant A administrator (cookie) → GET /api/reports/run/tenancy.branchDirectory [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+[xUnit.net 00:22:41.27]       
+[xUnit.net 00:22:41.27]       Process-wide state changed while the tenants used the app (2 lines):
+[xUnit.net 00:22:41.27]       static Erp.Modules.Reports.ReportEngine.Letterheads[en].Item1: was 10/18/2026 19:08:37 +00:00, now 10/18/2026 19:29:59 +00:00
+[xUnit.net 00:22:41.27]       static Erp.Modules.Reports.ReportEngine.Letterheads[ar].Item1: was 10/18/2026 19:08:37 +00:00, now 10/18/2026 19:30:00 +00:00
+[xUnit.net 00:22:41.27]       Stack Trace:
+[xUnit.net 00:22:41.27]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(176,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:22:41.27]         --- End of stack trace from previous location ---
+[xUnit.net 00:22:41.27]       Output:
+[xUnit.net 00:22:41.27]         routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 177.2 s
+[xUnit.net 00:22:41.27]         tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 199.0 s
+[xUnit.net 00:22:41.27]         write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 472.3 s
+[xUnit.net 00:22:41.27]         answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2387 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70069, 20053 in Arabic), 509.5 s
+[xUnit.net 00:22:41.27]         tenant B values in route and query parameters: 526250 requests so far (93624 by tenant A's Arabic sessions; tenant B 96266, 26602 in Arabic), 837.7 s
+[xUnit.net 00:22:41.27]         registered lists through their query contract: 17289 attacks, 31337 requests: 557587 requests so far (93624 by tenant A's Arabic sessions; tenant B 100233, 27594 in Arabic), 880.4 s
+[xUnit.net 00:22:41.27]         list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 992 with different true answers (622 sorted), 84018 rows walked; process-wide state fingerprinted in 105868 lines from 112 roots: 557587 requests so far (93624 by tenant A's Arabic sessions; tenant B 128338, 34620 in Arabic), 1145.8 s
+[xUnit.net 00:22:41.27]         tenant B values in body fields: 590815 requests so far (93624 by tenant A's Arabic sessions; tenant B 132424, 35641 in Arabic), 1231.0 s
+[xUnit.net 00:22:41.27]         tenant B activity: 161104 requests (62356 concurrent with the attack), 1980 successful own writes, 160852 responses judged for tenant A markers: 590815 requests so far (93624 by tenant A's Arabic sessions; tenant B 161104, 40730 in Arabic), 1301.6 s
+[xUnit.net 00:22:41.27]         tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+[xUnit.net 00:22:41.27]         736233 tenant bindings and 1472823 setting statements judged among 5507392 statements; 736233 tenant values judged, 6716958 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462176 responses judged on every header
+[xUnit.net 00:22:41.27]         11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+[xUnit.net 00:22:41.27]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:22:41.27]         120 endpoints, 618972 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 736096 traced lookups
+[xUnit.net 00:22:41.27]         in Arabic: 98522 tenant A requests, 40730 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+[xUnit.net 00:22:41.42]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [22 m 26 s]
+  Error Message:
+   2 isolation checks failed:
+
+6024 leaks:
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/identity.roles [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/identity.roles [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator in Arabic (cookie) → GET /api/reports/lists/identity.roles [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/identity.roles [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/identity.users [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/identity.users [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator in Arabic (cookie) → GET /api/reports/lists/identity.users [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/identity.users [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.access [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator in Arabic (cookie) → GET /api/reports/lists/tenancy.access [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.access [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.access [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.branches [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.branches [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator in Arabic (cookie) → GET /api/reports/lists/tenancy.branches [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.branches [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.companies [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.companies [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator in Arabic (cookie) → GET /api/reports/lists/tenancy.companies [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.companies [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.companies [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.companies [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/lists/tenancy.companies [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/run/identity.roleSummary [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator in Arabic (cookie) → GET /api/reports/run/identity.roleSummary [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/run/identity.roleSummary [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/run/identity.roleSummary [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/run/identity.roleSummary [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/run/identity.roleSummary [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/run/identity.roleSummary [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/run/identity.usersByRole [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/run/identity.usersByRole [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/run/identity.usersByRole [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator in Arabic (cookie) → GET /api/reports/run/identity.usersByRole [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/run/identity.usersByRole [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (bearer) → GET /api/reports/run/identity.usersByRole [TenantQuery] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/run/identity.usersByRole [TenantHeaders] → 200: response contains tenant B marker CNRY921DA780AE
+tenant A administrator (cookie) → GET /api/reports/run/tenancy.branchDirectory [Plain] → 200: response contains tenant B marker CNRY921DA780AE
+
+Process-wide state changed while the tenants used the app (2 lines):
+static Erp.Modules.Reports.ReportEngine.Letterheads[en].Item1: was 10/18/2026 19:08:37 +00:00, now 10/18/2026 19:29:59 +00:00
+static Erp.Modules.Reports.ReportEngine.Letterheads[ar].Item1: was 10/18/2026 19:08:37 +00:00, now 10/18/2026 19:30:00 +00:00
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 176
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 177.2 s
+ tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 199.0 s
+ write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 472.3 s
+ answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2387 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70069, 20053 in Arabic), 509.5 s
+ tenant B values in route and query parameters: 526250 requests so far (93624 by tenant A's Arabic sessions; tenant B 96266, 26602 in Arabic), 837.7 s
+ registered lists through their query contract: 17289 attacks, 31337 requests: 557587 requests so far (93624 by tenant A's Arabic sessions; tenant B 100233, 27594 in Arabic), 880.4 s
+ list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 992 with different true answers (622 sorted), 84018 rows walked; process-wide state fingerprinted in 105868 lines from 112 roots: 557587 requests so far (93624 by tenant A's Arabic sessions; tenant B 128338, 34620 in Arabic), 1145.8 s
+ tenant B values in body fields: 590815 requests so far (93624 by tenant A's Arabic sessions; tenant B 132424, 35641 in Arabic), 1231.0 s
+ tenant B activity: 161104 requests (62356 concurrent with the attack), 1980 successful own writes, 160852 responses judged for tenant A markers: 590815 requests so far (93624 by tenant A's Arabic sessions; tenant B 161104, 40730 in Arabic), 1301.6 s
+ tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+ 736233 tenant bindings and 1472823 setting statements judged among 5507392 statements; 736233 tenant values judged, 6716958 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462176 responses judged on every header
+ 11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 120 endpoints, 618972 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 736096 traced lookups
+ in Arabic: 98522 tenant A requests, 40730 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+
+Test Run Failed.
+Total tests: 2
+     Failed: 2
+ Total time: 22.7111 Minutes
+start 2026-10-18T19:07:46Z end 2026-10-18T19:30:58Z exit 1
