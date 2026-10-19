@@ -222,6 +222,18 @@ export function analyseTrace(events) {
     if (checkpoints.some(c => t.events.some(e => e !== c && e.ts > c.ts && e.ts <= c.ts + (c.dur || 0)))) continue;
     t.passive = t.answers.every(a => PASSIVE_RESOURCES.test(String(sends.get(a.args.data.requestId)?.event.args?.data?.resourceType || '')));
   }
+  // Round 14 (a busy machine): a frame whose callbacks the harness alone asked for (Playwright's check
+  // that a click's target stands still asks for animation frames inside its DevTools commands) and that
+  // ran nothing else of the page's is the harness's own: it posts nothing an untraceable task delivers.
+  for (const t of tasks) {
+    if (!t.frameFires.length || t.protocol || t.timerFires.length || t.idleFires.length || t.answers.length) continue;
+    const asked = t.frameFires.map(f => askedBefore(frames, `${f.args?.data?.frame}:${f.args?.data?.id}`, f.ts));
+    if (!asked.every(x => x && x.task.protocol)) continue;
+    const page = t.events.filter(e => e.ph === 'X' && /^(FunctionCall|EvaluateScript|EventDispatch|ParseHTML)$/.test(e.name) && !String(e.args?.data?.type || '').startsWith('__playwright'));
+    if (page.some(e => !t.frameFires.some(f => spanHolds(f, e.ts)))) continue;
+    if (t.events.some(e => /^(SchedulePostMessage|ResourceSendRequest|TimerInstall)$/.test(e.name))) continue;
+    t.passive = true;
+  }
   // Round 13: when the page's animations and transitions ran (Chromium's async "Animation" events by
   // id: begun, ended). One begun before the record has only its end; one still running has no end.
   const animations = new Map();

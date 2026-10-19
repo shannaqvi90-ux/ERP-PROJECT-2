@@ -177,6 +177,7 @@ export const MUTATIONS = [
   ['M129', 'any answer taken for a page task that could post a message (a font whose promise posted one)', 'lib/causation.mjs', "    t.passive = t.answers.every(a => PASSIVE_RESOURCES.test(", "    t.passive = true || t.answers.every(a => PASSIVE_RESOURCES.test(", 'test/causation.test.mjs', 'favicon'],
   ['M130', "set-up's back-end write its task does not declare accepted", 'lib/sandbox/bridge.mjs', '      if (this.setUpFixtures.enforce && !this.setUpFixtures.allows(method, url)) {', '      if (false) {', 'test/screen-causes.test.mjs', 'plant N4:'],
   ['M131', "set-up's browser write its task does not declare accepted", 'lib/runner.mjs', '          if (fixtures.enforce && !fixtures.allows(r.method(), r.url())) undeclared.push(', '          if (false) undeclared.push(', 'test/screen-causes.test.mjs', 'plant N4b'],
+  ['M132', "a frame only the harness asked for taken for the page's own", 'lib/causation.mjs', '    if (!asked.every(x => x && x.task.protocol)) continue;', '    continue;', 'test/causation.test.mjs', 'only the harness asked for'],
 ];
 
 function copyHarness() {

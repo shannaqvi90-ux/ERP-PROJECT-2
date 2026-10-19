@@ -90,10 +90,30 @@ click's handler ran inside a DevTools command task.
    set-up's browser may not open an address that names the task's data (`taskWords`, N2 in the critic's
    own shape, on a task that names nothing to find).
 
-4. **Input the browser delivers while running a DevTools command is the step's** (critic r13, other
+4. **Set-up writes only the fixtures its task declares** (`fixtures: { ours: [...] }` in the task file,
+   `METHOD /path` with `*`; a health check's extra ones in `healthFixtures`; `lib/runner.mjs
+   setUpFixturesFor`). Every task whose ours driver is built declares them (`test/tasks.test.mjs`):
+   preferences put back to English or Arabic, a user or company left by an earlier run retired or
+   removed, the two companies of switch-company, the passkey of the sign-in path. Any other set-up write
+   (the harness's fetch or set-up's browser; a sign-in excepted) is refused for our product: a saved
+   view, a home preference, a shortcut, whatever set-up could configure to finish or half-finish a task
+   that saves nothing (the critic's option c, in its general form; plants N4, N4b). Recorded for the
+   reference (`set_up_writes` in each result), whose set-up drives a client with writes of its own.
+
+5. **Input the browser delivers while running a DevTools command is the step's** (critic r13, other
    finding 1): a discrete input event (a click, a key, text) dispatched inside a command task, outside any
    of the page's script, chains to the step that began last before it. A click the page's own script
    dispatches there is inside its script and is not input.
+
+6. **What can post nothing stands nowhere** (found running the honest drivers on a busy machine, 1 run
+   in 4 of create-restricted-user refused before the fix): a task of no traceable origin (React's
+   scheduler delivers its work through a message port) is the step's when the page task just before it
+   was. Two kinds of task can post nothing and are now passed over when looking for that task: one that
+   only delivered a resource the browser fetched for rendering (a favicon, an image, a font, a style
+   sheet) and ran nothing of the page's, not even inside its microtask checkpoint; and a frame that ran
+   only callbacks the harness asked for (Playwright's check that a click's target stands still asks for
+   animation frames inside its DevTools commands). A font whose promise ran the page's code, or a frame
+   that also ran the page's observer, still stands between them (synthetic tests; mutations M129, M132).
 
 ## Self-tests and mutations
 
@@ -109,7 +129,8 @@ person, and the gap for a task that does not save. `test/causation.test.mjs`: th
 traces (a timer before the clock, a slow answer, a repeating timer a step armed, the harness's own
 change, an observer it set off, the browser's own change, a document by its navigation) and the
 DevTools-command input. The critic's own r13 plant file passes unchanged (N1, N1b, N2 never verify; C1
-does). Mutations M113-M128 (`npm run mutations`); M65, M66 and M80 follow the code they mutate.
+does). Plants N4 and N4b (set-up writes its task does not declare) and a control (a declared fixture).
+Mutations M113-M132 (`npm run mutations`); M65, M66, M76, M80, M83 and M112 follow the code they mutate.
 
 ## Alternatives considered
 
@@ -119,10 +140,11 @@ does). Mutations M113-M128 (`npm run mutations`); M65, M66 and M80 follow the co
   rule would still refuse the reference; and for our product the whole-screen rule holds today with no
   exception. It also leaves a gap the whole-screen rule does not: a change that reveals the end state by
   styling an ancestor.
-- **Refuse every set-up write that is not declared in the task file** (an allowlist of fixtures). Closer
-  to complete, but each product's sign-in and client writes set-up's browser sends as it loads would have
-  to be listed per task; the rule against the found name closes N3's class with no list to keep, and the
-  finds rules refuse a pre-filtered list whatever wrote it.
+- **Only refuse set-up writes that carry the task's data** (the critic's minimum for option c): kept, as
+  a rule of its own, but a setting that carries no data (open the last record at start, a shortcut, a
+  home screen) would pass it; the declared fixtures (decision 4) refuse those too. Odoo's set-up is not
+  held to a list: its sign-in drives a client whose own writes are not the driver's to declare, and a
+  set-up that helped the reference could only make our product's comparison harder.
 - **A control run with no steps** (leave the start screen alone for the same time and check verify()
   fails): doubles every run's cost and is defeated by a page that waits for any key.
 

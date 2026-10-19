@@ -369,7 +369,16 @@ product to finish; plants N1, N1b, N2 and N3 were recorded as verified wins). Pl
   browser) carrying the found name, whole or any of its words of four letters or more (the task's own
   input values taken out first), is refused, and so is an address set-up's browser opens that names
   the task's data. A health check, whose clean stack needs the record created, is exempt.
-- Input the browser delivers while running a DevTools command (a busy machine) is the step's.
+- **Set-up writes only the fixtures its task declares** (`fixtures: { ours: ['PUT /api/identity/me/preferences'] }`
+  in the task file, `METHOD /path` with `*` for one segment; `healthFixtures` for what a health check
+  adds). Every task whose ours driver is built declares them; any other set-up write (the harness's fetch
+  or set-up's browser, a sign-in excepted) is refused for our product, so set-up cannot configure the
+  product to finish a task (a saved view, a home preference, a shortcut). Each result records
+  `set_up_writes`; the reference's are recorded, not judged.
+- Input the browser delivers while running a DevTools command (a busy machine) is the step's. A task that
+  only delivered a resource for rendering (a favicon, an image) or a frame only the harness asked for
+  (the click's check that its target stands still) never stands between an untraceable task (a message
+  port's) and the step before it.
 
 What the instrument cannot do: tell whether a driver's `verify()` reads the right thing. It can
 only make sure `verify()` reads the same way before and after the clock and that, for a task that

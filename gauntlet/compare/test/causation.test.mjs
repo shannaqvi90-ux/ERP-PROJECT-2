@@ -881,3 +881,22 @@ test('causation (round 14): a favicon or image the browser fetched before the cl
   const active = verdict(tasks([I('SchedulePostMessage', 2.2, { traceId: 9 })]), 'w');
   assert.equal(active.caused, false);
 });
+
+test('causation (round 14): an animation frame only the harness asked for (the click\'s check that its target stands still) does not stand between an untraceable task and the step', () => {
+  const cmd = inner => [X('DevToolsSession::DispatchProtocolCommand', 0.5, 1), ...inner];
+  const raf = (at, id) => I('RequestAnimationFrame', at, { frame: 'F', id });
+  const fireFrame = (at, id) => X('FireAnimationFrame', at, 1, { frame: 'F', id });
+  // Step 1 types (its keyup schedules the page's work through a message port); the harness, waiting for
+  // step 2's target, asks for a frame inside its command; the frame runs only its callback; then the port.
+  const tasks = (frameInner = []) => [
+    task(101, INPUT, [X('EventDispatch', 1, 1, { type: 'keyup' }), X('FunctionCall', 1.2, 0.5, { url: 'http://p/' })]),
+    task(140, IPC, cmd([raf(1, 7)])),
+    task(150, FRAME, [fireFrame(1, 7), X('FunctionCall', 1.2, 0.5, { url: '' }), ...frameInner]),
+    task(156, PORT, [X('FunctionCall', 1, 2, { url: 'http://p/' }), send(2, 'w')]),
+  ];
+  const own = verdict(tasks(), 'w', [[100, 110, 'type'], [138, 170, 'click']]);
+  assert.equal(own.caused, true, own.why);
+  // The page's own observer ran in that frame too: the frame is the page's, and stands between them.
+  const page = verdict(tasks([X('FunctionCall', 3, 0.5, { url: 'http://p/' })]), 'w', [[100, 110, 'type'], [138, 170, 'click']]);
+  assert.equal(page.caused, false);
+});
