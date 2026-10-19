@@ -287,6 +287,9 @@ export class DriverSession {
     this.reads = reads;
     // Round 11: the runner's watch on set-up's browser writes (watchSetUpBrowser), for ctx.settleWrites().
     this.setUpWrites = null;
+    // Round 14: what set-up's writes may not carry (lib/runner.mjs foundWords) and the test of it (carriesFound).
+    this.setUpGuard = null;
+    this.setUpCarries = null;
     host.session = this;
   }
 
@@ -571,6 +574,12 @@ export class DriverSession {
       throw new ActionOutsideClock(`a back-end call that changes the product (fetch ${method} ${u.pathname}) in verify()`, phase);
     }
     const bodyText = typeof body === 'string' ? body : body ? Buffer.from(body).toString('utf8') : '';
+    // Round 14 (critic p01 r13, plant N3): set-up's writes may not carry the record the person finds
+    // (a saved default search of its name, a remembered record); the runner sets the guard for set-up
+    // and sign-in and lifts it at the start.
+    if (this.setUpGuard && phase === 'free' && !isReadRequest(url, { ...init, body: bodyText }) && this.setUpCarries?.(`${url} ${bodyText}`, this.setUpGuard)) {
+      throw new ActionOutsideClock(`a set-up write that carries the record the person finds (fetch ${method} ${u.pathname}): set-up may prepare fixtures, not put the record within reach (a saved search, a default view, a remembered record)`, 'set-up');
+    }
     const signIn = isSignIn(u.pathname, method);
     const cacheKey = signIn ? `${method} ${url} ${withoutRpcId(bodyText)}` : null;
     if (cacheKey && this.signIns.has(cacheKey)) return this.signIns.get(cacheKey);

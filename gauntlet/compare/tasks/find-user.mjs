@@ -10,6 +10,9 @@ export default {
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Open the user whose name the administrator knows ({user.name}) out of 100,000 users and read their sign-in e-mail.',
   done: 'The user\'s own record is open on screen and shows the sign-in {user.login}.',
+  // Round 14 (critic p01 r13, plants N2 and N3): the record the person finds. The measured part types a
+  // piece of it (its letters in order), and no screen shows it before that (lib/runner.mjs findsProblem).
+  finds: 'user.name',
   data: ['user.name', 'user.login'],
   notes: 'The bar\'s "find one record among 100,000" on the list that exists in both products today: the shared dataset\'s 100,000 users ' +
     '(gauntlet/compare/data/out/users.csv), loaded into the reference by its rig and into our product with ERP_SEED_USERS_CSV. ' +

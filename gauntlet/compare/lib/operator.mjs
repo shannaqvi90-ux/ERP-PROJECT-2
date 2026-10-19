@@ -125,8 +125,18 @@ export class NotBuilt extends Error {
   constructor(what = 'not built yet') { super(what); this.name = 'NotBuilt'; }
 }
 
+/**
+ * Round 14 (critic p01 r13, plants N2 and N3): whether the page shows a text (a record's name) as
+ * text or as a field's value, read in the harness's read world. Case and runs of white space are
+ * ignored; passwords are not read.
+ */
+export const SHOWS_TEXT = '(v) => { const norm = s => String(s || "").toLowerCase().replace(/\\s+/g, " ").trim(); const parts = [document.body ? document.body.innerText : ""]; '
+  + 'for (const el of document.querySelectorAll("input, textarea, select")) { if (String(el.type || "").toLowerCase() === "password") continue; '
+  + 'parts.push(el.tagName === "SELECT" ? (el.options.item(el.selectedIndex) ? el.options.item(el.selectedIndex).text : "") : String(el.value || "")); } '
+  + 'return norm(parts.join("\\n")).includes(norm(v)); }';
+
 export class Operator {
-  #page; #device = null; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null; #downloads = [];
+  #page; #device = null; #finds = null; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null; #downloads = [];
 
   /**
    * @param {import('playwright-core').Page} page  the raw page (unwrapped if a guarded one is passed)
@@ -142,6 +152,34 @@ export class Operator {
     this.shotFormat = shotFormat;
     this.defaultTimeout = defaultTimeout;
     this.#moments = moments ? [...moments] : null;
+  }
+
+  /**
+   * Round 14 (critic p01 r13, plants N2 and N3): a task that names what the person finds (`finds`: a
+   * record's name). The runner hands the value and the test of a piece of it (lib/runner.mjs isPieceOf);
+   * right before the measured part first types a piece of it, the operator reads whether the screen
+   * already shows it (then set-up or the product put it there, not the person's search). The read is on
+   * the clock, for both products alike (a few milliseconds).
+   */
+  watchFinds(value, isPiece) {
+    if (this.measuring) throw new UncountedAction('watching what the person finds inside the measured part');
+    this.#finds = { value: String(value), isPiece, typed_at_step: null, shown_before: null };
+  }
+
+  /** What the operator saw of the value the person finds: { typed_at_step, shown_before } (null when none is watched). */
+  get finds() { return this.#finds ? { typed_at_step: this.#finds.typed_at_step, shown_before: this.#finds.shown_before, ...(this.#finds.read_error ? { read_error: this.#finds.read_error } : {}) } : null; }
+
+  async #beforePiece(text) {
+    const f = this.#finds;
+    if (!f || f.typed_at_step !== null || !this.measuring || !f.isPiece(text)) return;
+    f.typed_at_step = this.#steps.length + 1;
+    for (let attempt = 0; attempt < 2 && f.shown_before === null; attempt++) {
+      try {
+        const r = await PageWorld.of(this.#page).run(SHOWS_TEXT, f.value);
+        if (typeof r?.value === 'boolean') f.shown_before = r.value;
+        else f.read_error = 'the read world returned no answer';
+      } catch (e) { f.read_error = String(e?.message || e).split('\n')[0]; }
+    }
   }
 
   /** Moments the task declares that were not shot while measuring. */
@@ -368,6 +406,7 @@ export class Operator {
     const value = String(text);
     const control = CONTROL.exec(value);
     if (control) throw new UncountedAction(`op.type() with the control character ${describeControl(control[0])}: it presses a key inside a field entry without a step of its own; press it with op.press`);
+    await this.#beforePiece(value);
     this.#begin();
     const sameField = await this.#focusInLastClick();
     const t = this.#begin();
