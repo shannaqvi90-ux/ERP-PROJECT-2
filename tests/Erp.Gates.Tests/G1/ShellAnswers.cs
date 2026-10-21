@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Erp.Kernel.Seeding;
 using Erp.Testing;
@@ -63,6 +64,21 @@ public static partial class ShellAnswers
     /// judged.</summary>
     public static readonly IReadOnlyDictionary<string, string> RandomByDesign = new Dictionary<string, string>(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Reviewed: answer values random by design that are compared by their exact shape. A value of
+    /// that shape is compared as the shape; a value of any other shape is compared as it is. The
+    /// trace id of a refused write (a problem answer's <c>traceId</c>) is the request's W3C activity
+    /// id (a random trace id and span id: <c>00-</c>32 hex<c>-</c>16 hex<c>-</c>flags) or 32 random
+    /// hexadecimal digits (Erp.Kernel.Hosting.ErpPlatform). ASP.NET Core's own trace identifier is a
+    /// counter that every request of the process moves (the connection count and the request number
+    /// on it), which tells tenant A how many requests other tenants made between two of its own; a
+    /// counter of that kind is not of this shape and is judged as numbers.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, (Regex Shape, string Reason)> RandomShapes = new Dictionary<string, (Regex, string)>(StringComparer.Ordinal)
+    {
+        ["body.traceId"] = (new Regex("^\"(?:00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}|[0-9a-f]{32})\"$", RegexOptions.CultureInvariant), "the request's W3C activity id or 32 random hexadecimal digits (Erp.Kernel.Hosting.ErpPlatform)"),
+    };
+
     /// <summary>Headers of the transport, different on every answer by design or the same for every
     /// tenant by design (the body is compared leaf by leaf, its length with it).</summary>
     private static readonly HashSet<string> TransportHeaders = new(StringComparer.OrdinalIgnoreCase)
@@ -82,6 +98,108 @@ public static partial class ShellAnswers
     /// with Arabic-Indic digits, so the sign-in turn runs in Arabic.</summary>
     public static readonly (string Language, string Numerals)[] PreferenceVariants = [("en", "latn"), ("en", "arab"), ("ar", "latn"), ("ar", "arab")];
 
+    /// <summary>
+    /// One body of the preferences write as the shell's own client may send it (critic p04 round 11,
+    /// plant SL1). The shell never sends the whole body on its main path: Alt+L, the top bar's
+    /// language button and My account send <c>{language}</c> alone, the digits switch
+    /// <c>{numerals}</c> alone, and a change saved again after a reload any subset of the two
+    /// (web/src/kernel/preferences.ts, <c>PreferenceChange = Partial&lt;Preferences&gt;</c>). A field
+    /// left out is filled by the server, and a fill from anything shared (the value anyone chose
+    /// last, a cache of defaults) is a leak only such a body shows.
+    /// <para>
+    /// <see cref="Body"/> is what X sends on each of its turns. <see cref="Prepared"/> is X's whole
+    /// stored state before its turns (X writes it first): the body's fields, and for each field left
+    /// out a value of its own. <see cref="Other"/> is what Y writes on its turns: in every field the
+    /// value X does not hold, so whatever X's answer takes from anyone else but X shows as a change.
+    /// </para>
+    /// </summary>
+    public sealed record BodyVariant(string Name, JsonObject Body, JsonObject Prepared, JsonObject Other)
+    {
+        /// <summary>The body's fields, by name: what the shape of the body is.</summary>
+        public string Shape => ShapeOf(Body.Select(p => p.Key));
+
+        public override string ToString() => Name;
+
+        /// <summary>A body's shape from its field names, in name order: <c>{language}</c>, <c>{language,numerals}</c>, <c>{}</c>.</summary>
+        public static string ShapeOf(IEnumerable<string> fields) => "{" + string.Join(",", fields.Order(StringComparer.Ordinal)) + "}";
+    }
+
+    /// <summary>
+    /// Every body the preferences write can take, derived from the request schema the running app
+    /// publishes (not a list kept here): every subset of its fields, from each single field to the
+    /// whole body and the empty body (refused: nothing to change), with every combination of each
+    /// field's documented values. A field of the schema whose values the document does not give is
+    /// a blind spot: the check throws rather than leave it out.
+    /// </summary>
+    public static async Task<IReadOnlyList<BodyVariant>> BodyVariantsAsync(ErpTestEnvironment env)
+    {
+        using var anonymous = env.Factory.CreateClient();
+        var openApi = await Infrastructure.OpenApiDocument.LoadAsync(anonymous);
+        var schema = openApi.RequestSchema("PUT", ArabicSession.PreferencesPath)
+            ?? throw new InvalidOperationException($"PUT {ArabicSession.PreferencesPath} documents no request body");
+        var fields = openApi.EnumLeaves(schema)
+            .Where(l => l.Path.Count == 1)
+            .Select(l => (Name: l.Path[0], Values: l.Values.Select(v => v.GetValue<string>()).ToList()))
+            .ToList();
+        var properties = openApi.Resolve(schema).GetProperty("properties").EnumerateObject().Select(p => p.Name).ToList();
+        var blind = properties.Where(p => fields.All(f => f.Name != p)).ToList();
+        if (blind.Count > 0 || fields.Any(f => f.Values.Count < 2))
+        {
+            throw new InvalidOperationException($"PUT {ArabicSession.PreferencesPath}: fields without two documented values to vary: {string.Join(", ", blind.Concat(fields.Where(f => f.Values.Count < 2).Select(f => f.Name)))}");
+        }
+        return BodyVariants(fields);
+    }
+
+    /// <summary>The variants of <see cref="BodyVariantsAsync"/> for the given fields and values: the
+    /// partial bodies first (fewest fields first), then the whole body, then the empty one.</summary>
+    public static IReadOnlyList<BodyVariant> BodyVariants(IReadOnlyList<(string Name, List<string> Values)> fields)
+    {
+        var subsets = Enumerable.Range(1, (1 << fields.Count) - 1)
+            .Select(mask => fields.Where((_, i) => (mask & (1 << i)) != 0).ToList())
+            .OrderBy(s => s.Count)
+            .Append([])
+            .ToList();
+        var variants = new List<BodyVariant>();
+        foreach (var subset in subsets)
+        {
+            IEnumerable<List<(string Name, string Value)>> combinations = [[]];
+            foreach (var field in subset)
+            {
+                combinations = combinations.SelectMany(c => field.Values.Select(v => c.Append((field.Name, v)).ToList())).ToList();
+            }
+            foreach (var combination in combinations)
+            {
+                var k = variants.Count;
+                var body = new JsonObject();
+                var prepared = new JsonObject();
+                var other = new JsonObject();
+                foreach (var field in fields)
+                {
+                    var given = combination.FirstOrDefault(c => c.Name == field.Name).Value;
+                    // A field left out is held at a value of X's own: each value in turn, so every
+                    // field's every value is the one the server must keep.
+                    var held = given ?? field.Values[k % field.Values.Count];
+                    if (given is not null)
+                    {
+                        body[field.Name] = given;
+                    }
+                    prepared[field.Name] = held;
+                    other[field.Name] = field.Values[(field.Values.IndexOf(held) + 1) % field.Values.Count];
+                }
+                variants.Add(new BodyVariant(
+                    $"preferences body {body.ToJsonString()} (held {prepared.ToJsonString()}, other tenant writes {other.ToJsonString()})",
+                    body, prepared, other));
+            }
+        }
+        return variants;
+    }
+
+    /// <summary>What a run judges. Without options: everything.</summary>
+    /// <param name="Variants">The whole-body variants judged against the same turn of the other tenant (default <see cref="PreferenceVariants"/>).</param>
+    /// <param name="Bodies">Which of <see cref="BodyVariantsAsync"/>'s bodies are judged against the other tenant's differing writes (default all).</param>
+    /// <param name="SignIn">Whether the sign-in turn is judged.</param>
+    public sealed record Options(IReadOnlyList<(string Language, string Numerals)>? Variants = null, Func<BodyVariant, bool>? Bodies = null, bool SignIn = true);
+
     public sealed class Result
     {
         public List<string> Findings { get; } = [];
@@ -94,6 +212,13 @@ public static partial class ShellAnswers
         public int NumbersJudged { get; set; }
         public int TimesJudged { get; set; }
         public HashSet<string> EndpointsJudged { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>The preferences bodies judged against the other tenant's differing writes, by shape (<see cref="BodyVariant.Shape"/>).</summary>
+        public HashSet<string> BodyShapesJudged { get; } = new(StringComparer.Ordinal);
+        public int BodyVariantsJudged { get; set; }
+
+        /// <summary>Request trace ids in answers, judged by their shape (<see cref="RandomShapes"/>).</summary>
+        public int TraceIdsShaped { get; set; }
 
         /// <summary>The tenants' seed markers (random per test process, in any letter case): replaced
         /// by a placeholder before a value is split, so the counts of numbers judged do not depend on their digits.</summary>
@@ -112,13 +237,22 @@ public static partial class ShellAnswers
         public List<(DateTimeOffset Start, DateTimeOffset End)> Windows { get; } = [];
     }
 
-    /// <summary>A turn: the requests the shell makes for one user action, in order.</summary>
-    private sealed record Turn(string Name, Func<HttpClient, Actor, Task<List<Answer>>> Run);
+    /// <summary>A turn: the requests the shell makes for one user action, in order. <c>Prepare</c>
+    /// sets X's state before its turns; <c>Other</c> is Y's turn number i (default: the same turn).</summary>
+    private sealed record Turn(string Name, Func<HttpClient, Actor, Task<List<Answer>>> Run,
+        Func<HttpClient, Actor, Task>? Prepare = null, Func<HttpClient, Actor, int, Task<List<Answer>>>? Other = null, BodyVariant? Body = null);
 
     /// <summary>Runs the check over <paramref name="env"/>'s app host. <paramref name="variants"/>
-    /// limits the preferences variants (a self-test needs only the Arabic one).</summary>
-    public static async Task<Result> RunAsync(ErpTestEnvironment env, IReadOnlyList<(string Language, string Numerals)>? variants = null)
+    /// limits the whole-body preferences variants and judges no partial body (a self-test needs only
+    /// the Arabic one).</summary>
+    public static Task<Result> RunAsync(ErpTestEnvironment env, IReadOnlyList<(string Language, string Numerals)>? variants = null) =>
+        RunAsync(env, variants is null ? new Options() : new Options(variants, _ => false));
+
+    /// <summary>Runs the check over <paramref name="env"/>'s app host as <paramref name="options"/> says.</summary>
+    public static async Task<Result> RunAsync(ErpTestEnvironment env, Options options)
     {
+        var variants = options.Variants;
+        var bodies = (await BodyVariantsAsync(env)).Where(options.Bodies ?? (_ => true)).ToList();
         var result = new Result();
         result.Canaries.AddRange(env.Plan.Tenants.Select(t => t.Canary).OfType<string>().Where(c => c.Length > 0));
         using var client = env.Factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
@@ -137,16 +271,50 @@ public static partial class ShellAnswers
                 await SendAsync(c, actor, "GET", "/api/auth/session", null, actor.Session, result),
             ]));
         }
-        turns.Add(new Turn("sign-in, session, sign-out", async (c, actor) =>
+        // Every body the shell's client may send, X's fields left out held at values of X's own and
+        // Y writing, in every field, the value X does not hold: the whole differing body, then each
+        // field alone, as the shell itself would.
+        foreach (var variant in bodies)
         {
-            var (signIn, token) = await SignInAsync(c, actor, result);
-            return
-            [
-                signIn,
-                await SendAsync(c, actor, "GET", "/api/auth/session", null, token, result),
-                await SendAsync(c, actor, "POST", "/api/auth/sign-out", null, token, result),
-            ];
-        }));
+            var fieldNames = variant.Other.Select(p => p.Key).ToList();
+            turns.Add(new Turn(variant.Name,
+                async (c, actor) =>
+                [
+                    await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, variant.Body.DeepClone(), actor.Session, result),
+                    await SendAsync(c, actor, "GET", "/api/auth/session", null, actor.Session, result),
+                ],
+                Prepare: async (c, actor) =>
+                {
+                    var prepared = await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, variant.Prepared.DeepClone(), actor.Session, result);
+                    if (prepared.Slots.GetValueOrDefault("status") != "200")
+                    {
+                        throw new InvalidOperationException($"{actor.Label} could not hold {variant.Prepared.ToJsonString()}: {prepared.Slots.GetValueOrDefault("status")}");
+                    }
+                },
+                Other: async (c, actor, i) =>
+                {
+                    var body = i == 0 ? variant.Other.DeepClone() : new JsonObject { [fieldNames[(i - 1) % fieldNames.Count]] = variant.Other[fieldNames[(i - 1) % fieldNames.Count]]!.DeepClone() };
+                    return
+                    [
+                        await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, body, actor.Session, result),
+                        await SendAsync(c, actor, "GET", "/api/auth/session", null, actor.Session, result),
+                    ];
+                },
+                Body: variant));
+        }
+        if (options.SignIn)
+        {
+            turns.Add(new Turn("sign-in, session, sign-out", async (c, actor) =>
+            {
+                var (signIn, token) = await SignInAsync(c, actor, result);
+                return
+                [
+                    signIn,
+                    await SendAsync(c, actor, "GET", "/api/auth/session", null, token, result),
+                    await SendAsync(c, actor, "POST", "/api/auth/sign-out", null, token, result),
+                ];
+            }));
+        }
 
         foreach (var turn in turns)
         {
@@ -162,6 +330,10 @@ public static partial class ShellAnswers
     {
         x.Windows.Clear();
         y.Windows.Clear();
+        if (turn.Prepare is not null)
+        {
+            await turn.Prepare(client, x);
+        }
         // Warm-up: X's first turn follows whatever came before (the other direction's run).
         await turn.Run(client, x);
         var start = DateTimeOffset.UtcNow + Pace;
@@ -183,8 +355,13 @@ public static partial class ShellAnswers
         await WaitUntilAsync(fourth - lead);
         for (var i = 0; i < OtherTurns; i++)
         {
-            await turn.Run(client, y);
+            await (turn.Other is { } other ? other(client, y, i) : turn.Run(client, y));
             await Task.Delay(OtherPause);
+        }
+        if (turn.Body is { } judged)
+        {
+            result.BodyShapesJudged.Add(judged.Shape);
+            result.BodyVariantsJudged++;
         }
         await WaitUntilAsync(fourth);
         var after = await turn.Run(client, x);
@@ -354,6 +531,16 @@ public static partial class ShellAnswers
         result.Requests++;
         actor.Windows.Add((start, end));
         var slots = Slots(response, text, out var token);
+        foreach (var (slot, (shape, _)) in RandomShapes)
+        {
+            // Of the reviewed random shape: compared as the shape. Of any other: compared as it is,
+            // so a counter or a time carried in it is judged like every other value.
+            if (slots.TryGetValue(slot, out var value) && shape.IsMatch(value))
+            {
+                slots[slot] = $"<{slot}: random, {shape}>";
+                result.TraceIdsShaped++;
+            }
+        }
         check?.Invoke(response, slots);
         return new Answer($"{method} {path}", start, end, slots, token);
     }

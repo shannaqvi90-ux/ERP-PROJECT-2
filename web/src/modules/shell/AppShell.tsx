@@ -4,7 +4,7 @@ import { allowed, extensions, type ModuleAction } from "../../kernel/extensions"
 import { Icon } from "../../kernel/icons";
 import { translate, useDocumentTitle, useI18n, type Language } from "../../kernel/i18n";
 import { PrintDocument } from "../../kernel/print";
-import { Link, matchRoute, navigate, splitPath, usePath } from "../../kernel/router";
+import { Link, matchRoute, navigate, splitPath, useNavigationKey, usePath } from "../../kernel/router";
 import { sessionUserName, useSession, type Session } from "../../kernel/session";
 import { Keys, chordForAria, useCommandList, useShortcut } from "../../kernel/shortcuts";
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -78,6 +78,9 @@ export function AppShell({ session }: { session: Session }) {
   const { signOut, can } = useSession();
   const { changeLanguage, changeNumerals } = usePreferenceActions();
   const path = usePath();
+  // Every navigation opens the screen again on its address, the same screen included (a second
+  // record from the first one's, a screen's own list from one of its records).
+  const navigationKey = useNavigationKey();
   const route = matchRoute(path);
   const mainRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -108,7 +111,7 @@ export function AppShell({ session }: { session: Session }) {
     if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true });
     // On a phone the pane covers the screen: opening a screen puts it away.
     if (isNarrow()) setNavOpen(false);
-  }, [path]);
+  }, [path, navigationKey]);
 
   // Only the wide window's choice is remembered: on a phone the pane closes by itself whenever a
   // screen opens, which says nothing about the desktop. A window that turns wide again gets the
@@ -331,7 +334,7 @@ export function AppShell({ session }: { session: Session }) {
               printedBy={userName}
               printedAt={printedAt}
             >
-              <Screen />
+              <Screen key={navigationKey} />
             </PrintDocument>
           ) : route ? (
             <section className="empty-state" role="alert">

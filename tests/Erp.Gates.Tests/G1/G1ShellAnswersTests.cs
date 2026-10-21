@@ -46,6 +46,119 @@ public sealed partial class G1ShellAnswersTests(G1ShellAnswersFixture fixture) :
         AssertAtLeast(result.TimesJudged, "g1.shellAnswerTimesJudged");
         AssertAtLeast(result.CredentialCookiesShaped, "g1.shellAnswerCredentialCookiesShaped");
         AssertAtLeast(result.EndpointsJudged.Count, "g1.shellAnswerEndpoints");
+        // Every body the preferences write can take was judged against the other tenant's
+        // differing writes: each field alone, the whole body, the empty one (critic p04 round 11).
+        var shapes = (await ShellAnswers.BodyVariantsAsync(Env)).Select(v => v.Shape).ToHashSet(StringComparer.Ordinal);
+        Assert.Equal(shapes.Order(StringComparer.Ordinal), result.BodyShapesJudged.Order(StringComparer.Ordinal));
+        AssertAtLeast(result.BodyShapesJudged.Count, "g1.shellAnswerBodyShapes");
+        AssertAtLeast(result.BodyVariantsJudged, "g1.shellAnswerBodyVariantsJudged");
+        AssertAtLeast(result.TraceIdsShaped, "g1.shellAnswerTraceIdsShaped");
+
+        // The audit rows of those writes carry the request's trace id as their correlation id: a
+        // random one, never a count of the process's requests (Kestrel's connection and request
+        // counters), so tenant A's own audit trail does not count tenant B's requests.
+        await using var db = await Env.OpenAdminAsync();
+        var correlations = await Infrastructure.DbCatalog.ReadAsync(db, """
+            SELECT correlation_id FROM audit.entries
+             WHERE tenant_id = ANY(@tenants) AND table_name = 'users' AND correlation_id IS NOT NULL AND correlation_id NOT LIKE 'seed:%'
+             ORDER BY id DESC LIMIT 200
+            """, r => r.GetString(0), ("tenants", new[] { Env.TenantA.Id, Env.TenantB.Id }));
+        Assert.True(correlations.Count >= 40, $"only {correlations.Count} audit rows of the preference writes carry a correlation id");
+        var shape = ShellAnswers.RandomShapes["body.traceId"].Shape;
+        var counted = correlations.Where(c => !shape.IsMatch($"\"{c}\"")).ToList();
+        Assert.True(counted.Count == 0, "audit correlation ids not of the random trace-id shape: " + string.Join(", ", counted.Take(10)));
+        Assert.Equal(correlations.Count, correlations.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    /// <summary>
+    /// The bodies the check sends are the bodies the shell sends (critic p04 round 11: the checks
+    /// sent whole bodies only, the shell sends <c>{language}</c> alone on Alt+L). The shell's client
+    /// sends the preferences write from one place (web/src/kernel/preferences.ts) with a body of
+    /// type <c>PreferenceChange = Partial&lt;Preferences&gt;</c>, so any subset of
+    /// <c>Preferences</c>' fields; the fields it names are the request schema's, both ways; every
+    /// body written out at a call of <c>savePreferences</c> (or the switches' <c>persist</c>) uses only those fields; and every
+    /// subset of them is a shape the check judges (<see cref="ShellAnswers.BodyVariantsAsync"/>).
+    /// </summary>
+    [Fact]
+    public async Task Every_body_the_shell_sends_to_its_own_write_is_judged()
+    {
+        var web = Repo.PathOf("web", "src");
+        var preferences = File.ReadAllText(Path.Combine(web, "kernel", "preferences.ts"));
+        var type = PreferencesTypeRegex().Match(preferences);
+        Assert.True(type.Success, "web/src/kernel/preferences.ts no longer declares `export type Preferences = { ... }`");
+        var clientFields = FieldRegex().Matches(type.Groups["body"].Value).Select(m => m.Groups["name"].Value).ToList();
+        Assert.Matches(@"export type PreferenceChange = Partial<Preferences>;", preferences);
+        Assert.Matches(@"api\(""PUT"", preferencesPath, change\b", preferences);
+
+        var variants = await ShellAnswers.BodyVariantsAsync(Env);
+        var schemaFields = variants.SelectMany(v => v.Prepared.Select(p => p.Key)).Distinct(StringComparer.Ordinal).ToList();
+        Assert.Equal(schemaFields.Order(StringComparer.Ordinal), clientFields.Order(StringComparer.Ordinal));
+
+        // Every source of the web client: the preferences path is written in preferences.ts alone,
+        // and every body written out at a savePreferences call names the client's fields only.
+        var testHelpers = Path.Combine(web, "test") + Path.DirectorySeparatorChar;
+        var sources = Directory.GetFiles(web, "*.ts*", SearchOption.AllDirectories)
+            .Where(f => !f.Contains(".test.", StringComparison.Ordinal) && !f.StartsWith(testHelpers, StringComparison.Ordinal))
+            .ToList();
+        var literals = new List<string>();
+        foreach (var file in sources)
+        {
+            var text = File.ReadAllText(file);
+            if (!file.EndsWith(Path.Combine("kernel", "preferences.ts"), StringComparison.Ordinal))
+            {
+                Assert.DoesNotContain(ArabicSession.PreferencesPath, text);
+            }
+            foreach (Match call in SaveCallRegex().Matches(text))
+            {
+                var keys = FieldRegex().Matches(call.Groups["body"].Value).Select(m => m.Groups["name"].Value).ToList();
+                Assert.True(keys.Count > 0 && keys.All(clientFields.Contains), $"{Path.GetFileName(file)}: savePreferences body {{{call.Groups["body"].Value}}} names a field the client's Preferences type does not");
+                literals.Add($"{Path.GetFileName(file)}: {ShellAnswers.BodyVariant.ShapeOf(keys)}");
+            }
+        }
+        Assert.True(literals.Count >= 2, "found no savePreferences body written out (Alt+L's {language}, My account's {language}): " + string.Join(", ", literals));
+
+        var judged = variants.Select(v => v.Shape).ToHashSet(StringComparer.Ordinal);
+        var subsets = Enumerable.Range(1, (1 << clientFields.Count) - 1)
+            .Select(mask => ShellAnswers.BodyVariant.ShapeOf(clientFields.Where((_, i) => (mask & (1 << i)) != 0)))
+            .ToList();
+        TestContext.Current.TestOutputHelper?.WriteLine($"client fields {string.Join(", ", clientFields)}; bodies written out: {string.Join("; ", literals)}; judged shapes: {string.Join(" ", judged.Order(StringComparer.Ordinal))}");
+        Assert.True(subsets.All(judged.Contains), "bodies the shell may send that the check does not judge: " + string.Join(", ", subsets.Where(s => !judged.Contains(s))));
+        Assert.Contains("{}", judged);
+    }
+
+    /// <summary>
+    /// The partial bodies must catch what only they can show (critic p04 round 11, plant SL1): on a
+    /// host that answers a write leaving a field out with the value anyone, in any tenant, sent last
+    /// for it (<see cref="ShellPartialPlantModule"/>), the check names the field left out, for
+    /// {language} alone in an English session and {numerals} alone in an Arabic one, in both
+    /// directions, and nothing else. The whole-body turns of the same run stay quiet on it.
+    /// </summary>
+    [Fact]
+    public async Task The_shell_answers_check_catches_a_field_left_out_filled_from_another_tenant()
+    {
+        await using var planted = Env.OverHost(ShellPartialPlantModule.Settings(Env));
+        var all = await ShellAnswers.BodyVariantsAsync(planted);
+        var language = all.First(v => v.Shape == "{language}" && (string?)v.Body["language"] == "en");
+        var numerals = all.First(v => v.Shape == "{numerals}" && (string?)v.Prepared["language"] == "ar");
+        var whole = all.First(v => v.Shape == "{language,numerals}");
+        var result = await ShellAnswers.RunAsync(planted, new ShellAnswers.Options([], v => v.Name == language.Name || v.Name == numerals.Name || v.Name == whole.Name, SignIn: false));
+        Report(result);
+        var preferences = $"PUT {ArabicSession.PreferencesPath}";
+        var plants = 0;
+        foreach (var (variant, field) in new[] { (language, "numerals"), (numerals, "language") })
+        {
+            foreach (var tenant in new[] { "tenant A", "tenant B" })
+            {
+                Assert.True(result.Findings.Any(f => f.StartsWith($"{tenant} {variant.Name}: {preferences} body.{field}:", StringComparison.Ordinal)),
+                    $"not caught for {tenant}: {variant.Name} body.{field}\nfindings:\n{string.Join("\n", result.Findings)}");
+            }
+            plants++;
+        }
+        var others = result.Findings.Where(f => !(f.Contains(language.Name, StringComparison.Ordinal) && f.Contains($"{preferences} body.numerals:", StringComparison.Ordinal)) &&
+                                                 !(f.Contains(numerals.Name, StringComparison.Ordinal) && f.Contains($"{preferences} body.language:", StringComparison.Ordinal))).ToList();
+        Assert.True(others.Count == 0, "findings nothing planted explains: " + string.Join("\n", others));
+        Assert.Equal(6, result.BodyVariantsJudged);
+        AssertAtLeast(plants, "g1.shellAnswerPartialPlantsCaught");
     }
 
     /// <summary>The shell calls no endpoint of its own that the check does not judge: every API path
@@ -131,4 +244,16 @@ public sealed partial class G1ShellAnswersTests(G1ShellAnswersFixture fixture) :
 
     [GeneratedRegex("[\"'`](?<path>/api/[A-Za-z0-9/_.-]+)")]
     private static partial Regex ApiPathRegex();
+
+    [GeneratedRegex(@"export type Preferences = \{(?<body>[^}]*)\}")]
+    private static partial Regex PreferencesTypeRegex();
+
+    /// <summary>A field of a TypeScript object type or literal: <c>name:</c> or <c>name?:</c>.</summary>
+    [GeneratedRegex(@"(?<![A-Za-z0-9_$.])(?<name>[A-Za-z_$][A-Za-z0-9_$]*)\??\s*:")]
+    private static partial Regex FieldRegex();
+
+    /// <summary>A body written out where it goes to savePreferences: <c>savePreferences(x, { language: value })</c>,
+    /// or the shell's switches' own funnel into it (usePreferenceActions: <c>persist({ numerals: next })</c>).</summary>
+    [GeneratedRegex(@"(?:savePreferences\([^,()]+(?:\([^()]*\))?[^,()]*,|\bpersist\()\s*\{(?<body>[^}]*)\}\s*\)")]
+    private static partial Regex SaveCallRegex();
 }

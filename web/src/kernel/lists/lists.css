@@ -625,3 +625,82 @@
     display: none;
   }
 }
+
+/* A list on paper fits the page (critic p04 round 11: on A4, 718px wide, the users grid needed
+   743px in English and 789px in Arabic, so the last column was off the page and 10:35 printed as
+   "…0:35"). The columns share the page by their shares alone (--list-print-columns, set by
+   ListView), the selection column is gone, nothing is cut with an ellipsis: a long value wraps,
+   and a row grows to hold it. The rows on screen print one after the other, not at their virtual
+   positions. An open record prints after the list, from a new page, whole: the list and the record
+   are both on paper at the page's full width, neither cut. */
+@media print {
+  .list-body,
+  .list-body.has-record,
+  .list-body.has-record.has-form {
+    display: block;
+  }
+
+  .list-splitter {
+    display: none !important;
+  }
+
+  .list-scroll,
+  .list-record {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .list-record {
+    break-before: page;
+    padding: 0;
+  }
+
+  .list-grid,
+  .list-head,
+  .list-rows,
+  .list-header,
+  .list-row {
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .list-head {
+    position: static;
+  }
+
+  .list-header,
+  .list-row {
+    grid-template-columns: var(--list-print-columns) !important;
+    height: auto;
+    min-height: 28px;
+  }
+
+  .list-grid .list-select {
+    display: none !important;
+  }
+
+  .list-rows {
+    height: auto !important;
+  }
+
+  .list-row {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    break-inside: avoid;
+  }
+
+  .list-cell,
+  .list-text,
+  .list-cell > span[dir],
+  .list-headcell,
+  .list-headcell * {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+  }
+}

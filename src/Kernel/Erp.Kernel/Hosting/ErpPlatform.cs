@@ -147,6 +147,9 @@ public static class ErpPlatform
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     }
 
+    /// <summary>A fresh request trace id: 32 random lowercase hexadecimal digits, nothing counted.</summary>
+    public static string RandomTraceId() => System.Security.Cryptography.RandomNumberGenerator.GetHexString(32, lowercase: true);
+
     /// <summary>Build the request pipeline and map every module's endpoints.</summary>
     public static WebApplication UseErpPlatform(this WebApplication app)
     {
@@ -155,6 +158,17 @@ public static class ErpPlatform
         _ = app.Services.GetRequiredService<Security.PasswordHashing>();
         // From here on a write into the configuration throws: every tenant shares it.
         ReadOnlyConfiguration.Seal(app.Services.GetRequiredService<IConfiguration>());
+        // A request's trace id (in problem answers, logs and the audit rows it writes) is random:
+        // the request's activity id (W3C trace context: a random span id, and a random trace id
+        // unless the caller sent its own traceparent), which problem answers carry anyway, else 32
+        // random hexadecimal digits. ASP.NET Core's own trace identifier is a counter every request
+        // of the process moves (Kestrel: the connection count and the request number on it), so in
+        // a log line or an audit row it told how many requests other tenants made in between.
+        app.Use((context, next) =>
+        {
+            context.TraceIdentifier = System.Diagnostics.Activity.Current?.Id ?? RandomTraceId();
+            return next(context);
+        });
         // Behind a reverse proxy the client address (rate limits, session records) comes from
         // X-Forwarded-For, trusted only from the configured proxies.
         if (ForwardedHeadersFrom(app.Configuration) is { } forwarded)
