@@ -58,7 +58,8 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.VictimRouteValuesReplayed} tenant B route values replayed, {report.VictimPreTouches} tenant B opens of the routes A was about to attack");
         TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{report.EnumValuesAttacked.Count} documented enumeration values sent, {report.EnumVariantPairs} enumeration-variant write pairs");
+            $"{report.EnumValuesAttacked.Count} documented enumeration values sent, {report.EnumVariantPairs} enumeration-variant write pairs; " +
+            $"{report.PartialWriteVariants} partial bodies, {report.PartialWritePairs} accepted on both sides over {report.PartialWriteEndpoints} endpoints");
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
             $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
@@ -141,6 +142,11 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
         // was sent by both tenants back to back, not only the first one.
         CheckAtLeast(report.EnumValuesAttacked.Count, "g1.enumValuesAttacked");
         CheckAtLeast(report.EnumVariantPairs, "g1.enumVariantWritePairs");
+        // Partial bodies (critic p04 round 11): every field a client may leave out was left out by
+        // both tenants, right after the other wrote the whole body.
+        CheckAtLeast(report.PartialWriteVariants, "g1.partialWriteVariants");
+        CheckAtLeast(report.PartialWritePairs, "g1.partialWritePairs");
+        CheckAtLeast(report.PartialWriteEndpoints, "g1.partialWriteEndpoints");
         // The Arabic side of every session (critic p04 round 4): tenant A attacks and tenant B
         // uses the app in Arabic with Arabic-Indic digits too, and both stayed Arabic throughout.
         Check(report.ArabicBlindSpots.Count == 0, "The Arabic sessions may have been blind:\n" + string.Join("\n", report.ArabicBlindSpots));
@@ -192,7 +198,15 @@ public static partial class IsolationAttack
     /// The gate's self-test judges the planted lists only: the product's lists are judged sorted
     /// by the gate itself, and doing it again in the self-test's environment cost about a quarter of
     /// an hour of the verify's longest process.</param>
-    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null)
+    /// <param name="only">The endpoints attacked and used by tenant B (default: every endpoint the
+    /// app exposes, which is what the gate runs). The gate's self-test passes the planted module's
+    /// endpoints: every phase, check and judgement runs exactly as in the gate, on the surface the
+    /// plants are on, while the product's own surface is attacked by the gate itself in the same
+    /// verify (round 13: the self-test's second full attack of the product was the verify's single
+    /// largest use of processor time). The registered lists, probes and list answers follow the
+    /// endpoints in scope.</param>
+    public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null,
+        Func<ApiEndpoint, bool>? only = null)
     {
         SqlTrace.EnsureStarted();
         // Environment variables are process-wide state outside any field (critic p00 round 4: the
@@ -205,7 +219,9 @@ public static partial class IsolationAttack
 
         using var anonymousForDocs = Env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymousForDocs);
-        var endpoints = EndpointInventory.From(Env.Factory.Services);
+        var endpoints = EndpointInventory.From(Env.Factory.Services).Where(e => only?.Invoke(e) ?? true).ToList();
+        Assert.True(endpoints.Count > 0, "no endpoint in the attack's scope");
+        bool ListInScope(Erp.Kernel.Lists.ListDefinition list) => only is null || endpoints.Any(e => e.Method == "GET" && e.Pattern == list.Endpoint);
 
         // Tenant B uses the product first: every write on its own records, then (below) every
         // read, so its data sits in whatever process-wide state the app keeps before A attacks.
@@ -387,6 +403,12 @@ public static partial class IsolationAttack
             foreach (var probeType in catalog.Modules.SelectMany(m => m.IsolationProbes))
             {
                 var probe = (IIsolationProbe)scope.ServiceProvider.GetRequiredService(probeType);
+                // A scoped attack runs the probes of the surface kinds its endpoints have (the gate,
+                // unscoped, runs every probe and fails on a surface kind without one).
+                if (only is not null && !endpoints.Any(e => e.Surface == probe.Kind))
+                {
+                    continue;
+                }
                 probeKinds.Add(probe.Kind);
                 // Tenant B's administrator goes with the probe: it uses the surface on its own
                 // records right before tenant A does (prints and exports every report and list).
@@ -530,7 +552,7 @@ public static partial class IsolationAttack
         // only through the raw parameters above.
         var listWork = new List<Func<Task>>();
         var listsAttacked = 0;
-        foreach (var binding in catalog.ListBindings)
+        foreach (var binding in catalog.ListBindings.Where(l => ListInScope(l.Definition)))
         {
             var list = binding.Definition;
             var listEndpoint = endpoints.SingleOrDefault(e => e.Method == "GET" && e.Pattern == list.Endpoint);
@@ -603,7 +625,7 @@ public static partial class IsolationAttack
                 }
             }
         }
-        Assert.True(listsAttacked >= Ratchet.Min("rules.listsChecked"), $"{listsAttacked} lists attacked through their query contract");
+        Assert.True(listsAttacked >= (only is null ? Ratchet.Min("rules.listsChecked") : 1), $"{listsAttacked} lists attacked through their query contract");
         var listAttacksBefore = state.Requests;
         await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) => await item());
         var listQueryAttacks = listWork.Count;
@@ -618,11 +640,11 @@ public static partial class IsolationAttack
             var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
             var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
             var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged", sortedLists));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged", sortedLists, ListInScope));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged", sortedLists, ListInScope));
             // The same in Arabic with Arabic-Indic digits, both ways.
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged", sortedLists));
-            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged", sortedLists));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged", sortedLists, ListInScope));
+            listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged", sortedLists, ListInScope));
         }
         Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries ({listAnswers.Sum(r => r.SortedQueries)} sorted), {listAnswers.Sum(r => r.Discriminating)} with different true answers ({listAnswers.Sum(r => r.SortedDiscriminating)} sorted), {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
 
@@ -767,6 +789,9 @@ public static partial class IsolationAttack
             WritePairs = pairs.Pairs,
             WritePairEndpoints = pairs.Endpoints,
             EnumVariantPairs = pairs.VariantPairs,
+            PartialWriteVariants = pairs.PartialVariants,
+            PartialWritePairs = pairs.PartialPairs,
+            PartialWriteEndpoints = pairs.PartialEndpoints,
             EnumValuesAttacked = pairs.EnumValuesAttacked ?? [],
             ArabicAttackRequests = attackers.Where(x => x.Arabic).Sum(x => x.Requests) + pairs.ArabicRequests,
             VictimArabicRequests = activity.ArabicRequests,
@@ -838,7 +863,17 @@ public static partial class IsolationAttack
 
     public sealed record WritePairResult(int Pairs, int Endpoints, int AttackerRequests, IReadOnlyList<string> Leaks,
         IReadOnlyList<string> AttackerUnsuccessfulWrites, IReadOnlyList<string> BlindSpots, int VariantPairs = 0, IReadOnlyList<string>? EnumValuesAttacked = null,
-        int ArabicPairs = 0, int ArabicRequests = 0, int ArabicWorkspaceRefusals = 0, int ArabicWorkspaceWrites = 0);
+        int ArabicPairs = 0, int ArabicRequests = 0, int ArabicWorkspaceRefusals = 0, int ArabicWorkspaceWrites = 0)
+    {
+        /// <summary>Partial bodies sent by both tenants (<see cref="TenantActivity.PartialVariantsOf"/>).</summary>
+        public int PartialVariants { get; init; }
+
+        /// <summary>Partial bodies accepted on both sides.</summary>
+        public int PartialPairs { get; init; }
+
+        /// <summary>Endpoints with at least one partial body accepted on both sides.</summary>
+        public int PartialEndpoints { get; init; }
+    }
 
     /// <summary>
     /// Write after write, in both directions, for every endpoint that changes data: tenant B writes,
@@ -870,6 +905,9 @@ public static partial class IsolationAttack
         var enumValues = new SortedSet<string>(StringComparer.Ordinal);
         var blind = new List<string>();
         var writes = victimActivity.Writes;
+        var partialVariants = 0;
+        var partialPairs = 0;
+        var partialEndpoints = new HashSet<string>(StringComparer.Ordinal);
         try
         {
             foreach (var endpoint in writes)
@@ -927,6 +965,28 @@ public static partial class IsolationAttack
                         enumValues.Add($"{endpoint.Key} {leaf.Name}={variant.Value!.ToJsonString()}");
                     }
                 }
+                // Partial bodies (critic p04 round 11, plant SL1: the shell sends {language} alone):
+                // each tenant writes the whole body, its own texts in every field, right before the
+                // other sends each partial body, both ways. A handler that fills a field left out
+                // from what the last caller sent hands the other tenant's text to the partial writer,
+                // where its answer is judged for the other tenant's markers. (What a partial write
+                // answers with no marker to show is the non-interference check's.) The partial
+                // bodies the product accepted from tenant B before the attack: one it refuses never
+                // reaches the handler's partial path, and its answer was judged when B sent it.
+                var accepted = victimActivity.PartialAccepted;
+                foreach (var variant in victimActivity.PartialVariantsOf(endpoint).Where(v => accepted.Contains($"{endpoint.Key}|{v.Label}")))
+                {
+                    await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes the whole body right before A's partial write ({variant})");
+                    var attackerStatus = await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes right after B's whole body ({variant})", variant: variant);
+                    await attacker.WriteOneAsync(endpoint, ownA, $"tenant A writes the whole body right before B's partial write ({variant})");
+                    var victimStatus = await victimActivity.WriteOneAsync(endpoint, victimNow, $"tenant B writes right after A's whole body ({variant})", variant: variant);
+                    partialVariants++;
+                    if (victimStatus is >= 200 and < 300 && attackerStatus is >= 200 and < 300)
+                    {
+                        partialPairs++;
+                        partialEndpoints.Add(endpoint.Key);
+                    }
+                }
                 // An Arabic session's own preferences write (a variant) may have left it in English.
                 await victimActivity.EnsureArabicAsync($"after the write pairs of {endpoint.Key}");
                 await attacker.EnsureArabicAsync($"after the write pairs of {endpoint.Key}");
@@ -960,7 +1020,16 @@ public static partial class IsolationAttack
         {
             blind.Add("no write pair in Arabic succeeded on both sides");
         }
-        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList(), arabicPairs, arabicRequests, workspaceRefusals, workspaceWrites);
+        if (partialVariants > 0 && partialPairs == 0)
+        {
+            blind.Add($"none of the {partialVariants} partial bodies tenant B's own writes had accepted was accepted on both sides");
+        }
+        return new WritePairResult(pairs, writes.Count, attacker.Requests, attacker.Leaks, attacker.UnsuccessfulWrites, blind, variantPairs, enumValues.ToList(), arabicPairs, arabicRequests, workspaceRefusals, workspaceWrites)
+        {
+            PartialVariants = partialVariants,
+            PartialPairs = partialPairs,
+            PartialEndpoints = partialEndpoints.Count,
+        };
     }
 
     /// <summary>Who writes in each write pair: the administrator's cookie, its bearer token, and the
@@ -1847,6 +1916,15 @@ public sealed record IsolationReport(
     /// <summary>Write pairs (both tenants succeeding) sent with a variant of the body: one
     /// documented value of an enumerated field, the same in both tenants' bodies.</summary>
     public int EnumVariantPairs { get; init; }
+
+    /// <summary>Partial bodies sent by both tenants in the write-after-write phase.</summary>
+    public int PartialWriteVariants { get; init; }
+
+    /// <summary>Partial bodies accepted on both sides.</summary>
+    public int PartialWritePairs { get; init; }
+
+    /// <summary>Endpoints with a partial body accepted on both sides.</summary>
+    public int PartialWriteEndpoints { get; init; }
 
     /// <summary>Requests tenant A's Arabic sessions (administrator and anonymous) sent, every one
     /// of them in Arabic with Arabic-Indic digits.</summary>

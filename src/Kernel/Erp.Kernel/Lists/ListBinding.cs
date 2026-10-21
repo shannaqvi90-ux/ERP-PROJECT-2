@@ -31,6 +31,15 @@ public interface IListBinding
 
     IReadOnlyList<ListBoundColumn> Columns { get; }
 
+    /// <summary>One-word searches of 2 to <see cref="ListSearch.MaxInitials"/> Latin letters also match
+    /// a value's initials (see <see cref="ListBinding{T}.Initials"/>).</summary>
+    bool SearchesInitials => false;
+
+    /// <summary>The column whose value the initials are read from, when the initials read a bound
+    /// column's member (the gates judge initials matches from the rows a list answers); null when
+    /// the list searches no initials or reads them from a value no column shows.</summary>
+    string? InitialsColumn => null;
+
     /// <summary>Problems with the binding (unbound sortable/filterable/search columns, value types
     /// that do not suit the column type). The host refuses to start with any.</summary>
     IEnumerable<string> Problems();
@@ -117,6 +126,15 @@ public sealed class ListBinding<T> : IListBinding where T : class
     public Type RowType => typeof(T);
 
     public string? InMemoryReason { get; }
+
+    /// <inheritdoc/>
+    public bool SearchesInitials => _initials is not null;
+
+    /// <inheritdoc/>
+    public string? InitialsColumn =>
+        _initials?.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == _initials.Parameters[0]
+            ? _columns.Values.OrderBy(b => b.Order).FirstOrDefault(b => b.Member == property.Name)?.Key
+            : null;
 
     public IReadOnlyList<ListBoundColumn> Columns =>
         _columns.Values.OrderBy(b => b.Order).Select(b => new ListBoundColumn(b.Key, b.ValueType, b.Expression, b.Member)).ToList();

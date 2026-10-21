@@ -31,12 +31,15 @@ const people: Row[] = Array.from({ length: 30 }, (_, i) => ({
   language: i % 3 === 0 ? "ar" : "en",
 }));
 
-function serve(calls: { method: string; url: string; body: unknown }[] = []) {
+/** What the server answers about saved views: whether the caller may share, and its views. */
+type ServeOptions = { canShare?: boolean; views?: unknown[] };
+
+function serve(calls: { method: string; url: string; body: unknown }[] = [], options: ServeOptions = {}) {
   return mockFetch((method, url, body) => {
     calls.push({ method, url, body });
     const parsed = new URL(url, "http://localhost");
-    if (parsed.pathname.endsWith("/definition")) return { status: 200, body: definition };
-    if (parsed.pathname.endsWith("/views") && method === "GET") return { status: 200, body: { items: [], total: 0 } };
+    if (parsed.pathname.endsWith("/definition")) return { status: 200, body: { ...definition, canShare: options.canShare ?? definition.canShare } };
+    if (parsed.pathname.endsWith("/views") && method === "GET") return { status: 200, body: { items: options.views ?? [], total: options.views?.length ?? 0 } };
     if (parsed.pathname.endsWith("/views") && method === "POST") {
       return { status: 201, body: { id: "v1", listKey: "identity.users", name: (body as { name: string }).name, isShared: false, isDefault: false, isMine: true, columns: [], sort: null, filter: null, search: null, groupBy: null, updatedAt: "", version: 1 } };
     }
@@ -460,6 +463,68 @@ describe("list view", () => {
     const post = calls.find((c) => c.method === "POST")!;
     expect(post.url).toBe("/api/lists/identity.users/views");
     expect(post.body).toMatchObject({ name: "My Arabic users", filter: "language eq 'ar'", sort: "displayName", columns: ["displayName", "email", "language"] });
+  });
+});
+
+describe("saved views and the share permission", () => {
+  const saved = { listKey: "identity.users", isDefault: false, columns: ["displayName", "email", "language"], sort: null, filter: null, search: null, groupBy: null, updatedAt: "", version: 1 };
+  const shared = { ...saved, id: "s1", name: "Team view", isShared: true, isMine: false };
+  const mine = { ...saved, id: "p1", name: "My view", isShared: false, isMine: true };
+
+  /** Picks a view, changes it (a sort from the header) and returns the actions the views menu offers. */
+  async function actionsOn(v: Rendered, name: string) {
+    const viewsButton = () => [...v.container.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent?.startsWith("View:"))!;
+    await act(async () => viewsButton().click());
+    const item = [...v.container.querySelectorAll<HTMLButtonElement>("[role=menuitemradio]")].find((b) => b.textContent?.startsWith(name))!;
+    expect(item).toBeTruthy();
+    await act(async () => item.click());
+    await settle();
+    const sortButton = [...v.container.querySelectorAll<HTMLButtonElement>(".list-sort")].find((b) => b.textContent?.startsWith("E-mail"))!;
+    await act(async () => sortButton.click());
+    await settle();
+    await act(async () => viewsButton().click());
+    expect(viewsButton().textContent).toContain(name);
+    expect(viewsButton().textContent).toContain("modified");
+    return [...v.container.querySelectorAll<HTMLButtonElement>("[role=menuitem]")].map((b) => b.textContent);
+  }
+
+  // Critic p05 round 12, plant P10: dropping the share check from the views menu offered a reader
+  // without lists.views.share "Save changes" and "Delete" on the workspace's shared view, and every
+  // unit test still passed.
+  it("offers a reader who may not share no change to the workspace's shared view", async () => {
+    serve([], { canShare: false, views: [shared, mine] });
+    const actions = await actionsOn(await show(), "Team view");
+    expect(actions).toContain("Save as a new view…");
+    expect(actions).not.toContain("Save changes to this view");
+    expect(actions).not.toContain("Delete this view");
+  });
+
+  it("offers a reader who may not share the changes to its own view", async () => {
+    serve([], { canShare: false, views: [shared, mine] });
+    const actions = await actionsOn(await show(), "My view");
+    expect(actions).toContain("Save changes to this view");
+    expect(actions).toContain("Delete this view");
+  });
+
+  it("offers a user who may share the changes to the workspace's shared view", async () => {
+    serve([], { canShare: true, views: [shared, mine] });
+    const actions = await actionsOn(await show(), "Team view");
+    expect(actions).toContain("Save changes to this view");
+    expect(actions).toContain("Delete this view");
+  });
+
+  it("offers no share box to a reader who may not share, and one to a user who may", async () => {
+    for (const canShare of [false, true]) {
+      serve([], { canShare, views: [shared, mine] });
+      const v = await show();
+      const viewsButton = [...v.container.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent?.startsWith("View:"))!;
+      await act(async () => viewsButton.click());
+      const saveAs = [...v.container.querySelectorAll<HTMLButtonElement>("[role=menuitem]")].find((b) => b.textContent === "Save as a new view…")!;
+      await act(async () => saveAs.click());
+      expect(v.container.querySelectorAll(".list-save input[type=checkbox]").length).toBe(canShare ? 2 : 1);
+      v.unmount();
+      view = undefined;
+    }
   });
 });
 

@@ -2,6 +2,7 @@ using Erp.Gates.Tests.Infrastructure;
 using Erp.Gates.Tests.SelfTests;
 using Erp.Kernel.Seeding;
 using Erp.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Gates.Tests.G1;
 
@@ -63,7 +64,8 @@ public sealed class G1ListVolumeTests(G1VolumeFixture fixture) : IClassFixture<G
         }
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{result.Queries} queries ({result.Discriminating} with different true answers), {result.Answers} answers judged, {result.RowsWalked} rows walked, " +
-            $"{result.ListsAtVolume} lists at volume, {result.DeepAnswers} deep answers, {result.UnrankedSearches} unranked and {result.RankedSearches} ranked searches, {result.CursorsFollowed} cursors followed");
+            $"{result.ListsAtVolume} lists at volume, {result.DeepAnswers} deep answers, {result.UnrankedSearches} unranked and {result.RankedSearches} ranked searches, {result.CursorsFollowed} cursors followed, " +
+            $"{result.SearchBranches} search branches judged");
 
         var failures = new List<string>();
         void CheckAtLeast(int value, string key)
@@ -94,14 +96,17 @@ public sealed class G1ListVolumeTests(G1VolumeFixture fixture) : IClassFixture<G
         CheckAtLeast(result.UnrankedSearches, "g1.listVolumeUnrankedSearches");
         CheckAtLeast(result.RankedSearches, "g1.listVolumeRankedSearches");
         CheckAtLeast(result.CursorsFollowed, "g1.listVolumeCursors");
+        CheckAtLeast(result.SearchBranches, "g1.listVolumeSearchBranches");
         Assert.True(failures.Count == 0, string.Join("\n\n", failures));
     }
 
     /// <summary>
     /// Self-test: on a host over the same database where the users list's total past 10,000 rows is
     /// taken from whole-table figures or kept for the next tenant (<see cref="VolumePlantModule"/>:
-    /// L12's reltuples, a total memo for big filtered queries, an EXPLAIN estimate for searches), the
-    /// volume check reports each, and the trace reports the catalog reads and the EXPLAIN.
+    /// L12's reltuples, a total memo for big filtered queries, an EXPLAIN estimate for one-letter
+    /// searches), and where every other search's total, broad or ranked, is kept for the next tenant
+    /// (L13), the volume check reports each (each search branch on its own), and the trace reports
+    /// the catalog reads and the EXPLAIN.
     /// </summary>
     [Fact]
     public async Task The_volume_check_catches_totals_taken_from_whole_table_figures_or_kept_for_big_lists()
@@ -112,12 +117,31 @@ public sealed class G1ListVolumeTests(G1VolumeFixture fixture) : IClassFixture<G
         var result = await ListVolume.RunAsync(planted, a, b, G1VolumeFixture.VolumeA, l => l.Key == "identity.users");
         var wrong = string.Join("\n", result.Wrong.Take(60));
         bool Found(Func<string, bool> uri) => result.Wrong.Any(w => w.Contains("answered total", StringComparison.Ordinal) && uri(w.Split(' ', 4)[3]));
+        // The request of a reported answer: "tenant B: GET <uri> answered total …".
+        static string Search(string uri) =>
+            Uri.TryCreate("http://gate" + uri.Split(' ')[0], UriKind.Absolute, out var parsed) ? System.Web.HttpUtility.ParseQueryString(parsed.Query)["search"] ?? "" : "";
         // V1 (L12): a whole-list query's total is every tenant's users.
         Assert.True(Found(u => !u.Contains("filter=", StringComparison.Ordinal) && !u.Contains("search=", StringComparison.Ordinal)), "V1 (reltuples) not caught:\n" + wrong);
         // V2: a big filtered query's total is the first asker's.
-        Assert.True(Found(u => u.Contains("filter=", StringComparison.Ordinal)), "V2 (total memo) not caught:\n" + wrong);
-        // V3: a broad search's total is the planner's estimate.
-        Assert.True(Found(u => u.Contains("search=", StringComparison.Ordinal)), "V3 (EXPLAIN estimate) not caught:\n" + wrong);
+        Assert.True(Found(u => u.Contains("filter=", StringComparison.Ordinal) && !u.Contains("search=", StringComparison.Ordinal)), "V2 (total memo) not caught:\n" + wrong);
+        // V3: a broad one-letter search's total is the planner's estimate.
+        Assert.True(Found(u => Search(u).Trim().Length == 1), "V3 (EXPLAIN estimate) not caught:\n" + wrong);
+        // V4 (L13): every other branch of the search engine, too broad to rank and ranked, keeps the
+        // first asker's total; each required branch must be caught on its own, and a search with a filter too.
+        var users = Env.Factory.Services.GetRequiredService<Erp.Kernel.Modules.ModuleCatalog>().ListBindings.Single(l => l.Definition.Key == "identity.users");
+        var missed = new List<string>();
+        foreach (var branch in ListVolume.BranchClasses(users, arabic: true, digits: true).Where(c => c.Required))
+        {
+            var caught = result.Wrong.Any(w => w.Contains("answered total", StringComparison.Ordinal) && w.Split(' ', 4)[3] is var uri &&
+                ListVolume.SearchBranch(Search(uri), users.SearchesInitials) == branch.Shape &&
+                int.Parse(w[(w.IndexOf("matching it are ", StringComparison.Ordinal) + "matching it are ".Length)..].Split(' ')[0], System.Globalization.CultureInfo.InvariantCulture) > Erp.Kernel.Lists.ListSearch.MaxRankedRows == branch.Broad);
+            if (!caught)
+            {
+                missed.Add(branch.Name);
+            }
+        }
+        Assert.True(missed.Count == 0, "V4 (L13: search totals kept for the next tenant) not caught for the branches: " + string.Join("; ", missed) + "\n" + wrong);
+        Assert.True(Found(u => u.Contains("filter=", StringComparison.Ordinal) && Search(u).Trim().Length > 1), "V4 with a filter (a search's total kept with its filter) not caught:\n" + wrong);
         var reads = SqlTrace.WholeTableReadsFor(planted);
         Assert.Contains(reads, r => r.Contains("pg_class", StringComparison.Ordinal));
         Assert.Contains(reads, r => r.Contains("EXPLAIN", StringComparison.Ordinal));

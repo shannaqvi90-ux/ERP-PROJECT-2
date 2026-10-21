@@ -80,6 +80,50 @@ public sealed class G1TenantSourceTests
             ("process-global", "private static readonly AsyncLocal<Guid> Tenant = new();"),
             ("process-global", "builder.Services.AddOutputCache();"),
             ("process-global", "builder.Services.AddMemoryCache();"),
+            // Critic p05 round 12, plant L9 (list totals in temporary files) and critic p04 round 11,
+            // plant SL1 (the digits last chosen by anyone, in a file): state outside the process's
+            // memory, which no process-state walk sees and a second process shares.
+            ("outside-process", "File.WriteAllText(Path.Combine(Path.GetTempPath(), \"erp-totals-\" + key), total.ToString());"),
+            ("outside-process", "var digits = System.IO.File.ReadAllText(\"/tmp/erp-digits\");"),
+            ("outside-process", "var path = Path.GetTempFileName();"),
+            ("outside-process", "Directory.CreateDirectory(cacheFolder);"),
+            ("outside-process", "using var stream = new FileStream(path, FileMode.Create);"),
+            ("outside-process", "var size = new FileInfo(path).Length;"),
+            ("outside-process", "using var writer = new StreamWriter(\"/tmp/erp-last\");"),
+            ("outside-process", "var map = MemoryMappedFile.CreateOrOpen(\"erp-totals\", 4096);"),
+            ("outside-process", "using var mutex = new Mutex(false, \"erp-last-tenant\");"),
+            ("outside-process", "var counter = Semaphore.OpenExisting(\"erp-count\");"),
+            ("outside-process", "var signal = new EventWaitHandle(false, EventResetMode.AutoReset, \"erp-switch\");"),
+            ("outside-process", "using var pipe = new NamedPipeClientStream(\"erp-totals\");"),
+            ("outside-process", "using var client = new TcpClient(\"cache\", 6379);"),
+            ("outside-process", "Process.Start(\"sh\", \"-c true\");"),
+            ("outside-process", "var block = Marshal.AllocHGlobal(64);"),
+            ("outside-process", "[DllImport(\"libc\")] static extern int getpid();"),
+            ("outside-process", "var store = IsolatedStorageFile.GetUserStoreForApplication();"),
+            ("outside-process", "var files = new PhysicalFileProvider(\"/var/erp\");"),
+            // Critic p05 round 12, plant L13 (p05 round 13's cases, one rule since): a broad search's total kept in the temporary folder,
+            // keyed by list and word without the tenant. State outside the process (files, the
+            // temporary folder, memory-mapped files, named synchronisation objects, pipes, isolated
+            // storage, the registry) escapes the process-state gate's reflection as well.
+            ("outside-process", "var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), \"erp-broad-search-totals\", key);"),
+            ("outside-process", "System.IO.File.WriteAllText(path, total.ToString());"),
+            ("outside-process", "if (File.Exists(path)) { return int.Parse(File.ReadAllText(path)); }"),
+            ("outside-process", "global::System.IO.Directory.CreateDirectory(folder);"),
+            ("outside-process", "await using var stream = new FileStream(path, FileMode.Create);"),
+            ("outside-process", "var info = new System.IO.FileInfo(path);"),
+            ("outside-process", "using var writer = new StreamWriter(\"/tmp/totals.txt\");"),
+            ("outside-process", "var folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);"),
+            ("outside-process", "var name = Path.GetTempFileName();"),
+            ("outside-process", "using var map = MemoryMappedFile.CreateOrOpen(\"erp-totals\", 4096);"),
+            ("outside-process", "using var gate = new Mutex(false, \"Global\\\\erp-\" + key);"),
+            ("outside-process", "var shared = new Semaphore(0, 1, \"erp-totals\");"),
+            ("outside-process", "if (EventWaitHandle.TryOpenExisting(\"erp\", out var handle)) { }"),
+            ("outside-process", "using var pipe = new NamedPipeServerStream(\"erp-totals\");"),
+            ("outside-process", "var store = IsolatedStorageFile.GetUserStoreForApplication();"),
+            ("outside-process", "using static System.IO.File;"),
+            ("outside-process", "using Disk = System.IO.File;"),
+            ("outside-process", "var length = RandomAccess.GetLength(handle);"),
+            ("outside-process", "services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(\"/keys\"));"),
         };
         foreach (var (rule, code) in planted)
         {
@@ -208,6 +252,26 @@ public static class TenantBypassScanner
             new(@"\bAppContext\.(?:SetData|SetSwitch)\b|\bAppDomain\b[^;]*\.SetData\b|\bEnvironment\.SetEnvironmentVariable\b|\[\s*ThreadStatic\s*\]|\bThreadLocal\s*<|\bAsyncLocal\s*<|\bMemoryCache\.Default\b|" +
               @"\b(?:Default|Leak[A-Za-z]*)?ObjectPool(?:Provider)?\b|\bArrayPool\s*<|\bMemoryPool\s*<|\bIMemoryCache\b|\bIDistributedCache\b|\bHybridCache\b|\bIOutputCacheStore\b|" +
               @"\bAdd(?:Memory|DistributedMemory|StackExchangeRedis|Output|Response|Hybrid)Cach(?:e|ing)\s*\(|\bSetString(?:Async)?\s*\(|\bConditionalWeakTable\s*<", Options)),
+        // Critic p05 round 12, plants L9 and L13 (list and search totals in temporary files), and
+        // critic p04 round 11, plant SL1 (the digits last chosen by anyone, in a file): state kept
+        // outside the process's memory, which every process-state check (they walk the process's
+        // own memory) misses and a second process shares. One rule, the union of p00's and p05's
+        // round-13 patterns (p05 called its rule external-state): a use either matched is flagged.
+        // The compiled-code gate (G1OutsideProcessStateTests) checks the same APIs method by
+        // method, whatever names the source uses for them.
+        new("outside-process", "keeps or reads state outside the process's memory (files, directories, the temporary or a special folder, temporary files, file streams, memory-mapped files, named mutexes, semaphores or events, pipes, sockets, child processes, unmanaged memory, native calls, isolated storage, the registry, keys persisted to the file system)",
+            new("(?:" +
+              @"(?:(?<![\w.])|\bIO\.)(?:File|Directory)\.[A-Z]|\b(?:FileInfo|DirectoryInfo|FileStream|FileSystemWatcher|RandomAccess|DriveInfo|ZipFile|PhysicalFileProvider|IsolatedStorage\w*|MemoryMapped\w+|NamedPipe\w*Stream|AnonymousPipe\w*Stream|TcpClient|UdpClient|TcpListener|NativeMemory)\b|" +
+                @"\bPath\.GetTemp(?:Path|FileName)\b|\bnew\s+(?:Mutex|Semaphore|EventWaitHandle)\s*\(\s*[^)\s]|\b(?:Mutex|Semaphore|EventWaitHandle)\.(?:Try)?OpenExisting\b|\bnew\s+Stream(?:Reader|Writer)\s*\(|" +
+                @"\bProcess\.Start\b|\bMarshal\.(?:AllocHGlobal|AllocCoTaskMem|ReAlloc\w*)\b|\[\s*(?:DllImport|LibraryImport)\b|\bnew\s+Socket\s*\(" +
+              ")|(?:" +
+              @"(?<![\w.])(?:global::)?(?:System\.IO\.)?(?:File|Directory|RandomAccess)\s*\.\s*[A-Z]\w*|" +
+                  @"\bnew\s+(?:(?:global::)?System\.IO\.)?(?:FileStream|FileInfo|DirectoryInfo|FileSystemWatcher|StreamWriter|StreamReader)\s*\(|\bFileStreamOptions\b|\bFileMode\s*\.|\bSafeFileHandle\b|" +
+                  @"\bPath\s*\.\s*GetTemp(?:Path|FileName)\b|\bEnvironment\s*\.\s*(?:GetFolderPath|SpecialFolder|CurrentDirectory)\b|\bPhysicalFileProvider\b|\bPersistKeysToFileSystem\b|" +
+                  @"\bMemoryMappedFile\b|\bIsolatedStorage\w*|\bRegistry\s*\.\s*(?:CurrentUser|LocalMachine|ClassesRoot|Users|SetValue|GetValue)\b|\bNamedPipe(?:Server|Client)Stream\b|\bUnixDomainSocketEndPoint\b|" +
+                  @"\bnew\s+(?:(?:global::)?System\.Threading\.)?(?:Mutex|Semaphore|EventWaitHandle)\s*\(|\b(?:Mutex|Semaphore|EventWaitHandle)\s*\.\s*(?:Try)?OpenExisting\b|" +
+                  @"\busing\s+(?:static\s+)?(?:\w+\s*=\s*)?(?:global::)?System\.IO\.(?:File|Directory|Path|FileStream|FileInfo|DirectoryInfo|MemoryMappedFiles|IsolatedStorage|Pipes|RandomAccess)\b" +
+              ")", Options)),
     ];
 
     public static IEnumerable<string> SourceFiles()

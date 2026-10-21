@@ -19,7 +19,8 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
     [Fact]
     public async Task The_non_interference_check_catches_shared_state_that_leaks_no_marker()
     {
-        var result = await NonInterference.RunAsync(fixture.Env);
+        // On the planted module's surface (the product's is the gate's, G1NonInterferenceTests).
+        var result = await NonInterference.RunAsync(fixture.Env, only: GateSelfTests.PlantedEndpoint);
         foreach (var finding in result.Findings)
         {
             TestContext.Current.TestOutputHelper?.WriteLine(finding);
@@ -91,6 +92,21 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
             Assert.Contains(result.Findings, f => f.StartsWith(tenant, StringComparison.Ordinal) && f.Contains("GET /api/leaky/me/previous-visit-second is answered", StringComparison.Ordinal) &&
                                                   f.Contains("time:other", StringComparison.Ordinal));
         }
+        // Bug 72 (critic p04 round 11, plant SL1): a body that leaves the digits out answers the
+        // digits last chosen by anyone, kept in a file; judged against the other tenant's choice,
+        // both ways. Bodies that carry the digits interfere with nothing.
+        foreach (var (judged, other) in new[] { ("tenant A", "tenant B"), ("tenant B", "tenant A") })
+        {
+            Assert.Contains(result.Findings, f => f.StartsWith(judged, StringComparison.Ordinal) && f.Contains("PUT /api/leaky/me/display (without numerals)", StringComparison.Ordinal) &&
+                                                  f.Contains($"right after {other} wrote numerals=\"arab\"", StringComparison.Ordinal));
+            Assert.Contains(result.Findings, f => f.StartsWith(judged, StringComparison.Ordinal) && f.Contains("PUT /api/leaky/me/display (language=\"ar\" alone)", StringComparison.Ordinal));
+        }
+        // Only bodies that leave the digits out: not the whole body, not one without the language alone.
+        Assert.DoesNotContain(result.Findings, f => f.Contains("/api/leaky/me/display", StringComparison.Ordinal) &&
+                                                    (f.Contains("(without language)", StringComparison.Ordinal) || f.Contains("(numerals=", StringComparison.Ordinal) ||
+                                                     (!f.Contains("(without ", StringComparison.Ordinal) && !f.Contains(" alone)", StringComparison.Ordinal))));
+        Assert.True(result.PartialWriteComparisons > 0, "no partial body was compared");
+        Assert.True(result.PartialChoiceChecks > 0, "no partial body was judged against the other tenant's choice");
         Assert.True(result.CookieValuesCompared > 0, "no cookie value was compared");
         Assert.True(result.TimesAttributed > 0, "no time was attributed to a request");
         Assert.True(result.PacedRuns > 0, "no comparison was paced for a time to the whole second");
