@@ -1,3 +1,4 @@
+import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { requestLeave } from "../forms/leave";
@@ -31,7 +32,7 @@ import {
   type SavedView,
 } from "./model";
 import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
-import { openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, toggledShare, widenChord, writeShare } from "./recordWidth";
+import { formFloor, openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, splitterWidth, toggledShare, widenChord, writeShare } from "./recordWidth";
 import { moreColumnRem, shownColumns } from "./columnFit";
 import { useListRows } from "./useListRows";
 import "./lists.css";
@@ -395,7 +396,9 @@ export function ListView(props: ListViewProps) {
       setFrameWidth(frame.clientWidth);
       if (frame.offsetWidth > 0) setFrameChrome(frame.offsetWidth - frame.clientWidth);
     };
-    const resized = new ResizeObserver(measure);
+    // A change of size (the record's form widening to fit its content, a scroll bar appearing) is
+    // laid out again before the browser paints, so no frame shows the old columns past the edge.
+    const resized = new ResizeObserver(() => flushSync(measure));
     resized.observe(body);
     resized.observe(frame);
     measure();
@@ -527,12 +530,15 @@ export function ListView(props: ListViewProps) {
   const waitingLabel = waiting.length
     ? t("lists.columns.waiting", { count: waiting.length, columns: waiting.map((c) => t(c.labelKey)).join(t("lists.columns.separator")) })
     : "";
-  // The marker gives the list room when narrowing the form can: the share that leaves the list
-  // every column, or the narrowest form.
+  // The marker gives the list room when narrowing the form shows more of its columns: the share
+  // that leaves the list every column, or the narrowest form.
   const roomShare = (() => {
-    if (!formOpen || !(bodyWidth > 0)) return null;
+    if (!formOpen || !(bodyWidth > 0) || waiting.length === 0) return null;
     const share = shareForList(bodyWidth, listNeed);
-    return share < formShare ? share : null;
+    if (share >= formShare) return null;
+    const form = Math.max(Math.min(formFloor, bodyWidth / 2), (share / 100) * bodyWidth);
+    const frame = bodyWidth - form - splitterWidth - frameChrome;
+    return shownColumns(minimums.map((m) => m * rem), frame, selectColumnRem * rem, moreColumnRem * rem) > shownCount ? share : null;
   })();
 
   function open(row: Row) {
@@ -767,6 +773,12 @@ export function ListView(props: ListViewProps) {
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
       focusGrid(0);
+    } else if (event.key === "/" && !event.ctrlKey && !event.altKey && !event.metaKey && searchKeyIsGoTo(event.currentTarget)) {
+      // The status bar's "/ search" already holds: the cursor is in the search box, so the key
+      // keeps it there instead of starting the search with a "/" (critic p03 round 13: after G U a
+      // user typed "/" and then an e-mail, and nothing matched "/accountant…").
+      event.preventDefault();
+      event.currentTarget.select();
     } else if (event.key === "Escape" && recordOpen) {
       event.preventDefault();
       closeRecord();
@@ -1537,6 +1549,13 @@ function headerMinimum(label: string): number {
 
 function minimumWidth(column: ListColumn, label: string): number {
   return Math.max(columnWidth(column).min, headerMinimum(label));
+}
+
+/** "/" in the search box goes to the search box (it is there already) when it would otherwise start
+ * the search with a "/": the box is empty, or its whole text is selected and would be replaced. */
+export function searchKeyIsGoTo(box: { value: string; selectionStart: number | null; selectionEnd: number | null }): boolean {
+  if (box.value === "") return true;
+  return box.selectionStart === 0 && box.selectionEnd === box.value.length;
 }
 
 /** Width of the selection column (the row's check box), in rem. */

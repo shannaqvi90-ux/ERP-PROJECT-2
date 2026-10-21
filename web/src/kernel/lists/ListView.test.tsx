@@ -2,7 +2,7 @@ import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18nProvider } from "../i18n";
 import { mockFetch, render, setInput, settle, type Rendered } from "../../test/render";
-import { ListView } from "./ListView";
+import { ListView, searchKeyIsGoTo } from "./ListView";
 import { ShortcutProvider } from "../shortcuts";
 import type { ListDefinition, Row } from "./model";
 
@@ -146,6 +146,33 @@ describe("list view", () => {
     await key(panel!, "Escape");
     expect(v.container.querySelector(".list-record")).toBeNull();
     expect(window.location.pathname).toBe("/identity/users");
+  });
+
+  it("keeps the cursor in the search box on '/', the status bar's search key, instead of typing it first", async () => {
+    serve();
+    const v = await show();
+    const search = v.container.querySelector<HTMLInputElement>("input[type=search]")!;
+    const slash = () => {
+      const event = new KeyboardEvent("keydown", { key: "/", bubbles: true, cancelable: true });
+      act(() => {
+        search.dispatchEvent(event);
+      });
+      return event.defaultPrevented;
+    };
+    // Empty: "/" goes to the search box, where the cursor already is; nothing is typed.
+    expect(slash()).toBe(true);
+    expect(document.activeElement).toBe(search);
+    // A search whose whole text is selected (it would be replaced): the same.
+    setInput(search, "accountant");
+    search.setSelectionRange(0, search.value.length);
+    expect(slash()).toBe(true);
+    // Inside a search being typed, "/" is text ("22/10").
+    setInput(search, "22");
+    search.setSelectionRange(2, 2);
+    expect(slash()).toBe(false);
+    expect(searchKeyIsGoTo({ value: "", selectionStart: 0, selectionEnd: 0 })).toBe(true);
+    expect(searchKeyIsGoTo({ value: "ab", selectionStart: 0, selectionEnd: 2 })).toBe(true);
+    expect(searchKeyIsGoTo({ value: "ab", selectionStart: 2, selectionEnd: 2 })).toBe(false);
   });
 
   it("closes an open record with Escape wherever the focus is on the page", async () => {
