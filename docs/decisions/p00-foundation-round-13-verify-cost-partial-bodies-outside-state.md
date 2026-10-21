@@ -209,3 +209,11 @@ counts are unchanged. The compiled-code gate gained the APIs only p05's rule nam
 `SafeFileHandle`, each with a planted method (24 plants; ratchet `g1.outsideProcessPlantsCaught`
 20 to 24). No product method newly matches them. Processor time added: under a second (two scans
 over the same compiled code and sources as before).
+
+The whole `./erp verify` of `9b3066f7` (this round on the integration branch with p05 round 13
+merged), through the verify slots, slot taken 2026-10-21 21:31:59 UTC: **verify passed in
+4,842 s**, every test passing (.NET 736, web unit 532, end to end 113, comparison harness 486,
+verify machinery 6) and the ratchet passed. **Processor time 7,890 s** (.NET 5,165, web 2,323,
+end to end 365, timing 37) against the owner's maximum of 10,500 (unchanged). The machine was busy
+(load up to 85.5 over 325 readings; another verify ran beside it for part of the run), so wall time
+was not judged. `suite.dotnetTests` is raised to 736 and `suite.webUnitTests` to 532.
