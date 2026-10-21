@@ -1,0 +1,77 @@
+TAP version 13
+# RESULT C1: status=verified steps=3 keys=30 machine=0.235 error=
+# Subtest: critic r13 control C1: the honest search (type the name, Enter) verifies
+ok 1 - critic r13 control C1: the honest search (type the name, Enter) verifies
+  ---
+  duration_ms: 2093.992923
+  type: 'test'
+  ...
+# RESULT N1: status=verified steps=1 keys=1 machine=1.009 human=2.03 human_plus_wait=3.03 typed=[] start="/contacts" vs_odoo_find_record=win {"steps":{"ours":1,"odoo":5,"outcome":"win"},"keystrokes":{"ours":1,"odoo":30,"outcome":"win"},"machine_seconds":{"ours":1.009,"odoo":1.974,"outcome":"win"},"human_seconds":{"ours":2.03,"odoo":17.91,"outcome":"win"},"human_plus_wait_seconds":{"ours":3.03,"odoo":19.429,"outcome":"win"}} error=
+# Subtest: critic r13 plant N1: set-up turns on "open the last record at start"; the start list opens the record on its own timer; run() presses Escape once -> never verifies
+not ok 2 - critic r13 plant N1: set-up turns on "open the last record at start"; the start list opens the record on its own timer; run() presses Escape once -> never verifies
+  ---
+  duration_ms: 2824.152053
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:112:1'
+  failureType: 'testCodeFailure'
+  error: "MISSED (N1): verified with 1 steps, 1 keys, 1.009 s and nothing found by the person; against Odoo's find-record baseline the comparison says win"
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    report (file:///home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:92:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:114:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT N1b: status=verified steps=1 keys=0 machine=1.04 human=2.65 human_plus_wait=3.586 typed=[] start="/contacts" vs_odoo_find_record=win {"steps":{"ours":1,"odoo":5,"outcome":"win"},"keystrokes":{"ours":0,"odoo":30,"outcome":"win"},"machine_seconds":{"ours":1.04,"odoo":1.974,"outcome":"win"},"human_seconds":{"ours":2.65,"odoo":17.91,"outcome":"win"},"human_plus_wait_seconds":{"ours":3.586,"odoo":19.429,"outcome":"win"}} error=
+# Subtest: critic r13 plant N1b: the same with one click on plain text -> never verifies
+not ok 3 - critic r13 plant N1b: the same with one click on plain text -> never verifies
+  ---
+  duration_ms: 2867.269342
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:126:1'
+  failureType: 'testCodeFailure'
+  error: "MISSED (N1b): verified with 1 steps, 0 keys, 1.04 s and nothing found by the person; against Odoo's find-record baseline the comparison says win"
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    report (file:///home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:92:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:128:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT N2: status=verified steps=1 keys=0 machine=0.167 human=2.65 human_plus_wait=2.691 typed=[] start="/contacts" vs_odoo_find_record=win {"steps":{"ours":1,"odoo":5,"outcome":"win"},"keystrokes":{"ours":0,"odoo":30,"outcome":"win"},"machine_seconds":{"ours":0.167,"odoo":1.974,"outcome":"win"},"human_seconds":{"ours":2.65,"odoo":17.91,"outcome":"win"},"human_plus_wait_seconds":{"ours":2.691,"odoo":19.429,"outcome":"win"}} error=
+# Subtest: critic r13 plant N2: set-up opens the record (the server lists it as recently viewed on the start list); run() clicks that link once, typing nothing -> never verifies
+not ok 4 - critic r13 plant N2: set-up opens the record (the server lists it as recently viewed on the start list); run() clicks that link once, typing nothing -> never verifies
+  ---
+  duration_ms: 2009.052093
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:140:1'
+  failureType: 'testCodeFailure'
+  error: "MISSED (N2): verified with 1 steps, 0 keys, 0.167 s and nothing found by the person; against Odoo's find-record baseline the comparison says win"
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    report (file:///home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:92:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r13/gauntlet/compare/test/zz-critic-r13.test.mjs:142:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 1
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15065.410421

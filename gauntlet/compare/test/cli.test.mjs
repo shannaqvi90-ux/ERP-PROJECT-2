@@ -56,3 +56,30 @@ test('the blind review page shows A and B only and keeps the mapping in key.json
     assert.deepEqual(key.letters['find-record'], { ours: 'A', odoo: 'B' });
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
 });
+
+// Round 13 (critic p01 r12, mutation K9): the review page's letters are drawn at random per task by
+// assignLetters, and each column shows the shots of the product its letter stands for in key.json.
+test('the blind review page draws its letters at random per task and shows each product under its own letter', () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'compare-review-'));
+  try {
+    const mk = (product, task, file) => ({ product, task, status: 'verified', counts: { steps: 1, keystrokes: 1, machine_seconds: 1, human_seconds: 1, human_plus_wait_seconds: 1 }, screenshots: [{ moment: 'start', file }] });
+    const pair = task => { const runs = { ours: mk('ours', task, `${task}-o.jpg`), odoo: mk('odoo', task, `${task}-r.jpg`) }; return { cmp: compareRuns(runs.ours, runs.odoo), runs }; };
+    const column = (html, task, letter) => { const sec = html.split('<section>').find(x => x.includes(`<h2>${task}</h2>`)); return sec.split('<div class="col">').find(c => c.startsWith(`<h3>${letter}</h3>`)); };
+    // A drawing that puts the reference first.
+    let html = fs.readFileSync(writeReview(out, [pair('t1')], () => 0.9), 'utf8');
+    let key = JSON.parse(fs.readFileSync(path.join(out, 'key.json'), 'utf8'));
+    assert.deepEqual(key.letters.t1, { odoo: 'A', ours: 'B' });
+    assert.match(column(html, 't1', 'A'), /t1-r\.jpg/);
+    assert.match(column(html, 't1', 'B'), /t1-o\.jpg/);
+    // Many tasks with the default drawing: both orders appear, and every column follows key.json.
+    const tasks = Array.from({ length: 40 }, (_, i) => `task${i}`);
+    html = fs.readFileSync(writeReview(out, tasks.map(pair)), 'utf8');
+    key = JSON.parse(fs.readFileSync(path.join(out, 'key.json'), 'utf8'));
+    const oursLetters = new Set(tasks.map(t => key.letters[t].ours));
+    assert.deepEqual([...oursLetters].sort(), ['A', 'B'], 'our product got the same letter in all 40 tasks');
+    for (const t of tasks) {
+      assert.match(column(html, t, key.letters[t].ours), new RegExp(`${t}-o\\.jpg`));
+      assert.match(column(html, t, key.letters[t].odoo), new RegExp(`${t}-r\\.jpg`));
+    }
+  } finally { fs.rmSync(out, { recursive: true, force: true }); }
+});

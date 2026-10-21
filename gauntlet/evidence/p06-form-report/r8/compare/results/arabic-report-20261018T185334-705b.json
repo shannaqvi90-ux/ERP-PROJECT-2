@@ -1,0 +1,235 @@
+{
+  "schema": 1,
+  "run_id": "arabic-report-20261018T185334-705b",
+  "instrument": 10,
+  "task": "arabic-report",
+  "task_title": "Print a document in Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Print the order as a PDF document in the vendor's language, Arabic.",
+  "done_when": "The product hands over a PDF of the order whose content is in Arabic and laid out right to left.",
+  "started_at": "2026-10-18T18:53:34.511Z",
+  "finished_at": "2026-10-18T18:54:01.898Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 0,
+    "clicks": 6,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 5.333,
+    "system_wait_seconds": 4.427,
+    "human_seconds": 15.9,
+    "human_plus_wait_seconds": 20.327,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 6,
+      "B": 12,
+      "H": 0,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "user menu",
+      "keystrokes": 0,
+      "at": 0.052,
+      "took": 0.08,
+      "began": 0.001,
+      "screen": "/odoo/purchase/100103",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "My Preferences",
+      "keystrokes": 0,
+      "at": 0.172,
+      "took": 0.066,
+      "began": 0.133,
+      "screen": "/odoo/purchase/100103",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "language",
+      "keystrokes": 0,
+      "at": 0.573,
+      "took": 0.104,
+      "began": 0.465,
+      "screen": "/odoo/purchase/100103",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Arabic",
+      "keystrokes": 0,
+      "at": 0.802,
+      "took": 0.09,
+      "began": 0.678,
+      "screen": "/odoo/purchase/100103",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Update Preferences",
+      "keystrokes": 0,
+      "at": 0.944,
+      "took": 0.079,
+      "began": 0.893,
+      "screen": "/odoo/purchase/100103",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Print",
+      "keystrokes": 0,
+      "at": 2.842,
+      "took": 0.063,
+      "began": 2.805,
+      "screen": "/odoo/purchase/100103",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "preferences dialog",
+      "at": 0.238,
+      "seconds": 0.226
+    },
+    {
+      "label": "interface in Arabic",
+      "at": 1.023,
+      "seconds": 0.805
+    },
+    {
+      "label": "order form in Arabic",
+      "at": 1.829,
+      "seconds": 0.974
+    },
+    {
+      "label": "file received",
+      "at": 2.906,
+      "seconds": 2.422
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b44e82aa2c02ec55.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p06-form-report/r8/compare/blind/shots/b44e82aa2c02ec55.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "5a9a8887da9cd8c4.jpg",
+      "at": 5.333,
+      "path": "../../evidence-staging/p06-form-report/r8/compare/blind/shots/5a9a8887da9cd8c4.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "أمر شراء - P00103.pdf",
+      "bytes": 47320,
+      "print_language": "ar_001",
+      "arabic_words_in_document": 25,
+      "right_to_left": true
+    }
+  },
+  "path_notes": "User menu > My Preferences > Language: Arabic > Update Preferences > Print. Printing straight away gives Arabic text in a left-to-right layout (Odoo lays the page out in the user's language and translates it into the vendor's), so the user switches to Arabic first.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/arabic-report.mjs",
+    "sha256": "5b17ff3f40d201cb70ef88a594d7b5f740e61b2d1bca09745fd020853b52b758"
+  },
+  "task_notes": "Odoo has no generic printable record in its core; its nearest printed document is the purchase order, which follows the vendor's language. Set-up creates the order and sets the vendor's language; clean-up restores both.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/odoo/purchase/100103",
+    "path": "/odoo/purchase/100103",
+    "query": "",
+    "fragment": "",
+    "fields": 3,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.067,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.068,
+      "verified": true,
+      "gap_seconds": 0.142
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 3,
+    "first": [
+      "GET /bus/websocket_worker_bundle (script)",
+      "POST /web/dataset/call_kw/purchase.order/web_read (xhr)",
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "0cf636994382e594",
+    "elements": 468
+  },
+  "screen_after_verify": {
+    "sha256": "0cf636994382e594",
+    "elements": 468,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.001
+  },
+  "set_up_writes_waited": 0
+}

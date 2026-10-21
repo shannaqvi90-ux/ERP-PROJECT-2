@@ -1,0 +1,4 @@
+noaccess@alnoor.example {'/api/identity/users': 403, '/api/identity/roles': 403, '/api/tenancy/companies': 403, '/api/tenancy/branches': 403, '/api/audit/entries': 404, 'POST users': 403}
+viewer@alnoor.example {'/api/identity/users': 200, '/api/identity/roles': 200, '/api/tenancy/companies': 200, '/api/tenancy/branches': 200, '/api/audit/entries': 404, 'POST users': 403}
+admin@alnoor.example {'/api/identity/users': 200, '/api/identity/roles': 200, '/api/tenancy/companies': 200, '/api/tenancy/branches': 200, '/api/audit/entries': 404, 'POST users': 'skipped'}
+anonymous {'/api/identity/users': 401, '/api/identity/roles': 401, '/api/tenancy/companies': 401, '/api/tenancy/branches': 401, '/api/audit/entries': 404, 'POST users': 401}

@@ -93,7 +93,7 @@ const describeControl = ch => ({ '\n': '\\n (Enter)', '\r': '\\r (Enter)', '\t':
  * keys, force skips the checks a person's click needs, clickCount adds clicks).
  */
 const OPTIONS = {
-  click: ['label'], doubleClick: ['label'], scrollTo: ['label'], type: ['label'], fill: ['label'], press: ['label'],
+  click: ['label'], doubleClick: ['label'], tripleClick: ['label'], scrollTo: ['label'], type: ['label'], fill: ['label'], press: ['label'],
   browserKey: ['label'], pickFile: ['label'], clickForDownload: ['label'], request: ['label', 'expect'], confirmOnDevice: ['label'],
   waitFor: ['label', 'timeout', 'arg', 'state'],
 };
@@ -125,8 +125,18 @@ export class NotBuilt extends Error {
   constructor(what = 'not built yet') { super(what); this.name = 'NotBuilt'; }
 }
 
+/**
+ * Round 14 (critic p01 r13, plants N2 and N3): whether the page shows a text (a record's name) as
+ * text or as a field's value, read in the harness's read world. Case and runs of white space are
+ * ignored; passwords are not read.
+ */
+export const SHOWS_TEXT = '(v) => { const norm = s => String(s || "").toLowerCase().replace(/\\s+/g, " ").trim(); const parts = [document.body ? document.body.innerText : ""]; '
+  + 'for (const el of document.querySelectorAll("input, textarea, select")) { if (String(el.type || "").toLowerCase() === "password") continue; '
+  + 'parts.push(el.tagName === "SELECT" ? (el.options.item(el.selectedIndex) ? el.options.item(el.selectedIndex).text : "") : String(el.value || "")); } '
+  + 'return norm(parts.join("\\n")).includes(norm(v)); }';
+
 export class Operator {
-  #page; #device = null; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null; #downloads = [];
+  #page; #device = null; #finds = null; #shotWindows = []; #t0 = null; #t1 = null; #steps = []; #waits = []; #shots = []; #api = null; #view = null; #lastClick = null; #moments = null; #copied = null; #downloads = [];
 
   /**
    * @param {import('playwright-core').Page} page  the raw page (unwrapped if a guarded one is passed)
@@ -142,6 +152,41 @@ export class Operator {
     this.shotFormat = shotFormat;
     this.defaultTimeout = defaultTimeout;
     this.#moments = moments ? [...moments] : null;
+  }
+
+  /**
+   * Round 14 (critic p01 r13, plants N2 and N3): a task that names what the person finds (`finds`: a
+   * record's name). The runner hands the value and the test of a piece of it (lib/runner.mjs isPieceOf);
+   * right before the measured part first types a piece of it, the operator reads whether the screen
+   * already shows it (then set-up or the product put it there, not the person's search). The read is on
+   * the clock, for both products alike (a few milliseconds).
+   */
+  watchFinds(value, isPiece) {
+    if (this.measuring) throw new UncountedAction('watching what the person finds inside the measured part');
+    this.#finds = { value: String(value), isPiece, typed_at_step: null, shown_before: null };
+  }
+
+  /**
+   * Round 14: when the harness itself changed the page for a blind screenshot (its neutral title, the
+   * screenshot's own style and masks), as performance.now milliseconds: lib/causation.mjs passes over
+   * those changes and judges only page script they set off.
+   */
+  get shotWindows() { return this.#shotWindows.map(w => ({ ...w })); }
+
+  /** What the operator saw of the value the person finds: { typed_at_step, shown_before } (null when none is watched). */
+  get finds() { return this.#finds ? { typed_at_step: this.#finds.typed_at_step, shown_before: this.#finds.shown_before, ...(this.#finds.read_error ? { read_error: this.#finds.read_error } : {}) } : null; }
+
+  async #beforePiece(text) {
+    const f = this.#finds;
+    if (!f || f.typed_at_step !== null || !this.measuring || !f.isPiece(text)) return;
+    f.typed_at_step = this.#steps.length + 1;
+    for (let attempt = 0; attempt < 2 && f.shown_before === null; attempt++) {
+      try {
+        const r = await PageWorld.of(this.#page).run(SHOWS_TEXT, f.value);
+        if (typeof r?.value === 'boolean') f.shown_before = r.value;
+        else f.read_error = 'the read world returned no answer';
+      } catch (e) { f.read_error = String(e?.message || e).split('\n')[0]; }
+    }
   }
 
   /** Moments the task declares that were not shot while measuring. */
@@ -219,7 +264,8 @@ export class Operator {
   async settleDocument({ timeout = this.defaultTimeout } = {}) {
     if (!this.measuring) return null;
     let state;
-    try { state = await this.#page.evaluate(() => document.readyState); } catch { return null; }
+    // Round 14: read in the harness's read world, never the page's (a getter the page replaced would run there).
+    try { state = (await PageWorld.of(this.#page).run('() => document.readyState')).value; } catch { return null; }
     if (state === 'complete') return null;
     const t = this.now();
     await this.#page.waitForLoadState('load', { timeout });
@@ -261,7 +307,7 @@ export class Operator {
     // Continuation (no M) is derived from the steps (lib/klm.mjs), recorded here for reading only.
     step.chain = continues(this.#steps[this.#steps.length - 1] || null, step);
     this.#steps.push(step);
-    if (kind !== 'click' && kind !== 'double-click') this.#lastClick = null;
+    if (kind !== 'click' && kind !== 'double-click' && kind !== 'triple-click') this.#lastClick = null;
     return { ...step };
   }
 
@@ -313,6 +359,23 @@ export class Operator {
   }
 
   /**
+   * Round 13 (critic p06 r7, routed to p01): a triple click (one step): it selects the whole
+   * content of a field, the shortest way an expert replaces a value in a product whose field click
+   * does not select it.
+   */
+  async tripleClick(target, opts) {
+    const { label } = checkOptions('tripleClick', opts);
+    this.#begin();
+    const loc = this.#locate(target);
+    const began = await this.#ready(loc, l => l.click({ trial: true, timeout: this.defaultTimeout }));
+    const t = this.now();
+    await loc.click({ clickCount: 3, timeout: this.defaultTimeout });
+    const step = this.#record('triple-click', label || String(target), 0, t, {}, undefined, began);
+    this.#lastClick = loc;
+    return step;
+  }
+
+  /**
    * Whether the focused element is a text field that the last click hit (or one inside what it hit):
    * typing then goes where the click put the caret.
    */
@@ -351,6 +414,7 @@ export class Operator {
     const value = String(text);
     const control = CONTROL.exec(value);
     if (control) throw new UncountedAction(`op.type() with the control character ${describeControl(control[0])}: it presses a key inside a field entry without a step of its own; press it with op.press`);
+    await this.#beforePiece(value);
     this.#begin();
     const sameField = await this.#focusInLastClick();
     const t = this.#begin();
@@ -536,6 +600,7 @@ export class Operator {
     fs.mkdirSync(this.shotsDir, { recursive: true });
     const file = blindName(this.shotFormat === 'png' ? 'png' : 'jpg');
     const t = this.now();
+    const from = clockNow();
     await neutraliseDocument(this.#page, this.branding.words);
     await this.#page.screenshot({
       path: path.join(this.shotsDir, file), type: this.shotFormat, ...(this.shotFormat === 'jpeg' ? { quality: 70 } : {}),
@@ -544,6 +609,7 @@ export class Operator {
     });
     const s = { moment, file, at: round(t), ...(measured ? { measured: true } : {}) };
     this.#shots.push(s);
+    this.#shotWindows.push({ from, to: clockNow() });
     // Instrument 4: a shot taken while the clock runs stays on the clock (round 3: taking its time
     // out let a driver hide the product's latency behind screenshots). The task's declared moments
     // make every driver of the task pay for the same shots. Before start() and after finish() the
@@ -556,7 +622,7 @@ export class Operator {
     if (this.#view) return this.#view;
     const op = this;
     const view = {};
-    for (const m of ['click', 'doubleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'confirmOnDevice', 'waitFor', 'shot', 'now']) {
+    for (const m of ['click', 'doubleClick', 'tripleClick', 'scrollTo', 'type', 'fill', 'press', 'browserKey', 'pickFile', 'clickForDownload', 'request', 'confirmOnDevice', 'waitFor', 'shot', 'now']) {
       view[m] = (...args) => op[m](...args);
     }
     Object.defineProperties(view, {
@@ -577,7 +643,7 @@ export class Operator {
     return {
       steps: steps.length,
       keystrokes: steps.reduce((s, x) => s + x.keystrokes, 0),
-      clicks: by('click') + by('double-click'),
+      clicks: by('click') + by('double-click') + by('triple-click'),
       scrolls: by('scroll'),
       field_entries: by('type'),
       key_chords: by('key'),

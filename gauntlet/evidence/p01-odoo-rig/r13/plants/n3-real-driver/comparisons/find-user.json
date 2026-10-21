@@ -1,0 +1,45 @@
+{
+  "task": "find-user",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 2,
+      "odoo": 6,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 1,
+      "odoo": 5,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.595,
+      "odoo": 2.713,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 4.68,
+      "odoo": 10.35,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 4.991,
+      "odoo": 12.791,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "odoo_best_path_per_metric": {
+    "steps": "menus",
+    "keystrokes": "shortest-suggestion",
+    "machine_seconds": "palette",
+    "human_seconds": "palette-shortest",
+    "human_plus_wait_seconds": "palette-shortest"
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p01-odoo-rig/r13/plants/n3-real-driver/results/find-user-20261019T081849-3070.json",
+    "odoo": "../../evidence-staging/p01-odoo-rig/r13/plants/n3-real-driver/results/find-user-20261019T081603-686a.json"
+  }
+}

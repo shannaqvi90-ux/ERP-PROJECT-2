@@ -100,6 +100,12 @@ public sealed class G1ReviewedLookupTests(GateFixture fixture)
                 proofs.Parameters.AddWithValue("e", email);
                 Assert.Equal(0L, await proofs.ExecuteScalarAsync());
             }
+            // Nor as a client at an address many clients share (p_shared).
+            await using (var shared = new NpgsqlCommand("SELECT count(*) FROM identity.verify_sign_in(@e, ARRAY['x'], 'gate', NULL, NULL, 5, 15, true)", app, tx))
+            {
+                shared.Parameters.AddWithValue("e", email);
+                Assert.Equal(0L, await shared.ExecuteScalarAsync());
+            }
         }
         await using (var sessions = new NpgsqlCommand("SELECT count(*) FROM identity.sessions", app, tx))
         {

@@ -177,7 +177,10 @@ export async function maskTargets(page, branding, { perLocator = 300 } = {}) {
  * look like any other field.
  */
 export async function neutraliseDocument(page, words = []) {
-  await page.evaluate(brandWords => {
+  // Round 14 (critic p01 r13): in a script world of the harness's own, never the page's: the page's own
+  // script (a title setter it replaced, a prototype it patched) cannot run inside the harness's change,
+  // where the browser's record would take what it did for the harness's doing (lib/causation.mjs).
+  const neutral = brandWords => {
     document.title = 'Product';
     for (const l of document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')) l.remove();
     if (!brandWords.length) return;
@@ -185,8 +188,29 @@ export async function neutraliseDocument(page, words = []) {
     for (const attr of ['placeholder', 'aria-label', 'alt']) {
       for (const el of document.querySelectorAll(`[${attr}]`)) if (re.test(el.getAttribute(attr))) el.setAttribute(attr, '');
     }
-  }, words).catch(() => {});
+  };
+  const expression = `(${neutral})(${JSON.stringify(words)})`;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      let w = neutralWorlds.get(page);
+      if (!w) { w = { cdp: await page.context().newCDPSession(page), contextId: null }; neutralWorlds.set(page, w); }
+      if (w.contextId === null) {
+        const { frameTree } = await w.cdp.send('Page.getFrameTree');
+        w.contextId = (await w.cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'compare-neutral', grantUniveralAccess: false })).executionContextId;
+      }
+      const r = await w.cdp.send('Runtime.evaluate', { expression, contextId: w.contextId, returnByValue: true, silent: true });
+      if (!r.exceptionDetails) return;
+      w.contextId = null; // a new document: a new world
+    } catch {
+      const w = neutralWorlds.get(page);
+      if (w) w.contextId = null;
+      if (page.isClosed()) return;
+    }
+  }
 }
+
+/** The harness's neutralising world of each page (one session kept open, like the read world's). */
+const neutralWorlds = new WeakMap();
 
 /**
  * Captions for a blind page: the moments both products share keep their names (start, done);

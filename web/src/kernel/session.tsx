@@ -29,8 +29,10 @@ export type Workspace = { code: string; nameEn: string; nameAr: string };
 
 export type SignInResult =
   | { kind: "ok"; session: Session }
-  /** `pausedFor`: with auth.signInPaused, the seconds until sign-in with the address works again from here. */
-  | { kind: "failed"; message: string; code?: string; pausedFor?: number }
+  /** `pausedFor`: with auth.signInPaused, the seconds until sign-in with the address works again from here.
+   * `deviceCode`: the address is one many people share (a gateway or proxy), and this code lets this
+   * browser in once the person (signed in elsewhere) or an administrator enters it. */
+  | { kind: "failed"; message: string; code?: string; pausedFor?: number; deviceCode?: string }
   | { kind: "invalid"; message: string; fieldErrors: Record<string, FieldError[]> }
   | { kind: "chooseWorkspace"; message: string; workspaces: Workspace[] }
   | { kind: "changePassword"; message: string };
@@ -108,8 +110,11 @@ async function send(body: Record<string, unknown>): Promise<SignInResult> {
       return { kind: "invalid", message: error.message, fieldErrors: error.fieldErrors };
     }
     const pausedFor = error.body.retryAfterSeconds;
+    const deviceCode = error.body.deviceCode;
     return typeof pausedFor === "number" && error.code === "auth.signInPaused"
-      ? { kind: "failed", message: error.message, code: error.code, pausedFor }
+      ? typeof deviceCode === "string" && deviceCode !== ""
+        ? { kind: "failed", message: error.message, code: error.code, pausedFor, deviceCode }
+        : { kind: "failed", message: error.message, code: error.code, pausedFor }
       : { kind: "failed", message: error.message, code: error.code };
   }
 }

@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "import-5000-20261017T124105-4faf",
-  "instrument": 10,
+  "run_id": "import-5000-20261019T124039-8cca",
+  "instrument": 12,
   "task": "import-5000",
   "task_title": "Import 5,000 rows",
   "product": "odoo",
   "status": "verified",
   "goal": "Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.",
   "done_when": "The product reports the import finished; the back end holds the 5,000 new contacts.",
-  "started_at": "2026-10-17T12:41:05.802Z",
-  "finished_at": "2026-10-17T12:42:36.844Z",
+  "started_at": "2026-10-19T12:40:39.127Z",
+  "finished_at": "2026-10-19T12:41:32.696Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 1,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 12.672,
-    "system_wait_seconds": 11.335,
+    "machine_seconds": 7.313,
+    "system_wait_seconds": 6.582,
     "human_seconds": 17.4,
-    "human_plus_wait_seconds": 28.735,
+    "human_plus_wait_seconds": 23.982,
     "klm_operator_counts": {
       "K": 0,
       "P": 7,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0.035,
-      "took": 0.054,
+      "at": 0.026,
+      "took": 0.036,
       "began": 0.001,
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "Contacts app",
       "keystrokes": 0,
-      "at": 0.134,
-      "took": 0.065,
-      "began": 0.091,
+      "at": 0.126,
+      "took": 0.034,
+      "began": 0.062,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -80,9 +80,9 @@
       "kind": "click",
       "label": "actions menu",
       "keystrokes": 0,
-      "at": 0.751,
-      "took": 0.112,
-      "began": 0.697,
+      "at": 0.581,
+      "took": 0.053,
+      "began": 0.541,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -91,9 +91,9 @@
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "at": 0.946,
-      "took": 0.107,
-      "began": 0.864,
+      "at": 0.679,
+      "took": 0.037,
+      "began": 0.635,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -102,9 +102,9 @@
       "kind": "click",
       "label": "open file dialog: contacts-import-5000.csv",
       "keystrokes": 0,
-      "at": 1.215,
+      "at": 0.825,
       "took": 0.035,
-      "began": 1.164,
+      "began": 0.788,
       "screen": "/odoo/contacts/import",
       "chain": false
     },
@@ -113,8 +113,8 @@
       "kind": "file-pick",
       "label": "contacts-import-5000.csv",
       "keystrokes": 0,
-      "at": 1.25,
-      "took": 0.019,
+      "at": 0.86,
+      "took": 0.006,
       "file": "contacts-import-5000.csv",
       "screen": "/odoo/contacts/import",
       "chain": true
@@ -124,9 +124,9 @@
       "kind": "click",
       "label": "Import",
       "keystrokes": 0,
-      "at": 1.902,
-      "took": 0.126,
-      "began": 1.855,
+      "at": 1.21,
+      "took": 0.058,
+      "began": 1.172,
       "screen": "/odoo/contacts/import",
       "chain": false
     }
@@ -134,48 +134,48 @@
   "waits": [
     {
       "label": "Contacts loaded",
-      "at": 0.199,
-      "seconds": 0.177
+      "at": 0.161,
+      "seconds": 0.079
     },
     {
       "label": "contact list",
-      "at": 0.378,
-      "seconds": 0.319
+      "at": 0.24,
+      "seconds": 0.301
     },
     {
       "label": "import screen",
-      "at": 1.054,
-      "seconds": 0.109
+      "at": 0.716,
+      "seconds": 0.071
     },
     {
       "label": "column mapping preview",
-      "at": 1.269,
-      "seconds": 0.091
+      "at": 0.866,
+      "seconds": 0.088
     },
     {
       "label": "import finished, imported records listed",
-      "at": 2.029,
-      "seconds": 10.639
+      "at": 1.269,
+      "seconds": 6.043
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "20222eb3df38373e.jpg",
+      "file": "8bd967428e5c5be4.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/20222eb3df38373e.jpg"
+      "path": "gauntlet/reference/odoo/shots/8bd967428e5c5be4.jpg"
     },
     {
       "moment": "columns matched",
-      "file": "d1e8f7b44b92ca23.jpg",
-      "at": 1.361,
-      "path": "gauntlet/reference/odoo/shots/d1e8f7b44b92ca23.jpg"
+      "file": "a4726a1ccefc43ca.jpg",
+      "at": 0.954,
+      "path": "gauntlet/reference/odoo/shots/a4726a1ccefc43ca.jpg"
     },
     {
       "moment": "done",
-      "file": "cabb29295655154d.jpg",
-      "at": 12.672,
-      "path": "gauntlet/reference/odoo/shots/cabb29295655154d.jpg"
+      "file": "1bf62b2eb34e04b4.jpg",
+      "at": 7.313,
+      "path": "gauntlet/reference/odoo/shots/1bf62b2eb34e04b4.jpg"
     }
   ],
   "verification": {
@@ -206,18 +206,18 @@
   "verify_passes": [
     {
       "requests": 4,
-      "longest_pause_seconds": 0.007,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.149,
+      "seconds": 0.067,
       "verified": true
     },
     {
       "requests": 4,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.122,
+      "seconds": 0.062,
       "verified": true,
       "gap_seconds": 1.101
     }
@@ -226,24 +226,24 @@
   "requests_in_flight_at_clock": {
     "count": 49,
     "first": [
-      "GET /web/image/res.partner/393886/avatar_128 (image)",
-      "GET /web/image/res.partner/394957/avatar_128 (image)",
-      "GET /web/image/res.partner/391746/avatar_128 (image)",
-      "GET /web/image/res.partner/392459/avatar_128 (image)",
-      "GET /web/image/res.partner/394515/avatar_128 (image)",
-      "GET /web/image/res.partner/391318/avatar_128 (image)",
-      "GET /web/image/res.partner/391426/avatar_128 (image)",
-      "GET /web/image/res.partner/395156/avatar_128 (image)",
-      "GET /web/image/res.partner/394982/avatar_128 (image)",
-      "GET /web/image/res.partner/392813/avatar_128 (image)"
+      "GET /web/image/res.partner/434062/avatar_128 (image)",
+      "GET /web/image/res.partner/435133/avatar_128 (image)",
+      "GET /web/image/res.partner/431922/avatar_128 (image)",
+      "GET /web/image/res.partner/432635/avatar_128 (image)",
+      "GET /web/image/res.partner/434691/avatar_128 (image)",
+      "GET /web/image/res.partner/431494/avatar_128 (image)",
+      "GET /web/image/res.partner/431602/avatar_128 (image)",
+      "GET /web/image/res.partner/435332/avatar_128 (image)",
+      "GET /web/image/res.partner/435158/avatar_128 (image)",
+      "GET /web/image/res.partner/432989/avatar_128 (image)"
     ]
   },
   "screen_at_clock": {
-    "sha256": "13e89bf13eac8229",
+    "sha256": "e04f329114d07f4d",
     "elements": 2191
   },
   "screen_after_verify": {
-    "sha256": "13e89bf13eac8229",
+    "sha256": "e04f329114d07f4d",
     "elements": 2191,
     "unchanged": true
   },
@@ -252,10 +252,10 @@
     "error": null,
     "back_end_reads": 3,
     "requests": 4,
-    "longest_pause_seconds": 0.003,
+    "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.114
+    "seconds": 0.068
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -303,11 +303,12 @@
     "writes_caused": [
       {
         "write": "POST /web/dataset/call_kw/res.partner/get_import_templates",
-        "at": 1.0227655780000204,
+        "at": 0.7152966350000352,
         "by_step": 4,
         "browser_record": {
           "caused": true,
           "by_step": 4,
+          "chain_seconds": 0.005,
           "chain": [
             "input of step 4"
           ]
@@ -315,11 +316,12 @@
       },
       {
         "write": "POST /web/dataset/call_kw/base_import.import/create",
-        "at": 1.0228834959999948,
+        "at": 0.7153671299999114,
         "by_step": 4,
         "browser_record": {
           "caused": true,
           "by_step": 4,
+          "chain_seconds": 0.005,
           "chain": [
             "input of step 4"
           ]
@@ -327,11 +329,12 @@
       },
       {
         "write": "POST /web/dataset/call_kw/res.lang/get_installed",
-        "at": 1.0229335220000066,
+        "at": 0.7153869580000173,
         "by_step": 4,
         "browser_record": {
           "caused": true,
           "by_step": 4,
+          "chain_seconds": 0.006,
           "chain": [
             "input of step 4"
           ]
@@ -339,11 +342,12 @@
       },
       {
         "write": "POST /base_import/set_file",
-        "at": 1.268202443999995,
+        "at": 0.8657327600000426,
         "by_step": 6,
         "browser_record": {
           "caused": true,
           "by_step": 6,
+          "chain_seconds": 0.001,
           "chain": [
             "a DevTools command of step 6"
           ]
@@ -351,25 +355,27 @@
       },
       {
         "write": "POST /web/dataset/call_kw/base_import.import/parse_preview",
-        "at": 1.3280061080000014,
+        "at": 0.8988091809998732,
         "by_step": 6,
         "browser_record": {
           "caused": true,
           "by_step": 6,
+          "chain_seconds": 0.026,
           "chain": [
             "a DevTools command of step 6",
-            "the answer to POST /base_import/set_file after 0.04 s",
+            "the answer to POST /base_import/set_file after 0.024 s",
             "a task that followed at once (a message or an observer)"
           ]
         }
       },
       {
         "write": "POST /web/dataset/call_kw/base_import.import/execute_import",
-        "at": 2.011435943999997,
+        "at": 1.2638780639998148,
         "by_step": 7,
         "browser_record": {
           "caused": true,
           "by_step": 7,
+          "chain_seconds": 0.001,
           "chain": [
             "input of step 7"
           ]
@@ -377,33 +383,98 @@
       },
       {
         "write": "POST /web/dataset/call_kw/base_import.import/execute_import",
-        "at": 6.06328573600002,
+        "at": 3.6440293539999984,
         "continues": "POST /web/dataset/call_kw/base_import.import/execute_import",
-        "not_caused": "the browser's record shows it waited 4.037 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
+        "not_caused": "the browser's record shows it waited 2.359 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
         "browser_record": {
           "caused": false,
-          "why": "it waited 4.037 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
+          "why": "it waited 2.359 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
           "chain": []
         }
       },
       {
         "write": "POST /web/dataset/call_kw/base_import.import/execute_import",
-        "at": 10.250781292,
+        "at": 5.92937008399982,
         "continues": "POST /web/dataset/call_kw/base_import.import/execute_import",
-        "not_caused": "8.223 s after step 7 ended",
+        "not_caused": "4.661 s after step 7 ended",
         "browser_record": {
           "caused": false,
-          "why": "it waited 4.184 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
+          "why": "it waited 2.326 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
           "chain": []
         }
       }
     ]
   },
+  "screen_changes": {
+    "judged": 137,
+    "not_caused": 11,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.174,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.621,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.008 s before it) and could have sent it: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.854,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.968,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 1.204,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 7 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 1.271,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 7.137,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 7.154,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.008 s before it) and could have sent it: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 7.325,
+      "by_step": 7,
+      "chain": [
+        "an animation frame",
+        "an animation frame",
+        "a timer of 0.1 s",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/import-5000.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/import-5000-20261017T123806-13df.json",
-    "gauntlet/reference/odoo/results/import-5000-20261017T123937-dfac.json",
-    "gauntlet/reference/odoo/results/import-5000-20261017T124105-4faf.json"
+    "gauntlet/reference/odoo/results/import-5000-20261019T123852-5e14.json",
+    "gauntlet/reference/odoo/results/import-5000-20261019T123946-794a.json",
+    "gauntlet/reference/odoo/results/import-5000-20261019T124039-8cca.json"
   ]
 }

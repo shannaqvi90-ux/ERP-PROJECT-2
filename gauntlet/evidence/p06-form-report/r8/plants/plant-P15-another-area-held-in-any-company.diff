@@ -1,0 +1,14 @@
+diff --git a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+index 1cf3f41d..eef1f482 100644
+--- a/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
++++ b/src/Modules/Reports/Erp.Modules.Reports/ReportEndpoints.cs
+@@ -191,7 +191,8 @@ internal static class ReportEndpoints
+             return false;
+         }
+         var reportIn = await places.CompaniesAsync(reportPermission, cancellationToken);
+-        return scope.CompanyIds.Where(c => reportIn is null || reportIn.Contains(c)).All(extraIn.Contains);
++        // PLANT P15 (critic p06 r8): held in any company the report reads counts as held in all of them.
++        return scope.CompanyIds.Where(c => reportIn is null || reportIn.Contains(c)).Any(extraIn.Contains);
+     }
+ 
+     private static async Task<IResult> RunAsync(ReportRegistration registration, HttpContext http, ReportEngine engine, PdfReportRenderer pdf, ITenantDirectory tenants, CancellationToken cancellationToken)

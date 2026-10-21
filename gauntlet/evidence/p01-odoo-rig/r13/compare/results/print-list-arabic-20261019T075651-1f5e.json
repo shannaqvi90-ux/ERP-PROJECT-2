@@ -1,0 +1,245 @@
+{
+  "schema": 1,
+  "run_id": "print-list-arabic-20261019T075651-1f5e",
+  "instrument": 11,
+  "task": "print-list-arabic",
+  "task_title": "Print a list report in Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
+  "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
+  "started_at": "2026-10-19T07:56:51.535Z",
+  "finished_at": "2026-10-19T07:57:16.695Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 32,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 4.652,
+    "system_wait_seconds": 4.133,
+    "human_seconds": 19.06,
+    "human_plus_wait_seconds": 23.193,
+    "klm_operator_counts": {
+      "K": 32,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "type",
+      "label": "vendor",
+      "keystrokes": 31,
+      "at": 0.022,
+      "took": 0.068,
+      "text": "Zenith General Trading Est.",
+      "same_field": false,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "search orders",
+      "keystrokes": 1,
+      "at": 0.093,
+      "took": 0.007,
+      "chord": "Enter",
+      "screen": "/odoo/purchase",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "select every order",
+      "keystrokes": 0,
+      "at": 0.526,
+      "took": 0.064,
+      "began": 0.493,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Print",
+      "keystrokes": 0,
+      "at": 0.627,
+      "took": 0.033,
+      "began": 0.593,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Purchase Order",
+      "keystrokes": 0,
+      "at": 0.727,
+      "took": 0.033,
+      "began": 0.661,
+      "screen": "/odoo/purchase",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "order list, search focused",
+      "at": 0.001,
+      "seconds": 0.021
+    },
+    {
+      "label": "search options",
+      "at": 0.09,
+      "seconds": 0.003
+    },
+    {
+      "label": "the vendor's orders",
+      "at": 0.101,
+      "seconds": 0.215
+    },
+    {
+      "label": "print menu offered",
+      "at": 0.59,
+      "seconds": 0.003
+    },
+    {
+      "label": "file received",
+      "at": 0.76,
+      "seconds": 3.891
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "ea8f3db4b469746f.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/compare/blind/shots/ea8f3db4b469746f.jpg"
+    },
+    {
+      "moment": "list filtered",
+      "file": "57ada1778e9f055f.jpg",
+      "at": 0.316,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/compare/blind/shots/57ada1778e9f055f.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "60caaa35ed3a1e6d.jpg",
+      "at": 4.652,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/compare/blind/shots/60caaa35ed3a1e6d.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "أمر شراء.pdf",
+      "bytes": 1196008,
+      "orders_printed": 27,
+      "orders_expected": 27,
+      "same_orders": true,
+      "print_language": "ar_001",
+      "arabic_words_in_document": 659,
+      "right_to_left": true,
+      "documents": 27
+    }
+  },
+  "path_notes": "Purchase orders list (search focused) > type the vendor > Enter (Search Order for: the order, the vendor's reference or the vendor and its contacts) > header check box > Print > Purchase Order.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/print-list-arabic.mjs",
+    "sha256": "dcd915fcb84231ab2c8862ea69406fe11da2083084a60fa6ba584e191cf09d01"
+  },
+  "task_notes": "The comparison named in gauntlet/pieces/p06-form-report.md (\"print a list report in Arabic\"). Odoo Community has no list report (a printed table of a list's rows); its nearest feature selects the listed records and prints their own document, all of them in one PDF (Print > Purchase Order). The printed order follows the vendor's language, so set-up gives the vendor and its contacts Arabic and clean-up restores them. The Odoo user who works in Arabic is a rig fixture (arabic.reporter, purchase administrator), created by set-up when missing. Our product has no purchase orders yet: its driver prints the stand-in list it has, the users named like the dataset user {user.name} without the first name (the product's search matches each word in the name or e-mail: 53 users of the shared dataset, against the vendor's 27 orders in the reference).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/odoo/purchase",
+    "path": "/odoo/purchase",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "بحث...",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.121,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.118,
+      "verified": true,
+      "gap_seconds": 0.162
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /web/dataset/call_kw/purchase.order/web_search_read (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "86321a38f201e386",
+    "elements": 1172
+  },
+  "screen_after_verify": {
+    "sha256": "86321a38f201e386",
+    "elements": 1172,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0
+  },
+  "set_up_writes_waited": 0
+}

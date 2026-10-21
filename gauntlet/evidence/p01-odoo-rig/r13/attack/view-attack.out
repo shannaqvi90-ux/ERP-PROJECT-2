@@ -1,0 +1,16 @@
+B makes identity.users views 201 01a15341-0e1e-79db-93b5-bcb0bacf9e9b
+B makes identity.users shared-views 201 01a15341-0e28-7a10-a4a6-b2486983c879
+B makes identity.roles views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+B makes identity.roles shared-views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+B makes tenancy.companies views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+B makes tenancy.companies shared-views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+B makes tenancy.branches views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+B makes tenancy.branches shared-views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+A GET /api/lists/identity.users/views/01a15341-0e1e-79db-93b5-bcb0bacf9e9b 404 ok
+A PUT /api/lists/identity.users/views/01a15341-0e1e-79db-93b5-bcb0bacf9e9b 404 ok
+A GET /api/lists/identity.users/views 200 ok
+A GET /api/lists/identity.users/shared-views/01a15341-0e28-7a10-a4a6-b2486983c879 404 ok
+A PUT /api/lists/identity.users/shared-views/01a15341-0e28-7a10-a4a6-b2486983c879 404 ok
+A GET /api/lists/identity.users/views 200 ok
+B still sees its own views: 4 names intact: True
+leaks 0

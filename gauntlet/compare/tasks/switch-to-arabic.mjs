@@ -12,6 +12,9 @@ export default {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }], writes: ['POST /web/dataset/call_kw/res.users/web_save', 'POST /web/dataset/call_button/res.users/preference_save'] },
     ours: { reads: [{ read: 'GET /api/auth/session', parts: ['user.language'] }], writes: ['PUT /api/identity/me/preferences'] },
   },
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up makes the tester when missing and puts the tester back to English); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['POST /api/identity/users', 'PUT /api/identity/me/preferences'] },
   moments: [],
   start: 'Signed in as an ordinary user working in English, on their working screen (the contacts list, with records).',
   goal: 'Switch your own interface language to Arabic.',

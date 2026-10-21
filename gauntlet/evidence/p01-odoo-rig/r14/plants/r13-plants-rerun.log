@@ -1,0 +1,42 @@
+TAP version 13
+# RESULT C1: status=verified steps=3 keys=30 machine=0.282 error=
+# Subtest: critic r13 control C1: the honest search (type the name, Enter) verifies
+ok 1 - critic r13 control C1: the honest search (type the name, Enter) verifies
+  ---
+  duration_ms: 4240.755169
+  type: 'test'
+  ...
+# RESULT N1: status=invalid steps=1 keys=1 machine=0.011 human=2.03 human_plus_wait=2.032 typed=[] start="/contacts" vs_odoo_find_record=undefined  error=action outside the clock (set-up): the page changed what it shows without a counted step causing it (4 changes; the first 1.167 s before the clock started, a FrameLoader::StartNavigation: a timer armed before the clock started): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r13 plant N1: set-up turns on "open the last record at start"; the start list opens the record on its own timer; run() presses Escape once -> never verifies
+ok 2 - critic r13 plant N1: set-up turns on "open the last record at start"; the start list opens the record on its own timer; run() presses Escape once -> never verifies
+  ---
+  duration_ms: 4181.800915
+  type: 'test'
+  ...
+# RESULT N1b: status=error steps=0 keys=0 machine=10.01 human=0 human_plus_wait=0 typed=[] start="/contacts" vs_odoo_find_record=undefined  error=TimeoutError: locator.click: Timeout 10000ms exceeded.
+# Call log:
+# [2m  - waiting for locator('\#rows')[22m
+#     (in the driver process)
+# Call log:
+# Subtest: critic r13 plant N1b: the same with one click on plain text -> never verifies
+ok 3 - critic r13 plant N1b: the same with one click on plain text -> never verifies
+  ---
+  duration_ms: 13674.22925
+  type: 'test'
+  ...
+# RESULT N2: status=invalid steps=undefined keys=undefined machine=undefined human=undefined human_plus_wait=undefined typed=[] start=undefined vs_odoo_find_record=undefined  error=action outside the clock (set-up): set-up's browser opened an address that names the task's data (/contact?n=Shamma%20Waleed%20Al%20Romaithi): set-up signs in and opens the start screen; a record it opened may be remembered and offered to the person. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r13 plant N2: set-up opens the record (the server lists it as recently viewed on the start list); run() clicks that link once, typing nothing -> never verifies
+ok 4 - critic r13 plant N2: set-up opens the record (the server lists it as recently viewed on the start list); run() clicks that link once, typing nothing -> never verifies
+  ---
+  duration_ms: 492.958455
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 52129.70854

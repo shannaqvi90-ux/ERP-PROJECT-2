@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "switch-company-20261017T120407-262e",
-  "instrument": 10,
+  "run_id": "switch-company-20261019T125012-8211",
+  "instrument": 12,
   "task": "switch-company",
   "task_title": "Switch company",
   "product": "odoo",
   "status": "verified",
   "goal": "Switch to working in \"Demo Manufacturing FZE\".",
   "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
-  "started_at": "2026-10-17T12:04:08.045Z",
-  "finished_at": "2026-10-17T12:04:27.651Z",
+  "started_at": "2026-10-19T12:50:12.924Z",
+  "finished_at": "2026-10-19T12:50:32.701Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 0.644,
-    "system_wait_seconds": 0.415,
+    "machine_seconds": 0.381,
+    "system_wait_seconds": 0.224,
     "human_seconds": 5.3,
-    "human_plus_wait_seconds": 5.715,
+    "human_plus_wait_seconds": 5.524,
     "klm_operator_counts": {
       "K": 0,
       "P": 2,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "company switcher",
       "keystrokes": 0,
-      "at": 0.048,
-      "took": 0.063,
+      "at": 0.014,
+      "took": 0.04,
       "began": 0.001,
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "Demo Manufacturing FZE",
       "keystrokes": 0,
-      "at": 0.156,
-      "took": 0.033,
-      "began": 0.113,
+      "at": 0.114,
+      "took": 0.035,
+      "began": 0.055,
       "screen": "/odoo/discuss",
       "chain": false
     }
@@ -79,22 +79,22 @@
   "waits": [
     {
       "label": "working in the other company",
-      "at": 0.189,
-      "seconds": 0.415
+      "at": 0.149,
+      "seconds": 0.224
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "fff7b4c5cea780df.jpg",
+      "file": "f0e3691f663cd1a9.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/fff7b4c5cea780df.jpg"
+      "path": "gauntlet/reference/odoo/shots/f0e3691f663cd1a9.jpg"
     },
     {
       "moment": "done",
-      "file": "46dd28bab13f649a.jpg",
-      "at": 0.644,
-      "path": "gauntlet/reference/odoo/shots/46dd28bab13f649a.jpg"
+      "file": "a46d338c5ac72a22.jpg",
+      "at": 0.381,
+      "path": "gauntlet/reference/odoo/shots/a46d338c5ac72a22.jpg"
     }
   ],
   "verification": {
@@ -124,36 +124,37 @@
   "verify_passes": [
     {
       "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "longest_pause_seconds": 0,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.003,
+      "seconds": 0.002,
       "verified": true
     },
     {
       "requests": 1,
-      "longest_pause_seconds": 0.001,
+      "longest_pause_seconds": 0,
       "repeated_reads": [],
       "paced_seconds": 0,
       "seconds": 0.002,
       "verified": true,
-      "gap_seconds": 0.073
+      "gap_seconds": 0.046
     }
   ],
-  "requests_after_clock": 1,
+  "requests_after_clock": 0,
   "requests_in_flight_at_clock": {
-    "count": 1,
+    "count": 2,
     "first": [
-      "GET /bus/websocket_worker_bundle (script)"
+      "GET /bus/websocket_worker_bundle (script)",
+      "POST /mail/store (xhr)"
     ]
   },
   "screen_at_clock": {
-    "sha256": "14d461502139942f",
-    "elements": 153
+    "sha256": "bb2f5db7a5598e14",
+    "elements": 92
   },
   "screen_after_verify": {
-    "sha256": "14d461502139942f",
-    "elements": 153,
+    "sha256": "bb2f5db7a5598e14",
+    "elements": 92,
     "unchanged": true
   },
   "verify_before": {
@@ -161,17 +162,81 @@
     "error": null,
     "back_end_reads": 0,
     "requests": 1,
-    "longest_pause_seconds": 0.001,
+    "longest_pause_seconds": 0,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.053
+    "seconds": 0.022
   },
   "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 24,
+    "not_caused": 8,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.068,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23f8f9fa' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.092,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.108,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.142,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.353,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.372,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/3/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.373,
+        "event": "ScheduleStyleRecalculation",
+        "why": "it followed the answer to GET /web/assets/3e97dca/web.material_symbols_outlined.min.woff2, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.375,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.314,
+      "by_step": 2,
+      "chain": [
+        "input of step 2",
+        "a timer of 0 s",
+        "the document /odoo/discuss"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/switch-company.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/switch-company-20261017T120328-9dc3.json",
-    "gauntlet/reference/odoo/results/switch-company-20261017T120348-2718.json",
-    "gauntlet/reference/odoo/results/switch-company-20261017T120407-262e.json"
+    "gauntlet/reference/odoo/results/switch-company-20261019T125012-8211.json",
+    "gauntlet/reference/odoo/results/switch-company-20261019T125032-2f82.json",
+    "gauntlet/reference/odoo/results/switch-company-20261019T125052-cb55.json"
   ]
 }

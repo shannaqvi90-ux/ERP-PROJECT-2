@@ -98,6 +98,16 @@ public static class FieldVariants
         var format = schema.TryGetProperty("format", out var f) ? f.GetString() : null;
         var lower = name.ToLowerInvariant();
         var currentText = current is JsonValue v && v.GetValueKind() == JsonValueKind.String ? v.GetValue<string>() : null;
+        if (schema.TryGetProperty("pattern", out var pattern) && pattern.GetString() is { } documented && currentText is not null)
+        {
+            // A text field with a documented pattern (a device code): another value the pattern
+            // takes, a documented example or the current value in the other letter case; without
+            // one the field is a blind spot the caller reports.
+            var candidates = OpenApiDocument.Examples(schema).Where(e => e.ValueKind == JsonValueKind.String).Select(e => e.GetString()!)
+                .Concat([currentText.ToLowerInvariant(), currentText.ToUpperInvariant()]);
+            var other = candidates.FirstOrDefault(c => c != currentText && System.Text.RegularExpressions.Regex.IsMatch(c, documented));
+            return other is null ? null : JsonValue.Create(other);
+        }
         return openApi.TypeOfSchema(schema) switch
         {
             "boolean" => JsonValue.Create(!(current is JsonValue b && b.GetValueKind() == JsonValueKind.True)),

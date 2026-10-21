@@ -1,0 +1,1954 @@
+{
+  "schema": 1,
+  "run_id": "edit-and-save-20261019T025842-3457",
+  "instrument": 10,
+  "task": "edit-and-save",
+  "task_title": "Edit a record and save it",
+  "product": "ours",
+  "status": "invalid",
+  "goal": "Change the contact's phone number to +971 50 555 0199 and save.",
+  "done_when": "The form shows the saved record; the back end holds the new phone number.",
+  "started_at": "2026-10-19T02:58:42.185Z",
+  "finished_at": "2026-10-19T02:59:16.321Z",
+  "environment": {
+    "base_url": "http://localhost:20650",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 12,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.281,
+    "system_wait_seconds": 0.055,
+    "human_seconds": 6.41,
+    "human_plus_wait_seconds": 6.465,
+    "klm_operator_counts": {
+      "K": 12,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "phone field (selects the number after +971)",
+      "keystrokes": 0,
+      "at": 0.039,
+      "took": 0.054,
+      "began": 0.002,
+      "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "new number with its code, no + (its last digit saves)",
+      "keystrokes": 12,
+      "at": 0.108,
+      "took": 0.111,
+      "text": "971505550199",
+      "same_field": true,
+      "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "saved",
+      "at": 0.222,
+      "seconds": 0.055
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "7aa51f98d841a710.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p06-form-report/r9/compare-ours-variants/blind/shots/7aa51f98d841a710.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "2396a2263f5715be.jpg",
+      "at": 0.281,
+      "path": "../../evidence-staging/p06-form-report/r9/compare-ours-variants/blind/shots/2396a2263f5715be.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "saved": "+971 50 555 0199",
+      "shown": "+971 50 555 0199",
+      "record": "company ALN-DXB"
+    }
+  },
+  "path_notes": "compact: Click the phone field > type +971505550199 (the field groups it; the last digit saves) | spaced: Click the phone field > type +971 50 555 0199 as written (the last digit saves) | national: critic r9: click > type 505550199 (the field keeps +971) | zero: critic r9: click > type 0505550199 | code: Click the phone field > type 971505550199 (twelve keys, none shifted; the field takes the code typed again and groups it; the last digit saves)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/edit-and-save.mjs",
+    "sha256": "8b9dfe7bd3a7f299119afc07f7a5edbe28f31e675865a82329d1414fae3ec88a"
+  },
+  "task_notes": "Clean-up puts the original number back through the back end.",
+  "error": "national: invalid action outside the clock (set-up): the end state gained \"+971 50 555 0199\", which the measured part never entered (typed or picked as a file); the page sent \"+971 50 555 0199\" in a request it composed itself (a draft or a value the product held before the clock), which nobody typed: it was entered off the clock. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.\nzero: invalid action outside the clock (set-up): the end state gained \"+971 50 555 0199\", which the measured part never entered (typed or picked as a file); the page sent \"+971 50 555 0199\" in a request it composed itself (a draft or a value the product held before the clock), which nobody typed: it was entered off the clock. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+    "path": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+    "query": "",
+    "fragment": "",
+    "fields": 21,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "legalNameEn",
+        "password": false,
+        "value_length": 19,
+        "value": "Al Noor Trading LLC"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "legalNameAr",
+        "password": false,
+        "value_length": 24,
+        "value": "شركة النور للتجارة ذ.م.م"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "code",
+        "password": false,
+        "value_length": 7,
+        "value": "ALN-DXB"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "tradeLicenceNumber",
+        "password": false,
+        "value_length": 10,
+        "value": "DED-604112"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "tradeLicenceAuthority",
+        "password": false,
+        "value_length": 39,
+        "value": "Dubai Department of Economy and Tourism"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "taxRegistrationNumber",
+        "password": false,
+        "value_length": 15,
+        "value": "100123456700003"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "baseCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "fiscalYearStartDay",
+        "password": false,
+        "value_length": 1,
+        "value": "1"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "addressLine1",
+        "password": false,
+        "value_length": 35,
+        "value": "Office 1204, Al Maktoum Road, Deira"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city",
+        "password": false,
+        "value_length": 5,
+        "value": "Dubai"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "poBox",
+        "password": false,
+        "value_length": 5,
+        "value": "11542"
+      },
+      {
+        "tag": "textarea",
+        "type": "textarea",
+        "name": "addressAr",
+        "password": false,
+        "value_length": 35,
+        "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone",
+        "password": false,
+        "value_length": 15,
+        "value": "+971 4 221 5500"
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email",
+        "password": false,
+        "value_length": 27,
+        "value": "accounts.aln-dxb@example.ae"
+      },
+      {
+        "tag": "input",
+        "type": "url",
+        "name": "website",
+        "password": false,
+        "value_length": 22,
+        "value": "https://www.example.ae"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "branchNameEn",
+        "password": false,
+        "value_length": 22,
+        "value": "Al Noor Trading LLC - "
+      }
+    ],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 5,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.033,
+      "verified": true
+    },
+    {
+      "requests": 5,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.041,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "bb54c22a2ac3cbf6",
+    "elements": 663
+  },
+  "screen_after_verify": {
+    "sha256": "bb54c22a2ac3cbf6",
+    "elements": 663,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 2,
+    "requests": 5,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.039
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 2,
+    "reads_after": 2,
+    "read_both_times": 2,
+    "read_before": [
+      "GET /api/tenancy/companies",
+      "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+    ],
+    "read_after": [
+      "GET /api/tenancy/companies",
+      "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+    ],
+    "changed": [
+      "GET /api/tenancy/companies",
+      "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+    ],
+    "changed_parts": {
+      "GET /api/tenancy/companies": [
+        "items.0.version"
+      ],
+      "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+        "phone",
+        "updatedAt",
+        "version"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+    ],
+    "end_state": [
+      "GET /api/tenancy/companies/* [phone]"
+    ],
+    "end_state_changed": {
+      "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+        "phone"
+      ]
+    },
+    "end_state_gained": [
+      "+971 50 555 0199"
+    ],
+    "writes_sent": [
+      "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+    ],
+    "writes_caused": [
+      {
+        "write": "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "at": 0.2153048050000034,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain": [
+            "input of step 2"
+          ]
+        }
+      }
+    ]
+  },
+  "screenshots_path": "code",
+  "error_page": {},
+  "best_path_per_metric": {
+    "steps": "compact",
+    "keystrokes": "code",
+    "machine_seconds": "code",
+    "human_seconds": "code",
+    "human_plus_wait_seconds": "code"
+  },
+  "counts_path": "code",
+  "variants": [
+    {
+      "id": "compact",
+      "path": "Click the phone field > type +971505550199 (the field groups it; the last digit saves)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 14,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.327,
+        "system_wait_seconds": 0.055,
+        "human_seconds": 6.97,
+        "human_plus_wait_seconds": 7.025,
+        "klm_operator_counts": {
+          "K": 14,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field (selects the number after +971)",
+          "keystrokes": 0,
+          "at": 0.059,
+          "took": 0.066,
+          "began": 0.002,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "new number (its last digit saves)",
+          "keystrokes": 14,
+          "at": 0.14,
+          "took": 0.122,
+          "text": "+971505550199",
+          "same_field": true,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.268,
+          "seconds": 0.055
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199",
+          "record": "company ALN-DXB"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "path": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "query": "",
+        "fragment": "",
+        "fields": 21,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameEn",
+            "password": false,
+            "value_length": 19,
+            "value": "Al Noor Trading LLC"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameAr",
+            "password": false,
+            "value_length": 24,
+            "value": "شركة النور للتجارة ذ.م.م"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "code",
+            "password": false,
+            "value_length": 7,
+            "value": "ALN-DXB"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceNumber",
+            "password": false,
+            "value_length": 10,
+            "value": "DED-604112"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceAuthority",
+            "password": false,
+            "value_length": 39,
+            "value": "Dubai Department of Economy and Tourism"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "taxRegistrationNumber",
+            "password": false,
+            "value_length": 15,
+            "value": "100123456700003"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "baseCurrency",
+            "password": false,
+            "value_length": 3,
+            "value": "AED"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "fiscalYearStartDay",
+            "password": false,
+            "value_length": 1,
+            "value": "1"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "addressLine1",
+            "password": false,
+            "value_length": 35,
+            "value": "Office 1204, Al Maktoum Road, Deira"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city",
+            "password": false,
+            "value_length": 5,
+            "value": "Dubai"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "poBox",
+            "password": false,
+            "value_length": 5,
+            "value": "11542"
+          },
+          {
+            "tag": "textarea",
+            "type": "textarea",
+            "name": "addressAr",
+            "password": false,
+            "value_length": 35,
+            "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone",
+            "password": false,
+            "value_length": 15,
+            "value": "+971 4 221 5500"
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "password": false,
+            "value_length": 27,
+            "value": "accounts.aln-dxb@example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "url",
+            "name": "website",
+            "password": false,
+            "value_length": 22,
+            "value": "https://www.example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "branchNameEn",
+            "password": false,
+            "value_length": 22,
+            "value": "Al Noor Trading LLC - "
+          }
+        ],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.048,
+          "verified": true
+        },
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.04,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "ed9787d5a1fb2847",
+        "elements": 663
+      },
+      "screen_after_verify": {
+        "sha256": "ed9787d5a1fb2847",
+        "elements": 663,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 2,
+        "requests": 5,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.056
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 2,
+        "reads_after": 2,
+        "read_both_times": 2,
+        "read_before": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "read_after": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed_parts": {
+          "GET /api/tenancy/companies": [
+            "items.0.version"
+          ],
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone",
+            "updatedAt",
+            "version"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "end_state": [
+          "GET /api/tenancy/companies/* [phone]"
+        ],
+        "end_state_changed": {
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "writes_caused": [
+          {
+            "write": "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+            "at": 0.26002060899999924,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain": [
+                "input of step 2"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "spaced",
+      "path": "Click the phone field > type +971 50 555 0199 as written (the last digit saves)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 17,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.307,
+        "system_wait_seconds": 0.055,
+        "human_seconds": 7.81,
+        "human_plus_wait_seconds": 7.865,
+        "klm_operator_counts": {
+          "K": 17,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field (selects the number after +971)",
+          "keystrokes": 0,
+          "at": 0.055,
+          "took": 0.045,
+          "began": 0.001,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "new number (its last digit saves)",
+          "keystrokes": 17,
+          "at": 0.113,
+          "took": 0.134,
+          "text": "+971 50 555 0199",
+          "same_field": true,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.249,
+          "seconds": 0.055
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199",
+          "record": "company ALN-DXB"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "path": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "query": "",
+        "fragment": "",
+        "fields": 21,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameEn",
+            "password": false,
+            "value_length": 19,
+            "value": "Al Noor Trading LLC"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameAr",
+            "password": false,
+            "value_length": 24,
+            "value": "شركة النور للتجارة ذ.م.م"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "code",
+            "password": false,
+            "value_length": 7,
+            "value": "ALN-DXB"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceNumber",
+            "password": false,
+            "value_length": 10,
+            "value": "DED-604112"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceAuthority",
+            "password": false,
+            "value_length": 39,
+            "value": "Dubai Department of Economy and Tourism"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "taxRegistrationNumber",
+            "password": false,
+            "value_length": 15,
+            "value": "100123456700003"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "baseCurrency",
+            "password": false,
+            "value_length": 3,
+            "value": "AED"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "fiscalYearStartDay",
+            "password": false,
+            "value_length": 1,
+            "value": "1"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "addressLine1",
+            "password": false,
+            "value_length": 35,
+            "value": "Office 1204, Al Maktoum Road, Deira"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city",
+            "password": false,
+            "value_length": 5,
+            "value": "Dubai"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "poBox",
+            "password": false,
+            "value_length": 5,
+            "value": "11542"
+          },
+          {
+            "tag": "textarea",
+            "type": "textarea",
+            "name": "addressAr",
+            "password": false,
+            "value_length": 35,
+            "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone",
+            "password": false,
+            "value_length": 15,
+            "value": "+971 4 221 5500"
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "password": false,
+            "value_length": 27,
+            "value": "accounts.aln-dxb@example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "url",
+            "name": "website",
+            "password": false,
+            "value_length": 22,
+            "value": "https://www.example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "branchNameEn",
+            "password": false,
+            "value_length": 22,
+            "value": "Al Noor Trading LLC - "
+          }
+        ],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.038,
+          "verified": true
+        },
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.058,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "ed9787d5a1fb2847",
+        "elements": 663
+      },
+      "screen_after_verify": {
+        "sha256": "ed9787d5a1fb2847",
+        "elements": 663,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 2,
+        "requests": 5,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.054
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 2,
+        "reads_after": 2,
+        "read_both_times": 2,
+        "read_before": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "read_after": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed_parts": {
+          "GET /api/tenancy/companies": [
+            "items.0.version"
+          ],
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone",
+            "updatedAt",
+            "version"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "end_state": [
+          "GET /api/tenancy/companies/* [phone]"
+        ],
+        "end_state_changed": {
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "writes_caused": [
+          {
+            "write": "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+            "at": 0.2449170439999998,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain": [
+                "input of step 2"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "national",
+      "path": "critic r9: click > type 505550199 (the field keeps +971)",
+      "status": "invalid",
+      "error": "action outside the clock (set-up): the end state gained \"+971 50 555 0199\", which the measured part never entered (typed or picked as a file); the page sent \"+971 50 555 0199\" in a request it composed itself (a draft or a value the product held before the clock), which nobody typed: it was entered off the clock. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+      "counts": {
+        "steps": 2,
+        "keystrokes": 9,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.276,
+        "system_wait_seconds": 0.055,
+        "human_seconds": 5.57,
+        "human_plus_wait_seconds": 5.625,
+        "klm_operator_counts": {
+          "K": 9,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0.057,
+          "took": 0.054,
+          "began": 0.001,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "national number",
+          "keystrokes": 9,
+          "at": 0.125,
+          "took": 0.092,
+          "text": "505550199",
+          "same_field": true,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.218,
+          "seconds": 0.055
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199",
+          "record": "company ALN-DXB"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "path": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "query": "",
+        "fragment": "",
+        "fields": 21,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameEn",
+            "password": false,
+            "value_length": 19,
+            "value": "Al Noor Trading LLC"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameAr",
+            "password": false,
+            "value_length": 24,
+            "value": "شركة النور للتجارة ذ.م.م"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "code",
+            "password": false,
+            "value_length": 7,
+            "value": "ALN-DXB"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceNumber",
+            "password": false,
+            "value_length": 10,
+            "value": "DED-604112"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceAuthority",
+            "password": false,
+            "value_length": 39,
+            "value": "Dubai Department of Economy and Tourism"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "taxRegistrationNumber",
+            "password": false,
+            "value_length": 15,
+            "value": "100123456700003"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "baseCurrency",
+            "password": false,
+            "value_length": 3,
+            "value": "AED"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "fiscalYearStartDay",
+            "password": false,
+            "value_length": 1,
+            "value": "1"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "addressLine1",
+            "password": false,
+            "value_length": 35,
+            "value": "Office 1204, Al Maktoum Road, Deira"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city",
+            "password": false,
+            "value_length": 5,
+            "value": "Dubai"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "poBox",
+            "password": false,
+            "value_length": 5,
+            "value": "11542"
+          },
+          {
+            "tag": "textarea",
+            "type": "textarea",
+            "name": "addressAr",
+            "password": false,
+            "value_length": 35,
+            "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone",
+            "password": false,
+            "value_length": 15,
+            "value": "+971 4 221 5500"
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "password": false,
+            "value_length": 27,
+            "value": "accounts.aln-dxb@example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "url",
+            "name": "website",
+            "password": false,
+            "value_length": 22,
+            "value": "https://www.example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "branchNameEn",
+            "password": false,
+            "value_length": 22,
+            "value": "Al Noor Trading LLC - "
+          }
+        ],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.005,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.054,
+          "verified": true
+        },
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.006,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.055,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "ed9787d5a1fb2847",
+        "elements": 663
+      },
+      "screen_after_verify": null,
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 2,
+        "requests": 5,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.042
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 2,
+        "reads_after": 2,
+        "read_both_times": 2,
+        "read_before": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "read_after": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed_parts": {
+          "GET /api/tenancy/companies": [
+            "items.0.version"
+          ],
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone",
+            "updatedAt",
+            "version"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "end_state": [
+          "GET /api/tenancy/companies/* [phone]"
+        ],
+        "end_state_changed": {
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "writes_caused": [
+          {
+            "write": "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+            "at": 0.21168060600000171,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain": [
+                "input of step 2"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "zero",
+      "path": "critic r9: click > type 0505550199",
+      "status": "invalid",
+      "error": "action outside the clock (set-up): the end state gained \"+971 50 555 0199\", which the measured part never entered (typed or picked as a file); the page sent \"+971 50 555 0199\" in a request it composed itself (a draft or a value the product held before the clock), which nobody typed: it was entered off the clock. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+      "counts": {
+        "steps": 2,
+        "keystrokes": 10,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.249,
+        "system_wait_seconds": 0.055,
+        "human_seconds": 5.85,
+        "human_plus_wait_seconds": 5.905,
+        "klm_operator_counts": {
+          "K": 10,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0.047,
+          "took": 0.049,
+          "began": 0.001,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "national number with trunk 0",
+          "keystrokes": 10,
+          "at": 0.11,
+          "took": 0.076,
+          "text": "0505550199",
+          "same_field": true,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.187,
+          "seconds": 0.055
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199",
+          "record": "company ALN-DXB"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "path": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "query": "",
+        "fragment": "",
+        "fields": 21,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameEn",
+            "password": false,
+            "value_length": 19,
+            "value": "Al Noor Trading LLC"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameAr",
+            "password": false,
+            "value_length": 24,
+            "value": "شركة النور للتجارة ذ.م.م"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "code",
+            "password": false,
+            "value_length": 7,
+            "value": "ALN-DXB"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceNumber",
+            "password": false,
+            "value_length": 10,
+            "value": "DED-604112"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceAuthority",
+            "password": false,
+            "value_length": 39,
+            "value": "Dubai Department of Economy and Tourism"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "taxRegistrationNumber",
+            "password": false,
+            "value_length": 15,
+            "value": "100123456700003"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "baseCurrency",
+            "password": false,
+            "value_length": 3,
+            "value": "AED"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "fiscalYearStartDay",
+            "password": false,
+            "value_length": 1,
+            "value": "1"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "addressLine1",
+            "password": false,
+            "value_length": 35,
+            "value": "Office 1204, Al Maktoum Road, Deira"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city",
+            "password": false,
+            "value_length": 5,
+            "value": "Dubai"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "poBox",
+            "password": false,
+            "value_length": 5,
+            "value": "11542"
+          },
+          {
+            "tag": "textarea",
+            "type": "textarea",
+            "name": "addressAr",
+            "password": false,
+            "value_length": 35,
+            "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone",
+            "password": false,
+            "value_length": 15,
+            "value": "+971 4 221 5500"
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "password": false,
+            "value_length": 27,
+            "value": "accounts.aln-dxb@example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "url",
+            "name": "website",
+            "password": false,
+            "value_length": 22,
+            "value": "https://www.example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "branchNameEn",
+            "password": false,
+            "value_length": 22,
+            "value": "Al Noor Trading LLC - "
+          }
+        ],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.038,
+          "verified": true
+        },
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.033,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "bb54c22a2ac3cbf6",
+        "elements": 663
+      },
+      "screen_after_verify": null,
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 2,
+        "requests": 5,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.036
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 2,
+        "reads_after": 2,
+        "read_both_times": 2,
+        "read_before": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "read_after": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed_parts": {
+          "GET /api/tenancy/companies": [
+            "items.0.version"
+          ],
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone",
+            "updatedAt",
+            "version"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "end_state": [
+          "GET /api/tenancy/companies/* [phone]"
+        ],
+        "end_state_changed": {
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "writes_caused": [
+          {
+            "write": "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+            "at": 0.18526504199999907,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain": [
+                "input of step 2"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "code",
+      "path": "Click the phone field > type 971505550199 (twelve keys, none shifted; the field takes the code typed again and groups it; the last digit saves)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 12,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.281,
+        "system_wait_seconds": 0.055,
+        "human_seconds": 6.41,
+        "human_plus_wait_seconds": 6.465,
+        "klm_operator_counts": {
+          "K": 12,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "phone field (selects the number after +971)",
+          "keystrokes": 0,
+          "at": 0.039,
+          "took": 0.054,
+          "began": 0.002,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "new number with its code, no + (its last digit saves)",
+          "keystrokes": 12,
+          "at": 0.108,
+          "took": 0.111,
+          "text": "971505550199",
+          "same_field": true,
+          "screen": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.222,
+          "seconds": 0.055
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "+971 50 555 0199",
+          "shown": "+971 50 555 0199",
+          "record": "company ALN-DXB"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "path": "/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+        "query": "",
+        "fragment": "",
+        "fields": 21,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameEn",
+            "password": false,
+            "value_length": 19,
+            "value": "Al Noor Trading LLC"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "legalNameAr",
+            "password": false,
+            "value_length": 24,
+            "value": "شركة النور للتجارة ذ.م.م"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "code",
+            "password": false,
+            "value_length": 7,
+            "value": "ALN-DXB"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceNumber",
+            "password": false,
+            "value_length": 10,
+            "value": "DED-604112"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "tradeLicenceAuthority",
+            "password": false,
+            "value_length": 39,
+            "value": "Dubai Department of Economy and Tourism"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "taxRegistrationNumber",
+            "password": false,
+            "value_length": 15,
+            "value": "100123456700003"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "baseCurrency",
+            "password": false,
+            "value_length": 3,
+            "value": "AED"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "fiscalYearStartDay",
+            "password": false,
+            "value_length": 1,
+            "value": "1"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "addressLine1",
+            "password": false,
+            "value_length": 35,
+            "value": "Office 1204, Al Maktoum Road, Deira"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city",
+            "password": false,
+            "value_length": 5,
+            "value": "Dubai"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "poBox",
+            "password": false,
+            "value_length": 5,
+            "value": "11542"
+          },
+          {
+            "tag": "textarea",
+            "type": "textarea",
+            "name": "addressAr",
+            "password": false,
+            "value_length": 35,
+            "value": "مكتب 1204، شارع آل مكتوم، ديرة، دبي"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone",
+            "password": false,
+            "value_length": 15,
+            "value": "+971 4 221 5500"
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "password": false,
+            "value_length": 27,
+            "value": "accounts.aln-dxb@example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "url",
+            "name": "website",
+            "password": false,
+            "value_length": 22,
+            "value": "https://www.example.ae"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "branchNameEn",
+            "password": false,
+            "value_length": 22,
+            "value": "Al Noor Trading LLC - "
+          }
+        ],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.033,
+          "verified": true
+        },
+        {
+          "requests": 5,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.041,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "bb54c22a2ac3cbf6",
+        "elements": 663
+      },
+      "screen_after_verify": {
+        "sha256": "bb54c22a2ac3cbf6",
+        "elements": 663,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 2,
+        "requests": 5,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.039
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 2,
+        "reads_after": 2,
+        "read_both_times": 2,
+        "read_before": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "read_after": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed": [
+          "GET /api/tenancy/companies",
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "changed_parts": {
+          "GET /api/tenancy/companies": [
+            "items.0.version"
+          ],
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone",
+            "updatedAt",
+            "version"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "end_state": [
+          "GET /api/tenancy/companies/* [phone]"
+        ],
+        "end_state_changed": {
+          "GET /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde": [
+            "phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde"
+        ],
+        "writes_caused": [
+          {
+            "write": "PUT /api/tenancy/companies/018dca08-f081-748c-9f03-e6f586e31dde",
+            "at": 0.2153048050000034,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain": [
+                "input of step 2"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

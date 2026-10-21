@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "see-and-rerun-job-20261017T115919-828a",
-  "instrument": 10,
+  "run_id": "see-and-rerun-job-20261019T124759-ee86",
+  "instrument": 12,
   "task": "see-and-rerun-job",
   "task_title": "See a background job and run it again",
   "product": "odoo",
   "status": "verified",
   "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
   "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
-  "started_at": "2026-10-17T11:59:19.089Z",
-  "finished_at": "2026-10-17T11:59:47.128Z",
+  "started_at": "2026-10-19T12:47:59.529Z",
+  "finished_at": "2026-10-19T12:48:25.101Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 5.438,
-    "system_wait_seconds": 1.647,
+    "machine_seconds": 3.955,
+    "system_wait_seconds": 0.986,
     "human_seconds": 34.68,
-    "human_plus_wait_seconds": 36.327,
+    "human_plus_wait_seconds": 35.666,
     "klm_operator_counts": {
       "K": 31,
       "P": 9,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0.036,
-      "took": 0.075,
+      "at": 0.024,
+      "took": 0.035,
       "began": 0.001,
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "Settings app",
       "keystrokes": 0,
-      "at": 0.15,
-      "took": 0.036,
-      "began": 0.112,
+      "at": 0.124,
+      "took": 0.034,
+      "began": 0.059,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -80,9 +80,9 @@
       "kind": "scroll",
       "label": "scroll to the bottom of the settings",
       "keystrokes": 0,
-      "at": 0.741,
-      "took": 0.054,
-      "began": 0.733,
+      "at": 0.419,
+      "took": 0.032,
+      "began": 0.415,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -91,9 +91,9 @@
       "kind": "click",
       "label": "Activate the developer mode",
       "keystrokes": 0,
-      "at": 0.837,
-      "took": 0.165,
-      "began": 0.796,
+      "at": 0.489,
+      "took": 0.034,
+      "began": 0.452,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -102,9 +102,9 @@
       "kind": "click",
       "label": "Technical menu",
       "keystrokes": 0,
-      "at": 1.461,
-      "took": 0.22,
-      "began": 1.371,
+      "at": 0.908,
+      "took": 0.068,
+      "began": 0.795,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -113,9 +113,9 @@
       "kind": "scroll",
       "label": "scroll the menu to Scheduled Actions",
       "keystrokes": 0,
-      "at": 1.767,
-      "took": 0.043,
-      "began": 1.763,
+      "at": 1.016,
+      "took": 0.035,
+      "began": 1.014,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -124,9 +124,9 @@
       "kind": "click",
       "label": "Scheduled Actions",
       "keystrokes": 0,
-      "at": 1.853,
-      "took": 0.06,
-      "began": 1.811,
+      "at": 1.09,
+      "took": 0.034,
+      "began": 1.052,
       "screen": "/odoo/settings",
       "chain": false
     },
@@ -135,8 +135,8 @@
       "kind": "type",
       "label": "job name",
       "keystrokes": 30,
-      "at": 4.17,
-      "took": 0.17,
+      "at": 3.287,
+      "took": 0.058,
       "text": "Mail: Email Queue Manager",
       "same_field": false,
       "screen": "/odoo/crons",
@@ -147,8 +147,8 @@
       "kind": "key",
       "label": "search",
       "keystrokes": 1,
-      "at": 4.345,
-      "took": 0.009,
+      "at": 3.346,
+      "took": 0.004,
       "chord": "Enter",
       "screen": "/odoo/crons",
       "chain": true
@@ -158,9 +158,9 @@
       "kind": "click",
       "label": "open the job",
       "keystrokes": 0,
-      "at": 4.458,
-      "took": 0.08,
-      "began": 4.409,
+      "at": 3.438,
+      "took": 0.044,
+      "began": 3.407,
       "screen": "/odoo/crons",
       "chain": false
     },
@@ -169,9 +169,9 @@
       "kind": "click",
       "label": "Run Manually",
       "keystrokes": 0,
-      "at": 5.2,
-      "took": 0.069,
-      "began": 5.148,
+      "at": 3.855,
+      "took": 0.044,
+      "began": 3.81,
       "screen": "/odoo/crons/4",
       "chain": false
     }
@@ -179,75 +179,75 @@
   "waits": [
     {
       "label": "Settings loaded",
-      "at": 0.187,
-      "seconds": 0.522
+      "at": 0.159,
+      "seconds": 0.247
     },
     {
       "label": "settings page",
-      "at": 0.709,
-      "seconds": 0.023
+      "at": 0.407,
+      "seconds": 0.007
     },
     {
       "label": "developer mode on",
-      "at": 1.005,
-      "seconds": 0.364
+      "at": 0.524,
+      "seconds": 0.27
     },
     {
       "label": "technical menu open",
-      "at": 1.682,
-      "seconds": 0.008
+      "at": 0.977,
+      "seconds": 0.026
     },
     {
       "label": "scheduled action list loaded, search focused",
-      "at": 1.914,
-      "seconds": 0.25
+      "at": 1.124,
+      "seconds": 0.162
     },
     {
       "label": "job name in the search box",
-      "at": 4.341,
-      "seconds": 0.004
+      "at": 3.345,
+      "seconds": 0.001
     },
     {
       "label": "one job",
-      "at": 4.355,
-      "seconds": 0.053
+      "at": 3.351,
+      "seconds": 0.055
     },
     {
       "label": "job form (last run on screen)",
-      "at": 4.538,
-      "seconds": 0.302
+      "at": 3.482,
+      "seconds": 0.164
     },
     {
       "label": "run finished (no message is shown)",
-      "at": 5.269,
-      "seconds": 0.166
+      "at": 3.9,
+      "seconds": 0.054
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "268df1687734fe97.jpg",
+      "file": "a78ca87304f0e0cd.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/268df1687734fe97.jpg"
+      "path": "gauntlet/reference/odoo/shots/a78ca87304f0e0cd.jpg"
     },
     {
       "moment": "job opened",
-      "file": "31b602f5ea951a50.jpg",
-      "at": 4.84,
-      "path": "gauntlet/reference/odoo/shots/31b602f5ea951a50.jpg"
+      "file": "48bc755b3f9c82cb.jpg",
+      "at": 3.646,
+      "path": "gauntlet/reference/odoo/shots/48bc755b3f9c82cb.jpg"
     },
     {
       "moment": "done",
-      "file": "e3056ce1880354e4.jpg",
-      "at": 5.438,
-      "path": "gauntlet/reference/odoo/shots/e3056ce1880354e4.jpg"
+      "file": "dac8f921149a75fe.jpg",
+      "at": 3.955,
+      "path": "gauntlet/reference/odoo/shots/dac8f921149a75fe.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "last_run_before": "2026-10-17 11:08:45",
-      "last_run_now": "2026-10-17 11:59:43",
+      "last_run_before": "2026-10-19 12:47:56",
+      "last_run_now": "2026-10-19 12:48:21",
       "last_run_shown_in_interface": false
     }
   },
@@ -271,10 +271,10 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.004,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.021,
+      "seconds": 0.009,
       "verified": true
     },
     {
@@ -282,9 +282,9 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.011,
+      "seconds": 0.01,
       "verified": true,
-      "gap_seconds": 1.101
+      "gap_seconds": 1.1
     }
   ],
   "requests_after_clock": 0,
@@ -295,11 +295,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "de7e621e8cb60424",
+    "sha256": "b50a5b3adc34b1c1",
     "elements": 337
   },
   "screen_after_verify": {
-    "sha256": "de7e621e8cb60424",
+    "sha256": "b50a5b3adc34b1c1",
     "elements": 337,
     "unchanged": true
   },
@@ -308,10 +308,10 @@
     "error": null,
     "back_end_reads": 1,
     "requests": 2,
-    "longest_pause_seconds": 0.004,
+    "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.019
+    "seconds": 0.009
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -350,63 +350,66 @@
     "writes_caused": [
       {
         "write": "POST /base_setup/data",
-        "at": 0.5815550220003352,
+        "at": 0.35206882799975575,
         "by_step": 2,
         "browser_record": {
           "caused": true,
-          "by_step": 7,
+          "by_step": 2,
+          "chain_seconds": 0.169,
           "chain": [
-            "input of step 7",
+            "input of step 2",
             "an animation frame",
-            "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.076 s",
-            "a task that followed at once (a message or an observer)",
-            "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.097 s"
+            "an animation frame",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.038 s",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.034 s"
           ]
         }
       },
       {
         "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
-        "at": 0.581619507000316,
+        "at": 0.35215046499995517,
         "by_step": 2,
         "browser_record": {
           "caused": true,
-          "by_step": 7,
+          "by_step": 2,
+          "chain_seconds": 0.196,
           "chain": [
-            "input of step 7",
+            "input of step 2",
             "an animation frame",
-            "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.076 s",
-            "a task that followed at once (a message or an observer)",
-            "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.097 s"
+            "an animation frame",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.038 s",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.034 s"
           ]
         }
       },
       {
         "write": "POST /base_setup/data",
-        "at": 1.6444455060004257,
-        "not_caused": "the browser's record shows a task of no traceable origin (a message, an observer) after a page task no step caused: a timer of 1799.918 s: a delay the page set, longer than a page takes to answer a step",
+        "at": 0.9060088979997672,
+        "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
         "browser_record": {
           "caused": false,
-          "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer of 1799.918 s: a delay the page set, longer than a page takes to answer a step",
+          "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
           "chain": []
         }
       },
       {
         "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
-        "at": 1.6446421070001087,
-        "not_caused": "the browser's record shows a task of no traceable origin (a message, an observer) after a page task no step caused: a timer of 1799.918 s: a delay the page set, longer than a page takes to answer a step",
+        "at": 0.9060586329996586,
+        "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
         "browser_record": {
           "caused": false,
-          "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer of 1799.918 s: a delay the page set, longer than a page takes to answer a step",
+          "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
           "chain": []
         }
       },
       {
         "write": "POST /web/dataset/call_button/ir.cron/method_direct_trigger",
-        "at": 5.264761178000365,
+        "at": 3.898627534999978,
         "by_step": 11,
         "browser_record": {
           "caused": true,
           "by_step": 11,
+          "chain_seconds": 0.007,
           "chain": [
             "input of step 11"
           ]
@@ -414,11 +417,75 @@
       }
     ]
   },
+  "screen_changes": {
+    "judged": 124,
+    "not_caused": 41,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.467,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.483,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.743,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.766,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/3/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.767,
+        "event": "ScheduleStyleRecalculation",
+        "why": "it followed the answer to GET /web/assets/3e97dca/web.material_symbols_outlined.min.woff2, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.769,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.809,
+        "event": "LayoutInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.936,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 3.945,
+      "by_step": 11,
+      "chain": [
+        "input of step 11",
+        "the answer to POST /web/dataset/call_button/ir.cron/method_direct_trigger after 0.016 s",
+        "the answer to POST /web/dataset/call_kw/ir.cron/web_read after 0.026 s"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/see-and-rerun-job.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/see-and-rerun-job-20261017T115919-828a.json",
-    "gauntlet/reference/odoo/results/see-and-rerun-job-20261017T115947-7269.json",
-    "gauntlet/reference/odoo/results/see-and-rerun-job-20261017T120015-f8c6.json"
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261019T124707-c34c.json",
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261019T124733-b233.json",
+    "gauntlet/reference/odoo/results/see-and-rerun-job-20261019T124759-ee86.json"
   ]
 }

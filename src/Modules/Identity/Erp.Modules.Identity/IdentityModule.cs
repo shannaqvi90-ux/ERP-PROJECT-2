@@ -32,6 +32,7 @@ public sealed class IdentityModule : ErpModule
         module.Services.AddScoped<ISessionCompanyGrants>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<SignInService>();
         module.Services.AddSingleton<TrustedDevices>();
+        module.Services.AddSingleton<ClientAddresses>();
         module.Services.AddSingleton<Auth.Passkeys.PasskeyChallenges>();
         module.Services.AddScoped<SessionPayload>();
         module.Services.AddScoped<IUserDirectory, UserDirectory>();
@@ -42,6 +43,7 @@ public sealed class IdentityModule : ErpModule
             UserBulkEndpoints.Map(group);
             RoleEndpoints.Map(group);
             ProfileEndpoints.Map(group);
+            DeviceApprovalEndpoints.Map(group);
             Auth.Passkeys.PasskeyEndpoints.Map(group);
         });
         module.Menu(new MenuEntry("identity.users", "identity.menu.users", "/identity/users", IdentityPermissions.UsersRead, Order: 800, Group: "settings"));
@@ -83,6 +85,15 @@ public sealed class User : TenantEntity
     /// <summary>When an administrator last cleared this account's sign-in pauses. Failed attempts
     /// before it no longer count.</summary>
     public DateTimeOffset? SignInUnblockedAt { get; set; }
+
+    /// <summary>A device the user (signed in elsewhere) or an administrator let sign in to this
+    /// account: the SHA-256 of the device code that device's sign-in screen showed
+    /// (<see cref="Auth.DeviceApprovals"/>). While it holds, that one browser is a client of its own
+    /// on this account, apart from the shared address it arrives from; its first sign-in uses it up.</summary>
+    public byte[]? DeviceApprovalHash { get; set; }
+
+    /// <summary>Until when <see cref="DeviceApprovalHash"/> holds.</summary>
+    public DateTimeOffset? DeviceApprovalUntil { get; set; }
 
     /// <summary>How many roles the user holds in one company (rows of <see cref="UserCompanyRole"/>
     /// in every company, kept by a database trigger). An administrator sees only the rows of the
@@ -272,6 +283,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
                 t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
                 t.HasCheckConstraint("ck_users_company_role_count", "company_role_count >= 0");
+                t.HasCheckConstraint("ck_users_device_approval",
+                    "(device_approval_hash IS NULL AND device_approval_until IS NULL) OR (length(device_approval_hash) = 32 AND device_approval_until IS NOT NULL)");
             });
             e.Property(x => x.Email).HasMaxLength(254);
             e.Property(x => x.EmailNormalized).HasMaxLength(254);
@@ -485,6 +498,20 @@ public sealed class AuthOptions
 
     /// <summary>How long a browser stays a trusted device of an account after signing in to it.</summary>
     public int DeviceDays { get; set; } = 180;
+
+    /// <summary>Addresses many clients share (comma-separated addresses or CIDR networks, such as
+    /// an office's NAT address when the deployment sees real client addresses), shown so in the
+    /// sign-in history; from them a valid set-up code still signs in while sign-in there is paused
+    /// (<see cref="ClientAddresses"/>).</summary>
+    public string? SharedAddresses { get; set; }
+
+    /// <summary>Treat the gateways in this server's routing table as shared (on by default: in a
+    /// container every client reaching a published port arrives from the network's gateway).</summary>
+    public bool DetectGateways { get; set; } = true;
+
+    /// <summary>How long a device the user or an administrator let sign in may use that, in
+    /// minutes (clamped to 5–1440): its first sign-in must come within it.</summary>
+    public int DeviceApprovalMinutes { get; set; } = 60;
 
     /// <summary>The WebAuthn relying party id passkeys are made for: the site's host name (or a
     /// parent domain of it). Unset: the host name each request arrives at. Set it when the app is

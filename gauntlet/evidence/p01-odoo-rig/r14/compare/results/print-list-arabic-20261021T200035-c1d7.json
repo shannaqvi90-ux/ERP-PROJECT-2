@@ -1,0 +1,314 @@
+{
+  "schema": 1,
+  "run_id": "print-list-arabic-20261021T200035-c1d7",
+  "instrument": 12,
+  "task": "print-list-arabic",
+  "task_title": "Print a list report in Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
+  "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
+  "started_at": "2026-10-21T20:00:35.102Z",
+  "finished_at": "2026-10-21T20:01:03.275Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 32,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 4.593,
+    "system_wait_seconds": 4.052,
+    "human_seconds": 19.06,
+    "human_plus_wait_seconds": 23.112,
+    "klm_operator_counts": {
+      "K": 32,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "type",
+      "label": "vendor",
+      "keystrokes": 31,
+      "at": 0.004,
+      "took": 0.077,
+      "text": "Zenith General Trading Est.",
+      "same_field": false,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "search orders",
+      "keystrokes": 1,
+      "at": 0.089,
+      "took": 0.008,
+      "chord": "Enter",
+      "screen": "/odoo/purchase",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "select every order",
+      "keystrokes": 0,
+      "at": 0.557,
+      "took": 0.075,
+      "began": 0.515,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Print",
+      "keystrokes": 0,
+      "at": 0.673,
+      "took": 0.035,
+      "began": 0.636,
+      "screen": "/odoo/purchase",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Purchase Order",
+      "keystrokes": 0,
+      "at": 0.773,
+      "took": 0.036,
+      "began": 0.709,
+      "screen": "/odoo/purchase",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "order list, search focused",
+      "at": 0.001,
+      "seconds": 0.003
+    },
+    {
+      "label": "search options",
+      "at": 0.081,
+      "seconds": 0.007
+    },
+    {
+      "label": "the vendor's orders",
+      "at": 0.097,
+      "seconds": 0.256
+    },
+    {
+      "label": "print menu offered",
+      "at": 0.632,
+      "seconds": 0.004
+    },
+    {
+      "label": "file received",
+      "at": 0.809,
+      "seconds": 3.782
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "f9b0708fad84cc30.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r14/compare/blind/shots/f9b0708fad84cc30.jpg"
+    },
+    {
+      "moment": "list filtered",
+      "file": "2f7c825082754264.jpg",
+      "at": 0.353,
+      "path": "../../evidence-staging/p01-odoo-rig/r14/compare/blind/shots/2f7c825082754264.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "a5a9bb7fbda5f332.jpg",
+      "at": 4.593,
+      "path": "../../evidence-staging/p01-odoo-rig/r14/compare/blind/shots/a5a9bb7fbda5f332.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "أمر شراء.pdf",
+      "bytes": 1196008,
+      "orders_printed": 27,
+      "orders_expected": 27,
+      "same_orders": true,
+      "print_language": "ar_001",
+      "arabic_words_in_document": 659,
+      "right_to_left": true,
+      "documents": 27
+    }
+  },
+  "path_notes": "Purchase orders list (search focused) > type the vendor > Enter (Search Order for: the order, the vendor's reference or the vendor and its contacts) > header check box > Print > Purchase Order.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/print-list-arabic.mjs",
+    "sha256": "dcd915fcb84231ab2c8862ea69406fe11da2083084a60fa6ba584e191cf09d01"
+  },
+  "task_notes": "The comparison named in gauntlet/pieces/p06-form-report.md (\"print a list report in Arabic\"). Odoo Community has no list report (a printed table of a list's rows); its nearest feature selects the listed records and prints their own document, all of them in one PDF (Print > Purchase Order). The printed order follows the vendor's language, so set-up gives the vendor and its contacts Arabic and clean-up restores them. The Odoo user who works in Arabic is a rig fixture (arabic.reporter, purchase administrator), created by set-up when missing. Our product has no purchase orders yet: its driver prints the stand-in list it has, the users named like the dataset user {user.name} without the first name (the product's search matches each word in the name or e-mail: 53 users of the shared dataset, against the vendor's 27 orders in the reference).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/odoo/purchase",
+    "path": "/odoo/purchase",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "بحث...",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.113,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.11,
+      "verified": true,
+      "gap_seconds": 0.153
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /web/dataset/call_kw/purchase.order/web_search_read (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "4a5e559be7a0aff9",
+    "elements": 1172
+  },
+  "screen_after_verify": {
+    "sha256": "4a5e559be7a0aff9",
+    "elements": 1172,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 78,
+    "not_caused": 13,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.55,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.583,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.63,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.634,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.667,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.7,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.718,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.733,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 4.537,
+      "by_step": 5,
+      "chain": [
+        "the answer to POST /web/action/load after 0.015 s",
+        "the answer to POST /report/get_pdf_engine_state after 0.005 s",
+        "the answer to POST /report/download after 3.694 s",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/res.partner/write",
+    "browser POST /web/dataset/call_kw/purchase.order/retrieve_dashboard"
+  ]
+}

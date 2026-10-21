@@ -414,6 +414,75 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         Assert.Matches(@"\p{IsArabic}", errors.GetProperty("code")[0].GetProperty("message").GetString()!);
     }
 
+    /// <summary>Critic p06 round 8: a typo in the twelve-key phone entry (9715055501) was kept as
+    /// the "Fujairah" number +971 9 715 055501. A number with the UAE's code is refused on its field
+    /// unless it has as many digits as the numbering plan gives its kind; another country's number,
+    /// or one without its code, is not judged.</summary>
+    [Theory]
+    [InlineData("+971 9 715 055501", false)]
+    [InlineData("+971 9 715 0555019", false)]
+    [InlineData("+971 9 712 34567", false)]
+    [InlineData("+971 50 555 019", false)]
+    [InlineData("+971 50 555 01990", false)]
+    [InlineData("00971 4 555 01", false)]
+    [InlineData("+971 0 4 555 0100", false)]
+    [InlineData("+971", false)]
+    [InlineData("+971 9 712 3456", true)]
+    [InlineData("+971 50 555 0199", true)]
+    [InlineData("+971 58 555 0199", true)]
+    [InlineData("+971 4 000 0000", true)]
+    [InlineData("+97125557810", true)]
+    [InlineData("00971 2 555 7810", true)]
+    [InlineData("+971 600 522222", true)]
+    [InlineData("+971 800 12", true)]
+    [InlineData("+971 800 123456789", true)]
+    [InlineData("+971 800 1234567890", false)]
+    [InlineData("+44 20 7946 0958", true)]
+    [InlineData("04 555 7810", true)]
+    public void A_uae_number_has_the_digits_its_kind_has_in_the_numbering_plan(string phone, bool fits)
+    {
+        Assert.Equal(fits, TenancyValidation.UaeNumberLengthFits(phone));
+        Assert.Equal(fits, TenancyValidation.DocumentedPhoneRegex().IsMatch(phone));
+    }
+
+    /// <summary>The API description's phone pattern accepts exactly what the server's two checks
+    /// accept (its characters, then the UAE length), so a client that follows the description (the
+    /// isolation gate's writes do) sends a number the server takes.</summary>
+    [Fact]
+    public void The_documented_phone_pattern_accepts_exactly_what_the_server_accepts()
+    {
+        var shape = new System.Text.RegularExpressions.Regex(TenancyValidation.PhoneShapePattern);
+        var random = new Random(971);
+        const string alphabet = "0123456789 ()-";
+        var candidates = new List<string> { "+971 4 123 4567", "+971 4 123 4567-1-2", "+971 4 123 4567-ab", "009715 0555 0199", "+971-50-555-0199", "+971 (4) 555 0100" };
+        foreach (var start in new[] { "+971", "00971", "+97", "971", "+44", "0", "+9710", "+9718", "+971800", "+971200" })
+        {
+            for (var i = 0; i < 400; i++)
+            {
+                var length = random.Next(0, 16);
+                candidates.Add(start + new string(Enumerable.Range(0, length).Select(_ => alphabet[random.Next(alphabet.Length)]).ToArray()));
+            }
+        }
+        foreach (var phone in candidates)
+        {
+            var server = shape.IsMatch(phone) && TenancyValidation.UaeNumberLengthFits(phone);
+            Assert.True(server == TenancyValidation.DocumentedPhoneRegex().IsMatch(phone), $"'{phone}': server {server}");
+        }
+    }
+
+    [Fact]
+    public async Task A_uae_number_of_the_wrong_length_is_refused_on_its_field_in_the_callers_language()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var body = JsonSerializer.SerializeToNode(Company("T-PHN"))!.AsObject();
+        body["phone"] = "+971 9 715 055501";
+        var response = await admin.PostAsJsonAsync("/api/tenancy/companies", body);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var error = (await Json(response)).GetProperty("errors").GetProperty("phone")[0];
+        Assert.Equal("tenancyUaePhone", error.GetProperty("code").GetString());
+        Assert.Contains("8 digits after +971", error.GetProperty("message").GetString(), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Changes_need_the_version_read_and_a_company_can_be_deactivated_and_reactivated()
     {

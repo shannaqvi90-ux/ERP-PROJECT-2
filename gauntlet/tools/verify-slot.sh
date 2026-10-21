@@ -10,7 +10,12 @@
 #                     another run still holds the same log, so one agent cannot wipe another's log by
 #                     choosing the same name. Do not also redirect with `> file`: the shell would empty
 #                     the file before this script could check the lock.
-# The slot is held by an open file descriptor and freed when the command exits, however it exits.
+#   ERP_VERIFY_ALONE  set to 1 for an integration verify (owner's decision, 2026-10-19, needs-human #22):
+#                     the run takes every slot, so no other full verify runs beside it and its processor
+#                     time is measured on a quiet machine. While it waits, no other run takes a new slot,
+#                     so it is not starved; runs already going finish first. Only one alone run waits or
+#                     runs at a time (integrators also hold the integration lock).
+# Slots are held by open file descriptors and freed when the command exits, however it exits.
 set -u
 slots="${ERP_VERIFY_SLOTS:-2}"
 dir="${ERP_SLOT_DIR:-$HOME/.verify-slots}"
@@ -31,16 +36,37 @@ if [ -n "$log" ]; then
 fi
 
 waited=0
-while :; do
+# The alone file: an alone run holds it exclusively from the moment it starts waiting; other runs only
+# look at it (a shared lock taken and dropped at once) and take no new slot while it is held.
+exec 7>>"$dir/alone"
+
+if [ "${ERP_VERIFY_ALONE:-}" = "1" ]; then
+  until flock -n 7; do sleep 15; waited=$((waited + 15)); done
+  echo "verify-slot: alone run waiting for all $slots slots (no other run takes a new slot meanwhile)" >&2
   for i in $(seq 1 "$slots"); do
-    exec 9>>"$dir/slot$i"
-    if flock -n 9; then
-      echo "verify-slot: slot $i of $slots taken at $(date -u +%FT%TZ) after waiting ${waited} s; time the run from here" >&2
-      "$@"
-      exit $?
-    fi
-    exec 9>&-
+    fd=$((9 + i))
+    eval "exec $fd>>\"\$dir/slot\$i\""
+    until flock -n "$fd"; do sleep 15; waited=$((waited + 15)); done
   done
+  echo "verify-slot: all $slots slots taken (alone) at $(date -u +%FT%TZ) after waiting ${waited} s; time the run from here" >&2
+  "$@"
+  exit $?
+fi
+
+while :; do
+  if flock -n -s 7; then
+    flock -u 7
+    for i in $(seq 1 "$slots"); do
+      exec 9>>"$dir/slot$i"
+      if flock -n 9; then
+        exec 7>&-
+        echo "verify-slot: slot $i of $slots taken at $(date -u +%FT%TZ) after waiting ${waited} s; time the run from here" >&2
+        "$@"
+        exit $?
+      fi
+      exec 9>&-
+    done
+  fi
   sleep 15
   waited=$((waited + 15))
 done

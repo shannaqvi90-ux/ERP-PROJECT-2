@@ -189,6 +189,20 @@ P3-P9) and `test/sandbox.test.mjs`:
   not hold before (a value is found as a person would have typed it: letters and digits in order,
   separators free, a number as an equal number). And **the start screen may not already show an
   entered value** (text or field values), or the start is unfair.
+- **A fixed prefix a field shows** (round 13, lead decision on critic p06 r7's question): a value
+  the task asks the person to enter may begin with a fixed prefix the field shows as its own (the
+  country code a phone field keeps, `+971`), which then need not be typed, only when all of these
+  hold: the task declares it for that product's field (`prefixes: { <product>: [{ field, prefix,
+  source, constant }] }`), as an international dialling code that a constant of the product's own code
+  sets for every user and record of that kind (`test/tasks.test.mjs` reads `source` and checks
+  `constant` holds it: a prefix set-up, a tenant's setting, the data or the task seeded is not one);
+  the field shows it in the start screen before the clock starts (read by the runner,
+  `prefixes_at_start`); the rest of the value is typed in full; and the end state holds the whole
+  value, the prefix as written (its `+`) included. The same rule applies to the reference: a prefix
+  its field showed would be declared the same way (its code is not in this repository, so such a
+  declaration first needs a check against the running rig; Odoo's phone field shows none). Plants
+  PF1-PF4 in `test/prefix.test.mjs` (a longer start set-up seeded, an undeclared prefix, a prefix the
+  page shows only once the clock runs, a back end that drops the `+`); mutations M102-M105.
 - A keyboard-only task (**`keyboardOnly: true`**) fails on any pointer step (click, double click,
   scroll, file pick). The harness judges it from the steps; `verify()` no longer reports it.
 - Every verify() call signs in again in its fresh process; the harness answers a fixture sign-in it
@@ -261,6 +275,48 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
   a delay a key armed) and honest
   controls (a save at once, on a 0 ms timer, on an animation frame, after reading one or two answers,
   a file chosen, a form posted by Enter); see `docs/decisions/p01-odoo-rig-causal-evidence.md`.
+- Round 13 (critic p01 r12, plants W1-W3: a server's own timer pushed "go" over a web socket right
+  after a click on a banner it had pushed; a cross-site frame posted it to the page; a click armed a
+  1.9 s answer and then a 0.9 s timer): **timing that lives outside the page's thread causes
+  nothing**, and **the delays of a chain add up** (`lib/causation.mjs`, instrument 11):
+  - a **web socket's message** is the answer to the page's last frame on that socket, when a caused
+    task sent that frame within `LINK_SECONDS` and the server had not answered it already; otherwise
+    the server pushed it when it chose (Chromium's `WebSocketSend`/`WebSocketReceive`);
+  - a **window's postMessage** is the task's that posted it (its `traceId`); one posted from another
+    process (a cross-site frame, another window) has no posting task in the page and causes nothing;
+  - a task started by a message on an interface that carries **another frame's, tab's, worker's or
+    server's** message (`OUTSIDE_CARRIERS`: web sockets, web transport, broadcast channels, a frame's
+    messages, service and shared workers, peer connections, push, storage events) causes nothing;
+  - a task of no traceable origin is refused while **any other thread of the page's script** ran from
+    the step's input on (a worker of any kind, another frame's or window's renderer: the trace holds
+    every process of the browser);
+  - a write must go out within **`LINK_SECONDS` of the input** of the step that began its chain,
+    whatever the links in between (W3: 2.8 s);
+  - an **animation's, transition's or media element's event** (`animationend`, `transitionend`,
+    `timeupdate` ...) is set by its duration and causes nothing (plant W5); an **idle callback** is
+    its asker's (`RequestIdleCallback`); script the browser runs for an **observer** as it renders a
+    frame (a resize or intersection observer) causes nothing while an animation or transition of the
+    page runs (Chromium's `Animation` events, and `document.getAnimations()` read as the clock starts,
+    `animations_at_start`; plants W6, W6b).
+  - a **document** is its navigation's: the task that commits it is judged by the task that started
+    the navigation (`FrameLoader::StartNavigation`, same address): a click on a link is the click's; a
+    document the page asked for before the clock (a slow one the server holds, plant W7) or one a
+    **refresh** the page set loads (a meta refresh, plant W8) causes nothing;
+  - a task that delivers what the browser read for the page itself (a file or blob read, a response's
+    body, the device's answer: `IN_PAGE_DATA`) is not refused for another thread's activity (Odoo keeps
+    a shared worker busy the whole time, and its file upload follows the file's read);
+  - a DevTools command is a step's only during a step whose action reaches the page as one (a file
+    chosen, the device's answer, a scroll into view); during a click, a key or typing (input the browser
+    delivers) the harness's commands only read the page: they cause nothing and are passed over when
+    looking for the page task before an untraceable one (this round's verify: a document that arrived
+    during a click was credited through the harness's reads);
+  - timer, animation-frame and idle ids start again in each new document of a frame, so a callback is
+    matched with the last request before it (a chain never runs backwards in time); each caused write
+    records how long its chain took (`browser_record.chain_seconds`).
+  The read world now skips a child frame's window when it arms (a page that embeds a cross-site frame
+  could not be measured: `SecurityError`). Plant-tested in `test/causation.test.mjs` (W1-W6b, honest
+  controls: a click that asks over a web socket and approves on the answer, a page with a cross-site
+  frame, a click on a link to a page that approves as it loads) and mutations M86-M97, M106-M112.
 - **Writes set-up's browser sent are answered before the start.** Every browser context of the run
   is watched from its first request (the runner's, a sign-in retry's, any the driver opened); before
   the set-up contexts close, the runner waits for their writes to be answered (`set_up_writes_waited`),
@@ -280,6 +336,49 @@ save landed inside a measured part of one key). Plant-tested in `test/set-up-off
   "websocket", "longpolling" or "/bus/", its query included, used to pass unwatched).
 - The **clipboard is read back** at the start (pasted into a scratch page that closes again): text
   set-up copied must be gone (X16). A signed-in start keeps no local storage from set-up (X12).
+
+**Every browser task, not only one that saves, is judged by causes** (round 14, critic p01 r13: eleven
+tasks do not save, find-record among them, and set-up could leave them done or half done for the
+product to finish; plants N1, N1b, N2 and N3 were recorded as verified wins). Plant-tested in
+`test/screen-causes.test.mjs` and `test/causation.test.mjs`; see
+`docs/decisions/p01-odoo-rig-screen-causes.md`:
+
+- **Every change of the screen leads back to a counted step** (`lib/causation.mjs screenCauses`). The
+  browser's record now runs for every browser task, from before verify()'s read on the start screen
+  until the page's script is frozen after the clock, and holds Chromium's invalidation tracking: every
+  node inserted or removed, text, attribute or style changed, document parsed or navigation started,
+  inside the task that did it. Each change is judged by the chains a write is judged by, by where the
+  chain begins (a counted step's input or acting command) and not by its delays (a slow search is the
+  person's; a click that opens the record 3 s later opened it). A document is its navigation's; markup
+  the page's script parses is that script's change. The harness's own changes for a blind screenshot
+  (neutral title set in a script world of its own, the screenshot's style and masks) are passed over,
+  and page script they set off is judged; any other change inside a harness command is the page's own
+  script run inside the harness's read and is no step's. Only the main frame's renderer is judged (a
+  frame of another site runs elsewhere and verify() never reads it). The clock starts 1.1-2.1 s after
+  verify()'s read for every browser task. **Enforced for the product measured against the reference**,
+  recorded for the reference (`screen_changes` in each result, `enforced`): the reference's own client
+  changes its screen from a shared worker, repeating timers and observers on every run, and it is a
+  published image no one here configures for a task; the rule refuses a run, it never changes a count.
+- **A task that asks the person to find one record names it** (`finds`: find-record and
+  who-changed-field `contact.name`, find-user `user.name`). The measured part must type a **piece** of
+  it (its letters and digits in order, at least two: the whole name, its first letters, the initials,
+  word starts, a fragment), no screen may show it before the first piece is typed (the operator reads
+  the screen in the read world right before that step, on the clock for both products), and the start
+  screen may not show it (`finds` in each result). A driver health check is held to the first rule only.
+- **Set-up may not put the record within reach**: a set-up write (the harness's fetch or set-up's
+  browser) carrying the found name, whole or any of its words of four letters or more (the task's own
+  input values taken out first), is refused, and so is an address set-up's browser opens that names
+  the task's data. A health check, whose clean stack needs the record created, is exempt.
+- **Set-up writes only the fixtures its task declares** (`fixtures: { ours: ['PUT /api/identity/me/preferences'] }`
+  in the task file, `METHOD /path` with `*` for one segment; `healthFixtures` for what a health check
+  adds). Every task whose ours driver is built declares them; any other set-up write (the harness's fetch
+  or set-up's browser, a sign-in excepted) is refused for our product, so set-up cannot configure the
+  product to finish a task (a saved view, a home preference, a shortcut). Each result records
+  `set_up_writes`; the reference's are recorded, not judged.
+- Input the browser delivers while running a DevTools command (a busy machine) is the step's. A task that
+  only delivered a resource for rendering (a favicon, an image) or a frame only the harness asked for
+  (the click's check that its target stands still) never stands between an untraceable task (a message
+  port's) and the step before it.
 
 What the instrument cannot do: tell whether a driver's `verify()` reads the right thing. It can
 only make sure `verify()` reads the same way before and after the clock and that, for a task that
@@ -328,12 +427,12 @@ both products pay for the same shots, each task declares its `moments`; while me
 may shoot only those, each once, and must shoot every one. The `done` screenshot is taken after
 the clock stops. `test/baselines.test.mjs` checks every baseline: machine seconds end within
 0.5 s after the last step or wait and never before it, and the waits never exceed the clock.
-Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 8); a baseline
+Results record the instrument version (`INSTRUMENT_VERSION` in `lib/runner.mjs`, now 12); a baseline
 from an older instrument fails the check until it is re-captured.
 
 | Measure | Definition |
 |---|---|
-| steps | each click, each key chord, each field entry (typing a value), each file pick, each scroll; in an API task each HTTP request |
+| steps | each click (a double or triple click is one), each key chord, each field entry (typing a value), each file pick, each scroll; in an API task each HTTP request |
 | keystrokes | each key pressed; Shift counts; a chord counts each of its keys; an API request counts as typed (method, path and query, compact JSON body) plus Enter |
 | machine_seconds | wall clock from the first step to the verified end state on screen; the task's declared moment shots included |
 | system_wait_seconds | the part of machine seconds spent waiting for the product to respond |
@@ -341,7 +440,7 @@ from an older instrument fails the check until it is re-captured.
 | human_plus_wait_seconds | human_seconds + system_wait_seconds |
 
 Keystroke-level model operator times (Card, Moran & Newell, CACM 23(7), 1980): K 0.28 s (average
-non-secretary typist), P 1.10 s, B 0.10 s per press or release (a click is 0.20 s), H 0.40 s,
+non-secretary typist), P 1.10 s, B 0.10 s per press or release (a click is 0.20 s, a triple click 0.60 s), H 0.40 s,
 M 1.35 s. One M before every step except a continuation, which the instrument derives from the
 recorded steps (a driver cannot declare it): typing right after a click on the field it types
 into, or right after a key step; Enter right after typing or an arrow key; the same navigation key
@@ -473,7 +572,7 @@ removed (plan.md); the ratchet counts them.
 | create-company-branch (p02) | Settings > Users & Companies > Companies > New > name > Branches > Add a line > branch > Save & Close > Save | keyboard and pointer variants |
 | switch-company (p02) | company switcher > the company | |
 | keyboard-navigation (p04) | Alt+H > Down, Down > Enter > Down ×4 > Enter | no mouse allowed (`keyboardOnly`, judged by the harness); the form's pager shows it is the list's third record |
-| edit-and-save (p06) | phone field > Ctrl+A > type > Save | keyboard and pointer variants |
+| edit-and-save (p06) | triple-click the phone field > type the number's digits (971505550199) > Save | keyboard and pointer variants; round 13 (critic p06 r7): a triple click selects the field in one step, and the digits alone are the shortest entry the instrument credits (separators free); typing only the 9 digits after +971 stores 505550199, not the number, and Odoo's field shows no prefix of its own; `verify()` follows the instrument's separators-free rule |
 | arabic-report (p06) | user menu > My Preferences > Arabic > Update Preferences > Print | printing straight away gives Arabic text laid out left to right |
 | who-changed-field (p07) | Apps > Contacts > name > Enter > open; the change log shows the latest change | change made by another user in set-up |
 | add-rate (p08) | Invoicing > Configuration > Currencies > EUR > Add a line > AED per unit > Save | keyboard and pointer variants |
@@ -559,7 +658,14 @@ only when a step caused them, the reaction time and its one link, set-up's abort
 changes, and long-lived channels by kind; (round 12) the browser's record of which task sent each
 write (input, commands, timers and their limit, frames, answers and their limit, untraceable tasks and
 their guards, the clock markers), steps timed from their input, the gap before the clock, and labels
-never counted as typed text. Each test file's self-tests run once unmutated for all of its
+never counted as typed text; (round 13) web-socket messages, posted messages and other processes'
+messages, other threads of the page's script, the chain's total delay, animation-timed events, idle
+callbacks, observers during an animation, a page with a cross-site frame, a browser key's keystrokes,
+human plus wait, the review page's random letters, the triple click and the fixed prefix of a field; (round 14)
+the screen-change rule and its parts (changes before the clock, the browser's own, the harness's shot, the
+harness's reads), the start gap for every task, the finds rules (a piece typed, not shown before, not on the
+start screen, a piece's letters and length), set-up writes and addresses carrying the found record, and
+input delivered inside a DevTools command. Each test file's self-tests run once unmutated for all of its
 mutations (the control), and a mutation counts as caught only when a test that passed there fails
 mutated. It exits 1 when a mutation is missed. `./erp verify` runs it after the unit tests (a missed mutation fails the
 web stage), and `test/ratchet.test.mjs` keeps the number of mutations at or above

@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "attach-file-20261017T112417-072b",
-  "instrument": 10,
+  "run_id": "attach-file-20261019T121233-b5c2",
+  "instrument": 12,
   "task": "attach-file",
   "task_title": "Attach a file to a record",
   "product": "odoo",
   "status": "verified",
   "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
   "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
-  "started_at": "2026-10-17T11:24:17.811Z",
-  "finished_at": "2026-10-17T11:24:40.508Z",
+  "started_at": "2026-10-19T12:12:33.311Z",
+  "finished_at": "2026-10-19T12:12:55.032Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 1,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 0.277,
-    "system_wait_seconds": 0.072,
+    "machine_seconds": 0.209,
+    "system_wait_seconds": 0.078,
     "human_seconds": 6.8,
-    "human_plus_wait_seconds": 6.872,
+    "human_plus_wait_seconds": 6.878,
     "klm_operator_counts": {
       "K": 0,
       "P": 3,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "paperclip (attachment box)",
       "keystrokes": 0,
-      "at": 0.02,
-      "took": 0.066,
+      "at": 0.013,
+      "took": 0.039,
       "began": 0.001,
       "screen": "/odoo/contacts/73531",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "at": 0.138,
-      "took": 0.055,
-      "began": 0.092,
+      "at": 0.112,
+      "took": 0.036,
+      "began": 0.079,
       "screen": "/odoo/contacts/73531",
       "chain": false
     },
@@ -80,8 +80,8 @@
       "kind": "file-pick",
       "label": "trade-licence-TL-2026-73519.pdf",
       "keystrokes": 0,
-      "at": 0.193,
-      "took": 0.014,
+      "at": 0.148,
+      "took": 0.007,
       "file": "trade-licence-TL-2026-73519.pdf",
       "screen": "/odoo/contacts/73531",
       "chain": true
@@ -90,27 +90,27 @@
   "waits": [
     {
       "label": "attachment box",
-      "at": 0.086,
-      "seconds": 0.005
+      "at": 0.053,
+      "seconds": 0.026
     },
     {
       "label": "file listed on the record",
-      "at": 0.208,
-      "seconds": 0.067
+      "at": 0.155,
+      "seconds": 0.053
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "ee06f5419a3166cd.jpg",
+      "file": "4813ecd177d94926.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/ee06f5419a3166cd.jpg"
+      "path": "gauntlet/reference/odoo/shots/4813ecd177d94926.jpg"
     },
     {
       "moment": "done",
-      "file": "9f628ebeb4adb17b.jpg",
-      "at": 0.277,
-      "path": "gauntlet/reference/odoo/shots/9f628ebeb4adb17b.jpg"
+      "file": "af2d5bd25a1726b6.jpg",
+      "at": 0.209,
+      "path": "gauntlet/reference/odoo/shots/af2d5bd25a1726b6.jpg"
     }
   ],
   "verification": {
@@ -118,7 +118,7 @@
     "details": {
       "attachments": [
         {
-          "id": 102455,
+          "id": 103451,
           "name": "trade-licence-TL-2026-73519.pdf",
           "file_size": 417
         }
@@ -227,20 +227,20 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.017,
+      "seconds": 0.011,
       "verified": true
     },
     {
       "requests": 2,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.016,
+      "seconds": 0.011,
       "verified": true,
-      "gap_seconds": 1.1
+      "gap_seconds": 1.101
     }
   ],
   "requests_after_clock": 0,
@@ -248,15 +248,15 @@
     "count": 2,
     "first": [
       "GET /mail/attachment/pdf_first_page/-1 (fetch)",
-      "GET /mail/attachment/pdf_first_page/102455 (fetch)"
+      "GET /mail/attachment/pdf_first_page/103451 (fetch)"
     ]
   },
   "screen_at_clock": {
-    "sha256": "b67c02a609f2cd0f",
+    "sha256": "60abf52d498f3d01",
     "elements": 1281
   },
   "screen_after_verify": {
-    "sha256": "b67c02a609f2cd0f",
+    "sha256": "60abf52d498f3d01",
     "elements": 1281,
     "unchanged": true
   },
@@ -265,10 +265,10 @@
     "error": null,
     "back_end_reads": 1,
     "requests": 2,
-    "longest_pause_seconds": 0.003,
+    "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.015
+    "seconds": 0.012
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -313,24 +313,85 @@
     "writes_caused": [
       {
         "write": "POST /mail/attachment/upload",
-        "at": 0.21508355400001164,
+        "at": 0.1657770320000127,
         "by_step": 3,
         "browser_record": {
           "caused": true,
-          "by_step": 3,
+          "by_step": 2,
+          "chain_seconds": 0.02,
           "chain": [
-            "a DevTools command of step 3",
+            "input of step 2",
+            "an animation frame",
             "a task that followed at once (a message or an observer)"
           ]
         }
       }
     ]
   },
+  "screen_changes": {
+    "judged": 22,
+    "not_caused": 7,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.04,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 1 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.073,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.09,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.106,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.14,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.191,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.207,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.191,
+      "by_step": 2,
+      "chain": [
+        "an animation frame",
+        "a task that followed at once (a message or an observer)",
+        "the answer to POST /mail/attachment/upload after 0.017 s",
+        "an animation frame"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/attach-file.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/attach-file-20261017T112417-072b.json",
-    "gauntlet/reference/odoo/results/attach-file-20261017T112440-e37f.json",
-    "gauntlet/reference/odoo/results/attach-file-20261017T112503-ba44.json"
+    "gauntlet/reference/odoo/results/attach-file-20261019T121233-b5c2.json",
+    "gauntlet/reference/odoo/results/attach-file-20261019T121255-998f.json",
+    "gauntlet/reference/odoo/results/attach-file-20261019T121316-c717.json"
   ]
 }

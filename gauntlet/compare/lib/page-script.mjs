@@ -319,6 +319,10 @@ function installReadWorld(token) {
   };
   for (const name of ownKeys(g)) {
     if (typeof name !== 'string' || setHas(ES, name)) continue;
+    // Round 13 (critic p01 r12, W2): an index of the window is a child frame's window. Page functions
+    // never reach one (window, frames, contentWindow ... are refused), and a cross-site frame's window
+    // cannot be swept at all: touching it threw, so a product that embeds one could not be measured.
+    if (test(/^\d+$/, name)) continue;
     const d = getOwn(g, name);
     if (!d) continue;
     if (d.get || d.set) {

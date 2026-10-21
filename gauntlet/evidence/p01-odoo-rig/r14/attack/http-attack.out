@@ -1,0 +1,33 @@
+{
+ "openapi_operations": 114,
+ "requests": 1113,
+ "leaks": 0,
+ "writes_on_b_ids_accepted": 0,
+ "b_ids": {
+  "users": [
+   "018cd9b6-6ae0-7106-af70-69e616952ea3",
+   "018cd84f-87e0-7a4f-a260-335938025076",
+   "018cd849-1f40-7a03-8ad8-647fddf2b14d"
+  ],
+  "roles": [
+   "01a15ff1-1d73-73bc-a895-b87897dcea11",
+   "01a15ff1-1e80-7ed5-80ce-2771e12d57ae",
+   "01a15ff1-1d73-728f-99e9-ecb04ceae44f"
+  ],
+  "companies": [
+   "018f6605-b084-7570-85f9-c88946057c60",
+   "018f6605-b081-77f0-a29a-ac0f3575bb43"
+  ],
+  "branches": [
+   "018f6605-b085-783b-b4fb-6a99d052067f",
+   "018f6605-b083-7eba-a6e7-989b2d0ae6ed",
+   "018f6605-b082-7f88-ba03-2a0ca5647e61"
+  ]
+ },
+ "b_views": [],
+ "b_views_intact": 0
+}
+NOTE POST /api/tenancy/companies accepted a body naming B ids: 201 {"id":"01a15ff1-a4ef-72ea-81b6-89cf518848c8","code":"R14X","legalNameEn":"r14","legalNameAr":"r14","tradeLicenceNumber":null,"tradeLicenceAuthority":null,"taxRe
+NOTE PUT /api/identity/me/preferences accepted a body naming B ids: 200 {"id":"01a15ff0-d557-7caf-bc9a-1c33a9ff7b7c","email":"admin@alnoor.example","displayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr"
+NOTE POST /api/identity/me/passkeys/options accepted a body naming B ids: 200 {"challenge":"AQEAAAGhX_GsRXD-eaA4GU8ueMzPwRD4uX8BoV_xoiV2YpvR28JjbgOcuLHy6JoNNOrC0HE4iAjnRw","rp":{"id":"localhost","name":"ERP"},"user":{"id":"AZCgAAAAcACAAAA
+timeouts/errors: 0

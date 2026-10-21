@@ -1,0 +1,26 @@
+// Critic p03 r13: the plants are real faults on a running planted stack (BASE). L1 cross-tenant read through the user answer memo;
+// P2 a helpdesk user lets a device of the Administrator in; U1 (browser) the device form offered to a sign-in auditor.
+import fs from 'node:fs';
+const BASE = process.env.BASE || 'http://localhost:20370'; const H = { 'content-type': 'application/json', 'X-Erp-Request': '1' };
+const out = []; const L = (s) => { out.push(s); console.log(s); };
+const signIn = async (email, password = 'Demo-Pass-2026', extra = {}) => { const r = await fetch(BASE + '/api/auth/sign-in', { method: 'POST', headers: H, body: JSON.stringify({ email, password, issueToken: true, ...extra }) }); return { status: r.status, j: await r.json().catch(() => null) }; };
+const c = (t) => async (m, p, b) => { const r = await fetch(BASE + p, { method: m, headers: { ...H, authorization: 'Bearer ' + t }, body: b ? JSON.stringify(b) : undefined }); const tx = await r.text(); let j = null; try { j = JSON.parse(tx) } catch { }; return { s: r.status, j, t: tx.slice(0, 160) }; };
+const A = c((await signIn('admin@alnoor.example')).j.token), B = c((await signIn('admin@gulfsteel.example')).j.token);
+const bUsers = (await B('GET', '/api/identity/users?take=3')).j.items;
+const bId = bUsers[0].id;
+L(`B reads its own user ${bId}: ${(await B('GET', `/api/identity/users/${bId}`)).s}`);
+const leak = await A('GET', `/api/identity/users/${bId}`);
+L(`L1: A reads B's user by id: ${leak.s} ${leak.t}`);
+const stamp = Date.now().toString(36);
+const role = (await A('POST', '/api/identity/roles', { nameEn: 'Helpdesk ' + stamp, nameAr: 'دعم ' + stamp, permissions: ['identity.users.read', 'identity.users.update', 'identity.signIns.read'] })).j;
+const hdUser = (await A('POST', '/api/identity/users', { email: `hd.${stamp}@alnoor.example`, displayName: 'Helpdesk ' + stamp, language: 'en', roleIds: [role.id], password: 'Helpdesk-Pass-2026!', mustChangePassword: false })).j;
+const hd = c((await signIn(`hd.${stamp}@alnoor.example`, 'Helpdesk-Pass-2026!')).j?.token);
+const adminId = (await A('GET', '/api/identity/users?search=admin%40alnoor.example&take=3')).j.items.find(u => u.email === 'admin@alnoor.example').id;
+L(`P2: helpdesk lets a device of the Administrator in: ${(await hd('POST', `/api/identity/users/${adminId}/devices/approve`, { code: 'K7QM-3XRA' })).t}`);
+const aud = (await A('POST', '/api/identity/roles', { nameEn: 'Auditor ' + stamp, nameAr: 'مدقق ' + stamp, permissions: ['identity.users.read', 'identity.signIns.read', 'identity.profile.update'] })).j;
+const audUser = await A('POST', '/api/identity/users', { email: `auditor.${stamp}@alnoor.example`, displayName: 'Auditor ' + stamp, language: 'en', roleIds: [aud.id], password: 'Auditor-Pass-2026!', mustChangePassword: false });
+L(`auditor role ${aud.id ? 'created' : JSON.stringify(aud)}; auditor user ${audUser.s}`);
+const audT = c((await signIn(`auditor.${stamp}@alnoor.example`, 'Auditor-Pass-2026!')).j?.token);
+L(`P1: the auditor (no identity.users.update) lets a device of the viewer in: ${(await audT('POST', `/api/identity/users/${(await A('GET', '/api/identity/users?search=viewer%40alnoor.example&take=1')).j.items[0].id}/devices/approve`, { code: 'K7QM-3XRA' })).t}`);
+fs.writeFileSync('/home/shan/evidence-staging/p03-identity/r13/plants/auditor.json', JSON.stringify({ email: `auditor.${stamp}@alnoor.example`, password: 'Auditor-Pass-2026!' }));
+fs.writeFileSync(new URL('./plant-demo.txt', import.meta.url), out.join('\n'));

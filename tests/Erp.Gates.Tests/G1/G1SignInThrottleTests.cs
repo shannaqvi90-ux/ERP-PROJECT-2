@@ -8,15 +8,23 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Erp.Gates.Tests.G1;
 
 /// <summary>Its own environment, behind a configured proxy so each request can name its client
-/// address (X-Forwarded-For) the way a real deployment sees it.</summary>
+/// address (X-Forwarded-For) the way a real deployment sees it. <see cref="SharedNetwork"/> is
+/// declared shared by many clients, as the compose gateway is in the shipped deployment.</summary>
 public sealed class ThrottleFixture : IAsyncLifetime
 {
     public const string Proxy = "192.0.2.1";
 
+    /// <summary>Addresses many clients share (Erp:Auth:SharedAddresses).</summary>
+    public const string SharedNetwork = "203.0.113.240/28";
+
     public ErpTestEnvironment Env { get; private set; } = null!;
 
     public async ValueTask InitializeAsync() =>
-        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?> { ["Erp:Http:KnownProxies"] = Proxy });
+        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?>
+        {
+            ["Erp:Http:KnownProxies"] = Proxy,
+            ["Erp:Auth:SharedAddresses"] = SharedNetwork,
+        });
 
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
 }
@@ -198,9 +206,263 @@ public sealed class G1SignInThrottleTests(ThrottleFixture fixture) : IClassFixtu
         Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInWithAsync(owner, office, email, "Owner-Password-2026")).Status);
     }
 
-    private static async Task<(HttpStatusCode Status, JsonElement Body)> SignInWithAsync(HttpClient client, string clientAddress, string email, string password)
+    [Fact]
+    public async Task A_set_up_code_still_signs_in_from_a_shared_address_another_client_paused_and_nothing_else_does()
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/sign-in") { Content = JsonContent.Create(new { email, password }) };
+        // Critic p03 round 11: in the shipped deployment every client arrives from the compose
+        // gateway, so an anonymous script's five wrong passwords kept a newly invited person (a
+        // fresh browser: no device of the account) out for as long as it kept failing. From an
+        // address many clients share, a valid set-up code now still signs in while that address
+        // is paused. Nothing else gets past the pause: not a wrong code, not an expired code, not
+        // a temporary password, not the person's new password from another browser, not the
+        // attacker; the newcomer's success does not clear the attacker's failures; and from an
+        // address of one client the pause holds for set-up codes too.
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var tag = Guid.NewGuid().ToString("N")[..10];
+        var (newcomer, newcomerId, code) = await InviteAsync(admin, $"newcomer.{tag}@{Env.TenantA.EmailDomain}");
+        const string gateway = "203.0.113.241";
+
+        // An anonymous script behind the gateway fails until the gateway is paused on the account.
+        for (var i = 0; i < Attempts; i++)
+        {
+            var (status, body) = await SignInAsync(gateway, newcomer, $"Wrong-Password-{i:D2}");
+            AssertRefusedInTurn(i, status, body);
+        }
+        var (_, pausedBody) = await SignInAsync(gateway, newcomer, "Wrong-Password-99");
+        var pausedAnswer = Answer(pausedBody);
+        // Guessing set-up codes from the paused gateway: the same answer as any other attempt.
+        foreach (var guess in new[] { "ABCD-EFGH-JKMN", code[..^1] + (code[^1] == 'A' ? 'B' : 'A'), code.ToLowerInvariant() + "x" })
+        {
+            var (status, body) = await SignInAsync(gateway, newcomer, guess);
+            Assert.Equal(HttpStatusCode.TooManyRequests, status);
+            Assert.Equal(pausedAnswer, Answer(body));
+        }
+
+        // The newcomer, a second client behind the same gateway with no device cookie, signs in
+        // with the set-up code and chooses a password.
+        using var browser = Env.CreateClient();
+        var (first, firstBody) = await SignInWithAsync(browser, gateway, newcomer, code);
+        Assert.Equal(HttpStatusCode.Conflict, first);
+        Assert.Equal("auth.passwordChangeRequired", firstBody.GetProperty("code").GetString());
+        const string chosen = "Newcomer-Chose-2026";
+        var (signedIn, signedInBody) = await SignInWithAsync(browser, gateway, newcomer, code, chosen);
+        Assert.True(signedIn == HttpStatusCode.OK, $"the set-up code from the shared gateway answered {(int)signedIn}: {signedInBody}");
+
+        // Nothing else gets past the pause: the attacker is still paused (the newcomer's success
+        // cleared none of its failures), and the new password from a browser that is not the
+        // newcomer's is paused like any password.
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInAsync(gateway, newcomer, "Wrong-Password-00")).Status);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInAsync(gateway, newcomer, chosen)).Status);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInAsync(gateway, newcomer, code)).Status);
+        // The newcomer's browser is a known device of the account now.
+        Assert.Equal(HttpStatusCode.OK, (await SignInWithAsync(browser, gateway, newcomer, chosen)).Status);
+
+        // An expired code and a temporary password do not get past a pause on the gateway.
+        var (late, lateId, lateCode) = await InviteAsync(admin, $"late.{tag}@{Env.TenantA.EmailDomain}");
+        await using (var db = await Env.OpenAdminAsync())
+        await using (var expire = new Npgsql.NpgsqlCommand("UPDATE identity.user_credentials SET expires_at = now() - interval '1 minute' WHERE id = @id", db))
+        {
+            expire.Parameters.AddWithValue("id", lateId);
+            Assert.Equal(1, await expire.ExecuteNonQueryAsync());
+        }
+        var temporary = $"temporary.{tag}@{Env.TenantA.EmailDomain}";
+        var created = await admin.PostAsJsonAsync("/api/identity/users",
+            new { email = temporary, displayName = "Temporary", language = "en", password = "Temporary-Pass-2026", mustChangePassword = true, roleIds = Array.Empty<Guid>() });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        foreach (var (email, right) in new[] { (late, lateCode), (temporary, "Temporary-Pass-2026") })
+        {
+            for (var i = 0; i < Attempts; i++)
+            {
+                var (status, body) = await SignInAsync(gateway, email, $"Wrong-Password-{i:D2}");
+                AssertRefusedInTurn(i, status, body);
+            }
+            var (status2, body2) = await SignInAsync(gateway, email, right);
+            Assert.Equal(HttpStatusCode.TooManyRequests, status2);
+            Assert.Equal(pausedAnswer.Split('|')[0], Answer(body2).Split('|')[0]);
+        }
+
+        // From an address of one client (not shared), a paused client stays paused for set-up
+        // codes as for passwords.
+        var (own, _, ownCode) = await InviteAsync(admin, $"own.{tag}@{Env.TenantA.EmailDomain}");
+        const string single = "198.51.100.77";
+        for (var i = 0; i < Attempts; i++)
+        {
+            var (status, body) = await SignInAsync(single, own, $"Wrong-Password-{i:D2}");
+            AssertRefusedInTurn(i, status, body);
+        }
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInAsync(single, own, ownCode)).Status);
+
+        // The administrator can tell the attacker from the newcomer: the attempts name the gateway
+        // as shared, the newcomer's success names its device, and the paused client is the gateway.
+        var history = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{newcomerId}/sign-ins?take=100");
+        var items = history.GetProperty("items").EnumerateArray().ToList();
+        var failed = items.Where(a => a.GetProperty("outcome").GetString() == "failed").ToList();
+        Assert.Equal(Threshold, failed.Count);
+        Assert.All(failed, a =>
+        {
+            Assert.Equal(gateway, a.GetProperty("ipAddress").GetString());
+            Assert.Equal("proxy", a.GetProperty("addressKind").GetString());
+            Assert.False(a.TryGetProperty("device", out var device) && device.ValueKind == JsonValueKind.String);
+        });
+        var successes = items.Where(a => a.GetProperty("outcome").GetString() == "succeeded").ToList();
+        Assert.Equal(2, successes.Count);
+        var devices = successes.Select(a => a.GetProperty("device").GetString()).Distinct().ToList();
+        Assert.Single(devices);
+        Assert.False(string.IsNullOrEmpty(devices[0]));
+        Assert.All(successes, a => Assert.Equal("proxy", a.GetProperty("addressKind").GetString()));
+        var paused = Assert.Single(history.GetProperty("paused").EnumerateArray());
+        Assert.Equal(gateway, paused.GetProperty("source").GetString());
+        Assert.Equal("proxy", paused.GetProperty("kind").GetString());
+    }
+
+    [Fact]
+    public async Task A_device_let_in_signs_in_with_its_password_from_a_paused_shared_address_and_nothing_else_does()
+    {
+        // Critic p03 round 12: behind the shipped compose gateway an anonymous script's five wrong
+        // passwords paused the account's owner on any new device (a new laptop, a fresh browser,
+        // cleared cookies) with their right password, and the only way in was a new set-up code,
+        // which throws the password away. Now the paused screen of such a browser shows a device
+        // code; the owner (signed in elsewhere, recently) or an administrator enters it, and that
+        // browser, and no other, signs in with its password. The attacker stays paused, other
+        // fresh browsers stay paused, the code works only on the account it was entered for (not
+        // the same address in another workspace), the approval is used up by the first sign-in,
+        // and the device's own failures pause it like any client's.
+        var email = $"owner.{Guid.NewGuid():N}@both.example";
+        using var adminA = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        using var adminB = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        // In A the owner keeps their own profile (identity.profile.update), as staff do.
+        var role = await adminA.PostAsJsonAsync("/api/identity/roles",
+            new { nameEn = $"Profile {email}", nameAr = $"الملف {email}", permissions = new[] { "identity.profile.update" } });
+        Assert.Equal(HttpStatusCode.Created, role.StatusCode);
+        var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        var created = await adminA.PostAsJsonAsync("/api/identity/users",
+            new { email, displayName = "Shared person", language = "en", password = "Password-Of-A-2026", mustChangePassword = false, roleIds = new[] { roleId } });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        await CreateUserAsync(adminB, email, "Password-Of-B-2026");
+        var ownerId = await UserIdAsync(adminA, email);
+        var ownerIdB = await UserIdAsync(adminB, email);
+        const string gateway = "203.0.113.243";
+
+        // An anonymous script behind the gateway pauses the gateway on the address.
+        for (var i = 0; i < Threshold; i++)
+        {
+            var (status, body) = await SignInAsync(gateway, email, $"Wrong-Password-{i:D2}");
+            AssertRefusedInTurn(i, status, body);
+        }
+
+        // The owner's new laptop, with the right password: paused, told the address is shared,
+        // and given a device code that stays the same for this browser and differs for another.
+        using var laptop = Env.CreateClient();
+        var (paused, pausedBody) = await SignInWithAsync(laptop, gateway, email, "Password-Of-A-2026");
+        Assert.Equal(HttpStatusCode.TooManyRequests, paused);
+        Assert.Equal("auth.signInPaused", pausedBody.GetProperty("code").GetString());
+        Assert.True(pausedBody.GetProperty("sharedAddress").GetBoolean());
+        var code = pausedBody.GetProperty("deviceCode").GetString()!;
+        Assert.Matches("^[A-HJKMNP-Z2-9]{4}-[A-HJKMNP-Z2-9]{4}$", code);
+        Assert.DoesNotContain(code, pausedBody.GetProperty("title").GetString()!, StringComparison.Ordinal);
+        Assert.Equal(code, (await SignInWithAsync(laptop, gateway, email, "Password-Of-A-2026")).Body.GetProperty("deviceCode").GetString());
+        using var stranger = Env.CreateClient();
+        var strangerCode = (await SignInWithAsync(stranger, gateway, email, "Password-Of-A-2026")).Body.GetProperty("deviceCode").GetString()!;
+        Assert.NotEqual(code, strangerCode);
+        // From an address of one client a paused answer carries no device code.
+        const string single = "198.51.100.143";
+        for (var i = 0; i < Threshold; i++)
+        {
+            await SignInAsync(single, email, $"Wrong-Password-{i:D2}");
+        }
+        var (_, singleBody) = await SignInAsync(single, email, "Password-Of-A-2026");
+        Assert.Equal("auth.signInPaused", singleBody.GetProperty("code").GetString());
+        Assert.False(singleBody.TryGetProperty("deviceCode", out _));
+
+        // A code that is not one is refused, and approving is not done on oneself through the
+        // administrators' endpoint.
+        var bad = await adminA.PostAsJsonAsync($"/api/identity/users/{ownerId}/devices/approve", new { code = "K7QM-3XR" });
+        Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
+        var adminId = await UserIdAsync(adminA, Env.Email(Env.TenantA, "admin"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await adminA.PostAsJsonAsync($"/api/identity/users/{adminId}/devices/approve", new { code })).StatusCode);
+
+        // The administrator lets the laptop in (the code typed in lower case, without the hyphen).
+        var approved = await adminA.PostAsJsonAsync($"/api/identity/users/{ownerId}/devices/approve", new { code = code.Replace("-", "").ToLowerInvariant() });
+        Assert.Equal(HttpStatusCode.OK, approved.StatusCode);
+        var until = (await approved.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("until").GetDateTimeOffset();
+        Assert.InRange(until, DateTimeOffset.UtcNow.AddMinutes(4), DateTimeOffset.UtcNow.AddDays(1));
+        var waiting = await adminA.GetFromJsonAsync<JsonElement>($"/api/identity/users/{ownerId}/sign-ins?take=1");
+        Assert.Equal(JsonValueKind.String, waiting.GetProperty("deviceApprovalUntil").ValueKind);
+
+        // Nobody else gets in: the script, a fresh browser, the stranger with its own code.
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInAsync(gateway, email, "Password-Of-A-2026")).Status);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInWithAsync(stranger, gateway, email, "Password-Of-A-2026")).Status);
+        // The same address in tenant B: the approval was made in A, so B's account stays paused
+        // for the laptop too (its attempt is recorded there as paused, not checked).
+        var (other, _) = await SignInWithAsync(laptop, gateway, email, "Password-Of-B-2026");
+        Assert.NotEqual(HttpStatusCode.OK, other);
+        var historyB = await adminB.GetFromJsonAsync<JsonElement>($"/api/identity/users/{ownerIdB}/sign-ins?take=1");
+        Assert.Equal("throttled", historyB.GetProperty("items")[0].GetProperty("outcome").GetString());
+
+        // The laptop signs in to A with its right password; the approval is used up and the
+        // laptop is a known device from now on.
+        var (signedIn, signedInBody) = await SignInWithAsync(laptop, gateway, email, "Password-Of-A-2026");
+        Assert.True(signedIn == HttpStatusCode.OK, $"the device let in answered {(int)signedIn}: {signedInBody}");
+        Assert.Equal(Env.TenantA.Code, signedInBody.GetProperty("tenant").GetProperty("code").GetString());
+        var after = await adminA.GetFromJsonAsync<JsonElement>($"/api/identity/users/{ownerId}/sign-ins?take=5");
+        Assert.True(after.GetProperty("deviceApprovalUntil").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined);
+        var success = after.GetProperty("items").EnumerateArray().First(a => a.GetProperty("outcome").GetString() == "succeeded");
+        Assert.False(string.IsNullOrEmpty(success.GetProperty("device").GetString()));
+        Assert.Equal(HttpStatusCode.OK, (await SignInWithAsync(laptop, gateway, email, "Password-Of-A-2026")).Status);
+        // The gateway is still paused for everyone else, and the stranger's code was never let in.
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInAsync(gateway, email, "Password-Of-A-2026")).Status);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInWithAsync(stranger, gateway, email, "Password-Of-A-2026")).Status);
+
+        // A device let in that keeps failing pauses itself, as any client does.
+        using var tablet = Env.CreateClient();
+        var tabletCode = (await SignInWithAsync(tablet, gateway, email, "Password-Of-A-2026")).Body.GetProperty("deviceCode").GetString()!;
+        Assert.Equal(HttpStatusCode.OK, (await adminA.PostAsJsonAsync($"/api/identity/users/{ownerId}/devices/approve", new { code = tabletCode })).StatusCode);
+        for (var i = 0; i < Threshold; i++)
+        {
+            var (status, body) = await SignInWithAsync(tablet, gateway, email, $"Wrong-Password-{i:D2}");
+            AssertRefusedInTurn(i, status, body);
+        }
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInWithAsync(tablet, gateway, email, "Password-Of-A-2026")).Status);
+
+        // The owner, signed in elsewhere and recently, lets a device of their own in (My account);
+        // a session signed in long ago may not.
+        using var phone = await Env.SignInAsync(email, "Password-Of-A-2026", Env.TenantA.Code);
+        using var desktop = Env.CreateClient();
+        var desktopCode = (await SignInWithAsync(desktop, gateway, email, "Password-Of-A-2026")).Body.GetProperty("deviceCode").GetString()!;
+        await using (var db = await Env.OpenAdminAsync())
+        await using (var age = new Npgsql.NpgsqlCommand(
+            "UPDATE identity.sessions SET created_at = created_at - interval '2 hours' WHERE user_id = @id AND revoked_at IS NULL", db))
+        {
+            age.Parameters.AddWithValue("id", ownerId);
+            Assert.True(await age.ExecuteNonQueryAsync() >= 1);
+        }
+        var stale = await phone.PostAsJsonAsync("/api/identity/me/devices/approve", new { code = desktopCode });
+        Assert.Equal(HttpStatusCode.Forbidden, stale.StatusCode);
+        Assert.Equal("auth.recentSignInRequiredDevice", (await stale.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await SignInWithAsync(desktop, gateway, email, "Password-Of-A-2026")).Status);
+        using var fresh = await Env.SignInAsync(email, "Password-Of-A-2026", Env.TenantA.Code);
+        Assert.Equal(HttpStatusCode.OK, (await fresh.PostAsJsonAsync("/api/identity/me/devices/approve", new { code = desktopCode })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await SignInWithAsync(desktop, gateway, email, "Password-Of-A-2026")).Status);
+    }
+
+    private static async Task<Guid> UserIdAsync(HttpClient admin, string email)
+    {
+        var list = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users?search={Uri.EscapeDataString(email)}");
+        return list.GetProperty("items").EnumerateArray().Single(u => u.GetProperty("email").GetString() == email).GetProperty("id").GetGuid();
+    }
+
+    /// <summary>Invite a user (no password): their address, id and one-time set-up code.</summary>
+    private static async Task<(string Email, Guid Id, string Code)> InviteAsync(HttpClient admin, string email)
+    {
+        var response = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Invited person", language = "en", roleIds = Array.Empty<Guid>() });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        return (email, body.GetProperty("id").GetGuid(), body.GetProperty("setupCode").GetString()!);
+    }
+
+    private static async Task<(HttpStatusCode Status, JsonElement Body)> SignInWithAsync(HttpClient client, string clientAddress, string email, string password, string? newPassword = null)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/sign-in") { Content = JsonContent.Create(new { email, password, newPassword }) };
         request.Headers.Add("X-Forwarded-For", clientAddress);
         using var response = await client.SendAsync(request);
         return (response.StatusCode, await response.Content.ReadFromJsonAsync<JsonElement>());

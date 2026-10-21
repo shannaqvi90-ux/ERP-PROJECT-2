@@ -1,0 +1,964 @@
+{
+  "schema": 1,
+  "run_id": "edit-and-save-20261021T194434-362b",
+  "instrument": 12,
+  "task": "edit-and-save",
+  "task_title": "Edit a record and save it",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Change the contact's phone number to +971 50 555 0199 and save.",
+  "done_when": "The form shows the saved record; the back end holds the new phone number.",
+  "started_at": "2026-10-21T19:44:34.613Z",
+  "finished_at": "2026-10-21T19:45:18.211Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 12,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.207,
+    "system_wait_seconds": 0.1,
+    "human_seconds": 8.72,
+    "human_plus_wait_seconds": 8.82,
+    "klm_operator_counts": {
+      "K": 14,
+      "P": 1,
+      "B": 6,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "triple-click",
+      "label": "phone field (selects the number)",
+      "keystrokes": 0,
+      "at": 0.017,
+      "took": 0.035,
+      "began": 0.001,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "new number",
+      "keystrokes": 12,
+      "at": 0.058,
+      "took": 0.022,
+      "text": "971505550199",
+      "same_field": true,
+      "screen": "/odoo/contacts/73531",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "at": 0.081,
+      "took": 0.025,
+      "chord": "Alt+s",
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "saved",
+      "at": 0.107,
+      "seconds": 0.1
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "2b3e5e7271aa9184.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r14/compare/blind/shots/2b3e5e7271aa9184.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "5c414ea500bc404b.jpg",
+      "at": 0.207,
+      "path": "../../evidence-staging/p01-odoo-rig/r14/compare/blind/shots/5c414ea500bc404b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "saved": "971505550199",
+      "shown": "+971 50 555 0199"
+    }
+  },
+  "path_notes": "keyboard: Triple-click the phone field > type the digits > Alt+S | pointer: Triple-click the phone field > type the digits > click Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/edit-and-save.mjs",
+    "sha256": "d5a226b9346e8de7d921915fce1760aeaadfaeaae37411083a1cc9f226ec7d48"
+  },
+  "task_notes": "Clean-up puts the original number back through the back end.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/odoo/contacts/73531",
+    "path": "/odoo/contacts/73531",
+    "query": "",
+    "fragment": "",
+    "fields": 15,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "name_0",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "parent_id_0",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email_0",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone_0",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street_0",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street2_0",
+        "password": false,
+        "value_length": 23,
+        "value": "Saif Zone, PO Box 68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city_0",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "state_id_0",
+        "password": false,
+        "value_length": 12,
+        "value": "Sharjah (AE)"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "country_id_0",
+        "password": false,
+        "value_length": 20,
+        "value": "United Arab Emirates"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "lang_0",
+        "password": false,
+        "value_length": 12,
+        "value": "English (US)"
+      }
+    ],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.013,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.013,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /web/image/res.partner/73531/avatar_128 (image)",
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "6e58bdd72c66a234",
+    "elements": 1243
+  },
+  "screen_after_verify": {
+    "sha256": "6e58bdd72c66a234",
+    "elements": 1243,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.014
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.phone"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "end_state": [
+      "POST /web/dataset/call_kw/res.partner/read [result.phone]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.phone"
+      ]
+    },
+    "end_state_gained": [
+      "+971 50 555 0199"
+    ],
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.partner/web_save"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /web/dataset/call_kw/res.partner/web_save",
+        "at": 0.1394552820000099,
+        "by_step": 3,
+        "browser_record": {
+          "caused": true,
+          "by_step": 3,
+          "chain_seconds": 0.043,
+          "chain": [
+            "input of step 3",
+            "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.034 s"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 25,
+    "not_caused": 1,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.143,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.217,
+      "by_step": 3,
+      "chain": [
+        "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.034 s",
+        "the answer to POST /web/dataset/call_kw/res.partner/web_save after 0.036 s",
+        "an animation frame",
+        "the answer to GET /web/image/res.partner/73531/avatar_128 after 0.016 s"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/res.partner/write",
+    "browser POST /web/dataset/call_kw/ir.attachment/register_as_main_attachment"
+  ],
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Triple-click the phone field > type the digits > Alt+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 14,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.207,
+        "system_wait_seconds": 0.1,
+        "human_seconds": 8.72,
+        "human_plus_wait_seconds": 8.82,
+        "klm_operator_counts": {
+          "K": 14,
+          "P": 1,
+          "B": 6,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "triple-click",
+          "label": "phone field (selects the number)",
+          "keystrokes": 0,
+          "at": 0.017,
+          "took": 0.035,
+          "began": 0.001,
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "new number",
+          "keystrokes": 12,
+          "at": 0.058,
+          "took": 0.022,
+          "text": "971505550199",
+          "same_field": true,
+          "screen": "/odoo/contacts/73531",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 0.081,
+          "took": 0.025,
+          "chord": "Alt+s",
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.107,
+          "seconds": 0.1
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "971505550199",
+          "shown": "+971 50 555 0199"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/odoo/contacts/73531",
+        "path": "/odoo/contacts/73531",
+        "query": "",
+        "fragment": "",
+        "fields": 15,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "name_0",
+            "password": false,
+            "value_length": 25,
+            "value": "Shamma Waleed Al Romaithi"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "parent_id_0",
+            "password": false,
+            "value_length": 27,
+            "value": "Zenith General Trading Est."
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email_0",
+            "password": false,
+            "value_length": 37,
+            "value": "shamma.al.romaithi.73519@mail.example"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone_0",
+            "password": false,
+            "value_length": 16,
+            "value": "+971 54 427 3034"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street_0",
+            "password": false,
+            "value_length": 12,
+            "value": "77 Avenue 20"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street2_0",
+            "password": false,
+            "value_length": 23,
+            "value": "Saif Zone, PO Box 68423"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city_0",
+            "password": false,
+            "value_length": 7,
+            "value": "Sharjah"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "state_id_0",
+            "password": false,
+            "value_length": 12,
+            "value": "Sharjah (AE)"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "country_id_0",
+            "password": false,
+            "value_length": 20,
+            "value": "United Arab Emirates"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "lang_0",
+            "password": false,
+            "value_length": 12,
+            "value": "English (US)"
+          }
+        ],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.013,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.013,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.partner/73531/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "6e58bdd72c66a234",
+        "elements": 1243
+      },
+      "screen_after_verify": {
+        "sha256": "6e58bdd72c66a234",
+        "elements": 1243,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.014
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.partner/read [result.phone]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "POST /web/dataset/call_kw/res.partner/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /web/dataset/call_kw/res.partner/web_save",
+            "at": 0.1394552820000099,
+            "by_step": 3,
+            "browser_record": {
+              "caused": true,
+              "by_step": 3,
+              "chain_seconds": 0.043,
+              "chain": [
+                "input of step 3",
+                "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.034 s"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 25,
+        "not_caused": 1,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.143,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 0.217,
+          "by_step": 3,
+          "chain": [
+            "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.034 s",
+            "the answer to POST /web/dataset/call_kw/res.partner/web_save after 0.036 s",
+            "an animation frame",
+            "the answer to GET /web/image/res.partner/73531/avatar_128 after 0.016 s"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/res.partner/write",
+        "browser POST /web/dataset/call_kw/ir.attachment/register_as_main_attachment"
+      ]
+    },
+    {
+      "id": "pointer",
+      "path": "Triple-click the phone field > type the digits > click Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 12,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.281,
+        "system_wait_seconds": 0.082,
+        "human_seconds": 9.86,
+        "human_plus_wait_seconds": 9.942,
+        "klm_operator_counts": {
+          "K": 12,
+          "P": 2,
+          "B": 8,
+          "H": 2,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "triple-click",
+          "label": "phone field (selects the number)",
+          "keystrokes": 0,
+          "at": 0.022,
+          "took": 0.035,
+          "began": 0.001,
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "new number",
+          "keystrokes": 12,
+          "at": 0.064,
+          "took": 0.021,
+          "text": "971505550199",
+          "same_field": true,
+          "screen": "/odoo/contacts/73531",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 0.12,
+          "took": 0.077,
+          "began": 0.086,
+          "screen": "/odoo/contacts/73531",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "saved",
+          "at": 0.198,
+          "seconds": 0.082
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "saved": "971505550199",
+          "shown": "+971 50 555 0199"
+        }
+      },
+      "start_state": {
+        "kind": "record",
+        "opened_by_sign_in": "/odoo/contacts/73531",
+        "path": "/odoo/contacts/73531",
+        "query": "",
+        "fragment": "",
+        "fields": 15,
+        "filled": [
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "name_0",
+            "password": false,
+            "value_length": 25,
+            "value": "Shamma Waleed Al Romaithi"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "parent_id_0",
+            "password": false,
+            "value_length": 27,
+            "value": "Zenith General Trading Est."
+          },
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email_0",
+            "password": false,
+            "value_length": 37,
+            "value": "shamma.al.romaithi.73519@mail.example"
+          },
+          {
+            "tag": "input",
+            "type": "tel",
+            "name": "phone_0",
+            "password": false,
+            "value_length": 16,
+            "value": "+971 54 427 3034"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street_0",
+            "password": false,
+            "value_length": 12,
+            "value": "77 Avenue 20"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "street2_0",
+            "password": false,
+            "value_length": 23,
+            "value": "Saif Zone, PO Box 68423"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "city_0",
+            "password": false,
+            "value_length": 7,
+            "value": "Sharjah"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "state_id_0",
+            "password": false,
+            "value_length": 12,
+            "value": "Sharjah (AE)"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "country_id_0",
+            "password": false,
+            "value_length": 20,
+            "value": "United Arab Emirates"
+          },
+          {
+            "tag": "input",
+            "type": "text",
+            "name": "lang_0",
+            "password": false,
+            "value_length": 12,
+            "value": "English (US)"
+          }
+        ],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.013,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.013,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.partner/73531/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "a3ab7a37f799795c",
+        "elements": 1243
+      },
+      "screen_after_verify": {
+        "sha256": "a3ab7a37f799795c",
+        "elements": 1243,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.014
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.partner/read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.partner/read [result.phone]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.partner/read": [
+            "result.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "+971 50 555 0199"
+        ],
+        "writes_sent": [
+          "POST /web/dataset/call_kw/res.partner/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /web/dataset/call_kw/res.partner/web_save",
+            "at": 0.19690534699999263,
+            "by_step": 3,
+            "browser_record": {
+              "caused": true,
+              "by_step": 3,
+              "chain_seconds": 0.045,
+              "chain": [
+                "input of step 3",
+                "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.037 s"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 33,
+        "not_caused": 4,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.148,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.19,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.256,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.276,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 0.285,
+          "by_step": 3,
+          "chain": [
+            "the answer to POST /web/dataset/call_kw/res.partner/web_save after 0.04 s",
+            "an animation frame",
+            "the answer to GET /web/image/res.partner/73531/avatar_128 after 0.011 s",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/res.partner/write",
+        "browser POST /web/dataset/call_kw/ir.attachment/register_as_main_attachment"
+      ]
+    }
+  ]
+}

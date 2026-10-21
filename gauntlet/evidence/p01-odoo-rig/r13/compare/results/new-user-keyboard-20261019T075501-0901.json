@@ -1,0 +1,212 @@
+{
+  "schema": 1,
+  "run_id": "new-user-keyboard-20261019T075501-0901",
+  "instrument": 11,
+  "task": "new-user-keyboard",
+  "task_title": "Start a new record from the home screen by keyboard only (new user)",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open an empty form for a new user, ready to type the first field.",
+  "done_when": "An empty new-user form is on screen and no step used the mouse.",
+  "started_at": "2026-10-19T07:55:01.623Z",
+  "finished_at": "2026-10-19T07:55:20.252Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.046,
+    "system_wait_seconds": 0.972,
+    "human_seconds": 5.9,
+    "human_plus_wait_seconds": 6.872,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.019,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "at": 0.124,
+      "took": 0.021,
+      "text": "/user",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.252,
+      "took": 0.005,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "new",
+      "keystrokes": 2,
+      "at": 0.588,
+      "took": 0.021,
+      "chord": "Alt+c",
+      "screen": "/odoo/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.021,
+      "seconds": 0.103
+    },
+    {
+      "label": "Users menu first",
+      "at": 0.147,
+      "seconds": 0.105
+    },
+    {
+      "label": "users list",
+      "at": 0.258,
+      "seconds": 0.33
+    },
+    {
+      "label": "new user form",
+      "at": 0.61,
+      "seconds": 0.373
+    },
+    {
+      "label": "the form's chatter loaded in full",
+      "at": 0.984,
+      "seconds": 0.061
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "9449b77c8c5805ff.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/compare/blind/shots/9449b77c8c5805ff.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "5dc9b1dfb51b921d.jpg",
+      "at": 1.046,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/compare/blind/shots/5dc9b1dfb51b921d.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/odoo/users/new",
+      "empty": true,
+      "focused": true
+    }
+  },
+  "path_notes": "Ctrl+K > \"/user\" > Enter (Users list) > Alt+C (New).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/new-user-keyboard.mjs",
+    "sha256": "1a0d626be22f8c0fee6b1a1f117fc9f4db895d2deb66e14958ab5544fb55fa3a"
+  },
+  "task_notes": "Proposed by the p04 critic, round 7: \"every action reachable without a mouse\" and \"open any action by typing\". Every step must be a key or key chord.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.047
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "4111e2bbc9f414b7",
+    "elements": 369
+  },
+  "screen_after_verify": {
+    "sha256": "4111e2bbc9f414b7",
+    "elements": 369,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.034
+  },
+  "set_up_writes_waited": 0
+}

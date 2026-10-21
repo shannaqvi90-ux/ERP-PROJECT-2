@@ -121,6 +121,48 @@ describe("sign-in screen", () => {
     expect(alert().getAttribute("lang")).toBeNull();
   });
 
+  it("on a shared address says the failures may not be this person's and shows the device code to be let in with, in English and Arabic", async () => {
+    mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: { authenticated: false } };
+      if (method === "POST" && url === "/api/auth/sign-in")
+        return {
+          status: 429,
+          body: {
+            title: "Paused (server words).",
+            code: "auth.signInPaused",
+            pausedUntil: "2026-10-19T10:15:00Z",
+            retryAfterSeconds: 14 * 60 + 30,
+            sharedAddress: true,
+            deviceCode: "K7QM-3XRA",
+          },
+        };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="email"]')!, "admin@alnoor.example");
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="password"]')!, "Demo-Pass-2026");
+    await submit(view.container);
+    await settle();
+    const alert = () => view!.container.querySelector('[role="alert"]')!;
+    expect(alert().textContent).toContain("from this network address, which many people share (a gateway or proxy), so they may not have been yours.");
+    expect(alert().textContent).toContain("Sign-in with it from here is paused until");
+    expect(alert().textContent).toContain("give the device code below to your administrator, or enter it under My account");
+    expect(alert().textContent).not.toContain("from this device.");
+    const code = view.container.querySelector("[data-device-code]")!;
+    expect(code.textContent).toBe("K7QM-3XRA");
+    expect(code.getAttribute("dir")).toBe("ltr");
+    expect(view.container.querySelector(".signin-device-code")!.textContent).toBe("Device code: K7QM-3XRA");
+    await act(async () => view!.container.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
+    await settle();
+    expect(alert().textContent).toContain("ويشترك فيه أشخاص كثيرون");
+    expect(alert().textContent).toContain("توقف تسجيل الدخول به من هنا حتى");
+    expect(alert().textContent).toContain("15 دقيقة تقريبًا");
+    expect(view.container.querySelector(".signin-device-code")!.textContent).toBe("رمز الجهاز: K7QM-3XRA");
+    // Apart from the code itself, every word is Arabic.
+    expect(alert().textContent!.replace("K7QM-3XRA", "")).not.toMatch(/[A-Za-z]/);
+  });
+
   it("keeps an unrecognised server message in its own language and direction after switching", async () => {
     mockFetch((method, url) => {
       if (url === "/api/auth/session") return { status: 200, body: { authenticated: false } };

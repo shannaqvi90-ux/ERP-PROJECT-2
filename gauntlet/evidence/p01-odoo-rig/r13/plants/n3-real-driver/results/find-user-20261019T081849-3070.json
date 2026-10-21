@@ -1,0 +1,187 @@
+{
+  "schema": 1,
+  "run_id": "find-user-20261019T081849-3070",
+  "instrument": 11,
+  "task": "find-user",
+  "task_title": "Find one user among 100,000",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Open the user whose name the administrator knows (Majid Anil Pillai) out of 100,000 users and read their sign-in e-mail.",
+  "done_when": "The user's own record is open on screen and shows the sign-in majid.pillai.068311@staff.example.",
+  "started_at": "2026-10-19T08:18:49.362Z",
+  "finished_at": "2026-10-19T08:18:53.139Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 1,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.595,
+    "system_wait_seconds": 0.315,
+    "human_seconds": 4.68,
+    "human_plus_wait_seconds": 4.995,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users",
+      "keystrokes": 0,
+      "at": 0.036,
+      "took": 0.068,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "open the best match",
+      "keystrokes": 1,
+      "at": 0.459,
+      "took": 0.021,
+      "chord": "Enter",
+      "screen": "/identity/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "the row with the name",
+      "at": 0.104,
+      "seconds": 0.205
+    },
+    {
+      "label": "the user's record with the sign-in",
+      "at": 0.481,
+      "seconds": 0.11
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b53ef5bdc9191131.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/plants/n3-real-driver/blind/shots/b53ef5bdc9191131.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "03994871d6e48b57.jpg",
+      "at": 0.309,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/plants/n3-real-driver/blind/shots/03994871d6e48b57.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "6135a5e67e891d29.jpg",
+      "at": 0.595,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/plants/n3-real-driver/blind/shots/6135a5e67e891d29.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "record_shows_name": true,
+      "record_shows_login": true,
+      "url": "http://localhost:20150/identity/users/019371ad-40c0-784c-b908-cc7e6e1ea34f?view=view%3A01a1533d-ee1c-7450-8ba6-3d0e5c1478ff&q=Majid+Anil+Pillai&cols=displayName%2Cemail"
+    }
+  },
+  "path_notes": "Users (navigation; the search box has the focus) > type the name > Enter opens the best match: the user's record shows the sign-in.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/find-user.mjs",
+    "sha256": "8cf602bbce011226462cfa0f90ec509a18e3a7132016f44e0ae9605f3c550f77"
+  },
+  "task_notes": "The bar's \"find one record among 100,000\" on the list that exists in both products today: the shared dataset's 100,000 users (gauntlet/compare/data/out/users.csv), loaded into the reference by its rig and into our product with ERP_SEED_USERS_CSV. The name occurs exactly once in the dataset. find-record (contacts) stays the named task.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.005,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.008,
+      "verified": true,
+      "gap_seconds": 0.117
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "7da40ffae88f1c8c",
+    "elements": 262
+  },
+  "screen_after_verify": {
+    "sha256": "7da40ffae88f1c8c",
+    "elements": 262,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.053
+  },
+  "set_up_writes_waited": 0
+}

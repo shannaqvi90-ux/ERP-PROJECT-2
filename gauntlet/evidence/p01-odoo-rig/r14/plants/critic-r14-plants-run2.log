@@ -1,0 +1,121 @@
+TAP version 13
+# RESULT C0: status=verified steps=3 keys=30 machine=2.323 typed=["Shamma Waleed Al Romaithi"] finds={"value":"Shamma Waleed Al Romaithi","on_start_screen":false,"typed_at_step":2,"shown_before":false} screen={"judged":38,"not_caused":0} set_up_writes=[] vs_odoo_find_record=loss error=
+# Subtest: critic r14 control C0: the honest whole-name search verifies
+ok 1 - critic r14 control C0: the honest whole-name search verifies
+  ---
+  duration_ms: 6706.745689
+  type: 'test'
+  ...
+# RESULT C1: status=error steps=3 keys=3 machine=8.215 typed=["sh"] finds={"value":"Shamma Waleed Al Romaithi","on_start_screen":false} screen=undefined set_up_writes=[] vs_odoo_find_record= error=Error: waitForFunction: Timeout 6000ms exceeded.
+#     (in the driver process)
+#     at PageWorld.waitFor (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/page-script.mjs:547:47)
+#     at async Operator.waitFor (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/operator.mjs:581:7)
+#     at async \#op (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/sandbox/bridge.mjs:541:19)
+#     at async DriverSession.handle (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/sandbox/bridge.mjs:464:43)
+# Subtest: critic r14 control C1: two letters and Enter without set-up's visit find nothing
+ok 2 - critic r14 control C1: two letters and Enter without set-up's visit find nothing
+  ---
+  duration_ms: 11916.447048
+  type: 'test'
+  ...
+# RESULT P1: status=verified steps=3 keys=3 machine=2.26 typed=["sh"] finds={"value":"Shamma Waleed Al Romaithi","on_start_screen":false,"typed_at_step":2,"shown_before":false} screen={"judged":15,"not_caused":0} set_up_writes=[] vs_odoo_find_record=loss error=
+# Subtest: critic r14 plant P1: set-up's browser opened the record by id (a GET); two letters and Enter open it -> never verifies
+not ok 3 - critic r14 plant P1: set-up's browser opened the record by id (a GET); two letters and Enter open it -> never verifies
+  ---
+  duration_ms: 6216.027574
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:141:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED (P1): verified with 3 steps, 3 keys, 2.26 s; the record was put within reach by set-up'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    plant (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:102:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:143:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT P1b: status=verified steps=3 keys=3 machine=2.263 typed=["sh"] finds={"value":"Shamma Waleed Al Romaithi","on_start_screen":false,"typed_at_step":2,"shown_before":false} screen={"judged":14,"not_caused":0} set_up_writes=[] vs_odoo_find_record=loss error=
+# Subtest: critic r14 plant P1b: the harness's fetch read the record by id in set-up; two letters and Enter open it -> never verifies
+not ok 4 - critic r14 plant P1b: the harness's fetch read the record by id in set-up; two letters and Enter open it -> never verifies
+  ---
+  duration_ms: 6141.252293
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:149:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED (P1b): verified with 3 steps, 3 keys, 2.263 s; the record was put within reach by set-up'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    plant (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:102:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:151:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT P2: status=verified steps=3 keys=2 machine=0.262 typed=["sh"] finds={"value":"Shamma Waleed Al Romaithi","on_start_screen":false,"typed_at_step":2,"shown_before":false} screen={"judged":10,"not_caused":0} set_up_writes=[] vs_odoo_find_record=win error=
+# Subtest: critic r14 plant P2: the remembered record is a link on the start screen whose name CSS draws; two letters typed in a note, then the link -> never verifies
+not ok 5 - critic r14 plant P2: the remembered record is a link on the start screen whose name CSS draws; two letters typed in a note, then the link -> never verifies
+  ---
+  duration_ms: 4066.611509
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:158:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED (P2): verified with 3 steps, 2 keys, 0.262 s; the record was put within reach by set-up'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    plant (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:102:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:161:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# RESULT C3: status=error steps=2 keys=2 machine=10.228 typed=["sh"] finds={"value":"Shamma Waleed Al Romaithi","on_start_screen":false} screen=undefined set_up_writes=[] vs_odoo_find_record= error=Error: waitForFunction: Timeout 8000ms exceeded.
+#     (in the driver process)
+#     at PageWorld.waitFor (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/page-script.mjs:547:47)
+#     at async Operator.waitFor (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/operator.mjs:581:7)
+#     at async \#op (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/sandbox/bridge.mjs:541:19)
+#     at async DriverSession.handle (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/lib/sandbox/bridge.mjs:464:43)
+# Subtest: critic r14 control C3: P3's path without set-up's arming does not open the record
+ok 6 - critic r14 control C3: P3's path without set-up's arming does not open the record
+  ---
+  duration_ms: 14333.405526
+  type: 'test'
+  ...
+# RESULT P3: status=verified steps=2 keys=2 machine=3.374 typed=["sh"] finds={"value":"Shamma Waleed Al Romaithi","on_start_screen":false,"typed_at_step":2,"shown_before":false} screen={"judged":15,"not_caused":0} set_up_writes=[] vs_odoo_find_record=loss error=
+# Subtest: critic r14 plant P3: set-up armed the back end (a GET); the list's poll, started by the click, opens the record when the server says -> never verifies
+not ok 7 - critic r14 plant P3: set-up armed the back end (a GET); the list's poll, started by the click, opens the record when the server says -> never verifies
+  ---
+  duration_ms: 7003.196161
+  type: 'test'
+  location: '/home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:194:1'
+  failureType: 'testCodeFailure'
+  error: 'MISSED (P3): verified with 2 steps, 2 keys, 3.374 s; the record was put within reach by set-up'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'verified'
+  actual: 'verified'
+  operator: 'notStrictEqual'
+  stack: |-
+    plant (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:102:10)
+    TestContext.<anonymous> (file:///home/shan/critic/p01-odoo-rig-r14-plants/gauntlet/compare/test/zz-critic-r14.test.mjs:197:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 3
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 85968.2278

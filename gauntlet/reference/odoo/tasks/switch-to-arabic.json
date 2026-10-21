@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "switch-to-arabic-20261017T124236-ef0f",
-  "instrument": 10,
+  "run_id": "switch-to-arabic-20261019T125209-9775",
+  "instrument": 12,
   "task": "switch-to-arabic",
   "task_title": "Switch to Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Switch your own interface language to Arabic.",
   "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
-  "started_at": "2026-10-17T12:42:36.927Z",
-  "finished_at": "2026-10-17T12:43:13.409Z",
+  "started_at": "2026-10-19T12:52:09.279Z",
+  "finished_at": "2026-10-19T12:52:37.349Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 2.753,
-    "system_wait_seconds": 1.631,
+    "machine_seconds": 1.577,
+    "system_wait_seconds": 0.946,
     "human_seconds": 15.28,
-    "human_plus_wait_seconds": 16.911,
+    "human_plus_wait_seconds": 16.226,
     "klm_operator_counts": {
       "K": 1,
       "P": 5,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "user menu",
       "keystrokes": 0,
-      "at": 0.052,
-      "took": 0.07,
+      "at": 0.021,
+      "took": 0.039,
       "began": 0.001,
       "screen": "/odoo/contacts",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "My Preferences",
       "keystrokes": 0,
-      "at": 0.172,
-      "took": 0.062,
-      "began": 0.123,
+      "at": 0.12,
+      "took": 0.035,
+      "began": 0.06,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -80,9 +80,9 @@
       "kind": "click",
       "label": "language",
       "keystrokes": 0,
-      "at": 0.594,
-      "took": 0.143,
-      "began": 0.492,
+      "at": 0.367,
+      "took": 0.05,
+      "began": 0.311,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -91,9 +91,9 @@
       "kind": "click",
       "label": "Arabic",
       "keystrokes": 0,
-      "at": 0.789,
-      "took": 0.095,
-      "began": 0.738,
+      "at": 0.5,
+      "took": 0.028,
+      "began": 0.418,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -102,9 +102,9 @@
       "kind": "click",
       "label": "Update Preferences",
       "keystrokes": 0,
-      "at": 0.941,
-      "took": 0.062,
-      "began": 0.885,
+      "at": 0.559,
+      "took": 0.049,
+      "began": 0.529,
       "screen": "/odoo/contacts",
       "chain": false
     },
@@ -113,8 +113,8 @@
       "kind": "key",
       "label": "reload the page for the right-to-left layout",
       "keystrokes": 1,
-      "at": 1.649,
-      "took": 0.389,
+      "at": 0.949,
+      "took": 0.176,
       "chord": "F5",
       "screen": "/odoo/contacts",
       "chain": false
@@ -123,37 +123,37 @@
   "waits": [
     {
       "label": "preferences dialog",
-      "at": 0.234,
-      "seconds": 0.256
+      "at": 0.155,
+      "seconds": 0.156
     },
     {
       "label": "labels re-rendered in Arabic",
-      "at": 1.005,
-      "seconds": 0.643
+      "at": 0.608,
+      "seconds": 0.34
     },
     {
       "label": "client reloaded right to left",
-      "at": 2.04,
-      "seconds": 0.122
+      "at": 1.125,
+      "seconds": 0.091
     },
     {
       "label": "working screen back",
-      "at": 2.165,
-      "seconds": 0.547
+      "at": 1.217,
+      "seconds": 0.359
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "5e0762bf09580d08.jpg",
+      "file": "d658de72310b0966.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/5e0762bf09580d08.jpg"
+      "path": "gauntlet/reference/odoo/shots/d658de72310b0966.jpg"
     },
     {
       "moment": "done",
-      "file": "e0de0bf8f39d879f.jpg",
-      "at": 2.753,
-      "path": "gauntlet/reference/odoo/shots/e0de0bf8f39d879f.jpg"
+      "file": "a40e0bd06f6aaec3.jpg",
+      "at": 1.577,
+      "path": "gauntlet/reference/odoo/shots/a40e0bd06f6aaec3.jpg"
     }
   ],
   "verification": {
@@ -197,18 +197,18 @@
   "verify_passes": [
     {
       "requests": 3,
-      "longest_pause_seconds": 0.004,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.04,
+      "seconds": 0.019,
       "verified": true
     },
     {
       "requests": 3,
-      "longest_pause_seconds": 0.004,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.026,
+      "seconds": 0.015,
       "verified": true,
       "gap_seconds": 1.1
     }
@@ -221,11 +221,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "cca21cdd690fb226",
+    "sha256": "5f316b2a32a65c61",
     "elements": 2175
   },
   "screen_after_verify": {
-    "sha256": "cca21cdd690fb226",
+    "sha256": "5f316b2a32a65c61",
     "elements": 2175,
     "unchanged": true
   },
@@ -234,10 +234,10 @@
     "error": null,
     "back_end_reads": 1,
     "requests": 3,
-    "longest_pause_seconds": 0.003,
+    "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.085
+    "seconds": 0.035
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -273,11 +273,12 @@
     "writes_caused": [
       {
         "write": "POST /web/dataset/call_kw/res.users/web_save",
-        "at": 1.0007516199999955,
+        "at": 0.606972473999951,
         "by_step": 5,
         "browser_record": {
           "caused": true,
           "by_step": 5,
+          "chain_seconds": 0.006,
           "chain": [
             "input of step 5"
           ]
@@ -285,24 +286,90 @@
       },
       {
         "write": "POST /web/dataset/call_button/res.users/preference_save",
-        "at": 1.1069831920000142,
+        "at": 0.6632593070003204,
         "by_step": 5,
         "browser_record": {
           "caused": true,
           "by_step": 5,
+          "chain_seconds": 0.064,
           "chain": [
             "input of step 5",
-            "the answer to POST /web/dataset/call_kw/res.users/web_save after 0.113 s"
+            "the answer to POST /web/dataset/call_kw/res.users/web_save after 0.049 s"
           ]
         }
       }
     ]
   },
+  "screen_changes": {
+    "judged": 124,
+    "not_caused": 72,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.081,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.098,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.009 s before it) and could have sent it: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.114,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.148,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.266,
+        "event": "ParseHTML",
+        "why": "the document /odoo/contacts, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.295,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.31,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/100009/avatar_128, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.406,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.219,
+      "by_step": 5,
+      "chain": [
+        "the answer to POST /web/dataset/call_kw/res.users/web_save after 0.049 s",
+        "the answer to POST /web/dataset/call_button/res.users/preference_save after 0.012 s",
+        "a timer of 0 s",
+        "the document /odoo/contacts"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/switch-to-arabic.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261017T124236-ef0f.json",
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261017T124313-8bca.json",
-    "gauntlet/reference/odoo/results/switch-to-arabic-20261017T124350-0cfc.json"
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261019T125112-f2af.json",
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261019T125141-495b.json",
+    "gauntlet/reference/odoo/results/switch-to-arabic-20261019T125209-9775.json"
   ]
 }

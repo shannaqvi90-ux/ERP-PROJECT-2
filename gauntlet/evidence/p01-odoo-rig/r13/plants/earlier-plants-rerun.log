@@ -1,0 +1,115 @@
+TAP version 13
+# RESULT C1: status=verified steps=3 keys=10 machine=0.279 human=8.9 vsHonest=loss writes_sent=["POST /api/save"] gained=["abcdefghij"] error=
+# Subtest: control C1: the honest typed save verifies
+ok 1 - control C1: the honest typed save verifies
+  ---
+  duration_ms: 5459.209444
+  type: 'test'
+  ...
+# RESULT C2: status=verified steps=1 keys=0 machine=0.15 human=2.65 vsHonest=win writes_sent=["POST /api/approve"] gained=undefined error=
+# Subtest: control C2: the honest approval verifies
+ok 2 - control C2: the honest approval verifies
+  ---
+  duration_ms: 4968.602736
+  type: 'test'
+  ...
+# RESULT R1: status=invalid steps=1 keys=0 machine=0.144 human=2.65 vsHonest=- writes_sent=["POST /api/save"] gained=["abcdefghij"] error=action outside the clock (set-up): the end state gained "abcdefghij", which the measured part never entered (typed or picked as a file); the page sent "abcdefghij" in a request it composed itself (a draft or a value the product held before the clock), which nobody typed: it was entered off the clock
+# Subtest: plant R1: set-up stashes the value as a server-side draft; run() clicks "Save draft" once, typing nothing -> must never verify
+ok 3 - plant R1: set-up stashes the value as a server-side draft; run() clicks "Save draft" once, typing nothing -> must never verify
+  ---
+  duration_ms: 4720.437863
+  type: 'test'
+  ...
+# RESULT R2: status=invalid steps=1 keys=1 machine=0.646 human=2.03 vsHonest=- writes_sent=["POST /api/approve"] gained=undefined error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: the browser's record shows a timer armed before the clock started): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fi
+# Subtest: plant R2: set-up turns on a setting; the start page sends the declared approval write on its own timer; run() presses Escape -> must never verify
+ok 4 - plant R2: set-up turns on a setting; the start page sends the declared approval write on its own timer; run() presses Escape -> must never verify
+  ---
+  duration_ms: 5226.420551
+  type: 'test'
+  ...
+# RESULT R3: status=invalid steps=1 keys=1 machine=1.222 human=2.03 vsHonest=- writes_sent=["POST /api/save"] gained=["abcdefghij"] error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/save: 1.16 s after step 1 ended): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is ope
+# Subtest: plant R3: set-up stashes the value; the start page autosaves it on a timer; run() presses Escape -> must never verify
+ok 5 - plant R3: set-up stashes the value; the start page autosaves it on a timer; run() presses Escape -> must never verify
+  ---
+  duration_ms: 5312.363712
+  type: 'test'
+  ...
+# RESULT R5: status=invalid steps=undefined keys=undefined machine=undefined human=undefined vsHonest=- writes_sent=undefined gained=undefined error=action outside the clock (set-up): set-up's browser abandoned 1 request(s) that change the product before they were answered (POST /api/slow-save (net::ERR_ABORTED)): the product may carry them out after the clock starts. Set-up may prepare fixtures and sign in; the start screen is opened by the run
+# Subtest: plant R5: set-up types the value and clicks a Save whose request the page aborts after 200 ms (the product still carries it out 1.5 s later); run() presses Escape -> must never verify
+ok 6 - plant R5: set-up types the value and clicks a Save whose request the page aborts after 200 ms (the product still carries it out 1.5 s later); run() presses Escape -> must never verify
+  ---
+  duration_ms: 933.745564
+  type: 'test'
+  ...
+# RESULT C1: status=verified steps=1 error=
+# Subtest: critic r11 control C1: the honest approval click verifies
+ok 7 - critic r11 control C1: the honest approval click verifies
+  ---
+  duration_ms: 4531.497853
+  type: 'test'
+  ...
+# RESULT S1: status=invalid steps=1 keys=0 machine=1.395 human=2.65 writes_caused=[{"write":"POST /api/approve","at":0.8528195660000001,"not_caused":"before the first step","browser_record":{"caused":false,"why":"a timer armed before the clock started","chain":[]}}] vs_odoo_follow_approval=undefined error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: before the first step): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r11 plant S1: the page approves on its own timer; one click on a "Close" that appears afterwards takes the credit -> never verifies
+ok 8 - critic r11 plant S1: the page approves on its own timer; one click on a "Close" that appears afterwards takes the credit -> never verifies
+  ---
+  duration_ms: 5867.980117
+  type: 'test'
+  ...
+# RESULT S1b: status=invalid steps=1 keys=0 machine=0.823 human=2.65 writes_caused=[{"write":"POST /api/approve","at":0.3577698359999995,"not_caused":"before the first step","browser_record":{"caused":false,"why":"a timer armed before the clock started","chain":[]}}] vs_odoo_follow_approval=undefined error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: before the first step): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r11 plant S1b: the same with one scroll step to the banner -> never verifies
+ok 9 - critic r11 plant S1b: the same with one scroll step to the banner -> never verifies
+  ---
+  duration_ms: 5548.666196
+  type: 'test'
+  ...
+# RESULT S2: status=invalid steps=1 keys=0 machine=2.577 human=2.65 writes_caused=[{"write":"POST /api/approve","at":2.561754271999998,"not_caused":"the browser's record shows it waited 2.505 s for the answer to GET /api/tick: a delay longer than 2 s links nothing (the page held the write back)","browser_record":{"caused":false,"why":"it waited 2.505 s for the answer to GET /api/tick: a delay longer than 2 s links nothing (the page held the write back)","chain":[]}}] vs_odoo_follow_approval=undefined error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: the browser's record shows it waited 2.505 s for the answer to GET /api/tick: a delay longer than 2 s links nothing (the page held the write back)): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r11 plant S2: R2b with the 2.5 s timer moved into a slow back-end answer (the one link) -> never verifies
+ok 10 - critic r11 plant S2: R2b with the 2.5 s timer moved into a slow back-end answer (the one link) -> never verifies
+  ---
+  duration_ms: 6990.170164
+  type: 'test'
+  ...
+# RESULT S3: status=invalid steps=1 keys=0 machine=0.086 human=2.65 writes_caused=[] vs_odoo_follow_approval=undefined error=action outside the clock (set-up): the measured part sent nothing that writes to the product (no save, no API write): the end state verify() found was saved off the clock (set-up's browser or back-end calls), not by what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r11 plant S3: the stand-in arms on verify()'s before-the-clock read and lets the page's poll approve; one click on plain text -> never verifies
+ok 11 - critic r11 plant S3: the stand-in arms on verify()'s before-the-clock read and lets the page's poll approve; one click on plain text -> never verifies
+  ---
+  duration_ms: 4897.633216
+  type: 'test'
+  ...
+# RESULT C1: status=verified steps=1 writes_caused=[{"write":"POST /api/approve","at":0.07835865399999967,"by_step":1,"browser_record":{"caused":true,"by_step":1,"chain_seconds":0.001,"chain":["input of step 1"]}}] error=
+# Subtest: critic r12 control C1: the honest approval click verifies
+ok 12 - critic r12 control C1: the honest approval click verifies
+  ---
+  duration_ms: 4275.840704
+  type: 'test'
+  ...
+# RESULT W1: status=invalid steps=1 keys=0 machine=0.556 human=2.65 writes_caused=[{"write":"POST /api/approve","at":0.5224130490000006,"not_caused":"the browser's record shows a message the server pushed over a web socket on which the page sent nothing since the clock started: when it came is the server's doing, not the person's","browser_record":{"caused":false,"why":"a message the server pushed over a web socket on which the page sent nothing since the clock started: when it came is the server's doing, not the person's","chain":[]}}] vs_odoo_follow_approval=undefined error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: the browser's record shows a message the server pushed over a web socket on which the page sent nothing since the clock started: when it came is the server's doing, not the person's): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r12 plant W1: the stand-in pushes "go" over a web socket on its own timer; one click on a Close that appeared just before takes the credit -> never verifies
+ok 13 - critic r12 plant W1: the stand-in pushes "go" over a web socket on its own timer; one click on a Close that appeared just before takes the credit -> never verifies
+  ---
+  duration_ms: 5379.426762
+  type: 'test'
+  ...
+# RESULT W2: status=invalid steps=1 keys=0 machine=0.744 human=2.65 writes_caused=[{"write":"POST /api/approve","at":0.7392815389999996,"not_caused":"the browser's record shows a message from outside the page's thread (blink.mojom.LocalFrame): when it came is the sender's doing (a server, another frame, window or worker), not the person's","browser_record":{"caused":false,"why":"a message from outside the page's thread (blink.mojom.LocalFrame): when it came is the sender's doing (a server, another frame, window or worker), not the person's","chain":[]}}] vs_odoo_follow_approval=undefined error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: the browser's record shows a message from outside the page's thread (blink.mojom.LocalFrame): when it came is the sender's doing (a server, another frame, window or worker), not the person's): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r12 plant W2: a cross-site iframe posts "go" to the page on its own timer; one click on Close takes the credit -> never verifies
+ok 14 - critic r12 plant W2: a cross-site iframe posts "go" to the page on its own timer; one click on Close takes the credit -> never verifies
+  ---
+  duration_ms: 5635.313411
+  type: 'test'
+  ...
+# RESULT W3: status=invalid steps=1 keys=0 machine=2.929 human=2.65 writes_caused=[{"write":"POST /api/approve","at":2.8780633009999983,"not_caused":"the browser's record shows it went out 2.807 s after the input of step 1 that began its chain (input of step 1 > the answer to GET /api/tick19 after 1.906 s > a timer of 0.9 s): delays that add up to more than 2 s link nothing (the page held the write back)","browser_record":{"caused":false,"why":"it went out 2.807 s after the input of step 1 that began its chain (input of step 1 > the answer to GET /api/tick19 after 1.906 s > a timer of 0.9 s): delays that add up to more than 2 s link nothing (the page held the write back)","chain":["input of step 1","the answer to GET /api/tick19 after 1.906 s","a timer of 0.9 s"]}}] vs_odoo_follow_approval=undefined error=action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: the browser's record shows it went out 2.807 s after the input of step 1 that began its chain (input of step 1 > the answer to GET /api/tick19 after 1.906 s > a timer of 0.9 s): delays that add up to more than 2 s link nothing (the page held the write back)): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+# Subtest: critic r12 plant W3: one click on plain text arms a 2.8 s delay (1.9 s held answer + 0.9 s timer) before the approval -> never verifies
+ok 15 - critic r12 plant W3: one click on plain text arms a 2.8 s delay (1.9 s held answer + 0.9 s timer) before the approval -> never verifies
+  ---
+  duration_ms: 7593.890988
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 163085.503522
