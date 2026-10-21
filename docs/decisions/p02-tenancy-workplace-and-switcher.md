@@ -43,3 +43,23 @@ Date: 2026-10-03. Piece: p02-tenancy. Status: accepted.
   per-tab override can be added through the same binder.
 - An extension point instead of editing the shell: the shell (p04) owns its layout. The tenancy
   module adds to it from its own folder.
+
+## Comparison driver with more than six companies (round 13, 2026-10-22)
+
+The critic of p01 round 14 found that the ours `switch-company` driver's one-click path broke once
+the tenant had a seventh active company. Its own attack added company R14X, and set-up retired
+only `E2E-` companies. Above six companies the buttons are the companies the user switched
+between most recently (above), so a "to" company the administrator had never switched to had no
+button. The screen already works with more companies. The driver's set-up did not.
+
+- Set-up now switches the actor to "to" and back to "from" through `PUT /api/tenancy/workplace`
+  (already among the task's allowed set-up writes). The server then keeps "to" in the
+  administrator's recent companies, so the button is there however many companies are active.
+  This is the state of the task's actor, an administrator who works in both companies and goes
+  between them. Set-up is off the clock. The measured path (one click) and the keyboard variant
+  (Alt+C, type, Enter) are unchanged, and the reference side is untouched.
+- The screen rule is unchanged. A device and account that never switched get no arbitrary
+  buttons above six companies (the existing unit test "with more than six companies, keeps the
+  ones switched between most recently one click away" asserts this, and it stays).
+- Processor time this adds to a verify: two API requests in the driver's set-up, well under one
+  second.
