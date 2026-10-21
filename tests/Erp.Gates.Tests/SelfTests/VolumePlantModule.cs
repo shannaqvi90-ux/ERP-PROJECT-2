@@ -20,8 +20,13 @@ namespace Erp.Gates.Tests.SelfTests;
 /// planner's row count of the whole table (every tenant's rows), as L12 did;</item>
 /// <item>V2, a filtered query: the total the first tenant to send that query got (a total memo for
 /// queries too big to count every time, keyed by the query without the tenant);</item>
-/// <item>V3, a search: the planner's row estimate of the search from EXPLAIN (whole-table
-/// statistics, which row-level security does not narrow).</item>
+/// <item>V3, a one-letter search: the planner's row estimate of the search from EXPLAIN (whole-table
+/// statistics, which row-level security does not narrow);</item>
+/// <item>V4 (critic p05 round 12, plant L13), every other search, too broad to rank or ranked, alone or
+/// with a filter, sort or grouping: the total the first tenant to send that search got (L13 kept the
+/// total of a broad initials search, one word of 2 to 5 letters, in the temporary folder keyed by
+/// list and word). Each branch of the search engine (<see cref="G1.ListVolume.SearchBranch"/>) is
+/// planted, ranked answers too, so the self-test proves the check judges every branch.</item>
 /// </list>
 /// Hosted only by the volume self-test's planted host, over the volume environment's database; the
 /// catalog figures are read with the superuser connection the self-test hands it (the application
@@ -56,6 +61,7 @@ public sealed class VolumePlantModule : ErpModule
     private sealed class Filter(string connection) : IStartupFilter
     {
         private readonly ConcurrentDictionary<string, int> _totals = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, int> _searchTotals = new(StringComparer.Ordinal);
 
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
         {
@@ -79,16 +85,24 @@ public sealed class VolumePlantModule : ErpModule
                 }
                 var bytes = buffer.ToArray();
                 if (context.Response.StatusCode == StatusCodes.Status200OK && JsonNode.Parse(bytes) is JsonObject page &&
-                    page["total"]?.GetValue<int>() is { } total and > Threshold)
+                    page["total"]?.GetValue<int>() is { } total)
                 {
                     var query = context.Request.Query;
                     var search = query["search"].ToString();
                     var filter = query["filter"].ToString();
-                    page["total"] = search.Length > 0 ? await EstimateAsync(search)
+                    var branch = search.Length > 0 ? G1.ListVolume.SearchBranch(search, initials: true) : null;
+                    int? planted = branch is not null and not ("one letter" or "Arabic letter")
+                        ? _searchTotals.GetOrAdd($"{search}|{filter}|{query["sort"]}|{query["groupBy"]}", total)
+                        : total <= Threshold ? null
+                        : search.Length > 0 ? await EstimateAsync(search)
                         : filter.Length > 0 ? _totals.GetOrAdd($"{filter}|{query["sort"]}|{query["groupBy"]}", total)
                         : await WholeTableAsync();
-                    bytes = JsonSerializer.SerializeToUtf8Bytes(page);
-                    context.Response.ContentLength = bytes.Length;
+                    if (planted is { } changed)
+                    {
+                        page["total"] = changed;
+                        bytes = JsonSerializer.SerializeToUtf8Bytes(page);
+                        context.Response.ContentLength = bytes.Length;
+                    }
                 }
                 await body.WriteAsync(bytes);
             });
