@@ -80,6 +80,29 @@ public sealed class G1TenantSourceTests
             ("process-global", "private static readonly AsyncLocal<Guid> Tenant = new();"),
             ("process-global", "builder.Services.AddOutputCache();"),
             ("process-global", "builder.Services.AddMemoryCache();"),
+            // Critic p05 round 12, plant L13: a broad search's total kept in the temporary folder,
+            // keyed by list and word without the tenant. State outside the process (files, the
+            // temporary folder, memory-mapped files, named synchronisation objects, pipes, isolated
+            // storage, the registry) escapes the process-state gate's reflection as well.
+            ("external-state", "var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), \"erp-broad-search-totals\", key);"),
+            ("external-state", "System.IO.File.WriteAllText(path, total.ToString());"),
+            ("external-state", "if (File.Exists(path)) { return int.Parse(File.ReadAllText(path)); }"),
+            ("external-state", "global::System.IO.Directory.CreateDirectory(folder);"),
+            ("external-state", "await using var stream = new FileStream(path, FileMode.Create);"),
+            ("external-state", "var info = new System.IO.FileInfo(path);"),
+            ("external-state", "using var writer = new StreamWriter(\"/tmp/totals.txt\");"),
+            ("external-state", "var folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);"),
+            ("external-state", "var name = Path.GetTempFileName();"),
+            ("external-state", "using var map = MemoryMappedFile.CreateOrOpen(\"erp-totals\", 4096);"),
+            ("external-state", "using var gate = new Mutex(false, \"Global\\\\erp-\" + key);"),
+            ("external-state", "var shared = new Semaphore(0, 1, \"erp-totals\");"),
+            ("external-state", "if (EventWaitHandle.TryOpenExisting(\"erp\", out var handle)) { }"),
+            ("external-state", "using var pipe = new NamedPipeServerStream(\"erp-totals\");"),
+            ("external-state", "var store = IsolatedStorageFile.GetUserStoreForApplication();"),
+            ("external-state", "using static System.IO.File;"),
+            ("external-state", "using Disk = System.IO.File;"),
+            ("external-state", "var length = RandomAccess.GetLength(handle);"),
+            ("external-state", "services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(\"/keys\"));"),
         };
         foreach (var (rule, code) in planted)
         {
@@ -208,6 +231,16 @@ public static class TenantBypassScanner
             new(@"\bAppContext\.(?:SetData|SetSwitch)\b|\bAppDomain\b[^;]*\.SetData\b|\bEnvironment\.SetEnvironmentVariable\b|\[\s*ThreadStatic\s*\]|\bThreadLocal\s*<|\bAsyncLocal\s*<|\bMemoryCache\.Default\b|" +
               @"\b(?:Default|Leak[A-Za-z]*)?ObjectPool(?:Provider)?\b|\bArrayPool\s*<|\bMemoryPool\s*<|\bIMemoryCache\b|\bIDistributedCache\b|\bHybridCache\b|\bIOutputCacheStore\b|" +
               @"\bAdd(?:Memory|DistributedMemory|StackExchangeRedis|Output|Response|Hybrid)Cach(?:e|ing)\s*\(|\bSetString(?:Async)?\s*\(|\bConditionalWeakTable\s*<", Options)),
+        // Critic p05 round 12, plant L13: a search total kept in the temporary folder, keyed without
+        // the tenant, which neither the process-state gate (fields) nor process-global (in-process
+        // stores) sees. Any use of the file system or of state other processes share is reviewed.
+        new("external-state", "keeps or reads state outside the process and the database (files and directories, the temporary or a special folder, file streams, memory-mapped files, named mutexes, semaphores or wait handles, pipes, isolated storage, the registry)",
+            new(@"(?<![\w.])(?:global::)?(?:System\.IO\.)?(?:File|Directory|RandomAccess)\s*\.\s*[A-Z]\w*|" +
+                @"\bnew\s+(?:(?:global::)?System\.IO\.)?(?:FileStream|FileInfo|DirectoryInfo|FileSystemWatcher|StreamWriter|StreamReader)\s*\(|\bFileStreamOptions\b|\bFileMode\s*\.|\bSafeFileHandle\b|" +
+                @"\bPath\s*\.\s*GetTemp(?:Path|FileName)\b|\bEnvironment\s*\.\s*(?:GetFolderPath|SpecialFolder|CurrentDirectory)\b|\bPhysicalFileProvider\b|\bPersistKeysToFileSystem\b|" +
+                @"\bMemoryMappedFile\b|\bIsolatedStorage\w*|\bRegistry\s*\.\s*(?:CurrentUser|LocalMachine|ClassesRoot|Users|SetValue|GetValue)\b|\bNamedPipe(?:Server|Client)Stream\b|\bUnixDomainSocketEndPoint\b|" +
+                @"\bnew\s+(?:(?:global::)?System\.Threading\.)?(?:Mutex|Semaphore|EventWaitHandle)\s*\(|\b(?:Mutex|Semaphore|EventWaitHandle)\s*\.\s*(?:Try)?OpenExisting\b|" +
+                @"\busing\s+(?:static\s+)?(?:\w+\s*=\s*)?(?:global::)?System\.IO\.(?:File|Directory|Path|FileStream|FileInfo|DirectoryInfo|MemoryMappedFiles|IsolatedStorage|Pipes|RandomAccess)\b", Options)),
     ];
 
     public static IEnumerable<string> SourceFiles()
