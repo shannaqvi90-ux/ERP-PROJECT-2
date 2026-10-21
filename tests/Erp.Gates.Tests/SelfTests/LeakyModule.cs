@@ -704,6 +704,32 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(new { language = request.Language });
             }).WithName("leaky.switches").WithSummary("Planted bug: Arabic answers every tenant's count of Arabic switches in a header.").RequirePermission("leaky.data.update");
 
+            // Bug 72 (critic p04 round 11, plant SL1): a display-settings write that keeps the digits
+            // last chosen by anyone in a temporary file and answers a body that leaves the digits
+            // out (the shell's language switch sends {language} alone) with them. Every body the
+            // gates sent carried every field, so the partial path never ran. Nothing of the other
+            // tenant's shows but its choice of digits, and the file reaches a fresh process too:
+            // only the non-interference check's partial body judged against the other tenant's
+            // choice sees it.
+            group.MapPut("/me/display", async (DisplayRequest request) =>
+            {
+                if (request.Language is not (null or "en" or "ar") || request.Numerals is not (null or "latn" or "arab"))
+                {
+                    return Results.BadRequest();
+                }
+                string numerals;
+                if (request.Numerals is { } chosen)
+                {
+                    await File.WriteAllTextAsync(DisplayNote, chosen);
+                    numerals = chosen;
+                }
+                else
+                {
+                    numerals = File.Exists(DisplayNote) ? await File.ReadAllTextAsync(DisplayNote) : "latn";
+                }
+                return Results.Ok(new { language = request.Language ?? "en", numerals });
+            }).WithName("leaky.display").WithSummary("Planted bug: a body without digits answers the digits last chosen by anyone.").RequirePermission("leaky.data.update");
+
             // Bug 67 (the same on a read, kept outside the process): every caller's visits counted
             // in a temporary file and told in a header only. Each answer differs from the last in
             // every process, so only the change between answers shows the other tenant's visits.
@@ -1762,6 +1788,7 @@ public sealed class LeakyModule : ErpModule
         exportedTenant = null;
         PersonCards.Clear();
         File.Delete(DigitsNote);
+        File.Delete(DisplayNote);
         File.Delete(ScriptNote);
         File.Delete(GreetingNote);
         File.Delete(GreetingCountNote);
@@ -1780,6 +1807,8 @@ public sealed class LeakyModule : ErpModule
     private static readonly string DigitsNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-digits-{Environment.ProcessId}.txt");
 
     private static readonly string ScriptNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-script-{Environment.ProcessId}.txt");
+
+    private static readonly string DisplayNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-display-{Environment.ProcessId}.txt");
 
     /// <summary>Planted state outside the process (bugs 47 and 48).</summary>
     private static readonly string GreetingNote = Path.Combine(Path.GetTempPath(), $"erp-leaky-greeting-{Environment.ProcessId}.txt");
@@ -1819,6 +1848,8 @@ public sealed class LeakyModule : ErpModule
     public sealed record DigitsRequest([property: AllowedTextValues("latn", "arab")] string? Numerals);
 
     public sealed record ScriptRequest([property: AllowedTextValues("en", "ar")] string? Language);
+
+    public sealed record DisplayRequest([property: AllowedTextValues("en", "ar")] string? Language, [property: AllowedTextValues("latn", "arab")] string? Numerals);
 
     /// <summary>Bug 51: the companies' tax numbers under a permission that does not grant them.</summary>
     public sealed class TaxNumbersReport(ErpDbSession session) : Erp.Kernel.Reports.IReportSource

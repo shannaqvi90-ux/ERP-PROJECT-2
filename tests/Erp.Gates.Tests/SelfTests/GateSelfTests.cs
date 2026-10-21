@@ -80,6 +80,17 @@ public static class SelfTestProcess
 [Collection(LeakyModuleCollection.Name)]
 public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFixture>
 {
+    /// <summary>An endpoint the leaky module contributes: its own routes, and the kernel's routes for
+    /// its lists and reports (views, definitions, printing, running a report). The surface its
+    /// plants are on.</summary>
+    internal static bool PlantedEndpoint(ApiEndpoint endpoint) =>
+        endpoint.Pattern.StartsWith("/api/leaky/", StringComparison.Ordinal) || endpoint.Pattern.Contains("/leaky.", StringComparison.Ordinal);
+
+    /// <summary>The planted endpoints the company attack takes on (it leaves out signing in and out
+    /// and catch-all routes, as the gate does).</summary>
+    private static int CompanySurface(ErpTestEnvironment env) =>
+        EndpointInventory.From(env.Factory.Services).Count(e => PlantedEndpoint(e) && e.Name is not ("auth.signIn" or "auth.signOut") && !e.Pattern.Contains("{*", StringComparison.Ordinal));
+
     /// <summary>A finding about one of the leaky module's planted endpoints or planted reports.</summary>
     private static bool Planted(string finding) =>
         finding.Contains("/api/leaky/", StringComparison.Ordinal) || finding.Contains("/api/reports/run/leaky.", StringComparison.Ordinal);
@@ -94,8 +105,12 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // Tenant B's warm-up must be the first to fill the planted static cache (bug 9), whatever
         // another self-test environment of this process left in it.
         LeakyModule.ResetProcessState();
-        // The planted lists are also judged sorted; the product's lists are judged sorted by the gate.
-        var report = await IsolationAttack.RunAsync(fixture.Env, sortedLists: l => l.Key.StartsWith("leaky.", StringComparison.Ordinal));
+        // The attack runs on the planted module's surface: every phase and judgement of the gate,
+        // on the endpoints the plants are on (the product's own surface is the gate's, attacked by
+        // G1HttpIsolationTests in the same verify). The planted lists are also judged sorted.
+        var report = await IsolationAttack.RunAsync(fixture.Env, sortedLists: l => l.Key.StartsWith("leaky.", StringComparison.Ordinal), only: PlantedEndpoint);
+        // Every planted endpoint was attacked (a scope that lost one would leave its plant unjudged).
+        Assert.Equal(EndpointInventory.From(fixture.Env.Factory.Services).Count(PlantedEndpoint), report.EndpointsAttacked);
         foreach (var leak in report.Leaks.Where(l => !l.Contains("/api/leaky/", StringComparison.Ordinal)))
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unexpected: {leak}");
@@ -349,7 +364,9 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     [Trait(SelfTestProcess.Trait, SelfTestProcess.Company)]
     public async Task The_company_attack_catches_an_endpoint_that_widens_the_company_scope()
     {
-        var report = await CompanyAttack.RunAsync(fixture.Env);
+        // On the planted module's surface (the product's is the gate's, G1CompanyIsolationTests).
+        var report = await CompanyAttack.RunAsync(fixture.Env, CompanyAttack.Layer.Company, only: PlantedEndpoint);
+        Assert.Equal(CompanySurface(fixture.Env), report.EndpointsAttacked);
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/company-names", StringComparison.Ordinal) && l.StartsWith("company X administrator", StringComparison.Ordinal));
         Assert.DoesNotContain(report.Leaks, l => !Planted(l));
         // Critic p02 round 6: the workspace every company shares, renamed by an administrator of one company.
@@ -378,7 +395,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
     {
         // Critic p02 round 3, plant C3: a user limited to one branch reads and renames the
         // company's other branches through code that relies on row-level security alone.
-        var report = await CompanyAttack.RunAsync(fixture.Env, CompanyAttack.Layer.Branch);
+        var report = await CompanyAttack.RunAsync(fixture.Env, CompanyAttack.Layer.Branch, only: PlantedEndpoint);
+        Assert.Equal(CompanySurface(fixture.Env), report.EndpointsAttacked);
         Assert.Contains(report.Leaks, l => l.Contains("GET /api/leaky/branch-names", StringComparison.Ordinal) && l.StartsWith("branch-limited administrator", StringComparison.Ordinal));
         Assert.Contains("tenancy.branches", report.ChangedTables);
         Assert.DoesNotContain(report.Leaks, l => !Planted(l));

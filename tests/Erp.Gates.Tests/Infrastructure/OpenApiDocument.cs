@@ -508,6 +508,58 @@ public sealed class OpenApiDocument(JsonElement root)
     /// resolving references; <c>object</c> for a schema with properties and no type.</summary>
     public string? TypeOfSchema(JsonElement schema) => TypeOf(Resolve(schema));
 
+    /// <summary>
+    /// The top-level fields of a request body a client may leave out: fields the document does not
+    /// list as required, and fields whose schema allows null (the binder reads a missing field as
+    /// null, and the product's own screens send such partial bodies: the shell's language switch
+    /// sends <c>{language}</c> alone). Critic p04 round 11, plant SL1: a write that fills a field
+    /// left out from the last value anyone chose, and no gate ever left one out.
+    /// </summary>
+    public IReadOnlyList<string> OmittableFields(JsonElement schema)
+    {
+        var resolved = Resolve(schema);
+        if (resolved.ValueKind != JsonValueKind.Object || !resolved.TryGetProperty("properties", out var properties) || properties.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+        var required = resolved.TryGetProperty("required", out var names) && names.ValueKind == JsonValueKind.Array
+            ? names.EnumerateArray().Where(n => n.ValueKind == JsonValueKind.String).Select(n => n.GetString()!).ToHashSet(StringComparer.Ordinal)
+            : [];
+        return properties.EnumerateObject().Where(p => !required.Contains(p.Name) || AllowsNull(p.Value)).Select(p => p.Name).ToList();
+    }
+
+    /// <summary>Whether a field's schema allows null (a "null" type, a null among its documented
+    /// values, nullable, or a null option of a combinator).</summary>
+    private bool AllowsNull(JsonElement schema)
+    {
+        if (schema.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+        if (schema.TryGetProperty("nullable", out var nullable) && nullable.ValueKind == JsonValueKind.True)
+        {
+            return true;
+        }
+        if (schema.TryGetProperty("type", out var type) &&
+            (type.ValueKind == JsonValueKind.String ? type.GetString() == "null" : type.ValueKind == JsonValueKind.Array && type.EnumerateArray().Any(t => t.GetString() == "null")))
+        {
+            return true;
+        }
+        if (schema.TryGetProperty("enum", out var values) && values.ValueKind == JsonValueKind.Array && values.EnumerateArray().Any(v => v.ValueKind == JsonValueKind.Null))
+        {
+            return true;
+        }
+        foreach (var combinator in new[] { "oneOf", "anyOf" })
+        {
+            if (schema.TryGetProperty(combinator, out var options) && options.ValueKind == JsonValueKind.Array && options.EnumerateArray().Any(o => AllowsNull(Resolve(o))))
+            {
+                return true;
+            }
+        }
+        // A reference resolves to a schema without one, so this ends.
+        return schema.TryGetProperty("$ref", out _) && AllowsNull(Resolve(schema));
+    }
+
     private static string? TypeOf(JsonElement schema)
     {
         if (!schema.TryGetProperty("type", out var type))

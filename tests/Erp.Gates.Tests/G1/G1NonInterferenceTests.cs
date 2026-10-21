@@ -38,7 +38,8 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
             $"({result.ArabicWorkspaceWriteComparisons} between the workspace-wide Arabic administrators); " +
             $"{result.HeadersCompared} response header lines compared, {result.ChangeProbes} changing answers judged by how they change, " +
             $"{result.ConfigurationKeysWatched} configuration keys watched; " +
-            $"{result.TimesAttributed} times attributed to a request ({result.TimesAmbiguous} ambiguous, {result.PacedRuns} paced re-runs), {result.CookieValuesCompared} cookie values compared");
+            $"{result.TimesAttributed} times attributed to a request ({result.TimesAmbiguous} ambiguous, {result.PacedRuns} paced re-runs), {result.CookieValuesCompared} cookie values compared; " +
+            $"{result.PartialWriteComparisons} partial-body write comparisons, {result.PartialChoiceChecks} partial bodies judged against the other tenant's choice");
         foreach (var unstable in result.Unstable)
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"unstable: {unstable}");
@@ -66,6 +67,11 @@ public sealed class G1NonInterferenceTests(G1NonInterferenceFixture fixture) : I
         // Times are attributed to the request they fall in, not blanked (critic p04 round 9): a
         // check that attributes none would be blind to the time of the other tenant's activity.
         AssertAtLeast(result.TimesAttributed, "g1.nonInterferenceTimesAttributed");
+        // Partial bodies (critic p04 round 11, plant SL1): every field a client may leave out was
+        // left out and compared, and each partial body that leaves out an enumerated field was
+        // judged against the other tenant's choice of it.
+        AssertAtLeast(result.PartialWriteComparisons, "g1.nonInterferencePartialWriteComparisons");
+        AssertAtLeast(result.PartialChoiceChecks, "g1.nonInterferencePartialChoiceChecks");
     }
 
     private static void AssertAtLeast(int value, string key) =>
