@@ -179,3 +179,33 @@ maximum of 10,500 (unchanged), where the round-12 critic's clean-clone runs used
 
 Nothing was removed, skipped or narrowed in the gates: every gate test, plant, assertion and ratchet
 minimum is as before or stricter, and the processor-time maximum is the owner's and untouched.
+
+## 4. After merging p03 round 13, p06 round 9 and p05 round 13 (serial-10)
+
+The serial-9 integrator could not merge this round: two methods merged after this branch's base
+reach outside the process and were not reviewed. Both were reviewed here, in both lists, as every
+existing entry is (the gates' rules unchanged):
+
+- `Erp.Modules.Identity.Auth.ClientAddresses.Read` (p03): `File.Exists` and `File.ReadAllText` on
+  `/proc/net/route` and `/proc/net/ipv6_route`, constant paths to read-only kernel pseudo-files,
+  read once from the constructor at start for the gateways every client arrives from. The text is
+  the kernel's routing table, the same for every tenant; nothing is written. Source count 2.
+  Changing it was not smaller: .NET's `NetworkInterface` gateway API reads the same files inside
+  the framework, so moving to it would only hide the read from the compiled-code scan.
+- `Erp.Modules.Reports.ReportEndpoints.PdfFile` (p06): one print's PDF in a scratch file under a
+  fresh random Guid name, `FileMode.CreateNew`, `FileShare.None`, unlinked at once on Linux
+  (`DeleteOnClose` on Windows), streamed as that response's body and disposed with it. Building the
+  PDF in memory was not taken: a 100,000-row list is some 2,000 pages and many megabytes per print,
+  held per concurrent request, which is p06's reason for the file and would change its behaviour.
+  No path is reopened, kept or shared, so no tenant's rows reach another request or process; p06's
+  own gate (`G1PrintFileTests`) checks the scratch files. Source count 5 (see below).
+
+p05 round 13 landed a source rule of its own for the same hazard, `external-state`. Both are now one
+rule, `outside-process`, whose pattern is the union of the two patterns: anything either matched is
+flagged, and every planted case of both (p00's 18, p05's 19) is kept and must be caught. Under the
+union, `ReportEndpoints.cs` counts 5 (its `FileMode.CreateNew` is a p05 term); the other reviewed
+counts are unchanged. The compiled-code gate gained the APIs only p05's rule named:
+`Environment.GetFolderPath` and `Environment.CurrentDirectory`, `PersistKeysToFileSystem`, and
+`SafeFileHandle`, each with a planted method (24 plants; ratchet `g1.outsideProcessPlantsCaught`
+20 to 24). No product method newly matches them. Processor time added: under a second (two scans
+over the same compiled code and sources as before).
