@@ -20,7 +20,9 @@ namespace Erp.Gates.Tests.G1;
 /// tests/Gates/outside-process-methods.txt; any other fails this gate, and so does a reviewed
 /// entry that no longer calls one. Async state machines, lambdas and local functions count for
 /// the method they are written in. The source gate (<see cref="TenantBypassScanner"/>, rule
-/// outside-process) flags the same uses by file.
+/// outside-process, which since p05 round 13 also matches what p05's external-state rule did)
+/// flags the same uses by file; this scan covers the APIs that rule names (special folders, the
+/// working directory, keys persisted to the file system, file handles) as well.
 /// </summary>
 public sealed class G1OutsideProcessStateTests
 {
@@ -70,6 +72,10 @@ public sealed class G1OutsideProcessStateTests
             ("Child", "Process.Start"),
             ("Unmanaged", "Marshal.AllocHGlobal"),
             ("Native", "PlantedOutsideProcessCode.getpid (native)"),
+            ("SpecialFolder", "Environment.GetFolderPath"),
+            ("WorkingDirectory", "Environment.get_CurrentDirectory"),
+            ("PersistedKeys", "DataProtectionBuilderExtensions.PersistKeysToFileSystem"),
+            ("Handle", "SafeFileHandle.get_IsAsync"),
         };
         foreach (var (method, use) in expected)
         {
@@ -151,6 +157,15 @@ internal static class PlantedOutsideProcessCode
     [DllImport("libc")]
     private static extern int getpid();
 
+    public static string SpecialFolder() => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+    public static string WorkingDirectory() => Environment.CurrentDirectory;
+
+    public static void PersistedKeys(Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder keys) =>
+        Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.PersistKeysToFileSystem(keys, new DirectoryInfo("/keys"));
+
+    public static bool Handle(Microsoft.Win32.SafeHandles.SafeFileHandle handle) => handle.IsAsync;
+
     public static string InsideTheProcess(Stream response)
     {
         using var writer = new StreamWriter(response, leaveOpen: true);
@@ -181,7 +196,7 @@ public static class OutsideProcessCode
         "System.IO.FileStream", "System.IO.RandomAccess", "System.IO.FileSystemWatcher", "System.IO.DriveInfo",
         "System.IO.Compression.ZipFile", "System.IO.Compression.ZipFileExtensions",
         "Microsoft.Extensions.FileProviders.PhysicalFileProvider", "System.Runtime.InteropServices.NativeMemory",
-        "Microsoft.Win32.Registry", "Microsoft.Win32.RegistryKey",
+        "Microsoft.Win32.Registry", "Microsoft.Win32.RegistryKey", "Microsoft.Win32.SafeHandles.SafeFileHandle",
     };
 
     /// <summary>Namespaces every type of which reaches outside the process.</summary>
@@ -218,6 +233,11 @@ public static class OutsideProcessCode
             "System.Threading.Mutex" or "System.Threading.Semaphore" or "System.Threading.EventWaitHandle"
                 when called.Name is "OpenExisting" or "TryOpenExisting" || (called is ConstructorInfo && parameters.Any(p => p.Name == "name" && p.ParameterType == typeof(string))) => use,
             "System.Diagnostics.Process" when called.Name is "Start" => use,
+            // A special folder or the working directory: a place on disk that other processes share
+            // (p05 round 13's source rule external-state covered these by name; one rule since).
+            "System.Environment" when called.Name is "GetFolderPath" or "get_CurrentDirectory" or "set_CurrentDirectory" => use,
+            // Data-protection keys written to a folder outlive the process and are read by the next.
+            "Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions" when called.Name is "PersistKeysToFileSystem" => use,
             "System.Runtime.InteropServices.Marshal" when called.Name.StartsWith("AllocHGlobal", StringComparison.Ordinal) ||
                                                           called.Name.StartsWith("AllocCoTaskMem", StringComparison.Ordinal) ||
                                                           called.Name.StartsWith("ReAlloc", StringComparison.Ordinal) => use,
