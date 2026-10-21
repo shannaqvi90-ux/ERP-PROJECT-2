@@ -1,0 +1,20 @@
+B makes identity.users views 201 01a15ff2-b60a-733b-86f1-eb10c6d15541
+B makes identity.users shared-views 201 01a15ff2-b625-7b29-9f5d-d4cfdf77e35c
+B makes identity.roles views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-698fafdad4a0100c1fc3c36f7f1dda24-fbd54
+B makes identity.roles shared-views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-ce595e5789cc991531c17f1bc19f6d92-36c53
+B makes tenancy.companies views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-58de4d84283e589a917a13cad409b2b7-61d81
+B makes tenancy.companies shared-views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-e9a033c89a550eeb1950ad290c6e202a-f3048
+B makes tenancy.branches views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-4f1c637409c290ac4279f2c1456dcabc-c4d0d
+B makes tenancy.branches shared-views 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-8dc7bd1b7ccaaeafdbbdeee71c334a5e-1066d
+A GET /api/lists/identity.users/views/01a15ff2-b60a-733b-86f1-eb10c6d15541 404 ok
+A PUT /api/lists/identity.users/views/01a15ff2-b60a-733b-86f1-eb10c6d15541 404 ok
+A DELETE /api/lists/identity.users/views/01a15ff2-b60a-733b-86f1-eb10c6d15541 404 ok
+A GET /api/lists/identity.users/views 200 ok
+A GET /api/lists/identity.users/views 200 ok
+A GET /api/lists/identity.users/shared-views/01a15ff2-b625-7b29-9f5d-d4cfdf77e35c 404 ok
+A PUT /api/lists/identity.users/shared-views/01a15ff2-b625-7b29-9f5d-d4cfdf77e35c 404 ok
+A DELETE /api/lists/identity.users/shared-views/01a15ff2-b625-7b29-9f5d-d4cfdf77e35c 404 ok
+A GET /api/lists/identity.users/shared-views 404 ok
+A GET /api/lists/identity.users/views 200 ok
+B still sees its own views: 4 names intact: True
+leaks 0
