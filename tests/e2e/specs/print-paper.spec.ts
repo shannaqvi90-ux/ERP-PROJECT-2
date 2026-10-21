@@ -283,3 +283,86 @@ test("a keyboard user's printout of the Arabic users list carries no focus ring 
   await expect(header).toBeFocused();
   expect(await header.evaluate((el) => getComputedStyle(el).outlineStyle)).not.toBe("none");
 });
+
+/**
+ * A list on paper fits the page (critic p04 round 11: on A4 the users grid was 743 px wide in
+ * English and 789 px in Arabic against 718 px of page, so the Roles column was off the page and the
+ * last sign-in time printed as "…0:35"); and a record open beside the list prints whole, not as a
+ * panel cut at the screen's height. The page is the A4 printable width of the print stylesheet
+ * (210 mm less 12 mm margins on each side: 186 mm, 703 px).
+ */
+const a4PrintableWidth = Math.floor((186 / 25.4) * 96);
+
+for (const language of ["en", "ar"] as const) {
+  test(`the users list and an open user record print inside an A4 page, nothing cut (${language})`, async ({ page }) => {
+    await freshStart(page, language);
+    await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
+    await setLanguage(page, language);
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("lang", language);
+    await page.keyboard.press("g");
+    await page.keyboard.press("u");
+    await expect(page.locator("main .list-row").first()).toBeVisible();
+    await page.setViewportSize({ width: a4PrintableWidth, height: 1000 });
+
+    const onPaper = () =>
+      page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        const problems: string[] = [];
+        const name = (el: Element) => `${el.className} "${(el.textContent ?? "").trim().slice(0, 24)}"`;
+        const cells = Array.from(document.querySelectorAll("main .list-header > *, main .list-row > *")).filter((el) => el.getClientRects().length > 0);
+        for (const el of cells) {
+          const box = el.getBoundingClientRect();
+          if (box.left < -1 || box.right > width + 1) problems.push(`off the page (${Math.round(box.left)}..${Math.round(box.right)} of ${width}): ${name(el)}`);
+          if (el.scrollWidth > el.clientWidth + 1) problems.push(`cut (${el.scrollWidth} > ${el.clientWidth}): ${name(el)}`);
+          const text = el.querySelector(".list-text, span[dir]");
+          if (text && text.scrollWidth > text.clientWidth + 1) problems.push(`value cut: ${name(el)}`);
+        }
+        const headers = Array.from(document.querySelectorAll("main .list-header > *")).filter((el) => el.getClientRects().length > 0).map((el) => (el.textContent ?? "").trim());
+        const record = document.querySelector("main aside.list-record");
+        let recordFacts: { left: number; right: number; cut: boolean; inputsOff: number } | null = null;
+        if (record && record.getClientRects().length > 0) {
+          const box = record.getBoundingClientRect();
+          const inputsOff = Array.from(record.querySelectorAll("input, select, textarea, h2, h3, legend")).filter((el) => {
+            const r = el.getBoundingClientRect();
+            return el.getClientRects().length > 0 && (r.left < -1 || r.right > width + 1);
+          }).length;
+          recordFacts = { left: box.left, right: box.right, cut: record.scrollHeight > record.clientHeight + 1, inputsOff };
+        }
+        return { width, problems, headers, cells: cells.length, recordFacts };
+      });
+
+    await page.emulateMedia({ media: "print" });
+    try {
+      const list = await onPaper();
+      expect(list.problems).toEqual([]);
+      // Every column the screen shows prints, with its heading; no selection column.
+      expect(list.headers.length).toBeGreaterThanOrEqual(6);
+      expect(list.headers.every((h) => h.length > 0)).toBe(true);
+      expect(list.cells).toBeGreaterThan(list.headers.length * 3);
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+    }
+
+    // A record open beside the list: on paper it follows the list, at the page's width, whole.
+    await page.locator("main .list-grid").focus();
+    await page.keyboard.press("Enter");
+    const panel = page.locator("main aside.list-record").first();
+    await expect(panel.locator("input").first()).toBeVisible();
+    await page.emulateMedia({ media: "print" });
+    try {
+      const withRecord = await onPaper();
+      expect(withRecord.problems).toEqual([]);
+      expect(withRecord.recordFacts).not.toBeNull();
+      const facts = withRecord.recordFacts!;
+      expect(facts.left).toBeGreaterThanOrEqual(-1);
+      expect(facts.right).toBeLessThanOrEqual(withRecord.width + 1);
+      expect(facts.right - facts.left).toBeGreaterThan(withRecord.width * 0.9);
+      expect(facts.cut, "the record is cut at a height").toBe(false);
+      expect(facts.inputsOff).toBe(0);
+    } finally {
+      await page.emulateMedia({ media: "screen" });
+    }
+  });
+}

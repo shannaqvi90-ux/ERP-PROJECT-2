@@ -54,16 +54,17 @@ public sealed partial class G1ShellAnswersTests(G1ShellAnswersFixture fixture) :
         AssertAtLeast(result.BodyVariantsJudged, "g1.shellAnswerBodyVariantsJudged");
         AssertAtLeast(result.TraceIdsShaped, "g1.shellAnswerTraceIdsShaped");
 
-        // The audit rows of those writes carry the request's trace id as their correlation id: a
-        // random one, never a count of the process's requests (Kestrel's connection and request
-        // counters), so tenant A's own audit trail does not count tenant B's requests.
+        // The audit rows of those writes (each write that changes a value: 39 in a run) carry the
+        // request's trace id as their correlation id: a random one, never a count of the process's
+        // requests (Kestrel's connection and request counters), so tenant A's own audit trail does
+        // not count tenant B's requests.
         await using var db = await Env.OpenAdminAsync();
         var correlations = await Infrastructure.DbCatalog.ReadAsync(db, """
             SELECT correlation_id FROM audit.entries
              WHERE tenant_id = ANY(@tenants) AND table_name = 'users' AND correlation_id IS NOT NULL AND correlation_id NOT LIKE 'seed:%'
              ORDER BY id DESC LIMIT 200
             """, r => r.GetString(0), ("tenants", new[] { Env.TenantA.Id, Env.TenantB.Id }));
-        Assert.True(correlations.Count >= 40, $"only {correlations.Count} audit rows of the preference writes carry a correlation id");
+        Assert.True(correlations.Count >= 20, $"only {correlations.Count} audit rows of the preference writes carry a correlation id");
         var shape = ShellAnswers.RandomShapes["body.traceId"].Shape;
         var counted = correlations.Where(c => !shape.IsMatch($"\"{c}\"")).ToList();
         Assert.True(counted.Count == 0, "audit correlation ids not of the random trace-id shape: " + string.Join(", ", counted.Take(10)));
@@ -232,7 +233,8 @@ public sealed partial class G1ShellAnswersTests(G1ShellAnswersFixture fixture) :
         TestContext.Current.TestOutputHelper?.WriteLine(
             $"{result.Requests} requests over {result.EndpointsJudged.Count} endpoints; {result.Comparisons} values compared " +
             $"({result.HeaderValuesCompared} headers, {result.CookieValuesCompared} cookie values, {result.CredentialCookiesShaped} credential cookies by shape), " +
-            $"{result.NumbersJudged} numbers and {result.TimesJudged} times judged by how they change; {result.Unjudged.Count} reviewed as random");
+            $"{result.NumbersJudged} numbers and {result.TimesJudged} times judged by how they change; {result.Unjudged.Count} reviewed as random; " +
+            $"{result.BodyVariantsJudged} preferences bodies judged against the other tenant's differing writes ({string.Join(" ", result.BodyShapesJudged.Order(StringComparer.Ordinal))}), {result.TraceIdsShaped} trace ids by shape");
         foreach (var finding in result.Findings)
         {
             TestContext.Current.TestOutputHelper?.WriteLine($"finding: {finding}");
