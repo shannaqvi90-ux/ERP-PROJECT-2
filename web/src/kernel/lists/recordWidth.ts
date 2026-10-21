@@ -88,3 +88,29 @@ export function shareAfterKey(key: string, share: number, rtl: boolean): number 
 export function toggledShare(share: number): number {
   return share >= recordShare.wide ? recordShare.standard : recordShare.wide;
 }
+
+/** Pixels of the splitter between the list and the form (lists.css: its 10px grid column). */
+export const splitterWidth = 10;
+
+/** The narrowest a screen's form gets by itself (lists.css: min(380px, 50%) of the list body). */
+export const formFloor = 380;
+
+/**
+ * The share a form opens at when the user has not chosen one: the standard share, or less when the
+ * list beside it would then be narrower than its columns need (`listNeed` pixels: every visible
+ * column at its minimum, with the frame), never under the form's own floor (critic p04 round 10:
+ * the Arabic users list at 1440px kept 614 of the 791 pixels its columns need, and its leftmost
+ * columns were cut at the frame's edge). Unknown widths (no layout yet) keep the standard share.
+ */
+export function openingShare(bodyWidth: number, listNeed: number): number {
+  if (!(bodyWidth > 0) || !(listNeed > 0)) return recordShare.standard;
+  const leaves = Math.floor(((bodyWidth - listNeed - splitterWidth) / bodyWidth) * 100);
+  const floor = Math.ceil((Math.min(formFloor, bodyWidth / 2) / bodyWidth) * 100);
+  return clampShare(Math.min(recordShare.standard, Math.max(floor, leaves)));
+}
+
+/** The share that leaves the list `listNeed` pixels beside the form, never under the narrowest share. */
+export function shareForList(bodyWidth: number, listNeed: number): number {
+  if (!(bodyWidth > 0)) return recordShare.standard;
+  return clampShare(Math.floor(((bodyWidth - listNeed - splitterWidth) / bodyWidth) * 100));
+}

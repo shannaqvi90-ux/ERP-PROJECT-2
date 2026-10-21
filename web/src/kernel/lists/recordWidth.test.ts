@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { clampShare, readShare, recordShare, shareAfterKey, shareFromPointer, shareToFit, toggledShare, writeShare } from "./recordWidth";
+import { clampShare, openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, toggledShare, writeShare } from "./recordWidth";
 
 afterEach(() => window.localStorage.clear());
 
@@ -70,5 +70,26 @@ describe("record form width", () => {
     } finally {
       Object.defineProperty(window, "localStorage", original);
     }
+  });
+
+  it("opens a form narrower than the standard when the list's columns would not fit beside it, never under the form's floor", () => {
+    // Plenty of room: the standard share.
+    expect(openingShare(1680, 800)).toBe(recordShare.standard);
+    // 1,200 px body, the list needs 760 px: the form takes what is left (430 of 1,200: 35%).
+    expect(openingShare(1200, 760)).toBe(35);
+    expect(Math.floor((openingShare(1200, 760) / 100) * 1200) + 10 + 760).toBeLessThanOrEqual(1200);
+    // Not enough room for both: the form keeps its 380 px floor (32% of 1,200), the list less.
+    expect(openingShare(1200, 900)).toBe(32);
+    // Never under the narrowest share, and no layout yet keeps the standard share.
+    expect(openingShare(2000, 1900)).toBe(recordShare.min);
+    expect(openingShare(0, 760)).toBe(recordShare.standard);
+    expect(openingShare(1200, 0)).toBe(recordShare.standard);
+  });
+
+  it("gives the list the room its columns need when asked, down to the narrowest form", () => {
+    expect(shareForList(1200, 760)).toBe(35);
+    expect(shareForList(1200, 1100)).toBe(recordShare.min);
+    expect(shareForList(1200, 100)).toBe(recordShare.wide);
+    expect(shareForList(0, 760)).toBe(recordShare.standard);
   });
 });

@@ -412,6 +412,35 @@
   background: rgba(0, 0, 0, 0.06);
 }
 
+/* The marker at the row's end while a record is open: how many of the view's columns wait beside
+   it (columnFit.ts). Its button narrows the record so they fit. */
+.list-grid .list-cell.list-more {
+  padding-inline: 2px;
+  text-align: center;
+}
+
+.list-more-button,
+.list-more-label {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.list-more-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.list-more-button:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
 .list-sort-mark {
   margin-inline-start: 4px;
   font-size: 10px;
