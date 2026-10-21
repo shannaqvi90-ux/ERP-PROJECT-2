@@ -591,4 +591,63 @@ describe("companies screen", () => {
     const put = calls.find((c) => c.method === "PUT" && c.url === "/api/tenancy/companies/c9")!;
     expect(put.body).toMatchObject({ arabicLegalNameRequired: true, legalNameAr: "النور عجمان ذ.م.م", taxRegistrationNumber: "100-1234-5678-9003" });
   });
+
+  it("opens a company where the user's roles only read as read-only, with the reason, no Save, no logo change and no branch line (critic p02 round 11)", async () => {
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    // The user manages another company; in this one their roles only read.
+    const readOnly = { ...saved, everyBranch: true, everyCompany: true, canUpdate: false, canAddBranch: false };
+    const calls = mockFetch((_method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: { ...session, permissions: [...permissions, "tenancy.branches.update"] } };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [{ ...readOnly }], total: 1, next: null } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: readOnly };
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const notice = view.container.querySelector('[data-testid="record-read-only"]')!;
+    expect(notice.textContent).toContain("Your roles let you read this company but not change it");
+    expect(field(view.container, "legalNameEn").readOnly || field(view.container, "legalNameEn").disabled).toBe(true);
+    expect([...view.container.querySelectorAll("button")].some((b) => b.textContent === "Save")).toBe(false);
+    expect(view.container.querySelector(".quick-add")).toBeNull();
+    press({ ctrlKey: true, key: "s", code: "KeyS" });
+    await settle();
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
+  });
+
+  it("refreshes the companies list (its branch count) when a branch is added from the open company's form (critic p02 round 11)", async () => {
+    window.history.replaceState(null, "", "/tenancy/companies?open=c9");
+    const company = { ...saved, everyBranch: true, everyCompany: true };
+    let branchCount = 0;
+    const calls = mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session };
+      if (url === "/api/lists/tenancy.companies/definition") return { status: 200, body: definition };
+      if (url === "/api/lists/tenancy.companies/views") return { status: 200, body: { items: [] } };
+      if (url.startsWith("/api/tenancy/companies?")) return { status: 200, body: { items: [{ ...company, branchCount }], total: 1, next: null } };
+      if (url === "/api/tenancy/companies/c9") return { status: 200, body: { ...company, branchCount } };
+      if (url === "/api/tenancy/branches" && method === "POST") {
+        branchCount++;
+        return { status: 201, body: { id: "b1", companyId: "c9", code: "AJM-1", nameEn: "Al Noor Ajman LLC - Port", nameAr: "", city: null, emirate: null, isActive: true, version: 1 } };
+      }
+      if (url.startsWith("/api/tenancy/branches?")) return { status: 200, body: { items: [], total: 0, next: null } };
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    // The list's own reads (not the one-row read that tells whether the user works in every company).
+    const listReads = () => calls.filter((c) => c.method === "GET" && c.url.startsWith("/api/tenancy/companies?") && c.url !== "/api/tenancy/companies?take=1").length;
+    const before = listReads();
+    setInput(view.container.querySelector<HTMLInputElement>('input[name="branchNameEn"]')!, "Al Noor Ajman LLC - Port");
+    await act(async () => {
+      view!.container.querySelector<HTMLFormElement>(".quick-add")!.requestSubmit();
+    });
+    await settle();
+    await settle();
+    expect(calls.some((c) => c.method === "POST" && c.url === "/api/tenancy/branches")).toBe(true);
+    expect(listReads()).toBeGreaterThan(before);
+  });
 });

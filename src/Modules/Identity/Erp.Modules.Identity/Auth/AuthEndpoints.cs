@@ -64,12 +64,13 @@ internal static class AuthEndpoints
     {
         group.MapPost("/sign-in", SignIn)
             .WithName("auth.signIn")
-            .WithSummary("Sign in with e-mail and password (or a one-time set-up code), or with a passkey (passkey, no e-mail or password: the device's answer to the challenge from GET /api/auth/session). Sets the session cookie; returns a bearer token too when issueToken is true. With newPassword it also changes the password; a set-up code answers 409 auth.passwordChangeRequired until one is given. After too many failed attempts at one address from one client, sign-in with that address from there answers 429 auth.signInPaused with pausedUntil and Retry-After, whether or not an account has the address, until the pause lifts or an administrator allows sign-in again; too many requests of any kind answer 429 request.tooMany.")
+            .WithSummary("Sign in with e-mail and password (or a one-time set-up code), or with a passkey (passkey, no e-mail or password: the device's answer to the challenge from GET /api/auth/session). Sets the session cookie; returns a bearer token too when issueToken is true. With newPassword it also changes the password; a set-up code answers 409 auth.passwordChangeRequired until one is given. After too many failed attempts at one address from one client, sign-in with that address from there answers 429 auth.signInPaused with pausedUntil and Retry-After, whether or not an account has the address, until the pause lifts or an administrator allows sign-in again. From a network address many clients share (a gateway or proxy), a browser that is not a known device of the account also gets sharedAddress true and a deviceCode (and the erp_pending cookie): once the user (POST /api/identity/me/devices/approve) or an administrator (POST /api/identity/users/{id}/devices/approve) enters that code, this browser signs in with its right password. Too many requests of any kind answer 429 request.tooMany.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .RequireRateLimiting(ErpPlatform.SignInRateLimit)
+            .WithRateLimitClient(SignInRateLimit.ClientAsync)
             .AllowAnonymousReviewed("Signing in is how a session starts.");
 
         group.MapPost("/sign-out", SignOut)
@@ -148,6 +149,16 @@ internal static class AuthEndpoints
                 var left = paused.Until - time.GetUtcNow();
                 var minutes = Math.Max(1, (int)Math.Ceiling(left.TotalMinutes));
                 var pause = Problems.Create(http, StatusCodes.Status429TooManyRequests, "auth.signInPaused", null, minutes);
+                if (paused.DeviceCode is { } deviceCode)
+                {
+                    // An address many clients share: the failures may be anyone's behind it. The
+                    // answer says so and gives this browser's device code, which the person (signed
+                    // in on another device) or an administrator enters to let this browser in.
+                    pause.Title = http.RequestServices.GetRequiredService<Kernel.Localization.StringCatalog>()
+                        .Get("problem.auth.signInPausedShared", Kernel.Localization.Languages.ForRequest(http), minutes, deviceCode);
+                    pause.Extensions["sharedAddress"] = true;
+                    pause.Extensions["deviceCode"] = deviceCode;
+                }
                 var seconds = Math.Max(1, (int)Math.Ceiling(left.TotalSeconds));
                 pause.Extensions["pausedUntil"] = paused.Until.ToUniversalTime();
                 // Relative too, so a screen whose clock differs from the server's shows the right time.

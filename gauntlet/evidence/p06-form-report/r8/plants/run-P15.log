@@ -1,0 +1,62 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:25.70
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.30]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.84]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.09]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [1 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [10 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [5 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [497 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [970 ms]
+[xUnit.net 00:00:48.20]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [FAIL]
+[xUnit.net 00:00:48.20]       users by role (json, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       users by role (json, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       users by role (csv, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       users by role (csv, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       users by role (xlsx, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       users by role (xlsx, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       users by role (pdf, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       users by role (pdf, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+[xUnit.net 00:00:48.20]       the catalogue offers users by role's role columns, role parameter or role grouping to a user who reads roles only in X: columns role,company,name,email,language,active,lastSignIn, parameters role,status,userLanguage,signedInSince
+[xUnit.net 00:00:48.20]       users by role grouped by role answered 200 and filtered by a role answered 200 to a user who reads roles only in X (expected 400 each)
+[xUnit.net 00:00:48.20]       Stack Trace:
+[xUnit.net 00:00:48.20]         /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleReports.cs(145,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held()
+[xUnit.net 00:00:48.20]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:48.20]       Output:
+[xUnit.net 00:00:48.20]         59 report prints and refusals judged for roles held in one company
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [12 s]
+  Error Message:
+   users by role (json, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+users by role (json, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+users by role (csv, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+users by role (csv, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+users by role (xlsx, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+users by role (xlsx, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+users by role (pdf, en) prints the role 'Report gate Yonder role' held in Y to a user who reads roles only in X
+users by role (pdf, ar) prints the role 'دور بوابة التقارير ص' held in Y to a user who reads roles only in X
+the catalogue offers users by role's role columns, role parameter or role grouping to a user who reads roles only in X: columns role,company,name,email,language,active,lastSignIn, parameters role,status,userLanguage,signedInSince
+users by role grouped by role answered 200 and filtered by a role answered 200 to a user who reads roles only in X (expected 400 each)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held() in /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleReports.cs:line 145
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 59 report prints and refusals judged for roles held in one company
+
+
+[xUnit.net 00:02:09.05]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [1 m 50 s]
+
+Test Run Failed.
+Total tests: 8
+     Passed: 7
+     Failed: 1
+ Total time: 2.1618 Minutes
+start 2026-10-18T19:31:04Z end 2026-10-18T19:33:52Z exit 1

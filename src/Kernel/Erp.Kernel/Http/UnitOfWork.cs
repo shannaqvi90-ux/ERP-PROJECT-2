@@ -64,7 +64,7 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
             logger.LogError(exception, "Request {TraceId} tried to bind another tenant", context.TraceIdentifier);
         }
         var (status, code) = Classify(exception, context.RequestAborted.IsCancellationRequested);
-        if (status >= 500 || exception is CrossTenantWriteException or CrossCompanyWriteException or CrossBranchWriteException || exception is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege }
+        if (status >= 500 || exception is CrossTenantWriteException or CrossCompanyWriteException or CrossBranchWriteException or CompanyPermissionWriteException || exception is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege }
             || exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.InsufficientPrivilege })
         {
             logger.LogError(exception, "Request {TraceId} failed with {Code}", context.TraceIdentifier, code);
@@ -111,6 +111,8 @@ internal sealed class ErpExceptionHandler(ILogger<ErpExceptionHandler> logger) :
             // The user reads the record (it is in their company) but their branch limits forbid the
             // write: a refusal, with the reason.
             CrossBranchWriteException branch => (StatusCodes.Status403Forbidden, branch.Code),
+            // The user works in the record's company, but the permission is held only elsewhere.
+            CompanyPermissionWriteException => (StatusCodes.Status403Forbidden, CompanyPermissionWriteException.Code),
             BadHttpRequestException bad => (bad.StatusCode, "request.malformed"),
             OperationCanceledException when requestAborted => (499, "request.cancelled"),
             _ => (StatusCodes.Status500InternalServerError, "internal"),

@@ -1,0 +1,122 @@
+  rolname  | rolsuper | rolbypassrls | rolinherit | rolcreaterole 
+-----------+----------+--------------+------------+---------------
+ erp_owner | f        | f            | t          | f
+ erp_app   | f        | f            | f          | f
+ erp_auth  | f        | f            | f          | f
+(3 rows)
+
+ nspname  |         relname         | relrowsecurity | relforcerowsecurity 
+----------+-------------------------+----------------+---------------------
+ audit    | __ef_migrations_history | f              | f
+ audit    | entries                 | t              | t
+ identity | __ef_migrations_history | f              | f
+ identity | passkeys                | t              | t
+ identity | roles                   | t              | t
+ identity | sessions                | t              | t
+ identity | sign_in_attempts        | t              | t
+ identity | sign_in_failures        | f              | f
+ identity | sign_in_secret          | f              | f
+ identity | user_company_roles      | t              | t
+ identity | user_credentials        | t              | t
+ identity | user_roles              | t              | t
+ identity | users                   | t              | t
+ lists    | __ef_migrations_history | f              | f
+ lists    | saved_views             | t              | t
+ tenancy  | __ef_migrations_history | f              | f
+ tenancy  | branches                | t              | t
+ tenancy  | companies               | t              | t
+ tenancy  | tenants                 | t              | t
+ tenancy  | user_branch_access      | t              | t
+ tenancy  | user_company_access     | t              | t
+ tenancy  | user_company_totals     | t              | t
+ tenancy  | user_workplaces         | t              | t
+(23 rows)
+
+ schemaname |      tablename      |      policyname      | permissive  |  roles   |  cmd   |                                  qual                                   
+------------+---------------------+----------------------+-------------+----------+--------+-------------------------------------------------------------------------
+ tenancy    | branches            | company_scope        | RESTRICTIVE | {public} | ALL    | erp.company_allowed(company_id)
+ tenancy    | branches            | tenant_isolation     | PERMISSIVE  | {public} | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | companies           | company_scope        | RESTRICTIVE | {public} | ALL    | erp.company_allowed(company_id)
+ tenancy    | companies           | tenant_isolation     | PERMISSIVE  | {public} | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | tenants             | tenant_isolation     | PERMISSIVE  | {public} | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_branch_access  | company_scope        | RESTRICTIVE | {public} | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ tenancy    | user_branch_access  | company_scope_delete | RESTRICTIVE | {public} | DELETE | erp.company_allowed(company_id)
+ tenancy    | user_branch_access  | company_scope_update | RESTRICTIVE | {public} | UPDATE | erp.company_allowed(company_id)
+ tenancy    | user_branch_access  | tenant_isolation     | PERMISSIVE  | {public} | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_company_access | company_scope        | RESTRICTIVE | {public} | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ tenancy    | user_company_access | company_scope_delete | RESTRICTIVE | {public} | DELETE | erp.company_allowed(company_id)
+ tenancy    | user_company_access | company_scope_update | RESTRICTIVE | {public} | UPDATE | erp.company_allowed(company_id)
+ tenancy    | user_company_access | tenant_isolation     | PERMISSIVE  | {public} | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_company_totals | tenant_isolation     | PERMISSIVE  | {public} | ALL    | (tenant_id = erp.current_tenant_id())
+ tenancy    | user_workplaces     | company_scope        | RESTRICTIVE | {public} | ALL    | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))
+ tenancy    | user_workplaces     | tenant_isolation     | PERMISSIVE  | {public} | ALL    | (tenant_id = erp.current_tenant_id())
+(16 rows)
+
+ grantee | table_schema |     table_name      |         string_agg          
+---------+--------------+---------------------+-----------------------------
+ erp_app | audit        | entries             | INSERT,SELECT
+ erp_app | identity     | passkeys            | UPDATE,INSERT,SELECT,DELETE
+ erp_app | identity     | roles               | INSERT,DELETE,UPDATE,SELECT
+ erp_app | identity     | sessions            | UPDATE,SELECT,INSERT,DELETE
+ erp_app | identity     | sign_in_attempts    | SELECT,INSERT
+ erp_app | identity     | user_company_roles  | DELETE,SELECT,INSERT,UPDATE
+ erp_app | identity     | user_credentials    | INSERT,DELETE
+ erp_app | identity     | user_roles          | UPDATE,SELECT,INSERT,DELETE
+ erp_app | identity     | users               | DELETE,INSERT,SELECT,UPDATE
+ erp_app | lists        | saved_views         | INSERT,DELETE,UPDATE,SELECT
+ erp_app | tenancy      | branches            | UPDATE,INSERT,SELECT,DELETE
+ erp_app | tenancy      | companies           | DELETE,SELECT,UPDATE,INSERT
+ erp_app | tenancy      | tenants             | DELETE,INSERT,SELECT,UPDATE
+ erp_app | tenancy      | user_branch_access  | DELETE,INSERT,SELECT,UPDATE
+ erp_app | tenancy      | user_company_access | SELECT,DELETE,UPDATE,INSERT
+ erp_app | tenancy      | user_company_totals | INSERT,DELETE,UPDATE,SELECT
+ erp_app | tenancy      | user_workplaces     | DELETE,UPDATE,SELECT,INSERT
+(17 rows)
+
+no tenant bound:
+ companies 
+-----------
+         0
+(1 row)
+
+ branches 
+----------
+        0
+(1 row)
+
+ users 
+-------
+     0
+(1 row)
+
+ workplaces 
+------------
+          0
+(1 row)
+
+bound to alnoor:
+BEGIN
+              set_config              
+--------------------------------------
+ 018d0000-0000-7000-8000-000000000001
+(1 row)
+
+           current_setting            
+--------------------------------------
+ 018d0000-0000-7000-8000-000000000001
+(1 row)
+
+ROLLBACK
+                                        pg_get_functiondef                                         
+---------------------------------------------------------------------------------------------------
+ CREATE OR REPLACE FUNCTION erp.current_tenant_id()                                               +
+  RETURNS uuid                                                                                    +
+  LANGUAGE sql                                                                                    +
+  STABLE PARALLEL SAFE                                                                            +
+ AS $function$                                                                                    +
+         SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text+
+                     THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END            +
+     $function$                                                                                   +
+ 
+(1 row)
+

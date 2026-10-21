@@ -43,13 +43,16 @@ internal sealed class TrustedDevices(IOptions<AuthOptions> options)
         return Read(http).FirstOrDefault(e => e.E == account) is { } entry ? SourcePrefix + entry.D : null;
     }
 
-    /// <summary>Remember this browser for the account just signed in to.</summary>
-    public void Remember(HttpContext http, string email, bool secure)
+    /// <summary>Remember this browser for the account just signed in to; answers its failure-count
+    /// source (the same as <see cref="SourceFor"/> answers from now on). <paramref name="deviceId"/>:
+    /// the id the browser already had as a device let in (<see cref="PendingId"/>), kept so its
+    /// history continues under one device.</summary>
+    public string Remember(HttpContext http, string email, bool secure, string? deviceId = null)
     {
         var account = AccountOf(email);
         var entries = Read(http).Where(e => e.E != account).TakeLast(MaxAccounts - 1).ToList();
-        var known = Read(http).FirstOrDefault(e => e.E == account);
-        entries.Add(known ?? new Entry(account, Base64Url(RandomNumberGenerator.GetBytes(9))));
+        var known = Read(http).FirstOrDefault(e => e.E == account) ?? new Entry(account, deviceId ?? Base64Url(RandomNumberGenerator.GetBytes(9)));
+        entries.Add(known);
         var payload = Base64Url(JsonSerializer.SerializeToUtf8Bytes(entries));
         http.Response.Cookies.Append(CookieName, $"{payload}.{Sign(payload)}", new CookieOptions
         {
@@ -60,7 +63,55 @@ internal sealed class TrustedDevices(IOptions<AuthOptions> options)
             Expires = DateTimeOffset.UtcNow.AddDays(options.Value.DeviceDays),
             IsEssential = true,
         });
+        return SourcePrefix + known.D;
     }
+
+    /// <summary>The id of this browser as a device not yet known to any account it signs in to
+    /// (the <c>erp_pending</c> cookie, signed like the device cookie), or null.</summary>
+    public string? PendingId(HttpContext http)
+    {
+        if (!http.Request.Cookies.TryGetValue(PendingCookieName, out var cookie) || cookie is not { Length: > 0 and <= 128 })
+        {
+            return null;
+        }
+        var dot = cookie.IndexOf('.');
+        if (dot <= 0 || !CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(Sign("pending:" + cookie[..dot])), Encoding.ASCII.GetBytes(cookie[(dot + 1)..])))
+        {
+            return null;
+        }
+        return cookie[..dot];
+    }
+
+    /// <summary>This browser's pending device id, given now when it has none (a day-long cookie):
+    /// the sign-in screen of a browser paused on a shared address shows the device code made from
+    /// it, and the user or an administrator lets exactly that browser in with the code.</summary>
+    public string IssuePending(HttpContext http, bool secure)
+    {
+        if (PendingId(http) is { } existing)
+        {
+            return existing;
+        }
+        var id = Base64Url(RandomNumberGenerator.GetBytes(9));
+        http.Response.Cookies.Append(PendingCookieName, $"{id}.{Sign("pending:" + id)}", new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Strict,
+            Secure = secure,
+            Path = "/api/auth",
+            Expires = DateTimeOffset.UtcNow.AddDays(1),
+            IsEssential = true,
+        });
+        return id;
+    }
+
+    /// <summary>The device code of browser <paramref name="deviceId"/> for the account with this
+    /// address (<see cref="DeviceApprovals"/>): eight symbols, keyed by this deployment's key, so
+    /// nobody can make a browser whose code is one they choose, and a code says nothing of the
+    /// browser or the account.</summary>
+    public string ApprovalCode(string email, string deviceId) =>
+        DeviceApprovals.CodeFrom(HMACSHA256.HashData(DeriveKey("device-approval"), Encoding.UTF8.GetBytes(AccountOf(email) + "\n" + deviceId)));
+
+    public const string PendingCookieName = "erp_pending";
 
     private List<Entry> Read(HttpContext http)
     {

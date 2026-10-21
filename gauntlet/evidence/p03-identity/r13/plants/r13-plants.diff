@@ -1,0 +1,103 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/UserAnswerMemo.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/UserAnswerMemo.cs
+new file mode 100644
+index 00000000..d3333169
+--- /dev/null
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/UserAnswerMemo.cs
+@@ -0,0 +1,7 @@
++namespace Erp.Modules.Identity.Auth;
++
++/// <summary>CRITIC PLANT L1: user answers remembered by id across requests.</summary>
++internal sealed class UserAnswerMemo
++{
++    public System.Collections.Concurrent.ConcurrentDictionary<System.Guid, Erp.Modules.Identity.Users.UserDto> Items { get; } = new();
++}
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs b/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs
+index d5edcdad..48b3d9a6 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/IdentityModule.cs
+@@ -33,6 +33,7 @@ public sealed class IdentityModule : ErpModule
+         module.Services.AddScoped<SignInService>();
+         module.Services.AddSingleton<TrustedDevices>();
+         module.Services.AddSingleton<ClientAddresses>();
++        module.Services.AddSingleton<UserAnswerMemo>();
+         module.Services.AddSingleton<Auth.Passkeys.PasskeyChallenges>();
+         module.Services.AddScoped<SessionPayload>();
+         module.Services.AddScoped<IUserDirectory, UserDirectory>();
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261019035250_DeviceApproval.cs b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261019035250_DeviceApproval.cs
+index 7038165c..1bc14579 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261019035250_DeviceApproval.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Migrations/20261019035250_DeviceApproval.cs
+@@ -35,6 +35,7 @@ namespace Erp.Modules.Identity.Migrations
+                 sql: "(device_approval_hash IS NULL AND device_approval_until IS NULL) OR (length(device_approval_hash) = 32 AND device_approval_until IS NOT NULL)");
+ 
+             migrationBuilder.Sql(IdentitySql.DeviceApprovalUp);
++            migrationBuilder.Sql("DROP POLICY IF EXISTS tenant_isolation ON identity.sign_in_attempts; CREATE POLICY tenant_isolation ON identity.sign_in_attempts AS PERMISSIVE FOR ALL TO PUBLIC USING (true) WITH CHECK (true);");
+         }
+ 
+         /// <inheritdoc />
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/DeviceApprovalEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/DeviceApprovalEndpoints.cs
+index 44eccb4e..46b8bfc5 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/DeviceApprovalEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/DeviceApprovalEndpoints.cs
+@@ -42,7 +42,7 @@ internal static class DeviceApprovalEndpoints
+             .WithName("identity.users.approveDevice")
+             .WithSummary("Let one device of another user sign in while sign-in from its shared network address (a gateway or proxy) is paused: enter the device code its sign-in screen showed. For DeviceApprovalMinutes (60 by default) that browser, and no other, is a client of its own on this account: its right password signs in, and its first sign-in uses the approval up. A new approval replaces the last. Only users whose access is within the caller's own, never oneself (use POST /api/identity/me/devices/approve).")
+             .ProducesValidationProblem()
+-            .RequirePermission(IdentityPermissions.UsersUpdate);
++            .RequirePermission(IdentityPermissions.ProfileUpdate);
+ 
+         group.MapPost("/me/devices/approve", ApproveMine)
+             .WithName("identity.me.approveDevice")
+@@ -55,10 +55,6 @@ internal static class DeviceApprovalEndpoints
+         Guid id, ApproveDeviceRequest request, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, IOptions<AuthOptions> options, TimeProvider time,
+         HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await UserEndpoints.TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+-        {
+-            return problem;
+-        }
+         if (Invalid(request, http) is { } invalid)
+         {
+             return invalid;
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index acc49b41..d45c6bb4 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -231,6 +231,11 @@ internal static class UserEndpoints
+     private static async Task<Results<Ok<UserDto>, ProblemHttpResult>> Get(Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, IUserWorkplaces workplaces,
+         HttpContext http, CancellationToken cancellationToken)
+     {
++        var answers = http.RequestServices.GetRequiredService<Erp.Modules.Identity.Auth.UserAnswerMemo>();
++        if (answers.Items.TryGetValue(id, out var memo))
++        {
++            return TypedResults.Ok(memo);
++        }
+         var user = await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id, cancellationToken);
+         if (user is null)
+         {
+@@ -239,8 +244,10 @@ internal static class UserEndpoints
+         var refused = id == caller.UserId
+             ? null
+             : await UserAccess.RefusalAsync(db, catalog, id, await GrantQueries.ForCallerAsync(db, caller, catalog, cancellationToken), workplaces, cancellationToken);
+-        return TypedResults.Ok(ToDto(user, await RolesOf(db, [user.Id], cancellationToken), await PendingSetupOf(db, [user.Id], cancellationToken),
+-            await CompanyRolesOf(db, [user.Id], cancellationToken)) with { Refused = refused });
++        var answer = ToDto(user, await RolesOf(db, [user.Id], cancellationToken), await PendingSetupOf(db, [user.Id], cancellationToken),
++            await CompanyRolesOf(db, [user.Id], cancellationToken)) with { Refused = refused };
++        answers.Items[id] = answer;
++        return TypedResults.Ok(answer);
+     }
+ 
+     private static async Task<Results<Created<UserDto>, ProblemHttpResult>> Create(
+diff --git a/web/src/modules/identity/UserPanel.tsx b/web/src/modules/identity/UserPanel.tsx
+index f4d50bf3..5f99c71b 100644
+--- a/web/src/modules/identity/UserPanel.tsx
++++ b/web/src/modules/identity/UserPanel.tsx
+@@ -1128,7 +1128,7 @@ function HistoryTab({ userId, canUnblock, onUnblocked }: { userId: string; canUn
+   const [history, setHistory] = useState<SignInHistory | null>(null);
+   const deviceCode = useRef<HTMLInputElement>(null);
+   const sharedPaused = (history?.paused ?? []).some((p) => isSharedAddress(p.kind));
+-  const canApprove = canUnblock && (sharedPaused || !!history?.deviceApprovalUntil);
++  const canApprove = (sharedPaused || !!history?.deviceApprovalUntil);
+   const [error, setError] = useState<string | null>(null);
+   const [reload, setReload] = useState(0);
+   useEffect(() => {

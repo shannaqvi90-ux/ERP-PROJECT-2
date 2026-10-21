@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "api-update-user-20261017T112246-5802",
-  "instrument": 10,
+  "run_id": "api-update-user-20261019T121111-a2a6",
+  "instrument": 12,
   "task": "api-update-user",
   "task_title": "Do a screen task through the API: find a user and switch their language",
   "product": "odoo",
   "status": "verified",
   "goal": "Through the product's documented API only, find the user Majid Anil Pillai among 100,000 users and switch their interface language to Arabic.",
   "done_when": "The API answered every request successfully and the back end shows the user's language as Arabic.",
-  "started_at": "2026-10-17T11:22:46.819Z",
-  "finished_at": "2026-10-17T11:22:51.264Z",
+  "started_at": "2026-10-19T12:11:11.536Z",
+  "finished_at": "2026-10-19T12:11:13.800Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 2,
     "device_confirmations": 0,
-    "machine_seconds": 0.419,
-    "system_wait_seconds": 0.416,
+    "machine_seconds": 0.266,
+    "system_wait_seconds": 0.264,
     "human_seconds": 54.62,
-    "human_plus_wait_seconds": 55.036,
+    "human_plus_wait_seconds": 54.884,
     "klm_operator_counts": {
       "K": 184,
       "P": 0,
@@ -59,7 +59,7 @@
       "label": "find the user by name",
       "keystrokes": 94,
       "at": 0.001,
-      "took": 0.368,
+      "took": 0.233,
       "text": "POST /json/2/res.users/search {\"domain\":[[\"name\",\"=\",\"Majid Anil Pillai\"]]}",
       "status": 200,
       "writes": false,
@@ -71,8 +71,8 @@
       "kind": "request",
       "label": "set the language",
       "keystrokes": 90,
-      "at": 0.37,
-      "took": 0.048,
+      "at": 0.235,
+      "took": 0.031,
       "text": "POST /json/2/res.users/write {\"ids\":[68318],\"vals\":{\"lang\":\"ar_001\"}}",
       "status": 200,
       "writes": true,
@@ -84,26 +84,26 @@
     {
       "label": "response POST /json/2/res.users/search",
       "at": 0.001,
-      "seconds": 0.368
+      "seconds": 0.233
     },
     {
       "label": "response POST /json/2/res.users/write",
-      "at": 0.37,
-      "seconds": 0.048
+      "at": 0.235,
+      "seconds": 0.031
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "6e0653a70bf3a517.jpg",
+      "file": "e982a62186e6bcbe.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/6e0653a70bf3a517.jpg"
+      "path": "gauntlet/reference/odoo/shots/e982a62186e6bcbe.jpg"
     },
     {
       "moment": "done",
-      "file": "b22bfe261b2b74a5.jpg",
-      "at": 0.419,
-      "path": "gauntlet/reference/odoo/shots/b22bfe261b2b74a5.jpg"
+      "file": "ed4b6e7d4bc229bf.jpg",
+      "at": 0.266,
+      "path": "gauntlet/reference/odoo/shots/ed4b6e7d4bc229bf.jpg"
     }
   ],
   "verification": {
@@ -134,15 +134,15 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.024,
+      "seconds": 0.016,
       "verified": true
     },
     {
       "requests": 2,
-      "longest_pause_seconds": 0.003,
+      "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.018,
+      "seconds": 0.012,
       "verified": true,
       "gap_seconds": 1.1
     }
@@ -156,10 +156,10 @@
     "error": null,
     "back_end_reads": 1,
     "requests": 2,
-    "longest_pause_seconds": 0.003,
+    "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.028
+    "seconds": 0.02
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -196,8 +196,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/api-update-user.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/api-update-user-20261017T112246-5802.json",
-    "gauntlet/reference/odoo/results/api-update-user-20261017T112251-38f5.json",
-    "gauntlet/reference/odoo/results/api-update-user-20261017T112255-5021.json"
+    "gauntlet/reference/odoo/results/api-update-user-20261019T121111-a2a6.json",
+    "gauntlet/reference/odoo/results/api-update-user-20261019T121113-1e36.json",
+    "gauntlet/reference/odoo/results/api-update-user-20261019T121116-f1da.json"
   ]
 }

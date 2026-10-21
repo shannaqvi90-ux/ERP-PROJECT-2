@@ -1,0 +1,24 @@
+ar html dir rtl lang ar
+ar form header ALN-AUH · النور للخدمات الفنية ذ.م.م‹1 من 4›طباعةحفظإغلاق
+ar phone dir ltr value +971 2 555 7810
+ar labels الاسم القانوني (بالعربية) | الاسم القانوني (بالإنجليزية) | الرمز | رقم الرخصة التجارية | جهة الترخيص | رقم التسجيل الضريبي | العملة الأساسية | بداية السنة المالية (الشهر)
+ar 12-key: shown +971 50 555 0199 notice تم الحفظ: اكتمل الإدخال.تراجع
+ar after undo +971 2 555 7810
+ar server error البريد الإلكترونيأدخل عنوان بريد إلكتروني صحيحًا.
+ar leave dialog [ 'حفظ وإغلاق', 'تجاهل التغييرات', 'متابعة التحرير' ]
+ar print menu ["PDF بالعربية","PDF بالإنجليزية","اعرض المستند على الشاشة"] focused PDF بالعربية
+ar record pdf ملف الشركة 2026-10-18.pdf
+ar catalog buttons ["ملف الشركةالبيانات القانونية لشركة واحدة وعنوانها ووسائل الاتصال بها مع فروعها.","دليل الفروعجميع فروع شركاتك مع المدينة والإمارة والهاتف، مجمّعة حسب الشركة.","المستخدمون حسب الدورمن يحمل كل دور، في كل الشركات أو في شركة واحدة فقط، وهل هو نشط، ومتى سجّل الدخول آخر مرة.","الأدوار والصلاحياتكل دور مع عدد المستخدمين الذين يحملونه وعدد الصلاحيات التي يمنحها، مع الإجماليات."]
+en catalog buttons ["Company profileOne company's legal details, address and contacts, with its branches.","Branch directoryEvery branch of your companies with city, emirate and phone, grouped by company.","Users by roleWho holds each role, in every company or only in one, whether they are active, and when they last signed in.","Roles and accessEvery role with how many users hold it and how many permissions it grants, with totals."]
+role report button Users by roleWho holds each role, in every company or only in one, whether they are active, and when they last signed in.
+focus after Enter role
+params ["role:text","status:select-one","userLanguage:select-one","signedInSince:date","groupBy:select-one","language:select-one"]
+en doc groups 5 totals text 
+branch dir ar: article dir rtl groups 4
+export links ["PDF /api/reports/run/tenancy.branchDirectory?groupBy=company&format=pdf&language=ar&numerals=latn","Excel /api/reports/run/tenancy.branchDirectory?groupBy=company&format=xlsx&language=ar&numerals=latn","CSV /api/reports/run/tenancy.branchDirectory?groupBy=company&format=csv&language=ar&numerals=latn"]
+   pdf 200 application/pdf 43143
+   xlsx 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet 3358
+   csv 200 text/csv; charset=utf-8 1793
+viewer disabled fields [21,21] readonly badge 1 save buttons 0
+viewer writes []
+viewer direct PUT 403

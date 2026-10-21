@@ -86,6 +86,10 @@ public sealed record ReportColumn(
 /// <param name="DefaultGroupBy">Groupable column the report is grouped by unless the caller chooses.</param>
 /// <param name="Facts">For a record document: the facts its heading prints (label and value), from
 /// the source's <see cref="ReportData.Facts"/>.</param>
+/// <param name="CompanyParameter">For a report about one company's records (a company's profile):
+/// the reference parameter naming that company. A permission a column, fact or parameter needs
+/// beyond the report's own is then judged in that company; otherwise it must be held in every
+/// company the report reads (a role held in one company counts only there, p02 round 12).</param>
 public sealed partial record ReportDefinition(
     string Key,
     string LabelKey,
@@ -94,7 +98,8 @@ public sealed partial record ReportDefinition(
     IReadOnlyList<ReportColumn> Columns,
     string? DescriptionKey = null,
     string? DefaultGroupBy = null,
-    IReadOnlyList<ReportColumn>? Facts = null)
+    IReadOnlyList<ReportColumn>? Facts = null,
+    string? CompanyParameter = null)
 {
     /// <summary>Parameter names the reports module itself reads on every report.</summary>
     public static readonly IReadOnlySet<string> ReservedParameters =
@@ -116,6 +121,10 @@ public sealed partial record ReportDefinition(
         if (Columns.Count == 0)
         {
             yield return $"report '{Key}': has no columns";
+        }
+        if (CompanyParameter is not null && Parameters.FirstOrDefault(p => p.Key == CompanyParameter) is not { Type: ReportParameterType.Reference, Required: true })
+        {
+            yield return $"report '{Key}': company parameter '{CompanyParameter}' must be one of its required reference parameters";
         }
         foreach (var duplicate in Parameters.GroupBy(p => p.Key).Where(g => g.Count() > 1))
         {

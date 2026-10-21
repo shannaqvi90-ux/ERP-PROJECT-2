@@ -1,0 +1,672 @@
+{
+  "schema": 1,
+  "run_id": "new-user-keyboard-20261018T064205-5872",
+  "instrument": 10,
+  "task": "new-user-keyboard",
+  "task_title": "Start a new record from the home screen by keyboard only (new user)",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Without touching the mouse, open an empty form for a new user, ready to type the first field.",
+  "done_when": "An empty new-user form is on screen and no step used the mouse.",
+  "started_at": "2026-10-18T06:42:05.240Z",
+  "finished_at": "2026-10-18T06:42:16.843Z",
+  "environment": {
+    "base_url": "http://localhost:20450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 4,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.168,
+    "system_wait_seconds": 0.03,
+    "human_seconds": 2.87,
+    "human_plus_wait_seconds": 2.9,
+    "klm_operator_counts": {
+      "K": 4,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.041,
+      "chord": "Control+k",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "action search",
+      "keystrokes": 1,
+      "at": 0.059,
+      "took": 0.015,
+      "text": "n",
+      "same_field": false,
+      "screen": "/",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "start",
+      "keystrokes": 1,
+      "at": 0.084,
+      "took": 0.043,
+      "chord": "Enter",
+      "screen": "/",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.047,
+      "seconds": 0.011
+    },
+    {
+      "label": "New user first",
+      "at": 0.077,
+      "seconds": 0.005
+    },
+    {
+      "label": "new user form",
+      "at": 0.128,
+      "seconds": 0.014
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "d8310cda449e801b.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r11/compare/blind/shots/d8310cda449e801b.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "4b6d1bb76a485b45.jpg",
+      "at": 0.168,
+      "path": "../../evidence-staging/p04-shell/r11/compare/blind/shots/4b6d1bb76a485b45.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/identity/users/new",
+      "focus": "email",
+      "value": ""
+    }
+  },
+  "path_notes": "goTo: G > U > Alt+N | navigation: Alt+M > Enter > Alt+N | palette: Ctrl+K > \"n\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/new-user-keyboard.mjs",
+    "sha256": "51f21740082e6be1e76f0ceb684387805dcb4befbcba532d3e1ae428d4a638e9"
+  },
+  "task_notes": "Proposed by the p04 critic, round 7: \"every action reachable without a mouse\" and \"open any action by typing\". Every step must be a key or key chord.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true,
+      "gap_seconds": 0.092
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 5,
+    "first": [
+      "GET /api/identity/companies (fetch)",
+      "GET /api/tenancy/workplace (fetch)",
+      "GET /api/identity/companies (fetch)",
+      "GET /api/tenancy/workplace (fetch)",
+      "GET /api/identity/users (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "97ab28f98f216ea9",
+    "elements": 245
+  },
+  "screen_after_verify": {
+    "sha256": "97ab28f98f216ea9",
+    "elements": 245,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.076
+  },
+  "set_up_writes_waited": 0,
+  "screenshots_path": "palette",
+  "best_path_per_metric": {
+    "steps": "goTo",
+    "keystrokes": "goTo",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "counts_path": "palette",
+  "variants": [
+    {
+      "id": "goTo",
+      "path": "G > U > Alt+N",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 4,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.233,
+        "system_wait_seconds": 0.124,
+        "human_seconds": 5.57,
+        "human_plus_wait_seconds": 5.694,
+        "klm_operator_counts": {
+          "K": 4,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "go to",
+          "keystrokes": 1,
+          "at": 0.001,
+          "took": 0.023,
+          "chord": "g",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "Users",
+          "keystrokes": 1,
+          "at": 0.031,
+          "took": 0.038,
+          "chord": "u",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "new user",
+          "keystrokes": 2,
+          "at": 0.188,
+          "took": 0.039,
+          "chord": "Alt+n",
+          "screen": "/identity/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "go-to keys shown",
+          "at": 0.025,
+          "seconds": 0.005
+        },
+        {
+          "label": "users list",
+          "at": 0.07,
+          "seconds": 0.117
+        },
+        {
+          "label": "new user form",
+          "at": 0.228,
+          "seconds": 0.002
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users/new",
+          "focus": "email",
+          "value": ""
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.097
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /api/identity/companies (fetch)",
+          "GET /api/tenancy/workplace (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "0bd5c1016ae1d28c",
+        "elements": 699
+      },
+      "screen_after_verify": {
+        "sha256": "0bd5c1016ae1d28c",
+        "elements": 699,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.067
+      },
+      "set_up_writes_waited": 0
+    },
+    {
+      "id": "navigation",
+      "path": "Alt+M > Enter > Alt+N",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 5,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.209,
+        "system_wait_seconds": 0.085,
+        "human_seconds": 5.85,
+        "human_plus_wait_seconds": 5.935,
+        "klm_operator_counts": {
+          "K": 5,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "navigation pane",
+          "keystrokes": 2,
+          "at": 0.002,
+          "took": 0.013,
+          "chord": "Alt+m",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "open",
+          "keystrokes": 1,
+          "at": 0.019,
+          "took": 0.04,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "new user",
+          "keystrokes": 2,
+          "at": 0.132,
+          "took": 0.051,
+          "chord": "Alt+n",
+          "screen": "/identity/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Users entry focused",
+          "at": 0.015,
+          "seconds": 0.003
+        },
+        {
+          "label": "users list",
+          "at": 0.067,
+          "seconds": 0.064
+        },
+        {
+          "label": "new user form",
+          "at": 0.184,
+          "seconds": 0.018
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users/new",
+          "focus": "email",
+          "value": ""
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.007,
+          "verified": true,
+          "gap_seconds": 0.103
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "0bd5c1016ae1d28c",
+        "elements": 699
+      },
+      "screen_after_verify": {
+        "sha256": "0bd5c1016ae1d28c",
+        "elements": 699,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.074
+      },
+      "set_up_writes_waited": 0
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > \"n\" > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 4,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.168,
+        "system_wait_seconds": 0.03,
+        "human_seconds": 2.87,
+        "human_plus_wait_seconds": 2.9,
+        "klm_operator_counts": {
+          "K": 4,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.041,
+          "chord": "Control+k",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "action search",
+          "keystrokes": 1,
+          "at": 0.059,
+          "took": 0.015,
+          "text": "n",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "start",
+          "keystrokes": 1,
+          "at": 0.084,
+          "took": 0.043,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.047,
+          "seconds": 0.011
+        },
+        {
+          "label": "New user first",
+          "at": 0.077,
+          "seconds": 0.005
+        },
+        {
+          "label": "new user form",
+          "at": 0.128,
+          "seconds": 0.014
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users/new",
+          "focus": "email",
+          "value": ""
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true,
+          "gap_seconds": 0.092
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 5,
+        "first": [
+          "GET /api/identity/companies (fetch)",
+          "GET /api/tenancy/workplace (fetch)",
+          "GET /api/identity/companies (fetch)",
+          "GET /api/tenancy/workplace (fetch)",
+          "GET /api/identity/users (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "97ab28f98f216ea9",
+        "elements": 245
+      },
+      "screen_after_verify": {
+        "sha256": "97ab28f98f216ea9",
+        "elements": 245,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.076
+      },
+      "set_up_writes_waited": 0
+    }
+  ]
+}

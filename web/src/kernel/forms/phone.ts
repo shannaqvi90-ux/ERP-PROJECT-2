@@ -3,11 +3,12 @@
  * takes the number that follows it, grouped as it is read aloud: a mobile number 50 555 0199, a
  * fixed line 4 555 0100, a toll-free or shared-cost number 800 1234 / 600 522222. A number typed
  * with its trunk 0 (050 555 0199), with 00 or +971 in front, or pasted as 971505550199, is kept the
- * same way; a number of another country is typed with + and its code and kept as typed. Arabic-Indic
- * digits typed on an Arabic keyboard become 0 to 9.
+ * same way, and so is the code typed again after the +971 the field keeps (971505550199: twelve
+ * keys, none of them shifted); a number of another country is typed with + and its code and kept
+ * as typed. Arabic-Indic digits typed on an Arabic keyboard become 0 to 9.
  *
  * The grouping and the lengths below follow the UAE's numbering plan (ITU-T E.164 country code 971,
- * plan kept by the TDRA; docs/decisions/p06-form-report-phone-field.md): a mobile number is 5 and
+ * plan kept by the TDRA; docs/decisions/p06-form-report-round-7-completed-entry-saves.md and p06-form-report-whole-documents.md): a mobile number is 5 and
  * eight more digits, a fixed-line number an area digit (2, 3, 4, 6, 7, 9) and seven more. Those two
  * kinds are the ones the field can call complete; any other number is kept as typed and never
  * judged complete, so nothing happens on its own for it.
@@ -49,10 +50,26 @@ export function nationalDigits(value: string): string | null {
   return value.startsWith(HOME_PREFIX) ? value.slice(HOME_PREFIX.length).replace(/\D/g, "") : null;
 }
 
+/** The digits after +971 of a whole UAE mobile or fixed-line number (the two kinds whose length is fixed). */
+function completeNational(digits: string): boolean {
+  return /^5\d{8}$/.test(digits) || /^[234679][1-9]\d{6}$/.test(digits);
+}
+
 /** A complete UAE mobile or fixed-line number (the two kinds whose length is fixed). */
 export function isCompletePhone(value: string): boolean {
   const national = nationalDigits(value);
-  return national !== null && (/^5\d{8}$/.test(national) || /^[234679][1-9]\d{6}$/.test(national));
+  return national !== null && completeNational(national);
+}
+
+/**
+ * Whether typing the last digit of `value` may complete the entry on its own (the form saves it).
+ * A number after +971 that starts 971 may be the country code typed again (971 50 555 0199, which
+ * the field takes as +971 50 555 0199 once its last digit is typed): eight digits of it are
+ * also a whole Fujairah fixed line (9 715 0555), so such a number never completes on its own; it
+ * is saved with Enter or Ctrl+S like any other value.
+ */
+export function completesOnEntry(value: string): boolean {
+  return isCompletePhone(value) && !nationalDigits(value)!.startsWith(HOME_CODE);
 }
 
 /**
@@ -85,7 +102,15 @@ export function phoneValue(raw: string): string {
 
 function national(digits: string): string {
   // The trunk 0 (050 ..., 04 ...) is not part of the number after +971.
-  const number = digits.replace(/^0/, "").slice(0, 15);
+  let number = digits.replace(/^0/, "").slice(0, 15);
+  // The country code typed again after the +971 the field keeps (971 50 555 0199, 00971 50 555
+  // 0199): once what follows it is a whole UAE number, that is the number. Until then the digits
+  // are kept as typed, so a Fujairah number 9 71x xxxx is never cut.
+  const again = /^0?971/.exec(number);
+  if (again) {
+    const rest = number.slice(again[0].length).replace(/^0/, "");
+    if (completeNational(rest)) number = rest;
+  }
   return number === "" ? "" : HOME_PREFIX + groupNational(number);
 }
 

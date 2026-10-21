@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "follow-approval-20261017T114856-cfb0",
-  "instrument": 10,
+  "run_id": "follow-approval-20261019T123827-1c53",
+  "instrument": 12,
   "task": "follow-approval",
   "task_title": "Follow an approval",
   "product": "odoo",
   "status": "verified",
   "goal": "Find the document that is waiting for your approval and approve it.",
   "done_when": "The document is approved; the back end shows it moved past the approval step, approved by the approver.",
-  "started_at": "2026-10-17T11:48:56.717Z",
-  "finished_at": "2026-10-17T11:49:20.302Z",
+  "started_at": "2026-10-19T12:38:27.369Z",
+  "finished_at": "2026-10-19T12:38:52.711Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 2.213,
-    "system_wait_seconds": 1.331,
+    "machine_seconds": 2.234,
+    "system_wait_seconds": 1.377,
     "human_seconds": 10.6,
-    "human_plus_wait_seconds": 11.931,
+    "human_plus_wait_seconds": 11.977,
     "klm_operator_counts": {
       "K": 0,
       "P": 4,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0.021,
-      "took": 0.036,
+      "at": 0.028,
+      "took": 0.035,
       "began": 0.001,
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "Purchase app",
       "keystrokes": 0,
-      "at": 0.12,
-      "took": 0.035,
-      "began": 0.058,
+      "at": 0.127,
+      "took": 0.034,
+      "began": 0.064,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -80,9 +80,9 @@
       "kind": "click",
       "label": "open the order waiting for approval",
       "keystrokes": 0,
-      "at": 1.564,
-      "took": 0.06,
-      "began": 1.519,
+      "at": 1.578,
+      "took": 0.049,
+      "began": 1.532,
       "screen": "/odoo/purchase",
       "chain": false
     },
@@ -91,61 +91,61 @@
       "kind": "click",
       "label": "Approve Order",
       "keystrokes": 0,
-      "at": 2.04,
-      "took": 0.053,
-      "began": 1.998,
-      "screen": "/odoo/purchase/100083",
+      "at": 2.06,
+      "took": 0.051,
+      "began": 2.019,
+      "screen": "/odoo/purchase/100118",
       "chain": false
     }
   ],
   "waits": [
     {
       "label": "Purchase loaded",
-      "at": 0.156,
-      "seconds": 0.104
+      "at": 0.162,
+      "seconds": 0.078
     },
     {
       "label": "order list",
-      "at": 0.26,
-      "seconds": 0.799
+      "at": 0.241,
+      "seconds": 0.788
     },
     {
       "label": "order form",
-      "at": 1.624,
-      "seconds": 0.374
+      "at": 1.628,
+      "seconds": 0.391
     },
     {
       "label": "order approved",
-      "at": 2.094,
-      "seconds": 0.117
+      "at": 2.112,
+      "seconds": 0.12
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "4d5912ae1fc7c51d.jpg",
+      "file": "14c96beeaa4f7e03.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/4d5912ae1fc7c51d.jpg"
+      "path": "gauntlet/reference/odoo/shots/14c96beeaa4f7e03.jpg"
     },
     {
       "moment": "orders waiting for approval",
-      "file": "17abe947a9d32095.jpg",
-      "at": 1.061,
-      "path": "gauntlet/reference/odoo/shots/17abe947a9d32095.jpg"
+      "file": "844f3c987f0213a0.jpg",
+      "at": 1.032,
+      "path": "gauntlet/reference/odoo/shots/844f3c987f0213a0.jpg"
     },
     {
       "moment": "done",
-      "file": "89865da8e8579a44.jpg",
-      "at": 2.213,
-      "path": "gauntlet/reference/odoo/shots/89865da8e8579a44.jpg"
+      "file": "ce7c8d7b0b250db4.jpg",
+      "at": 2.234,
+      "path": "gauntlet/reference/odoo/shots/ce7c8d7b0b250db4.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "order": "P00083",
+      "order": "P00118",
       "state": "purchase",
-      "date_approve": "2026-10-17 11:49:18",
+      "date_approve": "2026-10-19 12:38:48",
       "approver_messages": 1
     }
   },
@@ -172,7 +172,7 @@
       "longest_pause_seconds": 0.002,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.032,
+      "seconds": 0.027,
       "verified": true
     },
     {
@@ -182,7 +182,7 @@
       "paced_seconds": 0,
       "seconds": 0.027,
       "verified": true,
-      "gap_seconds": 1.1
+      "gap_seconds": 1.101
     }
   ],
   "requests_after_clock": 0,
@@ -191,11 +191,11 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "bd4ee386f60db8ec",
+    "sha256": "5fb917cc267f55a4",
     "elements": 498
   },
   "screen_after_verify": {
-    "sha256": "bd4ee386f60db8ec",
+    "sha256": "5fb917cc267f55a4",
     "elements": 498,
     "unchanged": true
   },
@@ -207,7 +207,7 @@
     "longest_pause_seconds": 0.002,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.291
+    "seconds": 0.289
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -253,28 +253,30 @@
     "writes_caused": [
       {
         "write": "POST /web/dataset/call_kw/purchase.order/retrieve_dashboard",
-        "at": 0.4481607790000271,
+        "at": 0.4108007370000705,
         "by_step": 2,
         "browser_record": {
           "caused": true,
           "by_step": 2,
+          "chain_seconds": 0.181,
           "chain": [
             "input of step 2",
             "an animation frame",
             "an animation frame",
-            "the answer to POST /web/dataset/call_kw/purchase.order/get_views after 0.035 s",
-            "the answer to POST /web/dataset/call_kw/purchase.order/web_search_read after 0.061 s",
-            "the answer to POST /web/dataset/call_kw/res.currency/read after 0.019 s"
+            "the answer to POST /web/dataset/call_kw/purchase.order/get_views after 0.016 s",
+            "the answer to POST /web/dataset/call_kw/purchase.order/web_search_read after 0.052 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/read after 0.015 s"
           ]
         }
       },
       {
         "write": "POST /web/dataset/call_button/purchase.order/button_approve",
-        "at": 2.086205417999998,
+        "at": 2.1085090860000344,
         "by_step": 4,
         "browser_record": {
           "caused": true,
           "by_step": 4,
+          "chain_seconds": 0.011,
           "chain": [
             "input of step 4"
           ]
@@ -282,11 +284,76 @@
       }
     ]
   },
+  "screen_changes": {
+    "judged": 57,
+    "not_caused": 13,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.174,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 1.757,
+        "event": "ParseHTML",
+        "why": "the document /odoo/purchase, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 1.973,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.994,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.008,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0 s before it) and could have sent it: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.026,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.037,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.054,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 2.212,
+      "by_step": 4,
+      "chain": [
+        "input of step 4",
+        "the answer to POST /web/dataset/call_button/purchase.order/button_approve after 0.023 s",
+        "the answer to POST /web/dataset/call_kw/purchase.order/web_read after 0.071 s",
+        "an animation frame"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/follow-approval.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/follow-approval-20261017T114856-cfb0.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261017T114920-978e.json",
-    "gauntlet/reference/odoo/results/follow-approval-20261017T114943-9a62.json"
+    "gauntlet/reference/odoo/results/follow-approval-20261019T123736-a110.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261019T123802-6a6a.json",
+    "gauntlet/reference/odoo/results/follow-approval-20261019T123827-1c53.json"
   ]
 }

@@ -256,6 +256,21 @@ public static class WriteSets
                     changes.Add(($"{leaf.Name}={value.ToJsonString()}", body => OpenApiDocument.SetLeaf(body, leaf.Path, value.DeepClone())));
                 }
             }
+            // Every number at another valid value too (critic p02 round 11, plant P1d: the switch
+            // also set the company's fiscal year start month, 1 to 12; the valid body sends 1, the
+            // month every company already had, so nothing reached the audit trail and the write
+            // went unseen). Together with the valid body's value (the smallest the field takes),
+            // the largest it takes is a value that differs from what is stored, whatever that is.
+            foreach (var leaf in openApi.Leaves(s).Where(l => l.Type is "integer" or "number" &&
+                                                            !l.Name.EndsWith("version", StringComparison.OrdinalIgnoreCase) &&
+                                                            !l.Name.Equals("expectedCount", StringComparison.Ordinal)))
+            {
+                var bounds = openApi.Resolve(leaf.Schema);
+                var low = Bound(bounds, "minimum") ?? 1m;
+                var other = Bound(bounds, "maximum") is { } x && x > low && x <= int.MaxValue ? x : low + 1;
+                changes.Add(($"{leaf.Display}={other}", body => OpenApiDocument.SetLeaf(body, leaf.Path,
+                    leaf.Type == "integer" ? JsonValue.Create((long)other) : JsonValue.Create(other))));
+            }
         }
         var n = 0;
         return changes.Select(c => new Variant(c.Name, async () =>
@@ -284,6 +299,17 @@ public static class WriteSets
             }
         })).ToList();
     }
+
+    /// <summary>A documented bound of a number (written as a number or as a string).</summary>
+    private static decimal? Bound(JsonElement schema, string name) =>
+        schema.TryGetProperty(name, out var value) switch
+        {
+            false => null,
+            true when value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out var number) => number,
+            true when value.ValueKind == JsonValueKind.String && decimal.TryParse(value.GetString(), System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture, out var parsed) => parsed,
+            _ => null,
+        };
 
     private sealed record Prepared(string Path, JsonObject? Body, string? Problem = null);
 

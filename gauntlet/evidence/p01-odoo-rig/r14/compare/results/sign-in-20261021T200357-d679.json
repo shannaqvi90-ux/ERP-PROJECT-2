@@ -1,0 +1,1219 @@
+{
+  "schema": 1,
+  "run_id": "sign-in-20261021T200357-d679",
+  "instrument": 12,
+  "task": "sign-in",
+  "task_title": "Sign in",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Sign in as signin.tester@demo-trading.example with the password Sign-In-Pass-2026.",
+  "done_when": "The screen the product shows right after sign-in is ready to work in, and the back end holds a session for that user.",
+  "started_at": "2026-10-21T20:03:57.070Z",
+  "finished_at": "2026-10-21T20:04:29.132Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 1,
+    "machine_seconds": 0.704,
+    "system_wait_seconds": 0.626,
+    "human_seconds": 4.68,
+    "human_plus_wait_seconds": 5.306,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 1,
+      "B": 2,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Use a Passkey",
+      "keystrokes": 0,
+      "at": 0.017,
+      "took": 0.033,
+      "began": 0.001,
+      "screen": "/web/login",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "device",
+      "label": "confirm on the device",
+      "keystrokes": 0,
+      "at": 0.064,
+      "took": 0.002,
+      "began": 0.051,
+      "ceremony": "get",
+      "screen": "/web/login",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "the product asks the device",
+      "at": 0.051,
+      "seconds": 0.013
+    },
+    {
+      "label": "signed in",
+      "at": 0.066,
+      "seconds": 0.355
+    },
+    {
+      "label": "working screen ready",
+      "at": 0.421,
+      "seconds": 0.258
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "0403fb48122dfc9a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r14/compare/blind/shots/0403fb48122dfc9a.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "547abc2a605917d9.jpg",
+      "at": 0.704,
+      "path": "../../evidence-staging/p01-odoo-rig/r14/compare/blind/shots/547abc2a605917d9.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "uid": 100008,
+      "expected_uid": 100008,
+      "login": "signin.tester@demo-trading.example"
+    }
+  },
+  "path_notes": "new-device: The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter. | returning: A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter. | passkey: The sign-in screen: click \"Use a Passkey\" > confirm on the device.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/sign-in.mjs",
+    "sha256": "4c8708155dd3cbed400bfe99b8f40f71f5f05817835ce6e13406b49de9156c97"
+  },
+  "task_notes": "Set-up creates the same user, with the same e-mail sign-in and password, in each product, so the keys typed are identical.",
+  "error": null,
+  "start_state": {
+    "kind": "sign-in",
+    "path": "/web/login",
+    "query": "?db=reference",
+    "fragment": "",
+    "fields": 2,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "login",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.022,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.02,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 1,
+  "requests_in_flight_at_clock": {
+    "count": 44,
+    "first": [
+      "GET /bus/websocket_worker_bundle (script)",
+      "GET /web/image/res.partner/101687/avatar_128 (image)",
+      "GET /web/image/res.partner/36646/avatar_128 (image)",
+      "GET /web/image/res.partner/5701/avatar_128 (image)",
+      "GET /web/image/res.partner/133660/avatar_128 (image)",
+      "GET /web/image/res.partner/194687/avatar_128 (image)",
+      "GET /web/image/res.partner/181159/avatar_128 (image)",
+      "GET /web/image/res.partner/101215/avatar_128 (image)",
+      "GET /web/image/res.partner/170658/avatar_128 (image)",
+      "GET /web/image/res.partner/50112/avatar_128 (image)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "8d3eb9a4ba9486d0",
+    "elements": 2175
+  },
+  "screen_after_verify": {
+    "sha256": "8d3eb9a4ba9486d0",
+    "elements": 2175,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.008
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/session/get_session_info"
+    ],
+    "read_after": [
+      "POST /web/session/get_session_info"
+    ],
+    "changed": [
+      "POST /web/session/get_session_info"
+    ],
+    "changed_parts": {
+      "POST /web/session/get_session_info": [
+        "result.uid",
+        "result.device_salt",
+        "result.is_system",
+        "result.is_admin",
+        "result.is_public",
+        "result.is_internal_user",
+        "result.is_regular_user",
+        "result.user_context.lang"
+      ]
+    },
+    "end_state": [
+      "POST /web/session/get_session_info [result.uid]"
+    ],
+    "end_state_changed": {
+      "POST /web/session/get_session_info": [
+        "result.uid"
+      ]
+    },
+    "writes_sent": [
+      "POST /auth/passkey/start-auth",
+      "POST /web/login"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /auth/passkey/start-auth",
+        "at": 0.050316667000064624,
+        "by_step": 1,
+        "browser_record": {
+          "caused": true,
+          "by_step": 1,
+          "chain_seconds": 0.002,
+          "chain": [
+            "input of step 1"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/login",
+        "at": 0.06933790499996394,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain_seconds": 0.001,
+          "chain": [
+            "a DevTools command of step 2",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 25,
+    "not_caused": 16,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.101,
+        "event": "LayoutInvalidationTracking",
+        "why": "the document / it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.383,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.402,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/200014/avatar_128, which no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.477,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.485,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.486,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.564,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.695,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/101218/avatar_128, which no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.41,
+      "by_step": 2,
+      "chain": [
+        "a DevTools command of step 2",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "the document /odoo"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/res.users/write",
+    "browser POST /web/dataset/call_button/res.users/action_create_passkey",
+    "browser POST /web/dataset/call_kw/res.users.identitycheck/web_save",
+    "browser POST /web/dataset/call_button/res.users.identitycheck/run_check",
+    "browser POST /web/dataset/call_kw/auth.passkey.key.create/web_save",
+    "browser POST /web/dataset/call_button/auth.passkey.key.create/make_key",
+    "browser POST /web/session/logout"
+  ],
+  "screenshots_path": "passkey",
+  "best_path_per_metric": {
+    "steps": "passkey",
+    "keystrokes": "passkey",
+    "machine_seconds": "passkey",
+    "human_seconds": "passkey",
+    "human_plus_wait_seconds": "passkey"
+  },
+  "variants": [
+    {
+      "id": "new-device",
+      "path": "The sign-in screen focuses the e-mail field: type the e-mail > Tab > type the password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 57,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.928,
+        "system_wait_seconds": 0.837,
+        "human_seconds": 19.06,
+        "human_plus_wait_seconds": 19.897,
+        "klm_operator_counts": {
+          "K": 57,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 35,
+          "at": 0.002,
+          "took": 0.04,
+          "text": "signin.tester@demo-trading.example",
+          "same_field": false,
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "next field (password)",
+          "keystrokes": 1,
+          "at": 0.043,
+          "took": 0.002,
+          "chord": "Tab",
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "at": 0.045,
+          "took": 0.019,
+          "text": "Sign-In-Pass-2026",
+          "same_field": false,
+          "screen": "/web/login",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "at": 0.064,
+          "took": 0.003,
+          "chord": "Enter",
+          "screen": "/web/login",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "signed in",
+          "at": 0.066,
+          "seconds": 0.579
+        },
+        {
+          "label": "working screen ready",
+          "at": 0.646,
+          "seconds": 0.258
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100008,
+          "expected_uid": 100008,
+          "login": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/web/login",
+        "query": "?db=reference",
+        "fragment": "",
+        "fields": 2,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "login",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.021,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.019,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 1,
+      "requests_in_flight_at_clock": {
+        "count": 44,
+        "first": [
+          "GET /bus/websocket_worker_bundle (script)",
+          "GET /web/image/res.partner/101687/avatar_128 (image)",
+          "GET /web/image/res.partner/36646/avatar_128 (image)",
+          "GET /web/image/res.partner/5701/avatar_128 (image)",
+          "GET /web/image/res.partner/133660/avatar_128 (image)",
+          "GET /web/image/res.partner/194687/avatar_128 (image)",
+          "GET /web/image/res.partner/181159/avatar_128 (image)",
+          "GET /web/image/res.partner/101215/avatar_128 (image)",
+          "GET /web/image/res.partner/170658/avatar_128 (image)",
+          "GET /web/image/res.partner/50112/avatar_128 (image)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "13b1c18b4483b0c1",
+        "elements": 2175
+      },
+      "screen_after_verify": {
+        "sha256": "13b1c18b4483b0c1",
+        "elements": 2175,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.016
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/session/get_session_info"
+        ],
+        "read_after": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed_parts": {
+          "POST /web/session/get_session_info": [
+            "result.uid",
+            "result.device_salt",
+            "result.is_system",
+            "result.is_admin",
+            "result.is_public",
+            "result.is_internal_user",
+            "result.is_regular_user",
+            "result.user_context.lang"
+          ]
+        },
+        "end_state": [
+          "POST /web/session/get_session_info [result.uid]"
+        ],
+        "end_state_changed": {
+          "POST /web/session/get_session_info": [
+            "result.uid"
+          ]
+        },
+        "writes_sent": [
+          "POST /web/login"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /web/login",
+            "at": 0.07172606900008395,
+            "by_step": 4,
+            "browser_record": {
+              "caused": true,
+              "by_step": 4,
+              "chain_seconds": 0.004,
+              "chain": [
+                "input of step 4",
+                "the form it submitted"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 76,
+        "not_caused": 16,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.322,
+            "event": "LayoutInvalidationTracking",
+            "why": "the document / it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.61,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.631,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/200014/avatar_128, which no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.703,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.712,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.712,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.79,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.92,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/149073/avatar_128, which no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 0.637,
+          "by_step": 4,
+          "chain": [
+            "input of step 4",
+            "the form it submitted",
+            "the document /odoo"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/res.users/write"
+      ]
+    },
+    {
+      "id": "returning",
+      "path": "A browser that signed in before: if the e-mail is remembered, type the password > Enter; otherwise type the e-mail > Tab > password > Enter.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 57,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.899,
+        "system_wait_seconds": 0.809,
+        "human_seconds": 19.06,
+        "human_plus_wait_seconds": 19.869,
+        "klm_operator_counts": {
+          "K": 57,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 35,
+          "at": 0.002,
+          "took": 0.037,
+          "text": "signin.tester@demo-trading.example",
+          "same_field": false,
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "next field (password)",
+          "keystrokes": 1,
+          "at": 0.04,
+          "took": 0.002,
+          "chord": "Tab",
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "password",
+          "keystrokes": 20,
+          "at": 0.042,
+          "took": 0.019,
+          "text": "Sign-In-Pass-2026",
+          "same_field": false,
+          "screen": "/web/login",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "sign in",
+          "keystrokes": 1,
+          "at": 0.062,
+          "took": 0.003,
+          "chord": "Enter",
+          "screen": "/web/login",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "signed in",
+          "at": 0.065,
+          "seconds": 0.569
+        },
+        {
+          "label": "working screen ready",
+          "at": 0.634,
+          "seconds": 0.24
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100008,
+          "expected_uid": 100008,
+          "login": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/web/login",
+        "query": "?db=reference",
+        "fragment": "",
+        "fields": 2,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "login",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.022,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.019,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 1,
+      "requests_in_flight_at_clock": {
+        "count": 44,
+        "first": [
+          "GET /bus/websocket_worker_bundle (script)",
+          "GET /web/image/res.partner/101687/avatar_128 (image)",
+          "GET /web/image/res.partner/36646/avatar_128 (image)",
+          "GET /web/image/res.partner/5701/avatar_128 (image)",
+          "GET /web/image/res.partner/133660/avatar_128 (image)",
+          "GET /web/image/res.partner/194687/avatar_128 (image)",
+          "GET /web/image/res.partner/181159/avatar_128 (image)",
+          "GET /web/image/res.partner/101215/avatar_128 (image)",
+          "GET /web/image/res.partner/170658/avatar_128 (image)",
+          "GET /web/image/res.partner/50112/avatar_128 (image)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "f9929aa0dcb52a02",
+        "elements": 2175
+      },
+      "screen_after_verify": {
+        "sha256": "f9929aa0dcb52a02",
+        "elements": 2175,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.008
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/session/get_session_info"
+        ],
+        "read_after": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed_parts": {
+          "POST /web/session/get_session_info": [
+            "result.uid",
+            "result.device_salt",
+            "result.is_system",
+            "result.is_admin",
+            "result.is_public",
+            "result.is_internal_user",
+            "result.is_regular_user",
+            "result.user_context.lang"
+          ]
+        },
+        "end_state": [
+          "POST /web/session/get_session_info [result.uid]"
+        ],
+        "end_state_changed": {
+          "POST /web/session/get_session_info": [
+            "result.uid"
+          ]
+        },
+        "writes_sent": [
+          "POST /web/login"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /web/login",
+            "at": 0.0718631760000717,
+            "by_step": 4,
+            "browser_record": {
+              "caused": true,
+              "by_step": 4,
+              "chain_seconds": 0.007,
+              "chain": [
+                "input of step 4",
+                "the form it submitted"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 76,
+        "not_caused": 17,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.312,
+            "event": "LayoutInvalidationTracking",
+            "why": "the document / it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.592,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.612,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/200014/avatar_128, which no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.677,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.686,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.686,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.76,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.892,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/171959/avatar_128, which no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 0.617,
+          "by_step": 4,
+          "chain": [
+            "input of step 4",
+            "the form it submitted",
+            "the document /odoo"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/res.users/write",
+        "browser POST /web/session/logout"
+      ]
+    },
+    {
+      "id": "passkey",
+      "path": "The sign-in screen: click \"Use a Passkey\" > confirm on the device.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 1,
+        "machine_seconds": 0.704,
+        "system_wait_seconds": 0.626,
+        "human_seconds": 4.68,
+        "human_plus_wait_seconds": 5.306,
+        "klm_operator_counts": {
+          "K": 1,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Use a Passkey",
+          "keystrokes": 0,
+          "at": 0.017,
+          "took": 0.033,
+          "began": 0.001,
+          "screen": "/web/login",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "device",
+          "label": "confirm on the device",
+          "keystrokes": 0,
+          "at": 0.064,
+          "took": 0.002,
+          "began": 0.051,
+          "ceremony": "get",
+          "screen": "/web/login",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "the product asks the device",
+          "at": 0.051,
+          "seconds": 0.013
+        },
+        {
+          "label": "signed in",
+          "at": 0.066,
+          "seconds": 0.355
+        },
+        {
+          "label": "working screen ready",
+          "at": 0.421,
+          "seconds": 0.258
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "uid": 100008,
+          "expected_uid": 100008,
+          "login": "signin.tester@demo-trading.example"
+        }
+      },
+      "start_state": {
+        "kind": "sign-in",
+        "path": "/web/login",
+        "query": "?db=reference",
+        "fragment": "",
+        "fields": 2,
+        "filled": [],
+        "focused": {
+          "tag": "input",
+          "type": "text",
+          "name": "login",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.022,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.02,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 1,
+      "requests_in_flight_at_clock": {
+        "count": 44,
+        "first": [
+          "GET /bus/websocket_worker_bundle (script)",
+          "GET /web/image/res.partner/101687/avatar_128 (image)",
+          "GET /web/image/res.partner/36646/avatar_128 (image)",
+          "GET /web/image/res.partner/5701/avatar_128 (image)",
+          "GET /web/image/res.partner/133660/avatar_128 (image)",
+          "GET /web/image/res.partner/194687/avatar_128 (image)",
+          "GET /web/image/res.partner/181159/avatar_128 (image)",
+          "GET /web/image/res.partner/101215/avatar_128 (image)",
+          "GET /web/image/res.partner/170658/avatar_128 (image)",
+          "GET /web/image/res.partner/50112/avatar_128 (image)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "8d3eb9a4ba9486d0",
+        "elements": 2175
+      },
+      "screen_after_verify": {
+        "sha256": "8d3eb9a4ba9486d0",
+        "elements": 2175,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.008
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/session/get_session_info"
+        ],
+        "read_after": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed": [
+          "POST /web/session/get_session_info"
+        ],
+        "changed_parts": {
+          "POST /web/session/get_session_info": [
+            "result.uid",
+            "result.device_salt",
+            "result.is_system",
+            "result.is_admin",
+            "result.is_public",
+            "result.is_internal_user",
+            "result.is_regular_user",
+            "result.user_context.lang"
+          ]
+        },
+        "end_state": [
+          "POST /web/session/get_session_info [result.uid]"
+        ],
+        "end_state_changed": {
+          "POST /web/session/get_session_info": [
+            "result.uid"
+          ]
+        },
+        "writes_sent": [
+          "POST /auth/passkey/start-auth",
+          "POST /web/login"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /auth/passkey/start-auth",
+            "at": 0.050316667000064624,
+            "by_step": 1,
+            "browser_record": {
+              "caused": true,
+              "by_step": 1,
+              "chain_seconds": 0.002,
+              "chain": [
+                "input of step 1"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/login",
+            "at": 0.06933790499996394,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain_seconds": 0.001,
+              "chain": [
+                "a DevTools command of step 2",
+                "a task that followed at once (a message or an observer)",
+                "a task that followed at once (a message or an observer)"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 25,
+        "not_caused": 16,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.101,
+            "event": "LayoutInvalidationTracking",
+            "why": "the document / it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.383,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.402,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/200014/avatar_128, which no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.477,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.485,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.486,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.564,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: the document /web/assets/3e97dca/web.material_symbols_outlined.min.woff2 it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 0.695,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/101218/avatar_128, which no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 0.41,
+          "by_step": 2,
+          "chain": [
+            "a DevTools command of step 2",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "the document /odoo"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/res.users/write",
+        "browser POST /web/dataset/call_button/res.users/action_create_passkey",
+        "browser POST /web/dataset/call_kw/res.users.identitycheck/web_save",
+        "browser POST /web/dataset/call_button/res.users.identitycheck/run_check",
+        "browser POST /web/dataset/call_kw/auth.passkey.key.create/web_save",
+        "browser POST /web/dataset/call_button/auth.passkey.key.create/make_key",
+        "browser POST /web/session/logout"
+      ]
+    }
+  ]
+}

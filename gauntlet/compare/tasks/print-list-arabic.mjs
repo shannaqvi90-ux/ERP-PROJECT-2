@@ -6,6 +6,10 @@ export default {
   piece: 'p06',
   actor: 'an administrator who works in Arabic',
   startAt: 'list',
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up puts the actor in Arabic; a health check creates the one user); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['PUT /api/identity/me/preferences'] },
+  healthFixtures: { ours: ['POST /api/identity/users'] },
   moments: ['list filtered'],
   start: 'Signed in, working in Arabic (the interface is Arabic and right to left), on the list of purchase orders.',
   goal: 'Narrow the list to the orders of the vendor {contact.parent_name} and print that list as a PDF in Arabic.',

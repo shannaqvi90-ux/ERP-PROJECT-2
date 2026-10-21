@@ -1,0 +1,345 @@
+{
+  "schema": 1,
+  "run_id": "create-company-branch-20261018T140105-2fec",
+  "instrument": 10,
+  "task": "create-company-branch",
+  "task_title": "Create a company with a branch",
+  "product": "ours",
+  "status": "error",
+  "goal": "Create the company \"Falcon Logistics LLC\" with one branch, \"Falcon Logistics LLC - Jebel Ali Branch\".",
+  "done_when": "Both are saved; the back end holds the company and the branch under it.",
+  "started_at": "2026-10-18T14:01:05.325Z",
+  "finished_at": "2026-10-18T14:04:17.174Z",
+  "environment": {
+    "base_url": "http://localhost:20250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 120.079,
+    "system_wait_seconds": 0,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.65,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Companies (navigation)",
+      "keystrokes": 0,
+      "at": 0.031,
+      "took": 0.043,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    }
+  ],
+  "waits": [],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "22be5db155d2ba95.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p02-tenancy/r12/compare/blind/shots/22be5db155d2ba95.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "adc8aa812d0b2c84.jpg",
+      "at": 120.079,
+      "path": "../../evidence-staging/p02-tenancy/r12/compare/blind/shots/adc8aa812d0b2c84.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "keyboard: Companies > Alt+N > company name > Ctrl+S > rest of the branch name > Enter | pointer: Companies > New > company name > Save > rest of the branch name > Add",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-company-branch.mjs",
+    "sha256": "e8dbecc4fe358750e04a2035f80801ea0d63376164e16251d67001a3e6baf199"
+  },
+  "task_notes": "Set-up removes any earlier copy; clean-up deletes both.",
+  "error": "keyboard: error TimeoutError: locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('table[role=grid] tbody tr').first() to be visible\u001b[22m\n\n    (in the driver process)\nCall log:\npointer: error Error: locator.waitFor: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('table[role=grid] tbody tr').first() to be visible\u001b[22m\n\n    (in the driver process)\nCall log:",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "error_page": {
+    "keyboard": {
+      "url": "/tenancy/companies?view=view%3A01a14f47-3b21-7463-b28e-a82864386c21&q=GSF-TEST&filter=isActive+eq+true&group=baseCurrency&cols=code",
+      "ready_state": "complete",
+      "title": "Companies · ERP",
+      "focused": {
+        "tag": "input",
+        "name": null,
+        "type": "search",
+        "label": "Search code or legal name (/)"
+      },
+      "navigation": true,
+      "busy": [],
+      "messages": [
+        "Nothing matches. Change the search or remove a filter."
+      ]
+    },
+    "pointer": {
+      "unreadable": "page.evaluate: Target page, context or browser has been closed"
+    }
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.015
+  },
+  "set_up_writes_waited": 0,
+  "failure_capture": {
+    "url": "http://localhost:20250/tenancy/companies?view=view%3A01a14f47-3b21-7463-b28e-a82864386c21&q=GSF-TEST&filter=isActive+eq+true&group=baseCurrency&cols=code",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {},
+  "counts_path": "keyboard",
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Companies > Alt+N > company name > Ctrl+S > rest of the branch name > Enter",
+      "status": "error",
+      "error": "TimeoutError: locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('table[role=grid] tbody tr').first() to be visible\u001b[22m\n\n    (in the driver process)\nCall log:",
+      "error_page": {
+        "url": "/tenancy/companies?view=view%3A01a14f47-3b21-7463-b28e-a82864386c21&q=GSF-TEST&filter=isActive+eq+true&group=baseCurrency&cols=code",
+        "ready_state": "complete",
+        "title": "Companies · ERP",
+        "focused": {
+          "tag": "input",
+          "name": null,
+          "type": "search",
+          "label": "Search code or legal name (/)"
+        },
+        "navigation": true,
+        "busy": [],
+        "messages": [
+          "Nothing matches. Change the search or remove a filter."
+        ]
+      },
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 120.079,
+        "system_wait_seconds": 0,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.65,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Companies (navigation)",
+          "keystrokes": 0,
+          "at": 0.031,
+          "took": 0.043,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [],
+      "verification": null,
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": null,
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.015
+      },
+      "set_up_writes_waited": 0,
+      "failure_capture": {
+        "url": "http://localhost:20250/tenancy/companies?view=view%3A01a14f47-3b21-7463-b28e-a82864386c21&q=GSF-TEST&filter=isActive+eq+true&group=baseCurrency&cols=code",
+        "console": [
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+        ]
+      }
+    },
+    {
+      "id": "pointer",
+      "path": "Companies > New > company name > Save > rest of the branch name > Add",
+      "status": "error",
+      "error": "Error: locator.waitFor: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('table[role=grid] tbody tr').first() to be visible\u001b[22m\n\n    (in the driver process)\nCall log:",
+      "error_page": {
+        "unreadable": "page.evaluate: Target page, context or browser has been closed"
+      },
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 33.443,
+        "system_wait_seconds": 0,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.65,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Companies (navigation)",
+          "keystrokes": 0,
+          "at": 0.023,
+          "took": 0.057,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [],
+      "verification": null,
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": null,
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.017
+      },
+      "set_up_writes_waited": 0,
+      "failure_capture": {
+        "url": "http://localhost:20250/tenancy/companies?view=view%3A01a14f47-3b21-7463-b28e-a82864386c21&q=GSF-TEST&filter=isActive+eq+true&group=baseCurrency&cols=code",
+        "console": [
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+        ]
+      }
+    }
+  ]
+}

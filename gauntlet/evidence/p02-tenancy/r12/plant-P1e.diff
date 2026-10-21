@@ -1,0 +1,19 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 20dba334..028f8a7f 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -195,6 +195,14 @@ internal static class BranchEndpoints
+         {
+             return Problems.NotFound(http);
+         }
++        if (request.IsActive == false && branch.IsActive && request.CompanyId == branch.CompanyId)
++        {
++            // PLANT P1e: closing a branch is one statement (it only flips the status)
++            await db.Branches.Where(b => b.Id == id).ExecuteUpdateAsync(u => u.SetProperty(b => b.IsActive, false), cancellationToken);
++            db.ChangeTracker.Clear();
++            var closed = await db.Branches.AsNoTracking().SingleAsync(b => b.Id == id, cancellationToken);
++            return TypedResults.Ok(await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), closed, cancellationToken));
++        }
+         if (!session.PermitsCompany(branch.CompanyId))
+         {
+             return Problems.Forbidden(http, CompanyPermissionWriteException.Code);

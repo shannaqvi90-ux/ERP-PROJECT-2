@@ -1,0 +1,393 @@
+[1mBuilding the application image[0m
+ Image erp-app:c-p01-odoo-rig-r14 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 660B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.14kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 1.3s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#5 DONE 0.7s
+
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#6 DONE 0.7s
+
+#7 [internal] load metadata for docker.io/library/node:22-alpine
+#7 DONE 1.1s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.0s
+
+#9 [internal] load build context
+#9 DONE 0.0s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+#10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2 0.1s done
+#10 ...
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:ce8d97f7cfc7c5386421eb932df20a29df99b1a7f469f6157d5c9956702ffadc
+#11 resolve docker.io/library/node:22-alpine@sha256:ce8d97f7cfc7c5386421eb932df20a29df99b1a7f469f6157d5c9956702ffadc 0.1s done
+#11 DONE 0.1s
+
+#9 [internal] load build context
+#9 transferring context: 28.89kB 0.0s done
+#9 DONE 0.1s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+#10 ...
+
+#12 [strings 2/3] COPY web/src/modules/ /modules/
+#12 CACHED
+
+#13 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#13 CACHED
+
+#14 [stage-3 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:8af87eba5e7cdafb1514d7388be287365da97c132509e84dfe252ffd552398ca
+#14 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:8af87eba5e7cdafb1514d7388be287365da97c132509e84dfe252ffd552398ca 0.1s done
+#14 DONE 0.5s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 0B / 20.57MB 0.2s
+#10 sha256:aa348bf96432f6cbe8a2cc3c647b7bc555ab7b44febdba507ccd524ce8040218 531B / 531B 0.3s done
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 0B / 21.03MB 0.2s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 0.2s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 1.05MB / 20.57MB 0.3s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 0B / 23.84MB 0.2s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 2.10MB / 20.57MB 0.8s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 3.15MB / 20.57MB 1.4s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 4.19MB / 20.57MB 2.6s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 5.24MB / 20.57MB 3.8s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 6.29MB / 20.57MB 4.8s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 0B / 21.03MB 5.3s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 5.3s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 1.05MB / 23.84MB 5.3s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 7.34MB / 20.57MB 6.0s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 8.39MB / 20.57MB 6.9s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 9.44MB / 20.57MB 7.7s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 10.49MB / 20.57MB 8.6s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 11.53MB / 20.57MB 9.3s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 12.58MB / 20.57MB 9.9s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 0B / 21.03MB 10.4s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 10.4s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 1.05MB / 23.84MB 10.4s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 13.63MB / 20.57MB 10.7s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 14.68MB / 20.57MB 11.6s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 15.73MB / 20.57MB 12.8s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 16.78MB / 20.57MB 13.4s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 3.15MB / 23.84MB 13.8s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 17.83MB / 20.57MB 14.4s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 18.87MB / 20.57MB 15.2s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 0B / 21.03MB 15.5s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 15.5s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 19.92MB / 20.57MB 15.8s
+#10 sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 20.57MB / 20.57MB 16.3s done
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 0B / 12.75MB 0.2s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 1.05MB / 12.75MB 1.2s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 2.10MB / 12.75MB 1.9s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 4.19MB / 23.84MB 18.9s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 3.15MB / 12.75MB 3.3s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 0B / 21.03MB 20.5s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 20.5s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 4.19MB / 12.75MB 4.6s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 6.29MB / 23.84MB 21.6s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 5.24MB / 12.75MB 6.9s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 6.29MB / 12.75MB 7.9s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 7.34MB / 12.75MB 8.7s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 1.05MB / 21.03MB 25.6s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 25.6s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 8.39MB / 12.75MB 9.7s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 8.39MB / 23.84MB 26.1s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 9.44MB / 12.75MB 11.1s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 10.49MB / 12.75MB 11.8s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 11.53MB / 12.75MB 12.7s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 12.58MB / 12.75MB 13.9s
+#10 sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 12.75MB / 12.75MB 14.1s done
+#10 sha256:2aa13cb6e98641bbfcc67a90c97c29e7696b21ffae339ccb6a110378191c88a7 0B / 155B 0.2s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 10.49MB / 23.84MB 30.3s
+#10 sha256:2aa13cb6e98641bbfcc67a90c97c29e7696b21ffae339ccb6a110378191c88a7 155B / 155B 0.2s done
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 0B / 36.63MB 0.2s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 1.05MB / 21.03MB 30.8s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 30.7s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 2.10MB / 36.63MB 2.6s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 12.58MB / 23.84MB 33.9s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 4.19MB / 36.63MB 4.7s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 1.05MB / 21.03MB 35.8s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 35.8s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 6.29MB / 36.63MB 6.3s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 8.39MB / 36.63MB 8.1s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 12.58MB / 23.84MB 39.0s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 10.49MB / 36.63MB 10.2s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 2.10MB / 21.03MB 40.9s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 40.9s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 14.68MB / 23.84MB 41.1s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 12.58MB / 36.63MB 13.1s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 16.78MB / 23.84MB 45.0s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 14.68MB / 36.63MB 14.9s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 2.10MB / 21.03MB 46.0s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 46.0s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 16.78MB / 36.63MB 16.2s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 18.87MB / 36.63MB 18.3s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 18.87MB / 23.84MB 49.6s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 2.10MB / 21.03MB 51.1s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 51.1s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 20.97MB / 36.63MB 20.7s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 20.97MB / 23.84MB 52.8s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 23.07MB / 36.63MB 23.0s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 25.17MB / 36.63MB 25.1s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 2.10MB / 21.03MB 56.2s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 56.2s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 27.26MB / 36.63MB 26.2s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 22.02MB / 23.84MB 57.9s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 29.36MB / 36.63MB 28.0s
+#10 sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 23.84MB / 23.84MB 60.1s done
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 31.46MB / 36.63MB 30.0s
+#10 sha256:e271a0d133c8cba0b3c0724d39498bb64a46bafa24fa9856ad549b09094e58e8 3.56kB / 3.56kB 0.1s done
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 0B / 16.78MB 0.2s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 2.10MB / 21.03MB 61.3s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 61.3s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 33.55MB / 36.63MB 31.9s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 35.65MB / 36.63MB 33.7s
+#10 sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 36.63MB / 36.63MB 34.3s done
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 1.05MB / 16.78MB 4.7s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 2.10MB / 16.78MB 5.4s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 3.15MB / 21.03MB 66.4s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 66.4s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 3.15MB / 16.78MB 6.3s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 4.19MB / 16.78MB 7.2s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 5.24MB / 16.78MB 8.1s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 5.24MB / 21.03MB 69.6s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 6.29MB / 16.78MB 9.2s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 7.34MB / 16.78MB 10.1s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 8.39MB / 16.78MB 10.8s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 0B / 189.68MB 71.5s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 9.44MB / 16.78MB 11.9s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 10.49MB / 16.78MB 12.8s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 11.53MB / 16.78MB 13.7s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 6.29MB / 21.03MB 74.7s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 12.58MB / 16.78MB 14.6s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 13.63MB / 16.78MB 15.6s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 1.05MB / 189.68MB 76.6s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 14.68MB / 16.78MB 16.7s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 15.73MB / 16.78MB 17.5s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 8.39MB / 21.03MB 78.1s
+#10 sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 16.78MB / 16.78MB 18.5s done
+#10 extracting sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a
+#10 extracting sha256:809fe014b8c9ea3822f20ea868f467405ed02e146e942a0bf6910d93dfdd2e7a 0.3s done
+#10 extracting sha256:e271a0d133c8cba0b3c0724d39498bb64a46bafa24fa9856ad549b09094e58e8 0.0s done
+#10 extracting sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae
+#10 extracting sha256:4ce2187f4e63680885b76b67d07b33a4b39e2404d2741d8bcdb5512f637492ae 0.2s done
+#10 extracting sha256:2aa13cb6e98641bbfcc67a90c97c29e7696b21ffae339ccb6a110378191c88a7 0.0s done
+#10 extracting sha256:9b660e3f3a1a97d9bf64bb18f8e17b89cc78e7fb667a5b62264e13f565ad233f 0.1s done
+#10 ...
+
+#15 [stage-3 2/4] WORKDIR /app
+#15 DONE 0.1s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+#10 extracting sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d
+#10 ...
+
+#16 [web 2/6] WORKDIR /web
+#16 CACHED
+
+#17 [web 3/6] COPY web/package.json web/package-lock.json ./
+#17 CACHED
+
+#18 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#18 CACHED
+
+#19 [web 5/6] COPY web/ ./
+#19 CACHED
+
+#20 [web 6/6] RUN npm run check && npm run build
+#20 CACHED
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 10.49MB / 21.03MB 80.4s
+#10 extracting sha256:933395b9676f2bd4f45d1f049e28c55605f225e9c6eb18095e112a4e0bdc053d 0.5s done
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 2.10MB / 189.68MB 81.7s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 12.58MB / 21.03MB 82.5s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 14.68MB / 21.03MB 84.6s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 6.29MB / 189.68MB 86.8s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 16.78MB / 21.03MB 88.2s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 18.87MB / 21.03MB 90.6s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 8.39MB / 189.68MB 91.9s
+#10 sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 21.03MB / 21.03MB 92.3s done
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 14.68MB / 189.68MB 97.0s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 22.02MB / 189.68MB 102.1s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 29.36MB / 189.68MB 107.2s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 35.65MB / 189.68MB 112.3s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 42.99MB / 189.68MB 117.4s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 50.33MB / 189.68MB 122.5s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 57.67MB / 189.68MB 127.6s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 65.01MB / 189.68MB 132.7s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 73.40MB / 189.68MB 137.8s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 77.59MB / 189.68MB 142.9s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 82.84MB / 189.68MB 148.0s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 84.93MB / 189.68MB 153.1s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 90.18MB / 189.68MB 158.2s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 94.37MB / 189.68MB 163.3s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 100.66MB / 189.68MB 168.4s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 105.91MB / 189.68MB 173.5s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 113.25MB / 189.68MB 178.6s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 119.54MB / 189.68MB 183.7s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 126.88MB / 189.68MB 188.8s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 134.22MB / 189.68MB 193.9s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 142.61MB / 189.68MB 199.0s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 149.95MB / 189.68MB 204.1s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 158.33MB / 189.68MB 209.2s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 165.68MB / 189.68MB 214.3s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 174.06MB / 189.68MB 219.4s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 181.40MB / 189.68MB 224.5s
+#10 sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 189.68MB / 189.68MB 229.5s done
+#10 extracting sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0
+#10 extracting sha256:dcb1426b01f7a2198ac710d5ef2a902bc7e978128cf6d05b52f2ca5e1965c4e0 1.7s done
+#10 DONE 231.6s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+#10 extracting sha256:e26e39803a84be4b990ab9a6f42d531dcbbd8fb2fd65dd1a1e4ef8ad417acba9 0.1s done
+#10 extracting sha256:aa348bf96432f6cbe8a2cc3c647b7bc555ab7b44febdba507ccd524ce8040218 0.0s done
+#10 extracting sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb
+#10 extracting sha256:d890623d20224ca4dbbfdc9bc97511c4d84227dcf584c3cdeafe0a164d224bdb 0.2s done
+#10 DONE 231.9s
+
+#21 [build 2/7] WORKDIR /src
+#21 DONE 0.4s
+
+#22 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#22 DONE 0.1s
+
+#23 [build 4/7] COPY src/ src/
+#23 DONE 0.1s
+
+#24 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#24 0.639   Determining projects to restore...
+#24 1.317   Restored /src/src/Modules/Reports/Erp.Modules.Reports.Contracts/Erp.Modules.Reports.Contracts.csproj (in 80 ms).
+#24 1.317   Restored /src/src/Modules/Lists/Erp.Modules.Lists.Contracts/Erp.Modules.Lists.Contracts.csproj (in 80 ms).
+#24 1.317   Restored /src/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/Erp.Modules.Tenancy.Contracts.csproj (in 80 ms).
+#24 2.255   Restored /src/src/Modules/Identity/Erp.Modules.Identity.Contracts/Erp.Modules.Identity.Contracts.csproj (in 1.03 sec).
+#24 2.256   Restored /src/src/Modules/Reports/Erp.Modules.Reports/Erp.Modules.Reports.csproj (in 1.03 sec).
+#24 2.258   Restored /src/src/Host/Erp.Host/Erp.Host.csproj (in 1.03 sec).
+#24 2.290   Restored /src/src/Kernel/Erp.Kernel/Erp.Kernel.csproj (in 1.06 sec).
+#24 2.291   Restored /src/src/Modules/Lists/Erp.Modules.Lists/Erp.Modules.Lists.csproj (in 1.06 sec).
+#24 2.291   Restored /src/src/Modules/Identity/Erp.Modules.Identity/Erp.Modules.Identity.csproj (in 1.06 sec).
+#24 2.291   Restored /src/src/Modules/Tenancy/Erp.Modules.Tenancy/Erp.Modules.Tenancy.csproj (in 1.06 sec).
+#24 DONE 2.3s
+
+#25 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#25 DONE 0.1s
+
+#26 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#26 2.232   Erp.Modules.Tenancy.Contracts -> /src/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+#26 2.235   Erp.Modules.Reports.Contracts -> /src/src/Modules/Reports/Erp.Modules.Reports.Contracts/bin/Release/net10.0/Erp.Modules.Reports.Contracts.dll
+#26 2.236   Erp.Modules.Lists.Contracts -> /src/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+#26 3.005   Erp.Kernel -> /src/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+#26 3.259   Erp.Modules.Identity.Contracts -> /src/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+#26 3.799   Erp.Modules.Lists -> /src/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+#26 5.187   Erp.Modules.Reports -> /src/src/Modules/Reports/Erp.Modules.Reports/bin/Release/net10.0/Erp.Modules.Reports.dll
+#26 5.432   Erp.Modules.Tenancy -> /src/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+#26 5.553   Erp.Modules.Identity -> /src/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+#26 5.986   Erp.Host -> /src/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+#26 6.044   Erp.Host -> /app/
+#26 DONE 6.1s
+
+#27 [stage-3 3/4] COPY --from=build /app ./
+#27 DONE 0.2s
+
+#28 [stage-3 4/4] COPY --from=web /web/dist ./wwwroot
+#28 DONE 0.1s
+
+#29 exporting to image
+#29 exporting layers
+#29 exporting layers 2.4s done
+#29 exporting manifest sha256:e6e21cfea8ca171d5792e64598877f8ee052d67cf884eda4d9b6933959f192ce 0.0s done
+#29 exporting config sha256:90bad9a576a34cafe2e3a6eaba079faeb0df5647160cb0a9f38dfea2362ee40d 0.0s done
+#29 exporting attestation manifest sha256:71c973a7e477cb141c069f2bfda26518e65f1eff0bfd52cb91d3ab4a240481c9 0.0s done
+#29 exporting manifest list sha256:a571472b040e9a1aa92604d96dbd9eb713d161a4adcdb65f475abd40ff96f0ed
+#29 exporting manifest list sha256:a571472b040e9a1aa92604d96dbd9eb713d161a4adcdb65f475abd40ff96f0ed 0.0s done
+#29 naming to docker.io/library/erp-app:c-p01-odoo-rig-r14 done
+#29 unpacking to docker.io/library/erp-app:c-p01-odoo-rig-r14
+#29 unpacking to docker.io/library/erp-app:c-p01-odoo-rig-r14 0.4s done
+#29 DONE 2.9s
+
+#30 resolving provenance for metadata file
+#30 DONE 0.0s
+ Image erp-app:c-p01-odoo-rig-r14 Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 100000 users) and serving[0m
+ Network c-p01-odoo-rig-r14_default Creating 
+ Network c-p01-odoo-rig-r14_default Created 
+ Volume c-p01-odoo-rig-r14_db-data Creating 
+ Volume c-p01-odoo-rig-r14_db-data Created 
+ Container c-p01-odoo-rig-r14-db-1 Creating 
+ Container c-p01-odoo-rig-r14-db-1 Created 
+ Container c-p01-odoo-rig-r14-db-1 Starting 
+ Container c-p01-odoo-rig-r14-db-1 Started 
+ Container c-p01-odoo-rig-r14-db-1 Waiting 
+ Container c-p01-odoo-rig-r14-db-1 Healthy 
+ Container c-p01-odoo-rig-r14-db-1 Running 
+ Container c-p01-odoo-rig-r14-setup-1 Creating 
+ Container c-p01-odoo-rig-r14-setup-1 Created 
+Attaching to setup-1
+ Container c-p01-odoo-rig-r14-db-1 Waiting 
+ Container c-p01-odoo-rig-r14-db-1 Healthy 
+ Container c-p01-odoo-rig-r14-setup-1 Starting 
+ Container c-p01-odoo-rig-r14-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 8 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 13 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 19011 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 295 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 685 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p01-odoo-rig-r14-setup-1 Stopping 
+ Container c-p01-odoo-rig-r14-setup-1 Stopped 
+ Container c-p01-odoo-rig-r14-db-1 Running 
+ Container c-p01-odoo-rig-r14-app-1 Creating 
+ Container c-p01-odoo-rig-r14-app-1 Created 
+ Container c-p01-odoo-rig-r14-db-1 Waiting 
+ Container c-p01-odoo-rig-r14-db-1 Healthy 
+ Container c-p01-odoo-rig-r14-setup-1 Starting 
+ Container c-p01-odoo-rig-r14-setup-1 Started 
+ Container c-p01-odoo-rig-r14-setup-1 Waiting 
+ Container c-p01-odoo-rig-r14-setup-1 Exited 
+ Container c-p01-odoo-rig-r14-app-1 Starting 
+ Container c-p01-odoo-rig-r14-app-1 Started 
+
+[1mThe demo is running (279 s): http://localhost:20150[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:20150/?domain=alnoor.example
+    http://localhost:20150/?domain=gulfsteel.example
+
+  API description: http://localhost:20150/api/openapi/v1.json
+  Database:        localhost:20151 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
+rc=0 280 s

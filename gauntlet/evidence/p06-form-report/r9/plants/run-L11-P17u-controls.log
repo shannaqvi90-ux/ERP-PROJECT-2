@@ -1,0 +1,819 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:18.85
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.67]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.92]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_unique_index_across_tenants [137 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y [7 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_letting_a_grant_held_in_one_company_cover_another [1 m 46 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_subject_check_catches_me_endpoints_that_act_on_the_user_a_request_names [2 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_grant_check_catches_access_given_without_checking_the_caller_or_the_user [5 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_database_check_catches_a_table_without_row_level_security [91 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_says_when_it_stopped_at_its_object_budget [315 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_report_data_check_catches_a_report_printing_data_its_permission_does_not_grant [1 m 21 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_reachable_state_walk_judges_every_field_of_registration_objects [7 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_judging_nothing_or_only_roles_held_everywhere [2 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_own_rows_writable_outside_the_scope [183 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [3 m 18 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [657 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [537 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [11 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_grant_checks_that_compare_only_identity_permissions [22 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_process_state_check_catches_a_static_cache_and_a_stateful_singleton [340 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [10 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [15 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [32 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [247 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [43 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [692 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [38 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [43 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [33 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [22 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [235 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [14 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [23 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [20 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [9 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [5 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_access_checks_that_compare_only_identity_permissions [1 m 28 s]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_company_policy_check_catches_a_company_table_without_the_company_scope [199 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_a_role_delete_without_the_grant_check [< 1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_set_takeover_check_catches_all_that_match_leaving_out_where_users_work [4 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_escalation_check_catches_an_endpoint_that_grants_any_role [< 1 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_role_checks_that_take_grants_held_in_one_company_as_held_everywhere [6 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes [77 ms]
+  Passed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_write_telling_another_tenants_id_inside_a_list_of_objects_from_an_unknown_one [4 s]
+  Passed Erp.Gates.Tests.SelfTests.WriteOracleSelfTests.The_write_oracle_check_catches_a_create_that_refuses_another_tenants_address [10 s]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Only_a_recent_instant_and_a_short_dated_text_are_scrubbed_as_the_print_stamp [1 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.A_compressed_pdf_and_a_zipped_workbook_are_read_for_their_text [22 ms]
+  Passed Erp.Gates.Tests.SelfTests.ResponseTextSelfTests.Right_to_left_runs_are_also_given_in_logical_order [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 39 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [16 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [761 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [2 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [7 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+[xUnit.net 00:08:58.65]     Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [FAIL]
+[xUnit.net 00:08:58.65]       10 leaks of branch Z:
+[xUnit.net 00:08:58.65]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-7c43-9233-2db23f64868c%27&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited read-only user → GET /api/reports/lists/tenancy.branches?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited read-only user → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-7c43-9233-2db23f64868c%27&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited read-only user → GET /api/reports/run/tenancy.branchDirectory?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited read-only user → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       branch-limited read-only user → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+[xUnit.net 00:08:58.65]       Stack Trace:
+[xUnit.net 00:08:58.65]         /work/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs(40,0): at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint()
+[xUnit.net 00:08:58.66]         --- End of stack trace from previous location ---
+[xUnit.net 00:08:58.66]       Output:
+[xUnit.net 00:08:58.66]         111 endpoints, 14354 requests, 4 branch Z markers, 1104 differential checks, 5 write oracle checks
+  Failed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 51 s]
+  Error Message:
+   10 leaks of branch Z:
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-7c43-9233-2db23f64868c%27&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited administrator → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited read-only user → GET /api/reports/lists/tenancy.branches?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited read-only user → GET /api/reports/lists/tenancy.branches?filter=companyId%20eq%20%270191260e-f481-7c43-9233-2db23f64868c%27&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited read-only user → GET /api/reports/run/tenancy.branchDirectory?format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited read-only user → GET /api/reports/run/tenancy.branchDirectory?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+branch-limited read-only user → GET /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&format=pdf (own parameters only) → 200: contains branch Z marker Alpha Trading branch two
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 111 endpoints, 14354 requests, 4 branch Z markers, 1104 differential checks, 5 write oracle checks
+
+
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [75 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [45 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [19 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [2 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [141 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [591 ms]
+  Passed Erp.Gates.Tests.G1.G1ConfigurationTests.The_running_apps_configuration_refuses_writes [6 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [165 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [148 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [84 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [52 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [150 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [22 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [47 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [1 s]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [42 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [79 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [173 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [26 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [112 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [65 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [18 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [49 ms]
+  Passed Erp.Gates.Tests.G1.G1ListVolumeDeterminismTests.The_volume_fixture_canary_holds_none_of_the_checked_letters_and_leaves_B_people_alone [5 ms]
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [705 ms]
+  Passed Erp.Gates.Tests.G1.G1PrintFileTests.A_print_leaves_no_file_behind_that_another_request_could_reach [2 s]
+  Passed Erp.Gates.Tests.G1.G1ListVolumeTests.The_volume_check_catches_totals_taken_from_whole_table_figures_or_kept_for_big_lists [2 m 57 s]
+[xUnit.net 00:10:07.81]     Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_with_every_documented_parameter_and_catches_what_only_a_searched_or_detailed_print_names [FAIL]
+[xUnit.net 00:10:07.81]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:10:07.81]                                                                                                                                           ↓ (pos 224)
+[xUnit.net 00:10:07.81]       Collection: [···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, ···]
+[xUnit.net 00:10:07.81]       Stack Trace:
+[xUnit.net 00:10:07.81]         /work/tests/Erp.Gates.Tests/SelfTests/PrintPlantModule.cs(303,0): at Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_with_every_documented_parameter_and_catches_what_only_a_searched_or_detailed_print_names()
+[xUnit.net 00:10:07.81]         --- End of stack trace from previous location ---
+[xUnit.net 00:10:07.81]       Output:
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=csv: the CSV prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=csv: the CSV prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=xlsx: the XLSX prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=xlsx: the XLSX prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=pdf: the PDF prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=pdf: the PDF prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?numerals=latn&disposition=attachment&detailed=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:07.81]         printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?numerals=latn&disposition=attachment&detailed=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+  Failed Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_with_every_documented_parameter_and_catches_what_only_a_searched_or_detailed_print_names [51 s]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+                                                                                                                                    ↓ (pos 224)
+Collection: [···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, "printplant.detailed (permission printplant.data.re"···, ···]
+  Stack Trace:
+     at Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_with_every_documented_parameter_and_catches_what_only_a_searched_or_detailed_print_names() in /work/tests/Erp.Gates.Tests/SelfTests/PrintPlantModule.cs:line 303
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=csv: the CSV prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=csv: the CSV prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=xlsx: the XLSX prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=xlsx: the XLSX prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=pdf: the PDF prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?detailed=true&language=en&format=pdf: the PDF prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?numerals=latn&disposition=attachment&detailed=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.detailed (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.detailed?numerals=latn&disposition=attachment&detailed=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+
+
+[xUnit.net 00:10:50.51]     Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_documented_values_together_and_catches_what_only_a_saved_view_or_a_pair_names [FAIL]
+[xUnit.net 00:10:50.51]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:10:50.51]                                                                                                                                           ↓ (pos 112)
+[xUnit.net 00:10:50.51]       Collection: [···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, ···]
+[xUnit.net 00:10:50.51]       Stack Trace:
+[xUnit.net 00:10:50.51]         /work/tests/Erp.Gates.Tests/SelfTests/PrintPlantModule.cs(328,0): at Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_documented_values_together_and_catches_what_only_a_saved_view_or_a_pair_names()
+[xUnit.net 00:10:50.51]         --- End of stack trace from previous location ---
+[xUnit.net 00:10:50.51]       Output:
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=csv: the CSV prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=csv: the CSV prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=xlsx: the XLSX prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=xlsx: the XLSX prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=pdf: the PDF prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=pdf: the PDF prints '100000000002003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=arab&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+[xUnit.net 00:10:50.51]         printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=arab&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+  Failed Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_documented_values_together_and_catches_what_only_a_saved_view_or_a_pair_names [42 s]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+                                                                                                                                    ↓ (pos 112)
+Collection: [···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, "printplant.paired (permission printplant.data.read"···, ···]
+  Stack Trace:
+     at Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_prints_documented_values_together_and_catches_what_only_a_saved_view_or_a_pair_names() in /work/tests/Erp.Gates.Tests/SelfTests/PrintPlantModule.cs:line 328
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=csv: the CSV prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=csv: the CSV prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=xlsx: the XLSX prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=xlsx: the XLSX prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=pdf: the PDF prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=latn&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar&format=pdf: the PDF prints '100000000002003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=arab&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000001003', which no other endpoint those permissions open shows
+ printplant.paired (permission printplant.data.read) as a user holding exactly [printplant.data.read] /api/reports/run/printplant.paired?numerals=arab&disposition=attachment&detailed=true&withNotes=true&timeZone=Asia%2FDubai&groupBy=&language=ar: the JSON prints '100000000002003', which no other endpoint those permissions open shows
+
+
+  Passed Erp.Gates.Tests.SelfTests.ReportPrintSelfTests.The_report_data_check_catches_exports_beyond_their_document_and_list_prints_beyond_their_list [32 s]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [266 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [16 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [19 ms]
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [689 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [42 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [49 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [25 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [13 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [7 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [8 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [5 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [55 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [104 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [4 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [71 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [9 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [146 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [133 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [1 ms]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [6 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [2 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [2 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [4 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [4 s]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [16 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [9 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [14 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [10 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [3 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [700 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [2 s]
+[xUnit.net 00:12:21.98]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [FAIL]
+[xUnit.net 00:12:21.98]       control: company profile of X (pdf, en) does not print X's branch to a user who reads branches in X
+[xUnit.net 00:12:21.98]       control: company profile of X (pdf, ar) does not print X's branch to a user who reads branches in X
+[xUnit.net 00:12:21.98]       branch directory (pdf, en) prints company Y's legal name 'Alpha Steel Industries' to a user who reads companies only in X: …4 000 0011YesA1-BR2‧SharjahSharjah+971 6 000 0012YesA2-CO · Alpha Steel Industries · 2 rowsA2-BR1‧DubaiDubai+971…
+[xUnit.net 00:12:21.98]       control: branch directory (pdf, en) does not print Y's branch to a user who reads branches in Y
+[xUnit.net 00:12:21.98]       branch directory (pdf, ar) prints company Y's legal name 'الصناعات الفولاذية' to a user who reads companies only in X: …فان
+[xUnit.net 00:12:21.98]       · 
+[xUnit.net 00:12:21.98]       التجارة 
+[xUnit.net 00:12:21.98]       ‧
+[xUnit.net 00:12:21.98]       دبي
+[xUnit.net 00:12:21.98]       دبي
+[xUnit.net 00:12:21.98]       نعم
+[xUnit.net 00:12:21.98]       ‧
+[xUnit.net 00:12:21.98]       الشارقة
+[xUnit.net 00:12:21.98]       الشارقة
+[xUnit.net 00:12:21.98]       نعم
+[xUnit.net 00:12:21.98]       صفان
+[xUnit.net 00:12:21.98]       · 
+[xUnit.net 00:12:21.98]       الصناعات الفولاذية 
+[xUnit.net 00:12:21.98]       ‧
+[xUnit.net 00:12:21.98]       دبي
+[xUnit.net 00:12:21.98]       دبي
+[xUnit.net 00:12:21.98]       نعم
+[xUnit.net 00:12:21.98]       ‧
+[xUnit.net 00:12:21.98]       الشارقة
+[xUnit.net 00:12:21.98]       الشا…
+[xUnit.net 00:12:21.98]       control: branch directory (pdf, ar) does not print Y's branch to a user who reads branches in Y
+[xUnit.net 00:12:21.98]       control: users by role (pdf, en) does not print the role held in Y to a user who reads roles in X and Y
+[xUnit.net 00:12:21.98]       control: users by role (pdf, ar) does not print the role held in Y to a user who reads roles in X and Y
+[xUnit.net 00:12:21.98]       Stack Trace:
+[xUnit.net 00:12:21.98]         /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleReports.cs(145,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held()
+[xUnit.net 00:12:21.98]         --- End of stack trace from previous location ---
+[xUnit.net 00:12:21.98]       Output:
+[xUnit.net 00:12:21.98]         59 report prints and refusals judged for roles held in one company
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [2 s]
+  Error Message:
+   control: company profile of X (pdf, en) does not print X's branch to a user who reads branches in X
+control: company profile of X (pdf, ar) does not print X's branch to a user who reads branches in X
+branch directory (pdf, en) prints company Y's legal name 'Alpha Steel Industries' to a user who reads companies only in X: …4 000 0011YesA1-BR2‧SharjahSharjah+971 6 000 0012YesA2-CO · Alpha Steel Industries · 2 rowsA2-BR1‧DubaiDubai+971…
+control: branch directory (pdf, en) does not print Y's branch to a user who reads branches in Y
+branch directory (pdf, ar) prints company Y's legal name 'الصناعات الفولاذية' to a user who reads companies only in X: …فان
+· 
+التجارة 
+‧
+دبي
+دبي
+نعم
+‧
+الشارقة
+الشارقة
+نعم
+صفان
+· 
+الصناعات الفولاذية 
+‧
+دبي
+دبي
+نعم
+‧
+الشارقة
+الشا…
+control: branch directory (pdf, ar) does not print Y's branch to a user who reads branches in Y
+control: users by role (pdf, en) does not print the role held in Y to a user who reads roles in X and Y
+control: users by role (pdf, ar) does not print the role held in Y to a user who reads roles in X and Y
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held() in /work/tests/Erp.Gates.Tests/G2/G2CompanyRoleReports.cs:line 145
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 59 report prints and refusals judged for roles held in one company
+
+
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_document_is_the_same_for_every_caller_and_never_repeats_the_host_it_was_asked_on [59 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [4 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [15 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_served_description_is_the_whole_current_document_the_same_for_every_caller [120 ms]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [1 s]
+  Passed Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [4 m 24 s]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [23 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [41 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [22 ms]
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.Product_code_reads_session_carriers_only_where_reviewed [56 ms]
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.The_carrier_pattern_finds_the_planted_bearer_bypass [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [22 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [1 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [12 s]
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [78 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [2 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [2 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [15 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [2 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [2 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [1 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [94 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [642 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [37 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [666 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [154 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [40 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [74 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [9 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [271 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [263 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [28 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [16 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [23 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [8 s]
+[xUnit.net 00:15:28.52]     Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [FAIL]
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&numerals=latn&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&numerals=latn&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=inline&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=inline&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=UTC&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=UTC&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?company=0191260e-f484-7408-b138-ced920dada49&language=ar&format=pdf: the PDF prints 'التجارة', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A1-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A1-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A2-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A2-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'التجارة فرع أول', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'التجارة فرع ثان', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'الصناعات الفولاذية فرع أول', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'الصناعات الفولاذية فرع ثان', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 4 000 0011', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 4 000 0021', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 6 000 0012', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 6 000 0022', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A1-CO', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A2-CO', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'التجارة', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'الصناعات الفولاذية', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A1-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A1-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A2-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A2-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Steel Industries branch one', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Steel Industries branch two', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Trading branch one', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Trading branch two', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints '+971 4 000 0011', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints '+971 4 000 0021', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints '+971 6 000 0012', which the JSON document of the same request does not (a file prints what the document shows, no more)
+[xUnit.net 00:15:28.52]       Stack Trace:
+[xUnit.net 00:15:28.52]         /work/tests/Erp.Gates.Tests/G2/G2ReportDataTests.cs(40,0): at Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere()
+[xUnit.net 00:15:28.52]         --- End of stack trace from previous location ---
+[xUnit.net 00:15:28.52]       Output:
+[xUnit.net 00:15:28.52]         4 reports, 36 permission sets, 5 printable lists, 45 list permission sets, 2598 runs, 7242 files, 48858 printed values judged in JSON, 135012 in files, 133 documented query values, 1197 runs with them, 117 combinations of them, 1041 runs with those
+  Failed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [3 m 3 s]
+  Error Message:
+   tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&numerals=latn&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&numerals=latn&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=attachment&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=inline&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&disposition=inline&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=Asia%2FDubai&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=UTC&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+tenancy.companyProfile (permission tenancy.companies.read) as a user holding exactly [tenancy.companies.read, tenancy.branches.read] /api/reports/run/tenancy.companyProfile?company=0191260e-f481-7c43-9233-2db23f64868c&timeZone=UTC&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?company=0191260e-f484-7408-b138-ced920dada49&language=ar&format=pdf: the PDF prints 'التجارة', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which no other endpoint those permissions open shows
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'ريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which no other endpoint those permissions open shows
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'مريم المنصوري', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A1-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A1-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A2-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A2-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'التجارة فرع أول', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'التجارة فرع ثان', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'الصناعات الفولاذية فرع أول', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'الصناعات الفولاذية فرع ثان', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 4 000 0011', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 4 000 0021', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 6 000 0012', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints '+971 6 000 0022', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A1-CO', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'A2-CO', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'التجارة', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=abuDhabi&language=ar&format=pdf: the PDF prints 'الصناعات الفولاذية', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which no other endpoint those permissions open shows
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Mariam Al Mansoori', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A1-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A1-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A2-BR1', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'A2-BR2', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Steel Industries branch one', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Steel Industries branch two', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Trading branch one', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints 'Alpha Trading branch two', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints '+971 4 000 0011', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints '+971 4 000 0021', which the JSON document of the same request does not (a file prints what the document shows, no more)
+tenancy.branchDirectory (permission tenancy.branches.read) as a user holding exactly [tenancy.branches.read] /api/reports/run/tenancy.branchDirectory?emirate=ajman&language=en&format=pdf: the PDF prints '+971 6 000 0012', which the JSON document of the same request does not (a file prints what the document shows, no more)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere() in /work/tests/Erp.Gates.Tests/G2/G2ReportDataTests.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 4 reports, 36 permission sets, 5 printable lists, 45 list permission sets, 2598 runs, 7242 files, 48858 printed values judged in JSON, 135012 in files, 133 documented query values, 1197 runs with them, 117 combinations of them, 1041 runs with those
+
+
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [1 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_set_up_code_still_signs_in_from_a_shared_address_another_client_paused_and_nothing_else_does [864 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failures_and_pauses_answer_alike_whether_or_not_and_wherever_an_account_has_the_address [4 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [532 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [17 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [3 ms]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [15 m 30 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [33 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [93 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [23 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_passkey_removed_whoever_holds_it_and_a_body_flag_that_skips_the_check [21 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_target_check_skipped_for_a_documented_query_value [2 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [1 m 3 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+[xUnit.net 00:33:57.00]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:33:57.00]       3 isolation checks failed:
+[xUnit.net 00:33:57.00]       
+[xUnit.net 00:33:57.00]       1026 leaks:
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem%2CnameEn&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem%2CnameEn [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=isSystem%2CnameEn [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=isSystem%2CnameEn&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn%2CisSystem&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn%2CisSystem [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true&sort=-isSystem&columns=nameEn&timeZone=UTC [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true&sort=-isSystem&columns=nameEn&timeZone=UTC&search=alpha [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true&sort=-isSystem&columns=nameEn&timeZone=UTC&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=attachment&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=attachment [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=inline [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=attachment [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=attachment&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&filter=isActive%20eq%20true [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&filter=isActive%20eq%20true&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=-createdAt [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=-createdAt&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=createdAt [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=createdAt&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage%2CisActive%2ClastSignInAt%2CroleIds [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage%2CisActive%2ClastSignInAt%2CroleIds&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=Asia%2FDubai&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=Asia%2FDubai [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=UTC&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=UTC [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&filter=isActive%20eq%20true&sort=createdAt&columns=displayName&timeZone=UTC [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&filter=displayName%20contains%20%27a%27 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&sort=displayName&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&sort=displayName [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName%2Cemail&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName%2Cemail [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&filter=displayName%20contains%20%27a%27&sort=displayName&columns=displayName&timeZone=UTC&groupBy= [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches?format=pdf&language=ar&numerals=arab&groupBy=companyId&disposition=inline [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches?format=pdf&language=ar&numerals=arab&groupBy=companyId&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches?format=pdf&language=ar&numerals=arab&groupBy=city&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+[xUnit.net 00:33:57.00]       
+[xUnit.net 00:33:57.00]       1 server errors:
+[xUnit.net 00:33:57.00]       tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=latn&disposition=attachment&search=alpha [an answer shape tenant B asked for first] → 500: {"type":"urn:erp:problem:internal","title":"Something went wrong on our side. Try again; if it keeps happening, quote the trace id to support.","status":500,"code":"internal","traceId":"0HNPDJAP14L18"}
+[xUnit.net 00:33:57.00]           server: Erp.Kernel.Http.ErpExceptionHandler: Request 0HNPDJAP14L18 failed with internal — FileNotFoundException: Could not find file '/tmp/erp-pdf-spool/D484EA9DB84988392F8C6B0CB4BC47A6E47FC0531F334087EFCA8D4A683ACF63.pdf.tmp'. at at System.IO.File.Move(String sourceFileName, String destFileName, Boolean overwrite)
+[xUnit.net 00:33:57.00]       
+[xUnit.net 00:33:57.00]       Tenant B's concurrent activity may have been blind:
+[xUnit.net 00:33:57.00]       answer shapes: tenant B was refused /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem&search=bravocnryfd73b80f48 (500), so that shape held nothing of tenant B's
+[xUnit.net 00:33:57.00]       answer shapes: tenant B was refused /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=isSystem%2CnameEn (500), so that shape held nothing of tenant B's
+[xUnit.net 00:33:57.00]       Stack Trace:
+[xUnit.net 00:33:57.00]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(176,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:33:57.00]         --- End of stack trace from previous location ---
+[xUnit.net 00:33:57.00]       Output:
+[xUnit.net 00:33:57.00]         routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 473.0 s
+[xUnit.net 00:33:57.00]         tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 558.9 s
+[xUnit.net 00:33:57.00]         write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 1101.5 s
+[xUnit.net 00:33:57.00]         answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2386 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70068, 20053 in Arabic), 1161.2 s
+[xUnit.net 00:33:57.00]         tenant B values in route and query parameters: 526244 requests so far (93618 by tenant A's Arabic sessions; tenant B 96615, 26689 in Arabic), 1606.7 s
+[xUnit.net 00:33:57.00]         registered lists through their query contract: 17289 attacks, 31337 requests: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 100469, 27653 in Arabic), 1647.5 s
+[xUnit.net 00:33:57.00]         list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 968 with different true answers (610 sorted), 82776 rows walked; process-wide state fingerprinted in 105901 lines from 115 roots: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 128335, 34619 in Arabic), 1872.5 s
+[xUnit.net 00:33:57.00]         tenant B values in body fields: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 132421, 35641 in Arabic), 1921.1 s
+[xUnit.net 00:33:57.00]         tenant B activity: 161103 requests (62356 concurrent with the attack), 1980 successful own writes, 160851 responses judged for tenant A markers: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 161103, 40730 in Arabic), 1953.7 s
+[xUnit.net 00:33:57.00]         tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+[xUnit.net 00:33:57.00]         736082 tenant bindings and 1472518 setting statements judged among 7519730 statements; 736082 tenant values judged, 6764562 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+[xUnit.net 00:33:57.00]         11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+[xUnit.net 00:33:57.00]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:33:57.00]         120 endpoints, 618966 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 735945 traced lookups
+[xUnit.net 00:33:57.00]         in Arabic: 98516 tenant A requests, 40730 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [33 m 40 s]
+  Error Message:
+   3 isolation checks failed:
+
+1026 leaks:
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem%2CnameEn&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem%2CnameEn [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=isSystem%2CnameEn [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=isSystem%2CnameEn&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn%2CisSystem&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&columns=nameEn%2CisSystem [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true&sort=-isSystem&columns=nameEn&timeZone=UTC [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true&sort=-isSystem&columns=nameEn&timeZone=UTC&search=alpha [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&filter=isSystem%20eq%20true&sort=-isSystem&columns=nameEn&timeZone=UTC&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=attachment&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=attachment [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=language&disposition=inline [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=attachment [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=attachment&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&filter=isActive%20eq%20true [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&filter=isActive%20eq%20true&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=-createdAt [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=-createdAt&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=createdAt [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&sort=createdAt&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage%2CisActive%2ClastSignInAt%2CroleIds [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage%2CisActive%2ClastSignInAt%2CroleIds&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&columns=displayName%2Cemail%2Clanguage [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=Asia%2FDubai&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=Asia%2FDubai [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=UTC&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&timeZone=UTC [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/identity.users?format=pdf&language=ar&numerals=arab&groupBy=isActive&disposition=inline&filter=isActive%20eq%20true&sort=createdAt&columns=displayName&timeZone=UTC [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&filter=displayName%20contains%20%27a%27 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&sort=displayName&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&sort=displayName [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName%2Cemail&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&columns=displayName%2Cemail [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.access?format=pdf&language=ar&numerals=arab&disposition=inline&filter=displayName%20contains%20%27a%27&sort=displayName&columns=displayName&timeZone=UTC&groupBy= [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches?format=pdf&language=ar&numerals=arab&groupBy=companyId&disposition=inline [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches?format=pdf&language=ar&numerals=arab&groupBy=companyId&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+tenant A administrator (cookie) → GET /api/reports/lists/tenancy.branches?format=pdf&language=ar&numerals=arab&groupBy=city&disposition=inline&search=bravocnryfd73b80f48 [an answer shape tenant B asked for first] → 200: response contains tenant B marker CNRYFD73B80F48
+
+1 server errors:
+tenant A administrator (cookie) → GET /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=latn&disposition=attachment&search=alpha [an answer shape tenant B asked for first] → 500: {"type":"urn:erp:problem:internal","title":"Something went wrong on our side. Try again; if it keeps happening, quote the trace id to support.","status":500,"code":"internal","traceId":"0HNPDJAP14L18"}
+    server: Erp.Kernel.Http.ErpExceptionHandler: Request 0HNPDJAP14L18 failed with internal — FileNotFoundException: Could not find file '/tmp/erp-pdf-spool/D484EA9DB84988392F8C6B0CB4BC47A6E47FC0531F334087EFCA8D4A683ACF63.pdf.tmp'. at at System.IO.File.Move(String sourceFileName, String destFileName, Boolean overwrite)
+
+Tenant B's concurrent activity may have been blind:
+answer shapes: tenant B was refused /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=-isSystem&search=bravocnryfd73b80f48 (500), so that shape held nothing of tenant B's
+answer shapes: tenant B was refused /api/reports/lists/identity.roles?format=pdf&language=ar&numerals=arab&disposition=inline&sort=isSystem%2CnameEn (500), so that shape held nothing of tenant B's
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 176
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 473.0 s
+ tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 558.9 s
+ write after write: 199 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 1101.5 s
+ answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2386 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70068, 20053 in Arabic), 1161.2 s
+ tenant B values in route and query parameters: 526244 requests so far (93618 by tenant A's Arabic sessions; tenant B 96615, 26689 in Arabic), 1606.7 s
+ registered lists through their query contract: 17289 attacks, 31337 requests: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 100469, 27653 in Arabic), 1647.5 s
+ list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 968 with different true answers (610 sorted), 82776 rows walked; process-wide state fingerprinted in 105901 lines from 115 roots: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 128335, 34619 in Arabic), 1872.5 s
+ tenant B values in body fields: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 132421, 35641 in Arabic), 1921.1 s
+ tenant B activity: 161103 requests (62356 concurrent with the attack), 1980 successful own writes, 160851 responses judged for tenant A markers: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 161103, 40730 in Arabic), 1953.7 s
+ tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+ 736082 tenant bindings and 1472518 setting statements judged among 7519730 statements; 736082 tenant values judged, 6764562 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+ 11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 120 endpoints, 618966 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 735945 traced lookups
+ in Arabic: 98516 tenant A requests, 40730 tenant B requests, 85 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [2 m 40 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers [1 m 4 s]
+[xUnit.net 00:37:43.77]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_endpoint_the_shell_calls_is_judged [6 ms]
+
+Total tests: 193
+     Passed: 187
+     Failed: 6
+Test Run Failed.
+ Total time: 37.7463 Minutes
+gates exit 1
+Test run for /work/tests/Erp.Modules.Reports.Tests/bin/Release/net10.0/Erp.Modules.Reports.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.12]   Discovering: Erp.Modules.Reports.Tests
+[xUnit.net 00:00:00.26]   Discovered:  Erp.Modules.Reports.Tests
+[xUnit.net 00:00:00.38]   Starting:    Erp.Modules.Reports.Tests
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "شركة Al Noor Trading للتجارة", rightToLeft: True, expected: "للتجارة|Al Noor Trading|شركة") [15 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "فاتورة 2026-10 رقم 15", rightToLeft: True, expected: "15|رقم|10|-|2026|فاتورة") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "هاتف +971 4 123-4567 فرع", rightToLeft: True, expected: "فرع|+971 4 123-4567|هاتف") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "Branch: الفرع الرئيسي today", rightToLeft: False, expected: "Branch:|الفرع الرئيسي|today") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "+971 2 555 7810", rightToLeft: True, expected: "+971 2 555 7810") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "04 555 7810", rightToLeft: True, expected: "04 555 7810") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(text: "05/10/2026 14:30", rightToLeft: True, expected: "14:30|05/10/2026") [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Exports_write_the_grouping_column_once_when_the_document_prints_it [19 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_telephone_number_prints_left_to_right_in_an_arabic_pdf [245 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_text_is_shaped_into_joining_forms_with_lam_alef [3 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_font_subset_keeps_the_drawn_glyphs_and_their_components_at_their_ids [14 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_line_narrower_than_one_character_still_ends [4 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_ends_with_the_grand_total_as_a_filter_aware_formula_below_the_filtered_rows [1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Font_units_scale_to_thousandths_of_an_em_rounded_half_to_even_as_decimals_round [212 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_letters_that_share_a_glyph_extract_as_the_letters_printed [4 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_cut_at_its_row_limit_ends_with_a_line_saying_so [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_document_of_thousands_of_rows_is_written_page_by_page_to_a_stream_that_cannot_seek [76 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_long_run_maps_every_glyph_back_to_its_characters_and_a_line_shaped_again_is_the_same [10 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Each_script_is_drawn_with_a_font_that_has_it [3 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.The_first_strong_character_decides_a_values_direction [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_of_a_grouped_report_lists_each_groups_total_under_the_grand_total [2 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_has_a_right_to_left_sheet_with_numbers_as_numbers [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_very_long_unbroken_value_wraps_quickly_into_at_most_the_lines_kept(arabic: True) [26 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_very_long_unbroken_value_wraps_quickly_into_at_most_the_lines_kept(arabic: False) [11 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_carries_the_rows_only_so_another_program_reads_every_line_as_data [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_writes_totals_in_more_than_one_currency_as_text_and_adds_no_total_to_a_report_without_one [12 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_wide_table_turns_the_page_to_landscape [11 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_long_report_breaks_into_pages_with_the_header_on_each_and_page_numbers [34 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_cancelled_print_stops [2 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_grouped_pdf_does_not_repeat_the_grouping_column_in_its_rows [11 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Long_text_wraps_at_spaces_within_the_width [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_pdf_starts_with_a_well_formed_header [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Csv_starts_with_a_byte_order_mark_keeps_raw_values_and_defuses_formulas [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Xlsx_cut_at_its_row_limit_says_so_under_the_table_outside_the_filter [1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.An_arabic_pdf_is_readable_right_to_left_with_its_fonts_embedded [13 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Arabic_runs_are_written_whole_and_in_reading_order_so_a_reader_extracts_words_intact [6 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_page_is_written_out_when_the_next_page_starts [2 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.The_shaper_keeps_a_bounded_number_of_lines_and_a_value_that_fits_is_one_line [117 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.Numbers_amounts_and_dates_follow_the_language_and_digits [< 1 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_pdf_embeds_only_the_glyphs_it_draws_and_every_letter_keeps_its_outline [13 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_composite_glyph_keeps_the_glyphs_it_is_built_from [2 ms]
+  Passed Erp.Modules.Reports.Tests.RenderingTests.A_report_with_a_huge_cell_renders_in_seconds [17 ms]
+[xUnit.net 00:00:09.10]     Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_the_roles_for_a_reader_of_roles_and_exports_moments_as_the_wall_clock [FAIL]
+[xUnit.net 00:00:09.10]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:09.10]                                    ↓ (pos 20)
+[xUnit.net 00:00:09.10]       String: "admin@alpha.example,Administrator"
+[xUnit.net 00:00:09.10]       Found:  "Administrator"
+[xUnit.net 00:00:09.10]       Stack Trace:
+[xUnit.net 00:00:09.11]         /work/tests/Erp.Modules.Reports.Tests/ReportApiTests.cs(451,0): at Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_the_roles_for_a_reader_of_roles_and_exports_moments_as_the_wall_clock()
+[xUnit.net 00:00:09.11]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Another_tenants_company_or_no_company_is_not_found_and_bad_parameters_are_explained [532 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Exports_carry_the_rows_as_csv_and_as_a_workbook [147 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_reports_isolation_probe_reports_requests_that_get_no_answer_and_runs_the_rest [9 ms]
+  Failed Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_the_roles_for_a_reader_of_roles_and_exports_moments_as_the_wall_clock [397 ms]
+  Error Message:
+   Assert.DoesNotContain() Failure: Sub-string found
+                             ↓ (pos 20)
+String: "admin@alpha.example,Administrator"
+Found:  "Administrator"
+  Stack Trace:
+     at Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_the_roles_for_a_reader_of_roles_and_exports_moments_as_the_wall_clock() in /work/tests/Erp.Modules.Reports.Tests/ReportApiTests.cs:line 451
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Another_areas_columns_and_parameters_are_left_out_for_a_caller_who_cannot_read_that_area [533 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_role_without_the_data_permission_cannot_run_the_report_and_does_not_see_it [62 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_printed_roles_list_names_each_roles_type_and_aligns_counts_as_numbers [42 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_api_description_gives_every_report_route_its_document_schema_and_file_types [209 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_list_of_records_in_a_cell_prints_as_their_codes [71 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_list_prints_with_its_own_query_columns_and_totals [132 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_reports_isolation_probe_sends_tenant_Bs_own_records_with_every_print_option_together [111 ms]
+[xUnit.net 00:00:12.31]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:12.31]                                              ↓ (pos 31)
+[xUnit.net 00:00:12.31]       Expected: ···"pany.roles@alpha.example,2"
+[xUnit.net 00:00:12.31]       Actual:   ···"pany.roles@alpha.example,"Rp everywhere role, Rp c"···
+[xUnit.net 00:00:12.31]                                              ↑ (pos 31)
+[xUnit.net 00:00:12.31]     Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_roles_held_in_one_company_with_its_code_and_names_the_printer_in_the_documents_language [FAIL]
+[xUnit.net 00:00:12.31]       Stack Trace:
+[xUnit.net 00:00:12.31]         /work/tests/Erp.Modules.Reports.Tests/ReportApiTests.cs(495,0): at Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_roles_held_in_one_company_with_its_code_and_names_the_printer_in_the_documents_language()
+[xUnit.net 00:00:12.31]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:12.36]     Erp.Modules.Reports.Tests.ReportApiTests.A_company_profile_prints_in_arabic_from_an_english_session [FAIL]
+[xUnit.net 00:00:12.36]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:12.36]       Expected: "inline"
+[xUnit.net 00:00:12.36]       Actual:   null
+[xUnit.net 00:00:12.36]       Stack Trace:
+[xUnit.net 00:00:12.36]         /work/tests/Erp.Modules.Reports.Tests/ReportApiTests.cs(99,0): at Erp.Modules.Reports.Tests.ReportApiTests.A_company_profile_prints_in_arabic_from_an_english_session()
+[xUnit.net 00:00:12.36]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_pdf_holds_every_row_the_screen_leaves_out_and_a_file_says_where_it_stops [1 s]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_branch_directory_groups_by_company_with_counts_and_by_any_groupable_column [74 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_roles_report_counts_holders_in_one_company_as_the_roles_list_does [75 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Covering_rows_hold_every_combination_of_the_values_of_any_options_of_that_many(strength: 3) [43 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.Covering_rows_hold_every_combination_of_the_values_of_any_options_of_that_many(strength: 2) [1 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_roles_report_totals_users_and_permissions_per_kind_and_overall [32 ms]
+  Failed Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_roles_held_in_one_company_with_its_code_and_names_the_printer_in_the_documents_language [151 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                       ↓ (pos 31)
+Expected: ···"pany.roles@alpha.example,2"
+Actual:   ···"pany.roles@alpha.example,"Rp everywhere role, Rp c"···
+                                       ↑ (pos 31)
+  Stack Trace:
+     at Erp.Modules.Reports.Tests.ReportApiTests.A_printed_users_list_names_roles_held_in_one_company_with_its_code_and_names_the_printer_in_the_documents_language() in /work/tests/Erp.Modules.Reports.Tests/ReportApiTests.cs:line 495
+--- End of stack trace from previous location ---
+  Failed Erp.Modules.Reports.Tests.ReportApiTests.A_company_profile_prints_in_arabic_from_an_english_session [51 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+Expected: "inline"
+Actual:   null
+  Stack Trace:
+     at Erp.Modules.Reports.Tests.ReportApiTests.A_company_profile_prints_in_arabic_from_an_english_session() in /work/tests/Erp.Modules.Reports.Tests/ReportApiTests.cs:line 99
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.The_catalogue_lists_reports_and_lists_in_the_callers_language [17 ms]
+[xUnit.net 00:00:13.75]   Finished:    Erp.Modules.Reports.Tests (ID = 'aa0ba11486d2994c9cc221f697ec8de6f8bbe06fde0d65669e5f45ee23fe8e20')
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_company_profile_is_issued_under_the_company_it_describes [44 ms]
+  Passed Erp.Modules.Reports.Tests.ReportApiTests.A_users_list_names_roles_beyond_the_first_page_of_roles [1 s]
+
+Test Run Failed.
+Total tests: 64
+     Passed: 61
+     Failed: 3
+ Total time: 14.0323 Seconds
+start 2026-10-19T04:36:52Z end 2026-10-19T05:15:22Z exit 1

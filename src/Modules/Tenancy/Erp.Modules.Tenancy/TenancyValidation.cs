@@ -72,7 +72,22 @@ internal static partial class TenancyValidation
     public const string UnitedArabEmirates = "AE";
 
     public const string CodePattern = "^[A-Z0-9][A-Z0-9-]{1,19}$";
-    public const string PhonePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
+    /// <summary>A phone number's characters: digits, spaces, brackets and hyphens, optionally
+    /// starting with +, 5 to 30 characters.</summary>
+    public const string PhoneShapePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
+
+    /// <summary>
+    /// A phone number as documented and accepted: <see cref="PhoneShapePattern"/>, and a number with
+    /// the UAE's code (+971 or 00971) has the digits its kind has in the numbering plan
+    /// (<see cref="UaeNumberLengthFits"/>): 8 for a fixed line, 9 for a mobile or a 200 to 900 service
+    /// number, 5 to 12 for an 800 number. The two checks together accept exactly what this pattern
+    /// matches (a test holds them to it), so a client that follows the API description sends a
+    /// number the server takes.
+    /// </summary>
+    public const string PhonePattern =
+        "^(?:(?!\\+971|00971)\\+?[0-9][0-9 ()-]{4,28}" +
+        "|(?=\\+?[0-9][0-9 ()-]{4,28}$)(?:\\+971|00971)[ ()-]*" +
+        "(?:5(?:[ ()-]*[0-9]){8}|[234679](?:[ ()-]*[0-9]){7}|[234679][ ()-]*0[ ()-]*0(?:[ ()-]*[0-9]){6}|8[ ()-]*0[ ()-]*0(?:[ ()-]*[0-9]){2,9})[ ()-]*)$";
     /// <summary>A Tax Registration Number as typed: exactly 15 digits, 0 to 9 or the Arabic-Indic
     /// ٠ to ٩ of an Arabic keyboard (turned into 0 to 9), with any spaces and dashes (removed before
     /// it is stored). docs/compliance/vat-trn-format.md, owner 2026-10-10 and 2026-10-17.</summary>
@@ -115,12 +130,16 @@ internal static partial class TenancyValidation
     /// A company's legal names: the English one is always required (it identifies the company in
     /// every list, code and English document, and an English document must never print an empty
     /// legal name: p06 round 3 saved a company whose English legal name was empty because an Arabic
-    /// one existed); the Arabic one is optional until the owner rules on it (needs-human #9). Each is
-    /// at most 200 characters.
+    /// one existed) and holds at least one Latin letter; the Arabic one is optional until the owner
+    /// rules on it (needs-human #9). Each is at most 200 characters.
     /// </summary>
     public static Validator LegalNames(this Validator validator, string? english, string? arabic)
     {
         validator.Must(!string.IsNullOrWhiteSpace(english), "legalNameEn", "tenancyLegalNameEn")
+            // The English legal name is the one in Latin letters on the trade licence: a name with
+            // no Latin letter at all (typed in Arabic, or digits only) is not it (critic p02 round 11:
+            // an Arabic walk saved the English legal name "فرع ديرة 60473").
+            .Must(string.IsNullOrWhiteSpace(english) || english.Any(char.IsAsciiLetter), "legalNameEn", "tenancyLegalNameEnLatin")
             .MaxLength("legalNameEn", english, 200)
             .MaxLength("legalNameAr", arabic, 200);
         return validator;
@@ -210,9 +229,56 @@ internal static partial class TenancyValidation
         }
         if (Clean(address.Phone) is { } phone)
         {
-            validator.Must(PhoneRegex().IsMatch(phone), "phone", "tenancyPhone");
+            if (PhoneRegex().IsMatch(phone))
+            {
+                validator.Must(UaeNumberLengthFits(phone), "phone", "tenancyUaePhone");
+            }
+            else
+            {
+                validator.Add("phone", "tenancyPhone");
+            }
         }
         return validator;
+    }
+
+    /// <summary>
+    /// Whether a number written with the UAE's country code (+971 or 00971) has as many digits after
+    /// it as the UAE's numbering plan gives its kind (ITU-T E.164 plan for country code 971 as
+    /// published by the ITU for the regulator, checked 2026-10-19; decision
+    /// p06-form-report-whole-documents): a fixed line, an area digit 2, 3, 4, 6, 7 or 9 and seven
+    /// more, 8 digits; a mobile number (5 and eight more) or a service number 200 to 900, 9 digits;
+    /// a toll-free 800 number 5 to 12 digits. A number of another country, or one written without
+    /// its country code, is not judged here.
+    /// </summary>
+    public static bool UaeNumberLengthFits(string phone)
+    {
+        var text = phone.Trim();
+        string rest;
+        if (text.StartsWith("+971", StringComparison.Ordinal))
+        {
+            rest = text[4..];
+        }
+        else if (text.StartsWith("00971", StringComparison.Ordinal))
+        {
+            rest = text[5..];
+        }
+        else
+        {
+            return true;
+        }
+        var national = new string(rest.Where(char.IsAsciiDigit).ToArray());
+        if (national.Length == 0)
+        {
+            return false;
+        }
+        return national[0] switch
+        {
+            '5' => national.Length == 9,
+            '8' => national.StartsWith("800", StringComparison.Ordinal) && national.Length is >= 5 and <= 12,
+            // Eight digits, or nine for a service number (200, 300, 400, 600, 700, 900).
+            '2' or '3' or '4' or '6' or '7' or '9' => national.Length == 8 || national.Length == 9 && national[1] == '0' && national[2] == '0',
+            _ => false,
+        };
     }
 
     public static Validator Website(this Validator validator, string? website)
@@ -308,8 +374,12 @@ internal static partial class TenancyValidation
     [GeneratedRegex(CodePattern)]
     private static partial Regex CodeRegex();
 
-    [GeneratedRegex(PhonePattern)]
+    [GeneratedRegex(PhoneShapePattern)]
     private static partial Regex PhoneRegex();
+
+    /// <summary>The documented pattern (<see cref="PhonePattern"/>), for the test that holds the checks to it.</summary>
+    [GeneratedRegex(PhonePattern)]
+    internal static partial Regex DocumentedPhoneRegex();
 
     [GeneratedRegex(StoredTaxNumberPattern)]
     private static partial Regex StoredTaxNumberRegex();

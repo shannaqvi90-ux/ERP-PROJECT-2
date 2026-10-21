@@ -1,0 +1,641 @@
+Test run for /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.18]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.45]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.62]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [12 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [528 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y [3 s]
+[xUnit.net 00:03:00.12]     Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [FAIL]
+[xUnit.net 00:03:00.12]       2 leaks of company Y:
+[xUnit.net 00:03:00.12]       company X administrator → GET /api/tenancy/workplace (own parameters only) → 200: contains company Y marker الصناعات الفولاذية
+[xUnit.net 00:03:00.12]       company X read-only user → GET /api/tenancy/workplace (own parameters only) → 200: contains company Y marker الصناعات الفولاذية
+[xUnit.net 00:03:00.12]       Stack Trace:
+[xUnit.net 00:03:00.12]         /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs(48,0): at Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint()
+[xUnit.net 00:03:00.12]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:00.12]       Output:
+[xUnit.net 00:03:00.12]         111 endpoints, 71238 requests, 26 company Y markers, 11344 differential checks, 8 write oracle checks
+  Failed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [2 m 43 s]
+  Error Message:
+   2 leaks of company Y:
+company X administrator → GET /api/tenancy/workplace (own parameters only) → 200: contains company Y marker الصناعات الفولاذية
+company X read-only user → GET /api/tenancy/workplace (own parameters only) → 200: contains company Y marker الصناعات الفولاذية
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint() in /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs:line 48
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 111 endpoints, 71238 requests, 26 company Y markers, 11344 differential checks, 8 write oracle checks
+
+
+  Passed Erp.Gates.Tests.G1.G1ListVolumeTests.The_volume_check_catches_totals_taken_from_whole_table_figures_or_kept_for_big_lists [1 m 58 s]
+[xUnit.net 00:03:50.62]     Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [FAIL]
+[xUnit.net 00:03:50.62]       2 leaks of branch Z:
+[xUnit.net 00:03:50.62]       branch-limited administrator → GET /api/tenancy/workplace (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+[xUnit.net 00:03:50.62]       branch-limited read-only user → GET /api/tenancy/workplace (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+[xUnit.net 00:03:50.62]       Stack Trace:
+[xUnit.net 00:03:50.62]         /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs(40,0): at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint()
+[xUnit.net 00:03:50.62]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:50.62]       Output:
+[xUnit.net 00:03:50.62]         111 endpoints, 15066 requests, 4 branch Z markers, 1104 differential checks, 5 write oracle checks
+  Failed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [48 s]
+  Error Message:
+   2 leaks of branch Z:
+branch-limited administrator → GET /api/tenancy/workplace (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+branch-limited read-only user → GET /api/tenancy/workplace (own parameters only) → 200: contains branch Z marker التجارة فرع ثان
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint() in /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1BranchScopeAttackTests.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 111 endpoints, 15066 requests, 4 branch Z markers, 1104 differential checks, 5 write oracle checks
+
+
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Server_string_files_have_matching_English_and_Arabic_keys [44 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_problem_and_validation_code_in_server_code_has_text [100 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Web_string_files_have_matching_English_and_Arabic_keys [3 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Count_messages_use_plural_forms [3 ms]
+  Passed Erp.Gates.Tests.Rules.StringGateTests.Every_permission_module_and_menu_entry_has_labels [7 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [30 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [221 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [30 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [218 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [569 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [13 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [901 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [27 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [28 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [412 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [10 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [21 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [12 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [638 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [40 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_target_check_skipped_for_a_documented_query_value [2 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [789 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [6 s]
+  Passed Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [3 m 12 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [1 m 24 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [900 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failures_and_pauses_answer_alike_whether_or_not_and_wherever_an_account_has_the_address [3 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [355 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [40 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [13 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [16 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [18 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [252 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [22 ms]
+  Passed Erp.Gates.Tests.G1.G1ConfigurationTests.The_running_apps_configuration_refuses_writes [1 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [40 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [77 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [29 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [9 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [23 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [8 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [41 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [384 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [24 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [59 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [11 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [41 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [20 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [5 ms]
+  Passed Erp.Gates.Tests.G1.G1ListVolumeDeterminismTests.The_volume_fixture_canary_holds_none_of_the_checked_letters_and_leaves_B_people_alone [1 ms]
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [260 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [12 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [15 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [64 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [29 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [54 ms]
+[xUnit.net 00:06:36.16]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:06:36.16]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:06:36.16]       Stack Trace:
+[xUnit.net 00:06:36.16]         /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:06:36.16]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:06:36.16]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:06:36.16]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:06:36.16]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:06:36.16]       Output:
+[xUnit.net 00:06:36.16]         436 types, 97 fields, 15 singleton services inspected, 115 endpoint delegates walked (3336 objects) to 29 closures; 5 framework singletons over product types; 112 roots walked to 1246 objects, 60 product types judged field by field; 29 reviewed findings
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [96 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [2 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [4 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [23 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [240 ms]
+  Error Message:
+   static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 436 types, 97 fields, 15 singleton services inspected, 115 endpoint delegates walked (3336 objects) to 29 closures; 5 framework singletons over product types; 112 roots walked to 1246 objects, 60 product types judged field by field; 29 reviewed findings
+
+
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [529 ms]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [37 ms]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [2 s]
+[xUnit.net 00:06:44.47]     Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [FAIL]
+[xUnit.net 00:06:44.47]       POST /api/tenancy/branches [code]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-169261d2d3eee909c6c9172dd548528b-2385b80744234f11-00","errors":{"companyId":[{…
+[xUnit.net 00:06:44.47]       POST /api/tenancy/branches [nameEn]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-5fb3390347c7694488dd57a1661b3966-337fbbbbce90955e-00","errors":{"companyId":[{…
+[xUnit.net 00:06:44.47]       POST /api/tenancy/branches [nameAr]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-fa0070a6703e150deeebc11fd625c64b-2ed80465d6033763-00","errors":{"companyId":[{…
+[xUnit.net 00:06:44.47]       POST /api/tenancy/branches [email]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-93c69bc96bb2eae1edaae1eb93ee0090-ec5cd98f2b9365d6-00","errors":{"companyId":[{…
+[xUnit.net 00:06:44.47]       PUT /api/tenancy/branches/{id:guid} [code]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-8e6e33a95c77a0c0455afb67b2b830c1-02d2c9517…
+[xUnit.net 00:06:44.47]       PUT /api/tenancy/branches/{id:guid} [nameEn]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-c8fb44022f1532546ca4308447bb7a1b-a11e27c5b…
+[xUnit.net 00:06:44.47]       PUT /api/tenancy/branches/{id:guid} [nameAr]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-9922f25eded19b9790e965154e29b9bb-6270bf26e…
+[xUnit.net 00:06:44.47]       PUT /api/tenancy/branches/{id:guid} [email]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-ea5af92b67e491b982af33552dc5f3aa-61852f1b0…
+[xUnit.net 00:06:44.47]       Stack Trace:
+[xUnit.net 00:06:44.47]         /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1WriteOracle.cs(350,0): at Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere()
+[xUnit.net 00:06:44.47]         --- End of stack trace from previous location ---
+[xUnit.net 00:06:44.47]       Output:
+[xUnit.net 00:06:44.47]         49 differential write checks on POST /api/identity/me/passkeys, POST /api/identity/roles, POST /api/identity/roles/{id:guid}/copy, POST /api/identity/users, POST /api/lists/identity.roles/shared-views, POST /api/lists/identity.roles/views, POST /api/lists/identity.users/shared-views, POST /api/lists/identity.users/views, POST /api/lists/tenancy.access/shared-views, POST /api/lists/tenancy.access/views, POST /api/lists/tenancy.branches/shared-views, POST /api/lists/tenancy.branches/views, POST /api/lists/tenancy.companies/shared-views, POST /api/lists/tenancy.companies/views, POST /api/tenancy/branches, POST /api/tenancy/companies, PUT /api/identity/me/passkeys/{id:guid}, PUT /api/identity/roles/{id:guid}, PUT /api/identity/users/{id:guid}, PUT /api/lists/identity.roles/shared-views/{id:guid}, PUT /api/lists/identity.roles/views/{id:guid}, PUT /api/lists/identity.users/shared-views/{id:guid}, PUT /api/lists/identity.users/views/{id:guid}, PUT /api/lists/tenancy.access/shared-views/{id:guid}, PUT /api/lists/tenancy.access/views/{id:guid}, PUT /api/lists/tenancy.branches/shared-views/{id:guid}, PUT /api/lists/tenancy.branches/views/{id:guid}, PUT /api/lists/tenancy.companies/shared-views/{id:guid}, PUT /api/lists/tenancy.companies/views/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}, PUT /api/tenancy/tenant
+  Failed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [3 s]
+  Error Message:
+   POST /api/tenancy/branches [code]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-169261d2d3eee909c6c9172dd548528b-2385b80744234f11-00","errors":{"companyId":[{…
+POST /api/tenancy/branches [nameEn]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-5fb3390347c7694488dd57a1661b3966-337fbbbbce90955e-00","errors":{"companyId":[{…
+POST /api/tenancy/branches [nameAr]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-fa0070a6703e150deeebc11fd625c64b-2ed80465d6033763-00","errors":{"companyId":[{…
+POST /api/tenancy/branches [email]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-93c69bc96bb2eae1edaae1eb93ee0090-ec5cd98f2b9365d6-00","errors":{"companyId":[{…
+PUT /api/tenancy/branches/{id:guid} [code]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-8e6e33a95c77a0c0455afb67b2b830c1-02d2c9517…
+PUT /api/tenancy/branches/{id:guid} [nameEn]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-c8fb44022f1532546ca4308447bb7a1b-a11e27c5b…
+PUT /api/tenancy/branches/{id:guid} [nameAr]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-9922f25eded19b9790e965154e29b9bb-6270bf26e…
+PUT /api/tenancy/branches/{id:guid} [email]: tenant B could not use the value through the endpoint (400), so the gate cannot judge it: creating the record to edit failed: {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-ea5af92b67e491b982af33552dc5f3aa-61852f1b0…
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere() in /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1WriteOracle.cs:line 350
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 49 differential write checks on POST /api/identity/me/passkeys, POST /api/identity/roles, POST /api/identity/roles/{id:guid}/copy, POST /api/identity/users, POST /api/lists/identity.roles/shared-views, POST /api/lists/identity.roles/views, POST /api/lists/identity.users/shared-views, POST /api/lists/identity.users/views, POST /api/lists/tenancy.access/shared-views, POST /api/lists/tenancy.access/views, POST /api/lists/tenancy.branches/shared-views, POST /api/lists/tenancy.branches/views, POST /api/lists/tenancy.companies/shared-views, POST /api/lists/tenancy.companies/views, POST /api/tenancy/branches, POST /api/tenancy/companies, PUT /api/identity/me/passkeys/{id:guid}, PUT /api/identity/roles/{id:guid}, PUT /api/identity/users/{id:guid}, PUT /api/lists/identity.roles/shared-views/{id:guid}, PUT /api/lists/identity.roles/views/{id:guid}, PUT /api/lists/identity.users/shared-views/{id:guid}, PUT /api/lists/identity.users/views/{id:guid}, PUT /api/lists/tenancy.access/shared-views/{id:guid}, PUT /api/lists/tenancy.access/views/{id:guid}, PUT /api/lists/tenancy.branches/shared-views/{id:guid}, PUT /api/lists/tenancy.branches/views/{id:guid}, PUT /api/lists/tenancy.companies/shared-views/{id:guid}, PUT /api/lists/tenancy.companies/views/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}, PUT /api/tenancy/tenant
+
+
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_passkey_removed_whoever_holds_it_and_a_body_flag_that_skips_the_check [23 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [25 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [22 s]
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.The_carrier_pattern_finds_the_planted_bearer_bypass [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.Product_code_reads_session_carriers_only_where_reviewed [44 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [7 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [2 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [1 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [2 ms]
+[xUnit.net 00:08:02.33]     Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [FAIL]
+[xUnit.net 00:08:02.33]       PUT /api/tenancy/workplace [allBranches turned] as a user holding exactly [tenancy.workplace.switch] wrote update tenancy.user_company_access (all_branches), outside the write set of tenancy.workplace.switch (tests/Gates/permission-write-sets.txt): a request this permission authorises changes what it does not cover (answered 200)
+[xUnit.net 00:08:02.33]       Stack Trace:
+[xUnit.net 00:08:02.33]         /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G2/G2WriteSetTests.cs(35,0): at Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns()
+[xUnit.net 00:08:02.33]         --- End of stack trace from previous location ---
+[xUnit.net 00:08:02.33]       Output:
+[xUnit.net 00:08:02.33]         57 endpoints exercised, 348 requests, 442 audited row changes judged
+[xUnit.net 00:08:02.33]         DELETE /api/identity/me/passkeys/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/identity/roles/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/identity/users/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/identity/users/{id:guid}/passkeys [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/identity.roles/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/identity.roles/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/identity.users/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/identity.users/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/tenancy.access/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/tenancy.access/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/tenancy.branches/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/tenancy.branches/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/tenancy.companies/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         DELETE /api/lists/tenancy.companies/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         DELETE /api/tenancy/companies/{id:guid}/logo [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/me/passkeys [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/me/passkeys/options [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/roles [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/roles/{id:guid}/copy [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/users [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/users/matching/active [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/users/{id:guid}/password [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/users/{id:guid}/sessions/revoke [alone]
+[xUnit.net 00:08:02.33]         POST /api/identity/users/{id:guid}/unblock [alone]
+[xUnit.net 00:08:02.33]         POST /api/lists/identity.roles/shared-views [with read permissions]
+[xUnit.net 00:08:02.33]         POST /api/lists/identity.roles/views [alone]
+[xUnit.net 00:08:02.33]         POST /api/lists/identity.users/shared-views [with read permissions]
+[xUnit.net 00:08:02.33]         POST /api/lists/identity.users/views [alone]
+[xUnit.net 00:08:02.33]         POST /api/lists/tenancy.access/shared-views [with read permissions]
+[xUnit.net 00:08:02.33]         POST /api/lists/tenancy.access/views [alone]
+[xUnit.net 00:08:02.33]         POST /api/lists/tenancy.branches/shared-views [with read permissions]
+[xUnit.net 00:08:02.33]         POST /api/lists/tenancy.branches/views [alone]
+[xUnit.net 00:08:02.33]         POST /api/lists/tenancy.companies/shared-views [with read permissions]
+[xUnit.net 00:08:02.33]         POST /api/lists/tenancy.companies/views [alone]
+[xUnit.net 00:08:02.33]         POST /api/tenancy/branches [alone]
+[xUnit.net 00:08:02.33]         POST /api/tenancy/companies [alone]
+[xUnit.net 00:08:02.33]         PUT /api/identity/me/passkeys/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/identity/me/preferences [alone]
+[xUnit.net 00:08:02.33]         PUT /api/identity/roles/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/identity/users/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/identity/users/{id:guid}/default-company [alone]
+[xUnit.net 00:08:02.33]         PUT /api/lists/identity.roles/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         PUT /api/lists/identity.roles/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/lists/identity.users/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         PUT /api/lists/identity.users/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/lists/tenancy.access/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         PUT /api/lists/tenancy.access/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/lists/tenancy.branches/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         PUT /api/lists/tenancy.branches/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/lists/tenancy.companies/shared-views/{id:guid} [with read permissions]
+[xUnit.net 00:08:02.33]         PUT /api/lists/tenancy.companies/views/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/tenancy/access/{userId:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/tenancy/branches/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/tenancy/companies/{id:guid} [alone]
+[xUnit.net 00:08:02.33]         PUT /api/tenancy/companies/{id:guid}/logo [alone]
+[xUnit.net 00:08:02.33]         PUT /api/tenancy/tenant [alone]
+[xUnit.net 00:08:02.33]         PUT /api/tenancy/workplace [alone]
+  Failed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [10 s]
+  Error Message:
+   PUT /api/tenancy/workplace [allBranches turned] as a user holding exactly [tenancy.workplace.switch] wrote update tenancy.user_company_access (all_branches), outside the write set of tenancy.workplace.switch (tests/Gates/permission-write-sets.txt): a request this permission authorises changes what it does not cover (answered 200)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns() in /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G2/G2WriteSetTests.cs:line 35
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 57 endpoints exercised, 348 requests, 442 audited row changes judged
+ DELETE /api/identity/me/passkeys/{id:guid} [alone]
+ DELETE /api/identity/roles/{id:guid} [alone]
+ DELETE /api/identity/users/{id:guid} [alone]
+ DELETE /api/identity/users/{id:guid}/passkeys [alone]
+ DELETE /api/lists/identity.roles/shared-views/{id:guid} [with read permissions]
+ DELETE /api/lists/identity.roles/views/{id:guid} [alone]
+ DELETE /api/lists/identity.users/shared-views/{id:guid} [with read permissions]
+ DELETE /api/lists/identity.users/views/{id:guid} [alone]
+ DELETE /api/lists/tenancy.access/shared-views/{id:guid} [with read permissions]
+ DELETE /api/lists/tenancy.access/views/{id:guid} [alone]
+ DELETE /api/lists/tenancy.branches/shared-views/{id:guid} [with read permissions]
+ DELETE /api/lists/tenancy.branches/views/{id:guid} [alone]
+ DELETE /api/lists/tenancy.companies/shared-views/{id:guid} [with read permissions]
+ DELETE /api/lists/tenancy.companies/views/{id:guid} [alone]
+ DELETE /api/tenancy/companies/{id:guid}/logo [alone]
+ POST /api/identity/me/passkeys [alone]
+ POST /api/identity/me/passkeys/options [alone]
+ POST /api/identity/roles [alone]
+ POST /api/identity/roles/{id:guid}/copy [alone]
+ POST /api/identity/users [alone]
+ POST /api/identity/users/matching/active [alone]
+ POST /api/identity/users/{id:guid}/password [alone]
+ POST /api/identity/users/{id:guid}/sessions/revoke [alone]
+ POST /api/identity/users/{id:guid}/unblock [alone]
+ POST /api/lists/identity.roles/shared-views [with read permissions]
+ POST /api/lists/identity.roles/views [alone]
+ POST /api/lists/identity.users/shared-views [with read permissions]
+ POST /api/lists/identity.users/views [alone]
+ POST /api/lists/tenancy.access/shared-views [with read permissions]
+ POST /api/lists/tenancy.access/views [alone]
+ POST /api/lists/tenancy.branches/shared-views [with read permissions]
+ POST /api/lists/tenancy.branches/views [alone]
+ POST /api/lists/tenancy.companies/shared-views [with read permissions]
+ POST /api/lists/tenancy.companies/views [alone]
+ POST /api/tenancy/branches [alone]
+ POST /api/tenancy/companies [alone]
+ PUT /api/identity/me/passkeys/{id:guid} [alone]
+ PUT /api/identity/me/preferences [alone]
+ PUT /api/identity/roles/{id:guid} [alone]
+ PUT /api/identity/users/{id:guid} [alone]
+ PUT /api/identity/users/{id:guid}/default-company [alone]
+ PUT /api/lists/identity.roles/shared-views/{id:guid} [with read permissions]
+ PUT /api/lists/identity.roles/views/{id:guid} [alone]
+ PUT /api/lists/identity.users/shared-views/{id:guid} [with read permissions]
+ PUT /api/lists/identity.users/views/{id:guid} [alone]
+ PUT /api/lists/tenancy.access/shared-views/{id:guid} [with read permissions]
+ PUT /api/lists/tenancy.access/views/{id:guid} [alone]
+ PUT /api/lists/tenancy.branches/shared-views/{id:guid} [with read permissions]
+ PUT /api/lists/tenancy.branches/views/{id:guid} [alone]
+ PUT /api/lists/tenancy.companies/shared-views/{id:guid} [with read permissions]
+ PUT /api/lists/tenancy.companies/views/{id:guid} [alone]
+ PUT /api/tenancy/access/{userId:guid} [alone]
+ PUT /api/tenancy/branches/{id:guid} [alone]
+ PUT /api/tenancy/companies/{id:guid} [alone]
+ PUT /api/tenancy/companies/{id:guid}/logo [alone]
+ PUT /api/tenancy/tenant [alone]
+ PUT /api/tenancy/workplace [alone]
+
+
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [437 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [74 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [32 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [26 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [100 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_font_file_in_the_repository_is_reviewed_with_its_licence_beside_it [354 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_NuGet_package_has_an_allowed_licence [57 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.The_font_check_catches_an_unreviewed_font_changed_bytes_and_a_missing_licence [3 ms]
+  Passed Erp.Gates.Tests.Rules.LicenceGateTests.Every_npm_package_has_an_allowed_licence [26 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_search_field_is_searched_word_by_word_and_grouping_counts_every_row_once [427 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_filterable_column_filters_its_list_and_other_columns_are_refused [1 s]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_registered_list_documents_the_list_query_contract_and_its_definition [163 ms]
+  Passed Erp.Gates.Tests.Rules.ListContractGateTests.Every_sortable_column_orders_its_list_both_ways_and_keyset_paging_matches_one_page [1 s]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Bulk_code_never_sets_a_literal_command_timeout_or_opens_its_own_connection [12 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.The_seed_runner_puts_every_tenant_seed_on_the_bulk_pool [< 1 ms]
+  Passed Erp.Gates.Tests.Rules.BulkTimeoutGateTests.Only_the_seed_runner_and_the_platform_build_the_application_pools [17 ms]
+  Passed Erp.Gates.Tests.Rules.ListIndexGateTests.Search_fields_and_sortable_columns_of_database_lists_are_indexed [59 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_float_or_double_in_server_code [21 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_floating_point_or_money_columns_in_the_database [4 ms]
+  Passed Erp.Gates.Tests.Rules.MoneyGateTests.No_parseFloat_in_front_end_code [9 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [1 s]
+[xUnit.net 00:08:17.95]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [FAIL]
+[xUnit.net 00:08:17.95]       Company Y rows changed by an administrator of company X alone: tenancy.branches
+[xUnit.net 00:08:17.95]       Stack Trace:
+[xUnit.net 00:08:17.95]         /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs(254,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y()
+[xUnit.net 00:08:17.95]         --- End of stack trace from previous location ---
+[xUnit.net 00:08:17.95]       Output:
+[xUnit.net 00:08:17.95]         99 endpoints, 1022 requests
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [7 s]
+  Error Message:
+   Company Y rows changed by an administrator of company X alone: tenancy.branches
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y() in /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs:line 254
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 99 endpoints, 1022 requests
+
+
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [4 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [393 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_served_description_is_the_whole_current_document_the_same_for_every_caller [92 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.OpenApi_document_covers_every_endpoint_with_its_permission [3 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.Decimals_are_documented_as_strings [8 ms]
+  Passed Erp.Gates.Tests.Rules.OpenApiGateTests.The_document_is_the_same_for_every_caller_and_never_repeats_the_host_it_was_asked_on [30 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Every_registered_list_is_served_as_a_page_whose_rows_carry_its_columns [4 ms]
+  Passed Erp.Gates.Tests.Rules.RegistrationGateTests.Navigation_reaches_every_screen_and_every_menu_entry_opens_a_screen_with_its_permission [5 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.Modules_use_one_another_only_through_their_contracts [10 ms]
+  Passed Erp.Gates.Tests.Rules.ModuleBoundaryGateTests.The_boundary_check_catches_a_module_reaching_into_another_one [1 ms]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_report_and_printable_list_renders_in_every_format_and_both_languages [1 s]
+  Passed Erp.Gates.Tests.Rules.ReportGateTests.Every_list_is_printable_and_every_report_is_well_formed [2 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Language_and_digit_fields_document_their_allowed_values [3 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Stylesheets_and_inline_styles_use_logical_directions_only [90 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Every_navigation_group_has_an_English_and_Arabic_heading [1 ms]
+  Passed Erp.Gates.Tests.Rules.ShellGateTests.Screens_format_numbers_amounts_and_dates_through_the_kernel_formatter [11 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [2 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [1 m 44 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [239 ms]
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [9 m 9 s]
+[xUnit.net 00:21:36.52]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:21:36.52]       3 isolation checks failed:
+[xUnit.net 00:21:36.52]       
+[xUnit.net 00:21:36.52]       1362 leaks:
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace [TenantHeaders] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator in Arabic (cookie) → GET /api/tenancy/workplace [Plain] → 200: response contains tenant B marker 018e6487-b884-78b2-a517-7b9c6d90ebcf
+[xUnit.net 00:21:36.52]       tenant A administrator (bearer) → GET /api/tenancy/workplace [Plain] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (bearer) → GET /api/tenancy/workplace [TenantHeaders] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace [TenantQuery] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace [Plain] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (bearer) → GET /api/tenancy/workplace [TenantQuery] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=0190a000-0000-7000-8000-00000000000b [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-fa28-7ba8-b4b0-f4b88cec7aee [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-fa0f-7291-bb37-c8a929af71dd [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=bravocnrya038d03d66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-efeb-70ba-8d17-4b918b10cc38 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-fa0f-7829-9c91-17d615cb2681 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f00e-74a7-8d6e-8b47ab2b49d1 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=018cc39b-8b00-7df1-a012-95096060c9b5 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-efee-73aa-92cd-45a2114c780c [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f013-789e-9c4a-cf1bda38c6b6 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=018e6487-b882-7aef-8801-1fbdf1970252 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f001-77f5-b54d-b178e9757f80 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f000-7201-a852-1675bb8d05d0 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=018e6487-b881-79e1-896d-f048d2f63250 [query tenantId] → 200: response contains tenant B marker 018e6487-b882-7aef-8801-1fbdf1970252
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f59-0d94-7f8c-8494-2cc2e9cff516 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f000-7ab0-bce4-ffa9d704db78 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=delete [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=0HNPD45T4LL88 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%202 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=pbkdf2-sha512%2410000%24%2FycIIzbDROXCRVqTd48klw%3D%3D%24wva7rp7%2Fc8J%2FKs6kr8KfINJwcSuKSjNPyfySCvO%2B8JY%3D [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%A7%D9%84%D9%85%D9%88%D8%B8%D9%81%D9%88%D9%86%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=accountant%40bravo-cnrya038d03d66.example [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%201 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=arab [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%20369 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%20159 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%AD%D8%B5%D8%A9%20%D8%A7%D9%84%D8%B3%D9%88%D9%8A%D8%AF%D9%8A%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=city [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%2010 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%A3%D9%88%D9%84%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=B1-BR1 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=12345-D0C3-159 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=abuDhabi [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D9%86%D8%B4%D8%A7%D8%B7%20CNRYA038D03D66%20159 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=AN-DXB-D0C3-167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Bravo%20Steel%20Industries%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%20167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=12345-D0C3-167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=accounts.b1-co%40example.ae [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%B4%D8%A7%D8%B1%D8%B9%201%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=https%3A%2F%2Fwww.example.ae-D0C3-167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=5d2aebafa8c481d52f1a05036b5747a83b96ec850871f526e103f1c619799687 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       
+[xUnit.net 00:21:36.52]       Tenant B's own writes must succeed so their handlers run to the end; these did not:
+[xUnit.net 00:21:36.52]       PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-516ea51f536bd9a813c21fda35a242aa-34baa6f9d9a39b44-00","errors":{"companyId":[{
+[xUnit.net 00:21:36.52]       PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-7bedf19a2f3364276bf15f4ddb52e852-5875ebad5fd5cbb1-00","errors":{"companyId":[{
+[xUnit.net 00:21:36.52]       PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-46be77d88f99ca8b1643102ce319d208-ce1994cd60ba9186-00","errors":{"companyId":[{
+[xUnit.net 00:21:36.52]       PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-00cf3a28e16ca4f87c88a401cadf8ce9-658812dad500fb2a-00","errors":{"companyId":[{
+[xUnit.net 00:21:36.52]       PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"بعض الحقول تحتاج إلى مراجعة.","status":400,"code":"validation","traceId":"00-514fe8881ee3f3e38d7179e754ad9ce7-5ba535d5de508c73-00","errors":{"companyId":[
+[xUnit.net 00:21:36.52]       PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-673a921045d7b0db375e7f3c2db8cd9b-cb1f07994a7f0266-00","errors":{"companyId":[{
+[xUnit.net 00:21:36.52]       
+[xUnit.net 00:21:36.52]       Process-wide state changed while the tenants used the app (1114 lines):
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item1: was 10/18/2026 14:10:30, now 10/18/2026 14:30:51
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).CompanyId: was 0191260e-f481-7166-a0da-8fc1a2801e75, now 018e6487-b881-79e1-896d-f048d2f63250
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).BranchId: was 0191260e-f482-77a7-9ef0-325f60519e11, now 018e6487-b882-7aef-8801-1fbdf1970252
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies: was System.Collections.Generic.List`1 count=1, now System.Collections.Generic.List`1 count=49
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 0191260e-f481-7166-a0da-8fc1a2801e75, now 01a14f59-037d-707c-8788-f430ab1f3f8f
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was A1-CO, now AN-DXB-D0C3-167
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameEn: was Alpha Trading, now Al Noor Trading LLC
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameAr: was التجارة, now نشاط CNRYA038D03D66 167
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches: was System.Collections.Generic.List`1 count=2, now System.Collections.Generic.List`1 count=0
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0]: was Erp.Modules.Tenancy.Workplace.WorkplaceBranch, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Id: was 0191260e-f482-77a7-9ef0-325f60519e11, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Code: was A1-BR1, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameEn: was Alpha Trading branch one, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameAr: was التجارة فرع أول, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1]: was Erp.Modules.Tenancy.Workplace.WorkplaceBranch, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Id: was 0191260e-f483-72ee-8c7e-0c822358ae75, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Code: was A1-BR2, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameEn: was Alpha Trading branch two, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameAr: was التجارة فرع ثان, now gone
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).RecentCompanyIds: was System.Collections.Generic.List`1 count=0, now System.Collections.Generic.List`1 count=1
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item1: was 10/18/2026 14:10:01, now 10/18/2026 14:30:51
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies: was System.Collections.Generic.List`1 count=11, now System.Collections.Generic.List`1 count=49
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[6](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 01a14f59-03fc-7682-9a0f-4588c7144126, now 01a14f63-c3c8-7241-acc3-346469cb2891
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[6](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was AN-DXB-D0C3-173, now AN-DXB-D0C3-1726
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[6](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameAr: was نشاط CNRYA038D03D66 173, now نشاط CNRYA038D03D66 1726
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[7](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 01a14f59-040b-755f-96ce-e18533f37274, now 01a14f63-c441-7967-a7f7-fcf21ad8e214
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[7](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was AN-DXB-D0C3-174, now AN-DXB-D0C3-1727
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[7](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameAr: was نشاط CNRYA038D03D66 174, now نشاط CNRYA038D03D66 1727
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[8](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 01a14f59-106c-7724-a881-8268e53e1ffe, now 01a14f63-c4b6-71c3-831a-7f8e8e52fe51
+[xUnit.net 00:21:36.52]       static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[8](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was AN-DXB-D0C3-380, now AN-DXB-D0C3-1728
+[xUnit.net 00:21:36.52]       Stack Trace:
+[xUnit.net 00:21:36.52]         /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(176,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:21:36.52]         --- End of stack trace from previous location ---
+[xUnit.net 00:21:36.52]       Output:
+[xUnit.net 00:21:36.52]         routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 321.9 s
+[xUnit.net 00:21:36.52]         tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 355.9 s
+[xUnit.net 00:21:36.52]         write after write: 196 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 691.0 s
+[xUnit.net 00:21:36.52]         answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2391 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70073, 20053 in Arabic), 728.5 s
+[xUnit.net 00:21:36.52]         tenant B values in route and query parameters: 526244 requests so far (93618 by tenant A's Arabic sessions; tenant B 95354, 26373 in Arabic), 1001.2 s
+[xUnit.net 00:21:36.52]         registered lists through their query contract: 17289 attacks, 31337 requests: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 99227, 27341 in Arabic), 1034.8 s
+[xUnit.net 00:21:36.52]         list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 980 with different true answers (616 sorted), 83333 rows walked; process-wide state fingerprinted in 106025 lines from 112 roots: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 127113, 34313 in Arabic), 1189.6 s
+[xUnit.net 00:21:36.53]         tenant B values in body fields: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 130925, 35266 in Arabic), 1218.4 s
+[xUnit.net 00:21:36.53]         tenant B activity: 159608 requests (60856 concurrent with the attack), 1974 successful own writes, 159356 responses judged for tenant A markers: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 159608, 40355 in Arabic), 1244.5 s
+[xUnit.net 00:21:36.53]         tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+[xUnit.net 00:21:36.53]         734843 tenant bindings and 1470036 setting statements judged among 7184727 statements; 734843 tenant values judged, 6749189 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+[xUnit.net 00:21:36.53]         11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+[xUnit.net 00:21:36.53]         209 documented enumeration values sent, 652 enumeration-variant write pairs
+[xUnit.net 00:21:36.53]         120 endpoints, 618966 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 734706 traced lookups
+[xUnit.net 00:21:36.53]         in Arabic: 98516 tenant A requests, 40355 tenant B requests, 84 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [21 m 25 s]
+  Error Message:
+   3 isolation checks failed:
+
+1362 leaks:
+tenant A administrator (cookie) → GET /api/tenancy/workplace [TenantHeaders] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator in Arabic (cookie) → GET /api/tenancy/workplace [Plain] → 200: response contains tenant B marker 018e6487-b884-78b2-a517-7b9c6d90ebcf
+tenant A administrator (bearer) → GET /api/tenancy/workplace [Plain] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (bearer) → GET /api/tenancy/workplace [TenantHeaders] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace [TenantQuery] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace [Plain] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (bearer) → GET /api/tenancy/workplace [TenantQuery] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=0190a000-0000-7000-8000-00000000000b [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-fa28-7ba8-b4b0-f4b88cec7aee [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-fa0f-7291-bb37-c8a929af71dd [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=bravocnrya038d03d66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-efeb-70ba-8d17-4b918b10cc38 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-fa0f-7829-9c91-17d615cb2681 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f00e-74a7-8d6e-8b47ab2b49d1 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=018cc39b-8b00-7df1-a012-95096060c9b5 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-efee-73aa-92cd-45a2114c780c [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f013-789e-9c4a-cf1bda38c6b6 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=018e6487-b882-7aef-8801-1fbdf1970252 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f001-77f5-b54d-b178e9757f80 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f000-7201-a852-1675bb8d05d0 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=018e6487-b881-79e1-896d-f048d2f63250 [query tenantId] → 200: response contains tenant B marker 018e6487-b882-7aef-8801-1fbdf1970252
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f59-0d94-7f8c-8494-2cc2e9cff516 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=01a14f58-f000-7ab0-bce4-ffa9d704db78 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=delete [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=0HNPD45T4LL88 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%202 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=pbkdf2-sha512%2410000%24%2FycIIzbDROXCRVqTd48klw%3D%3D%24wva7rp7%2Fc8J%2FKs6kr8KfINJwcSuKSjNPyfySCvO%2B8JY%3D [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%A7%D9%84%D9%85%D9%88%D8%B8%D9%81%D9%88%D9%86%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=accountant%40bravo-cnrya038d03d66.example [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%201 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=arab [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%20369 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%20159 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%AD%D8%B5%D8%A9%20%D8%A7%D9%84%D8%B3%D9%88%D9%8A%D8%AF%D9%8A%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=city [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%2010 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D8%B9%20%D8%A3%D9%88%D9%84%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=B1-BR1 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=12345-D0C3-159 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=abuDhabi [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D9%86%D8%B4%D8%A7%D8%B7%20CNRYA038D03D66%20159 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=AN-DXB-D0C3-167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Bravo%20Steel%20Industries%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=Activity%20CNRYA038D03D66%20167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=12345-D0C3-167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=accounts.b1-co%40example.ae [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=%D8%B4%D8%A7%D8%B1%D8%B9%201%20CNRYA038D03D66 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=https%3A%2F%2Fwww.example.ae-D0C3-167 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+tenant A administrator (cookie) → GET /api/tenancy/workplace?tenantId=5d2aebafa8c481d52f1a05036b5747a83b96ec850871f526e103f1c619799687 [query tenantId] → 200: response contains tenant B marker 018e6487-b881-79e1-896d-f048d2f63250
+
+Tenant B's own writes must succeed so their handlers run to the end; these did not:
+PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-516ea51f536bd9a813c21fda35a242aa-34baa6f9d9a39b44-00","errors":{"companyId":[{
+PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-7bedf19a2f3364276bf15f4ddb52e852-5875ebad5fd5cbb1-00","errors":{"companyId":[{
+PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-46be77d88f99ca8b1643102ce319d208-ce1994cd60ba9186-00","errors":{"companyId":[{
+PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-00cf3a28e16ca4f87c88a401cadf8ce9-658812dad500fb2a-00","errors":{"companyId":[{
+PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"بعض الحقول تحتاج إلى مراجعة.","status":400,"code":"validation","traceId":"00-514fe8881ee3f3e38d7179e754ad9ce7-5ba535d5de508c73-00","errors":{"companyId":[
+PUT /api/tenancy/workplace → 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-673a921045d7b0db375e7f3c2db8cd9b-cb1f07994a7f0266-00","errors":{"companyId":[{
+
+Process-wide state changed while the tenants used the app (1114 lines):
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item1: was 10/18/2026 14:10:30, now 10/18/2026 14:30:51
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).CompanyId: was 0191260e-f481-7166-a0da-8fc1a2801e75, now 018e6487-b881-79e1-896d-f048d2f63250
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).BranchId: was 0191260e-f482-77a7-9ef0-325f60519e11, now 018e6487-b882-7aef-8801-1fbdf1970252
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies: was System.Collections.Generic.List`1 count=1, now System.Collections.Generic.List`1 count=49
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 0191260e-f481-7166-a0da-8fc1a2801e75, now 01a14f59-037d-707c-8788-f430ab1f3f8f
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was A1-CO, now AN-DXB-D0C3-167
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameEn: was Alpha Trading, now Al Noor Trading LLC
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameAr: was التجارة, now نشاط CNRYA038D03D66 167
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches: was System.Collections.Generic.List`1 count=2, now System.Collections.Generic.List`1 count=0
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0]: was Erp.Modules.Tenancy.Workplace.WorkplaceBranch, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Id: was 0191260e-f482-77a7-9ef0-325f60519e11, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Code: was A1-BR1, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameEn: was Alpha Trading branch one, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[0](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameAr: was التجارة فرع أول, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1]: was Erp.Modules.Tenancy.Workplace.WorkplaceBranch, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Id: was 0191260e-f483-72ee-8c7e-0c822358ae75, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).Code: was A1-BR2, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameEn: was Alpha Trading branch two, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[0](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Branches[1](Erp.Modules.Tenancy.Workplace.WorkplaceBranch).NameAr: was التجارة فرع ثان, now gone
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[en].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).RecentCompanyIds: was System.Collections.Generic.List`1 count=0, now System.Collections.Generic.List`1 count=1
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item1: was 10/18/2026 14:10:01, now 10/18/2026 14:30:51
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies: was System.Collections.Generic.List`1 count=11, now System.Collections.Generic.List`1 count=49
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[6](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 01a14f59-03fc-7682-9a0f-4588c7144126, now 01a14f63-c3c8-7241-acc3-346469cb2891
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[6](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was AN-DXB-D0C3-173, now AN-DXB-D0C3-1726
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[6](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameAr: was نشاط CNRYA038D03D66 173, now نشاط CNRYA038D03D66 1726
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[7](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 01a14f59-040b-755f-96ce-e18533f37274, now 01a14f63-c441-7967-a7f7-fcf21ad8e214
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[7](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was AN-DXB-D0C3-174, now AN-DXB-D0C3-1727
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[7](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).LegalNameAr: was نشاط CNRYA038D03D66 174, now نشاط CNRYA038D03D66 1727
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[8](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Id: was 01a14f59-106c-7724-a881-8268e53e1ffe, now 01a14f63-c4b6-71c3-831a-7f8e8e52fe51
+static Erp.Modules.Tenancy.Workplace.WorkplaceEndpoints.RecentAnswers[ar].Item2(Erp.Modules.Tenancy.Workplace.WorkplaceDto).Companies[8](Erp.Modules.Tenancy.Workplace.WorkplaceCompany).Code: was AN-DXB-D0C3-380, now AN-DXB-D0C3-1728
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /home/shan/critic/p02-tenancy-r12-plant/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 176
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 218241 requests so far (18633 by tenant A's Arabic sessions; tenant B 52611, 13993 in Arabic), 321.9 s
+ tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 53011, 14101 in Arabic), 355.9 s
+ write after write: 196 pairs over 57 endpoints, 652 pairs with 209 documented values, 28157 tenant A requests: 230872 requests so far (18633 by tenant A's Arabic sessions; tenant B 64520, 18999 in Arabic), 691.0 s
+ answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2391 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 232343 requests so far (18633 by tenant A's Arabic sessions; tenant B 70073, 20053 in Arabic), 728.5 s
+ tenant B values in route and query parameters: 526244 requests so far (93618 by tenant A's Arabic sessions; tenant B 95354, 26373 in Arabic), 1001.2 s
+ registered lists through their query contract: 17289 attacks, 31337 requests: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 99227, 27341 in Arabic), 1034.8 s
+ list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 980 with different true answers (616 sorted), 83333 rows walked; process-wide state fingerprinted in 106025 lines from 112 roots: 557581 requests so far (93618 by tenant A's Arabic sessions; tenant B 127113, 34313 in Arabic), 1189.6 s
+ tenant B values in body fields: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 130925, 35266 in Arabic), 1218.4 s
+ tenant B activity: 159608 requests (60856 concurrent with the attack), 1974 successful own writes, 159356 responses judged for tenant A markers: 590809 requests so far (93618 by tenant A's Arabic sessions; tenant B 159608, 40355 in Arabic), 1244.5 s
+ tenant B: 285 ids (64 sampled), 156 text values, 109 extra markers, 45 probe values
+ 734843 tenant bindings and 1470036 setting statements judged among 7184727 statements; 734843 tenant values judged, 6749189 statements observed with their parameters; 12631 tenant switch inputs over 19 header names; 462173 responses judged on every header
+ 11979 tenant B route values replayed, 15627 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs
+ 120 endpoints, 618966 requests, 441 tenant B values, 194417 parameter attacks, 33228 body value attacks, 119473 differential checks (8431 values tenant A holds itself not compared), 734706 traced lookups
+ in Arabic: 98516 tenant A requests, 40355 tenant B requests, 84 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [2 m 40 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_endpoint_the_shell_calls_is_judged [1 ms]
+[xUnit.net 00:25:22.83]   Finished:    Erp.Gates.Tests (ID = 'bc54476273aebe854cb44a4903c54f040b4d1bafab8cdbc13c0e415920ebaa9c')
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers [1 m 4 s]
+
+Test Run Failed.
+Total tests: 158
+     Passed: 151
+     Failed: 7
+ Total time: 25.3939 Minutes
+rc=1 secs=1524

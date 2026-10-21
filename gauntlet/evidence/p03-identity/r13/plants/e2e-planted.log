@@ -1,0 +1,80 @@
+  ✓  109 [chromium] › specs/tenancy.spec.ts:108:7 › companies, branches and the working company › a manager of one company who only reads another changes the first and is shown the second read-only, with the reason (965ms)
+  ✓  110 [chromium] › specs/tenancy.spec.ts:141:7 › companies, branches and the working company › an administrator of one company is offered neither New nor a company code to change, and reads why (1.7s)
+  ✓  111 [chromium] › specs/tenancy.spec.ts:184:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu (1.6s)
+  ✓  112 [chromium] › specs/tenancy.spec.ts:227:7 › companies, branches and the working company › access: find a user by e-mail, see their companies and limit them to branches (1.0s)
+  ✓  113 [chromium] › specs/tenancy.spec.ts:248:7 › companies, branches and the working company › at phone width the working company stays readable and the switcher opens inside the window (735ms)
+
+
+  1) [chromium] › specs/identity.spec.ts:163:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "e2e.typo.nhwc71@alnoor.example"
+    Received: "e2e.typo.nhwc71@alnor.example"
+
+      181 |     await expect(page.getByText("Saved.", { exact: false }).first()).toBeVisible();
+      182 |     const saved = (await (await page.request.get(`/api/identity/users/${id}`)).json()) as { email: string; displayNameAr: string };
+    > 183 |     expect(saved.email).toBe(`e2e.typo.${tag}@alnoor.example`);
+          |                         ^
+      184 |     expect(saved.displayNameAr).toBe(`خطأ ${tag}`);
+      185 |
+      186 |     await page.getByRole("button", { name: "Delete user" }).click();
+        at /work/tests/e2e/specs/identity.spec.ts:183:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/identity-users-roles-and-p-0f2ee--never-signed-in-is-deleted-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/identity-users-roles-and-p-0f2ee--never-signed-in-is-deleted-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/identity-users-roles-and-p-0f2ee--never-signed-in-is-deleted-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/identity-users-roles-and-p-0f2ee--never-signed-in-is-deleted-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › specs/shell.spec.ts:114:7 › app shell › Alt+L on the users list with one's own record open: the own row and the record say Arabic at once, not after a reload 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  locator('aside.list-record [data-field="language"] select')
+    Expected: "ar"
+    Received: "en"
+    Timeout:  3000ms
+
+    Call log:
+      - Expect "toHaveValue" locator('aside.list-record [data-field="language"] select') with timeout 3000ms
+      - waiting for locator('aside.list-record [data-field="language"] select')
+        10 × locator resolved to <select id="_r_8_" name="language" aria-invalid="false">…</select>
+           - unexpected value "en"
+
+
+      130 |       await expect(ownRow).toContainText("العربية", { timeout: 3000 });
+      131 |       await expect(ownRow).not.toContainText("الإنجليزية");
+    > 132 |       await expect(languageField).toHaveValue("ar", { timeout: 3000 });
+          |                                   ^
+      133 |       // Nothing of the user's own to save: the record shows the change as the record's, not theirs.
+      134 |       await expect(page.locator("aside.list-record .record-dirty")).toHaveCount(0);
+      135 |     } finally {
+        at /work/tests/e2e/specs/shell.spec.ts:132:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/shell-app-shell-Alt-L-on-t-f50f9--at-once-not-after-a-reload-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/shell-app-shell-Alt-L-on-t-f50f9--at-once-not-after-a-reload-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/shell-app-shell-Alt-L-on-t-f50f9--at-once-not-after-a-reload-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/shell-app-shell-Alt-L-on-t-f50f9--at-once-not-after-a-reload-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › specs/identity.spec.ts:163:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted 
+    [chromium] › specs/shell.spec.ts:114:7 › app shell › Alt+L on the users list with one's own record open: the own row and the record say Arabic at once, not after a reload 
+  111 passed (6.5m)

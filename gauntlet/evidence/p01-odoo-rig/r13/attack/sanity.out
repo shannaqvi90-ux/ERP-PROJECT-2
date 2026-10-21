@@ -1,0 +1,6 @@
+/api/identity/users noaccess 403 viewer 200 admin 200 anonymous 401
+/api/identity/roles noaccess 403 viewer 200 admin 200 anonymous 401
+/api/tenancy/companies noaccess 403 viewer 200 admin 200 anonymous 401
+/api/tenancy/branches noaccess 403 viewer 200 admin 200 anonymous 401
+/api/audit/entries noaccess 404 viewer 404 admin 404 anonymous 404
+POST users noaccess 403 viewer 403

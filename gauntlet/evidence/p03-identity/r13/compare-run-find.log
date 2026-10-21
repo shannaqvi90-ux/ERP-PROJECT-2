@@ -1,0 +1,16 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+find-user                odoo  verified  steps 6  keys 5  machine 3.081s  human 10.35s  human+wait 12.937s  -> ../../evidence-staging/p03-identity/r13/compare/results/find-user-20261019T082947-10b1.json
+find-user                odoo  verified  steps 6  keys 5  machine 2.177s  human 10.35s  human+wait 12.052s  -> ../../evidence-staging/p03-identity/r13/compare/results/find-user-20261019T083231-5652.json
+find-user                odoo  verified  steps 6  keys 5  machine 2.381s  human 10.35s  human+wait 12.457s  -> ../../evidence-staging/p03-identity/r13/compare/results/find-user-20261019T083505-f7b5.json
+find-user                ours  verified  steps 3  keys 8  machine 1.855s  human 6.64s  human+wait 8.028s  -> ../../evidence-staging/p03-identity/r13/compare/results/find-user-20261019T083737-f23b.json
+find-user                ours  error     steps 3  keys 8  machine 1.822s  human 6.64s  human+wait 8.027s  (row: error Error: the driver process ended (SIGTERM))  -> ../../evidence-staging/p03-identity/r13/compare/results/find-user-20261019T083900-426f.json
+    row: error Error: the driver process ended (SIGTERM)
+        at ChildProcess.<anonymous> (file:///home/shan/critic/p03-identity-r13-demo/gauntlet/compare/lib/sandbox/bridge.mjs:183:19)
+        at ChildProcess.emit (node:events:531:35)
+        at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+        at Process.callbackTrampoline (node:internal/async_hooks:130:17)
+    page: {"row":{"unreadable":"page.evaluate: Target page, context or browser has been closed"}}
+find-user                ours  verified  steps 3  keys 8  machine 1.98s  human 6.64s  human+wait 8.03s  -> ../../evidence-staging/p03-identity/r13/compare/results/find-user-20261019T084038-c307.json
+find-user                verdict win (ours judged on its whole path 'initials')
+blind review page: ../../../../evidence-staging/p03-identity/r13/compare/blind/review.html
+output: ../../../../evidence-staging/p03-identity/r13/compare

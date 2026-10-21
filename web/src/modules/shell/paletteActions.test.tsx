@@ -568,6 +568,11 @@ describe("a record's commands on every tab", () => {
     expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe(en("identity.tab.details"));
     expect(document.querySelector("fieldset.id-method")).not.toBeNull();
     expect(document.activeElement).toBe(document.querySelector("fieldset.id-method input"));
+    // Enter on the focused choice resets, with no Tab to the button (critic p03 round 11).
+    const sent = calls.length;
+    press({ code: "Enter", key: "Enter" });
+    await settleUntilQuiet(() => calls);
+    expect(calls.slice(sent).filter((c) => c.method === "POST").map((c) => c.url)).toEqual(["/api/identity/users/u1/password"]);
 
     await open("/identity/users?open=u1", every, { neverSignedIn: true });
     await showTab("identity.tab.history");

@@ -1,0 +1,27 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.29]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.78]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.02]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Critic.CriticR12Proof.Update_alone_does_not_open_reads [1 s]
+[xUnit.net 00:00:18.93]     Erp.Gates.Tests.Critic.CriticR12Proof.A_permission_taken_away_stops_working_at_once [FAIL]
+[xUnit.net 00:00:18.93]       GET users after the role lost identity.users.read -> 200
+[xUnit.net 00:00:18.93]       Stack Trace:
+[xUnit.net 00:00:18.93]         /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs(92,0): at Erp.Gates.Tests.Critic.CriticR12Proof.A_permission_taken_away_stops_working_at_once()
+[xUnit.net 00:00:18.93]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:20.00]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR12Proof.A_permission_taken_away_stops_working_at_once [706 ms]
+  Error Message:
+   GET users after the role lost identity.users.read -> 200
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR12Proof.A_permission_taken_away_stops_working_at_once() in /work/tests/Erp.Gates.Tests/Critic/CriticR12Proof.cs:line 92
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.Critic.CriticR12Proof.Creating_a_record_gives_no_right_to_change_or_delete_it [571 ms]
+  Passed Erp.Gates.Tests.Critic.CriticR12Proof.No_roles_user_is_denied_own_record_and_kernel_endpoints [185 ms]
+
+Test Run Failed.
+Total tests: 4
+     Passed: 3
+     Failed: 1
+ Total time: 20.6130 Seconds

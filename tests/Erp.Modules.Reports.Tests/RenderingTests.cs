@@ -498,6 +498,78 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.Contains("Row 150", PdfText.Of(bytes), StringComparison.Ordinal);
     }
 
+    /// <summary>Critic p06 round 8: a PDF stopped at 2,000 rows. A file now holds the whole
+    /// selection, so a document of thousands of pages is written page by page: each page's drawing
+    /// goes out when the next page starts, the output need not seek (a response body), and the
+    /// result reads whole, its last row on its last page with "page n of n".</summary>
+    [Fact]
+    public void A_document_of_thousands_of_rows_is_written_page_by_page_to_a_stream_that_cannot_seek()
+    {
+        var document = Sample("en", rows: 2_500, grouped: false) with { RowCountText = "2,500 rows" };
+        using var memory = new MemoryStream();
+        new PdfReportRenderer(fixture.Fonts).Render(document, new ForwardOnlyStream(memory), TestContext.Current.CancellationToken);
+        using var pdf = PdfDocument.Open(memory.ToArray());
+        Assert.True(pdf.NumberOfPages > 40, $"{pdf.NumberOfPages} pages");
+        var first = string.Join(" ", pdf.GetPage(1).GetWords().Select(w => w.Text));
+        Assert.Contains("2,500 rows", first, StringComparison.Ordinal);
+        Assert.Contains($"Page 1 of {pdf.NumberOfPages}", first, StringComparison.Ordinal);
+        var last = pdf.GetPage(pdf.NumberOfPages);
+        var lastWords = string.Join(" ", last.GetWords().Select(w => w.Text));
+        Assert.Contains("Row 2500", lastWords, StringComparison.Ordinal);
+        Assert.Contains($"Page {pdf.NumberOfPages} of {pdf.NumberOfPages}", lastWords, StringComparison.Ordinal);
+        Assert.Contains("Code", last.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_page_is_written_out_when_the_next_page_starts()
+    {
+        using var output = new MemoryStream();
+        var writer = new PdfWriter("t", "en", false, output);
+        var shaper = new TextShaper(fixture.Fonts);
+        var first = writer.AddPage(595, 842);
+        first.Text(shaper.Shape("First page", 10, false, false), 36, 800);
+        Assert.Equal(0, output.Length);
+        var second = writer.AddPage(595, 842);
+        // The first page's drawing is in the output, not in memory.
+        Assert.True(output.Length > 0);
+        Assert.Equal(0, first.Content.Length);
+        second.Text(shaper.Shape("Second page", 10, false, false), 36, 800);
+        // A footer drawn later goes into a stream of its own for that page.
+        first.Text(shaper.Shape("Page 1 of 2", 8, false, false), 36, 30);
+        writer.Finish(DateTimeOffset.UnixEpoch);
+        using var pdf = PdfDocument.Open(output.ToArray());
+        Assert.Equal(2, pdf.NumberOfPages);
+        Assert.Contains("First page", pdf.GetPage(1).Text, StringComparison.Ordinal);
+        Assert.Contains("Page 1 of 2", pdf.GetPage(1).Text, StringComparison.Ordinal);
+        Assert.Contains("Second page", pdf.GetPage(2).Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_cancelled_print_stops()
+    {
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        Assert.Throws<OperationCanceledException>(() => new PdfReportRenderer(fixture.Fonts).Render(Sample("ar", 50, false), Stream.Null, cancelled.Token));
+    }
+
+    /// <summary>The shaper keeps the lines it shaped for the document, but not without bound: a
+    /// document of 100,000 rows shapes hundreds of thousands of values.</summary>
+    [Fact]
+    public void The_shaper_keeps_a_bounded_number_of_lines_and_a_value_that_fits_is_one_line()
+    {
+        var shaper = new TextShaper(fixture.Fonts);
+        for (var i = 0; i < TextShaper.MaxKept + 50; i++)
+        {
+            shaper.Shape($"v{i}", 8.5m, false, false);
+        }
+        Assert.InRange(shaper.Kept, 1, TextShaper.MaxKept);
+        var line = Assert.Single(shaper.Wrap("Al Noor Trading LLC, Dubai", 8.5m, false, false, 400m));
+        Assert.Equal(shaper.Shape("Al Noor Trading LLC, Dubai", 8.5m, false, false).Width, line.Width);
+        // A leading space is dropped as before; a value too wide still wraps at its spaces.
+        Assert.Equal("a b", string.Concat(Assert.Single(shaper.Wrap(" a b", 8.5m, false, false, 400m)).Runs.Select(r => r.Text)));
+        Assert.True(shaper.Wrap("Al Noor Trading LLC, Dubai", 8.5m, false, false, 40m).Count > 1);
+    }
+
     [Fact]
     public void A_wide_table_turns_the_page_to_landscape()
     {
@@ -737,6 +809,22 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
                 : new ReportDocumentTexts("Total", "Printed by Admin", "Page {page} of {pages}", "Nothing matches", "(none)"),
         };
     }
+}
+
+/// <summary>An output that only takes bytes in order, like a response body: no seeking, no length.</summary>
+internal sealed class ForwardOnlyStream(Stream inner) : Stream
+{
+    public override bool CanRead => false;
+    public override bool CanSeek => false;
+    public override bool CanWrite => true;
+    public override long Length => throw new NotSupportedException();
+    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+    public override void Flush() => inner.Flush();
+    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+    public override void SetLength(long value) => throw new NotSupportedException();
+    public override void Write(byte[] buffer, int offset, int count) => inner.Write(buffer, offset, count);
+    public override void Write(ReadOnlySpan<byte> buffer) => inner.Write(buffer);
 }
 
 /// <summary>A PDF's text for assertions: page text, the same with right-to-left runs in logical

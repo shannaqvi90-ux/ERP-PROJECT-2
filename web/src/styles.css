@@ -350,6 +350,18 @@ input[aria-invalid="true"] {
   font-size: 12px;
 }
 
+/* The device code of a browser paused on a shared address: read out or typed by someone else. */
+.signin-device-code {
+  margin-block: 8px 0;
+}
+
+.signin-device-code strong {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+
 .signin .lang-toggle {
   color: var(--accent);
 }

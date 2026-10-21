@@ -1,10 +1,15 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { api } from "../api";
 import { useI18n } from "../i18n";
+import { chordForAria, chordKeys } from "../shortcuts";
 import { minorUnitsOf } from "../format";
 import { countryChoices } from "./countries";
-import { caretAfter, HOME_PREFIX, isCompletePhone, nationalDigits, phoneValue } from "./phone";
+import { caretAfter, completesOnEntry, HOME_PREFIX, isCompletePhone, latinDigits, phoneValue } from "./phone";
+import { formChords } from "./RecordForm";
 import type { FieldBinding } from "./useRecordForm";
+
+/** The digits in a phone field's text (Arabic-Indic ones too). */
+const digitCount = (text: string) => latinDigits(text).replace(/\D/g, "").length;
 
 type A11y = { id: string; "aria-invalid": boolean; "aria-describedby"?: string };
 
@@ -13,12 +18,14 @@ type A11y = { id: string; "aria-invalid": boolean; "aria-describedby"?: string }
  * language). Every field of every form has this shape: <c>div.field[data-field=name]</c>, so the
  * form can put the cursor on the first field the server refused.
  */
-export function Field({ name, label, errors = [], hint, wide, children }: {
+export function Field({ name, label, errors = [], hint, wide, notice, children }: {
   name: string;
   label: string;
   errors?: string[];
   hint?: string;
   wide?: boolean;
+  /** A status the field shows under itself (a completed entry the form saved, with Undo). */
+  notice?: ReactNode;
   children: (a11y: A11y) => ReactNode;
 }) {
   const id = useId();
@@ -41,6 +48,7 @@ export function Field({ name, label, errors = [], hint, wide, children }: {
           {errors.join(" ")}
         </span>
       )}
+      {notice}
     </div>
   );
 }
@@ -128,13 +136,34 @@ export function PhoneField({ field, ...p }: Common & { field: FieldBinding<strin
   };
   const editable = !(p.disabled || field.readOnly);
   return (
-    <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint ?? (editable ? t(field.onComplete ? "forms.phone.hintSaves" : "forms.phone.hint") : undefined)} wide={p.wide}>
+    <Field
+      name={field.name}
+      label={p.label}
+      errors={field.errors}
+      hint={p.hint ?? (editable ? t(field.onComplete ? "forms.phone.hintSaves" : "forms.phone.hint") : undefined)}
+      wide={p.wide}
+      notice={
+        field.entrySaved && editable ? (
+          // Beside the field the user is looking at, with its Undo: the record form shows no notice
+          // of its own for a completed entry (RecordForm).
+          <div className="notice field-notice" role="status">
+            {t("forms.savedComplete")}
+            {field.undoEntry && (
+              <button type="button" className="button link" onClick={field.undoEntry} title={chordKeys(formChords.discard).join("+")} aria-keyshortcuts={chordForAria(formChords.discard)}>
+                {t("forms.undo")}
+              </button>
+            )}
+          </div>
+        ) : undefined
+      }
+    >
       {(a11y) => (
         <input
           {...a11y}
           ref={ref}
           name={field.name}
           type="tel"
+          placeholder={editable ? HOME_PREFIX.trim() : undefined}
           inputMode="tel"
           dir="ltr"
           value={shown}
@@ -164,9 +193,11 @@ export function PhoneField({ field, ...p }: Common & { field: FieldBinding<strin
             caret.current = caretAfter(nextShown, raw.slice(end).replace(/\D/g, "").length);
             field.onChange(next);
             // One more digit typed, and the UAE number is now whole (a paste or a replaced value is
-            // not a typed completion: the user may still be checking it).
-            const before = nationalDigits(value)?.length ?? 0;
-            if (field.onComplete && !isCompletePhone(value) && isCompletePhone(next) && nationalDigits(next)!.length === before + 1) field.onComplete(next);
+            // not a typed completion: the user may still be checking it). Counted in what the field
+            // showed and what it holds now as typed: the code typed again (+971 971505550199)
+            // shortens the number when its last digit makes it whole.
+            const typedOne = digitCount(raw) === digitCount(shown) + 1;
+            if (field.onComplete && typedOne && !isCompletePhone(value) && completesOnEntry(next)) field.onComplete(next);
           }}
         />
       )}

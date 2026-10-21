@@ -35,7 +35,11 @@ Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 
 New users are invited with a one-time set-up code shown once to the administrator (Users, `Alt+N` from anywhere on the screen, or `n` when no field has the focus);
 they sign in with it as the password and choose their own. Failed sign-ins pause only the client
-that failed, on that account; administrators see the sign-in history and can unblock. An
+that failed, on that account: a browser that signed in to the account before is a client of its
+own. Without a reverse proxy (`ERP_KNOWN_PROXIES`) the app sees every browser from the container
+network's gateway; the sign-in history marks such an address as shared, and a valid set-up code
+still signs in from it while it is paused, so an administrator lets one person in with a new
+set-up code. Administrators see the sign-in history and can unblock. An
 invitation sent to a mistyped address is corrected in the user's panel, or deleted while nobody has
 signed in with it (`identity.users.delete`); anyone who has signed in stays for the audit trail and
 is deactivated instead. Roles and users are managed only by someone who holds every permission

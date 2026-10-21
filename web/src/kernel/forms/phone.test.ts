@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { caretAfter, groupNational, isCompletePhone, phoneValue } from "./phone";
+import { caretAfter, completesOnEntry, groupNational, isCompletePhone, phoneValue } from "./phone";
 
 describe("phone numbers", () => {
   it("keeps +971 and groups the number after it as it is read", () => {
@@ -16,6 +16,25 @@ describe("phone numbers", () => {
     for (const typed of ["0505550199", "050 555 0199", "+971 50 555 0199", "+971505550199", "00971 50 555 0199", "971505550199", "+971 050 555 0199", "٠٥٠٥٥٥٠١٩٩", "+971 +971 50 555 0199"]) {
       expect(phoneValue(typed), typed).toBe("+971 50 555 0199");
     }
+  });
+
+  it("takes the country code typed again after the +971 the field keeps, once what follows it is a whole number", () => {
+    for (const typed of ["+971 971505550199", "+971 0971505550199", "+971 00971505550199", "+971 971 50 555 0199", "+971 ٩٧١٥٠٥٥٥٠١٩٩"]) {
+      expect(phoneValue(typed), typed).toBe("+971 50 555 0199");
+    }
+    expect(phoneValue("+971 97142223333")).toBe("+971 4 222 3333");
+    // On the way, the digits are kept as typed (a Fujairah line 9 71x xxxx is never cut).
+    expect(phoneValue("+971 9715055501")).toBe("+971 9 715 055501");
+    expect(phoneValue("+971 97123456")).toBe("+971 9 712 3456");
+  });
+
+  it("completes an entry on its own only for a whole number that cannot be the code typed again", () => {
+    expect(completesOnEntry("+971 50 555 0199")).toBe(true);
+    expect(completesOnEntry("+971 9 222 3333")).toBe(true);
+    expect(completesOnEntry("+971 9 712 3456")).toBe(false);
+    expect(isCompletePhone("+971 9 712 3456")).toBe(true);
+    expect(completesOnEntry("+971 50 555 019")).toBe(false);
+    expect(completesOnEntry("+44 20 7946 0958")).toBe(false);
   });
 
   it("keeps another country's number as typed, and the code while it is being typed", () => {

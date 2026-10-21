@@ -68,6 +68,8 @@ test.describe("record forms and printed documents", () => {
   });
 
   test("a phone number keeps +971: a click selects the number after it, and typing its last digit saves; Alt+Z undoes that save", async ({ page }) => {
+    // The size the critic of round 7 found the form's notice scrolled out of sight at.
+    await page.setViewportSize({ width: 1400, height: 900 });
     await freshStart(page, "en");
     await signIn(page, users.admin);
     await openCompanies(page);
@@ -86,6 +88,10 @@ test.describe("record forms and printed documents", () => {
     expect(await phone.evaluate((el: HTMLInputElement) => [el.selectionStart, el.value.slice(el.selectionStart ?? 0, el.selectionEnd ?? 0)])).toEqual([5, original.slice(5)]);
     await page.keyboard.type(number.replace(/\s/g, ""));
     await expect(page.locator(".record-form .notice")).toHaveText(/Saved: the entry was complete\./);
+    // Said under the field itself, with Undo, in sight where the user is typing.
+    const saidHere = page.locator('[data-field="phone"] .notice[role="status"]');
+    await expect(saidHere).toBeInViewport({ ratio: 1 });
+    await expect(saidHere.getByRole("button", { name: "Undo" })).toBeInViewport({ ratio: 1 });
     await expect(phone).toHaveValue(number);
     await expect(page.locator(".record-header")).not.toContainText("Unsaved changes");
     expect(puts).toEqual([number]);
@@ -107,6 +113,20 @@ test.describe("record forms and printed documents", () => {
     await page.keyboard.press("Alt+KeyZ");
     await expect(phone).toHaveValue(original);
     await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+
+    // The country code typed again after the +971 the field keeps (twelve keys, none shifted) is
+    // the same number: one save, at its last digit; the field's own Undo puts the old one back.
+    await page.locator(".record-header h2").click();
+    await phone.click();
+    const before = puts.length;
+    await page.keyboard.type("971" + number.slice(5).replace(/\s/g, ""));
+    await expect(phone).toHaveValue(number);
+    await expect(saidHere).toHaveText(/Saved: the entry was complete\./);
+    expect(puts.slice(before)).toEqual([number]);
+    await saidHere.getByRole("button", { name: "Undo" }).click();
+    await expect(phone).toHaveValue(original);
+    await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+    expect(puts.slice(before)).toEqual([number, original]);
   });
 
   test("a user who may only read a record sees it read-only, and no key of the form sends a change", async ({ page }) => {
@@ -231,6 +251,31 @@ test.describe("record forms and printed documents", () => {
     const workbook = await page.request.get(excelHref!);
     expect(workbook.status()).toBe(200);
     expect(workbook.headers()["content-type"]).toContain("spreadsheetml");
+  });
+
+  // Critic p06 round 8: printing stopped at the 2,000 rows the screen holds. The verify stack holds
+  // more than 2,000 users, so users by role runs past the screen: the screen says that its files
+  // hold every row, and printing opens the whole PDF instead of printing the screen.
+  test("a report longer than the screen prints every row through its PDF", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+    await page.goto("/reports/catalog?report=identity.usersByRole&run=1");
+    const doc = page.getByTestId("report-document").locator("article");
+    await expect(doc.locator(".report-count")).toHaveText(/^The first 2,000 of [\d,]+ rows are shown here; the PDF, Excel and CSV hold all [\d,]+\.$/);
+    await expect(page.getByRole("button", { name: "Print", exact: true })).toHaveCount(0);
+    const printAll = page.getByRole("link", { name: "Print all rows (PDF)" });
+    await expect(printAll).toHaveAttribute("target", "_blank");
+    const href = (await printAll.getAttribute("href"))!;
+    expect(href).toMatch(/^\/api\/reports\/run\/identity\.usersByRole\?.*format=pdf.*&disposition=inline$/);
+    const pdf = await page.request.get(href);
+    expect(pdf.status()).toBe(200);
+    expect(pdf.headers()["content-type"]).toBe("application/pdf");
+    expect(pdf.headers()["content-disposition"]).toMatch(/^inline;/);
+    // A long document of many pages (every row; the API tests check the rows themselves).
+    const body = await pdf.body();
+    const pages = Number(/\/Type \/Pages \/Kids \[[^\]]*\] \/Count (\d+)/.exec(body.toString("latin1"))?.[1] ?? 0);
+    expect(pages).toBeGreaterThan(40);
   });
 
   test("a list prints what it shows: the filtered users list as PDF and CSV", async ({ page }) => {

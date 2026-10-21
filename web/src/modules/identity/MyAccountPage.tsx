@@ -7,10 +7,12 @@ import { teamSignInAddress } from "../../kernel/signInAddress";
 import { formKeys } from "../../kernel/forms/RecordForm";
 import { Field } from "../../kernel/forms/fields";
 import { PasskeysSection } from "./PasskeysSection";
+import { DeviceApprovalForm } from "./DeviceApprovalForm";
 import "./identity.css";
 
 /**
- * The signed-in user's own account: interface language, password and passkeys. Changing the password
+ * The signed-in user's own account: interface language, password, passkeys and letting a new
+ * device of theirs in while its shared network address is paused. Changing the password
  * proves the current one (through sign-in) and ends every other session of the account.
  * Not a record form (nothing to load, no version): it uses the kernel's field shape (`Field`:
  * label, hint and message linked to the input) and the kernel's save keys (`formKeys`).
@@ -143,6 +145,7 @@ export function MyAccountPage() {
         </button>
       </form>
       <PasskeysSection />
+      <DeviceApprovalForm endpoint="/api/identity/me/devices/approve" hintKey="identity.device.mineHint" />
     </section>
   );
 }

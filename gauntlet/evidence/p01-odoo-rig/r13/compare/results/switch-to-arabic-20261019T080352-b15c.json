@@ -1,0 +1,303 @@
+{
+  "schema": 1,
+  "run_id": "switch-to-arabic-20261019T080352-b15c",
+  "instrument": 11,
+  "task": "switch-to-arabic",
+  "task_title": "Switch to Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Switch your own interface language to Arabic.",
+  "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
+  "started_at": "2026-10-19T08:03:52.858Z",
+  "finished_at": "2026-10-19T08:04:20.043Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 1,
+    "clicks": 5,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.432,
+    "system_wait_seconds": 0.783,
+    "human_seconds": 15.28,
+    "human_plus_wait_seconds": 16.063,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 5,
+      "B": 10,
+      "H": 1,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "user menu",
+      "keystrokes": 0,
+      "at": 0.023,
+      "took": 0.04,
+      "began": 0.001,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "My Preferences",
+      "keystrokes": 0,
+      "at": 0.105,
+      "took": 0.035,
+      "began": 0.063,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "language",
+      "keystrokes": 0,
+      "at": 0.327,
+      "took": 0.052,
+      "began": 0.27,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Arabic",
+      "keystrokes": 0,
+      "at": 0.447,
+      "took": 0.047,
+      "began": 0.379,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Update Preferences",
+      "keystrokes": 0,
+      "at": 0.535,
+      "took": 0.049,
+      "began": 0.495,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "reload the page for the right-to-left layout",
+      "keystrokes": 1,
+      "at": 0.893,
+      "took": 0.167,
+      "chord": "F5",
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "preferences dialog",
+      "at": 0.14,
+      "seconds": 0.13
+    },
+    {
+      "label": "labels re-rendered in Arabic",
+      "at": 0.585,
+      "seconds": 0.308
+    },
+    {
+      "label": "client reloaded right to left",
+      "at": 1.061,
+      "seconds": 0.08
+    },
+    {
+      "label": "working screen back",
+      "at": 1.142,
+      "seconds": 0.265
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "d21001a769364a4f.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/compare/blind/shots/d21001a769364a4f.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "5087da99de4f6eac.jpg",
+      "at": 1.432,
+      "path": "../../evidence-staging/p01-odoo-rig/r13/compare/blind/shots/5087da99de4f6eac.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "user_lang": "ar_001",
+      "direction": "rtl",
+      "app_menus": [
+        "جهات الاتصال",
+        "جهات الاتصال"
+      ],
+      "working_screen": "جديد\nجهات الاتصال\n1-80 / 10000+",
+      "working_screen_records": 80
+    }
+  },
+  "path_notes": "User menu > My Preferences > Language > Arabic > Update Preferences. Odoo re-renders the labels in Arabic but keeps the left-to-right layout until the page is reloaded, so the path ends with F5.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/switch-to-arabic.mjs",
+    "sha256": "4fe90968727019596acdf3ec1a7fe50e315a9aea6a07693a354077562ddbcdab"
+  },
+  "task_notes": "Clean-up switches the user back to English through the back end (not measured).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/odoo/contacts",
+    "path": "/odoo/contacts",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "Search...",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.02,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.014,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /bus/websocket_worker_bundle (script)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "76816b32ba7e1206",
+    "elements": 2175
+  },
+  "screen_after_verify": {
+    "sha256": "76816b32ba7e1206",
+    "elements": 2175,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.035
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.users/read": [
+        "result.0.lang"
+      ]
+    },
+    "end_state": [
+      "POST /web/dataset/call_kw/res.users/read [result.lang]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.users/read": [
+        "result.0.lang"
+      ]
+    },
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.users/web_save",
+      "POST /web/dataset/call_button/res.users/preference_save"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /web/dataset/call_kw/res.users/web_save",
+        "at": 0.5831922809998504,
+        "by_step": 5,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.004,
+          "chain": [
+            "input of step 5"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_button/res.users/preference_save",
+        "at": 0.6305594440000132,
+        "by_step": 5,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.053,
+          "chain": [
+            "input of step 5",
+            "the answer to POST /web/dataset/call_kw/res.users/web_save after 0.042 s"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -34,7 +34,7 @@ public sealed class CompanyRoleFixture : IAsyncLifetime
 /// make the user untouchable for them: what those roles grant cannot be seen.</item>
 /// </list>
 /// </summary>
-public sealed class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixture<CompanyRoleFixture>
+public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixture<CompanyRoleFixture>
 {
     private ErpTestEnvironment Env => fixture.Env;
 
@@ -236,6 +236,144 @@ public sealed class G2CompanyRoleTests(CompanyRoleFixture fixture) : IClassFixtu
 
         TestContext.Current.TestOutputHelper?.WriteLine($"{checks} checks");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
+    /// <summary>
+    /// A role held in company X acts on nothing of company Y, whichever company the user works in
+    /// (critic p02 round 11): an administrator of X alone, who also works in Y, attacks every record
+    /// of Y through every endpoint whose permission they hold only in X (<see cref="CompanyRoleRecords"/>).
+    /// </summary>
+    [Fact]
+    public async Task A_role_held_in_company_X_acts_on_nothing_of_company_Y()
+    {
+        var setup = await CompanyRoleRecords.PrepareAsync(Env, Guid.NewGuid().ToString("N")[..8]);
+        using var admin = setup.Admin;
+        using var attacker = setup.Attacker;
+        var report = await CompanyRoleRecords.RunAsync(Env, setup);
+        TestContext.Current.TestOutputHelper?.WriteLine($"{report.Endpoints} endpoints, {report.Requests} requests");
+        Assert.True(report.Changed.Count == 0, "Company Y rows changed by an administrator of company X alone: " + string.Join(", ", report.Changed));
+        Assert.True(report.Leaks.Count == 0, "Answers carrying company Y's records:\n" + string.Join("\n", report.Leaks.Take(40)));
+        Assert.True(report.Oracles.Count == 0, "Reads that tell company Y's records apart from ids that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
+        Assert.True(report.ServerErrors.Count == 0, "Server errors:\n" + string.Join("\n", report.ServerErrors.Take(20)));
+        Assert.True(report.Named.Count == 0, string.Join("\n", report.Named));
+        Assert.True(report.Endpoints >= Ratchet.Min("g2.companyRoleRecordEndpoints"),
+            $"g2.companyRoleRecordEndpoints: {report.Endpoints}; ratchet minimum {Ratchet.Min("g2.companyRoleRecordEndpoints")}");
+        Assert.True(report.Requests >= Ratchet.Min("g2.companyRoleRecordRequests"),
+            $"g2.companyRoleRecordRequests: {report.Requests}; ratchet minimum {Ratchet.Min("g2.companyRoleRecordRequests")}");
+    }
+
+    /// <summary>
+    /// The screens offer a change only where the role is held (critic p02 round 11: the JAFZA
+    /// entity's form opened editable, with Save, for a user who only reads there). A user managing
+    /// company X and reading company Y is told, record by record, that X's company and branches
+    /// are theirs to change and Y's are not; and a change to Y is refused with the reason.
+    /// </summary>
+    [Fact]
+    public async Task A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var companies = await GateCompanies.OfAsync(admin);
+        var (x, y) = (companies.Ids[0], companies.Ids[1]);
+        var roles = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray().ToList();
+        var administrator = roles.Single(r => r.GetProperty("isSystem").GetBoolean()).GetProperty("id").GetGuid();
+        var catalogue = Env.Factory.Services.GetRequiredService<ModuleCatalog>().PermissionKeys;
+        var tag = Guid.NewGuid().ToString("N")[..8];
+        var staff = await CreateAsync(admin, "/api/identity/roles", new { nameEn = $"Readers staff {tag}", nameAr = $"موظفو القراءة {tag}", permissions = Switching });
+        var reads = await CreateAsync(admin, "/api/identity/roles", new
+        {
+            nameEn = $"Reads everything {tag}", nameAr = $"يقرأ كل شيء {tag}", permissions = catalogue.Where(p => p.EndsWith(".read", StringComparison.Ordinal)).ToArray(),
+        });
+        var email = $"g2.xmanager.{tag}@{Env.TenantA.EmailDomain}";
+        var user = await CreateAsync(admin, "/api/identity/users", new
+        {
+            email, displayName = $"Manager of X {tag}", language = "en", password = ErpTestEnvironment.Password, mustChangePassword = false,
+            roleIds = new[] { staff }, companyRoles = new object[] { new { roleId = administrator, companyId = x }, new { roleId = reads, companyId = y } },
+        });
+        await companies.GiveAccessAsync(user);
+        var target = await CreateAsync(admin, "/api/identity/users", new
+        {
+            email = $"g2.xmanager.target.{tag}@{Env.TenantA.EmailDomain}", displayName = $"Target {tag}", language = "en",
+            password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>(),
+        });
+        await companies.GiveAccessAsync(target);
+        using var client = await Env.SignInAsync(email);
+        var problems = new List<string>();
+        foreach (var working in new[] { x, y })
+        {
+            await SwitchAsync(client, working);
+            var where = working == x ? "working in X" : "working in Y";
+            foreach (var (company, expected) in new[] { (x, true), (y, false) })
+            {
+                var dto = await client.GetFromJsonAsync<JsonElement>($"/api/tenancy/companies/{company}");
+                foreach (var flag in new[] { "canUpdate", "canAddBranch" })
+                {
+                    if (dto.GetProperty(flag).GetBoolean() != expected)
+                    {
+                        problems.Add($"{where}: company {(company == x ? "X" : "Y")} answered {flag} {dto.GetProperty(flag)} (expected {expected})");
+                    }
+                }
+                var branches = await client.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?filter={Uri.EscapeDataString($"companyId eq '{company}'")}");
+                foreach (var row in branches.GetProperty("items").EnumerateArray())
+                {
+                    if (row.GetProperty("canUpdate").GetBoolean() != expected)
+                    {
+                        problems.Add($"{where}: branch {row.GetProperty("code")} of company {(company == x ? "X" : "Y")} listed with canUpdate {row.GetProperty("canUpdate")} (expected {expected})");
+                    }
+                    var branch = await client.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches/{row.GetProperty("id").GetGuid()}");
+                    if (branch.GetProperty("canUpdate").GetBoolean() != expected)
+                    {
+                        problems.Add($"{where}: branch {row.GetProperty("code")} of company {(company == x ? "X" : "Y")} opened with canUpdate {branch.GetProperty("canUpdate")} (expected {expected})");
+                    }
+                }
+            }
+            var list = await client.GetFromJsonAsync<JsonElement>("/api/tenancy/companies");
+            foreach (var row in list.GetProperty("items").EnumerateArray())
+            {
+                var expected = row.GetProperty("id").GetGuid() == x;
+                if (row.GetProperty("canUpdate").GetBoolean() != expected || row.GetProperty("canAddBranch").GetBoolean() != expected)
+                {
+                    problems.Add($"{where}: the companies list row {row.GetProperty("code")} offers canUpdate {row.GetProperty("canUpdate")} canAddBranch {row.GetProperty("canAddBranch")} (expected {expected})");
+                }
+            }
+            var access = await client.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{target}");
+            foreach (var option in access.GetProperty("options").EnumerateArray())
+            {
+                var expected = option.GetProperty("id").GetGuid() == x;
+                if (option.GetProperty("canChange").GetBoolean() != expected)
+                {
+                    problems.Add($"{where}: the access screen offers canChange {option.GetProperty("canChange")} for company {option.GetProperty("code")} (expected {expected})");
+                }
+            }
+            var current = await client.GetFromJsonAsync<JsonObject>($"/api/tenancy/companies/{y}") ?? [];
+            current["tradeLicenceNumber"] = $"Y-{tag}";
+            using var change = await client.PutAsJsonAsync($"/api/tenancy/companies/{y}", current);
+            var text = await change.Content.ReadAsStringAsync();
+            // Working in Y the permission is not held at all (the door refuses); working in X it is
+            // held, but not in Y (the endpoint refuses, naming why).
+            var reason = working == x ? "\"permissionNotHeldInCompany\"" : "\"auth.forbidden\"";
+            if (change.StatusCode != HttpStatusCode.Forbidden || !text.Contains(reason, StringComparison.Ordinal))
+            {
+                problems.Add($"{where}: changing company Y, where the role only reads, answered {(int)change.StatusCode} {text} (expected 403 {reason})");
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
+    /// <summary>The attack catches handlers that check the permission only in the working company
+    /// (<see cref="CompanyRolePlantModule"/>): a branch changed by its id past the kernel's write
+    /// check, and company Y's legal name answered by a request that writes.</summary>
+    [Fact]
+    public async Task The_company_role_attack_catches_a_permission_checked_in_the_working_company_only()
+    {
+        await using var planted = Env.OverHost(CompanyRolePlantModule.Settings(Env));
+        var setup = await CompanyRoleRecords.PrepareAsync(planted, Guid.NewGuid().ToString("N")[..8]);
+        using var admin = setup.Admin;
+        using var attacker = setup.Attacker;
+        var report = await CompanyRoleRecords.RunAsync(planted, setup, e => e.Pattern.StartsWith(CompanyRolePlantModule.Prefix, StringComparison.Ordinal));
+        TestContext.Current.TestOutputHelper?.WriteLine($"changed: {string.Join(", ", report.Changed)}\nleaks:\n{string.Join("\n", report.Leaks.Take(5))}");
+        Assert.Equal(2, report.Endpoints);
+        Assert.Contains("tenancy.branches", report.Changed);
+        Assert.Contains(report.Leaks, l => l.StartsWith($"POST {CompanyRolePlantModule.Prefix}/company-name", StringComparison.Ordinal));
     }
 
     private sealed record SessionView(IReadOnlySet<string> Permissions, IReadOnlySet<string> Menu);

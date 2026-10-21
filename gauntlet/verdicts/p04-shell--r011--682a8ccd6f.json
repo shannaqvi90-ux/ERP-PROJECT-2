@@ -1,0 +1,162 @@
+{
+  "piece": "p04-shell",
+  "round": 11,
+  "commit": "682a8ccd6f75de0168cda2f4cf674178d5edf450",
+  "judged_at": "2026-10-18T12:06:44Z",
+  "critic": "fresh critic, p04-shell round 11",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation of the product (my own attacks)",
+      "status": "pass",
+      "evidence": "isolation-probe.txt (drivers/isolation_probe.py). Signed in as admin@alnoor.example, I sent 1,812 requests at Gulf Steel: every GET in the OpenAPI document with B's 30 ids and codes in the route, tenantId/tenant/q/search/companyId query values, X-Tenant-Id/X-Tenant headers; 780 writes (every documented PUT/POST/DELETE with B's ids in the route and body, plus a tenant header); and list exports (pdf/csv/xlsx) of 5 lists with tenant parameters. None of B's 33 markers appeared. No write on a B id succeeded, and B's own views of its tenant, companies, branches, roles, users and session were unchanged. The one 'changed' view was a 404 for a path that does not exist, whose traceId varies. Database (db-rls.txt): all 17 tenant tables have row-level security enabled and forced. As erp_app with no tenant context, users and audit return 0 rows. A cross-tenant UPDATE touched 0 rows, and a cross-tenant INSERT was refused by the policy. erp_app is neither superuser nor BYPASSRLS."
+    },
+    {
+      "gate": "G1 gate self-test on this piece's surface (plants)",
+      "status": "fail",
+      "evidence": "plants/plants-summary.txt. SL1 (plant-server-S1-SL1-shared-digits-file.diff): PUT /api/identity/me/preferences, the shell's own switch endpoint, keeps the digits last chosen by anyone, in any tenant, in a temp file, and answers a language-only switch with them. It was MISSED by every G1 check that ran (plants-S1-gates.log, 10 tests): G1NonInterferenceTests (8 min), G1ShellAnswersTests (3 tests), G1HttpIsolationTests (21.5 min) and G1ProcessStateTests all passed. The leak is real at run time on the planted build (plants/plant-SL1-runtime-leak.txt). Right after Gulf Steel set ar/arab, Al Noor's language-only PUT was answered numerals 'arab', while Al Noor's stored numerals stayed 'latn'. When B set latn, A's answer followed to 'latn'. Caught in the same run: CL2 (new code this round: recordEvents writes the changed record into the device key erp.lastRecordChange). The web unit suite missed it (512 passed), but G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed failed on it. Also caught: CL1 (a pending preference applied to the next user on the device), with 2 web tests failing."
+    },
+    {
+      "gate": "G2 permissions (product and plants on this piece's surface)",
+      "status": "pass",
+      "evidence": "SP1 (plants/plant-server-S2-SP1-preferences-anonymous.diff): AllowAnonymous on PUT /me/preferences. CAUGHT: the host refuses to start ('PUT /api/identity/me/preferences => UpdatePreferences: declares no permission'), and 28 of 28 G2PermissionTests fail (plants-S2-gates.log). CP1 (plants/plant-client-CP1-switch-without-permission.diff): the language switch saves to the account without identity.profile.update. CAUGHT by AppShell.test.tsx, 1 test failed. Product, roles-ui.json: noaccess sees no screens and no palette 'new' actions, and its Alt+L switches on the device only (no PUT). viewer gets no 'New' actions. A deep link to /identity/users/new shows 'No access' for noaccess and the read-only list for viewer."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command runs the demo",
+      "status": "fail",
+      "evidence": "Fresh clone at 682a8ccd. Run 1 took slot 1 at 2026-10-18T08:46:27Z. Every test passed (.NET 656, web unit 512, e2e 110, compare 415, build 6, all at their ratchet minimums, 0 failed, 0 skipped). But './erp verify' exited 1 on the ratchet: 'verify.cpuSeconds: the verify stages used 10659 processor seconds, maximum 10500'. The load peaked at 79.1. Re-run (run 2) took slot 2 at 2026-10-18T10:56:16Z: again every test passed, and again it exited 1 on 10,727 s against 10,500 (load peaked at 77.7). I could not get a quiet run. Both logs and the kept reports are in verify-critic-p04-shell-r11-run{1,2}.log and verify-run{1,2}-reports. './erp up' served the seeded demo (100,006 users) in 81 s (up.log). The maximum was not raised."
+    },
+    {
+      "gate": "Rule gates (licences, decimal money, EN/AR string twins, accessibility, audit)",
+      "status": "pass",
+      "evidence": "These ran inside the verify and passed: 'String check passed: 79 source files, 785 keys in English and Arabic, 78 plural messages' and 'Accessibility check passed: 1120 JSX elements', plus the .NET rule tests. axe-core WCAG 2 A/AA found 0 violations on sign-in, home, users, a user record, the palette and the help sheet, in English and in Arabic (axe.json). Database (db-audit-preferences.txt): every language or digits switch and every record save wrote an audit.entries row with actor, time, record and old/new values."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p04-shell-r11 ERP_HTTP_PORT=20450 ERP_DB_PORT=20451 ERP_VERIFY_HTTP_PORT=20460 ERP_VERIFY_DB_PORT=20461 ERP_VERIFY_LOG=/home/shan/evidence-staging/p04-shell/r11/verify-critic-p04-shell-r11-run1.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1699,
+    "passed": 1699,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4100
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 4100,
+    "evidence": "Every test passed in both runs, but ./erp verify exited 1 both times on the processor-time maximum alone: 10,659 s, then 10,727 s, against 10,500 s. Loads peaked at 79.1 and 77.7 while other agents' verifies and stacks ran; the wall time was not judged because the machine was busy. Run 1 took 4,100 s from the slot (it waited 8,055 s for a slot first). ./erp up from the clean clone brought the seeded demo up in 81 s, and it worked. A quiet re-run should settle whether this is load or real growth: run 1's .NET stage alone used 8,118 s of processor time."
+  },
+  "odoo": [
+    {
+      "task": "switch-to-arabic",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.177,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 3.571,
+        "klm_seconds": 15.28
+      },
+      "notes": "Run with --repeat 3 against the shared rig on 8069, which passed the live check of 100,000 or more rows in all 7 lists. Branding hidden; medians of machine seconds (compare/, compare-run.log). Every metric wins. In my browser, Alt+L switched in 71 to 104 ms with no reload. The own row and an open own record now show Arabic at once (explore2.json): round 10's stale-row minor is fixed."
+    },
+    {
+      "task": "reach-screen-keyboard",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 2,
+        "seconds": 0.183,
+        "klm_seconds": 3.66
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 8,
+        "seconds": 1.039,
+        "klm_seconds": 3.99
+      },
+      "notes": "Ours was judged on one whole path, G then U. Odoo: Ctrl+K > '/user' > Enter. Every metric wins. Our palette path loses (3.15 s modelled, 5 keys), but the G U path wins every metric. The modelled human margin is still only 0.33 s."
+    },
+    {
+      "task": "open-third-user-keyboard (critic-added r2, kept)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 6,
+        "seconds": 0.361,
+        "klm_seconds": 6.13
+      },
+      "odoo": {
+        "steps": 8,
+        "keystrokes": 13,
+        "seconds": 1.636,
+        "klm_seconds": 6.74
+      },
+      "notes": "Run with the harness's registered drivers; all 6 runs verified. Every metric wins."
+    },
+    {
+      "task": "new-user-keyboard (critic-added r7, kept)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 4,
+        "seconds": 0.232,
+        "klm_seconds": 5.57
+      },
+      "odoo": {
+        "steps": 4,
+        "keystrokes": 10,
+        "seconds": 1.81,
+        "klm_seconds": 5.9
+      },
+      "notes": "Judged on the G > U > Alt+N path; every metric wins. The new palette path, Ctrl+K > 'n' > Enter, also wins: 3 steps, 4 keys, 0.168 s and 2.87 s modelled against Odoo's 5.90 s. Odoo: Ctrl+K > '/user' > Enter > Alt+C."
+    },
+    {
+      "task": "keyboard-navigation (open the third contact by keyboard)",
+      "winner": "not-compared",
+      "odoo": {
+        "steps": 9,
+        "keystrokes": 10,
+        "seconds": 1.733,
+        "klm_seconds": 7.25
+      },
+      "notes": "Not compared: the ours driver is still a stub waiting for p16, and the product has no contacts list (src/Modules holds Identity, Lists, Reports and Tenancy). The users-list stand-in, open-third-user-keyboard, was compared and won."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p04-shell/r11/01-signin-ar.jpg",
+    "gauntlet/evidence/p04-shell/r11/02-home-en.jpg",
+    "gauntlet/evidence/p04-shell/r11/03-users-own-row-en.jpg",
+    "gauntlet/evidence/p04-shell/r11/04-users-own-row-after-altl-ar.jpg",
+    "gauntlet/evidence/p04-shell/r11/05-own-record-after-switch-en.jpg",
+    "gauntlet/evidence/p04-shell/r11/06-print-media-users-ar.jpg",
+    "gauntlet/evidence/p04-shell/r11/07-print-media-record-ar.jpg",
+    "gauntlet/evidence/p04-shell/r11/08-print-a4-users-ar.jpg",
+    "gauntlet/evidence/p04-shell/r11/09-print-a4-users-en.jpg",
+    "gauntlet/evidence/p04-shell/r11/10-palette-record-en.jpg",
+    "gauntlet/evidence/p04-shell/r11/11-palette-second-record-stale-en.jpg",
+    "gauntlet/evidence/p04-shell/r11/12-dirty-record-after-altl-ar.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The G1 gates never send the partial preferences body the shell itself sends, so a cross-tenant leak on the language switch (Alt+L sends only {language}) passes every check",
+    "detail": "Every G1 check that exercises the shell's own write, PUT /api/identity/me/preferences, sends a full body with both language and numerals: ShellAnswers.PreferenceVariants covers the 4 combinations, and TenantActivity's first and last values fill every enumerated field. The product never sends that body on its main path. Alt+L, the top-bar button and My account send {language} only, and the digits switch sends {numerals} only. So any behaviour that differs when a field is left out is outside G1. I planted SL1: the endpoint remembers the digits last chosen by anyone, in any tenant, in a file, and answers a language-only switch with them. G1NonInterference, G1ShellAnswers (3 tests), G1HttpIsolation and G1ProcessState all passed. On the running planted build, tenant A's answer revealed tenant B's last digit choice. Real code produces exactly this pattern: 'fill unspecified fields from a shared default or cache', partial-update merges, and PATCH-style endpoints that every later module (invoices, stock, journals) will have. Under the round rules, a gate that misses a fault planted in this piece's surface fails the round. Fix: derive write variants from the request the product's own client sends, not only from full enumerations. For every body schema with optional or nullable fields, add each single-field variant and the empty-but-valid subsets to the turns that NonInterference, ShellAnswers and TenantActivity run. For the preferences endpoint, include {language} alone and {numerals} alone, in English and Arabic sessions. Add a self-test plant shaped like SL1 so the gate proves it catches it.",
+    "evidence": "plants/plant-server-S1-SL1-shared-digits-file.diff applied to 682a8ccd. plants/run-plant.sh S1 'FullyQualifiedName~G1NonInterferenceTests|FullyQualifiedName~G1ShellAnswersTests|FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1ClientStateTests|FullyQualifiedName~G1HttpIsolationTests' ran 10 tests: 9 passed, and the only failure was G1ClientState on the separate CL2 plant (plants-S1-gates.log). Runtime proof: bring up the planted tree with ERP_PROJECT=c-p04-shell-r11-plant ERP_HTTP_PORT=20470 ERP_DB_PORT=20471 ERP_SEED_VOLUME=1000 ./erp up, then run drivers/sl1_demo.py. Output (plants/plant-SL1-runtime-leak.txt): 'B (gulfsteel) sets ar/arab -> arab; A language-only (en), after B -> arab (A stored numerals: latn)'. The gate sources: tests/Erp.Gates.Tests/G1/ShellAnswers.cs line 83 (PreferenceVariants, full bodies only), TenantActivity.cs FirstValues/LastValues (every enum leaf filled)."
+  },
+  "other_findings": [
+    "SCOPE GAP (p04 command palette and go-to keys; it alone would make this round a LOSS): opening a record or screen that belongs to the screen already on show changes the address but not the screen. Reproduce from home: Ctrl+K, 'latifa alsuw', Enter (Latifa's record opens). Then Ctrl+K, 'Mariam Al Mansoori', Enter. The address becomes /identity/users/<Mariam's id>?q=admin%40alnoor.example, but the search box, the list and the open record are still Latifa's, even after 4 s more. Pressing Ctrl+S then saves Latifa's record (PUT /api/identity/users/01968ada-..., palette-repro2.json). The same happens after Esc, in Arabic, on Roles (Read-only stays on screen after the palette opens Staff), and with G then U from an open record: the address becomes /identity/users while Latifa's record and search stay on screen (palette-repro.json, palette-repro3.json, 11-palette-second-record-stale-en.jpg). Only a reload shows what the address says. Cause: kernel/router navigate() pushes the address, but useRecordPanel and ListView read window.location only when they mount, and the shell keeps the same screen component mounted. Fix in the shell: remount the screen (key it by path and query) or have screens follow erp:navigate. Add e2e checks for palette record to record, and G U from a record, in English and Arabic.",
+    "SCOPE GAP (p04 print base): 'Print this screen' on A4 cuts off the list's last column. At the A4 printable width (718 px), the users grid is 789 px wide in Arabic and 743 px in English (print3.json). In Arabic the Roles column sits at -72..28 px, so it is off the page. The time in 'Last sign-in' is clipped to '…0:35' for 10:35, which reads as a different time (08-print-a4-users-ar.jpg, print-users-ar-a4.pdf). The checkbox column is hidden but keeps its 32 px. With a record open, the printed page is one A4 sheet: the record is cut mid-section, and the list keeps only Name and E-mail (07-print-media-record-ar.jpg, print-user-record-ar.pdf). Round 10's printout (print-users-ar-after-keyboard.pdf) shows the same clipping. Fix: under @media print, size the grid to the page (table-layout: auto, width 100%, no fixed column widths, no ellipsis, wrap), drop the hidden checkbox column, and print an open record as its own document rather than a clipped panel.",
+    "Round 10 gap FIXED and holding: no focus ring, hover, selection or active-row styling reaches paper. At 30 tab stops on the Arabic users list, the print-media outline is 'none' and the box-shadow 'none' (print1.json). Selected and active rows print with a transparent background (print2.json).",
+    "Round 10 minor FIXED: after Alt+L, the own row and an open own record show the new language at once, in both directions (explore2.json). A field being edited keeps what was typed across the switch, and the save succeeds with no conflict and keeps both changes (dirty-switch.json, 12-dirty-record-after-altl-ar.jpg).",
+    "Processor-time ratchet: both verifies exceeded the maximum with every test green: 10,659 s (dotnet 8,118, web 2,089, e2e 392, timing 60) and 10,727 s (dotnet 8,202, web 2,154, e2e 332, timing 39), against 10,500 s. Loads peaked at 79.1 and 77.7. Recent quiet integration runs used 9,218 to 10,181 s, so the headroom is now under 3% and a quiet re-run is needed. The maximum was not raised.",
+    "[route: p00-foundation] The G1 write-variant generator (TenantActivity First/LastValues and the NonInterference turns) fills every enumerated body field for every endpoint, not just preferences. Partial-body behaviour is unjudged product-wide. This is the shared part of the biggest gap.",
+    "Help sheet wording: under 'In lists', 'PgUp PgDn' is described as 'Move a page down or up', which is the reverse of the keys' order. The sheet does not list Ctrl+P or 'Print this screen'.",
+    "Positive: the sign-in screen is right to left under an ar-AE browser locale, with the e-mail field focused, and the font stack leads with Noto Sans Arabic Variable. In Arabic the navigation pane is on the right and the breadcrumbs are mirrored. The help sheet (Ctrl+/) is complete, and the focus returns to main after it closes. The palette finds records by name among 100,006 users and offers 'Show all 129 matches'. The status line shows the session and workspace. axe found 0 WCAG A/AA violations in either language.",
+    "Odoo rig: the shared rig on 8069 passed run.mjs's live volume check (7 lists of 100,000 or more), so no private rig was needed. All 24 measured runs verified."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p04-shell/r11",
+  "evidence_dir": "gauntlet/evidence/p04-shell/r11"
+}

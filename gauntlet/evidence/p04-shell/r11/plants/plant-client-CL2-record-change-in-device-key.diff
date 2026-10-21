@@ -1,0 +1,13 @@
+diff --git a/web/src/kernel/recordEvents.ts b/web/src/kernel/recordEvents.ts
+index db105a06..634fc78b 100644
+--- a/web/src/kernel/recordEvents.ts
++++ b/web/src/kernel/recordEvents.ts
+@@ -20,6 +20,8 @@ export type RecordChange = {
+ 
+ export function announceRecordChanged(change: RecordChange): void {
+   window.dispatchEvent(new CustomEvent<RecordChange>(recordChangedEvent, { detail: { record: change.record, id: change.id } }));
++  // PLANT CL2: the last changed record kept in a device key that sign-out does not clear
++  try { localStorage.setItem("erp.lastRecordChange", JSON.stringify(change)); } catch { /* ignore */ }
+ }
+ 
+ /** Calls `onChanged` with the record's id whenever a record of this kind is announced as changed. */

@@ -1,0 +1,23 @@
+// Walk 3: the paused user's sign-in history (EN, then AR): is the shared gateway named, and what does the admin get told?
+import { open, signIn, focused, EV, shot } from './h.mjs';
+import fs from 'node:fs';
+const log = []; const L = (s) => { log.push(s); console.log(s); };
+const [lang, email] = process.argv.slice(2);
+const { browser, page, errors } = await open();
+await signIn(page, lang === 'ar' ? 'admin.ar@alnoor.example' : 'admin@alnoor.example');
+L('dir=' + await page.locator('html').getAttribute('dir'));
+await page.keyboard.press('g'); await page.keyboard.press('u'); await page.waitForTimeout(2500);
+await page.keyboard.type(email); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+L('focus after search Enter: ' + await focused(page));
+const aside = page.locator('aside').first();
+L('aside open? ' + await aside.count());
+const tab = page.getByRole('tab', { name: lang === 'ar' ? /سجل/ : /Sign-in history/ });
+L('history tabs: ' + await tab.count());
+await tab.first().focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+const txt = await aside.innerText();
+L('history: ' + txt.slice(0, 1600).replace(/\n/g, ' | '));
+L('kind titles: ' + JSON.stringify(await page.locator('aside .id-address-kind, aside .id-device').evaluateAll((e) => e.map((x) => `${x.innerText} [${x.getAttribute('title')}]`).slice(0, 6))));
+await shot(page, lang === 'ar' ? '05-sign-in-history-shared-gateway-ar' : '04-sign-in-history-shared-gateway-en');
+L('errors: ' + JSON.stringify(errors));
+fs.writeFileSync(EV + `/walks/w3-${lang}.txt`, log.join('\n'));
+await browser.close();

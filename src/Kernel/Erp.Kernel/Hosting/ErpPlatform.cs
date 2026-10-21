@@ -54,6 +54,8 @@ public static class ErpPlatform
         services.AddHttpContextAccessor();
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
+        services.AddScoped<SessionCompanyPermissions>();
+        services.AddScoped<ICompanyPermissions>(sp => sp.GetRequiredService<SessionCompanyPermissions>());
         services.AddSingleton<Security.PasswordHashing>();
         services.AddSingleton<ShellMenu>();
         services.AddSingleton<DatabaseBootstrap>();
@@ -78,9 +80,20 @@ public static class ErpPlatform
         services.AddOptions<Microsoft.AspNetCore.RateLimiting.RateLimiterOptions>().Configure<IConfiguration>((options, config) =>
         {
             var signInPerMinute = config.GetValue("Erp:RateLimits:SignInPerMinute", 30);
+            // A client's budget: by default its remote address; an endpoint that can tell clients
+            // apart behind an address many share names a finer partition (RateLimitClientMetadata).
             options.AddPolicy(SignInRateLimit, context => RateLimitPartition.GetFixedWindowLimiter(
-                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                context.RateLimitClientOf()?.Key ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 _ => new FixedWindowRateLimiterOptions { PermitLimit = signInPerMinute, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+            // Everyone behind one shared address together: the budget of SharedAddressClients
+            // clients (clamped 1 to 1000), so finer partitions there never lift the address's own
+            // ceiling. Requests not from a shared address are not limited here.
+            var sharedPerMinute = (int)Math.Min(int.MaxValue, (long)signInPerMinute * Math.Clamp(config.GetValue("Erp:RateLimits:SharedAddressClients", 20), 1, 1000));
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                context.RateLimitClientOf()?.SharedCeiling is { } shared
+                    ? RateLimitPartition.GetFixedWindowLimiter("shared|" + shared,
+                        _ => new FixedWindowRateLimiterOptions { PermitLimit = sharedPerMinute, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })
+                    : RateLimitPartition.GetNoLimiter(""));
             options.OnRejected = async (context, _) =>
                 await Problems.Write(context.HttpContext, StatusCodes.Status429TooManyRequests, "request.tooMany");
         });
@@ -170,6 +183,16 @@ public static class ErpPlatform
         });
         app.UseAuthentication();
         app.UseMiddleware<CsrfMiddleware>();
+        // The partition an endpoint's rate limit counts the request against, when it names one.
+        app.Use(async (context, next) =>
+        {
+            if (context.GetEndpoint()?.Metadata.GetMetadata<RateLimitClientMetadata>() is { } partitioned &&
+                await partitioned.Resolve(context) is { } partition)
+            {
+                context.Items[RateLimitClientExtensions.PartitionItem] = partition;
+            }
+            await next(context);
+        });
         app.UseRateLimiter();
         app.UseAuthorization();
 

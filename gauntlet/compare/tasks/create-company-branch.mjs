@@ -14,6 +14,9 @@ export default {
     ours: { reads: [{ read: 'GET /api/tenancy/companies', parts: ['items.legalNameEn'] }], writes: ['POST /api/tenancy/companies'] },
   },
   enters: ['company', 'branch'],
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up retires a company left by an earlier run under the task's name); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['PUT /api/tenancy/companies/*'] },
   moments: ['branch filled in'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Create the company "{company}" with one branch, "{branch}".',

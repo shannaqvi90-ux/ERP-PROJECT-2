@@ -1,0 +1,21 @@
+Critic p04-shell round 11: plants on this piece's surface (separate copies of 682a8ccd; never in the judged clone)
+
+CLIENT (web unit suite, 512 tests, each plant alone; client-plants.sh, logs plant-client-*.log)
+  CL1 pending preference change applied to whichever user signs in next on the device (pendingFor ignores userId)  -> CAUGHT, 2 tests failed (preferences.test.ts, AppShell.test.tsx)
+  CP1 Alt+L / top-bar switch saves to the account without identity.profile.update (usePreferenceActions)        -> CAUGHT, 1 test failed (AppShell.test.tsx)
+  CL2 new code this round: recordEvents.announceRecordChanged also writes the change to localStorage "erp.lastRecordChange"
+      -> NOT caught by the web unit suite (512 passed); CAUGHT by the .NET gate G1ClientStateTests
+         (Every_use_of_a_carrier_that_outlives_the_document_is_reviewed) in the S1 run below
+
+SERVER G1 (plants-S1-gates.log; plant-server-S1-SL1-shared-digits-file.diff + CL2; 10 tests, 9 passed, 1 failed)
+  SL1 PUT /api/identity/me/preferences remembers the digits last chosen by anyone (any tenant) in a temp file and
+      answers a language-only switch (the body Alt+L sends) with them
+      -> MISSED by G1NonInterferenceTests (8 m), G1ShellAnswersTests (3 tests), G1HttpIsolationTests (21 m), G1ProcessStateTests.
+         The gates' preference variants always send language AND numerals (ShellAnswers.PreferenceVariants,
+         TenantActivity first/last values), never the partial body the product's own switch sends.
+      -> Real at run time on the planted build (plant-SL1-runtime-leak.txt): after Gulf Steel chose ar/arab, Al Noor's
+         language-only PUT was answered numerals "arab" while Al Noor's stored numerals stayed "latn".
+
+SERVER G2 (plants-S2-gates.log; plant-server-S2-SP1-preferences-anonymous.diff)
+  SP1 PUT /api/identity/me/preferences .AllowAnonymous() instead of RequirePermission -> CAUGHT: host refuses to start
+      ("declares no permission"); 28 of 28 G2PermissionTests fail

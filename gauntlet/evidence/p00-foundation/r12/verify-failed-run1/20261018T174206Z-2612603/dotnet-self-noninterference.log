@@ -1,0 +1,21 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.40]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.57]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:02.09]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.Times_are_told_apart_by_whose_request_they_fall_in [77 ms]
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.How_an_answer_changes_is_told_by_its_numbers [4 ms]
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.A_finding_shows_where_a_long_answer_differs [3 ms]
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_catches_shared_state_that_leaks_no_marker [14 m 12 s]
+[xUnit.net 00:14:46.71]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_header_comparison_ignores_only_transport_tracing_dates_and_cookie_values [14 ms]
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_write_comparison_also_ignores_only_versions [< 1 ms]
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.The_non_interference_check_ignores_only_times_and_trace_ids [< 1 ms]
+  Passed Erp.Gates.Tests.SelfTests.NonInterferenceSelfTests.Only_the_credential_cookies_values_are_left_out [72 ms]
+Results File: /out/trx/self-noninterference_net10.0_20261018164549.trx
+
+Test Run Successful.
+Total tests: 8
+     Passed: 8
+ Total time: 14.8128 Minutes

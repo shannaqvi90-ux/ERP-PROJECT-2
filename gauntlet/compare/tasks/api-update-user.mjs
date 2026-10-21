@@ -15,6 +15,10 @@ export default {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.users/read', parts: ['result.lang'] }], writes: ['POST /json/2/res.users/write'] },
     ours: { reads: [{ read: 'GET /api/identity/users/*', parts: ['language'] }], writes: ['PUT /api/identity/users/*'] },
   },
+  // Round 14 (critic p01 r13, fix c): the writes set-up sends for each product whose driver is built
+  // (set-up gives the dataset user back the language the task changes); any other set-up write is refused for our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['PUT /api/identity/users/*'] },
+  healthFixtures: { ours: ['POST /api/identity/users'] },
   moments: [],
   start: 'An HTTP client holding a signed-in administrator session (base address and token set up); nothing sent yet.',
   goal: 'Through the product\'s documented API only, find the user {user.name} among 100,000 users and switch their interface language to Arabic.',

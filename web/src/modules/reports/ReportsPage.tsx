@@ -87,6 +87,21 @@ export function ReportsPage() {
 
   useShortcut({ id: "reports.run", chord: "Mod+Enter", labelKey: "reports.action.show", groupKey: "reports.shortcut.group", enabled: Boolean(report), run: () => void run() });
 
+  // A document cut on screen whose PDF holds every row prints through that PDF: the link and Ctrl+P
+  // open it (the browser's viewer prints it), so the keyboard never prints only the screen's rows.
+  const printAllUrl =
+    report && document?.truncated && document.filesHoldAll ? `${reportUrl(report, values, "pdf", documentLanguage, numerals, report.defaultGroupBy)}&disposition=inline` : null;
+  useShortcut({
+    id: "reports.printAll",
+    chord: "Mod+KeyP",
+    labelKey: "reports.action.printAll",
+    groupKey: "reports.shortcut.group",
+    enabled: printAllUrl !== null,
+    run: () => {
+      if (printAllUrl) window.open(printAllUrl, "_blank", "noopener");
+    },
+  });
+
   const bind = (key: string): FieldBinding<string> => ({
     name: key,
     value: values[key] ?? "",
@@ -168,10 +183,18 @@ export function ReportsPage() {
                   <button type="submit" className="button primary" disabled={busy} aria-keyshortcuts="Control+Enter">
                     {busy ? t("reports.running") : t("reports.action.show")}
                   </button>
-                  {document && (
-                    <button type="button" className="button" onClick={() => window.print()}>
-                      {t("reports.action.print")}
-                    </button>
+                  {printAllUrl ? (
+                    // The screen holds the first rows only; the PDF holds every row, so printing
+                    // opens it (the browser's viewer prints it) instead of printing the screen.
+                    <a className="button" href={printAllUrl} target="_blank" rel="noopener" aria-keyshortcuts="Control+P" data-testid="report-print-all">
+                      {t("reports.action.printAll")}
+                    </a>
+                  ) : (
+                    document && (
+                      <button type="button" className="button" onClick={() => window.print()}>
+                        {t("reports.action.print")}
+                      </button>
+                    )
                   )}
                   <a className="button" href={reportUrl(report, values, "pdf", documentLanguage, numerals, report.defaultGroupBy)} download>
                     {t("reports.action.pdf")}

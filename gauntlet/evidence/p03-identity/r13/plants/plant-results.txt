@@ -1,0 +1,22 @@
+Critic p03 r13 planted faults (r13-plants.diff, in a scratch clone of 047f1920; the shipped code is untouched)
+
+L1 tenant leak: GET /api/identity/users/{id} answers from a DI-singleton memo keyed by id only (UserAnswerMemo).
+   Live on the planted stack: tenant A reads tenant B's user (plant-demo.txt).
+   CAUGHT by G1HttpIsolation (86 leaks), G1NonInterference, G1ProcessState (run-server/gates.log).
+L2 tenant leak: the DeviceApproval migration replaces identity.sign_in_attempts' tenant_isolation with USING (true).
+   Live: erp_app bound to tenant A sees other tenants' sign-in attempts (plant-demo.txt).
+   CAUGHT by G1DatabaseIsolation (standard policy; app role sees other tenants).
+P1 no permission check: POST /api/identity/users/{id}/devices/approve requires identity.profile.update (every user) instead of identity.users.update.
+   Live: an auditor with no users.update lets a device in (plant-demo.txt).
+   CAUGHT by G2PermissionTests (reviewed map).
+P2 no target check: the same endpoint skips TargetProblemAsync (whose access covers whom, never oneself).
+   Live: the auditor lets a device of the Administrator in, 200 (plant-demo.txt).
+   CAUGHT by G1CompanyIsolation / G2 takeover checks and G1SignInThrottle (approve on oneself answered 200).
+U1 screen offers an action the user cannot do: UserPanel HistoryTab canApprove drops canUnblock, so anyone who may read
+   the sign-in history (identity.signIns.read) is offered "Let a device sign in" (device code field, Let it in button,
+   palette command identity.users.approveDevice).
+   Live: screenshot 10 (planted: form offered to the auditor) against 11 (shipped: not offered).
+   MISSED: web unit suite 528/528 passed with the plant (web-U1-planted-full.log; it also runs the identity screens'
+   permission gate and its 13-plant self-test, all caught, none of them this one); the e2e suite against the planted
+   stack failed only 2 tests, both from L1's stale cache (an edited e-mail and language read back old), none about the
+   device form (e2e-planted.log, 111 passed, 2 failed).

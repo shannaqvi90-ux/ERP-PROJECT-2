@@ -85,11 +85,17 @@ public sealed record ReportDocument
     /// <summary>Rows that matched (more than <see cref="RowCount"/> when the document stopped at its limit).</summary>
     public required int MatchCount { get; init; }
 
-    /// <summary>"12 rows" or "the first 2,000 of 100,004 rows" in the document's language.</summary>
+    /// <summary>"12 rows", "the first 2,000 of 100,004 rows are shown here; the PDF, Excel and CSV hold
+    /// all 100,004", or (past a file's limit) "the first 200,000 of 250,000 rows; narrow the
+    /// parameters to print the rest", in the document's language.</summary>
     public required string RowCountText { get; init; }
 
     /// <summary>More rows matched than the document holds.</summary>
     public required bool Truncated { get; init; }
+
+    /// <summary>A document shown on screen that stopped at the screen's rows while its PDF and
+    /// exports hold every row that matched (the screen offers to print them all).</summary>
+    public bool FilesHoldAll { get; init; }
 
     public required DateTimeOffset PrintedAt { get; init; }
 

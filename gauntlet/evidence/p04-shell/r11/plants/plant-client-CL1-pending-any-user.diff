@@ -1,0 +1,13 @@
+diff --git a/web/src/kernel/preferences.ts b/web/src/kernel/preferences.ts
+index f1094ff5..cce9cd66 100644
+--- a/web/src/kernel/preferences.ts
++++ b/web/src/kernel/preferences.ts
+@@ -51,7 +51,7 @@ function writeStore(store: PendingStore | null): void {
+ /** Changes this device made for the user that the server may not have yet. */
+ export function pendingFor(userId: string): PreferenceChange | null {
+   const store = readStore();
+-  if (!store || store.userId !== userId || Object.keys(store.changes).length === 0) return null;
++  if (!store || Object.keys(store.changes).length === 0) return null; // PLANT CL1: another user's pending change on this device applies to whoever signs in next
+   return store.changes;
+ }
+ 

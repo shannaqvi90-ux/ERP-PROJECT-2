@@ -1,0 +1,43 @@
+  rolname  | rolsuper | rolbypassrls | rolcanlogin 
+-----------+----------+--------------+-------------
+ erp_app   | f        | f            | t
+ erp_auth  | f        | f            | f
+ erp_owner | f        | f            | t
+ postgres  | t        | t            | t
+(4 rows)
+
+             tbl             | rls | forced |   owner   | tenant_notnull | policies 
+-----------------------------+-----+--------+-----------+----------------+----------
+ audit.entries               | t   | t      | erp_owner | t              |        1
+ identity.passkeys           | t   | t      | erp_owner | t              |        1
+ identity.roles              | t   | t      | erp_owner | t              |        1
+ identity.sessions           | t   | t      | erp_owner | t              |        2
+ identity.sign_in_attempts   | t   | t      | erp_owner | t              |        1
+ identity.user_company_roles | t   | t      | erp_owner | t              |        4
+ identity.user_credentials   | t   | t      | erp_owner | t              |        2
+ identity.user_roles         | t   | t      | erp_owner | t              |        1
+ identity.users              | t   | t      | erp_owner | t              |        2
+ lists.saved_views           | t   | t      | erp_owner | t              |        1
+ tenancy.branches            | t   | t      | erp_owner | t              |        2
+ tenancy.companies           | t   | t      | erp_owner | t              |        2
+ tenancy.tenants             | t   | t      | erp_owner | t              |        1
+ tenancy.user_branch_access  | t   | t      | erp_owner | t              |        4
+ tenancy.user_company_access | t   | t      | erp_owner | t              |        4
+ tenancy.user_company_totals | t   | t      | erp_owner | t              |        1
+ tenancy.user_workplaces     | t   | t      | erp_owner | t              |        2
+(17 rows)
+
+        tbl_without_tenant        | relrowsecurity 
+----------------------------------+----------------
+ audit.__ef_migrations_history    | f
+ identity.__ef_migrations_history | f
+ identity.sign_in_failures        | f
+ identity.sign_in_secret          | f
+ lists.__ef_migrations_history    | f
+ tenancy.__ef_migrations_history  | f
+(6 rows)
+
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+

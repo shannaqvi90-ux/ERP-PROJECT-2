@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "print-list-arabic-20261017T115756-6a97",
-  "instrument": 10,
+  "run_id": "print-list-arabic-20261019T124538-48ec",
+  "instrument": 12,
   "task": "print-list-arabic",
   "task_title": "Print a list report in Arabic",
   "product": "odoo",
   "status": "verified",
   "goal": "Narrow the list to the orders of the vendor Zenith General Trading Est. and print that list as a PDF in Arabic.",
   "done_when": "The product hands over one PDF that holds every order the narrowed list shows, and only those, in Arabic and laid out right to left.",
-  "started_at": "2026-10-17T11:57:56.408Z",
-  "finished_at": "2026-10-17T11:58:23.311Z",
+  "started_at": "2026-10-19T12:45:38.258Z",
+  "finished_at": "2026-10-19T12:46:07.348Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 5.626,
-    "system_wait_seconds": 4.934,
+    "machine_seconds": 4.947,
+    "system_wait_seconds": 4.372,
     "human_seconds": 19.06,
-    "human_plus_wait_seconds": 23.994,
+    "human_plus_wait_seconds": 23.432,
     "klm_operator_counts": {
       "K": 32,
       "P": 3,
@@ -58,8 +58,8 @@
       "kind": "type",
       "label": "vendor",
       "keystrokes": 31,
-      "at": 0.006,
-      "took": 0.096,
+      "at": 0.004,
+      "took": 0.082,
       "text": "Zenith General Trading Est.",
       "same_field": false,
       "screen": "/odoo/purchase",
@@ -70,8 +70,8 @@
       "kind": "key",
       "label": "search orders",
       "keystrokes": 1,
-      "at": 0.107,
-      "took": 0.018,
+      "at": 0.089,
+      "took": 0.007,
       "chord": "Enter",
       "screen": "/odoo/purchase",
       "chain": true
@@ -81,9 +81,9 @@
       "kind": "click",
       "label": "select every order",
       "keystrokes": 0,
-      "at": 0.67,
-      "took": 0.063,
-      "began": 0.628,
+      "at": 0.629,
+      "took": 0.087,
+      "began": 0.596,
       "screen": "/odoo/purchase",
       "chain": false
     },
@@ -92,9 +92,9 @@
       "kind": "click",
       "label": "Print",
       "keystrokes": 0,
-      "at": 0.775,
-      "took": 0.036,
-      "began": 0.736,
+      "at": 0.766,
+      "took": 0.033,
+      "began": 0.72,
       "screen": "/odoo/purchase",
       "chain": false
     },
@@ -103,9 +103,9 @@
       "kind": "click",
       "label": "Purchase Order",
       "keystrokes": 0,
-      "at": 0.854,
-      "took": 0.04,
-      "began": 0.812,
+      "at": 0.865,
+      "took": 0.035,
+      "began": 0.8,
       "screen": "/odoo/purchase",
       "chain": false
     }
@@ -114,47 +114,47 @@
     {
       "label": "order list, search focused",
       "at": 0.001,
-      "seconds": 0.004
+      "seconds": 0.003
     },
     {
       "label": "search options",
-      "at": 0.102,
-      "seconds": 0.004
+      "at": 0.086,
+      "seconds": 0.003
     },
     {
       "label": "the vendor's orders",
-      "at": 0.126,
-      "seconds": 0.271
+      "at": 0.096,
+      "seconds": 0.318
     },
     {
       "label": "print menu offered",
-      "at": 0.733,
+      "at": 0.716,
       "seconds": 0.003
     },
     {
       "label": "file received",
-      "at": 0.894,
-      "seconds": 4.73
+      "at": 0.901,
+      "seconds": 4.045
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "7c00ea25096a70f1.jpg",
+      "file": "a2f91f9c6ba1859f.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/7c00ea25096a70f1.jpg"
+      "path": "gauntlet/reference/odoo/shots/a2f91f9c6ba1859f.jpg"
     },
     {
       "moment": "list filtered",
-      "file": "dfb59d6f2a49e998.jpg",
-      "at": 0.398,
-      "path": "gauntlet/reference/odoo/shots/dfb59d6f2a49e998.jpg"
+      "file": "d1aa3b9076f298da.jpg",
+      "at": 0.415,
+      "path": "gauntlet/reference/odoo/shots/d1aa3b9076f298da.jpg"
     },
     {
       "moment": "done",
-      "file": "a04a542048e74ff3.jpg",
-      "at": 5.626,
-      "path": "gauntlet/reference/odoo/shots/a04a542048e74ff3.jpg"
+      "file": "e35cbab753a468c0.jpg",
+      "at": 4.947,
+      "path": "gauntlet/reference/odoo/shots/e35cbab753a468c0.jpg"
     }
   ],
   "verification": {
@@ -199,20 +199,20 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.006,
+      "longest_pause_seconds": 0.004,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.182,
+      "seconds": 0.14,
       "verified": true
     },
     {
       "requests": 2,
-      "longest_pause_seconds": 0.006,
+      "longest_pause_seconds": 0.004,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.187,
+      "seconds": 0.128,
       "verified": true,
-      "gap_seconds": 0.243
+      "gap_seconds": 0.193
     }
   ],
   "requests_after_clock": 0,
@@ -223,11 +223,11 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "ceab5851ec60432c",
+    "sha256": "5dc6f7474222075d",
     "elements": 1172
   },
   "screen_after_verify": {
-    "sha256": "ceab5851ec60432c",
+    "sha256": "5dc6f7474222075d",
     "elements": 1172,
     "unchanged": true
   },
@@ -236,17 +236,82 @@
     "error": null,
     "back_end_reads": 0,
     "requests": 0,
-    "longest_pause_seconds": 0.001,
+    "longest_pause_seconds": 0,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.001
+    "seconds": 0
   },
   "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 76,
+    "not_caused": 14,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.106,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.622,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.656,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.756,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.789,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.81,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.823,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.84,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 4.897,
+      "by_step": 5,
+      "chain": [
+        "the answer to POST /web/action/load after 0.013 s",
+        "the answer to POST /report/get_pdf_engine_state after 0.005 s",
+        "the answer to POST /report/download after 3.956 s",
+        "an animation frame"
+      ]
+    }
+  },
   "result_file": "gauntlet/reference/odoo/tasks/print-list-arabic.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/print-list-arabic-20261017T115701-a27a.json",
-    "gauntlet/reference/odoo/results/print-list-arabic-20261017T115728-f346.json",
-    "gauntlet/reference/odoo/results/print-list-arabic-20261017T115756-6a97.json"
+    "gauntlet/reference/odoo/results/print-list-arabic-20261019T124440-71ea.json",
+    "gauntlet/reference/odoo/results/print-list-arabic-20261019T124509-6d65.json",
+    "gauntlet/reference/odoo/results/print-list-arabic-20261019T124538-48ec.json"
   ]
 }

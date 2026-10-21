@@ -21,8 +21,24 @@ namespace Erp.Gates.Tests.G2;
 public static class CarrierMatrix
 {
     /// <summary>A user whose roles grant nothing: through every carrier, the session lists no
-    /// permission and no menu entry, and every permissioned endpoint answers 403.</summary>
-    public static async Task<Result> DeniedEverythingAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null)
+    /// permission and no menu entry, and every permissioned endpoint answers 403, both with random
+    /// ids and with every id of the caller's own (<see cref="OwnIds"/>: their user id, session,
+    /// tenant, companies, branches and the records that name them), each through a session of its
+    /// own per carrier.</summary>
+    /// <param name="ownIds">False for the carrier self-test alone (its plant is about carriers, and
+    /// the own-id requests have a self-test of their own).</param>
+    public static async Task<Result> DeniedEverythingAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, bool ownIds = true)
+    {
+        var random = await DeniedForRandomIdsAsync(env, email, permissioned, factory);
+        if (!ownIds)
+        {
+            return random;
+        }
+        var self = await SelfReferencingAsync(env, email, null, permissioned, SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory);
+        return random with { Problems = [.. random.Problems, .. self.Problems], SelfRequests = self.Requests, OwnIdsTried = self.OwnIdsTried, SelfEndpoints = self.Endpoints };
+    }
+
+    private static async Task<Result> DeniedForRandomIdsAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory)
     {
         var problems = new List<string>();
         var carriers = new List<string>();
@@ -57,9 +73,59 @@ public static class CarrierMatrix
 
     /// <summary>A user holding exactly <paramref name="permission"/>: through every carrier, the
     /// session lists exactly it and its menu entries, and exactly the endpoints that declare it
-    /// open.</summary>
+    /// open. Then, through each carrier in <paramref name="selfCarriers"/> (every carrier when
+    /// null; none when empty, for the carrier self-test alone), with a session of its own: every endpoint of the permission's module that declares
+    /// another permission answers 403 when the request names any id of the caller's own
+    /// (<see cref="OwnIds"/>), so holding one permission never opens another action on "my own"
+    /// records.</summary>
     public static async Task<Result> ExactlyOneAsync(ErpTestEnvironment env, string email, string permission, IReadOnlyList<string> expectedMenu,
-        IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null)
+        IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, IReadOnlyList<string>? selfCarriers = null)
+    {
+        var random = await ExactlyOneForRandomIdsAsync(env, email, permission, expectedMenu, permissioned, factory);
+        if (selfCarriers is [])
+        {
+            return random;
+        }
+        var module = OwnIds.ModuleOf(permission);
+        var others = permissioned.Where(e => e.Permission != permission && OwnIds.ModuleOf(e.Permission) == module).ToList();
+        var self = await SelfReferencingAsync(env, email, permission, others, selfCarriers ?? SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory);
+        return random with { Problems = [.. random.Problems, .. self.Problems], SelfRequests = self.Requests, OwnIdsTried = self.OwnIdsTried, SelfEndpoints = self.Endpoints };
+    }
+
+    /// <summary>Every endpoint given answers 403 to requests naming the caller's own ids, through
+    /// each carrier named, each carrier with a session of its own (an action that ends the session
+    /// under a planted bypass then spoils only that carrier's later requests).</summary>
+    private static async Task<SelfResult> SelfReferencingAsync(ErpTestEnvironment env, string email, string? holding, IReadOnlyList<ApiEndpoint> endpoints,
+        IReadOnlyList<string> carriers, ErpAppFactory? factory)
+    {
+        var problems = new List<string>();
+        var requests = 0;
+        var ownIds = 0;
+        foreach (var carrier in carriers)
+        {
+            var (token, userId) = await env.SignInForTokenAsync(email, factory);
+            var own = await OwnIds.OfAsync(env, userId, token);
+            ownIds = Math.Max(ownIds, own.Count);
+            using var client = env.ClientCarrying(carrier, token, factory);
+            foreach (var (endpoint, id, build) in OwnIds.Requests(endpoints, own))
+            {
+                using var request = build();
+                using var response = await client.SendAsync(request);
+                requests++;
+                if (response.StatusCode != HttpStatusCode.Forbidden)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    problems.Add($"[{carrier}] {(holding is null ? "" : holding + ": ")}{endpoint} naming {id.Source} answered {(int)response.StatusCode} (expected 403) {body[..Math.Min(160, body.Length)]}");
+                }
+            }
+        }
+        return new SelfResult(problems, requests, ownIds, endpoints.Count);
+    }
+
+    private sealed record SelfResult(IReadOnlyList<string> Problems, int Requests, int OwnIdsTried, int Endpoints);
+
+    private static async Task<Result> ExactlyOneForRandomIdsAsync(ErpTestEnvironment env, string email, string permission, IReadOnlyList<string> expectedMenu,
+        IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory)
     {
         var problems = new List<string>();
         var carriers = new List<string>();
@@ -146,7 +212,18 @@ public static class CarrierMatrix
         return body.GetProperty("authenticated").GetBoolean() || user is not null ? $"signed in as {user ?? "someone"}" : null;
     }
 
-    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Carriers, int Requests);
+    /// <param name="Requests">Requests with random ids (one per endpoint and carrier).</param>
+    public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Carriers, int Requests)
+    {
+        /// <summary>Requests that named one of the caller's own ids.</summary>
+        public int SelfRequests { get; init; }
+
+        /// <summary>The most own ids found for one session of the caller.</summary>
+        public int OwnIdsTried { get; init; }
+
+        /// <summary>Endpoints the requests naming own ids went to.</summary>
+        public int SelfEndpoints { get; init; }
+    }
 }
 
 /// <summary>

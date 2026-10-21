@@ -120,8 +120,9 @@ public static partial class G1WriteOracle
             {
                 n++;
                 var tag = $"{n}{Guid.NewGuid():N}"[..12];
-                var used = ValueLike(field, $"oracle.{tag}", env.TenantB);
-                var fresh = ValueLike(field, $"oracle.{tag}x", env.TenantB);
+                var property = openApi.Resolve(properties.GetProperty(field));
+                var used = Fit(property, ValueLike(field, $"oracle.{tag}", env.TenantB), $"oracle.{tag}");
+                var fresh = Fit(property, ValueLike(field, $"oracle.{tag}x", env.TenantB), $"oracle.{tag}x");
 
                 // Tenant B uses the value through this very endpoint.
                 var (victimStatus, victimText) = await SendAsync(b, openApi, endpoint, collection, schema, env, $"{tag}b", field, used);
@@ -131,7 +132,9 @@ public static partial class G1WriteOracle
                     continue;
                 }
                 var pairs = new List<(string Label, string Value)> { ("written by tenant B through this endpoint", used) };
-                if (!IsName(field, null) && SeedValue(field) is { } seeded)
+                // A value B holds from its seed data, when one can be the field's value at all (no
+                // seeded value has the shape of a device code, which only a paused screen makes).
+                if (!IsName(field, null) && SeedValue(field) is { } seeded && Fits(property, seeded))
                 {
                     pairs.Add(("from tenant B's seed data", seeded));
                 }
@@ -150,7 +153,7 @@ public static partial class G1WriteOracle
                     {
                         problems.Add(undo);
                     }
-                    var (withFresh, withFreshText) = await SendAsync(a, openApi, endpoint, collection, schema, env, $"{tag}f{checks}", field, label.StartsWith("from", StringComparison.Ordinal) ? ValueLike(field, $"oracle.{tag}s", env.TenantB) : fresh);
+                    var (withFresh, withFreshText) = await SendAsync(a, openApi, endpoint, collection, schema, env, $"{tag}f{checks}", field, label.StartsWith("from", StringComparison.Ordinal) ? Fit(property, ValueLike(field, $"oracle.{tag}s", env.TenantB), $"oracle.{tag}s") : fresh);
                     checks++;
                     if (withB != withFresh)
                     {
@@ -179,6 +182,64 @@ public static partial class G1WriteOracle
         }
         var workplace = await response.Content.ReadFromJsonAsync<JsonObject>();
         return workplace?["companyId"]?.GetValue<string>() ?? "";
+    }
+
+    /// <summary>Whether <paramref name="value"/> meets the field's documented pattern (true without one).</summary>
+    internal static bool Fits(JsonElement property, string value) =>
+        !property.TryGetProperty("pattern", out var pattern) || System.Text.RegularExpressions.Regex.IsMatch(value, pattern.GetString()!);
+
+    /// <summary>
+    /// The value, or, when it breaks the field's documented pattern (a device code: eight symbols of
+    /// an alphabet without 0, O, 1, I and L), a value made from <paramref name="seed"/> of the
+    /// pattern's own characters (its widest character class) that the pattern takes: a different
+    /// seed gives a different value, so tenant B's value and one that exists nowhere stay apart.
+    /// </summary>
+    internal static string Fit(JsonElement property, string value, string seed)
+    {
+        if (Fits(property, value))
+        {
+            return value;
+        }
+        var pattern = property.GetProperty("pattern").GetString()!;
+        var alphabets = System.Text.RegularExpressions.Regex.Matches(pattern, @"\[([^\]\\]+)\]")
+            .Select(m => Expand(m.Groups[1].Value))
+            .Where(a => a.Length > 1)
+            .OrderByDescending(a => a.Length);
+        var bytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(seed));
+        foreach (var alphabet in alphabets)
+        {
+            for (var length = 1; length <= bytes.Length; length++)
+            {
+                var candidate = new string(bytes.Take(length).Select(b => alphabet[b % alphabet.Length]).ToArray());
+                if (System.Text.RegularExpressions.Regex.IsMatch(candidate, pattern))
+                {
+                    return candidate;
+                }
+            }
+        }
+        return value;
+
+        // The characters of a character class (ranges spelled out), without separators.
+        static string Expand(string body)
+        {
+            var chars = new List<char>();
+            for (var i = 0; i < body.Length; i++)
+            {
+                if (i + 2 < body.Length && body[i + 1] == '-')
+                {
+                    for (var c = body[i]; c <= body[i + 2]; c++)
+                    {
+                        chars.Add(c);
+                    }
+                    i += 2;
+                }
+                else
+                {
+                    chars.Add(body[i]);
+                }
+            }
+            return new string(chars.Where(c => c is not (' ' or '-')).Distinct().ToArray());
+        }
     }
 
     /// <summary>An address in tenant B's domain, or a code of the same shape.</summary>

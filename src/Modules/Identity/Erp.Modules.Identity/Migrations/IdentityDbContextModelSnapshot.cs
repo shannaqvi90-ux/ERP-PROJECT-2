@@ -388,6 +388,14 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
+                    b.Property<byte[]>("DeviceApprovalHash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("device_approval_hash");
+
+                    b.Property<DateTimeOffset?>("DeviceApprovalUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("device_approval_until");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -494,6 +502,8 @@ namespace Erp.Modules.Identity.Migrations
                     b.ToTable("users", "identity", t =>
                         {
                             t.HasCheckConstraint("ck_users_company_role_count", "company_role_count >= 0");
+
+                            t.HasCheckConstraint("ck_users_device_approval", "(device_approval_hash IS NULL AND device_approval_until IS NULL) OR (length(device_approval_hash) = 32 AND device_approval_until IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
 

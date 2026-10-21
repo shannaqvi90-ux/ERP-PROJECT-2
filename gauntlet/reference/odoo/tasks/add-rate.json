@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "add-rate-20261017T112111-1088",
-  "instrument": 10,
+  "run_id": "add-rate-20261019T120939-39cf",
+  "instrument": 12,
   "task": "add-rate",
   "task_title": "Add an exchange rate",
   "product": "odoo",
   "status": "verified",
   "goal": "Record today's rate for the euro: 1 EUR = 4.2875 AED.",
   "done_when": "The rate is saved; the back end holds a EUR rate dated today equal to 4.2875 AED per euro.",
-  "started_at": "2026-10-17T11:21:11.147Z",
-  "finished_at": "2026-10-17T11:21:58.521Z",
+  "started_at": "2026-10-19T12:09:39.247Z",
+  "finished_at": "2026-10-19T12:10:25.280Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -30,10 +30,10 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 2.203,
-    "system_wait_seconds": 1.344,
+    "machine_seconds": 1.536,
+    "system_wait_seconds": 0.684,
     "human_seconds": 22.08,
-    "human_plus_wait_seconds": 23.424,
+    "human_plus_wait_seconds": 22.764,
     "klm_operator_counts": {
       "K": 11,
       "P": 6,
@@ -58,8 +58,8 @@
       "kind": "click",
       "label": "apps menu",
       "keystrokes": 0,
-      "at": 0.018,
-      "took": 0.039,
+      "at": 0.013,
+      "took": 0.036,
       "began": 0.001,
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,9 +69,9 @@
       "kind": "click",
       "label": "Invoicing app",
       "keystrokes": 0,
-      "at": 0.101,
+      "at": 0.113,
       "took": 0.035,
-      "began": 0.058,
+      "began": 0.049,
       "screen": "/odoo/discuss",
       "chain": false
     },
@@ -80,9 +80,9 @@
       "kind": "click",
       "label": "Configuration menu",
       "keystrokes": 0,
-      "at": 0.417,
-      "took": 0.038,
-      "began": 0.365,
+      "at": 0.362,
+      "took": 0.037,
+      "began": 0.324,
       "screen": "/odoo/customer-invoices",
       "chain": false
     },
@@ -91,9 +91,9 @@
       "kind": "click",
       "label": "Currencies",
       "keystrokes": 0,
-      "at": 0.517,
-      "took": 0.034,
-      "began": 0.455,
+      "at": 0.463,
+      "took": 0.035,
+      "began": 0.399,
       "screen": "/odoo/customer-invoices",
       "chain": false
     },
@@ -102,9 +102,9 @@
       "kind": "click",
       "label": "open EUR",
       "keystrokes": 0,
-      "at": 0.752,
-      "took": 0.048,
-      "began": 0.556,
+      "at": 0.733,
+      "took": 0.063,
+      "began": 0.501,
       "screen": "/odoo/customer-invoices",
       "chain": false
     },
@@ -113,9 +113,9 @@
       "kind": "click",
       "label": "Add a line (date defaults to today)",
       "keystrokes": 0,
-      "at": 0.934,
-      "took": 0.039,
-      "began": 0.903,
+      "at": 0.964,
+      "took": 0.036,
+      "began": 0.921,
       "screen": "/odoo/currencies/126",
       "chain": false
     },
@@ -124,8 +124,8 @@
       "kind": "key",
       "label": "next cell 1",
       "keystrokes": 1,
-      "at": 1.16,
-      "took": 0.007,
+      "at": 1.093,
+      "took": 0.008,
       "chord": "Tab",
       "screen": "/odoo/currencies/126",
       "chain": false
@@ -135,8 +135,8 @@
       "kind": "key",
       "label": "next cell 2",
       "keystrokes": 1,
-      "at": 1.168,
-      "took": 0.004,
+      "at": 1.1,
+      "took": 0.003,
       "chord": "Tab",
       "screen": "/odoo/currencies/126",
       "chain": true
@@ -146,8 +146,8 @@
       "kind": "key",
       "label": "next cell 3",
       "keystrokes": 1,
-      "at": 1.173,
-      "took": 0.003,
+      "at": 1.104,
+      "took": 0.002,
       "chord": "Tab",
       "screen": "/odoo/currencies/126",
       "chain": true
@@ -157,8 +157,8 @@
       "kind": "type",
       "label": "AED per unit",
       "keystrokes": 6,
-      "at": 1.184,
-      "took": 0.016,
+      "at": 1.111,
+      "took": 0.009,
       "text": "4.2875",
       "same_field": false,
       "screen": "/odoo/currencies/126",
@@ -169,8 +169,8 @@
       "kind": "key",
       "label": "Save (hotkey)",
       "keystrokes": 2,
-      "at": 1.365,
-      "took": 0.018,
+      "at": 1.234,
+      "took": 0.015,
       "chord": "Alt+s",
       "screen": "/odoo/currencies/126",
       "chain": false
@@ -179,62 +179,62 @@
   "waits": [
     {
       "label": "Invoicing loaded",
-      "at": 0.136,
-      "seconds": 0.227
+      "at": 0.148,
+      "seconds": 0.175
     },
     {
       "label": "currency list",
-      "at": 0.552,
-      "seconds": 0.003
+      "at": 0.499,
+      "seconds": 0.002
     },
     {
       "label": "currency form with its rates",
-      "at": 0.801,
-      "seconds": 0.102
+      "at": 0.797,
+      "seconds": 0.124
     },
     {
       "label": "new rate row",
-      "at": 0.973,
-      "seconds": 0.187
+      "at": 1,
+      "seconds": 0.092
     },
     {
       "label": "AED per unit cell",
-      "at": 1.176,
-      "seconds": 0.007
+      "at": 1.106,
+      "seconds": 0.005
     },
     {
       "label": "saved",
-      "at": 1.383,
-      "seconds": 0.818
+      "at": 1.249,
+      "seconds": 0.286
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "8821f222aae0daa5.jpg",
+      "file": "55a6aee2133508ab.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/8821f222aae0daa5.jpg"
+      "path": "gauntlet/reference/odoo/shots/55a6aee2133508ab.jpg"
     },
     {
       "moment": "rate entered",
-      "file": "77a2a072083db585.jpg",
-      "at": 1.2,
-      "path": "gauntlet/reference/odoo/shots/77a2a072083db585.jpg"
+      "file": "e4c6553bd54d00da.jpg",
+      "at": 1.121,
+      "path": "gauntlet/reference/odoo/shots/e4c6553bd54d00da.jpg"
     },
     {
       "moment": "done",
-      "file": "56d550e478e377bb.jpg",
-      "at": 2.203,
-      "path": "gauntlet/reference/odoo/shots/56d550e478e377bb.jpg"
+      "file": "196486ef4c3c76ed.jpg",
+      "at": 1.536,
+      "path": "gauntlet/reference/odoo/shots/196486ef4c3c76ed.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "date": "2026-10-17",
+      "date": "2026-10-19",
       "rates": [
         {
-          "id": 100045,
+          "id": 100067,
           "inverse_company_rate": 4.2875,
           "company_rate": 0.23323615160349856,
           "company_id": [
@@ -265,20 +265,20 @@
   "verify_passes": [
     {
       "requests": 2,
-      "longest_pause_seconds": 0.012,
+      "longest_pause_seconds": 0.01,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.024,
+      "seconds": 0.02,
       "verified": true
     },
     {
       "requests": 2,
-      "longest_pause_seconds": 0.012,
+      "longest_pause_seconds": 0.01,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.027,
+      "seconds": 0.021,
       "verified": true,
-      "gap_seconds": 1.1
+      "gap_seconds": 1.101
     }
   ],
   "requests_after_clock": 0,
@@ -287,11 +287,11 @@
     "first": []
   },
   "screen_at_clock": {
-    "sha256": "a11c928ae5c32bab",
+    "sha256": "4887d4bbc739fda9",
     "elements": 452
   },
   "screen_after_verify": {
-    "sha256": "a11c928ae5c32bab",
+    "sha256": "4887d4bbc739fda9",
     "elements": 452,
     "unchanged": true
   },
@@ -300,10 +300,10 @@
     "error": null,
     "back_end_reads": 1,
     "requests": 2,
-    "longest_pause_seconds": 0.012,
+    "longest_pause_seconds": 0.01,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.024
+    "seconds": 0.02
   },
   "set_up_writes_waited": 0,
   "saved_state": {
@@ -351,34 +351,101 @@
     "writes_caused": [
       {
         "write": "POST /web/dataset/call_kw/res.currency/web_save",
-        "at": 1.641096353000001,
+        "at": 1.4408637630000012,
         "by_step": 11,
         "browser_record": {
           "caused": true,
           "by_step": 11,
+          "chain_seconds": 0.199,
           "chain": [
             "input of step 11",
-            "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.066 s",
-            "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.183 s"
+            "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.132 s"
           ]
         }
       },
       {
         "write": "POST /web/dataset/call_kw/res.currency/get_all_currencies",
-        "at": 1.6810970700000034,
+        "at": 1.4731729880000057,
         "by_step": 11,
         "browser_record": {
           "caused": true,
           "by_step": 11,
+          "chain_seconds": 0.219,
           "chain": [
             "input of step 11",
-            "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.066 s",
-            "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.183 s",
-            "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.025 s"
+            "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.132 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.019 s"
           ]
         }
       }
     ]
+  },
+  "screen_changes": {
+    "judged": 82,
+    "not_caused": 9,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.16,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.357,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.491,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.957,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.991,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 1.276,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 1.277,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 1.291,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.474,
+      "by_step": 11,
+      "chain": [
+        "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+        "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.132 s",
+        "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.019 s",
+        "an animation frame"
+      ]
+    }
   },
   "screenshots_path": "keyboard",
   "best_path_per_metric": {
@@ -404,10 +471,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.203,
-        "system_wait_seconds": 1.344,
+        "machine_seconds": 1.536,
+        "system_wait_seconds": 0.684,
         "human_seconds": 22.08,
-        "human_plus_wait_seconds": 23.424,
+        "human_plus_wait_seconds": 22.764,
         "klm_operator_counts": {
           "K": 11,
           "P": 6,
@@ -422,8 +489,8 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.018,
-          "took": 0.039,
+          "at": 0.013,
+          "took": 0.036,
           "began": 0.001,
           "screen": "/odoo/discuss",
           "chain": false
@@ -433,9 +500,9 @@
           "kind": "click",
           "label": "Invoicing app",
           "keystrokes": 0,
-          "at": 0.101,
+          "at": 0.113,
           "took": 0.035,
-          "began": 0.058,
+          "began": 0.049,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -444,9 +511,9 @@
           "kind": "click",
           "label": "Configuration menu",
           "keystrokes": 0,
-          "at": 0.417,
-          "took": 0.038,
-          "began": 0.365,
+          "at": 0.362,
+          "took": 0.037,
+          "began": 0.324,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -455,9 +522,9 @@
           "kind": "click",
           "label": "Currencies",
           "keystrokes": 0,
-          "at": 0.517,
-          "took": 0.034,
-          "began": 0.455,
+          "at": 0.463,
+          "took": 0.035,
+          "began": 0.399,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -466,9 +533,9 @@
           "kind": "click",
           "label": "open EUR",
           "keystrokes": 0,
-          "at": 0.752,
-          "took": 0.048,
-          "began": 0.556,
+          "at": 0.733,
+          "took": 0.063,
+          "began": 0.501,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -477,9 +544,9 @@
           "kind": "click",
           "label": "Add a line (date defaults to today)",
           "keystrokes": 0,
-          "at": 0.934,
-          "took": 0.039,
-          "began": 0.903,
+          "at": 0.964,
+          "took": 0.036,
+          "began": 0.921,
           "screen": "/odoo/currencies/126",
           "chain": false
         },
@@ -488,8 +555,8 @@
           "kind": "key",
           "label": "next cell 1",
           "keystrokes": 1,
-          "at": 1.16,
-          "took": 0.007,
+          "at": 1.093,
+          "took": 0.008,
           "chord": "Tab",
           "screen": "/odoo/currencies/126",
           "chain": false
@@ -499,8 +566,8 @@
           "kind": "key",
           "label": "next cell 2",
           "keystrokes": 1,
-          "at": 1.168,
-          "took": 0.004,
+          "at": 1.1,
+          "took": 0.003,
           "chord": "Tab",
           "screen": "/odoo/currencies/126",
           "chain": true
@@ -510,8 +577,8 @@
           "kind": "key",
           "label": "next cell 3",
           "keystrokes": 1,
-          "at": 1.173,
-          "took": 0.003,
+          "at": 1.104,
+          "took": 0.002,
           "chord": "Tab",
           "screen": "/odoo/currencies/126",
           "chain": true
@@ -521,8 +588,8 @@
           "kind": "type",
           "label": "AED per unit",
           "keystrokes": 6,
-          "at": 1.184,
-          "took": 0.016,
+          "at": 1.111,
+          "took": 0.009,
           "text": "4.2875",
           "same_field": false,
           "screen": "/odoo/currencies/126",
@@ -533,8 +600,8 @@
           "kind": "key",
           "label": "Save (hotkey)",
           "keystrokes": 2,
-          "at": 1.365,
-          "took": 0.018,
+          "at": 1.234,
+          "took": 0.015,
           "chord": "Alt+s",
           "screen": "/odoo/currencies/126",
           "chain": false
@@ -543,42 +610,42 @@
       "waits": [
         {
           "label": "Invoicing loaded",
-          "at": 0.136,
-          "seconds": 0.227
+          "at": 0.148,
+          "seconds": 0.175
         },
         {
           "label": "currency list",
-          "at": 0.552,
-          "seconds": 0.003
+          "at": 0.499,
+          "seconds": 0.002
         },
         {
           "label": "currency form with its rates",
-          "at": 0.801,
-          "seconds": 0.102
+          "at": 0.797,
+          "seconds": 0.124
         },
         {
           "label": "new rate row",
-          "at": 0.973,
-          "seconds": 0.187
+          "at": 1,
+          "seconds": 0.092
         },
         {
           "label": "AED per unit cell",
-          "at": 1.176,
-          "seconds": 0.007
+          "at": 1.106,
+          "seconds": 0.005
         },
         {
           "label": "saved",
-          "at": 1.383,
-          "seconds": 0.818
+          "at": 1.249,
+          "seconds": 0.286
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "date": "2026-10-17",
+          "date": "2026-10-19",
           "rates": [
             {
-              "id": 100045,
+              "id": 100067,
               "inverse_company_rate": 4.2875,
               "company_rate": 0.23323615160349856,
               "company_id": [
@@ -602,20 +669,20 @@
       "verify_passes": [
         {
           "requests": 2,
-          "longest_pause_seconds": 0.012,
+          "longest_pause_seconds": 0.01,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.024,
+          "seconds": 0.02,
           "verified": true
         },
         {
           "requests": 2,
-          "longest_pause_seconds": 0.012,
+          "longest_pause_seconds": 0.01,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.027,
+          "seconds": 0.021,
           "verified": true,
-          "gap_seconds": 1.1
+          "gap_seconds": 1.101
         }
       ],
       "requests_after_clock": 0,
@@ -624,11 +691,11 @@
         "first": []
       },
       "screen_at_clock": {
-        "sha256": "a11c928ae5c32bab",
+        "sha256": "4887d4bbc739fda9",
         "elements": 452
       },
       "screen_after_verify": {
-        "sha256": "a11c928ae5c32bab",
+        "sha256": "4887d4bbc739fda9",
         "elements": 452,
         "unchanged": true
       },
@@ -637,10 +704,10 @@
         "error": null,
         "back_end_reads": 1,
         "requests": 2,
-        "longest_pause_seconds": 0.012,
+        "longest_pause_seconds": 0.01,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.024
+        "seconds": 0.02
       },
       "set_up_writes_waited": 0,
       "saved_state": {
@@ -688,34 +755,101 @@
         "writes_caused": [
           {
             "write": "POST /web/dataset/call_kw/res.currency/web_save",
-            "at": 1.641096353000001,
+            "at": 1.4408637630000012,
             "by_step": 11,
             "browser_record": {
               "caused": true,
               "by_step": 11,
+              "chain_seconds": 0.199,
               "chain": [
                 "input of step 11",
-                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.066 s",
-                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.183 s"
+                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.132 s"
               ]
             }
           },
           {
             "write": "POST /web/dataset/call_kw/res.currency/get_all_currencies",
-            "at": 1.6810970700000034,
+            "at": 1.4731729880000057,
             "by_step": 11,
             "browser_record": {
               "caused": true,
               "by_step": 11,
+              "chain_seconds": 0.219,
               "chain": [
                 "input of step 11",
-                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.066 s",
-                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.183 s",
-                "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.025 s"
+                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.132 s",
+                "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.019 s"
               ]
             }
           }
         ]
+      },
+      "screen_changes": {
+        "judged": 82,
+        "not_caused": 9,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.16,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.357,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.491,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.957,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.991,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 1.276,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 1.277,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 1.291,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 1.474,
+          "by_step": 11,
+          "chain": [
+            "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.132 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.019 s",
+            "an animation frame"
+          ]
+        }
       },
       "median_counts": {
         "steps": 11,
@@ -727,10 +861,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.203,
-        "system_wait_seconds": 1.344,
+        "machine_seconds": 1.536,
+        "system_wait_seconds": 0.684,
         "human_seconds": 22.08,
-        "human_plus_wait_seconds": 23.424,
+        "human_plus_wait_seconds": 22.764,
         "klm_operator_counts": {
           "K": 11,
           "P": 6,
@@ -755,10 +889,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.476,
-        "system_wait_seconds": 1.372,
+        "machine_seconds": 1.718,
+        "system_wait_seconds": 0.765,
         "human_seconds": 24.24,
-        "human_plus_wait_seconds": 25.612,
+        "human_plus_wait_seconds": 25.005,
         "klm_operator_counts": {
           "K": 8,
           "P": 8,
@@ -773,8 +907,8 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.029,
-          "took": 0.037,
+          "at": 0.02,
+          "took": 0.036,
           "began": 0.001,
           "screen": "/odoo/discuss",
           "chain": false
@@ -784,9 +918,9 @@
           "kind": "click",
           "label": "Invoicing app",
           "keystrokes": 0,
-          "at": 0.112,
-          "took": 0.036,
-          "began": 0.067,
+          "at": 0.119,
+          "took": 0.035,
+          "began": 0.056,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -795,9 +929,9 @@
           "kind": "click",
           "label": "Configuration menu",
           "keystrokes": 0,
-          "at": 0.466,
-          "took": 0.052,
-          "began": 0.412,
+          "at": 0.369,
+          "took": 0.036,
+          "began": 0.332,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -806,9 +940,9 @@
           "kind": "click",
           "label": "Currencies",
           "keystrokes": 0,
-          "at": 0.566,
-          "took": 0.048,
-          "began": 0.518,
+          "at": 0.469,
+          "took": 0.034,
+          "began": 0.406,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -817,9 +951,9 @@
           "kind": "click",
           "label": "open EUR",
           "keystrokes": 0,
-          "at": 0.846,
-          "took": 0.069,
-          "began": 0.62,
+          "at": 0.72,
+          "took": 0.04,
+          "began": 0.506,
           "screen": "/odoo/customer-invoices",
           "chain": false
         },
@@ -828,9 +962,9 @@
           "kind": "click",
           "label": "Add a line (date defaults to today)",
           "keystrokes": 0,
-          "at": 1.077,
-          "took": 0.04,
-          "began": 1.035,
+          "at": 1.003,
+          "took": 0.037,
+          "began": 0.975,
           "screen": "/odoo/currencies/126",
           "chain": false
         },
@@ -839,9 +973,9 @@
           "kind": "click",
           "label": "AED per unit cell",
           "keystrokes": 0,
-          "at": 1.327,
-          "took": 0.037,
-          "began": 1.31,
+          "at": 1.17,
+          "took": 0.034,
+          "began": 1.131,
           "screen": "/odoo/currencies/126",
           "chain": false
         },
@@ -850,8 +984,8 @@
           "kind": "key",
           "label": "select the suggested rate",
           "keystrokes": 2,
-          "at": 1.364,
-          "took": 0.01,
+          "at": 1.204,
+          "took": 0.003,
           "chord": "Control+a",
           "screen": "/odoo/currencies/126",
           "chain": true
@@ -861,8 +995,8 @@
           "kind": "type",
           "label": "AED per unit",
           "keystrokes": 6,
-          "at": 1.375,
-          "took": 0.017,
+          "at": 1.208,
+          "took": 0.011,
           "text": "4.2875",
           "same_field": false,
           "screen": "/odoo/currencies/126",
@@ -873,9 +1007,9 @@
           "kind": "click",
           "label": "Save",
           "keystrokes": 0,
-          "at": 1.63,
-          "took": 0.048,
-          "began": 1.588,
+          "at": 1.388,
+          "took": 0.046,
+          "began": 1.354,
           "screen": "/odoo/currencies/126",
           "chain": false
         }
@@ -883,37 +1017,37 @@
       "waits": [
         {
           "label": "Invoicing loaded",
-          "at": 0.149,
-          "seconds": 0.262
+          "at": 0.155,
+          "seconds": 0.177
         },
         {
           "label": "currency list",
-          "at": 0.614,
-          "seconds": 0.004
+          "at": 0.504,
+          "seconds": 0.002
         },
         {
           "label": "currency form with its rates",
-          "at": 0.916,
-          "seconds": 0.119
+          "at": 0.761,
+          "seconds": 0.214
         },
         {
           "label": "new rate row",
-          "at": 1.118,
-          "seconds": 0.191
+          "at": 1.04,
+          "seconds": 0.09
         },
         {
           "label": "saved",
-          "at": 1.678,
-          "seconds": 0.796
+          "at": 1.434,
+          "seconds": 0.282
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "date": "2026-10-17",
+          "date": "2026-10-19",
           "rates": [
             {
-              "id": 100046,
+              "id": 100068,
               "inverse_company_rate": 4.2875,
               "company_rate": 0.23323615160349856,
               "company_id": [
@@ -937,18 +1071,18 @@
       "verify_passes": [
         {
           "requests": 2,
-          "longest_pause_seconds": 0.015,
+          "longest_pause_seconds": 0.01,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.033,
+          "seconds": 0.021,
           "verified": true
         },
         {
           "requests": 2,
-          "longest_pause_seconds": 0.016,
+          "longest_pause_seconds": 0.01,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.03,
+          "seconds": 0.019,
           "verified": true,
           "gap_seconds": 1.101
         }
@@ -959,11 +1093,11 @@
         "first": []
       },
       "screen_at_clock": {
-        "sha256": "dfda1ba2d5a161bb",
+        "sha256": "9eab429edc37118c",
         "elements": 452
       },
       "screen_after_verify": {
-        "sha256": "dfda1ba2d5a161bb",
+        "sha256": "9eab429edc37118c",
         "elements": 452,
         "unchanged": true
       },
@@ -972,10 +1106,10 @@
         "error": null,
         "back_end_reads": 1,
         "requests": 2,
-        "longest_pause_seconds": 0.016,
+        "longest_pause_seconds": 0.01,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.031
+        "seconds": 0.022
       },
       "set_up_writes_waited": 0,
       "saved_state": {
@@ -1023,34 +1157,101 @@
         "writes_caused": [
           {
             "write": "POST /web/dataset/call_kw/res.currency/web_save",
-            "at": 1.9972041699999972,
+            "at": 1.599415961999999,
             "by_step": 10,
             "browser_record": {
               "caused": true,
               "by_step": 10,
+              "chain_seconds": 0.181,
               "chain": [
                 "input of step 10",
-                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.076 s",
-                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.242 s"
+                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.123 s"
               ]
             }
           },
           {
             "write": "POST /web/dataset/call_kw/res.currency/get_all_currencies",
-            "at": 2.0347153039999974,
+            "at": 1.6312447140000004,
             "by_step": 10,
             "browser_record": {
               "caused": true,
               "by_step": 10,
+              "chain_seconds": 0.202,
               "chain": [
                 "input of step 10",
-                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.076 s",
-                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.242 s",
-                "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.026 s"
+                "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+                "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.123 s",
+                "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.019 s"
               ]
             }
           }
         ]
+      },
+      "screen_changes": {
+        "judged": 87,
+        "not_caused": 11,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.168,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.364,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.398,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.498,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 0.714,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 5 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.998,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 1.164,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 7 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 1.198,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 1.633,
+          "by_step": 10,
+          "chain": [
+            "the answer to POST /web/dataset/call_kw/res.currency.rate/onchange after 0.052 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/onchange after 0.123 s",
+            "the answer to POST /web/dataset/call_kw/res.currency/web_save after 0.019 s",
+            "an animation frame"
+          ]
+        }
       },
       "median_counts": {
         "steps": 10,
@@ -1062,10 +1263,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.476,
-        "system_wait_seconds": 1.372,
+        "machine_seconds": 1.686,
+        "system_wait_seconds": 0.718,
         "human_seconds": 24.24,
-        "human_plus_wait_seconds": 25.612,
+        "human_plus_wait_seconds": 24.958,
         "klm_operator_counts": {
           "K": 8,
           "P": 8,
@@ -1079,8 +1280,8 @@
   "result_file": "gauntlet/reference/odoo/tasks/add-rate.json",
   "repeats": 3,
   "repeat_files": [
-    "gauntlet/reference/odoo/results/add-rate-20261017T112025-5a40.json",
-    "gauntlet/reference/odoo/results/add-rate-20261017T112111-1088.json",
-    "gauntlet/reference/odoo/results/add-rate-20261017T112158-2a0d.json"
+    "gauntlet/reference/odoo/results/add-rate-20261019T120851-bd55.json",
+    "gauntlet/reference/odoo/results/add-rate-20261019T120939-39cf.json",
+    "gauntlet/reference/odoo/results/add-rate-20261019T121025-47c4.json"
   ]
 }

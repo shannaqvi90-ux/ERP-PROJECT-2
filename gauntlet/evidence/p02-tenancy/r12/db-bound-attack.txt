@@ -1,0 +1,66 @@
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1792331472.974203
+(1 row)
+
+          current_tenant_id           
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+      ?column?       | count 
+---------------------+-------
+ A companies visible |     0
+(1 row)
+
+      ?column?       | count 
+---------------------+-------
+ B companies visible |     0
+(1 row)
+
+    ?column?     | count 
+-----------------+-------
+ B users visible |     0
+(1 row)
+
+UPDATE 0
+UPDATE 0
+SAVEPOINT
+ERROR:  new row violates row-level security policy for table "branches"
+ROLLBACK
+ERROR:  permission denied to set role "postgres"
+ROLLBACK
+ERROR:  must be owner of table companies
+ROLLBACK
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     
+--------------------------------------+-------------------+------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1792331479.453274 | all        | 1792331479.453274
+(1 row)
+
+            ?column?             | count 
+---------------------------------+-------
+ A companies visible (scope all) |     4
+(1 row)
+
+            ?column?             | count 
+---------------------------------+-------
+ B companies visible (scope all) |     0
+(1 row)
+
+  ?column?  | count 
+------------+-------
+ B branches |     0
+(1 row)
+
+ ?column? | count 
+----------+-------
+ B audit  |     0
+(1 row)
+
+UPDATE 0
+SAVEPOINT
+INSERT 0 0
+ERROR:  new row violates row-level security policy for table "companies"
+ROLLBACK

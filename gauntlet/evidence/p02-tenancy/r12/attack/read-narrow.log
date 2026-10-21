@@ -1,0 +1,36 @@
+rd access DXB+FZE 200
+switch DXB 200
+/api/tenancy/companies 200 no-fze {"items":[{"id":"018dca08-f081-7b15-b0d0-b198074503df","code":"ALN-DXB","legalNameEn":"Al Noor Trading LLC","legalNameAr":"شركة النور للتجارة ذ.م.م","baseCurrency":"AED","city":"Dubai","emirate":"dubai","branchCount":3,"isActive":true,"version":1032853693,"everyBranch":true,"everyCompany":false,"can
+/api/tenancy/companies/018dca08-f085-75f9-a436-65424d008e41 404 no-fze {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-ae54a66e0924204b66600f66c71a9b54-bee72f3e6ab4320c-00"}
+/api/tenancy/companies/018dca08-f085-75f9-a436-65424d008e41/logo 404 no-fze {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-6351c11dc2436a54da830429396f5c54-7dc1f8067ca22096-00"}
+/api/tenancy/branches 200 no-fze {"items":[{"id":"018dca08-f083-70c3-b0b7-86a383de015d","companyId":"018dca08-f081-7b15-b0d0-b198074503df","companyCode":"ALN-DXB","code":"AQZ-WH","nameEn":"Al Quoz warehouse","nameAr":"مستودع القوز","city":"Dubai","emirate":"dubai","isActive":true,"version":175061848,"canUpdate":false},{"id":"018dca
+/api/tenancy/branches?filter=companyId%20eq%20'018dca08-f085-75f9-a436-65424d008e41' 200 no-fze {"items":[],"total":0,"next":null,"groups":null,"ranked":false}
+/api/tenancy/branches?groupBy=companyId 200 no-fze {"items":[{"id":"018dca08-f083-70c3-b0b7-86a383de015d","companyId":"018dca08-f081-7b15-b0d0-b198074503df","companyCode":"ALN-DXB","code":"AQZ-WH","nameEn":"Al Quoz warehouse","nameAr":"مستودع القوز","city":"Dubai","emirate":"dubai","isActive":true,"version":175061848,"canUpdate":false},{"id":"018dca
+/api/tenancy/access 200 no-fze {"items":[{"id":"018d00f0-d640-79f2-9f6f-9cf8762d76c3","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.2451@alnoor.example","companies":[]},{"id":"018d0a2d-a4e0-7c44-adad-1f8b914eb9d2","displayName":"Abdullah Al Dhaheri","email":"abdullah.aldhaheri.2820@alnoor.example","companies":[]
+/api/tenancy/access/01a14f46-446b-7742-8886-99623e999435 200 no-fze {"userId":"01a14f46-446b-7742-8886-99623e999435","displayName":"RD","email":"rd67521@alnoor.example","isCaller":true,"companies":[{"companyId":"018dca08-f081-7b15-b0d0-b198074503df","allBranches":true,"branchIds":[]}],"options":[{"id":"018dca08-f081-7b15-b0d0-b198074503df","code":"ALN-DXB","legalNam
+/api/reports/run/tenancy.companyProfile?companyId=018dca08-f085-75f9-a436-65424d008e41&format=json 400 no-fze {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-a671e687d06f1746c85754b65d3efa48-8c2c3f7dfbc9f2f4-00","errors":{"company":[{"code":"required","message":"Required."}]}}
+/api/reports/run/tenancy.branchDirectory?format=json 200 no-fze {"key":"tenancy.branchDirectory","title":"Branch directory","subject":null,"issuer":"Al Noor Trading LLC","language":"en","direction":"ltr","numerals":"latn","parameters":[{"label":"Grouped by","text":"Company"}],"notes":[],"facts":[],"columns":[{"key":"company","label":"Company","type":"text","alig
+/api/reports/run/tenancy.branchDirectory?companyId=018dca08-f085-75f9-a436-65424d008e41&format=json 200 no-fze {"key":"tenancy.branchDirectory","title":"Branch directory","subject":null,"issuer":"Al Noor Trading LLC","language":"en","direction":"ltr","numerals":"latn","parameters":[{"label":"Grouped by","text":"Company"}],"notes":[],"facts":[],"columns":[{"key":"company","label":"Company","type":"text","alig
+/api/reports/lists/tenancy.companies?format=csv 200 no-fze Code,Legal name (English),Legal name (Arabic),Base currency,City,Emirate,Branches,Status
+ALN-DXB,Al Noor Trading LLC,شركة النور للتجارة ذ.م.م,AED,Dubai,Dubai,3,Active
+
+/api/reports/lists/tenancy.branches?format=csv 200 no-fze Code,Name (English),Name (Arabic),Company,City,Emirate,Status
+AQZ-WH,Al Quoz warehouse,مستودع القوز,ALN-DXB,Dubai,Dubai,Active
+DEIRA-HQ,Deira head office,المكتب الرئيسي - ديرة,ALN-DXB,Dubai,Dubai,Active
+DIP-SR,Dubai Investments Park showroom,صالة عرض مجمع دبي للاستثمار,ALN-DXB,Dubai,Dubai,Active
+/api/reports/lists/tenancy.access?format=csv 200 no-fze User,E-mail,Companies
+Abdullah Al Dhaheri,abdullah.aldhaheri.2451@alnoor.example,
+Abdullah Al Dhaheri,abdullah.aldhaheri.2820@alnoor.example,
+Abdullah Al Dhaheri,abdullah.aldhaheri.3036@alnoor.example,
+Abdullah Al Dhaheri,abdullah.aldhaheri.3618@alnoor.example,
+Abdullah Al Dhaheri,abdullah.aldh
+/api/identity/companies 200 no-fze [{"id":"018dca08-f081-7b15-b0d0-b198074503df","code":"ALN-DXB","legalNameEn":"Al Noor Trading LLC","legalNameAr":"شركة النور للتجارة ذ.م.م"}]
+/api/identity/users/01a14f46-446b-7742-8886-99623e999435/access 200 no-fze {"userId":"01a14f46-446b-7742-8886-99623e999435","roles":[{"id":"01a14f43-1816-7a5e-91a7-b538c077c2e4","nameEn":"Staff","nameAr":"الموظفون","isSystem":false,"companyId":null},{"id":"01a14f46-445b-7409-a26a-af8fb2314234","nameEn":"DXB reader 7507","nameAr":"قارئ دبي 7507","isSystem":false,"companyId"
+/api/tenancy/workplace 200 CONTAINS-FZE {"companyId":"018dca08-f081-7b15-b0d0-b198074503df","branchId":"018dca08-f082-7986-83ec-f32f18104680","companies":[{"id":"018dca08-f081-7b15-b0d0-b198074503df","code":"ALN-DXB","legalNameEn":"Al Noor Trading LLC","legalNameAr":"شركة النور للتجارة ذ.م.م","baseCurrency":"AED","branches":[{"id":"018dca
+switch FZE 200
+[FZE] /api/tenancy/companies 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD3OVAKCQM:00000003"}
+[FZE] /api/tenancy/companies/018dca08-f085-75f9-a436-65424d008e41 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD3OVAKCQL:0000000E"}
+[FZE] /api/tenancy/companies/018dca08-f081-7b15-b0d0-b198074503df 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD3OVAKCQM:00000004"}
+[FZE] /api/tenancy/branches 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD3OVAKCQL:0000000F"}
+[FZE] /api/reports/lists/tenancy.companies?format=csv 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"0HNPD3OVAKCQM:00000005"}
+RD rd67521@alnoor.example

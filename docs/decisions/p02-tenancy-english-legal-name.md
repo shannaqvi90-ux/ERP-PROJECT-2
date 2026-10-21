@@ -52,3 +52,12 @@ The two questions this record left open were answered by the owner on 2026-10-10
 per-company setting that makes it required, and a TRN is exactly 15 digits. Both are built as
 `p02-tenancy-trn-and-arabic-name-setting.md` describes. The English legal name rule above is
 unchanged.
+
+## Round 12: Latin letters
+
+Critic p02 round 11 saved the English legal name "فرع ديرة 60473" in an Arabic walk. A UAE trade
+licence carries the company's name in Latin letters; that is the English legal name. The server now
+refuses an English legal name with no Latin letter A to Z at all (Arabic script, or digits only),
+with `validation.tenancyLegalNameEnLatin` in English and Arabic, on create and change. Any name with
+one Latin letter passes ("3M Gulf 60473"). This is a data rule, not a statutory one: it checks the
+script only, never the spelling.

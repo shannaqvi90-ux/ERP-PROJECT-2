@@ -59,7 +59,9 @@ internal sealed class IdentitySeeder(IdentityDbContext db, ModuleCatalog catalog
                 Language = first.Language,
             };
             db.Users.Add(owner);
-            db.Credentials.Add(new UserCredential { Id = owner.Id, PasswordHash = hashing.Hash(first.Password), ChangedAt = DateTimeOffset.UtcNow });
+            // The operator set (or was shown) this password: it is temporary, and the first
+            // sign-in asks the administrator to choose their own (critic p00 rounds 10 and 11).
+            db.Credentials.Add(new UserCredential { Id = owner.Id, PasswordHash = hashing.Hash(first.Password), ChangedAt = DateTimeOffset.UtcNow, MustChange = true });
             db.UserRoles.Add(new UserRole { UserId = owner.Id, RoleId = administrator.Id });
             await db.SaveChangesAsync(cancellationToken);
             return;

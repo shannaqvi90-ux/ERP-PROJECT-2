@@ -1019,6 +1019,48 @@ describe("identity form keys", () => {
 });
 
 describe("my account", () => {
+  it("lets a new device of one's own in with its device code, checked before sending, with the server's refusal shown", async () => {
+    // Critic p03 round 12: on a new laptop behind a shared address the person was paused with their
+    // right password; signed in elsewhere they now let that laptop in with the code it shows.
+    window.history.replaceState(null, "", "/identity/me");
+    let answer: { status: number; body: unknown } = { status: 200, body: { until: "2026-10-19T09:00:00Z" } };
+    const calls = mockFetch((method, url) => {
+      if (url === "/api/auth/session") return { status: 200, body: session(["identity.profile.update"]) };
+      if (method === "POST" && url === "/api/identity/me/devices/approve") return answer;
+      return { status: 404, body: {} };
+    });
+    view = await render(<App language="en" />);
+    await settle();
+    await act(async () => new Promise((r) => setTimeout(r, 50)));
+    const form = view.container.querySelector<HTMLElement>(".id-device-approval")!;
+    expect(form.querySelector("h2")!.textContent).toBe("Let a device sign in");
+    const code = form.querySelector<HTMLInputElement>('input[name="deviceCode"]')!;
+    expect(code.getAttribute("dir")).toBe("ltr");
+    // Not a device code: said on the field, nothing sent.
+    setInput(code, "K7QM-3XR0");
+    key(code, { key: "Enter", ctrlKey: true });
+    await settle();
+    expect(document.getElementById((code.getAttribute("aria-describedby") ?? "").split(" ")[0]!)?.textContent).toContain("eight-character device code");
+    expect(calls.some((c) => c.url === "/api/identity/me/devices/approve")).toBe(false);
+    // A code typed in lower case without its hyphen is sent as typed (upper-cased on screen).
+    setInput(code, "k7qm3xra");
+    key(code, { key: "Enter", ctrlKey: true });
+    await settle();
+    await settle();
+    const sent = calls.filter((c) => c.method === "POST" && c.url === "/api/identity/me/devices/approve");
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.body).toEqual({ code: "K7QM3XRA" });
+    expect(form.querySelector('[role="status"]')!.textContent).toContain("That device can now sign in with its password until");
+    expect(code.value).toBe("");
+    // A session signed in long ago is refused by the server, which says why.
+    answer = { status: 403, body: { title: "For your safety, sign in again on this device before letting another device in.", code: "auth.recentSignInRequiredDevice" } };
+    setInput(code, "K7QM-3XRA");
+    key(code, { key: "Enter", ctrlKey: true });
+    await settle();
+    await settle();
+    expect(form.querySelector('[role="alert"]')!.textContent).toBe("For your safety, sign in again on this device before letting another device in.");
+  });
+
   it("shows the team's sign-in address for the user's own e-mail domain, in both languages", async () => {
     for (const language of ["en", "ar"] as const) {
       window.history.replaceState(null, "", "/identity/me");
@@ -1147,6 +1189,32 @@ describe("roles in one company and the default company", () => {
     ]);
     const start = calls.find((c) => c.method === "PUT" && c.url === "/api/identity/users/u-acc/default-company")!;
     expect(start.body).toEqual({ companyId: "c-jfz", version: 0 });
+  });
+
+  it("chooses no role in one company until the person picks one: Add and Enter grant nothing, not even the first role by name", async () => {
+    // Critic p03 round 11: Administrator (first by name) was preselected, so Add staged the strongest role.
+    await openPanel(all, target, () => undefined);
+    const aside = view!.container.querySelector("aside")!;
+    const before = aside.querySelector(".id-company-roles-table")!.textContent;
+    const role = aside.querySelector<HTMLSelectElement>('select[name="companyRoleRole"]')!;
+    expect(role.value).toBe("");
+    expect(role.selectedOptions[0]!.textContent).toBe("Choose a role");
+    const add = [...aside.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent === "Add")!;
+    expect(add.disabled).toBe(true);
+    key(role, { key: "Enter" });
+    await settle();
+    expect(aside.querySelector(".id-company-roles-table")!.textContent).toBe(before);
+    const company = aside.querySelector<HTMLSelectElement>('select[name="companyRoleCompany"]')!;
+    await act(async () => {
+      company.value = "c-jfz";
+      company.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(role.value).toBe("");
+    await act(async () => {
+      role.value = "r-clerk";
+      role.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(add.disabled).toBe(false);
   });
 
   it("removes a role in one company by keyboard-reachable button and sends no company roles when they did not change", async () => {
@@ -1421,18 +1489,23 @@ describe("account actions keep the open record saveable", () => {
   // and the next save (unticking Active) was refused as changed by someone else.
   const paused = { id: "u-paused", email: "paused@demo-trading.example", displayName: "Paused User", language: "en", isActive: true, roleIds: ["r-clerk"], lastSignInAt: "2026-10-09T08:00:00Z", createdAt: "2026-10-03T00:00:00Z", version: 4, pendingSetup: false, companyRoles: [] };
 
-  async function openPaused(renamedElsewhere: boolean) {
+  async function openPaused(renamedElsewhere: boolean, language: "en" | "ar" = "en") {
     let current = { ...paused };
     let blocked = true;
+    let approvedUntil: string | null = null;
     window.history.replaceState(null, "", `/identity/users?open=${paused.id}`);
     const calls = mockFetch((m, url, body) => {
-      if (url === "/api/auth/session") return { status: 200, body: session(all) };
+      if (url === "/api/auth/session") return { status: 200, body: session(all, language) };
       const list = listReply(m, url);
       if (list) return list;
       if (url.startsWith("/api/identity/users?")) return { status: 200, body: { items: [], total: 0 } };
       if (url === "/api/identity/roles" || url.startsWith("/api/identity/roles?")) return { status: 200, body: { items: [admin, clerk], total: 2 } };
       if (m === "GET" && url === `/api/identity/users/${paused.id}`) return { status: 200, body: current };
       if (m === "GET" && url === `/api/identity/users/${paused.id}/passkeys`) return { status: 200, body: [] };
+      if (m === "POST" && url === `/api/identity/users/${paused.id}/devices/approve`) {
+        approvedUntil = "2026-10-09T10:00:00Z";
+        return { status: 200, body: { until: approvedUntil } };
+      }
       if (m === "POST" && url === `/api/identity/users/${paused.id}/unblock`) {
         blocked = false;
         // The row changes (its version) and, in the control, someone else renamed the user meanwhile.
@@ -1448,11 +1521,25 @@ describe("account actions keep the open record saveable", () => {
       if (url === `/api/identity/users/${paused.id}/sign-ins?take=100`)
         return {
           status: 200,
-          body: { items: [], total: 0, paused: blocked ? [{ source: "10.0.0.9", until: "2026-10-09T09:00:00Z", failures: 5 }] : [] },
+          body: {
+            items: [
+              { id: "s1", occurredAt: "2026-10-09T08:10:00Z", outcome: "succeeded", ipAddress: "172.21.0.1", userAgent: null, sessionActive: true, method: "password", addressKind: "gateway", device: "AbC123" },
+              { id: "s2", occurredAt: "2026-10-09T08:05:00Z", outcome: "failed", ipAddress: "172.21.0.1", userAgent: "attacker-script/1.0", sessionActive: false, method: "password", addressKind: "gateway", device: null },
+              { id: "s3", occurredAt: "2026-10-09T08:00:00Z", outcome: "failed", ipAddress: "10.0.0.9", userAgent: null, sessionActive: false, method: "password", addressKind: "client", device: null },
+            ],
+            total: 3,
+            paused: blocked
+              ? [
+                  { source: "10.0.0.9", until: "2026-10-09T09:00:00Z", failures: 5, kind: "client" },
+                  { source: "172.21.0.1", until: "2026-10-09T09:05:00Z", failures: 5, kind: "gateway" },
+                ]
+              : [],
+            deviceApprovalUntil: approvedUntil,
+          },
         };
       return { status: 404, body: {} };
     });
-    view = await render(<App language="en" />);
+    view = await render(<App language={language} />);
     await settle();
     await settle();
     await settle();
@@ -1490,6 +1577,62 @@ describe("account actions keep the open record saveable", () => {
     expect(puts).toHaveLength(1);
     expect((puts[0]!.body as { version: number; isActive: boolean })).toMatchObject({ version: 5, isActive: false });
     expect(view!.container.textContent).not.toContain("Someone else changed this record");
+  });
+
+  it("the sign-in history names a shared gateway and a known device, and says how to let one person in, in English and Arabic", async () => {
+    // Critic p03 round 11: the attacker's script and the owner's laptop showed the same gateway
+    // address; nothing said the address was shared, nor that Allow sign-in again lets the attacker in too.
+    await openPaused(false);
+    await click(tab("Sign-in history"));
+    const rows = [...view!.container.querySelectorAll(".id-history-table tbody tr")].map((r) => r.textContent ?? "");
+    expect(rows[0]).toContain("172.21.0.1 · shared gateway · known device \u2068AbC123\u2069");
+    expect(rows[1]).toContain("172.21.0.1 · shared gateway");
+    expect(rows[1]).not.toContain("known device");
+    expect(rows[2]).toContain("10.0.0.9");
+    expect(rows[2]).not.toContain("shared");
+    const notice = view!.container.querySelector("aside .id-notice.warn")!;
+    const items = [...notice.querySelectorAll("li")].map((li) => li.textContent ?? "");
+    expect(items[0]).toContain("10.0.0.9");
+    expect(items[0]).not.toContain("shared");
+    expect(items[1]).toContain("172.21.0.1 · shared gateway");
+    expect(notice.querySelector(".id-address-kind")!.getAttribute("title")).toContain("does not tell people apart");
+    expect(notice.textContent).toContain("give them a new set-up code with Reset password…");
+    view?.unmount();
+    view = undefined;
+    await openPaused(false, "ar");
+    await click(tab("سجل الدخول"));
+    const arabic = view!.container.querySelector("aside .id-history")!.textContent ?? "";
+    expect(arabic).toContain("بوابة مشتركة");
+    expect(arabic).toContain("جهاز معروف");
+    expect(arabic).toContain("أعطه رمز إعداد جديدًا");
+    expect(arabic).not.toMatch(/shared|device|set-up/);
+  });
+
+  it("lets one device in with the code its paused sign-in screen shows, from the sign-in history, in English and Arabic", async () => {
+    const calls = await openPaused(false);
+    await click(tab("Sign-in history"));
+    const form = view!.container.querySelector<HTMLElement>("aside .id-device-approval")!;
+    expect(form).not.toBeNull();
+    expect(form.textContent).toContain("nobody else behind the address gets in");
+    const code = form.querySelector<HTMLInputElement>('input[name="deviceCode"]')!;
+    setInput(code, "K7QM-3XRA");
+    // Plain Enter in the record panel lets the device in (the panel's own keys do not take it).
+    key(code, { key: "Enter", code: "Enter" });
+    await settle();
+    await settle();
+    const sent = calls.filter((c) => c.method === "POST" && c.url === `/api/identity/users/${paused.id}/devices/approve`);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.body).toEqual({ code: "K7QM-3XRA" });
+    // The history is read again and says a device let in may sign in until when.
+    expect(view!.container.querySelector("aside .id-history")!.textContent).toContain("A device let in with its code can sign in until");
+    view?.unmount();
+    view = undefined;
+    await openPaused(false, "ar");
+    await click(tab("سجل الدخول"));
+    const arabic = view!.container.querySelector("aside .id-device-approval")!.textContent ?? "";
+    expect(arabic).toContain("السماح لجهاز بتسجيل الدخول");
+    expect(arabic).toContain("رمز الجهاز");
+    expect(arabic).not.toMatch(/[A-Za-z]/);
   });
 
   it("the control: when someone else changed a field meanwhile, the save is still refused as changed elsewhere", async () => {

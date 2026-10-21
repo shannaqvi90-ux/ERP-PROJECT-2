@@ -16,13 +16,47 @@ namespace Erp.Modules.Reports.Pdf;
 /// map from glyph to text would give every such letter the text of whichever came first, and copy,
 /// search and screen readers would read الإشم for الاسم (critic p06 round 1).</para>
 /// </summary>
-public sealed class PdfWriter(string title, string language, bool rightToLeft)
+public sealed class PdfWriter
 {
     private readonly List<PdfPage> _pages = [];
     private readonly Dictionary<PdfFontFace, FontUse> _fonts = [];
+    private readonly string _title;
+    private readonly string _language;
+    private readonly bool _rightToLeft;
+    private readonly Stream _output;
+    private readonly List<long> _offsets = [0];
+    private long _position;
+    private bool _started;
+    private int _catalog;
+    private int _pagesId;
+    private int _info;
 
+    /// <summary>A writer that sends each page's drawing to <paramref name="output"/> as soon as the
+    /// next page starts (<see cref="AddPage"/>), so a document of thousands of pages never holds
+    /// more than one page's drawing operations in memory; fonts, page objects and the cross-reference
+    /// table follow in <see cref="Finish"/>. The output need not be seekable.</summary>
+    public PdfWriter(string title, string language, bool rightToLeft, Stream output)
+    {
+        _title = title;
+        _language = language;
+        _rightToLeft = rightToLeft;
+        _output = output;
+    }
+
+    /// <summary>A writer that keeps the document in memory; <see cref="Write"/> returns its bytes.</summary>
+    public PdfWriter(string title, string language, bool rightToLeft) : this(title, language, rightToLeft, new MemoryStream())
+    {
+    }
+
+    /// <summary>A page. The page before it is finished: its drawing is compressed and written out,
+    /// and whatever is drawn on it later (a footer that needs the page count) goes into a second,
+    /// small content stream of its own.</summary>
     public PdfPage AddPage(decimal width, decimal height)
     {
+        if (_pages.Count > 0)
+        {
+            Flush(_pages[^1]);
+        }
         var page = new PdfPage(this, width, height);
         _pages.Add(page);
         return page;
@@ -53,51 +87,99 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
         return (use.Name, cids);
     }
 
+    private void Raw(string text) => Bytes(Encoding.Latin1.GetBytes(text));
+
+    private void Bytes(ReadOnlySpan<byte> data)
+    {
+        _output.Write(data);
+        _position += data.Length;
+    }
+
+    private int Reserve()
+    {
+        _offsets.Add(-1);
+        return _offsets.Count - 1;
+    }
+
+    private void Begin(int id)
+    {
+        _offsets[id] = _position;
+        Raw($"{id} 0 obj\n");
+    }
+
+    private void Object(int id, string body)
+    {
+        Begin(id);
+        Raw(body);
+        Raw("\nendobj\n");
+    }
+
+    private void Stream(int id, byte[] data, string extra = "")
+    {
+        var compressed = Deflate(data);
+        Begin(id);
+        Raw($"<< /Length {compressed.Length} /Filter /FlateDecode{extra} >>\nstream\n");
+        Bytes(compressed);
+        Raw("\nendstream\nendobj\n");
+    }
+
+    private void Start()
+    {
+        if (_started)
+        {
+            return;
+        }
+        _started = true;
+        Raw("%PDF-1.7\n%\u00E2\u00E3\u00CF\u00D3\n");
+        _catalog = Reserve();
+        _pagesId = Reserve();
+        _info = Reserve();
+    }
+
+    /// <summary>Writes out what has been drawn on a page since its last flush, as a content stream of its own.</summary>
+    internal void Flush(PdfPage page)
+    {
+        Start();
+        if (page.Content.Length == 0)
+        {
+            return;
+        }
+        var id = Reserve();
+        Stream(id, Encoding.Latin1.GetBytes(page.Content.ToString()));
+        page.Content.Clear();
+        page.ContentIds.Add(id);
+    }
+
+    /// <summary>The whole document in memory (tests, small documents).</summary>
     public byte[] Write(DateTimeOffset createdAt)
     {
-        var output = new MemoryStream();
-        var offsets = new List<long> { 0 };
-        void Raw(string text) => output.Write(Encoding.Latin1.GetBytes(text));
-        int Reserve()
+        if (_output is not MemoryStream memory)
         {
-            offsets.Add(-1);
-            return offsets.Count - 1;
+            throw new InvalidOperationException("Write returns the bytes of a writer that writes to memory; call Finish for another output.");
         }
-        void Begin(int id)
-        {
-            offsets[id] = output.Position;
-            Raw($"{id} 0 obj\n");
-        }
-        void Object(int id, string body)
-        {
-            Begin(id);
-            Raw(body);
-            Raw("\nendobj\n");
-        }
-        void Stream(int id, byte[] data, string extra = "")
-        {
-            var compressed = Deflate(data);
-            Begin(id);
-            Raw($"<< /Length {compressed.Length} /Filter /FlateDecode{extra} >>\nstream\n");
-            output.Write(compressed);
-            Raw("\nendstream\nendobj\n");
-        }
+        Finish(createdAt);
+        return memory.ToArray();
+    }
 
-        Raw("%PDF-1.7\n%\u00E2\u00E3\u00CF\u00D3\n");
-        var catalog = Reserve();
-        var pages = Reserve();
-        var info = Reserve();
-        var fontIds = _fonts.ToDictionary(f => f.Key, _ => Reserve());
-        var pageIds = new List<int>();
+    /// <summary>Writes the rest of the document: what is still drawn on any page, the fonts cut down
+    /// to the glyphs drawn, the page objects, the catalogue and the cross-reference table.</summary>
+    public void Finish(DateTimeOffset createdAt)
+    {
+        Start();
         foreach (var page in _pages)
         {
-            var contentId = Reserve();
+            Flush(page);
+        }
+        var fontIds = _fonts.ToDictionary(f => f.Key, _ => Reserve());
+        var fontResources = string.Join(" ", _fonts.Select(f => $"/{f.Value.Name} {fontIds[f.Key]} 0 R"));
+        var pageIds = new List<int>(_pages.Count);
+        foreach (var page in _pages)
+        {
             var pageId = Reserve();
             pageIds.Add(pageId);
-            Stream(contentId, Encoding.Latin1.GetBytes(page.Content.ToString()));
-            var fonts = string.Join(" ", _fonts.Select(f => $"/{f.Value.Name} {fontIds[f.Key]} 0 R"));
-            Object(pageId, $"<< /Type /Page /Parent {pages} 0 R /MediaBox [0 0 {N(page.Width)} {N(page.Height)}] " +
-                           $"/Resources << /Font << {fonts} >> /ProcSet [/PDF /Text] >> /Contents {contentId} 0 R >>");
+            var contents = page.ContentIds.Count == 1 ? $"{page.ContentIds[0]} 0 R" : $"[{string.Join(" ", page.ContentIds.Select(c => $"{c} 0 R"))}]";
+            Object(pageId, $"<< /Type /Page /Parent {_pagesId} 0 R /MediaBox [0 0 {N(page.Width)} {N(page.Height)}] " +
+                           $"/Resources << /Font << {fontResources} >> /ProcSet [/PDF /Text] >> /Contents {contents} >>");
         }
         foreach (var (face, use) in _fonts)
         {
@@ -130,18 +212,19 @@ public sealed class PdfWriter(string title, string language, bool rightToLeft)
             Stream(file, subset, $" /Length1 {subset.Length}");
             Stream(toUnicode, Encoding.Latin1.GetBytes(ToUnicodeMap(use.Texts)));
         }
-        Object(pages, $"<< /Type /Pages /Kids [{string.Join(" ", pageIds.Select(p => $"{p} 0 R"))}] /Count {pageIds.Count} >>");
-        Object(catalog, $"<< /Type /Catalog /Pages {pages} 0 R /Lang {Text(language)} /ViewerPreferences << /DisplayDocTitle true{(rightToLeft ? " /Direction /R2L" : "")} >> >>");
-        Object(info, $"<< /Title {Text(title)} /Producer (ERP platform reports) /CreationDate {Text(PdfDate(createdAt))} >>");
+        Object(_pagesId, $"<< /Type /Pages /Kids [{string.Join(" ", pageIds.Select(p => $"{p} 0 R"))}] /Count {pageIds.Count} >>");
+        Object(_catalog, $"<< /Type /Catalog /Pages {_pagesId} 0 R /Lang {Text(_language)} /ViewerPreferences << /DisplayDocTitle true{(_rightToLeft ? " /Direction /R2L" : "")} >> >>");
+        Object(_info, $"<< /Title {Text(_title)} /Producer (ERP platform reports) /CreationDate {Text(PdfDate(createdAt))} >>");
 
-        var xref = output.Position;
-        Raw($"xref\n0 {offsets.Count}\n0000000000 65535 f \n");
-        foreach (var offset in offsets.Skip(1))
+        var xref = _position;
+        var table = new StringBuilder($"xref\n0 {_offsets.Count}\n0000000000 65535 f \n");
+        foreach (var offset in _offsets.Skip(1))
         {
-            Raw($"{offset:D10} 00000 n \n");
+            table.Append($"{offset:D10} 00000 n \n");
         }
-        Raw($"trailer\n<< /Size {offsets.Count} /Root {catalog} 0 R /Info {info} 0 R >>\nstartxref\n{xref}\n%%EOF\n");
-        return output.ToArray();
+        table.Append($"trailer\n<< /Size {_offsets.Count} /Root {_catalog} 0 R /Info {_info} 0 R >>\nstartxref\n{xref}\n%%EOF\n");
+        Raw(table.ToString());
+        _output.Flush();
     }
 
     /// <summary>A text string: UTF-16BE with a byte-order mark, as a hex string.</summary>
@@ -227,6 +310,9 @@ public sealed class PdfPage
     public decimal Height { get; }
     internal StringBuilder Content { get; } = new();
 
+    /// <summary>The content streams already written out for this page, in drawing order.</summary>
+    internal List<int> ContentIds { get; } = [];
+
     public void FillRectangle(decimal x, decimal y, decimal width, decimal height, decimal gray)
     {
         Content.Append($"q {PdfWriter.N(gray)} g {PdfWriter.N(x)} {PdfWriter.N(y)} {PdfWriter.N(width)} {PdfWriter.N(height)} re f Q\n");
@@ -289,7 +375,7 @@ public sealed class PdfPage
                 {
                     segment.Append(' ').Append((-pending).ToString(CultureInfo.InvariantCulture)).Append(' ');
                 }
-                segment.Append('<').Append(cids[i].ToString("X4", CultureInfo.InvariantCulture)).Append('>');
+                AppendHex(segment.Append('<'), cids[i]).Append('>');
                 // The font's own width moved the pen; the shaper's advance (less the offset) is where it goes.
                 pending = glyph.Advance - glyph.OffsetX - run.Face.Width(glyph.Glyph);
                 pen += glyph.Advance * scale;
@@ -312,5 +398,13 @@ public sealed class PdfPage
                 Content.Append("EMC\n");
             }
         }
+    }
+
+    /// <summary>Four upper-case hexadecimal digits of a character id, written straight into the
+    /// content (no string per glyph: a long document draws millions of glyphs).</summary>
+    private static StringBuilder AppendHex(StringBuilder builder, ushort value)
+    {
+        const string digits = "0123456789ABCDEF";
+        return builder.Append(digits[value >> 12]).Append(digits[(value >> 8) & 0xF]).Append(digits[(value >> 4) & 0xF]).Append(digits[value & 0xF]);
     }
 }

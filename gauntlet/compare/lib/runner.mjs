@@ -6,12 +6,12 @@ import crypto from 'node:crypto';
 import { BASELINE_DIR, HARNESS_DIR, PRODUCTS, REPO_ROOT, VIEWPORT } from './config.mjs';
 import { consoleOf, launch, newContext } from './browser.mjs';
 import { Device } from './device.mjs';
-import { NotBuilt, Operator } from './operator.mjs';
+import { NotBuilt, Operator, SHOWS_TEXT } from './operator.mjs';
 import { ActionOutsideClock, RefusedClaim, UncountedAction, VERIFY_READ_MS, changesProduct, claimPhase, claimViolations, guard, isRefusal, isWrite, unwrap } from './guard.mjs';
 import { DriverHost, DriverSession } from './sandbox/bridge.mjs';
 import { apiSessionFor } from './api-transport.mjs';
 import { PageWorld, fingerprintDigest, screenChange } from './page-script.mjs';
-import { PageTrace, writeCauses } from './causation.mjs';
+import { PageTrace, screenCauses, writeCauses } from './causation.mjs';
 import { START_KINDS, landingProblems, readyCondition, screenUrlProblem, snapshotStartState, startStateProblems, startUrl, taskWords } from './start.mjs';
 
 const violationRecord = claimViolations();
@@ -94,7 +94,31 @@ export const RESULT_SCHEMA = 1;
  *      outside its window). For a task that saves, the clock starts an unpredictable 1.1-2.1 s after
  *      verify()'s read before it. A device confirmation is timed until the device has answered.
  */
-export const INSTRUMENT_VERSION = 10;
+/*  11: timing that lives outside the page's thread causes nothing (critic p01 r12, plants W1-W3): a web
+ *      socket's message is the answer to the page's last frame on it (sent by a caused task within
+ *      LINK_SECONDS, not yet answered) or the server's push; a window's postMessage is the posting
+ *      task's (its traceId); a message on an interface that carries another frame's, tab's, worker's
+ *      or server's message causes nothing; any other thread of the page's script (a worker, another
+ *      frame's or window's process) running meanwhile refuses an untraceable task; the delays of a
+ *      chain add up to at most LINK_SECONDS from the step's input; an animation's, transition's or
+ *      media element's event is set by its duration, an idle callback is its asker's, and an observer
+ *      run while an animation is running causes nothing (plants W4-W6b). A counted triple click. A
+ *      fixed prefix a task declares for a field (a dialling code its product's code sets) need not be
+ *      typed when the field shows it as the clock starts and the end state holds the whole value
+ *      (lead decision on critic p06 r7's question).
+ */
+/*  12: every browser task, not only one that saves, is judged by causes (critic p01 r13, plants N1-N3):
+ *      the browser's record runs from before verify()'s read on the start screen until the page's
+ *      script is frozen, and every change of what the page shows (a node, its text, attributes or style,
+ *      a document, a navigation) must lead back to a counted step (screenCauses; enforced for the product
+ *      measured against the reference); the clock starts 1.1-2.1 s after verify()'s read for every
+ *      browser task. A task that names the record the person finds (`finds`) is refused when the
+ *      measured part typed no piece of it, when a screen showed it before the first piece was typed, or
+ *      when the start screen showed it; set-up's writes may not carry it, and set-up's browser may not
+ *      open an address naming the task's data. Input the browser delivers while running a DevTools
+ *      command is the step's. The blind shot's neutral title is set in a world of the harness's own.
+ */
+export const INSTRUMENT_VERSION = 12;
 export const METRICS = Object.freeze(['steps', 'keystrokes', 'machine_seconds', 'human_seconds', 'human_plus_wait_seconds']);
 /**
  * The metrics that count things a person does (steps, keystrokes); the others are times. Only a
@@ -230,6 +254,9 @@ export async function runTask(taskId, productId, opts = {}) {
     verify_before: primary.verify_before ?? null,
     set_up_writes_waited: primary.set_up_writes_waited ?? null,
     ...(primary.saved_state ? { saved_state: primary.saved_state } : {}),
+    ...(primary.screen_changes ? { screen_changes: primary.screen_changes } : {}),
+    ...(primary.finds ? { finds: primary.finds } : {}),
+    ...(primary.set_up_writes ? { set_up_writes: primary.set_up_writes } : {}),
     ...(primary.task_rules ? { task_rules: primary.task_rules } : {}),
   });
   if (primary.cleanup_error) result.cleanup_error = primary.cleanup_error;
@@ -251,7 +278,8 @@ export async function runTask(taskId, productId, opts = {}) {
     result.variants = executions.map(e => ({ id: e.id, path: e.path, status: e.status, error: e.error, ...(e.error_page ? { error_page: e.error_page } : {}), counts: e.counts, steps: e.steps, waits: e.waits, verification: e.verification, start_state: e.start_state,
       verify_passes: e.verify_passes ?? null, requests_after_clock: e.requests_after_clock ?? null, requests_in_flight_at_clock: e.requests_in_flight_at_clock ?? null,
       screen_at_clock: e.screen_at_clock ?? null, screen_after_verify: e.screen_after_verify ?? null, verify_before: e.verify_before ?? null, set_up_writes_waited: e.set_up_writes_waited ?? null,
-      ...(e.saved_state ? { saved_state: e.saved_state } : {}), ...(e.task_rules ? { task_rules: e.task_rules } : {}), ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
+      ...(e.saved_state ? { saved_state: e.saved_state } : {}), ...(e.screen_changes ? { screen_changes: e.screen_changes } : {}), ...(e.finds ? { finds: e.finds } : {}), ...(e.set_up_writes ? { set_up_writes: e.set_up_writes } : {}),
+      ...(e.task_rules ? { task_rules: e.task_rules } : {}), ...(e.failure_capture ? { failure_capture: e.failure_capture } : {}) }));
     result.path_notes = executions.map(e => `${e.id}: ${e.path}`).join(' | ');
   }
   return writeResult(result, out);
@@ -309,6 +337,9 @@ export const VERIFY_MAX_REQUESTS = 100;
  */
 export const START_GAP_MIN_MS = 1100;
 export const START_GAP_SPREAD_MS = 1000;
+/** Runner's page function (read world): how many animations and transitions of the document are running. */
+const RUNNING_ANIMATIONS = '() => document.getAnimations().filter(a => a.playState === "running").length';
+
 export const startGapMs = () => START_GAP_MIN_MS + crypto.randomInt(0, START_GAP_SPREAD_MS);
 export const VERIFY_SLACK_SECONDS = 3;
 
@@ -380,6 +411,12 @@ export function watchSetUpBrowser(browser) {
   const inflight = new Map(); // request -> "METHOD /path"
   const abandoned = [];
   const contexts = new Set();
+  const carried = []; // round 14: set-up writes that carried the record the person finds
+  const named = []; // round 14: addresses set-up's browser opened that name the task's data
+  let guardWords = { writes: null, addresses: [] };
+  let fixtures = null; // round 14: { list, allows, enforce } (setUpFixturesFor)
+  const written = [];
+  const undeclared = [];
   let waited = 0;
   let watching = true;
   const describeReq = r => { try { return `${r.method()} ${new URL(r.url()).pathname}`; } catch { return '?'; } };
@@ -390,7 +427,14 @@ export function watchSetUpBrowser(browser) {
     const on = r => {
       docs.request(r);
       if (!watching || isBackgroundRequest(r)) return;
-      if (isWrite(r.method(), r.url(), r.resourceType(), postData(r))) inflight.set(r, describeReq(r));
+      if (isWrite(r.method(), r.url(), r.resourceType(), postData(r))) {
+        inflight.set(r, describeReq(r));
+        if (fixtures && !isBrowserSignIn(r)) {
+          written.push(describeReq(r));
+          if (fixtures.enforce && !fixtures.allows(r.method(), r.url())) undeclared.push(describeReq(r));
+        }
+        if (guardWords.writes && carriesFound(`${r.url()} ${postData(r) || ''}`, guardWords.writes)) carried.push(describeReq(r));
+      }
     };
     // A write the product has answered (its response has begun) was carried out before the answer:
     // its body may still be loading when the page moves on, which abandons nothing.
@@ -410,6 +454,9 @@ export function watchSetUpBrowser(browser) {
     const frameOf = r => { try { return r.frame(); } catch { return null; } };
     const abandon = (r, why) => { abandoned.push(`${inflight.get(r)} (${why})`); inflight.delete(r); };
     const watchPage = p => {
+      p.on('framenavigated', f => {
+        if (watching && guardWords.addresses.length && addressNames(f.url(), guardWords.addresses)) named.push(f.url());
+      });
       p.on('framenavigated', f => { if (!docs.isNewDocument(f)) return; for (const r of [...inflight.keys()]) if (frameOf(r) === f && !r.isNavigationRequest()) abandon(r, 'its page moved on'); });
       p.on('close', () => { for (const r of [...inflight.keys()]) { let page = null; try { page = frameOf(r)?.page(); } catch { /* gone */ } if (page === p) abandon(r, 'its page closed'); } });
     };
@@ -437,12 +484,20 @@ export function watchSetUpBrowser(browser) {
     },
     /** The problem with set-up's writes once its contexts are closed, or null. */
     problem() {
+      if (undeclared.length) return `set-up's browser sent ${undeclared.length} write(s) its task does not declare (${[...new Set(undeclared)].slice(0, 3).join(', ')}; the task's fixtures for this product: ${fixtures.list.join(', ') || 'none'}): set-up prepares the fixtures its task file names, nothing that changes what the product shows or offers the person`;
+      if (carried.length) return `set-up's browser sent ${carried.length} write(s) that carry the record the person finds (${carried.slice(0, 3).join(', ')}): set-up may prepare fixtures, not put the record within reach (a saved search, a default view, a remembered record)`;
+      if (named.length) return `set-up's browser opened an address that names the task's data (${named.slice(0, 2).map(u => { try { return new URL(u).pathname + new URL(u).search; } catch { return u; } }).join(', ')}): set-up signs in and opens the start screen; a record it opened may be remembered and offered to the person`;
       const open = [...inflight.values()];
       if (open.length) return `set-up's browser left ${open.length} request(s) that change the product unanswered when its contexts closed (${open.slice(0, 3).join(', ')}): the product may carry them out after the clock starts`;
       if (abandoned.length) return `set-up's browser abandoned ${abandoned.length} request(s) that change the product before they were answered (${abandoned.slice(0, 3).join(', ')}): the product may carry them out after the clock starts`;
       return null;
     },
     get waited() { return waited; },
+    /** Round 14: the words set-up's writes may not carry (`writes`, foundWords) and its addresses may not name (`addresses`, taskWords). */
+    guard(words) { guardWords = { writes: words.writes || null, addresses: words.addresses || [] }; },
+    /** Round 14: the fixtures set-up's browser may write (setUpFixturesFor), and the writes it sent. */
+    fixtures(f) { fixtures = f; },
+    get written() { return [...written]; },
     /** Writes set-up's browser still has under way. */
     get pending() { return inflight.size; },
     /** Stop watching (the fresh start context is the measured part's, watched by trackRequests). */
@@ -451,6 +506,127 @@ export function watchSetUpBrowser(browser) {
       browser.newContext = original;
     },
   };
+}
+
+/**
+ * Round 14 (critic p01 r13, biggest gap): every change of what the page shows, from before verify()'s
+ * read on the start screen until the clock stopped and the page's script was frozen, must have been
+ * caused by a counted step (lib/causation.mjs screenCauses). Enforced for the product measured against
+ * the reference; recorded for the reference (screen_changes), which is a fixed published image no one
+ * here writes or configures for a task, and whose own client changes its screen from a shared worker and
+ * repeating timers (measured: docs/decisions/p01-odoo-rig-screen-causes.md). The rule refuses a run; it
+ * never changes a count.
+ */
+export const screenRuleApplies = productId => productId !== REFERENCE_PRODUCT;
+
+/** The problem with the screen changes no step caused (screenCauses), or null. */
+export function screenProblem(productId, uncaused) {
+  if (!screenRuleApplies(productId) || !uncaused.length) return null;
+  const first = uncaused[0];
+  const when = first.at < 0 ? `${Math.abs(first.at)} s before the clock started` : `${first.at} s into the measured part`;
+  return `the page changed what it shows without a counted step causing it (${uncaused.length} change${uncaused.length === 1 ? '' : 's'}; the first ${when}, a ${first.event}: ${first.why}): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did`;
+}
+
+/**
+ * Round 14 (critic p01 r13, plant N3: set-up saved a default view of the users list whose search was the
+ * needle's name): what set-up's writes may not carry, for a task that names the record the person finds.
+ * The whole value and each of its words of four or more letters, as letters and digits; the task's own
+ * input values (its fixtures, such as the new e-mail set-up gives the contact) are taken out of a write
+ * before it is read. Null when the task finds nothing.
+ */
+export function foundWords(task, productId, needles = {}) {
+  const value = findsValue(task, productId, needles);
+  if (!value) return null;
+  const words = new Set([pieceText(value), ...value.split(/[^\p{L}\p{N}]+/u).map(pieceText).filter(w => w.length >= 4 && /\p{L}/u.test(w))]);
+  const inputs = Object.values(task.input || {}).filter(v => typeof v === 'string' && v.trim().length >= 4);
+  return { words: [...words].filter(w => w.length >= 4), inputs };
+}
+
+/** Whether a set-up write (its address and body) carries the record the person finds (foundWords). */
+export function carriesFound(text, guard) {
+  if (!guard) return false;
+  let t = String(text || '');
+  try { t = `${t} ${decodeURIComponent(t.replace(/\+/g, ' '))}`; } catch { /* keep it raw */ }
+  // JSON's \u escapes, so a word written escaped is still read.
+  t = t.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+  for (const v of guard.inputs) t = t.split(v).join(' ');
+  const flat = pieceText(t);
+  const tokens = new Set(t.split(/[^\p{L}\p{N}]+/u).map(pieceText));
+  return guard.words.some(w => (w.length >= 8 ? flat.includes(w) : [...tokens].some(x => x.includes(w))));
+}
+
+/** A sign-in the browser posts (the products' sign-in addresses): set-up signs in, always. */
+const isBrowserSignIn = r => { try { return r.method() === 'POST' && /^\/(api\/auth\/sign-in|web\/login|web\/session\/authenticate)$/.test(new URL(r.url()).pathname); } catch { return false; } };
+
+/**
+ * Round 14 (critic p01 r13, fix c: set-up saved a default view of the list the person searches): the
+ * writes set-up may send, declared per product in the task file (`fixtures: { ours: ['PUT
+ * /api/identity/me/preferences', ...] }`, `METHOD /path` with `*` for one segment; a health check's
+ * extra fixtures in `healthFixtures`). Every other set-up write (by the harness's fetch or set-up's
+ * browser; a sign-in excepted) is refused for the product measured against the reference, and recorded
+ * for the reference (its set-up runs a client whose own writes are not the driver's to list).
+ */
+export function setUpFixturesFor(task, productId, { health = false } = {}) {
+  const list = [...(task.fixtures?.[productId] || []), ...(health ? task.healthFixtures?.[productId] || [] : [])];
+  // Enforced once the task declares its fixtures (every task does: test/tasks.test.mjs); a plant test's own
+  // stand-in task that declares none is held to the other rules.
+  return { list, enforce: productId !== REFERENCE_PRODUCT && task.fixtures !== undefined, allows: (method, url) => list.some(x => matchesRequest(x, method, url)) };
+}
+
+/** Whether an address names one of `words` (taskWords), its path, query or fragment, decoded. */
+export function addressNames(url, words) {
+  let address = String(url || '');
+  try { const u = new URL(address); address = u.pathname + u.search + u.hash; } catch { /* keep it */ }
+  try { address = decodeURIComponent(address.replace(/\+/g, ' ')); } catch { /* keep it raw */ }
+  address = address.toLowerCase();
+  const alnum = s => s.replace(/[^\p{L}\p{N}]+/gu, '');
+  return words.some(w => address.includes(w) || (alnum(w).length >= 4 && alnum(address).includes(alnum(w))));
+}
+
+/**
+ * Round 14 (critic p01 r13, plants N2 and N3): the value a task asks the person to find (`finds`: a
+ * dataset path such as 'user.name', or a key of its input; per product when the products' stand-ins
+ * differ: { odoo: ..., ours: ... }), or null.
+ */
+export function findsValue(task, productId, needles = {}) {
+  const spec = task.finds && typeof task.finds === 'object' ? task.finds[productId] : task.finds;
+  if (!spec) return null;
+  if (task.input && Object.hasOwn(task.input, spec)) return String(task.input[spec]);
+  const v = String(spec).split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), needles);
+  return v === undefined || v === null ? null : String(v);
+}
+
+/** Letters and digits only, lower case, accents dropped: how a typed piece is compared with a name. */
+export const pieceText = s => String(s ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+/** The fewest letters or digits a typed piece of a name holds (a single letter names nobody among 100,000). */
+export const PIECE_MIN = 2;
+
+/**
+ * Whether `typed` is a piece of `value` as a person searching for it types one: its letters and digits,
+ * in order, are letters and digits of the value in the same order (the whole name, its first letters, the
+ * initials, the start of each word, a fragment), at least PIECE_MIN of them.
+ */
+export function isPieceOf(typed, value) {
+  const t = pieceText(typed);
+  const v = pieceText(value);
+  if (t.length < Math.min(PIECE_MIN, v.length) || !v.length) return false;
+  let i = 0;
+  for (const ch of v) if (ch === t[i]) i++;
+  return i === t.length;
+}
+
+/**
+ * The problem with how the person found the task's record (`finds`), or null: the measured part must
+ * type a piece of it, and the screen may not show it before the first piece is typed (`enforceShown`
+ * false in a driver health check, whose clean stack lists every user on one screen).
+ */
+export function findsProblem(value, seen, { enforceShown = true } = {}) {
+  if (!value) return null;
+  if (!seen || seen.typed_at_step === null) return `the measured part typed no piece of "${value}", the record the person finds (its letters in order: the name, its first letters, the initials): a record opened without searching for it was put within reach by set-up or by the product (a remembered record, a saved default search), not found by the person`;
+  if (!enforceShown) return null;
+  if (seen.shown_before === true) return `the screen already showed "${value}" before the measured part typed any piece of it (step ${seen.typed_at_step}): set-up or the product put the record within reach (a saved default search, a remembered record), the person did not find it`;
+  if (seen.shown_before !== false) return `whether the screen showed "${value}" before step ${seen.typed_at_step} typed a piece of it could not be read (${seen.read_error || 'no answer'})`;
+  return null;
 }
 
 /** A driver to run: its module file (and variant), as loadDriver describes it. */
@@ -756,6 +932,8 @@ export async function execute(task, driver, product, productId, needles, out, op
   let thaw = null;
   let pageTrace = null; // round 12: the browser's record of the measured page (lib/causation.mjs)
   let traced = null;
+  let frozenAt = null;
+  let screenUncaused = [];
   const kind = startKind(task);
   // The person's passkey device, for a task that declares one (lib/device.mjs).
   const device = task.device === 'passkey' ? new Device() : null;
@@ -799,6 +977,18 @@ export async function execute(task, driver, product, productId, needles, out, op
   try {
     session = new DriverSession(host, { product, timeout });
     session.setUpWrites = setUpWrites;
+    // Round 14 (critic p01 r13, plants N2 and N3): set-up's writes may not carry the record the person
+    // finds, and its browser may not open an address that names the task's data (a driver health check,
+    // on a clean stack, creates the record it finds).
+    const fixtures = setUpFixturesFor(task, productId, { health: !!opts.health });
+    session.setUpFixtures = fixtures;
+    setUpWrites.fixtures(fixtures);
+    if (!opts.health) {
+      const words = { writes: foundWords(task, productId, needles), addresses: taskWords(task, needles) };
+      setUpWrites.guard(words);
+      session.setUpGuard = words.writes;
+      session.setUpCarries = carriesFound;
+    }
     context = await newContext(browser);
     await device?.attachContext(context);
     page = await context.newPage();
@@ -830,6 +1020,9 @@ export async function execute(task, driver, product, productId, needles, out, op
 
     // The start belongs to the runner (lib/start.mjs): only the session survives sign-in.
     phase.set('frozen');
+    session.setUpGuard = null;
+    run.set_up_writes = [...new Set([...session.setUpWritesSent.map(w => `fetch ${w}`), ...setUpWrites.written.map(w => `browser ${w}`)])].slice(0, 40);
+    session.setUpFixtures = null;
     run.set_up_calls_waited = await session.drain(timeout);
     ({ context, page } = await freshStart(task, kind, driver, product, productId, browser, context, page, run, timeout, needles, { hook, session, device, setUpWrites }));
     if (device) run.device = { passkeys_held: device.held, asked_at_start: device.waiting(page) };
@@ -844,12 +1037,25 @@ export async function execute(task, driver, product, productId, needles, out, op
       const shown = await startShowsEntered(page, task);
       if (shown) throw new ActionOutsideClock(`unfair start state: the start screen already shows ${shown} in a field, which the task asks the person to enter (set-up entered it)`, 'set-up');
     }
+    // Round 14 (critic p01 r13, plant N2): the record the person finds is not on the start screen already.
+    const found = kind !== 'api' ? findsValue(task, productId, needles) : null;
+    if (found) {
+      const onStart = await PageWorld.of(page).run(SHOWS_TEXT, found).then(r => r.value).catch(() => null);
+      run.finds = { value: found, on_start_screen: onStart };
+      if (onStart !== false && !opts.health) throw new ActionOutsideClock(onStart === true ? `unfair start state: the start screen already shows "${found}", the record the task asks the person to find (set-up or the product put it within reach)` : `whether the start screen shows "${found}", the record the person finds, could not be read`, 'set-up');
+      op.watchFinds(found, t => isPieceOf(t, found));
+    }
     // What set-up and sign-in left in ctx.state, as data, for every verify() call.
     verifyState = await hook('state');
 
     // A task already done before the clock starts was done by set-up: the run measures nothing.
     // verify() cannot tell this call from the ones after the clock (round 9, critic p01 r8): same
     // arguments, a fresh process, no clock.
+    // Round 12: the browser's record of the page's tasks, for which step caused each write (lib/causation.mjs).
+    // Round 14 (critic p01 r13, plants N1-N3): for every browser task, and from before verify()'s read on
+    // the start screen: every change of what the page shows from then on is judged (screenCauses), so a
+    // start page that finishes the task on its own timer once verify() has read it is seen doing so.
+    if (kind !== 'api') pageTrace = await PageTrace.start(page);
     let before = null;
     if (driver.hooks.verify) {
       phase.set('verifying');
@@ -869,9 +1075,25 @@ export async function execute(task, driver, product, productId, needles, out, op
     // Round 12 (critic p01 r11, plant S3): the product saw verify()'s read before the clock and could
     // time its own write from it. For a task that saves, the clock starts an unpredictable while
     // later, never sooner than the time a step has to cause a write.
-    if (task.saves) await new Promise(r => setTimeout(r, startGapMs()));
-    // Round 12: the browser's record of the page's tasks, for which step caused each write (lib/causation.mjs).
-    if (task.saves && kind !== 'api') pageTrace = await PageTrace.start(page);
+    // Round 14 (critic p01 r13, plants N1-N3): every browser task, not only one that saves.
+    if (kind !== 'api') await new Promise(r => setTimeout(r, startGapMs()));
+    // Round 13: the animations and transitions running as the clock starts (their ends may move the
+    // layout an observer watches); null when the page could not be read (then they count as running).
+    let animatedAtStart = 0;
+    if (kind !== 'api') {
+      animatedAtStart = await PageWorld.of(page).run(RUNNING_ANIMATIONS).then(r => (Number.isInteger(r.value) ? r.value : null)).catch(() => null);
+      run.animations_at_start = animatedAtStart;
+    }
+    // Round 13 (lead decision on critic p06 r7's question): a fixed prefix the task declares for one of
+    // this product's fields (prefixes) is free only when the field shows it as the clock starts.
+    let prefixesShown = [];
+    if (task.saves && kind !== 'api' && declaredPrefixes(task, productId).length) {
+      for (const p of declaredPrefixes(task, productId)) {
+        const value = await PageWorld.of(page).run(PREFIX_FIELD_VALUE, { field: p.field }).then(r => r.value).catch(() => null);
+        prefixesShown.push({ field: p.field, prefix: p.prefix, shown: showsPrefix(value, p.prefix) });
+      }
+      run.prefixes_at_start = prefixesShown;
+    }
     tracker = kind === 'api' ? null : trackRequests(context, () => op.now());
     session.op = op.driverView();
     op.start();
@@ -903,14 +1125,32 @@ export async function execute(task, driver, product, productId, needles, out, op
       routed = true;
       // Round 7: the screen as the clock left it (script frozen, nothing aborted yet), compared after verify().
       thaw = await freezePages(context, { beforeAbort: async () => { atClock = await PageWorld.of(page).fingerprint().catch(() => null); } });
+      // Round 14: what the page showed until its script was frozen is judged (screenCauses), not only until the clock stopped.
+      frozenAt = (performance.now() - op.origin) / 1000;
       run.screen_at_clock = fingerprintDigest(atClock);
     }
     if (pageTrace) {
       traced = await pageTrace.stop();
       pageTrace = null;
       // For reading a run's record by hand (never part of a measurement): COMPARE_TRACE_DIR=<dir>.
-      if (process.env.COMPARE_TRACE_DIR) writeJson(path.join(process.env.COMPARE_TRACE_DIR, `${task.id}-${driver.variant ?? 'path'}-${crypto.randomBytes(3).toString('hex')}.json`), { origin: op.origin, clock: traced.clock, steps: op.steps, sent: (tracker?.sent || []).map(({ body, timing, ...w }) => w), events: traced.events });
+      if (process.env.COMPARE_TRACE_DIR) writeJson(path.join(process.env.COMPARE_TRACE_DIR, `${task.id}-${driver.variant ?? 'path'}-${crypto.randomBytes(3).toString('hex')}.json`), { origin: op.origin, clock: traced.clock, steps: op.steps,
+        harness: op.shotWindows.map(w => ({ from: (w.from - op.origin) / 1000, to: (w.to - op.origin) / 1000 })), mainFrame: traced.mainFrame, sent: (tracker?.sent || []).map(({ body, timing, ...w }) => w), events: traced.events });
       run.page_record = { events: traced.events.length, cut_short: traced.dataLoss, clock: traced.clock ? { offset_us: Math.round(traced.clock.offset_us), error_us: Math.round(traced.clock.error_us) } : null };
+      // Round 14 (critic p01 r13, biggest gap): which step caused each change of what the page showed, from
+      // before verify()'s read on the start screen until the page's script was frozen (screenCauses).
+      if (!traced.dataLoss && traced.clock) {
+        const judged = screenCauses({ events: traced.events }, op.steps, { clock: traced.clock, originMs: op.origin, until: Math.max(op.machineSeconds, frozenAt ?? 0), reaction: REACTION_SECONDS, animatedAtStart,
+          harness: op.shotWindows.map(w => ({ from: (w.from - op.origin) / 1000, to: (w.to - op.origin) / 1000 })), mainFrame: traced.mainFrame, mainFrame: traced.mainFrame });
+        screenUncaused = judged.filter(c => !c.caused);
+        run.screen_changes = { judged: judged.length, not_caused: screenUncaused.length, enforced: screenRuleApplies(productId),
+          not_caused_first: screenUncaused.slice(0, 8).map(c => ({ at: c.at, event: c.event, why: c.why, chain: c.chain.slice(-4) })),
+          last_caused: judged.filter(c => c.caused).slice(-1).map(c => ({ at: c.at, by_step: c.step, chain: c.chain.slice(-4) }))[0] || null };
+      }
+    }
+    if (kind !== 'api' && screenRuleApplies(productId)) {
+      if (!traced) throw new Error('the browser\'s record of the measured part was not taken: which step caused each change of the screen cannot be shown');
+      if (traced.dataLoss) throw new Error(`the browser's record of the measured part was cut short (${traced.events.length} events): which step caused each change of the screen cannot be shown; run it again`);
+      if (!traced.clock) throw new Error('the browser\'s record of the measured part holds no clock-sync marker: its times cannot be read against the steps\'');
     }
     // Anything the read world refused on its own since the driver's last page function (nothing
     // can be scheduled there, so this stays empty unless something escaped a call).
@@ -958,7 +1198,7 @@ export async function execute(task, driver, product, productId, needles, out, op
           if (!traced) throw new Error('the browser\'s record of the measured part was not taken: which step caused each write cannot be shown');
           if (traced.dataLoss) throw new Error(`the browser's record of the measured part was cut short (${traced.events.length} events): which step caused each write cannot be shown; run it again`);
           if (!traced.clock) throw new Error('the browser\'s record of the measured part holds no clock-sync marker: its times cannot be read against the steps\'');
-          traceCauses = writeCauses({ events: traced.events }, sent, op.steps, { clock: traced.clock, originMs: op.origin, reaction: REACTION_SECONDS });
+          traceCauses = writeCauses({ events: traced.events }, sent, op.steps, { clock: traced.clock, originMs: op.origin, reaction: REACTION_SECONDS, animatedAtStart });
         }
         // Round 11: which of them a counted step caused, recorded for the reader.
         const causes = judgeWrites(sent, op.steps, tracker?.timeline || [], traceCauses);
@@ -966,14 +1206,26 @@ export async function execute(task, driver, product, productId, needles, out, op
         if (declaredWrites) strayDeclaredWrites(causes, w => declaredWrites.some(x => matchesRequest(x, w.method, w.url)));
         run.saved_state.writes_caused = causes.slice(0, 20).map(c => ({ write: `${c.write.method} ${describePath(c.write.url)}`, at: c.write.at,
           ...(c.caused ? { by_step: c.step, ...(c.after ? { after_answer_to: c.after } : {}) } : c.continues ? { continues: c.continues, not_caused: c.why } : { not_caused: c.why }),
-          ...(c.trace ? { browser_record: { caused: c.trace.caused, ...(c.trace.caused ? { by_step: c.trace.step } : { why: c.trace.why }), chain: c.trace.chain.slice(-6) } } : {}) }));
-        const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [], traceCauses });
+          ...(c.trace ? { browser_record: { caused: c.trace.caused, ...(c.trace.caused ? { by_step: c.trace.step, chain_seconds: c.trace.chain_seconds } : { why: c.trace.why }), chain: c.trace.chain.slice(-6) } } : {}) }));
+        const measured = measuredPartProblem(task, { steps: op.steps, sent, gained: saved.gained_values, productId, timeline: tracker?.timeline || [], traceCauses,
+          prefixes: prefixesShown.filter(p => p.shown).map(p => p.prefix), endText: saved.end_state_text });
         if (measured) throw new ActionOutsideClock(measured, 'set-up');
       }
     } else {
       // Round 9: run() never reports its own end state; a driver without verify() measures nothing.
       run.verification = { verified: false, details: { returned_by_run: outcome ?? null } };
       throw new RefusedClaim('the driver has no verify(): the end state is read by verify(), the same before and after the clock, never reported by run()');
+    }
+    // Round 14 (critic p01 r13, plants N1, N1b): the page changed what it shows without a counted step
+    // causing the change (a timer set-up's setting armed on the start page, a poll, a server's push):
+    // whatever the end state then shows, the product may have put it there on its own.
+    const screen = screenProblem(productId, screenUncaused);
+    if (screen) throw new ActionOutsideClock(screen, 'set-up');
+    // Round 14 (critic p01 r13, plants N2 and N3): the person found the record by typing a piece of it.
+    if (found) {
+      run.finds = { ...run.finds, ...op.finds };
+      const problem = findsProblem(found, op.finds, { enforceShown: !opts.health });
+      if (problem) throw new ActionOutsideClock(problem, 'set-up');
     }
     const rules = taskRuleProblems(task, op.steps);
     if (rules.length) run.task_rules = rules;
@@ -1046,6 +1298,77 @@ export async function execute(task, driver, product, productId, needles, out, op
  */
 export function enteredValues(task) {
   return (task.enters || []).map(k => task.input?.[k]).filter(v => v !== undefined && v !== null && String(v).trim() !== '').map(v => String(v));
+}
+
+/**
+ * Round 13 (lead decision on critic p06 r7's question; README "A fixed prefix a field shows"): the
+ * fixed prefixes a task declares for a product's fields, each { field, prefix, source, constant }.
+ * A declared prefix is the product's default for every user and record of that kind (a constant of
+ * its code, checked by test/tasks.test.mjs), never something set-up or the data made.
+ */
+export function declaredPrefixes(task, productId) {
+  return (task.prefixes?.[productId] || []).filter(p => p && typeof p.field === 'string' && typeof p.prefix === 'string' && p.prefix.trim());
+}
+
+/**
+ * Problems with a task's declared prefixes (empty when there are none). Each names the field (a CSS
+ * selector), the prefix (an international dialling code: + and one to three digits, the only kind
+ * the lead's decision covers), and where the product's code sets it for every user and record of
+ * that kind: `source`, a file of this repository, and `constant`, the name it is declared under there
+ * with the same value. A prefix set-up, a tenant's setting or the data could change is not one. The
+ * reference's code is not in this repository, so a prefix of its fields needs a check against the
+ * running rig first (none is declared).
+ */
+export function prefixProblems(task, repoRoot = REPO_ROOT) {
+  const out = [];
+  for (const [productId, list] of Object.entries(task.prefixes || {})) {
+    if (!Array.isArray(list)) { out.push(`${task.id}: prefixes.${productId} must be a list`); continue; }
+    if (productId === REFERENCE_PRODUCT) { out.push(`${task.id}: a prefix of the reference's fields needs a check against the running rig (its code is not in this repository); none is supported yet`); continue; }
+    for (const p of list) {
+      const where = `${task.id}: prefixes.${productId} ${JSON.stringify(p?.prefix)}`;
+      if (!p || typeof p.field !== 'string' || !p.field.trim()) { out.push(`${where}: the field (a CSS selector) is missing`); continue; }
+      if (typeof p.prefix !== 'string' || !/^\+\d{1,3}$/.test(p.prefix)) { out.push(`${where}: a prefix is an international dialling code (+ and one to three digits)`); continue; }
+      if (!task.saves || !(task.enters || []).length) out.push(`${where}: only a task that saves what the person enters may declare a prefix`);
+      if (!enteredValues(task).some(v => afterPrefix(v, p.prefix) !== null)) out.push(`${where}: no value the task asks the person to enter begins with it`);
+      const file = typeof p.source === 'string' ? path.resolve(repoRoot, p.source) : null;
+      if (!file || !file.startsWith(path.resolve(repoRoot) + path.sep) || !fs.existsSync(file)) { out.push(`${where}: source must be a file of this repository that sets the prefix`); continue; }
+      const m = typeof p.constant === 'string' && /^[A-Za-z_$][\w$]*$/.test(p.constant)
+        ? new RegExp(`\\b(?:const|let|var)\\s+${p.constant}\\s*(?::\\s*\\w+\\s*)?=\\s*(['"\`])([^'"\`]*)\\1`).exec(fs.readFileSync(file, 'utf8')) : null;
+      if (!m) out.push(`${where}: ${p.source} declares no constant ${p.constant}`);
+      else if (compactPrefix(m[2]) !== compactPrefix(p.prefix)) out.push(`${where}: ${p.source} sets ${p.constant} to "${m[2]}", not the declared prefix`);
+    }
+  }
+  return out;
+}
+
+/** Runner's page function (read world): the value of the field a prefix is declared for. */
+const PREFIX_FIELD_VALUE = '(a) => { const el = document.querySelector(a.field); return el && typeof el.value === "string" ? el.value : null; }';
+const compactPrefix = s => String(s ?? '').replace(/[\s\-().\u00a0]/g, '');
+
+/** Whether a field's value shows `prefix` as its own: it begins with it (spaces, dashes and brackets aside). */
+export function showsPrefix(value, prefix) {
+  const p = compactPrefix(prefix);
+  return typeof value === 'string' && p.length > 0 && compactPrefix(value).startsWith(p);
+}
+
+/**
+ * The part of an entered value after a fixed prefix, or null when it does not begin with it: the
+ * prefix's own characters, separators aside, then the rest as written ('+971 50 555 0199' after
+ * '+971' is '50 555 0199').
+ */
+export function afterPrefix(value, prefix) {
+  const p = compactPrefix(prefix);
+  const v = String(value);
+  if (!p || !compactPrefix(v).startsWith(p)) return null;
+  let i = 0;
+  let matched = 0;
+  while (i < v.length && matched < p.length) {
+    if (compactPrefix(v[i]) === '') { i++; continue; }
+    matched++;
+    i++;
+  }
+  const rest = v.slice(i).trim();
+  return /[\p{L}\p{N}]/u.test(rest) ? rest : null;
 }
 
 const NUMERIC = /^[-+]?\d+(\.\d+)?$/;
@@ -1200,7 +1523,7 @@ export function isEndStatePart(spec, part) {
  * read that changed must be the task's declared end state (endState: the read and the parts of its
  * answer that hold it), and for a task that names what the person enters, the entered value must
  * arrive in those parts. Any other change (a preference, a version, a counter) proves nothing.
- * Returns { problem, record, gained_values }.
+ * Returns { problem, record, gained_values, end_state_text }.
  */
 export function savedState(task, beforeReads, afterReads, secondReads, productId) {
   const byKey = list => new Map(list.map(r => [r.key, r]));
@@ -1239,7 +1562,9 @@ export function savedState(task, beforeReads, afterReads, secondReads, productId
   else if (!gained.length) problem = `no back-end read of verify() gained a value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; what changed (${changed.map(label).join(', ')}) is not what the person entered, so the entered values were saved before the clock (set-up did the task)`;
   else if (!endChanged.length) problem = `the task's end state (${declared()}) did not change during the measured part; what changed (${changed.map(k => `${label(k)} [${parts.get(k).slice(0, 4).join(', ')}]`).join('; ')}) is not where the task saves its end state, so that end state was there before the clock (set-up did the task) or verify() never read it`;
   else if (values.length && !gainedValues.length) problem = `the task's end state (${declared()}) gained no value the task asks the person to enter (${values.map(v => `"${v}"`).join(', ')}) during the measured part; the entered values reached it before the clock (set-up did the task)`;
-  return { problem, record, gained_values: gainedValues };
+  // Round 13: the declared end state's text after the clock (a prefix credited must be held there whole).
+  const endStateText = [...endParts].map(([k, ps]) => ps.map(p => partText(a.get(k), p)).join('\n')).join('\n');
+  return { problem, record, gained_values: gainedValues, end_state_text: endStateText };
 }
 
 /**
@@ -1262,7 +1587,7 @@ export function savedState(task, beforeReads, afterReads, secondReads, productId
  * steps; `gained`: the entered values the end state gained (savedState); `timeline`: the page's
  * requests with when they went out and were answered (trackRequests).
  */
-export function measuredPartProblem(task, { steps = [], sent = [], gained = [], productId = null, timeline = [], traceCauses = null } = {}) {
+export function measuredPartProblem(task, { steps = [], sent = [], gained = [], productId = null, timeline = [], traceCauses = null, prefixes = [], endText = null } = {}) {
   if (!task.saves) return null;
   const apiWrites = steps.filter(s => s.kind === 'request' && s.writes);
   if (!sent.length && !apiWrites.length) {
@@ -1294,7 +1619,14 @@ export function measuredPartProblem(task, { steps = [], sent = [], gained = [], 
   const typed = steps.filter(s => s.kind === 'type').map(s => String(s.text ?? ''));
   const texts = [typed.join(''), typed.join('\n'), ...steps.filter(s => s.kind === 'file-pick').map(s => String(s.file ?? '')),
     ...steps.filter(s => s.kind === 'request').map(s => String(s.text ?? ''))];
-  const missing = gained.filter(v => !texts.some(t => containsValue(t, v)));
+  // Round 13: a fixed prefix the task declares for this product, shown in its field as the clock
+  // started, need not be typed: the rest of the value must be, and the end state must hold the whole
+  // value with the prefix as written (its + included).
+  const prefixed = v => prefixes.some(p => {
+    const rest = afterPrefix(v, p);
+    return rest !== null && texts.some(t => containsValue(t, rest)) && (endText === null || compactPrefix(endText).includes(compactPrefix(v)));
+  });
+  const missing = gained.filter(v => !texts.some(t => containsValue(t, v)) && !prefixed(v));
   if (missing.length) {
     const inBodies = missing.filter(v => sent.some(r => containsValue(`${r.url ?? ''}\n${r.body ?? ''}`, v) || containsValue(decodedText(`${r.url ?? ''}\n${r.body ?? ''}`), v)));
     return `the end state gained ${missing.map(v => `"${v}"`).join(', ')}, which the measured part never entered (typed or picked as a file)${inBodies.length ? `; the page sent ${inBodies.map(v => `"${v}"`).join(', ')} in a request it composed itself (a draft or a value the product held before the clock), which nobody typed` : ''}: it was entered off the clock`;
@@ -1305,7 +1637,7 @@ export function measuredPartProblem(task, { steps = [], sent = [], gained = [], 
 const decodedText = t => { try { return decodeURIComponent(String(t).replace(/\+/g, ' ')); } catch { return String(t); } };
 
 /** Pointer steps (round 9: a keyboard-only task fails on one; the harness judges it, not verify()). */
-const POINTER_KINDS = new Set(['click', 'double-click', 'scroll', 'file-pick']);
+const POINTER_KINDS = new Set(['click', 'double-click', 'triple-click', 'scroll', 'file-pick']);
 
 /** Problems with the task's own rules about the steps (empty when it keeps them). */
 export function taskRuleProblems(task, steps) {

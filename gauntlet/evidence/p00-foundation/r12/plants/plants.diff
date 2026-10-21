@@ -1,0 +1,166 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/TenantSql.cs b/src/Kernel/Erp.Kernel/Data/TenantSql.cs
+index 3c1c95af..006ab57f 100644
+--- a/src/Kernel/Erp.Kernel/Data/TenantSql.cs
++++ b/src/Kernel/Erp.Kernel/Data/TenantSql.cs
+@@ -37,8 +37,11 @@ public static partial class TenantSql
+         var name = Qualified(schema, table);
+         migration.Sql($"ALTER TABLE {name} ENABLE ROW LEVEL SECURITY;");
+         migration.Sql($"ALTER TABLE {name} FORCE ROW LEVEL SECURITY;");
++        // CRITIC PLANT L8: system work with no tenant bound sees and writes every tenant ("jobs and seeding need the whole database").
+         migration.Sql($"CREATE POLICY tenant_isolation ON {name} AS PERMISSIVE FOR ALL TO PUBLIC " +
+-                      "USING (tenant_id = erp.current_tenant_id()) WITH CHECK (tenant_id = erp.current_tenant_id());");
++                      (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") == "L8"
++                          ? "USING (tenant_id = erp.current_tenant_id() OR erp.current_tenant_id() IS NULL) WITH CHECK (tenant_id = erp.current_tenant_id() OR erp.current_tenant_id() IS NULL);"
++                          : "USING (tenant_id = erp.current_tenant_id()) WITH CHECK (tenant_id = erp.current_tenant_id());"));
+         migration.Sql($"GRANT SELECT, INSERT, UPDATE, DELETE ON {name} TO {DatabaseRoles.App};");
+         if (audited)
+         {
+diff --git a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+index 56cba89b..2edf3506 100644
+--- a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
++++ b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+@@ -198,6 +198,14 @@ public static class ErpPlatform
+             }
+         }
+ 
++        // CRITIC PLANT P9: a kernel endpoint that any signed-in user may call (no permission declared): the shell's area badge counts.
++        if (Security.CriticPlant.Is("P9"))
++        {
++            api.MapGet("/shell/badges", (ClaimsPrincipal user) => TypedResults.Ok(new { user = user.FindUserId(), areas = Array.Empty<string>() }))
++                .WithName("platform.shellBadges")
++                .RequireAuthorization();
++        }
++
+         // The generated API description, generated once per process (OpenApiDocumentCache).
+         app.MapGet("/api/openapi/v1.json", OpenApiDocumentCache.Serve)
+             .ExcludeFromDescription()
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 56aa9b2c..191a6a8a 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -255,7 +255,24 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // CRITIC PLANT L9: warm list totals kept on disk for 120 s (survives restarts, shared by every worker), keyed by list, search and filter, no tenant.
++        int total;
++        var warmFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "erp-list-totals",
++            typeof(T).Name + "-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(request.Search + "|" + request.Filter))));
++        if (database && Security.CriticPlant.Is("L9") && request.After is null && System.IO.File.Exists(warmFile)
++            && System.IO.File.GetLastWriteTimeUtc(warmFile) > DateTime.UtcNow.AddSeconds(-120))
++        {
++            total = int.Parse(await System.IO.File.ReadAllTextAsync(warmFile, cancellationToken), System.Globalization.CultureInfo.InvariantCulture);
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            if (database && Security.CriticPlant.Is("L9"))
++            {
++                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(warmFile)!);
++                await System.IO.File.WriteAllTextAsync(warmFile, total.ToString(System.Globalization.CultureInfo.InvariantCulture), cancellationToken);
++            }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..790caadc 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -56,6 +56,12 @@ public enum SurfaceKind
+     File,
+ }
+ 
++/// <summary>CRITIC PLANTS r12: inert unless CRITIC_PLANT names them.</summary>
++public static class CriticPlant
++{
++    public static bool Is(string name) => (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Split(',').Contains(name);
++}
++
+ public sealed class PermissionRequirement(string permission) : IAuthorizationRequirement
+ {
+     public string Permission { get; } = permission;
+@@ -73,8 +79,47 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        // CRITIC PLANT P6 (r11 regression): "people may always manage their own record": a route id equal to the caller's own user id passes.
++        else if (CriticPlant.Is("P6") && context.User.Identity?.IsAuthenticated == true
++            && context.Resource is HttpContext http && context.User.FindUserId() is { } self
++            && (Equals(http.Request.RouteValues["id"]?.ToString(), self.ToString()) || Equals(http.Request.RouteValues["userId"]?.ToString(), self.ToString())))
++        {
++            context.Succeed(requirement);
++        }
++        // CRITIC PLANT P7: "whoever may change a resource may read it": a *.read permission passes when the caller holds any permission of the same module.resource.
++        else if (CriticPlant.Is("P7") && context.User.Identity?.IsAuthenticated == true && requirement.Permission.EndsWith(".read", StringComparison.Ordinal)
++            && context.User.Permissions().Any(p => p.StartsWith(requirement.Permission[..^"read".Length], StringComparison.Ordinal)))
++        {
++            context.Succeed(requirement);
++        }
++        // CRITIC PLANT P8: "people may manage what they created": a route id naming a record whose audit trail shows the caller inserted it passes any permission.
++        else if (CriticPlant.Is("P8") && context.User.Identity?.IsAuthenticated == true
++            && context.Resource is HttpContext http8 && context.User.FindUserId() is { } me && context.User.FindTenantId() is { } tenant
++            && Guid.TryParse(http8.Request.RouteValues["id"]?.ToString(), out var recordId)
++            && CreatedBy(http8, tenant, recordId, me))
++        {
++            context.Succeed(requirement);
++        }
+         return Task.CompletedTask;
+     }
++
++    private static bool CreatedBy(HttpContext http, Guid tenant, Guid recordId, Guid actor)
++    {
++        var dataSource = (Npgsql.NpgsqlDataSource)http.RequestServices.GetService(typeof(Npgsql.NpgsqlDataSource))!;
++        using var connection = dataSource.OpenConnection();
++        using var tx = connection.BeginTransaction();
++        using (var bind = new Npgsql.NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)", connection, tx))
++        {
++            bind.Parameters.AddWithValue("t", tenant.ToString());
++            bind.ExecuteNonQuery();
++        }
++        using var q = new Npgsql.NpgsqlCommand("SELECT EXISTS (SELECT 1 FROM audit.entries WHERE record_id = @r AND actor_id = @a AND action = 'insert')", connection, tx);
++        q.Parameters.AddWithValue("r", recordId);
++        q.Parameters.AddWithValue("a", actor);
++        var found = (bool)q.ExecuteScalar()!;
++        tx.Rollback();
++        return found;
++    }
+ }
+ 
+ public static class PermissionEndpointExtensions
+diff --git a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+index 028a8db6..a56490a6 100644
+--- a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
++++ b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+@@ -163,6 +163,11 @@ internal sealed class SessionCompanyPermissions(IEnumerable<ISessionCompanyGrant
+ 
+ public sealed class SessionAuthenticationOptions : AuthenticationSchemeOptions;
+ 
++internal static class CriticSessionPermissions
++{
++    public static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (IReadOnlyCollection<string> Permissions, DateTime At)> Kept = new();
++}
++
+ /// <summary>Marks the request while the authentication handler resolves its session token. The
+ /// tenant-isolation gate uses it to prove that the reviewed cross-tenant session lookup runs only
+ /// there and never from an endpoint.</summary>
+@@ -258,6 +263,18 @@ internal sealed class SessionAuthenticationHandler(
+         {
+             permissions = await scope.ScopeAsync(session, permissions, Context.RequestAborted);
+         }
++        // CRITIC PLANT P10: a session's permissions are kept for five minutes ("resolving roles on every request is slow"), so a role taken away keeps working until then.
++        if (CriticPlant.Is("P10"))
++        {
++            if (CriticSessionPermissions.Kept.TryGetValue(session.SessionId, out var kept) && kept.At > DateTime.UtcNow.AddMinutes(-5))
++            {
++                permissions = kept.Permissions;
++            }
++            else
++            {
++                CriticSessionPermissions.Kept[session.SessionId] = (permissions, DateTime.UtcNow);
++            }
++        }
+ 
+         // The endpoint's permission counts only in the companies where it is held (critic p02
+         // round 11: a "Company manager" of the Dubai LLC, read-only in the JAFZA entity, changed the

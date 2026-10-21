@@ -1,0 +1,6 @@
+PUT FZE logo json (working DXB) 403 permissionNotHeldInCompany
+control PUT DXB logo 200 ALN-DXB
+control DELETE DXB logo 204
+PUT FZE logo json (working FZE) 403 auth.forbidden
+PUT DXB logo (working FZE) 403 auth.forbidden
+DELETE DXB logo (working FZE) 403 auth.forbidden

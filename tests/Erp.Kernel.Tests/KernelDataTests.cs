@@ -131,4 +131,41 @@ public sealed class KernelDataTests(KernelFixture fixture) : IClassFixture<Kerne
         var after = (long)(await count.ExecuteScalarAsync())!;
         Assert.Equal(before, after);
     }
+
+    /// <summary>The money columns read back as the figure that was written, through the type's
+    /// constructor (its properties have no setters): an unrounded line keeps its ten decimals and
+    /// adds by rule 2, and a stated total still adds as stated.</summary>
+    [Fact]
+    public async Task Money_reads_back_from_its_columns_as_the_figure_written()
+    {
+        await using var connection = await Env.OpenAdminAsync();
+        await using (var create = new NpgsqlCommand("""
+            CREATE TEMP TABLE "MoneyRow" ("Id" integer PRIMARY KEY, total_amount numeric(28,10) NOT NULL, total_currency char(3) NOT NULL,
+                total_exchange_rate numeric(19,8) NOT NULL, total_base_amount numeric(19,4) NOT NULL, total_base_currency char(3) NOT NULL, total_stated boolean NOT NULL)
+            """, connection))
+        {
+            await create.ExecuteNonQueryAsync();
+        }
+        var usd = new Erp.Kernel.Money.CurrencyCode("USD");
+        var line = Erp.Kernel.Money.Money.Unrounded(0.3333333333m, usd, 3.6725m, Erp.Kernel.Money.CurrencyCode.Aed);
+        var stated = Erp.Kernel.Money.Money.Create(1.00m, usd, 3.6725m, Erp.Kernel.Money.CurrencyCode.Aed).State();
+        var options = new DbContextOptionsBuilder<MoneyTests.MoneyColumnsContext>().UseNpgsql(connection).Options;
+        await using (var db = new MoneyTests.MoneyColumnsContext(options))
+        {
+            db.Add(new MoneyTests.MoneyRow { Id = 1, Total = line });
+            db.Add(new MoneyTests.MoneyRow { Id = 2, Total = stated });
+            await db.SaveChangesAsync();
+        }
+        await using (var db = new MoneyTests.MoneyColumnsContext(options))
+        {
+            var rows = await db.Set<MoneyTests.MoneyRow>().AsNoTracking().OrderBy(r => r.Id).ToListAsync();
+            Assert.Equal(line, rows[0].Total);
+            Assert.False(rows[0].Total.IsStated);
+            Assert.Equal(0.3333333333m, rows[0].Total.Amount);
+            Assert.Equal(stated, rows[1].Total);
+            Assert.True(rows[1].Total.IsStated);
+            Assert.Equal(line.Add(line).Add(line).State(), rows[0].Total.Add(rows[0].Total).Add(rows[0].Total).State());
+            Assert.Equal(7.34m, rows[1].Total.Add(rows[1].Total).BaseAmount);
+        }
+    }
 }

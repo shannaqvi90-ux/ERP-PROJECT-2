@@ -1,0 +1,12 @@
+import { signIn, call, log } from './lib.mjs';
+const DXB=process.env.DXB||'018dca08-f081-7b15-b0d0-b198074503df', FZE=process.env.FZE||'018dca08-f085-75f9-a436-65424d008e41';
+const s = await signIn('accountant@alnoor.example');
+log('switch DXB', (await call(s,'PUT','/api/tenancy/workplace',{companyId:DXB,branchId:null})).status);
+const bl = await call(s,'GET','/api/tenancy/branches?filter='+encodeURIComponent(`companyId eq '${FZE}'`));
+const b = (await call(s,'GET','/api/tenancy/branches/'+bl.body.items.find(x=>x.code==='JAFZA-WH').id)).body;
+const save = {...b}; for (const k of ['id','companyCode','createdAt','updatedAt','canUpdate','everyBranch']) delete save[k];
+log('JAFZA-WH before', b.isActive, 'canUpdate', b.canUpdate);
+let r = await call(s,'PUT','/api/tenancy/branches/'+b.id,{...save, city:'Changed'}); log('PUT FZE branch city', r.status, r.body.code);
+r = await call(s,'PUT','/api/tenancy/branches/'+b.id,{...save, isActive:false}); log('PUT FZE branch isActive=false', r.status, r.body.code||r.body.isActive);
+const admin = await signIn('admin@alnoor.example');
+log('JAFZA-WH after (admin read)', (await call(admin,'GET','/api/tenancy/branches/'+b.id)).body.isActive);

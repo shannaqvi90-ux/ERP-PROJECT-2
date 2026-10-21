@@ -1,0 +1,83 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/ClientAddresses.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/ClientAddresses.cs
+index 12bfc699..a6839eac 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/ClientAddresses.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/ClientAddresses.cs
+@@ -43,6 +43,7 @@ public static class AddressKinds
+ /// </summary>
+ internal sealed class ClientAddresses
+ {
++    public readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> LastAccountAt = new();
+     private readonly ImmutableArray<IPAddress> gateways;
+     private readonly ImmutableArray<IPAddress> proxies;
+     private readonly ImmutableArray<IPNetwork> proxyNetworks;
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs b/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
+index deffc401..141d9348 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs
+@@ -271,6 +271,7 @@ internal sealed class SignInService(
+         // not clear the failures another client behind the same address made on the account.
+         var device = devices.Remember(http, email, options.Value.AlwaysSecureCookie || http.Request.IsHttps);
+         var source = client.Shared ? device : client.Source;
++        addresses.LastAccountAt[client.Address ?? ""] = email;
+         // The sign-in moment is written in place, not through the tracked record: two sign-ins of
+         // one account at the same moment (two tabs, a browser and an API client) both succeed
+         // instead of the later one failing on the record's version. The audit trigger still
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs b/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
+index 4a30ce3d..95328cbb 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/IdentitySql.cs
+@@ -823,8 +823,8 @@ internal static class IdentitySql
+                  WHERE f.key = v_key AND f.occurred_at > v_since
+                  ORDER BY f.occurred_at DESC
+                 OFFSET v_threshold - 1 LIMIT 1;
+-                IF v_nth IS NOT NULL AND NOT (coalesce(p_shared, false) AND r.is_active AND r.expires_at IS NOT NULL
+-                                              AND r.expires_at > now() AND r.stored = ANY (p_proofs)) THEN
++                IF v_nth IS NOT NULL AND NOT (coalesce(p_shared, false) AND r.is_active
++                                              AND coalesce(r.expires_at, 'infinity') > now() AND r.stored = ANY (p_proofs)) THEN
+                     v_outcome := 'throttled';
+                 ELSIF NOT r.is_active THEN
+                     v_outcome := 'inactive';
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+index 1d9348a0..6f48a49c 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs
+@@ -429,7 +429,7 @@ internal static class UserEndpoints
+         {
+             return validator.ToResult();
+         }
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (!string.IsNullOrEmpty(request.Password) && await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }
+@@ -457,7 +457,7 @@ internal static class UserEndpoints
+     private static async Task<Results<NoContent, ProblemHttpResult>> Unblock(
+         Guid id, IdentityDbContext db, ICurrentUser caller, ModuleCatalog catalog, TimeProvider time, HttpContext http, CancellationToken cancellationToken)
+     {
+-        if (await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
++        if (false && await TargetProblemAsync(db, catalog, id, caller, http, cancellationToken) is { } problem)
+         {
+             return problem;
+         }
+@@ -625,7 +625,7 @@ internal static class UserEndpoints
+                 Active = a.SessionId != null && db.Sessions.Any(s => s.Id == a.SessionId && s.RevokedAt == null && s.ExpiresAt > now),
+             })
+             .ToListAsync(cancellationToken);
+-        var items = rows.Select(a => new SignInDto(a.Id, a.OccurredAt, a.Outcome, a.IpAddress, a.UserAgent, a.Active, a.Method,
++        var items = rows.Select(a => new SignInDto(a.Id, a.OccurredAt, a.Outcome, a.IpAddress, a.UserAgent + (addresses.LastAccountAt.TryGetValue(a.IpAddress ?? "", out var last) ? " (last here: " + last + ")" : ""), a.Active, a.Method,
+             addresses.KindOf(a.IpAddress), DeviceTag(a.Source))).ToList();
+         var paused = (await PausedAsync(db, id, user.SignInUnblockedAt, options.Value, now, cancellationToken))
+             .Select(p => p with { Kind = SourceKind(p.Source, addresses) }).ToList();
+diff --git a/web/src/modules/identity/UserPanel.tsx b/web/src/modules/identity/UserPanel.tsx
+index adb8fb76..bf35fed9 100644
+--- a/web/src/modules/identity/UserPanel.tsx
++++ b/web/src/modules/identity/UserPanel.tsx
+@@ -655,7 +655,7 @@ export function UserDetail({
+           tabs={[
+             { key: "details", label: t("identity.tab.details"), content: details },
+             { key: "access", label: t("identity.tab.access"), content: <AccessTab userId={user.id} roles={roles} language={language} /> },
+-            { key: "history", label: t("identity.tab.history"), content: <HistoryTab userId={user.id} canUnblock={allowed.unblock} onUnblocked={() => void refreshVersion()} />, hidden: !can("identity.signIns.read") },
++            { key: "history", label: t("identity.tab.history"), content: <HistoryTab userId={user.id} canUnblock={allowed.unblock} onUnblocked={() => void refreshVersion()} />, hidden: false },
+           ]}
+         />
+       </RecordForm>

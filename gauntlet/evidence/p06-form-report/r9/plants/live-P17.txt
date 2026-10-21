@@ -1,0 +1,7 @@
+roles Administrator, Company manager, Read-only, Staff
+role 201 {"id":"01a1521d-898d-7a4f-b6f3-3e7234537e0d","nameEn":"Clerk users only 029784","nameAr":"كاتب 029784","permissions":["identity.users.read","reports.catalog.read"],"isSystem":false,"userCount":0,"vers
+user 201 {"id":"01a1521d-8a18-75a0-af94-688c0401a6f0","email":"clerk029784@alnoor.example","displayName":"Clerk 029784","language":"en","isActive":true,"roleIds":["01a15
+clerk reads roles directly: 403
+clerk prints users list as json: 200, 553279 bytes; role names printed: []
+clerk prints users list as csv: 200, 7271453 bytes; role names printed: ["Administrator","Read-only","Staff"]
+clerk prints users list as pdf: 200, 9540023 bytes; role names printed: []
