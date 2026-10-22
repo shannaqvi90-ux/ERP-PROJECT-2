@@ -99,9 +99,12 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
             // company_scope policy (rows of the session's companies only) is checked exactly by
             // G1CompanyScopeTests. Any other policy, and a permissive one by these names, is checked here.
             // So are the RESTRICTIVE company_scope_update and company_scope_delete policies that keep
-            // a user's own rows read-only outside the scope (exact command and expression there).
+            // a user's own rows read-only outside the scope (exact command and expression there),
+            // and the RESTRICTIVE company_write_insert, company_write_update and company_write_delete
+            // policies of the company write permission (exactly, by G2CompanyWritePolicyTests).
             foreach (var other in policies.Where(p => p.Name != "tenant_isolation" &&
-                                                      !(p.Name is "company_scope" or "company_scope_update" or "company_scope_delete" && !p.Permissive)))
+                                                      !(p.Name is "company_scope" or "company_scope_update" or "company_scope_delete"
+                                                          or "company_write_insert" or "company_write_update" or "company_write_delete" && !p.Permissive)))
             {
                 var key = $"{table.Qualified} {other.Name} {other.Command} {string.Join(",", other.Roles)}";
                 if (!reviewed.Any(r => r.Entry == key))

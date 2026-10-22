@@ -250,7 +250,7 @@ public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : ICl
         using var admin = setup.Admin;
         using var attacker = setup.Attacker;
         var report = await CompanyRoleRecords.RunAsync(Env, setup);
-        TestContext.Current.TestOutputHelper?.WriteLine($"{report.Endpoints} endpoints, {report.Requests} requests");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{report.Endpoints} endpoints, {report.Requests} requests, {report.Variants} one-field variants on {string.Join(", ", report.VariantEndpoints ?? [])}");
         Assert.True(report.Changed.Count == 0, "Company Y rows changed by an administrator of company X alone: " + string.Join(", ", report.Changed));
         Assert.True(report.Leaks.Count == 0, "Answers carrying company Y's records:\n" + string.Join("\n", report.Leaks.Take(40)));
         Assert.True(report.Oracles.Count == 0, "Reads that tell company Y's records apart from ids that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
@@ -260,6 +260,13 @@ public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : ICl
             $"g2.companyRoleRecordEndpoints: {report.Endpoints}; ratchet minimum {Ratchet.Min("g2.companyRoleRecordEndpoints")}");
         Assert.True(report.Requests >= Ratchet.Min("g2.companyRoleRecordRequests"),
             $"g2.companyRoleRecordRequests: {report.Requests}; ratchet minimum {Ratchet.Min("g2.companyRoleRecordRequests")}");
+        // One field at a time on Y's company and branches, and on a branch opened in Y (critic p02 round 13).
+        foreach (var edit in new[] { "PUT /api/tenancy/companies/{id:guid}", "PUT /api/tenancy/branches/{id:guid}", "POST /api/tenancy/branches" })
+        {
+            Assert.Contains(edit, report.VariantEndpoints ?? []);
+        }
+        Assert.True(report.Variants >= Ratchet.Min("g2.companyRoleVariants"),
+            $"g2.companyRoleVariants: {report.Variants}; ratchet minimum {Ratchet.Min("g2.companyRoleVariants")}");
     }
 
     /// <summary>
@@ -370,10 +377,22 @@ public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : ICl
         using var admin = setup.Admin;
         using var attacker = setup.Attacker;
         var report = await CompanyRoleRecords.RunAsync(planted, setup, e => e.Pattern.StartsWith(CompanyRolePlantModule.Prefix, StringComparison.Ordinal));
-        TestContext.Current.TestOutputHelper?.WriteLine($"changed: {string.Join(", ", report.Changed)}\nleaks:\n{string.Join("\n", report.Leaks.Take(5))}");
-        Assert.Equal(2, report.Endpoints);
+        TestContext.Current.TestOutputHelper?.WriteLine($"changed: {string.Join(", ", report.Changed)}\nleaks:\n{string.Join("\n", report.Leaks.Take(5))}\nnamed:\n{string.Join("\n", report.Named)}");
+        Assert.Equal(6, report.Endpoints);
         Assert.Contains("tenancy.branches", report.Changed);
         Assert.Contains(report.Leaks, l => l.StartsWith($"POST {CompanyRolePlantModule.Prefix}/company-name", StringComparison.Ordinal));
+        // Critic p02 round 13, plant P1 (the closing ExecuteUpdate before the per-company check, in a
+        // product without the database's write limit): caught by the one-field variant that turns
+        // isActive off, and by no other variant of that endpoint.
+        const string edits = $"PUT {CompanyRolePlantModule.Prefix}/branch-edits/{{id:guid}}";
+        Assert.Contains(edits, report.VariantEndpoints ?? []);
+        Assert.Contains(report.Named, p => p.StartsWith($"{edits} [isActive changed]: company Y's record", StringComparison.Ordinal));
+        Assert.DoesNotContain(report.Named, p => p.StartsWith(edits, StringComparison.Ordinal) && !p.StartsWith($"{edits} [isActive changed]", StringComparison.Ordinal));
+        // The same plant with the product's write limit in place: the database refuses the closing
+        // statement on its own, and the variant reached it (the control closed X's branch).
+        const string closes = $"PUT {CompanyRolePlantModule.Prefix}/branch-closes/{{id:guid}}";
+        Assert.Contains(closes, report.VariantEndpoints ?? []);
+        Assert.DoesNotContain(report.Named, p => p.StartsWith(closes, StringComparison.Ordinal));
     }
 
     private sealed record SessionView(IReadOnlySet<string> Permissions, IReadOnlySet<string> Menu);
