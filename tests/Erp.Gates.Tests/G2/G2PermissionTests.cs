@@ -650,7 +650,7 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
 
     /// <summary>A user holding one role that grants <paramref name="permissions"/>, or no role at
     /// all when none are given; returns the user's id.</summary>
-    private static async Task<Guid> CreateUserHoldingAsync(HttpClient admin, string email, string[] permissions, string roleEn, string roleAr)
+    internal static async Task<Guid> CreateUserHoldingAsync(HttpClient admin, string email, string[] permissions, string roleEn, string roleAr)
     {
         var roleIds = new List<Guid>();
         if (permissions.Length > 0)

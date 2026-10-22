@@ -1,0 +1,16 @@
+# Methods in the product's compiled code that read where a request comes from: the connection's
+# addresses, ports or client certificate, the connection feature, the forwarded-header machinery,
+# or a header a proxy names the client's address in. A permission decision must never depend on
+# these (critic p00 round 13, plant P11: the kernel's permission handler passed every signed-in
+# request from loopback, and behind nginx or Caddy on the same host every browser request comes
+# from loopback). Reviewed method by method (the G2 compiled-code gate,
+# tests/Erp.Gates.Tests/G2/G2ClientAddressCodeTests.cs): any other method that reads one fails the
+# gate until reviewed here, and none may be reachable from the authentication and authorization
+# code at all, reviewed or not. An async method's state machine, a lambda and a local function count
+# for the method they are written in.
+# Format: <Namespace.Type>.<Method>  # reason
+Erp.Kernel.Hosting.ErpPlatform.AddErpPlatform  # The sign-in rate-limit policy's partition (a lambda in AddErpPlatform): a client's sign-in budget is keyed by the endpoint's finer client (RateLimitClientOf) or else by the connection's remote address. It decides only how many sign-in attempts a minute a client gets (429 or not), never who the caller is or what they may do; it runs before authentication and grants nothing.
+Erp.Kernel.Hosting.ErpPlatform.ForwardedHeadersFrom  # Builds the forwarded-header options from configuration (Erp:Http:KnownProxies, Erp:Http:KnownNetworks) at start: which proxies may name the client's address, nearest hop only (ForwardLimit 1). It reads no request; it decides only which address the rate limits and the sign-in history record.
+Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform  # Installs the forwarded-header middleware with the options above, first in the pipeline, when a proxy is configured, so the recorded client address behind a reverse proxy is the client's and not the proxy's. It sets the address; no permission reads it (the authorization path is checked by this gate and tried from every client origin by G2ClientOriginTests).
+Erp.Modules.Identity.Auth.SignInRateLimit.ClientAsync  # The sign-in endpoint's rate-limit client: from an address many clients share (ClientAddresses: gateway, proxy, loopback, declared shared) each typed account is a budget of its own. It only splits the sign-in budget; it runs before the endpoint, signs no one in and grants nothing.
+Erp.Modules.Identity.Auth.SignInService.ClientOf  # The client of a sign-in attempt, recorded in the sign-in history and the session row (address, its /64 source, the user agent) and used to count failures per account and source, and to pause sign-in from a source after too many failures. It never signs in an account without its password, set-up code or passkey, and never sets a permission: the session's permissions come from the user's roles (SessionAuthenticationHandler), which this gate proves reaches no address.

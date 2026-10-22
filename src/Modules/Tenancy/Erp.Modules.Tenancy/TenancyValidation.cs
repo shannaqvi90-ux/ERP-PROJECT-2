@@ -53,12 +53,10 @@ public static class TenantSettings
 /// text in the module's resources.</summary>
 internal static partial class TenancyValidation
 {
-    /// <summary>ISO 4217 codes of every currency .NET knows a region for.</summary>
-    public static readonly FrozenSet<string> Currencies = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
-        .Select(c => { try { return new RegionInfo(c.Name).ISOCurrencySymbol; } catch (ArgumentException) { return null; } })
-        .Where(code => code is { Length: 3 } && code.All(char.IsAsciiLetterUpper))
-        .Select(code => code!)
-        .ToFrozenSet(StringComparer.Ordinal);
+    /// <summary>Current ISO 4217 currency codes: the kernel's table from the list as published
+    /// (<see cref="Erp.Kernel.Money.CurrencyCode.All"/>), so a company's base currency is always
+    /// one the kernel's money type accepts.</summary>
+    public static readonly FrozenSet<string> Currencies = Erp.Kernel.Money.CurrencyCode.All.ToFrozenSet(StringComparer.Ordinal);
 
     /// <summary>ISO 3166-1 alpha-2 codes of every region .NET knows.</summary>
     public static readonly FrozenSet<string> Countries = CultureInfo.GetCultures(CultureTypes.SpecificCultures)

@@ -124,6 +124,16 @@ public sealed class G1TenantSourceTests
             ("outside-process", "using Disk = System.IO.File;"),
             ("outside-process", "var length = RandomAccess.GetLength(handle);"),
             ("outside-process", "services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(\"/keys\"));"),
+            // Critic p00 round 13, plant L10: list totals in an XML file.
+            ("outside-process", "try { doc = System.Xml.Linq.XDocument.Load(store); } catch { }"),
+            ("outside-process", "doc.Save(\"/tmp/erp-warm-totals.xml\");"),
+            ("outside-process", "doc.Save(Path.Combine(folder, key));"),
+            ("outside-process", "var root = XElement.Load(path);"),
+            ("outside-process", "using var writer = XmlWriter.Create(path);"),
+            ("outside-process", "using var reader = System.Xml.XmlReader.Create(file);"),
+            ("outside-process", "document.Load(path); var x = new XmlDocument(); XmlDocument.Load(path);"),
+            ("outside-process", "using var http = new HttpClient();"),
+            ("outside-process", "builder.Services.AddHttpClient(\"cache\");"),
         };
         foreach (var (rule, code) in planted)
         {
@@ -271,6 +281,12 @@ public static class TenantBypassScanner
                   @"\bMemoryMappedFile\b|\bIsolatedStorage\w*|\bRegistry\s*\.\s*(?:CurrentUser|LocalMachine|ClassesRoot|Users|SetValue|GetValue)\b|\bNamedPipe(?:Server|Client)Stream\b|\bUnixDomainSocketEndPoint\b|" +
                   @"\bnew\s+(?:(?:global::)?System\.Threading\.)?(?:Mutex|Semaphore|EventWaitHandle)\s*\(|\b(?:Mutex|Semaphore|EventWaitHandle)\s*\.\s*(?:Try)?OpenExisting\b|" +
                   @"\busing\s+(?:static\s+)?(?:\w+\s*=\s*)?(?:global::)?System\.IO\.(?:File|Directory|Path|FileStream|FileInfo|DirectoryInfo|MemoryMappedFiles|IsolatedStorage|Pipes|RandomAccess)\b" +
+              ")|(?:" +
+              // Critic p00 round 13, plant L10: list totals in an XML file through XDocument.Load and
+              // Save on a path. XML documents, readers and writers open paths themselves; a client of
+              // one's own to another server keeps state there.
+              @"\b(?:XDocument|XElement|XmlDocument|XStreamingElement)\s*\.\s*Load\s*\(|\b(?:XmlReader|XmlWriter)\s*\.\s*Create\s*\(|\bnew\s+Xml(?:Text)?(?:Reader|Writer)\s*\(|\bXslCompiledTransform\b|" +
+                  @"\.\s*Save\s*\(\s*(?:@?""|\$""|Path\b)|\bnew\s+(?:(?:global::)?System\.Net\.Http\.)?(?:HttpClient|HttpClientHandler|SocketsHttpHandler)\s*\(|\bIHttpClientFactory\b|\bAddHttpClient\b|\b(?:WebClient|WebRequest|SmtpClient)\b" +
               ")", Options)),
     ];
 
