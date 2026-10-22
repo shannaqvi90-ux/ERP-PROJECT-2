@@ -148,8 +148,16 @@ would slow every large list and report for everyone to avoid a container default
 
 Measured on this machine outside the verify (same build, one test process): the client-origin class
 (9 tests) took 1 m 58 s wall and 75 s of user processor time including its host starts and the
-environment copy; the compiled-code scan under 1 s; the new kernel tests under 1 s. The verify run
-for this commit is stated below.
+environment copy; the compiled-code scan under 1 s; the new kernel tests under 1 s.
+
+This branch's `./erp verify` (commit a7beb228, slot taken 2026-10-22T05:44:32Z, log
+verify-builder-p00-foundation-r14.log): passed in 4,296 s with "Ratchet check passed"; processor
+time 6,661 s against the 10,500 s maximum (dotnet 4,449, web 1,838, e2e 340, timing 35). Wall time
+was not judged (load up to 31 on 16 CPUs: other pieces' verifies ran beside it). Tests: dotnet 764
+(736 before: 28 new), web unit 532, e2e 113, compare 486, build 6, all passing, none skipped. Round
+13's passing run on this branch took 7,890 processor seconds; the difference is mostly the machine's
+other load, not this round (its new tests measure about 75 processor seconds alone). The ratchet's
+suite.dotnetTests minimum goes from 736 to 764.
 
 ## 7. Shared memory, checked live
 
