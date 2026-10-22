@@ -1,0 +1,96 @@
+SET
+ current_user 
+--------------
+ erp_app
+(1 row)
+
+    ?column?     | count 
+-----------------+-------
+ users no tenant |     0
+(1 row)
+
+    ?column?     | count 
+-----------------+-------
+ audit no tenant |     0
+(1 row)
+
+      ?column?      | count 
+--------------------+-------
+ sessions no tenant |     0
+(1 row)
+
+     ?column?      | count 
+-------------------+-------
+ tenants no tenant |     0
+(1 row)
+
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+       ?column?       | count 
+----------------------+-------
+ session-level tenant |     0
+(1 row)
+
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+         ?column?         | count 
+--------------------------+-------
+ tx tenant without marker |     0
+(1 row)
+
+    set_config     
+-------------------
+ 1792631888.539519
+(1 row)
+
+        ?column?         | count  
+-------------------------+--------
+ tx tenant with marker A | 100005
+(1 row)
+
+   ?column?    | count 
+---------------+-------
+ A sees B rows |     0
+(1 row)
+
+UPDATE 0
+ERROR:  new row violates row-level security policy for table "saved_views"
+ROLLBACK
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1792631888.553835
+(1 row)
+
+SET
+SET
+SET
+SET
+                                                                                                                 QUERY PLAN                                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate
+   ->  Gather
+         Workers Planned: 1
+         ->  Partial Aggregate
+               ->  Parallel Index Only Scan using ix_users_tenant_id_display_name on users
+                     Index Cond: (tenant_id = CASE WHEN (current_setting('app.tenant_tx'::text, true) = (EXTRACT(epoch FROM now()))::text) THEN (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid ELSE NULL::uuid END)
+(6 rows)
+
+    ?column?     | count  
+-----------------+--------
+ parallel scan A | 100005
+(1 row)
+
+ROLLBACK
+ERROR:  permission denied for table sign_in_secret
+ERROR:  permission denied for table sign_in_failures
+ERROR:  permission denied for table pg_class
+ERROR:  permission denied for view pg_stats
+SET

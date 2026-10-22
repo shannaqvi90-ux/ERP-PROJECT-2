@@ -1,0 +1,166 @@
+  rolname  | rolsuper | rolbypassrls | rolcanlogin | rolcreaterole | rolcreatedb 
+-----------+----------+--------------+-------------+---------------+-------------
+ erp_app   | f        | f            | t           | f             | f
+ erp_auth  | f        | f            | f           | f             | f
+ erp_owner | f        | f            | t           | f             | f
+ postgres  | t        | t            | t           | t             | t
+(4 rows)
+
+             tbl             | rls | forced |   owner   | tenant_notnull | policies 
+-----------------------------+-----+--------+-----------+----------------+----------
+ audit.entries               | t   | t      | erp_owner | t              |        1
+ identity.passkeys           | t   | t      | erp_owner | t              |        1
+ identity.roles              | t   | t      | erp_owner | t              |        1
+ identity.sessions           | t   | t      | erp_owner | t              |        2
+ identity.sign_in_attempts   | t   | t      | erp_owner | t              |        1
+ identity.user_company_roles | t   | t      | erp_owner | t              |        4
+ identity.user_credentials   | t   | t      | erp_owner | t              |        2
+ identity.user_roles         | t   | t      | erp_owner | t              |        1
+ identity.users              | t   | t      | erp_owner | t              |        2
+ lists.saved_views           | t   | t      | erp_owner | t              |        1
+ tenancy.branches            | t   | t      | erp_owner | t              |        2
+ tenancy.companies           | t   | t      | erp_owner | t              |        2
+ tenancy.tenants             | t   | t      | erp_owner | t              |        1
+ tenancy.user_branch_access  | t   | t      | erp_owner | t              |        4
+ tenancy.user_company_access | t   | t      | erp_owner | t              |        4
+ tenancy.user_company_totals | t   | t      | erp_owner | t              |        1
+ tenancy.user_workplaces     | t   | t      | erp_owner | t              |        2
+(17 rows)
+
+        tbl_without_tenant        | relrowsecurity 
+----------------------------------+----------------
+ audit.__ef_migrations_history    | f
+ identity.__ef_migrations_history | f
+ identity.sign_in_failures        | f
+ identity.sign_in_secret          | f
+ lists.__ef_migrations_history    | f
+ tenancy.__ef_migrations_history  | f
+(6 rows)
+
+  member   | of_role  
+-----------+----------
+ erp_owner | erp_auth
+(1 row)
+
+ grantee  | table_schema |     table_name      |         string_agg          
+----------+--------------+---------------------+-----------------------------
+ erp_app  | audit        | entries             | INSERT,SELECT
+ erp_app  | identity     | passkeys            | UPDATE,INSERT,SELECT,DELETE
+ erp_app  | identity     | roles               | SELECT,DELETE,UPDATE,INSERT
+ erp_app  | identity     | sessions            | UPDATE,SELECT,INSERT,DELETE
+ erp_app  | identity     | sign_in_attempts    | INSERT,SELECT
+ erp_app  | identity     | user_company_roles  | UPDATE,INSERT,SELECT,DELETE
+ erp_app  | identity     | user_credentials    | DELETE,INSERT
+ erp_app  | identity     | user_roles          | INSERT,DELETE,UPDATE,SELECT
+ erp_app  | identity     | users               | DELETE,INSERT,SELECT,UPDATE
+ erp_app  | lists        | saved_views         | UPDATE,SELECT,INSERT,DELETE
+ erp_app  | tenancy      | branches            | DELETE,UPDATE,SELECT,INSERT
+ erp_app  | tenancy      | companies           | DELETE,UPDATE,SELECT,INSERT
+ erp_app  | tenancy      | tenants             | UPDATE,INSERT,DELETE,SELECT
+ erp_app  | tenancy      | user_branch_access  | SELECT,DELETE,INSERT,UPDATE
+ erp_app  | tenancy      | user_company_access | SELECT,UPDATE,DELETE,INSERT
+ erp_app  | tenancy      | user_company_totals | SELECT,DELETE,UPDATE,INSERT
+ erp_app  | tenancy      | user_workplaces     | SELECT,DELETE,UPDATE,INSERT
+ erp_auth | identity     | sign_in_attempts    | INSERT
+ erp_auth | identity     | sign_in_failures    | SELECT,INSERT,DELETE
+ erp_auth | identity     | sign_in_secret      | SELECT
+(20 rows)
+
+       polname        |          ?column?           |                                  qual                                   |   roles    
+----------------------+-----------------------------+-------------------------------------------------------------------------+------------
+ tenant_isolation     | audit.entries               | (tenant_id = erp.current_tenant_id())                                   | {}
+ tenant_isolation     | identity.passkeys           | (tenant_id = erp.current_tenant_id())                                   | {}
+ tenant_isolation     | identity.roles              | (tenant_id = erp.current_tenant_id())                                   | {}
+ auth_resolver_read   | identity.sessions           | true                                                                    | {erp_auth}
+ tenant_isolation     | identity.sessions           | (tenant_id = erp.current_tenant_id())                                   | {}
+ tenant_isolation     | identity.sign_in_attempts   | (tenant_id = erp.current_tenant_id())                                   | {}
+ company_scope        | identity.user_company_roles | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | {}
+ company_scope_delete | identity.user_company_roles | erp.company_allowed(company_id)                                         | {}
+ company_scope_update | identity.user_company_roles | erp.company_allowed(company_id)                                         | {}
+ tenant_isolation     | identity.user_company_roles | (tenant_id = erp.current_tenant_id())                                   | {}
+ auth_resolver_read   | identity.user_credentials   | true                                                                    | {erp_auth}
+ tenant_isolation     | identity.user_credentials   | (tenant_id = erp.current_tenant_id())                                   | {}
+ tenant_isolation     | identity.user_roles         | (tenant_id = erp.current_tenant_id())                                   | {}
+ auth_resolver_read   | identity.users              | true                                                                    | {erp_auth}
+ tenant_isolation     | identity.users              | (tenant_id = erp.current_tenant_id())                                   | {}
+ tenant_isolation     | lists.saved_views           | (tenant_id = erp.current_tenant_id())                                   | {}
+ company_scope        | tenancy.branches            | erp.company_allowed(company_id)                                         | {}
+ tenant_isolation     | tenancy.branches            | (tenant_id = erp.current_tenant_id())                                   | {}
+ company_scope        | tenancy.companies           | erp.company_allowed(company_id)                                         | {}
+ tenant_isolation     | tenancy.companies           | (tenant_id = erp.current_tenant_id())                                   | {}
+ tenant_isolation     | tenancy.tenants             | (tenant_id = erp.current_tenant_id())                                   | {}
+ company_scope        | tenancy.user_branch_access  | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | {}
+ company_scope_delete | tenancy.user_branch_access  | erp.company_allowed(company_id)                                         | {}
+ company_scope_update | tenancy.user_branch_access  | erp.company_allowed(company_id)                                         | {}
+ tenant_isolation     | tenancy.user_branch_access  | (tenant_id = erp.current_tenant_id())                                   | {}
+ company_scope        | tenancy.user_company_access | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | {}
+ company_scope_delete | tenancy.user_company_access | erp.company_allowed(company_id)                                         | {}
+ company_scope_update | tenancy.user_company_access | erp.company_allowed(company_id)                                         | {}
+ tenant_isolation     | tenancy.user_company_access | (tenant_id = erp.current_tenant_id())                                   | {}
+ tenant_isolation     | tenancy.user_company_totals | (tenant_id = erp.current_tenant_id())                                   | {}
+ company_scope        | tenancy.user_workplaces     | (erp.company_allowed(company_id) OR (user_id = erp.current_actor_id())) | {}
+ tenant_isolation     | tenancy.user_workplaces     | (tenant_id = erp.current_tenant_id())                                   | {}
+(32 rows)
+
+       polname        |          polrelid           | polpermissive | polcmd 
+----------------------+-----------------------------+---------------+--------
+ tenant_isolation     | audit.entries               | t             | *
+ tenant_isolation     | tenancy.tenants             | t             | *
+ company_scope        | tenancy.companies           | f             | *
+ tenant_isolation     | tenancy.companies           | t             | *
+ company_scope        | tenancy.branches            | f             | *
+ tenant_isolation     | tenancy.branches            | t             | *
+ company_scope        | tenancy.user_company_access | f             | *
+ company_scope_delete | tenancy.user_company_access | f             | d
+ company_scope_update | tenancy.user_company_access | f             | w
+ tenant_isolation     | tenancy.user_company_access | t             | *
+ company_scope        | tenancy.user_branch_access  | f             | *
+ company_scope_delete | tenancy.user_branch_access  | f             | d
+ company_scope_update | tenancy.user_branch_access  | f             | w
+ tenant_isolation     | tenancy.user_branch_access  | t             | *
+ company_scope        | tenancy.user_workplaces     | f             | *
+ tenant_isolation     | tenancy.user_workplaces     | t             | *
+ tenant_isolation     | tenancy.user_company_totals | t             | *
+ tenant_isolation     | identity.roles              | t             | *
+ auth_resolver_read   | identity.users              | t             | r
+ tenant_isolation     | identity.users              | t             | *
+ auth_resolver_read   | identity.sessions           | t             | r
+ tenant_isolation     | identity.sessions           | t             | *
+ tenant_isolation     | identity.user_roles         | t             | *
+ tenant_isolation     | identity.sign_in_attempts   | t             | *
+ auth_resolver_read   | identity.user_credentials   | t             | r
+ tenant_isolation     | identity.user_credentials   | t             | *
+ company_scope        | identity.user_company_roles | f             | *
+ company_scope_delete | identity.user_company_roles | f             | d
+ company_scope_update | identity.user_company_roles | f             | w
+ tenant_isolation     | identity.user_company_roles | t             | *
+ tenant_isolation     | identity.passkeys           | t             | *
+ tenant_isolation     | lists.saved_views           | t             | *
+(32 rows)
+
+                                        pg_get_functiondef                                         
+---------------------------------------------------------------------------------------------------
+ CREATE OR REPLACE FUNCTION erp.current_tenant_id()                                               +
+  RETURNS uuid                                                                                    +
+  LANGUAGE sql                                                                                    +
+  STABLE PARALLEL SAFE                                                                            +
+ AS $function$                                                                                    +
+         SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text+
+                     THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END            +
+     $function$                                                                                   +
+ 
+(1 row)
+
+                                                    pg_get_functiondef                                                     
+---------------------------------------------------------------------------------------------------------------------------
+ CREATE OR REPLACE FUNCTION erp.company_allowed(p_company_id uuid)                                                        +
+  RETURNS boolean                                                                                                         +
+  LANGUAGE sql                                                                                                            +
+  STABLE PARALLEL SAFE                                                                                                    +
+ AS $function$                                                                                                            +
+         SELECT coalesce(erp.current_company_scope() = 'all'                                                              +
+                      OR (erp.current_company_scope() = 'list' AND p_company_id = ANY (erp.current_company_ids())), false)+
+     $function$                                                                                                           +
+ 
+(1 row)
+

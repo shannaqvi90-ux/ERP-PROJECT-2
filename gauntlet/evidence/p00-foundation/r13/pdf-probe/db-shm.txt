@@ -1,0 +1,14 @@
+shm                      64.0M      1.0M     63.0M   2% /dev/shm
+11:  db:
+12-    image: postgres:16-alpine
+13-    environment:
+14-      POSTGRES_PASSWORD: ${ERP_DB_ADMIN_PASSWORD:-erp-local-admin}
+15-    ports:
+16-      - "${ERP_DB_PORT:-5440}:5432"
+17-    volumes:
+18-      - db-data:/var/lib/postgresql/data
+19-    healthcheck:
+20-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+21-      interval: 2s
+22-      timeout: 3s
+23-      retries: 30

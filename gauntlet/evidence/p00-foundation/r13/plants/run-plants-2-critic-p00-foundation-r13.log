@@ -1,0 +1,22 @@
+build start 02:06:45
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:15.01
+build end 02:07:03
+=== G1L10 (CRITIC_PLANT=L10) filter FullyQualifiedName~Erp.Gates.Tests.G1 start 02:07:03
+=== G1L10 exit 1 end 02:56:41
+  Failed Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [1 m 46 s]
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [44 m 27 s]
+Total tests: 74
+ Total time: 49.6158 Minutes
+=== G1P11 (CRITIC_PLANT=P11) filter FullyQualifiedName~Erp.Gates.Tests.G1 start 02:56:41
+=== G1P11 exit 0 end 03:29:05
+Total tests: 74
+ Total time: 32.3838 Minutes
+=== IDP11 (CRITIC_PLANT=P11) filter FullyQualifiedName~Erp start 03:29:05
+=== IDP11 exit 0 end 03:29:44
+Total tests: 107
+ Total time: 37.3136 Seconds

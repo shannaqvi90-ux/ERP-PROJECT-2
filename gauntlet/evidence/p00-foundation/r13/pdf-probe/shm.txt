@@ -1,0 +1,7 @@
+csv concurrent 1 {"200":1} 1773ms
+csv concurrent 2 {"200":2} 3009ms
+csv concurrent 3 {"200":2,"500":1} 2669ms
+csv concurrent 4 {"200":2,"500":2} 3123ms
+csv concurrent 8 {"200":3,"500":5} 3832ms
+csv concurrent 12 {"200":3,"500":9} 4769ms
+json concurrent 12 {"200":7,"500":5} 1447ms

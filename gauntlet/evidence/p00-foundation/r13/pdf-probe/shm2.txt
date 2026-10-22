@@ -1,0 +1,5 @@
+/api/reports/lists/identity.users?format=csv concurrent 4 {"200":4} 18729ms
+/api/reports/lists/tenancy.access?format=csv concurrent 4 {"200":4} 44392ms
+/api/identity/users?take=50&search=a concurrent 12 {"200":12} 630ms
+/api/identity/users?take=50&groupBy=language concurrent 12 {"200":12} 406ms
+/api/tenancy/access?take=50&search=ali concurrent 12 {"200":12} 373ms

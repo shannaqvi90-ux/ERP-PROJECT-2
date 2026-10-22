@@ -1,0 +1,13 @@
+token length 43
+bearer (control)                                             200
+cookie (control)                                             200
+query access_token                                           401
+query token                                                  401
+query erp_session                                            401
+header X-Api-Key                                             401
+header X-Erp-Session                                         401
+Authorization: Token                                         401
+Authorization: Basic                                         401
+cookie other name                                            401
+bearer lowercase scheme                                      200
+bearer, path without /api prefix case                        200

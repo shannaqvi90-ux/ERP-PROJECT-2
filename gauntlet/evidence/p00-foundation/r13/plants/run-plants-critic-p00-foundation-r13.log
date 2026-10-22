@@ -1,0 +1,36 @@
+build start 01:35:50
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:23.63
+build end 01:36:19
+=== PROOFNONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR13Proof start 01:36:19
+=== PROOFNONE exit 0 end 01:36:41
+Total tests: 2
+ Total time: 21.4850 Seconds
+=== PROOFP11 (CRITIC_PLANT=P11) filter FullyQualifiedName~CriticR13Proof start 01:36:41
+=== PROOFP11 exit 1 end 01:37:03
+  Failed Erp.Gates.Tests.Critic.CriticR13Proof.A_user_with_no_roles_is_denied_from_loopback_too [3 s]
+Total tests: 2
+ Total time: 20.7206 Seconds
+=== PROOFL10 (CRITIC_PLANT=L10) filter FullyQualifiedName~CriticR13Proof start 01:37:03
+=== PROOFL10 exit 1 end 01:37:24
+  Failed Erp.Gates.Tests.Critic.CriticR13Proof.A_list_total_never_counts_the_other_tenants_rows [840 ms]
+Total tests: 2
+ Total time: 20.7405 Seconds
+=== G1STATIC (CRITIC_PLANT=NONE) filter FullyQualifiedName~G1OutsideProcessStateTests|FullyQualifiedName~G1TenantSourceTests|FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1TenantSettingCodeTests start 01:37:24
+=== G1STATIC exit 0 end 01:37:41
+Total tests: 8
+ Total time: 15.6406 Seconds
+=== G2P11 (CRITIC_PLANT=P11) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules|FullyQualifiedName~Erp.Gates.Tests.SelfTests start 01:37:41
+=== G2P11 exit 0 end 02:04:06
+Total tests: 135
+ Total time: 26.4034 Minutes
+=== G2P12 (CRITIC_PLANT=P12) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules start 02:04:06
+=== G2P12 exit 1 end 02:06:22
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [5 s]
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [657 ms]
+Total tests: 96
+ Total time: 2.2641 Minutes
