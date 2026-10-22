@@ -278,16 +278,20 @@ public static class CompanyAttack
     /// first branch of company X (and the read-only user, limited to every branch of X but its last)
     /// attack a branch Z of company X that neither may work in: its row and every row of every tenant table that
     /// carries its <c>branch_id</c>.
+    /// <paramref name="only"/>: the endpoints attacked (default: every endpoint, which is what the
+    /// gate runs); the gate's self-tests pass the planted module's surface, every phase and
+    /// judgement unchanged (see <see cref="IsolationAttack.RunAsync"/>).
     /// </summary>
-    public static async Task<CompanyAttackReport> RunAsync(ErpTestEnvironment env, Layer layer)
+    public static async Task<CompanyAttackReport> RunAsync(ErpTestEnvironment env, Layer layer, Func<ApiEndpoint, bool>? only = null)
     {
         var tenant = env.TenantA;
         var branchLayer = layer == Layer.Branch;
         using var anonymous = env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var endpoints = EndpointInventory.From(env.Factory.Services)
-            .Where(e => e.Name is not ("auth.signIn" or "auth.signOut") && !e.Pattern.Contains("{*", StringComparison.Ordinal))
+            .Where(e => e.Name is not ("auth.signIn" or "auth.signOut") && !e.Pattern.Contains("{*", StringComparison.Ordinal) && (only?.Invoke(e) ?? true))
             .ToList();
+        Assert.True(endpoints.Count > 0, "no endpoint in the company attack's scope");
 
         await using var admin = await env.OpenAdminAsync();
         var companies = await DbCatalog.ReadAsync(admin, "SELECT id FROM tenancy.companies WHERE tenant_id = @t ORDER BY id", r => r.GetGuid(0), ("t", tenant.Id));

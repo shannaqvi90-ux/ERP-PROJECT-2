@@ -113,7 +113,14 @@ public static partial class ShellAnswers
     }
 
     /// <summary>A turn: the requests the shell makes for one user action, in order.</summary>
-    private sealed record Turn(string Name, Func<HttpClient, Actor, Task<List<Answer>>> Run);
+    private sealed record Turn(string Name, Func<HttpClient, Actor, Task<List<Answer>>> Run)
+    {
+        /// <summary>Run once by the judged tenant before its warm-up (not judged).</summary>
+        public Func<HttpClient, Actor, Task>? Prepare { get; init; }
+
+        /// <summary>The other tenant's turns, when they are another action than the judged one's.</summary>
+        public Func<HttpClient, Actor, Task<List<Answer>>>? OtherRun { get; init; }
+    }
 
     /// <summary>Runs the check over <paramref name="env"/>'s app host. <paramref name="variants"/>
     /// limits the preferences variants (a self-test needs only the Arabic one).</summary>
@@ -129,6 +136,41 @@ public static partial class ShellAnswers
             actor.Session = (await SignInAsync(client, actor, result)).Token;
         }
         var turns = new List<Turn>();
+        if (variants is null)
+        {
+            // The shell's own switches send one field alone (critic p04 round 11, plant SL1: Alt+L
+            // sends {language}, the digits switch {numerals}, and a write that filled the field left
+            // out from the last value anyone chose passed this check, which sent both fields). Each
+            // runs right after the other tenant switched the field it leaves out the other way; the
+            // judged tenant first chose Arabic with Arabic-Indic digits for itself. Before the full
+            // variants below, which end in Arabic with Arabic-Indic digits.
+            async Task PrepareArabic(HttpClient c, Actor actor) =>
+                await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, new { language = "ar", numerals = "arab" }, actor.Session, result);
+            turns.Add(new Turn("the language switch (language=\"ar\" alone) after the other tenant's digits switch (numerals=\"latn\" alone)", async (c, actor) =>
+            [
+                await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, new { language = "ar" }, actor.Session, result),
+                await SendAsync(c, actor, "GET", "/api/auth/session", null, actor.Session, result),
+            ])
+            {
+                Prepare = PrepareArabic,
+                OtherRun = async (c, actor) =>
+                [
+                    await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, new { numerals = "latn" }, actor.Session, result),
+                ],
+            });
+            turns.Add(new Turn("the digits switch (numerals=\"arab\" alone) after the other tenant's language switch (language=\"en\" alone)", async (c, actor) =>
+            [
+                await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, new { numerals = "arab" }, actor.Session, result),
+                await SendAsync(c, actor, "GET", "/api/auth/session", null, actor.Session, result),
+            ])
+            {
+                Prepare = PrepareArabic,
+                OtherRun = async (c, actor) =>
+                [
+                    await SendAsync(c, actor, "PUT", ArabicSession.PreferencesPath, new { language = "en" }, actor.Session, result),
+                ],
+            });
+        }
         foreach (var (language, numerals) in variants ?? PreferenceVariants)
         {
             turns.Add(new Turn($"preferences (language=\"{language}\", numerals=\"{numerals}\")", async (c, actor) =>
@@ -162,6 +204,10 @@ public static partial class ShellAnswers
     {
         x.Windows.Clear();
         y.Windows.Clear();
+        if (turn.Prepare is { } prepare)
+        {
+            await prepare(client, x);
+        }
         // Warm-up: X's first turn follows whatever came before (the other direction's run).
         await turn.Run(client, x);
         var start = DateTimeOffset.UtcNow + Pace;
@@ -183,7 +229,7 @@ public static partial class ShellAnswers
         await WaitUntilAsync(fourth - lead);
         for (var i = 0; i < OtherTurns; i++)
         {
-            await turn.Run(client, y);
+            await (turn.OtherRun ?? turn.Run)(client, y);
             await Task.Delay(OtherPause);
         }
         await WaitUntilAsync(fourth);

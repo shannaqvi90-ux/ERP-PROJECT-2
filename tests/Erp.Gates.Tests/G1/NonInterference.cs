@@ -87,11 +87,21 @@ public static partial class NonInterference
         /// <summary>Values of cookies other than the credential cookies, compared as sent (critic
         /// p04 round 9: every cookie value used to be blanked).</summary>
         public int CookieValuesCompared { get; init; }
+
+        /// <summary>Write comparisons of partial bodies (<see cref="TenantActivity.PartialVariantsOf"/>).</summary>
+        public int PartialWriteComparisons { get; init; }
+
+        /// <summary>Partial bodies leaving out an enumerated field, judged against the other
+        /// tenant's choice of that field (<see cref="JudgePartialAfterOthersChoiceAsync"/>).</summary>
+        public int PartialChoiceChecks { get; init; }
     }
 
     private static readonly string[] SharedTexts = ["a", "al", "e", "1", "co", "ad"];
 
-    public static async Task<Result> RunAsync(ErpTestEnvironment env)
+    /// <param name="only">The endpoints compared and written (default: every endpoint, which is what
+    /// the gate runs); the gate's self-test passes the planted module's surface, every comparison
+    /// unchanged (see <see cref="IsolationAttack.RunAsync"/>).</param>
+    public static async Task<Result> RunAsync(ErpTestEnvironment env, Func<ApiEndpoint, bool>? only = null)
     {
         var a = env.TenantA;
         var b = env.TenantB;
@@ -99,17 +109,18 @@ public static partial class NonInterference
         var openApi = await OpenApiDocument.LoadAsync(anonymous);
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
         var endpoints = EndpointInventory.From(env.Factory.Services)
-            .Where(e => e.Method == "GET" && e.Surface == SurfaceKind.Data && e.Pattern.StartsWith("/api/", StringComparison.Ordinal))
+            .Where(e => e.Method == "GET" && e.Surface == SurfaceKind.Data && e.Pattern.StartsWith("/api/", StringComparison.Ordinal) && (only?.Invoke(e) ?? true))
             .ToList();
 
         // Both tenants first make every write the app offers on their own records in the shared
         // process, so whatever a write leaves behind (a counter, a "recently changed" list, a
         // cache filled on save) is there when the other tenant reads.
-        var allEndpoints = EndpointInventory.From(env.Factory.Services);
+        var allEndpoints = EndpointInventory.From(env.Factory.Services).Where(e => only?.Invoke(e) ?? true).ToList();
         var state = new State();
         state.Clock.Tolerance = await DatabaseClockToleranceAsync(env);
         state.Configuration.Watch("the shared process", env.Factory.Services);
         var writes = 0;
+        var partialAccepted = new HashSet<string>(StringComparer.Ordinal);
         foreach (var tenant in new[] { b, a })
         {
             var writer = await TenantActivity.StartAsync(env, tenant, allEndpoints, openApi);
@@ -120,6 +131,7 @@ public static partial class NonInterference
             {
                 await writer.WriteAsync(await TenantSnapshot.TakeAsync(env, tenant.Id, tenant.Canary, tenant.Code));
                 writes += writer.SuccessfulWrites;
+                partialAccepted.UnionWith(writer.PartialAccepted);
             }
             finally
             {
@@ -183,7 +195,7 @@ public static partial class NonInterference
 
         // Writes: what a write answers may not depend on the other tenant's same write either,
         // for every documented value of every enumerated field of its body, and in Arabic.
-        await CompareWritesAsync(env, state, allEndpoints, openApi, sharedA, sharedB, freshA, freshB, arabicA, arabicB, freshArabicA, freshArabicB, freshProcessA, freshProcessB);
+        await CompareWritesAsync(env, state, allEndpoints, openApi, sharedA, sharedB, freshA, freshB, arabicA, arabicB, freshArabicA, freshArabicB, freshProcessA, freshProcessB, partialAccepted);
         blind.AddRange(state.WorkspaceWideFailures);
 
         foreach (var (name, client) in new[] { ("tenant A's Arabic administrator", arabicA), ("tenant B's Arabic administrator", arabicB),
@@ -249,6 +261,8 @@ public static partial class NonInterference
             TimesAmbiguous = state.Clock.TimesAmbiguous,
             PacedRuns = state.Clock.PacedRuns,
             CookieValuesCompared = state.Clock.CookieValuesCompared,
+            PartialWriteComparisons = state.PartialWriteComparisons,
+            PartialChoiceChecks = state.PartialChoiceChecks,
         };
     }
 
@@ -262,11 +276,14 @@ public static partial class NonInterference
     /// process only it has used, written twice there so a difference between two such writes
     /// counts as unstable rather than as a finding. Both directions. Versions (a row's
     /// concurrency token, which every save changes) are left out of the comparison along with
-    /// times and trace ids.
+    /// times and trace ids. The partial bodies the product accepts (<see cref="TenantActivity.PartialVariantsOf"/>,
+    /// critic p04 round 11) are compared the same way, and those that leave out an enumerated field
+    /// are also judged against the other tenant's choice of it (<see cref="JudgePartialAfterOthersChoiceAsync"/>).
     /// </summary>
     private static async Task CompareWritesAsync(ErpTestEnvironment env, State state, IReadOnlyList<ApiEndpoint> allEndpoints, OpenApiDocument openApi,
         HttpClient sharedA, HttpClient sharedB, HttpClient freshA, HttpClient freshB,
-        HttpClient arabicA, HttpClient arabicB, HttpClient freshArabicA, HttpClient freshArabicB, ErpAppFactory freshProcessA, ErpAppFactory freshProcessB)
+        HttpClient arabicA, HttpClient arabicB, HttpClient freshArabicA, HttpClient freshArabicB, ErpAppFactory freshProcessA, ErpAppFactory freshProcessB,
+        IReadOnlySet<string> partialAccepted)
     {
         var a = env.TenantA;
         var b = env.TenantB;
@@ -313,18 +330,40 @@ public static partial class NonInterference
             };
             foreach (var endpoint in activityA.Writes.Where(ComparableWrite))
             {
-                // Every variant first, every enumerated field at its first value last (it puts both
-                // tenants' records back; without enumerated fields, the default body).
-                foreach (var variant in activityA.VariantsOf(endpoint).Append(activityA.FirstValues(endpoint)))
+                // Every variant first, then every partial body (critic p04 round 11), every enumerated
+                // field at its first value last (it puts both tenants' records back; without
+                // enumerated fields, the default body).
+                // The partial bodies the product accepted in either tenant's own writes above (one it
+                // refuses never reaches the handler's partial path).
+                var partials = activityA.PartialVariantsOf(endpoint).Where(v => partialAccepted.Contains($"{endpoint.Key}|{v.Label}")).ToList();
+                foreach (var variant in activityA.VariantsOf(endpoint).Concat(partials).Append(activityA.FirstValues(endpoint)))
                 {
                     foreach (var (judged, other) in new[] { (sides[0], sides[1]), (sides[1], sides[0]) })
                     {
+                        var before = state.WriteComparisons;
                         await JudgeWriteAsync(state, endpoint, variant, judged, other);
+                        if (variant is { Partial: true })
+                        {
+                            state.PartialWriteComparisons += state.WriteComparisons - before;
+                        }
                     }
                     state.WriteEndpoints.Add(endpoint.Key);
                     if (variant is not null)
                     {
                         state.WriteVariants.Add($"{endpoint.Key}|{variant.Label}");
+                    }
+                }
+                // A partial body that leaves out an enumerated field, against the other tenant's
+                // choice of that field (critic p04 round 11, plant SL1), both ways.
+                foreach (var partial in partials.DistinctBy(v => v.Label))
+                {
+                    if (OthersChoice(activityA, endpoint, partial) is not { } choice)
+                    {
+                        continue;
+                    }
+                    foreach (var (judged, other) in new[] { (sides[0], sides[1]), (sides[1], sides[0]) })
+                    {
+                        await JudgePartialAfterOthersChoiceAsync(state, endpoint, partial, activityA.FirstValues(endpoint), choice, judged, other);
                     }
                 }
                 // The same write by both Arabic administrators, every enumerated field at its last
@@ -365,6 +404,87 @@ public static partial class NonInterference
             wideClients.ForEach(c => c.Dispose());
             activityA.Dispose();
             activityB.Dispose();
+        }
+    }
+
+    /// <summary>The other tenant's choice against which a partial body is judged: every enumerated
+    /// top-level field the partial body leaves out, at its last documented value (null when it
+    /// leaves out none with two values or more).</summary>
+    private static WriteVariant? OthersChoice(TenantActivity activity, ApiEndpoint endpoint, WriteVariant partial)
+    {
+        if (activity.FirstValues(endpoint) is not { } first)
+        {
+            return null;
+        }
+        var settings = first.Settings.Where(s => s.Leaf.Path.Count == 1 && partial.Omitted.Contains(s.Leaf.Path[0]) && s.Leaf.Values.Count > 1)
+            .Select(s => (s.Leaf, s.Leaf.Values[^1])).ToList();
+        return settings.Count == 0 ? null : new WriteVariant(string.Join(" ", settings.Select(s => $"{s.Leaf.Name}={s.Item2.ToJsonString()}")), settings, null, null);
+    }
+
+    /// <summary>
+    /// A partial body against the other tenant's choice (critic p04 round 11, plant SL1: the digits
+    /// last chosen by anyone, kept in a file, answered a language-only switch). Both tenants first
+    /// write every enumerated field at its first value; the judged tenant sends the partial body
+    /// twice (its answer must be stable), then once right after the other tenant wrote the fields
+    /// the partial body leaves out at their last documented value. The judged tenant's own requests
+    /// are the same each time, so its answer must be too: one that follows the other tenant's choice
+    /// back and forth (first value, then the choice again) is a finding. All in the shared process,
+    /// without a fresh one, whose baseline state kept outside the process would reach as well.
+    /// </summary>
+    private static async Task JudgePartialAfterOthersChoiceAsync(State state, ApiEndpoint endpoint, WriteVariant partial, WriteVariant? first, WriteVariant choice,
+        WriteSide judged, WriteSide other)
+    {
+        var label = $"{endpoint.Method} {endpoint.Pattern} ({partial})";
+        async Task<string> WriteAsync(WriteSide side, WriteVariant? variant)
+        {
+            state.Requests++;
+            var started = await state.Clock.StartAsync();
+            var (status, text, headers) = await side.Activity.WriteThroughWithHeadersAsync(side.Shared, $"{side.Name} (shared process)", endpoint, side.Own,
+                $"partial body after the other tenant's choice, {label}", variant, side.Owner);
+            var context = state.Clock.End(started, TenantOf(side.Name));
+            return Answer(status, NormalizeWrite(text, context), NormalizeHeaders(headers, context));
+        }
+        state.Configuration.Check(state, $"a request sent between the judged ones (before {label} after the other tenant's choice)");
+        try
+        {
+            await WriteAsync(judged, first);
+            await WriteAsync(other, first);
+            var before = await WriteAsync(judged, partial);
+            var again = await WriteAsync(judged, partial);
+            state.PartialChoiceChecks++;
+            state.WriteComparisons++;
+            if (again != before)
+            {
+                state.UnstableWrites++;
+                state.Unstable.Add($"{judged.Name}: {label} answers differently from one write to the next ({Short(before)} / {Short(again)})");
+                return;
+            }
+            await WriteAsync(other, choice);
+            var after = await WriteAsync(judged, partial);
+            if (after == before)
+            {
+                return;
+            }
+            await WriteAsync(other, first);
+            var back = await WriteAsync(judged, partial);
+            await WriteAsync(other, choice);
+            var forth = await WriteAsync(judged, partial);
+            if (back == before && forth == after)
+            {
+                state.Findings.Add($"{judged.Name}: {label} is answered {Difference(after, before)} right after {other.Name} wrote {choice}, " +
+                                   $"but {Difference(before, after)} after {other.Name} wrote {first?.Label ?? "the default body"}; {judged.Name}'s own requests were the same");
+            }
+            else
+            {
+                state.UnstableWrites++;
+                state.Unstable.Add($"{judged.Name}: {label} changed after {other.Name} wrote {choice} but did not follow it back and forth ({Short(before)} / {Short(after)} / {Short(back)} / {Short(forth)})");
+            }
+        }
+        finally
+        {
+            await WriteAsync(other, first);
+            await WriteAsync(judged, first);
+            state.Configuration.Check(state, $"{label} after the other tenant's choice");
         }
     }
 
@@ -557,6 +677,8 @@ public static partial class NonInterference
         public int ArabicWorkspaceWriteComparisons;
         public int HeadersCompared;
         public int ChangeProbes;
+        public int PartialWriteComparisons;
+        public int PartialChoiceChecks;
         public List<string> WorkspaceWideFailures { get; } = [];
         public ConfigurationWatch Configuration { get; } = new();
         public RequestClock Clock { get; } = new();

@@ -183,7 +183,7 @@ public static class TenantSettingCode
     /// <summary>The method a body belongs to: an async or iterator state machine
     /// (<c>&lt;Name&gt;d__3.MoveNext</c>), a lambda or a local function (<c>&lt;Name&gt;b__0</c>,
     /// <c>&lt;Name&gt;g__Local|1_0</c>) counts for the method it was written in.</summary>
-    private static string Owner(MethodBase method)
+    internal static string Owner(MethodBase method)
     {
         var type = method.DeclaringType!;
         var name = method.Name;

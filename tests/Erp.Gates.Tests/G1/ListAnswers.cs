@@ -56,10 +56,11 @@ public static class ListAnswers
     /// <param name="judged">The tenant whose answer is judged.</param>
     /// <param name="judgedIds">Every id of the judged tenant's rows (from the database).</param>
     public static async Task<Result> RunAsync(ModuleCatalog catalog, HttpClient first, HttpClient judged, IReadOnlySet<Guid> judgedIds,
-        IReadOnlySet<Guid> firstIds, IReadOnlyList<string> victimStrings, string label, Func<ListDefinition, bool>? sortedLists = null)
+        IReadOnlySet<Guid> firstIds, IReadOnlyList<string> victimStrings, string label, Func<ListDefinition, bool>? sortedLists = null,
+        Func<ListDefinition, bool>? only = null)
     {
         var tally = new Tally(label, judgedIds, firstIds);
-        foreach (var binding in catalog.ListBindings)
+        foreach (var binding in catalog.ListBindings.Where(l => only?.Invoke(l.Definition) ?? true))
         {
             var list = binding.Definition;
             var listDiscriminating = 0;

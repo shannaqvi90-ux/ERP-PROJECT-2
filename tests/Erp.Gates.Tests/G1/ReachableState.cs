@@ -174,6 +174,24 @@ public static class ReachableState
                 return;
             }
             var inner = isProduct ? 0 : Math.Max(0, open - 1);
+            // A framework expression tree by what it says (its text) and by the objects its constants
+            // hold, which are walked like any other: its private fields include caches the framework
+            // fills on first use (a lambda keeps its first parameter in a field until its parameter
+            // list is first read, then the list), which are not state a tenant changed. Round 13: a
+            // self-test that used the product's lists only after the first fingerprint saw every list
+            // binding's selector "change" that way. Extension nodes (anything the framework does not
+            // define) keep the field walk.
+            if (!isProduct && value is System.Linq.Expressions.Expression expression && expression.NodeType != System.Linq.Expressions.ExpressionType.Extension)
+            {
+                var text = expression.ToString();
+                Note(path + " (expression)", text.Length > 160 ? $"{text[..160]}… ({text.Length} characters, hash {StringComparer.Ordinal.GetHashCode(text)})" : text);
+                var index = 0;
+                foreach (var part in ExpressionParts.Of(expression))
+                {
+                    Walk(part, $"{path}.constant[{index++}]", depth + 1, inner);
+                }
+                return;
+            }
             // Framework collections by what they hold, not by their internals: a dictionary's lazily
             // created key or value view, or its version counter, is not state a tenant changed.
             if (!isProduct && value is System.Collections.IDictionary dictionary)
@@ -396,6 +414,32 @@ public static class ReachableState
     }
 
     private static bool IsGenerated(Type type) => CompilerGenerated.Is(type);
+
+    /// <summary>The values of an expression tree's constants (closures included) and its extension
+    /// nodes, in the order the tree is visited.</summary>
+    private sealed class ExpressionParts : System.Linq.Expressions.ExpressionVisitor
+    {
+        private readonly List<object?> _parts = [];
+
+        public static IReadOnlyList<object?> Of(System.Linq.Expressions.Expression expression)
+        {
+            var visitor = new ExpressionParts();
+            visitor.Visit(expression);
+            return visitor._parts;
+        }
+
+        protected override System.Linq.Expressions.Expression VisitConstant(System.Linq.Expressions.ConstantExpression node)
+        {
+            _parts.Add(node.Value);
+            return node;
+        }
+
+        protected override System.Linq.Expressions.Expression VisitExtension(System.Linq.Expressions.Expression node)
+        {
+            _parts.Add(node);
+            return node;
+        }
+    }
 
     /// <summary>The static fields of a reached product object's closed generic type, its generic
     /// base types and the generic types it is nested in, once per type (critic p05 round 4, plant
