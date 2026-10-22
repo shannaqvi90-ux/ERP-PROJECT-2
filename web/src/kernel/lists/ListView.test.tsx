@@ -121,7 +121,7 @@ describe("list view", () => {
 
   it("gives a column marked wide more room and one marked narrow less than its type would (a legal name, a code)", async () => {
     const original = definition.columns;
-    definition.columns = [{ ...original[0], width: "wide" }, { ...original[1], width: "narrow" }, original[2]];
+    definition.columns = [{ ...original[0]!, width: "wide" }, { ...original[1]!, width: "narrow" }, original[2]!];
     try {
       serve();
       const v = await show();
