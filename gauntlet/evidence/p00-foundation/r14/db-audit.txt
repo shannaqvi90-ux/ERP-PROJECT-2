@@ -1,0 +1,52 @@
+                                      Table "audit.entries"
+     Column     |           Type           | Collation | Nullable |           Default            
+----------------+--------------------------+-----------+----------+------------------------------
+ id             | bigint                   |           | not null | generated always as identity
+ tenant_id      | uuid                     |           | not null | 
+ occurred_at    | timestamp with time zone |           | not null | now()
+ actor_id       | uuid                     |           |          | 
+ actor_kind     | character varying(20)    |           | not null | 
+ table_schema   | character varying(63)    |           | not null | 
+ table_name     | character varying(63)    |           | not null | 
+ record_id      | uuid                     |           |          | 
+ action         | character varying(10)    |           | not null | 
+ changes        | jsonb                    |           | not null | 
+ transaction_id | bigint                   |           | not null | 
+ correlation_id | character varying(100)   |           |          | 
+Indexes:
+    "pk_entries" PRIMARY KEY, btree (id)
+    "ix_entries_tenant_id_actor_id_occurred_at" btree (tenant_id, actor_id, occurred_at)
+    "ix_entries_tenant_id_occurred_at" btree (tenant_id, occurred_at)
+    "ix_entries_tenant_id_table_name_record_id_occurred_at" btree (tenant_id, table_name, record_id, occurred_at)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+
+-[ RECORD 1 ]--+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+id             | 202222
+tenant_id      | 0190a000-0000-7000-8000-000000000001
+occurred_at    | 2026-10-22 14:45:48.735261+00
+actor_id       | 01a16405-87c8-7a0a-9b43-9b72af13df66
+actor_kind     | user
+table_schema   | identity
+table_name     | roles
+record_id      | 01a16413-4c44-7fc3-aed8-cf855e856a8b
+action         | insert
+changes        | {"id": {"new": "01a16413-4c44-7fc3-aed8-cf855e856a8b"}, "name_ar": {"new": "تدقيق الناقد"}, "name_en": {"new": "Critic audit r14"}, "is_system": {"new": false}, "permissions": {"new": ["identity.users.read"]}}
+transaction_id | 990
+correlation_id | 00-e0325b6e4677d518dbc36d6010bd4e39-899770b938d9fc12-00
+-[ RECORD 2 ]--+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+id             | 202223
+tenant_id      | 0190a000-0000-7000-8000-000000000001
+occurred_at    | 2026-10-22 14:45:48.803056+00
+actor_id       | 01a16405-87c8-7a0a-9b43-9b72af13df66
+actor_kind     | user
+table_schema   | identity
+table_name     | roles
+record_id      | 01a16413-4c44-7fc3-aed8-cf855e856a8b
+action         | update
+changes        | {"name_en": {"new": "Critic audit r14 renamed", "old": "Critic audit r14"}}
+transaction_id | 991
+correlation_id | 00-dac8b9eb119db7812d08075b76ea2f9d-8f4727b36231a7f7-00
+

@@ -1,0 +1,102 @@
+{
+  "piece": "p00-foundation",
+  "round": 14,
+  "commit": "810929c2",
+  "judged_at": "2026-10-22T15:46:23Z",
+  "critic": "fresh critic, p00-foundation round 14",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G2 permissions: the gate catches an unchecked action planted in p00's kernel",
+      "status": "fail",
+      "evidence": "Plant P13 is in the kernel's PermissionAuthorizationHandler (src/Kernel/Erp.Kernel/Security/Permissions.cs; plants/plants.diff). Any signed-in request whose Host is 'app', the compose service name, passes every permission. The plant's reasoning: 'calls inside the compose network address the app by its service name and are the server's own'. This matters in practice: a default nginx 'proxy_pass http://app:8080;' sends 'Host: app:8080' on every browser request. appsettings.json also has AllowedHosts '*', so any client can send that Host itself. The plant is live (plants/plant-PROOFALL.log). A user with no roles gets 403 on GET /api/identity/users from a plain client, but 200 on GET /api/identity/users?take=1 and on /api/identity/roles?take=1 with Host app:8080. The control run without plants passes 3/3 (plant-PROOFNONE.log). Every gate and test missed the plant. G2+Rules+SelfTests passed 146/146 in 37 min (plant-G2P13.log), including the new G2ClientOriginTests, whose 15 origins vary only the peer address and X-Forwarded-For. G2ClientAddressCodeTests also passed, because it does not classify a read of Request.Host. In G1 only the two static tests that flag plant L11's code failed, and nothing related to P13 (plant-G1P13.log). Identity 107/107, Kernel 299/299, Lists 6/6, Reports 64/64 and Tenancy 60/60 all passed. A second plant was caught: P14 ('x.y.update implies x.y.read'), by G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it (plant-G2P14.log)."
+    },
+    {
+      "gate": "G1 tenant isolation: the gate catches a leak planted in p00's kernel",
+      "status": "pass",
+      "evidence": "Plant L11 is a middleware in the kernel's UseErpPlatform, placed after UseAuthorization. It keeps the users list's search answers for 120 s in /tmp/erp-l11-answers.xml (XDocument.Load and Save), keyed by path and query with no tenant. It is live: B has 3 users with a fresh word, and A's search for that word returned total 3 with B's e-mails (plant-PROOFALL.log). Two static tests caught it (plant-G1STATIC.log). G1OutsideProcessStateTests reported 'ErpPlatform.<UseErpPlatform keeps or reads state outside the process (XDocument.Load(uri), XDocument.Save(fileName))', so the method-level review of UseErpPlatform did not hide the lambda. G1TenantSourceTests flagged ErpPlatform.cs:225 (request-enumeration) and :228 (outside-process). The live tests caught it too (plant-G1L11.log): G1ListVolumeTests, G1HttpIsolationTests and G1SignInThrottleTests, where B's lookup received A's cached answer."
+    },
+    {
+      "gate": "G1 tenant isolation: critic's live attack on the demo (API, query parameters, switch inputs, exports, files, DB roles, Host and loopback)",
+      "status": "pass",
+      "evidence": "attack/attack.mjs is the earlier critics' script with only the container name changed. It ran as the alnoor admin (A) against gulfsteel (B), using 114 OpenAPI operations. It covered 111 operations attacked, 686 documented query-parameter requests, 465 switch-input requests, 100 exports and 35 filters. Result: LEAKS 0, no ids shared between A and B, and B's rows unchanged by checksum (attack/attack-run.log). Session-token carriers: only Bearer and the erp_session cookie were accepted (attack/carriers.txt). The unplanted product refused the no-roles user with 403 from every angle tried: Host localhost, app, app:8080, 127.0.0.1 and the container name; the X-Forwarded-For, X-Real-IP, X-Forwarded-Host and Forwarded headers; and loopback from inside the app container's own network namespace (attack/host-header-probe.txt, attack/loopback-probe.txt). Database: erp_app is not superuser and has no BYPASSRLS. All 17 tenant tables have RLS enabled and forced, and no tenant_id is nullable. With no tenant bound, erp_app sees 0 rows. A tenant set at session level binds nothing. Bound to A, erp_app updates 0 of B's rows, and an insert into B is refused by policy. ALTER ROLE and DISABLE RLS are refused, and pg_stats is denied (db-roles-rls.txt, db-app-role-attack*.txt)."
+    },
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, every test)",
+      "status": "pass",
+      "evidence": "Fresh clone of 810929c2. Command: ERP_PROJECT=c-p00-foundation-r14 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r14.log verify-slot.sh ./erp verify. It took slot 1 at 2026-10-22T14:29:01Z after waiting 4,905 s and printed 'verify passed in 4602 s'. Tests passed: dotnet 766, web unit 537, e2e 117, compare 486 and build 6, with 0 failed and 0 skipped. Processor time was 7,743 s against the 10,500 s maximum (dotnet 5,064, web 2,270, e2e 373). Wall time was not judged because the machine was busy (highest load 79). The ratchet check passed."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p00-foundation-r14 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up served http://localhost:20050 in 82 s. It seeded alnoor (100,005 users) in 46.9 s and gulfsteel in 0.9 s, and printed the demo sign-ins (erp-up.log). The port and project overrides were honoured. './erp tenant create ... --language ar' made the empty workspace emptyco (tenant-create.txt)."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR parity, audit coverage) and the ratchet",
+      "status": "pass",
+      "evidence": "These run inside ./erp verify, which passed. Against round 13's 24f7d0a5, gauntlet/ratchet.json removes no key, lowers no minimum and raises no maximum. dotnetTests went from 736 to 764, webUnitTests from 532 to 537 and e2eTests from 113 to 117. Five g1.shellAnswer* minimums were raised, outsideProcessPlantsCaught went from 24 to 33, and 13 keys were added (g2.clientOrigins 14, g2.clientOriginPlantsCaught 5, g2.authorizationPathMethods 110 and others). Live database: no real or double columns. Audit: creating a role wrote an insert row with every field's new value, and renaming it wrote an update row {name_en: {old, new}}. Both rows carry tenant, actor and correlation id (db-audit.txt)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p00-foundation-r14 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r14.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1912,
+    "passed": 1912,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4602
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4602,
+    "evidence": "./erp verify passed in 4,602 s, timed from 'slot taken' at 14:29:01Z. All 1,912 tests passed (dotnet 766, web 537, e2e 117, compare 486, build 6) with 0 skipped. Processor time was 7,743 s against the 10,500 s maximum. ./erp up served the 100,005-user demo in 82 s with the overridden ports and project."
+  },
+  "odoo": [
+    {
+      "task": "sign-in (sign in to an empty workspace)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.042,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 1.374,
+        "klm_seconds": 4.68
+      },
+      "notes": "The shared rig on :8069 passed run.mjs's live volume check (at least 100,000 rows in each of 7 main lists). Command: COMPARE_OURS_URL=http://localhost:20050 node run.mjs --task sign-in --product both --repeat 3 --out <staging>/compare. It exited 0 and every run was verified. Figures are medians of 3. Ours was judged on its whole 'passkey' path against Odoo's best on each metric: steps 1 < 2, machine 0.042 < 1.374 s, KLM 2.03 < 4.68 s, human+wait 2.067 < 5.923 s. Keystrokes are 0 in both and are left out (needs-human #11). Ours' password paths: new device 4 steps, 35 keys, 0.297 s; whole e-mail 3 steps, 56 keys; returning 2 steps, 21 keys, 0.253 s (compare/comparisons/sign-in.json). Empty workspace: emptyco was made with ./erp tenant create --language ar. Its administrator signed in by keyboard with 86 keys, was asked for their own password and reached an RTL Arabic home 3.5 s after starting (07, 08, browser/empty.log). The blind shots were pruned to the median run per product (compare/PRUNED.txt)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r14/01-sign-in-en.jpg",
+    "gauntlet/evidence/p00-foundation/r14/02-sign-in-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r14/03-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r14/04-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r14/05-roles-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r14/06-no-roles-user.jpg",
+    "gauntlet/evidence/p00-foundation/r14/07-first-sign-in-own-password.jpg",
+    "gauntlet/evidence/p00-foundation/r14/08-empty-workspace-home.jpg",
+    "gauntlet/evidence/p00-foundation/r14/compare/blind/shots/5b27e6da0c8732ce.jpg",
+    "gauntlet/evidence/p00-foundation/r14/compare/blind/shots/7d9b18d574011758.jpg",
+    "gauntlet/evidence/p00-foundation/r14/compare/blind/shots/be6915f0cc4191b6.jpg",
+    "gauntlet/evidence/p00-foundation/r14/compare/blind/shots/51fd3566baa6d74f.jpg"
+  ],
+  "biggest_gap": {
+    "title": "G2 checks only the client address, so a kernel permission rule that trusts the request's Host header passes every test",
+    "detail": "Round 13's loopback gap is fixed. G2ClientOriginTests now run every deny, grant and own-id matrix from 15 peer addresses. G2ClientAddressCodeTests reject any address read reachable from authorization. Inside the app container, a no-roles user calling from loopback gets 403. But the fix covers only the client address, not other parts of the request. Plant P13 makes the kernel's PermissionAuthorizationHandler pass any signed-in request whose Host is 'app', the compose service name. The plant's reasoning: internal callers (jobs, the report renderer, a proxy's upstream) address the app that way. All 146 G2/Rules/SelfTests tests, all G1 live tests and all 536 module and kernel tests passed with it in place. This is as realistic as P11. A default nginx 'proxy_pass http://app:8080;' rewrites Host to 'app:8080' on every browser request. The product also ships AllowedHosts '*', so any client can send 'Host: app' directly. One such rule would give every clerk of a UAE trading company the owner's rights over price lists, payroll and VAT, and no gate would notice. Fix it inside G2: (1) Widen the compiled-code gate so the authorization path may read nothing of the request except the session carriers and the endpoint's metadata. That means no Host, Scheme, Path, Query, Headers, Cookies or User-Agent, with each necessary read reviewed in a list, and not just the address APIs. (2) Run the deny-everything and grant-exactly-one matrices with varied Host values as well: the service name, localhost, 127.0.0.1, the container name, a configured public name and an unknown one. Also vary X-Forwarded-Host, X-Forwarded-Proto and the scheme. (3) Add self-tests that plant a Host-trusting handler and a header-trusting handler, with a ratchet count.",
+    "evidence": "Apply plants/plants.diff to a clone of 810929c2. Copy plants/CriticPlant.cs to src/Kernel/Erp.Kernel/ and plants/CriticR14Proof.cs to tests/Erp.Gates.Tests/Critic/. Then run plants/run-in-toolbox.sh with PLANTS='PROOFNONE PROOFALL G2P13 IDP13 MODP13 G1P13'. Results: plant-PROOFNONE.log passes 3/3. plant-PROOFALL.log shows 'plain client GET users -> 403 / Host app:8080 GET /api/identity/users?take=1 -> 200 / Host app:8080 GET /api/identity/roles?take=1 -> 200'. plant-G2P13.log passes 146/146. plant-G1P13.log fails only the two static tests about plant L11. Identity 107/107, Kernel 299/299, Lists 6/6, Reports 64/64 and Tenancy 60/60 pass. All of these are under gauntlet/evidence/p00-foundation/r14/plants/ (plant-results.txt summarises them)."
+  },
+  "other_findings": [
+    "Fixed since round 13 and checked here: (1) Round 13's gap (P11, loopback trust) is now covered by G2ClientOriginTests (15 origins, including loopback in 4 spellings, the compose and machine gateways, a proxy with and without X-Forwarded-For, and a spoofed loopback) and by G2ClientAddressCodeTests. On the unplanted demo, a no-roles user gets 403 from inside the app container's loopback. (2) Money.CurrencyCode now accepts only current ISO 4217 List One codes, with minor units taken from that list (Iso4217.g.cs, list published 2026-09-17), and tenancy's currency set uses the same table. (3) compose.yaml gives the db 1 GB of /dev/shm. 12 concurrent CSV prints and 12 concurrent JSON prints of the 100,005-user 'Users by role' report all returned 200 (pdf-probe/shm.txt; round 13 got 9 of 12 as HTTP 500). I did not repeat round 13's concurrent PDF print test.",
+    "Lead's note on reviewed entries. outside-process-methods.txt has one new entry, ErpPlatform.UseErpPlatform (MapFallbackToFile('index.html'): a constant path to the read-only build output), and its reason holds. Plant L11 showed that this method-level review does not hide a lambda written in the same method: the scan names it 'ErpPlatform.<UseErpPlatform', a separate owner, and flags it. ClientAddresses.Read (Identity) and ReportEndpoints.PdfFile (Reports) are unchanged since round 13, whose critic found both reasons hold; I did not re-attack PdfFile. The five client-address-readers.txt entries (sign-in rate-limit partition, forwarded-header options and middleware, SignInRateLimit.ClientAsync, SignInService.ClientOf) only key budgets or record addresses, and the gate proves none is reachable from authorization.",
+    "The static gates held against plant L11. G1OutsideProcessStateTests now knows XDocument.Load(uri) and Save(fileName), which round 13's plant L10 slipped past. The G1TenantSourceTests source rule also flagged the file.",
+    "Processor time for verify was 7,743 s against the 10,500 s maximum (dotnet 5,064, web 2,270, e2e 373). Wall time was 4,602 s on a busy machine (highest load 79.29 on 16 CPUs; my own plant runs and two other verifies overlapped part of it).",
+    "English and Arabic. The sign-in screen and the shell switch to rtl/ar. On the Arabic sign-in screen the only Latin text is 'English'. In the Arabic shell the only Latin text is the company codes, Ctrl/K, 'English' and the workspace code. Keyboard sign-in takes 0.65-0.68 s in both languages. 40 Tab presses in the English shell never land on the body. Ctrl+K, typing الأدوار and Enter opens the roles screen in RTL. After sign-out the API answers 401. The no-roles user sees no menu and gets 403. The read-only user sees no New button and gets 403 on POST roles (browser/walk.log).",
+    "A session token is accepted with a lower-case 'bearer' scheme and on the upper-case path /API/... (both 200). These are the same token and the same checks, so this is not a bypass; it is recorded only so the carrier list stays complete (attack/carriers.txt)."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p00-foundation/r14",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r14"
+}

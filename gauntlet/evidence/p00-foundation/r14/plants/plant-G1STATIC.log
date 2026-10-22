@@ -1,0 +1,81 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.42]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.16]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.47]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls [216 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [392 ms]
+[xUnit.net 00:00:25.18]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:00:25.18]       src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:225 enumerates a request's headers, query, cookies or form, or reads the raw query string or target [request-enumeration]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:00:25.18]       src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:228 keeps or reads state outside the process's memory (files, directories, the temporary or a special folder, temporary files, file streams, memory-mapped files, named mutexes, semaphores or events, pipes, sockets, child processes, unmanaged memory, native calls, isolated storage, the registry, keys persisted to the file system) [outside-process]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:00:25.20]       Stack Trace:
+[xUnit.net 00:00:25.20]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:00:25.20]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:25.20]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:25.20]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:25.20]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:25.20]       Output:
+[xUnit.net 00:00:25.20]         165 files scanned, 170 reviewed uses of 14 rules
+[xUnit.net 00:00:25.24]     Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [FAIL]
+[xUnit.net 00:00:25.25]       Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform keeps or reads state outside the process (XDocument.Load(uri), XDocument.Save(fileName)): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows
+[xUnit.net 00:00:25.25]       Stack Trace:
+[xUnit.net 00:00:25.25]         /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs(41,0): at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process()
+[xUnit.net 00:00:25.25]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:25.25]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:25.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:25.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:25.25]       Output:
+[xUnit.net 00:00:25.26]         9486 methods scanned, 63009 calls resolved; 6 reach outside the process:
+[xUnit.net 00:00:25.26]           Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform: XDocument.Load(uri), XDocument.Save(fileName)
+[xUnit.net 00:00:25.26]           Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform: StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(filePath)
+[xUnit.net 00:00:25.26]           Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+[xUnit.net 00:00:25.26]           Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, FileNotFoundException..ctor(fileName), StreamReader..ctor
+[xUnit.net 00:00:25.26]           Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+[xUnit.net 00:00:25.26]           Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath
+[xUnit.net 00:00:26.19]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [1 s]
+  Error Message:
+   src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:225 enumerates a request's headers, query, cookies or form, or reads the raw query string or target [request-enumeration]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:228 keeps or reads state outside the process's memory (files, directories, the temporary or a special folder, temporary files, file streams, memory-mapped files, named mutexes, semaphores or events, pipes, sockets, child processes, unmanaged memory, native calls, isolated storage, the registry, keys persisted to the file system) [outside-process]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 165 files scanned, 170 reviewed uses of 14 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [12 ms]
+  Failed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [1 s]
+  Error Message:
+   Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform keeps or reads state outside the process (XDocument.Load(uri), XDocument.Save(fileName)): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process() in /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs:line 41
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 9486 methods scanned, 63009 calls resolved; 6 reach outside the process:
+   Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform: XDocument.Load(uri), XDocument.Save(fileName)
+   Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform: StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(filePath)
+   Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+   Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, FileNotFoundException..ctor(fileName), StreamReader..ctor
+   Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+   Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath
+
+
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [2 s]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [225 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [147 ms]
+  Passed Erp.Gates.Tests.G2.G2ClientAddressCodeTests.Only_reviewed_methods_read_where_a_request_comes_from_and_no_permission_decision_reaches_one [2 s]
+  Passed Erp.Gates.Tests.G2.G2ClientAddressCodeTests.The_scan_catches_a_permission_check_that_reads_the_client_address_directly_through_a_helper_a_feature_or_an_interface [6 ms]
+
+Test Run Failed.
+Total tests: 10
+     Passed: 8
+     Failed: 2
+ Total time: 27.2441 Seconds

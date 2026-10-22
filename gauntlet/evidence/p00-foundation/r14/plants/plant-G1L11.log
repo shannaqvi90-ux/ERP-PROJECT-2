@@ -1,0 +1,393 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.22]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.57]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.72]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.An_administrator_of_company_X_leaves_alone_the_users_who_also_work_in_company_Y [6 s]
+  Passed Erp.Gates.Tests.G1.G1ListVolumeTests.The_volume_check_catches_totals_taken_from_whole_table_figures_or_kept_for_big_lists [1 m 29 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [2 m 26 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [813 ms]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failed_sign_ins_from_one_client_never_lock_the_account_out_for_anyone_else [6 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_set_up_code_still_signs_in_from_a_shared_address_another_client_paused_and_nothing_else_does [8 s]
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.Failures_and_pauses_answer_alike_whether_or_not_and_wherever_an_account_has_the_address [19 s]
+[xUnit.net 00:03:31.26]     Erp.Gates.Tests.G1.G1SignInThrottleTests.A_device_let_in_signs_in_with_its_password_from_a_paused_shared_address_and_nothing_else_does [FAIL]
+[xUnit.net 00:03:31.26]       System.Net.Http.HttpRequestException : Response status code does not indicate success: 404 (Not Found).
+[xUnit.net 00:03:31.26]       Stack Trace:
+[xUnit.net 00:03:31.27]            at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+[xUnit.net 00:03:31.27]            at System.Net.Http.Json.HttpClientJsonExtensions.<FromJsonAsyncCore>g__Core|12_0[TValue,TJsonOptions](HttpClient client, Task`1 responseTask, Boolean usingResponseHeadersRead, CancellationTokenSource linkedCTS, Func`4 deserializeMethod, TJsonOptions jsonOptions, CancellationToken cancellationToken)
+[xUnit.net 00:03:31.27]         /work/tests/Erp.Gates.Tests/G1/G1SignInThrottleTests.cs(399,0): at Erp.Gates.Tests.G1.G1SignInThrottleTests.A_device_let_in_signs_in_with_its_password_from_a_paused_shared_address_and_nothing_else_does()
+[xUnit.net 00:03:31.27]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_device_let_in_signs_in_with_its_password_from_a_paused_shared_address_and_nothing_else_does [5 s]
+  Error Message:
+   System.Net.Http.HttpRequestException : Response status code does not indicate success: 404 (Not Found).
+  Stack Trace:
+     at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at System.Net.Http.Json.HttpClientJsonExtensions.<FromJsonAsyncCore>g__Core|12_0[TValue,TJsonOptions](HttpClient client, Task`1 responseTask, Boolean usingResponseHeadersRead, CancellationTokenSource linkedCTS, Func`4 deserializeMethod, TJsonOptions jsonOptions, CancellationToken cancellationToken)
+   at Erp.Gates.Tests.G1.G1SignInThrottleTests.A_device_let_in_signs_in_with_its_password_from_a_paused_shared_address_and_nothing_else_does() in /work/tests/Erp.Gates.Tests/G1/G1SignInThrottleTests.cs:line 399
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_browser_that_signed_in_before_is_not_paused_by_failures_from_its_network_address [4 s]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"items\":[{\"id\":\"0190a000-0000-7000-8000-0000"···) [1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "\"bravo trading\"") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "not json at all: bravo trading, admin@bravo.exampl"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "null") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"type\":\"https://tools.ietf.org/html/rfc9110#se"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "42") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "  {\"spaced\" : [ 1 , 2 ] , \"s\" : \"admin@bravo."···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"bravo trading\":\"key is never scrubbed\",\"x\""···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "[{\"a\":1.50,\"b\":1e3,\"c\":-0,\"d\":true,\"e\":f"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"nested\":{\"traceId\":\"t\",\"deeper\":[{\"trac"···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"broken\": bravo}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"name\":\"شركة برافو\",\"note\":\"مرحبا bravo\","···) [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.DifferentialNormalizationTests.One_pass_gives_what_two_passes_gave(body: "{\"a\":1} {\"b\":2}") [< 1 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [69 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [46 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [10 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [2 ms]
+  Passed Erp.Gates.Tests.G1.ReachableStateFingerprintTests.State_behind_an_expression_trees_constants_is_seen_and_the_frameworks_first_use_caches_are_not [3 ms]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [1 m 7 s]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.Every_company_table_carries_the_standard_company_scope_policy [32 ms]
+  Passed Erp.Gates.Tests.G1.G1CompanyScopeTests.The_application_role_sees_and_changes_only_the_bound_companies_in_every_company_table [241 ms]
+  Passed Erp.Gates.Tests.G1.G1ConfigurationTests.The_running_apps_configuration_refuses_writes [2 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [47 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [68 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [33 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [9 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [64 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [13 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [604 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [9 ms]
+[xUnit.net 00:04:53.78]     Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [FAIL]
+[xUnit.net 00:04:53.78]       Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform keeps or reads state outside the process (XDocument.Load(uri), XDocument.Save(fileName)): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows
+[xUnit.net 00:04:53.78]       Stack Trace:
+[xUnit.net 00:04:53.78]         /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs(41,0): at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process()
+[xUnit.net 00:04:53.78]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:53.78]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:53.78]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:04:53.78]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:04:53.78]       Output:
+[xUnit.net 00:04:53.78]         9486 methods scanned, 63009 calls resolved; 6 reach outside the process:
+[xUnit.net 00:04:53.78]           Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform: XDocument.Load(uri), XDocument.Save(fileName)
+[xUnit.net 00:04:53.78]           Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform: StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(filePath)
+[xUnit.net 00:04:53.78]           Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+[xUnit.net 00:04:53.78]           Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, FileNotFoundException..ctor(fileName), StreamReader..ctor
+[xUnit.net 00:04:53.78]           Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+[xUnit.net 00:04:53.78]           Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [18 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [50 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [9 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [159 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [31 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [17 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [21 ms]
+  Passed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls [30 ms]
+  Failed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [287 ms]
+  Error Message:
+   Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform keeps or reads state outside the process (XDocument.Load(uri), XDocument.Save(fileName)): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process() in /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs:line 41
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 9486 methods scanned, 63009 calls resolved; 6 reach outside the process:
+   Erp.Kernel.Hosting.ErpPlatform.<UseErpPlatform: XDocument.Load(uri), XDocument.Save(fileName)
+   Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform: StaticFilesEndpointRouteBuilderExtensions.MapFallbackToFile(filePath)
+   Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+   Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, FileNotFoundException..ctor(fileName), StreamReader..ctor
+   Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+   Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath
+
+
+  Passed Erp.Gates.Tests.G1.G1PasskeyTests.Tenant_A_cannot_sign_in_to_or_reach_tenant_Bs_passkeys_and_learns_nothing_of_them [371 ms]
+  Passed Erp.Gates.Tests.G1.G1PrintFileTests.A_print_leaves_no_file_behind_that_another_request_could_reach [1 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_values_as_for_values_that_exist_nowhere [11 s]
+  Passed Erp.Gates.Tests.G1.G1WriteOracleTests.Writes_answer_the_same_for_another_tenants_record_ids_as_for_ids_that_exist_nowhere [6 s]
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [315 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Only_reviewed_source_files_name_a_reviewed_function [20 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Every_reviewed_function_has_reviewed_callers_and_sources [2 ms]
+  Passed Erp.Gates.Tests.G1.G1ReviewedLookupTests.Reviewed_lookups_answer_nothing_inside_a_tenant_bound_transaction [58 ms]
+[xUnit.net 00:05:19.25]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:05:19.25]       src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:225 enumerates a request's headers, query, cookies or form, or reads the raw query string or target [request-enumeration]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:05:19.25]       src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:228 keeps or reads state outside the process's memory (files, directories, the temporary or a special folder, temporary files, file streams, memory-mapped files, named mutexes, semaphores or events, pipes, sockets, child processes, unmanaged memory, native calls, isolated storage, the registry, keys persisted to the file system) [outside-process]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:05:19.25]       Stack Trace:
+[xUnit.net 00:05:19.25]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:05:19.25]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:05:19.25]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:05:19.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:05:19.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:05:19.25]       Output:
+[xUnit.net 00:05:19.25]         165 files scanned, 170 reviewed uses of 14 rules
+  Passed Erp.Gates.Tests.G1.G1RowVersionTests.A_record_version_is_never_a_database_transaction_id [1 s]
+  Passed Erp.Gates.Tests.G1.G1UniqueIndexTests.Unique_indexes_on_tenant_tables_include_the_tenant [67 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [48 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [47 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [118 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [155 ms]
+  Error Message:
+   src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:225 enumerates a request's headers, query, cookies or form, or reads the raw query string or target [request-enumeration]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:228 keeps or reads state outside the process's memory (files, directories, the temporary or a special folder, temporary files, file streams, memory-mapped files, named mutexes, semaphores or events, pipes, sockets, child processes, unmanaged memory, native calls, isolated storage, the registry, keys persisted to the file system) [outside-process]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 165 files scanned, 170 reviewed uses of 14 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [5 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.Every_shape_of_setting_change_is_read_with_its_value [16 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantValueRuleTests.A_request_may_run_its_SQL_only_under_the_tenant_it_may_bind [3 ms]
+  Passed Erp.Gates.Tests.G1.G1ListVolumeDeterminismTests.The_volume_fixture_canary_holds_none_of_the_checked_letters_and_leaves_B_people_alone [1 ms]
+[xUnit.net 00:06:07.41]     Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [FAIL]
+[xUnit.net 00:06:07.41]       1528 list answers at volume that are not the asking tenant's own:
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-79bb-8e65-e65e813487e7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-7307-9a0d-a002bcbc0bb7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-79bb-8e65-e65e813487e7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-7307-9a0d-a002bcbc0bb7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=a returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-724e-830b-2f901120f469, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-7009-896c-78cbb5e0c8ad, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-724e-830b-2f901120f469, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-7009-896c-78cbb5e0c8ad, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=50&search=s returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf52-b960-71ff-a119-f7c08e54fa4e, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf4c-50c0-7c2c-9337-e5e9081acfbf, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf45-e820-783a-9b1b-18415dc37939, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf52-b960-71ff-a119-f7c08e54fa4e, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf4c-50c0-7c2c-9337-e5e9081acfbf, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf45-e820-783a-9b1b-18415dc37939, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 102505)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a93-f8e0-7791-80eb-e9bd77477c09, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a87-27a0-72cf-baca-304e6c801723, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a7a-5660-74de-8083-48185288c71f, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a93-f8e0-7791-80eb-e9bd77477c09, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a87-27a0-72cf-baca-304e6c801723, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a7a-5660-74de-8083-48185288c71f, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 59417)
+[xUnit.net 00:06:07.41]       Stack Trace:
+[xUnit.net 00:06:07.41]         /work/tests/Erp.Gates.Tests/G1/G1ListVolumeTests.cs(100,0): at Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume()
+[xUnit.net 00:06:07.41]         --- End of stack trace from previous location ---
+[xUnit.net 00:06:07.41]       Output:
+[xUnit.net 00:06:07.41]         list 'tenancy.companies': walked A 2 and B 2 rows; 78 queries, 5 with different true answers, 0 deep answers, 0 unranked and 0 ranked searches; searches (A/B rows): a 2/2, g 1/1, i 2/2, j 0/0, k 0/0, q 0/0, s 1/1, t 2/2, u 1/1, w 0/0, z 0/0, ا 2/2, ق 0/0, م 0/0
+[xUnit.net 00:06:07.41]         list 'tenancy.branches': walked A 4 and B 4 rows; 75 queries, 5 with different true answers, 0 deep answers, 0 unranked and 0 ranked searches; searches (A/B rows): a 4/4, g 2/2, i 4/4, j 0/0, k 0/0, q 0/0, s 2/2, t 4/4, u 2/2, w 2/2, z 0/0, ا 4/4, ق 0/0, م 0/0
+[xUnit.net 00:06:07.41]         list 'tenancy.access': walked A 100005 and B 102505 rows (at volume); 50 queries, 43 with different true answers, 344 deep answers, 15 unranked and 10 ranked searches; searches (A/B rows): . 100005/102505, 0 33571/102505, 46 3970/4025, a 100005/102505, al dhaheri 4059/4150, am ex 100005/102505, ampl 100005/102505, ample 100005/102505, ari 7386/7644, ashi 6585/6602, exampl 100005/102505, fa 12124/12564, g 5168/5208, hamdan 4551/4591, i 80136/82379, ia 7794/7872, j 6472/6454, k 18021/18582, manso 6068/6182, mar 12114/12252, q 9480/9636, s 58265/59417, t 19830/20476, u 35413/36229, w 9989/10439, z 13256/13641, ا 0/0, ق 0/0, م 0/0; search branches (A/B rows): initials word of 2 letters, too broad to rank: 'fa' 12124/12564; initials word of 2 letters, ranked: 'ia' 7794/7872; initials word of 3 letters, too broad to rank: 'mar' 12114/12252; initials word of 3 letters, ranked: 'ari' 7386/7644; initials word of 4 letters, too broad to rank: 'ampl' 100005/102505; initials word of 4 letters, ranked: 'ashi' 6585/6602; initials word of 5 letters, too broad to rank: 'ample' 100005/102505; initials word of 5 letters, ranked: 'manso' 6068/6182; long word, too broad to rank: 'exampl' 100005/102505; long word, ranked: 'hamdan' 4551/4591; word with digits, too broad to rank: '0' 33571/102505; word with digits, ranked: '46' 3970/4025; words, too broad to rank: 'am ex' 100005/102505; words, ranked: 'al dhaheri' 4059/4150; word with other characters, too broad to rank: '.' 100005/102505
+[xUnit.net 00:06:07.41]         list 'identity.users': walked A 100005 and B 102505 rows (at volume); 81 queries, 72 with different true answers, 672 deep answers, 18 unranked and 13 ranked searches; searches (A/B rows): . 100005/102505, 0 33571/102505, 41 3970/4025, a 100005/102505, al suwaidi 3964/4191, am ex 100005/102505, ampl 100005/102505, ample 100005/102505, ashi 6585/6602, exampl 100005/102505, g 5168/5208, hamdan 4551/4591, i 80136/82379, j 6472/6454, k 18021/18582, man 8480/8266, manso 6068/6182, mar 12114/12252, mi 13437/13086, oo 7950/8203, q 9480/9636, s 58265/59417, t 19830/20476, u 35413/36229, w 9989/10439, z 13256/13641, ا 19872/20460, ال 19870/20458, ال ري 5656/5781, ري 5656/5781, ق 1951/2003, م 15533/15908; search branches (A/B rows): initials word of 2 letters, too broad to rank: 'mi' 13437/13086; initials word of 2 letters, ranked: 'oo' 7950/8203; initials word of 3 letters, too broad to rank: 'mar' 12114/12252; initials word of 3 letters, ranked: 'man' 8480/8266; initials word of 4 letters, too broad to rank: 'ampl' 100005/102505; initials word of 4 letters, ranked: 'ashi' 6585/6602; initials word of 5 letters, too broad to rank: 'ample' 100005/102505; initials word of 5 letters, ranked: 'manso' 6068/6182; long word, too broad to rank: 'exampl' 100005/102505; long word, ranked: 'hamdan' 4551/4591; word with digits, too broad to rank: '0' 33571/102505; word with digits, ranked: '41' 3970/4025; words, too broad to rank: 'am ex' 100005/102505; words, ranked: 'al suwaidi' 3964/4191; Arabic word, too broad to rank: 'ال' 19870/20458; Arabic word, ranked: 'ري' 5656/5781; Arabic words, ranked: 'ال ري' 5656/5781; word with other characters, too broad to rank: '.' 100005/102505
+[xUnit.net 00:06:07.41]         list 'identity.roles': walked A 4 and B 4 rows; 44 queries, 0 with different true answers, 0 deep answers, 0 unranked and 0 ranked searches; searches (A/B rows): a 4/4, g 1/1, i 1/1, j 0/0, k 0/0, q 0/0, s 2/2, t 2/2, u 0/0, w 0/0, z 0/0, ا 4/4, ق 1/1, م 3/3
+[xUnit.net 00:06:07.41]         328 queries (125 with different true answers), 3348 answers judged, 405040 rows walked, 2 lists at volume, 1016 deep answers, 33 unranked and 23 ranked searches, 12 cursors followed, 31 search branches judged
+  Failed Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [3 m 23 s]
+  Error Message:
+   1528 list answers at volume that are not the asking tenant's own:
+tenant A: GET /api/identity/users?take=50&search=a answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-79bb-8e65-e65e813487e7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-7307-9a0d-a002bcbc0bb7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-79bb-8e65-e65e813487e7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned row 01a163e5-280c-7307-9a0d-a002bcbc0bb7, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=a returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=50&search=s answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-724e-830b-2f901120f469, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-7009-896c-78cbb5e0c8ad, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-78d5-9328-a56ac199bab2, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-724e-830b-2f901120f469, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned row 01a163e5-280c-7009-896c-78cbb5e0c8ad, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=50&search=s returned rows other than the tenant's matching rows 1 to 50 in the list's default order (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf52-b960-71ff-a119-f7c08e54fa4e, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf4c-50c0-7c2c-9337-e5e9081acfbf, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf45-e820-783a-9b1b-18415dc37939, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 answered total 102505, but the tenant's own rows matching it are 100005 (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf52-b960-71ff-a119-f7c08e54fa4e, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf4c-50c0-7c2c-9337-e5e9081acfbf, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned row 0195cf45-e820-783a-9b1b-18415dc37939, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=a&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 102505)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a93-f8e0-7791-80eb-e9bd77477c09, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a87-27a0-72cf-baca-304e6c801723, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a7a-5660-74de-8083-48185288c71f, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 answered total 59417, but the tenant's own rows matching it are 58265 (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a93-f8e0-7791-80eb-e9bd77477c09, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a87-27a0-72cf-baca-304e6c801723, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned row 01951a7a-5660-74de-8083-48185288c71f, which is not one of the tenant's rows matching the query (it is the other tenant's) (the other tenant's own rows: 59417)
+tenant A: GET /api/identity/users?take=100&search=s&skip=10001 returned rows other than the tenant's matching rows 10002 to 10101 in the list's default order (the other tenant's own rows: 59417)
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume() in /work/tests/Erp.Gates.Tests/G1/G1ListVolumeTests.cs:line 100
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ list 'tenancy.companies': walked A 2 and B 2 rows; 78 queries, 5 with different true answers, 0 deep answers, 0 unranked and 0 ranked searches; searches (A/B rows): a 2/2, g 1/1, i 2/2, j 0/0, k 0/0, q 0/0, s 1/1, t 2/2, u 1/1, w 0/0, z 0/0, ا 2/2, ق 0/0, م 0/0
+ list 'tenancy.branches': walked A 4 and B 4 rows; 75 queries, 5 with different true answers, 0 deep answers, 0 unranked and 0 ranked searches; searches (A/B rows): a 4/4, g 2/2, i 4/4, j 0/0, k 0/0, q 0/0, s 2/2, t 4/4, u 2/2, w 2/2, z 0/0, ا 4/4, ق 0/0, م 0/0
+ list 'tenancy.access': walked A 100005 and B 102505 rows (at volume); 50 queries, 43 with different true answers, 344 deep answers, 15 unranked and 10 ranked searches; searches (A/B rows): . 100005/102505, 0 33571/102505, 46 3970/4025, a 100005/102505, al dhaheri 4059/4150, am ex 100005/102505, ampl 100005/102505, ample 100005/102505, ari 7386/7644, ashi 6585/6602, exampl 100005/102505, fa 12124/12564, g 5168/5208, hamdan 4551/4591, i 80136/82379, ia 7794/7872, j 6472/6454, k 18021/18582, manso 6068/6182, mar 12114/12252, q 9480/9636, s 58265/59417, t 19830/20476, u 35413/36229, w 9989/10439, z 13256/13641, ا 0/0, ق 0/0, م 0/0; search branches (A/B rows): initials word of 2 letters, too broad to rank: 'fa' 12124/12564; initials word of 2 letters, ranked: 'ia' 7794/7872; initials word of 3 letters, too broad to rank: 'mar' 12114/12252; initials word of 3 letters, ranked: 'ari' 7386/7644; initials word of 4 letters, too broad to rank: 'ampl' 100005/102505; initials word of 4 letters, ranked: 'ashi' 6585/6602; initials word of 5 letters, too broad to rank: 'ample' 100005/102505; initials word of 5 letters, ranked: 'manso' 6068/6182; long word, too broad to rank: 'exampl' 100005/102505; long word, ranked: 'hamdan' 4551/4591; word with digits, too broad to rank: '0' 33571/102505; word with digits, ranked: '46' 3970/4025; words, too broad to rank: 'am ex' 100005/102505; words, ranked: 'al dhaheri' 4059/4150; word with other characters, too broad to rank: '.' 100005/102505
+ list 'identity.users': walked A 100005 and B 102505 rows (at volume); 81 queries, 72 with different true answers, 672 deep answers, 18 unranked and 13 ranked searches; searches (A/B rows): . 100005/102505, 0 33571/102505, 41 3970/4025, a 100005/102505, al suwaidi 3964/4191, am ex 100005/102505, ampl 100005/102505, ample 100005/102505, ashi 6585/6602, exampl 100005/102505, g 5168/5208, hamdan 4551/4591, i 80136/82379, j 6472/6454, k 18021/18582, man 8480/8266, manso 6068/6182, mar 12114/12252, mi 13437/13086, oo 7950/8203, q 9480/9636, s 58265/59417, t 19830/20476, u 35413/36229, w 9989/10439, z 13256/13641, ا 19872/20460, ال 19870/20458, ال ري 5656/5781, ري 5656/5781, ق 1951/2003, م 15533/15908; search branches (A/B rows): initials word of 2 letters, too broad to rank: 'mi' 13437/13086; initials word of 2 letters, ranked: 'oo' 7950/8203; initials word of 3 letters, too broad to rank: 'mar' 12114/12252; initials word of 3 letters, ranked: 'man' 8480/8266; initials word of 4 letters, too broad to rank: 'ampl' 100005/102505; initials word of 4 letters, ranked: 'ashi' 6585/6602; initials word of 5 letters, too broad to rank: 'ample' 100005/102505; initials word of 5 letters, ranked: 'manso' 6068/6182; long word, too broad to rank: 'exampl' 100005/102505; long word, ranked: 'hamdan' 4551/4591; word with digits, too broad to rank: '0' 33571/102505; word with digits, ranked: '41' 3970/4025; words, too broad to rank: 'am ex' 100005/102505; words, ranked: 'al suwaidi' 3964/4191; Arabic word, too broad to rank: 'ال' 19870/20458; Arabic word, ranked: 'ري' 5656/5781; Arabic words, ranked: 'ال ري' 5656/5781; word with other characters, too broad to rank: '.' 100005/102505
+ list 'identity.roles': walked A 4 and B 4 rows; 44 queries, 0 with different true answers, 0 deep answers, 0 unranked and 0 ranked searches; searches (A/B rows): a 4/4, g 1/1, i 1/1, j 0/0, k 0/0, q 0/0, s 2/2, t 2/2, u 0/0, w 0/0, z 0/0, ا 4/4, ق 1/1, م 3/3
+ 328 queries (125 with different true answers), 3348 answers judged, 405040 rows walked, 2 lists at volume, 1016 deep answers, 33 unranked and 23 ranked searches, 12 cursors followed, 31 search branches judged
+
+
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [9 m 3 s]
+[xUnit.net 00:24:02.70]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 00:24:02.70]       3 isolation checks failed:
+[xUnit.net 00:24:02.70]       
+[xUnit.net 00:24:02.70]       Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):
+[xUnit.net 00:24:02.70]       raw query string by Erp.Kernel.Hosting.ErpPlatform
+[xUnit.net 00:24:02.70]       
+[xUnit.net 00:24:02.70]       436 list answers that are not the asking tenant's own:
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=a answered total 73, but walking the same query returns 164 rows (the other tenant's answer to the same request was 73)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=a returned row 018cc435-5a00-7e83-acc7-343b1311b6df, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=a returned row 01a163e4-a5f9-7462-b155-cdff2523aa79, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=a returned row 01a163e4-a5f9-7fae-bd33-b0328c3843f8, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=e answered total 73, but walking the same query returns 164 rows (the other tenant's answer to the same request was 73)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=e returned row 018cc402-1500-771e-bac4-98919159d696, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=e returned row 01a163ea-d6ac-72b8-8dfb-8c4fdc33cbdc, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=e returned row 01a163ea-d699-7a5d-8a4a-4e0b2feb5859, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=o answered total 73, but walking the same query returns 14 rows (the other tenant's answer to the same request was 73)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=o returned row 01a163e4-a5f9-7980-b7c4-4cd76104e1c3, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=o returned row 01a163e4-a5f9-783a-ae3b-302a2f7eae61, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=o returned row 018cc3c8-6760-79cb-9d50-4848f84d99f1, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=s answered total 16, but walking the same query returns 127 rows (the other tenant's answer to the same request was 16)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=s returned row 01a163ea-d6ac-72b8-8dfb-8c4fdc33cbdc, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=s returned row 01a163ea-d699-7a5d-8a4a-4e0b2feb5859, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=s returned row 01a163ea-d67e-7381-91a6-894186842a4a, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=n answered total 73, but walking the same query returns 17 rows (the other tenant's answer to the same request was 73)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=n returned row 01a163e4-a5f9-783a-ae3b-302a2f7eae61, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=n returned row 018cc42e-f160-7a1f-91ba-4d42b4bf77cb, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=n returned row 018cc408-7da0-7403-9795-5a203cc9e58d, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=Activity answered total 42, but walking the same query returns 23 rows (the other tenant's answer to the same request was 42)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=Activity returned row 01a163eb-8fcb-7232-a746-3a75b857df12, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=Activity returned row 01a163eb-8281-7814-a068-c339076592a2, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=Activity returned row 01a163eb-8222-7f5c-9f8f-4c11e21f3fb5, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%85%D8%AF%D9%8A%D8%B1 returned row 01a163ee-f8ca-76c1-8875-3083ab527386, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=%D9%86%D8%B4%D8%A7%D8%B7 answered total 40, but walking the same query returns 22 rows (the other tenant's answer to the same request was 40)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%86%D8%B4%D8%A7%D8%B7 returned row 01a163eb-8fcb-7232-a746-3a75b857df12, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%86%D8%B4%D8%A7%D8%B7 returned row 01a163eb-8281-7814-a068-c339076592a2, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%86%D8%B4%D8%A7%D8%B7 returned row 01a163eb-8222-7f5c-9f8f-4c11e21f3fb5, which is not its own (it is the judged tenant's)
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=accountant%40bravo-cnry8a1daf1fa9.example answered total 1, but walking the same query returns 0 rows (the other tenant's answer to the same request was 1)
+[xUnit.net 00:24:02.70]       
+[xUnit.net 00:24:02.70]       The list answer check may be blind:
+[xUnit.net 00:24:02.70]       tenant B asks first, tenant A judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+[xUnit.net 00:24:02.70]       tenant A asks first, tenant B judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+[xUnit.net 00:24:02.70]       in Arabic, tenant B asks first, tenant A judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+[xUnit.net 00:24:02.70]       in Arabic, tenant A asks first, tenant B judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+[xUnit.net 00:24:02.70]       Stack Trace:
+[xUnit.net 00:24:02.70]         /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs(182,0): at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 00:24:02.70]         --- End of stack trace from previous location ---
+[xUnit.net 00:24:02.70]       Output:
+[xUnit.net 00:24:02.70]         routes, tenant headers and guessed queries: 225018 requests so far (19182 by tenant A's Arabic sessions; tenant B 55308, 14198 in Arabic), 329.2 s
+[xUnit.net 00:24:02.70]         tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 237875 requests so far (19182 by tenant A's Arabic sessions; tenant B 55712, 14306 in Arabic), 357.3 s
+[xUnit.net 00:24:02.70]         write after write: 205 pairs over 59 endpoints, 652 pairs with 209 documented values, 29719 tenant A requests: 237875 requests so far (19182 by tenant A's Arabic sessions; tenant B 68029, 19318 in Arabic), 624.0 s
+[xUnit.net 00:24:02.70]         answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2379 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 239346 requests so far (19182 by tenant A's Arabic sessions; tenant B 73570, 20372 in Arabic), 667.5 s
+[xUnit.net 00:24:02.70]         tenant B values in route and query parameters: 545359 requests so far (92625 by tenant A's Arabic sessions; tenant B 95014, 25733 in Arabic), 938.3 s
+[xUnit.net 00:24:02.70]         registered lists through their query contract: 18543 attacks, 33653 requests: 579012 requests so far (92625 by tenant A's Arabic sessions; tenant B 98365, 26570 in Arabic), 975.3 s
+[xUnit.net 00:24:02.70]         list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 1128 with different true answers (692 sorted), 107180 rows walked; process-wide state fingerprinted in 106459 lines from 117 roots: 579012 requests so far (92625 by tenant A's Arabic sessions; tenant B 131775, 34923 in Arabic), 1268.2 s
+[xUnit.net 00:24:02.70]         tenant B values in body fields: 615347 requests so far (92625 by tenant A's Arabic sessions; tenant B 135032, 35737 in Arabic), 1313.1 s
+[xUnit.net 00:24:02.70]         tenant B activity: 165411 requests (61464 concurrent with the attack), 2607 successful own writes, 165152 responses judged for tenant A markers: 615347 requests so far (92625 by tenant A's Arabic sessions; tenant B 165411, 40835 in Arabic), 1367.5 s
+[xUnit.net 00:24:02.70]         tenant B: 428 ids (67 sampled), 169 text values, 121 extra markers, 45 probe values
+[xUnit.net 00:24:02.70]         768997 tenant bindings and 1538409 setting statements judged among 7170239 statements; 768997 tenant values judged, 7046609 statements observed with their parameters; 12857 tenant switch inputs over 19 header names; 484231 responses judged on every header
+[xUnit.net 00:24:02.70]         12219 tenant B route values replayed, 15879 tenant B opens of the routes A was about to attack
+[xUnit.net 00:24:02.70]         209 documented enumeration values sent, 652 enumeration-variant write pairs; 203 partial bodies, 203 accepted on both sides over 35 endpoints
+[xUnit.net 00:24:02.70]         122 endpoints, 645066 requests, 597 tenant B values, 206365 parameter attacks, 36335 body value attacks, 121433 differential checks (11943 values tenant A holds itself not compared), 768860 traced lookups
+[xUnit.net 00:24:02.70]         in Arabic: 97637 tenant A requests, 40835 tenant B requests, 87 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [23 m 46 s]
+  Error Message:
+   3 isolation checks failed:
+
+Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):
+raw query string by Erp.Kernel.Hosting.ErpPlatform
+
+436 list answers that are not the asking tenant's own:
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=a answered total 73, but walking the same query returns 164 rows (the other tenant's answer to the same request was 73)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=a returned row 018cc435-5a00-7e83-acc7-343b1311b6df, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=a returned row 01a163e4-a5f9-7462-b155-cdff2523aa79, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=a returned row 01a163e4-a5f9-7fae-bd33-b0328c3843f8, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=e answered total 73, but walking the same query returns 164 rows (the other tenant's answer to the same request was 73)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=e returned row 018cc402-1500-771e-bac4-98919159d696, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=e returned row 01a163ea-d6ac-72b8-8dfb-8c4fdc33cbdc, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=e returned row 01a163ea-d699-7a5d-8a4a-4e0b2feb5859, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=o answered total 73, but walking the same query returns 14 rows (the other tenant's answer to the same request was 73)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=o returned row 01a163e4-a5f9-7980-b7c4-4cd76104e1c3, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=o returned row 01a163e4-a5f9-783a-ae3b-302a2f7eae61, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=o returned row 018cc3c8-6760-79cb-9d50-4848f84d99f1, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=s answered total 16, but walking the same query returns 127 rows (the other tenant's answer to the same request was 16)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=s returned row 01a163ea-d6ac-72b8-8dfb-8c4fdc33cbdc, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=s returned row 01a163ea-d699-7a5d-8a4a-4e0b2feb5859, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=s returned row 01a163ea-d67e-7381-91a6-894186842a4a, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=n answered total 73, but walking the same query returns 17 rows (the other tenant's answer to the same request was 73)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=n returned row 01a163e4-a5f9-783a-ae3b-302a2f7eae61, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=n returned row 018cc42e-f160-7a1f-91ba-4d42b4bf77cb, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=n returned row 018cc408-7da0-7403-9795-5a203cc9e58d, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=Activity answered total 42, but walking the same query returns 23 rows (the other tenant's answer to the same request was 42)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=Activity returned row 01a163eb-8fcb-7232-a746-3a75b857df12, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=Activity returned row 01a163eb-8281-7814-a068-c339076592a2, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=Activity returned row 01a163eb-8222-7f5c-9f8f-4c11e21f3fb5, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%85%D8%AF%D9%8A%D8%B1 returned row 01a163ee-f8ca-76c1-8875-3083ab527386, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=%D9%86%D8%B4%D8%A7%D8%B7 answered total 40, but walking the same query returns 22 rows (the other tenant's answer to the same request was 40)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%86%D8%B4%D8%A7%D8%B7 returned row 01a163eb-8fcb-7232-a746-3a75b857df12, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%86%D8%B4%D8%A7%D8%B7 returned row 01a163eb-8281-7814-a068-c339076592a2, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: the other tenant's walk of /api/identity/users&search=%D9%86%D8%B4%D8%A7%D8%B7 returned row 01a163eb-8222-7f5c-9f8f-4c11e21f3fb5, which is not its own (it is the judged tenant's)
+tenant B asks first, tenant A judged: GET /api/identity/users?take=50&search=accountant%40bravo-cnry8a1daf1fa9.example answered total 1, but walking the same query returns 0 rows (the other tenant's answer to the same request was 1)
+
+The list answer check may be blind:
+tenant B asks first, tenant A judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+tenant A asks first, tenant B judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+in Arabic, tenant B asks first, tenant A judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+in Arabic, tenant A asks first, tenant B judged: list 'identity.users': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1HttpIsolationTests.cs:line 182
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 225018 requests so far (19182 by tenant A's Arabic sessions; tenant B 55308, 14198 in Arabic), 329.2 s
+ tenant switch inputs: 19 headers, 34 query names, 3 cookies, 36 body names: 237875 requests so far (19182 by tenant A's Arabic sessions; tenant B 55712, 14306 in Arabic), 357.3 s
+ write after write: 205 pairs over 59 endpoints, 652 pairs with 209 documented values, 29719 tenant A requests: 237875 requests so far (19182 by tenant A's Arabic sessions; tenant B 68029, 19318 in Arabic), 624.0 s
+ answer shapes: 10 endpoints, 683 shapes (51 documented values, 19 rows of them together), 2379 tenant B and 1460 tenant A requests (35 of them tenant B's own requests as sent): 239346 requests so far (19182 by tenant A's Arabic sessions; tenant B 73570, 20372 in Arabic), 667.5 s
+ tenant B values in route and query parameters: 545359 requests so far (92625 by tenant A's Arabic sessions; tenant B 95014, 25733 in Arabic), 938.3 s
+ registered lists through their query contract: 18543 attacks, 33653 requests: 579012 requests so far (92625 by tenant A's Arabic sessions; tenant B 98365, 26570 in Arabic), 975.3 s
+ list answers judged against each tenant's own rows: 2472 queries (1368 sorted), 1128 with different true answers (692 sorted), 107180 rows walked; process-wide state fingerprinted in 106459 lines from 117 roots: 579012 requests so far (92625 by tenant A's Arabic sessions; tenant B 131775, 34923 in Arabic), 1268.2 s
+ tenant B values in body fields: 615347 requests so far (92625 by tenant A's Arabic sessions; tenant B 135032, 35737 in Arabic), 1313.1 s
+ tenant B activity: 165411 requests (61464 concurrent with the attack), 2607 successful own writes, 165152 responses judged for tenant A markers: 615347 requests so far (92625 by tenant A's Arabic sessions; tenant B 165411, 40835 in Arabic), 1367.5 s
+ tenant B: 428 ids (67 sampled), 169 text values, 121 extra markers, 45 probe values
+ 768997 tenant bindings and 1538409 setting statements judged among 7170239 statements; 768997 tenant values judged, 7046609 statements observed with their parameters; 12857 tenant switch inputs over 19 header names; 484231 responses judged on every header
+ 12219 tenant B route values replayed, 15879 tenant B opens of the routes A was about to attack
+ 209 documented enumeration values sent, 652 enumeration-variant write pairs; 203 partial bodies, 203 accepted on both sides over 35 endpoints
+ 122 endpoints, 645066 requests, 597 tenant B values, 206365 parameter attacks, 36335 body value attacks, 121433 differential checks (11943 values tenant A holds itself not compared), 768860 traced lookups
+ in Arabic: 97637 tenant A requests, 40835 tenant B requests, 87 write pairs, 4 of 4 workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one
+
+
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_body_the_shell_sends_to_its_own_write_is_judged [374 ms]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [8 m 33 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers [1 m 5 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_a_field_left_out_filled_from_another_tenant [1 m 38 s]
+[xUnit.net 00:35:21.52]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_endpoint_the_shell_calls_is_judged [3 ms]
+
+Test Run Failed.
+Total tests: 76
+     Passed: 71
+     Failed: 5
+ Total time: 35.3840 Minutes

@@ -1,0 +1,78 @@
+diff --git a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+index 3af25231..d9d6978d 100644
+--- a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
++++ b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+@@ -209,6 +209,46 @@ public static class ErpPlatform
+         });
+         app.UseRateLimiter();
+         app.UseAuthorization();
++        // CRITIC PLANT L11: "warm answers" for the users list's search, kept for 120 s in an XML file in the scratch
++        // folder (shared by every worker, survives restarts), keyed by path and query, with no tenant. Runs after
++        // authorization, so only callers allowed to read users get it.
++        if (CriticPlant.Is("L11"))
++        {
++            app.Use(async (context, next) =>
++            {
++                if (!HttpMethods.IsGet(context.Request.Method) || !context.Request.Path.StartsWithSegments("/api/identity/users") ||
++                    !context.Request.Query.ContainsKey("search") || context.Request.Path.Value!.Count(c => c == '/') != 3)
++                {
++                    await next(context);
++                    return;
++                }
++                var key = context.Request.Path.Value + context.Request.QueryString.Value;
++                var store = System.IO.Path.Combine("/tmp", "erp-l11-answers.xml");
++                System.Xml.Linq.XDocument doc;
++                try { doc = System.Xml.Linq.XDocument.Load(store); } catch { doc = new System.Xml.Linq.XDocument(new System.Xml.Linq.XElement("a")); }
++                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++                var hit = doc.Root!.Elements("e").FirstOrDefault(e => (string?)e.Attribute("k") == key && (long)e.Attribute("at")! > now - 120);
++                if (hit is not null)
++                {
++                    context.Response.StatusCode = 200;
++                    context.Response.ContentType = "application/json; charset=utf-8";
++                    await context.Response.WriteAsync((string)hit.Attribute("v")!);
++                    return;
++                }
++                var original = context.Response.Body;
++                using var buffer = new System.IO.MemoryStream();
++                context.Response.Body = buffer;
++                try { await next(context); } finally { context.Response.Body = original; }
++                var bytes = buffer.ToArray();
++                if (context.Response.StatusCode == 200)
++                {
++                    foreach (var stale in doc.Root.Elements("e").Where(e => (string?)e.Attribute("k") == key).ToList()) { stale.Remove(); }
++                    doc.Root.Add(new System.Xml.Linq.XElement("e", new System.Xml.Linq.XAttribute("k", key), new System.Xml.Linq.XAttribute("v", System.Text.Encoding.UTF8.GetString(bytes)), new System.Xml.Linq.XAttribute("at", now)));
++                    try { doc.Save(store); } catch (System.Exception) { }
++                }
++                await original.WriteAsync(bytes);
++            });
++        }
+ 
+         var catalog = app.Services.GetRequiredService<ModuleCatalog>();
+         var api = app.MapGroup("/api").AddEndpointFilter<UnitOfWorkFilter>();
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..8c0cddd0 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -69,6 +69,22 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+ {
+     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+     {
++        // CRITIC PLANT P13: "calls made inside the compose network address the app by its service name (the jobs, the
++        // report renderer, the reverse proxy's upstream 'app:8080') and are the server's own": a signed-in request whose
++        // Host is the service name passes every permission. (A default nginx proxy_pass http://app:8080 sends Host: app:8080.)
++        if (CriticPlant.Is("P13") && context.User.Identity?.IsAuthenticated == true &&
++            context.Resource is Microsoft.AspNetCore.Http.HttpContext http && http.Request.Host.Host == "app")
++        {
++            context.Succeed(requirement);
++            return Task.CompletedTask;
++        }
++        // CRITIC PLANT P14: "whoever may change a resource may read it": x.y.update implies x.y.read.
++        if (CriticPlant.Is("P14") && context.User.Identity?.IsAuthenticated == true && requirement.Permission.EndsWith(".read", System.StringComparison.Ordinal) &&
++            context.User.HasPermission(requirement.Permission[..^".read".Length] + ".update"))
++        {
++            context.Succeed(requirement);
++            return Task.CompletedTask;
++        }
+         if (context.User.Identity?.IsAuthenticated == true && context.User.HasPermission(requirement.Permission))
+         {
+             context.Succeed(requirement);

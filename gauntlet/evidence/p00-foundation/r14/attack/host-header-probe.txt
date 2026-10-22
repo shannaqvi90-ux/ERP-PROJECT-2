@@ -1,0 +1,11 @@
+Host localhost                      users=403 roles=403
+Host app                            users=403 roles=403
+Host app:8080                       users=403 roles=403
+Host 127.0.0.1                      users=403 roles=403
+Host erp                            users=403 roles=403
+Host c-p00-foundation-r14-app-1     users=403 roles=403
+X-Forwarded-For: 127.0.0.1       users=403
+X-Real-IP: 127.0.0.1             users=403
+X-Forwarded-Host: app            users=403
+Forwarded: for=127.0.0.1         users=403
+X-Original-URL: /api/health      users=403

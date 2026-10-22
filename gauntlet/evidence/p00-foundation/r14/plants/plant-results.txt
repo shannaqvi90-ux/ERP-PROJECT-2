@@ -1,0 +1,30 @@
+Critic p00 r14 plants (plants.diff + CriticPlant.cs + CriticR14Proof.cs; inert unless CRITIC_PLANT names them), run in the
+toolbox (run-in-toolbox.sh / run-plants.sh) on a copy of 810929c2. One build carries every plant, so the static gates see all.
+Control: CriticR14Proof with CRITIC_PLANT=NONE passes 3/3 (plant-PROOFNONE.log). With P13,P14,L11 all three fail (plant-PROOFALL.log).
+
+PERMISSION PLANTS (kernel, src/Kernel/Erp.Kernel/Security/Permissions.cs, PermissionAuthorizationHandler)
+P13 "calls made inside the compose network address the app by its service name (jobs, the report renderer, a reverse
+    proxy's upstream app:8080) and are the server's own": a signed-in request whose Host is "app" passes every permission.
+    A default nginx `proxy_pass http://app:8080;` sends Host: app:8080 on every browser request; appsettings.json has
+    AllowedHosts "*", so any client can also send Host: app itself.
+    Proof (plant-PROOFALL.log): a user with no roles: plain client GET /api/identity/users -> 403; with Host app:8080
+    GET /api/identity/users?take=1 -> 200, GET /api/identity/roles?take=1 -> 200.
+    MISSED by every gate and every .NET test project:
+      G2 + Rules + SelfTests 146/146 passed (plant-G2P13.log, 37.0 min), including G2ClientOriginTests (15 client
+        origins: peer address and X-Forwarded-For only) and G2ClientAddressCodeTests (reads Request.Host are not classified);
+      G1 76 tests: only the two static tests that flag plant L11's code failed, nothing about P13 (plant-G1P13.log);
+      Identity 107/107, Kernel 299/299, Lists 6/6, Reports 64/64, Tenancy 60/60 passed (plant-IDP13.log,
+        plant-KernelP13.log, plant-Modules.*P13.log).
+P14 "whoever may change a resource may read it": x.y.update implies x.y.read.
+    CAUGHT by G2 (plant-G2P14.log): G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it.
+
+TENANT-LEAK PLANT (kernel, src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs, UseErpPlatform)
+L11 a middleware after UseAuthorization keeps the users list's search answers for 120 s in /tmp/erp-l11-answers.xml
+    (System.Xml.Linq XDocument.Load/Save), keyed by path and query with no tenant.
+    Proof (plant-PROOFALL.log): B has 3 users with a fresh word; A's search for it answers total 3 and carries B's e-mails.
+    CAUGHT statically (plant-G1STATIC.log): G1OutsideProcessStateTests ("ErpPlatform.<UseErpPlatform keeps or reads state
+    outside the process (XDocument.Load(uri), XDocument.Save(fileName))") and G1TenantSourceTests (ErpPlatform.cs:225
+    request-enumeration, :228 outside-process). The method-level review of UseErpPlatform (MapFallbackToFile) did not hide
+    the lambda. CAUGHT live (plant-G1L11.log): G1ListVolume, G1HttpIsolation, and G1SignInThrottle (a B lookup got A's answer).
+
+Result: G1 caught its plant (static and live); G2 missed P13, an unchecked action in p00's kernel permission handler.

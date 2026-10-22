@@ -1,0 +1,79 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.42]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.05]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.39]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:24.77]     Erp.Gates.Tests.Critic.CriticR14Proof.A_user_with_no_roles_is_denied_when_the_host_is_the_service_name [FAIL]
+[xUnit.net 00:00:24.77]       plain client GET users -> 403
+[xUnit.net 00:00:24.78]       Host app:8080 GET /api/identity/users?take=1 -> 200
+[xUnit.net 00:00:24.78]       Host app:8080 GET /api/identity/roles?take=1 -> 200
+[xUnit.net 00:00:24.78]       Stack Trace:
+[xUnit.net 00:00:24.78]         /work/tests/Erp.Gates.Tests/Critic/CriticR14Proof.cs(40,0): at Erp.Gates.Tests.Critic.CriticR14Proof.A_user_with_no_roles_is_denied_when_the_host_is_the_service_name()
+[xUnit.net 00:00:24.79]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:24.79]       Output:
+[xUnit.net 00:00:24.79]         plain client GET users -> 403
+[xUnit.net 00:00:24.79]         Host app:8080 GET /api/identity/users?take=1 -> 200
+[xUnit.net 00:00:24.79]         Host app:8080 GET /api/identity/roles?take=1 -> 200
+  Failed Erp.Gates.Tests.Critic.CriticR14Proof.A_user_with_no_roles_is_denied_when_the_host_is_the_service_name [1 s]
+  Error Message:
+   plain client GET users -> 403
+Host app:8080 GET /api/identity/users?take=1 -> 200
+Host app:8080 GET /api/identity/roles?take=1 -> 200
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR14Proof.A_user_with_no_roles_is_denied_when_the_host_is_the_service_name() in /work/tests/Erp.Gates.Tests/Critic/CriticR14Proof.cs:line 40
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ plain client GET users -> 403
+ Host app:8080 GET /api/identity/users?take=1 -> 200
+ Host app:8080 GET /api/identity/roles?take=1 -> 200
+
+
+[xUnit.net 00:00:25.82]     Erp.Gates.Tests.Critic.CriticR14Proof.A_search_answer_never_carries_the_other_tenants_rows [FAIL]
+[xUnit.net 00:00:25.82]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:25.82]       Expected: 0
+[xUnit.net 00:00:25.82]       Actual:   3
+[xUnit.net 00:00:25.82]       Stack Trace:
+[xUnit.net 00:00:25.82]         /work/tests/Erp.Gates.Tests/Critic/CriticR14Proof.cs(75,0): at Erp.Gates.Tests.Critic.CriticR14Proof.A_search_answer_never_carries_the_other_tenants_rows()
+[xUnit.net 00:00:25.82]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:25.82]       Output:
+[xUnit.net 00:00:25.82]         B total 3, A total 3; A answer carries B's word: True
+  Failed Erp.Gates.Tests.Critic.CriticR14Proof.A_search_answer_never_carries_the_other_tenants_rows [1 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   3
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR14Proof.A_search_answer_never_carries_the_other_tenants_rows() in /work/tests/Erp.Gates.Tests/Critic/CriticR14Proof.cs:line 75
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ B total 3, A total 3; A answer carries B's word: True
+
+
+[xUnit.net 00:00:26.43]     Erp.Gates.Tests.Critic.CriticR14Proof.Update_alone_does_not_open_read [FAIL]
+[xUnit.net 00:00:26.43]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:26.43]       Expected: Forbidden
+[xUnit.net 00:00:26.43]       Actual:   OK
+[xUnit.net 00:00:26.43]       Stack Trace:
+[xUnit.net 00:00:26.43]         /work/tests/Erp.Gates.Tests/Critic/CriticR14Proof.cs(53,0): at Erp.Gates.Tests.Critic.CriticR14Proof.Update_alone_does_not_open_read()
+[xUnit.net 00:00:26.43]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:26.44]       Output:
+[xUnit.net 00:00:26.44]         update-only GET users -> 200
+[xUnit.net 00:00:26.80]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR14Proof.Update_alone_does_not_open_read [609 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR14Proof.Update_alone_does_not_open_read() in /work/tests/Erp.Gates.Tests/Critic/CriticR14Proof.cs:line 53
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ update-only GET users -> 200
+
+
+
+Test Run Failed.
+Total tests: 3
+     Failed: 3
+ Total time: 27.6585 Seconds

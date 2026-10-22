@@ -1,0 +1,4 @@
+loopback sign-in cookie len 55
+loopback no-roles GET /api/identity/users?take=1 -> 403
+loopback no-roles GET /api/identity/roles?take=1 -> 403
+loopback no-roles GET /api/tenancy/companies?take=1 -> 403
