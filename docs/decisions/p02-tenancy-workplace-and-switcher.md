@@ -63,3 +63,11 @@ button. The screen already works with more companies. The driver's set-up did no
   ones switched between most recently one click away" asserts this, and it stays).
 - Processor time this adds to a verify: two API requests in the driver's set-up, well under one
   second.
+- Verify on this branch (round 13), all through the verify slots:
+  - Run 1: every test passed (.NET 732, web 528, end to end 113, compare 486, build 6). It went
+    over only on processor time, 10,589 s of the 10,500 s maximum, on a busy machine (load up
+    to 85).
+  - Run 2: one comparison-harness timing control failed under load ("a form posted by Enter in
+    its field is caused by the key"). That test is outside this change and passed in runs 1 and 3.
+  - Run 3: passed in 4,597 s, processor time 9,938 s, same counts. In every run the ours
+    `switch-company` health check verified at one step.
