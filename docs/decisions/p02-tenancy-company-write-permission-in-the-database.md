@@ -74,7 +74,7 @@ every boolean is true, plus two named text edits. So no path that runs only when
      changes, and the X control still closes X's branch. The old city plant now lifts the limit
      too, since it stands for a product whose only checks are the endpoint's.
    - Ratchet: `g2.companyRoleVariants` 120 (124 measured) and `g2.companyRoleRecordRequests`
-     850 → 1,500 (1,592 measured).
+     850 → 1,100 (1,136 measured in a fresh fixture by the verify; 1,592 when other tests of the class ran first and gave company Y more access rows).
 
 Alternatives considered: a ban on ExecuteUpdate/ExecuteDelete alone, without the database layer,
 was rejected. Raw SQL and a set-based statement in a reviewed file would still bypass it. An EF

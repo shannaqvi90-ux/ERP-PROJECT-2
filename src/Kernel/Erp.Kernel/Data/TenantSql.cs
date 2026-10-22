@@ -81,7 +81,7 @@ public static partial class TenantSql
     public const string CompanyWriteExpression = "erp.company_writable(company_id)";
 
     /// <summary>The company write-permission policies: name and command (PostgreSQL's polcmd letter).</summary>
-    public static readonly IReadOnlyList<(string Name, string Command)> CompanyWritePolicies =
+    public static IReadOnlyList<(string Name, string Command)> CompanyWritePolicies =>
         [("company_write_insert", "a"), ("company_write_update", "w"), ("company_write_delete", "d")];
 
     /// <summary>
