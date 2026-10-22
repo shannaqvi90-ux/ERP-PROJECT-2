@@ -27,48 +27,76 @@ public static class CarrierMatrix
     /// own per carrier.</summary>
     /// <param name="ownIds">False for the carrier self-test alone (its plant is about carriers, and
     /// the own-id requests have a self-test of their own).</param>
-    public static async Task<Result> DeniedEverythingAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, bool ownIds = true)
+    /// <param name="origins">Where the sign-in and each request come from (<see cref="Origins"/>);
+    /// the in-memory server's own, as before, when null.</param>
+    /// <param name="onlyCarriers">The carriers to run (every carrier when null; self-tests only).</param>
+    public static async Task<Result> DeniedEverythingAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, bool ownIds = true,
+        Origins? origins = null, IReadOnlyList<string>? onlyCarriers = null)
     {
-        var random = await DeniedForRandomIdsAsync(env, email, permissioned, factory);
+        var random = await DeniedForRandomIdsAsync(env, email, permissioned, factory, origins, onlyCarriers);
         if (!ownIds)
         {
             return random;
         }
-        var self = await SelfReferencingAsync(env, email, null, permissioned, SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory);
-        return random with { Problems = [.. random.Problems, .. self.Problems], SelfRequests = self.Requests, OwnIdsTried = self.OwnIdsTried, SelfEndpoints = self.Endpoints };
+        var self = await SelfReferencingAsync(env, email, null, permissioned, onlyCarriers ?? SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory, origins);
+        return random with
+        {
+            Problems = [.. random.Problems, .. self.Problems], SelfRequests = self.Requests, OwnIdsTried = self.OwnIdsTried, SelfEndpoints = self.Endpoints,
+            OriginsTried = random.OriginsTried.Union(self.Origins).ToHashSet(StringComparer.Ordinal),
+        };
     }
 
-    private static async Task<Result> DeniedForRandomIdsAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory)
+    /// <summary>The finding prefix of a carrier, and of the origin when the run has origins.</summary>
+    private static string Tag(string carrier, ClientOrigin? origin) => origin is null ? carrier : $"{carrier}@{origin.Name}";
+
+    private static async Task<Result> DeniedForRandomIdsAsync(ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory,
+        Origins? origins, IReadOnlyList<string>? onlyCarriers)
     {
         var problems = new List<string>();
         var carriers = new List<string>();
+        var tried = new HashSet<string>(StringComparer.Ordinal);
         var requests = 0;
-        foreach (var carrier in await env.SignInPerCarrierAsync(email, factory))
+        foreach (var carrier in await env.SignInPerCarrierAsync(email, factory, origin: origins?.SignIn))
         {
             using (carrier)
             {
+                if (onlyCarriers is not null && !onlyCarriers.Contains(carrier.Carrier))
+                {
+                    continue;
+                }
                 carriers.Add(carrier.Carrier);
-                var session = await carrier.Client.GetFromJsonAsync<JsonElement>("/api/auth/session");
+                using var sessionRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/session");
+                origins?.SignIn?.Apply(sessionRequest);
+                using var sessionResponse = await carrier.Client.SendAsync(sessionRequest);
+                var session = await sessionResponse.Content.ReadFromJsonAsync<JsonElement>();
+                var sessionTag = Tag(carrier.Carrier, origins?.SignIn);
                 if (session.GetProperty("permissions").GetArrayLength() != 0)
                 {
-                    problems.Add($"[{carrier.Carrier}] the session lists permissions: {session.GetProperty("permissions")}");
+                    problems.Add($"[{sessionTag}] the session lists permissions: {session.GetProperty("permissions")}");
                 }
                 if (session.GetProperty("menu").GetArrayLength() != 0)
                 {
-                    problems.Add($"[{carrier.Carrier}] the session shows menu entries: {session.GetProperty("menu")}");
+                    problems.Add($"[{sessionTag}] the session shows menu entries: {session.GetProperty("menu")}");
                 }
                 foreach (var endpoint in permissioned)
                 {
-                    using var response = await carrier.Client.SendAsync(G2PermissionTests.Request(endpoint));
+                    var origin = origins?.ForRequest(requests);
+                    using var request = G2PermissionTests.Request(endpoint);
+                    origin?.Apply(request);
+                    using var response = await carrier.Client.SendAsync(request);
                     requests++;
+                    if (origin is not null)
+                    {
+                        tried.Add(origin.Name);
+                    }
                     if (response.StatusCode != HttpStatusCode.Forbidden)
                     {
-                        problems.Add($"[{carrier.Carrier}] {endpoint}: {(int)response.StatusCode}");
+                        problems.Add($"[{Tag(carrier.Carrier, origin)}] {endpoint}: {(int)response.StatusCode}");
                     }
                 }
             }
         }
-        return new Result(problems, carriers, requests);
+        return new Result(problems, carriers, requests) { OriginsTried = tried };
     }
 
     /// <summary>A user holding exactly <paramref name="permission"/>: through every carrier, the
@@ -78,121 +106,158 @@ public static class CarrierMatrix
     /// another permission answers 403 when the request names any id of the caller's own
     /// (<see cref="OwnIds"/>), so holding one permission never opens another action on "my own"
     /// records.</summary>
+    /// <param name="origins">Where the sign-in and each request come from (<see cref="Origins"/>);
+    /// the in-memory server's own, as before, when null.</param>
     public static async Task<Result> ExactlyOneAsync(ErpTestEnvironment env, string email, string permission, IReadOnlyList<string> expectedMenu,
-        IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, IReadOnlyList<string>? selfCarriers = null)
+        IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, IReadOnlyList<string>? selfCarriers = null, Origins? origins = null)
     {
-        var random = await ExactlyOneForRandomIdsAsync(env, email, permission, expectedMenu, permissioned, factory);
+        var random = await ExactlyOneForRandomIdsAsync(env, email, permission, expectedMenu, permissioned, factory, origins);
         if (selfCarriers is [])
         {
             return random;
         }
         var module = OwnIds.ModuleOf(permission);
         var others = permissioned.Where(e => e.Permission != permission && OwnIds.ModuleOf(e.Permission) == module).ToList();
-        var self = await SelfReferencingAsync(env, email, permission, others, selfCarriers ?? SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory);
-        return random with { Problems = [.. random.Problems, .. self.Problems], SelfRequests = self.Requests, OwnIdsTried = self.OwnIdsTried, SelfEndpoints = self.Endpoints };
+        var self = await SelfReferencingAsync(env, email, permission, others, selfCarriers ?? SessionTokenCarriers.All.Select(c => c.Name).ToList(), factory, origins);
+        return random with
+        {
+            Problems = [.. random.Problems, .. self.Problems], SelfRequests = self.Requests, OwnIdsTried = self.OwnIdsTried, SelfEndpoints = self.Endpoints,
+            OriginsTried = random.OriginsTried.Union(self.Origins).ToHashSet(StringComparer.Ordinal),
+        };
     }
 
     /// <summary>Every endpoint given answers 403 to requests naming the caller's own ids, through
     /// each carrier named, each carrier with a session of its own (an action that ends the session
     /// under a planted bypass then spoils only that carrier's later requests).</summary>
     private static async Task<SelfResult> SelfReferencingAsync(ErpTestEnvironment env, string email, string? holding, IReadOnlyList<ApiEndpoint> endpoints,
-        IReadOnlyList<string> carriers, ErpAppFactory? factory)
+        IReadOnlyList<string> carriers, ErpAppFactory? factory, Origins? origins)
     {
         var problems = new List<string>();
+        var tried = new HashSet<string>(StringComparer.Ordinal);
         var requests = 0;
         var ownIds = 0;
         foreach (var carrier in carriers)
         {
-            var (token, userId) = await env.SignInForTokenAsync(email, factory);
+            var (token, userId) = await env.SignInForTokenAsync(email, factory, origin: origins?.SignIn);
             var own = await OwnIds.OfAsync(env, userId, token);
             ownIds = Math.Max(ownIds, own.Count);
             using var client = env.ClientCarrying(carrier, token, factory);
             foreach (var (endpoint, id, build) in OwnIds.Requests(endpoints, own))
             {
+                var origin = origins?.ForRequest(requests);
                 using var request = build();
+                origin?.Apply(request);
                 using var response = await client.SendAsync(request);
                 requests++;
+                if (origin is not null)
+                {
+                    tried.Add(origin.Name);
+                }
                 if (response.StatusCode != HttpStatusCode.Forbidden)
                 {
                     var body = await response.Content.ReadAsStringAsync();
-                    problems.Add($"[{carrier}] {(holding is null ? "" : holding + ": ")}{endpoint} naming {id.Source} answered {(int)response.StatusCode} (expected 403) {body[..Math.Min(160, body.Length)]}");
+                    problems.Add($"[{Tag(carrier, origin)}] {(holding is null ? "" : holding + ": ")}{endpoint} naming {id.Source} answered {(int)response.StatusCode} (expected 403) {body[..Math.Min(160, body.Length)]}");
                 }
             }
         }
-        return new SelfResult(problems, requests, ownIds, endpoints.Count);
+        return new SelfResult(problems, requests, ownIds, endpoints.Count, tried);
     }
 
-    private sealed record SelfResult(IReadOnlyList<string> Problems, int Requests, int OwnIdsTried, int Endpoints);
+    private sealed record SelfResult(IReadOnlyList<string> Problems, int Requests, int OwnIdsTried, int Endpoints, IReadOnlySet<string> Origins);
 
     private static async Task<Result> ExactlyOneForRandomIdsAsync(ErpTestEnvironment env, string email, string permission, IReadOnlyList<string> expectedMenu,
-        IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory)
+        IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory, Origins? origins)
     {
         var problems = new List<string>();
         var carriers = new List<string>();
+        var tried = new HashSet<string>(StringComparer.Ordinal);
         var requests = 0;
-        foreach (var carrier in await env.SignInPerCarrierAsync(email, factory))
+        foreach (var carrier in await env.SignInPerCarrierAsync(email, factory, origin: origins?.SignIn))
         {
             using (carrier)
             {
                 carriers.Add(carrier.Carrier);
-                var session = await carrier.Client.GetFromJsonAsync<JsonElement>("/api/auth/session");
+                using var sessionRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/session");
+                origins?.SignIn?.Apply(sessionRequest);
+                using var sessionResponse = await carrier.Client.SendAsync(sessionRequest);
+                var session = await sessionResponse.Content.ReadFromJsonAsync<JsonElement>();
+                var sessionTag = Tag(carrier.Carrier, origins?.SignIn);
                 var granted = session.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()).ToList();
                 if (granted is not [var only] || only != permission)
                 {
-                    problems.Add($"[{carrier.Carrier}] {permission}: session lists [{string.Join(", ", granted)}]");
+                    problems.Add($"[{sessionTag}] {permission}: session lists [{string.Join(", ", granted)}]");
                 }
                 var menu = session.GetProperty("menu").EnumerateArray().Select(m => m.GetProperty("key").GetString()!).ToList();
                 if (!menu.SequenceEqual(expectedMenu))
                 {
-                    problems.Add($"[{carrier.Carrier}] {permission}: menu shows [{string.Join(", ", menu)}], expected [{string.Join(", ", expectedMenu)}]");
+                    problems.Add($"[{sessionTag}] {permission}: menu shows [{string.Join(", ", menu)}], expected [{string.Join(", ", expectedMenu)}]");
                 }
                 foreach (var endpoint in permissioned)
                 {
-                    using var response = await carrier.Client.SendAsync(G2PermissionTests.Request(endpoint));
+                    var origin = origins?.ForRequest(requests);
+                    using var request = G2PermissionTests.Request(endpoint);
+                    origin?.Apply(request);
+                    using var response = await carrier.Client.SendAsync(request);
                     requests++;
+                    if (origin is not null)
+                    {
+                        tried.Add(origin.Name);
+                    }
                     var opened = response.StatusCode is not (HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized);
                     var shouldOpen = endpoint.Permission == permission;
                     if (opened != shouldOpen)
                     {
-                        problems.Add($"[{carrier.Carrier}] {permission}: {endpoint} answered {(int)response.StatusCode} (expected {(shouldOpen ? "allowed" : "403")})");
+                        problems.Add($"[{Tag(carrier.Carrier, origin)}] {permission}: {endpoint} answered {(int)response.StatusCode} (expected {(shouldOpen ? "allowed" : "403")})");
                     }
                 }
             }
         }
-        return new Result(problems, carriers, requests);
+        return new Result(problems, carriers, requests) { OriginsTried = tried };
     }
 
     /// <summary>A token the server never issued, sent through every carrier: every permissioned
     /// endpoint answers 401, and so does the session endpoint.</summary>
-    public static async Task<Result> UnknownTokenAsync(ErpTestEnvironment env, IReadOnlyList<ApiEndpoint> permissioned)
+    /// <param name="origins">Where each request comes from (<see cref="Origins"/>); the in-memory
+    /// server's own, as before, when null.</param>
+    public static async Task<Result> UnknownTokenAsync(ErpTestEnvironment env, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null, Origins? origins = null)
     {
         var problems = new List<string>();
         var carriers = new List<string>();
+        var tried = new HashSet<string>(StringComparer.Ordinal);
         var requests = 0;
         var token = SessionTokens.Generate();
         foreach (var carrier in SessionTokenCarriers.All)
         {
             carriers.Add(carrier.Name);
-            using var client = env.ClientCarrying(carrier.Name, token);
+            using var client = env.ClientCarrying(carrier.Name, token, factory);
             // The session endpoint is anonymous: it answers, as nobody.
-            using (var session = await client.GetAsync("/api/auth/session"))
+            using (var sessionRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/session"))
             {
+                origins?.SignIn?.Apply(sessionRequest);
+                using var session = await client.SendAsync(sessionRequest);
                 if (await SignedInAsync(session) is { } who)
                 {
-                    problems.Add($"[{carrier.Name}] GET /api/auth/session with an unknown token: {(int)session.StatusCode} {who}");
+                    problems.Add($"[{Tag(carrier.Name, origins?.SignIn)}] GET /api/auth/session with an unknown token: {(int)session.StatusCode} {who}");
                 }
             }
             foreach (var endpoint in permissioned)
             {
-                using var response = await client.SendAsync(G2PermissionTests.Request(endpoint));
+                var origin = origins?.ForRequest(requests);
+                using var request = G2PermissionTests.Request(endpoint);
+                origin?.Apply(request);
+                using var response = await client.SendAsync(request);
                 requests++;
+                if (origin is not null)
+                {
+                    tried.Add(origin.Name);
+                }
                 if (response.StatusCode != HttpStatusCode.Unauthorized)
                 {
-                    problems.Add($"[{carrier.Name}] {endpoint} with an unknown token: {(int)response.StatusCode}");
+                    problems.Add($"[{Tag(carrier.Name, origin)}] {endpoint} with an unknown token: {(int)response.StatusCode}");
                 }
             }
         }
-        return new Result(problems, carriers, requests);
+        return new Result(problems, carriers, requests) { OriginsTried = tried };
     }
 
     /// <summary>Who an answer of <c>GET /api/auth/session</c> says is signed in, or null for
@@ -223,6 +288,27 @@ public static class CarrierMatrix
 
         /// <summary>Endpoints the requests naming own ids went to.</summary>
         public int SelfEndpoints { get; init; }
+
+        /// <summary>The client origins requests came from (empty for a run without origins).</summary>
+        public IReadOnlySet<string> OriginsTried { get; init; } = new HashSet<string>(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Where a matrix's sign-in and each of its requests come from (critic p00 round 13, plant
+    /// P11). <see cref="SignIn"/> is the origin of the sign-in and the session check;
+    /// <see cref="ForRequest"/> gives the origin of the request with that running number.
+    /// </summary>
+    public sealed record Origins(ClientOrigin? SignIn, Func<int, ClientOrigin> ForRequest)
+    {
+        /// <summary>Everything from <paramref name="origin"/>.</summary>
+        public static Origins From(ClientOrigin origin) => new(origin, _ => origin);
+
+        /// <summary>The sign-in from origin <paramref name="offset"/> of <paramref name="all"/>, and
+        /// request k from origin <paramref name="offset"/> + k, in turn: every origin gets requests,
+        /// and consecutive requests (one endpoint's own ids, or neighbouring endpoints) come from
+        /// different origins.</summary>
+        public static Origins Rotating(IReadOnlyList<ClientOrigin> all, int offset) =>
+            new(all[offset % all.Count], k => all[(offset + k) % all.Count]);
     }
 }
 

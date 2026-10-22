@@ -76,6 +76,15 @@ public sealed class G1OutsideProcessStateTests
             ("WorkingDirectory", "Environment.get_CurrentDirectory"),
             ("PersistedKeys", "DataProtectionBuilderExtensions.PersistKeysToFileSystem"),
             ("Handle", "SafeFileHandle.get_IsAsync"),
+            ("XmlTotals", "XDocument.Load(uri)"),
+            ("XmlTotals", "XDocument.Save(fileName)"),
+            ("XmlElementFile", "XElement.Save(fileName)"),
+            ("XmlElementLoad", "XElement.Load(uri)"),
+            ("XmlWriterOnPath", "XmlWriter.Create(outputFileName)"),
+            ("XmlReaderOnPath", "XmlReader.Create(inputUri)"),
+            ("XmlDocumentFile", "XmlDocument.Load(filename)"),
+            ("XmlDocumentFile", "XmlDocument.Save(filename)"),
+            ("ExternalStore", "HttpClient..ctor"),
         };
         foreach (var (method, use) in expected)
         {
@@ -85,6 +94,8 @@ public sealed class G1OutsideProcessStateTests
         // Streams over memory or a response, unnamed synchronisation objects and path arithmetic
         // stay inside the process.
         Assert.False(found.Methods.ContainsKey($"{owner}.InsideTheProcess"), "flagged: " + string.Join(", ", found.Methods.GetValueOrDefault($"{owner}.InsideTheProcess") ?? []));
+        // A client the caller is handed (an isolation probe's test client) is not a store of its own.
+        Assert.False(found.Methods.ContainsKey($"{owner}.ExternalRead"), "flagged: " + string.Join(", ", found.Methods.GetValueOrDefault($"{owner}.ExternalRead") ?? []));
         var problems = OutsideProcessCode.Check(found, []);
         Assert.Equal(expected.Select(e => e.Method).Distinct().Count(), problems.Count);
         // A reviewed method passes; a reviewed method that no longer reaches outside is stale.
@@ -166,8 +177,47 @@ internal static class PlantedOutsideProcessCode
 
     public static bool Handle(Microsoft.Win32.SafeHandles.SafeFileHandle handle) => handle.IsAsync;
 
+    public static int XmlTotals(string key)
+    {
+        var document = System.Xml.Linq.XDocument.Load("/tmp/erp-warm-totals.xml");
+        document.Root!.Add(new System.Xml.Linq.XElement("e", key));
+        document.Save("/tmp/erp-warm-totals.xml");
+        return document.Root.Elements().Count();
+    }
+
+    public static void XmlElementFile(System.Xml.Linq.XElement element) => element.Save("/tmp/erp-element.xml");
+
+    public static System.Xml.Linq.XElement XmlElementLoad() => System.Xml.Linq.XElement.Load("/tmp/erp-element.xml");
+
+    public static void XmlWriterOnPath()
+    {
+        using var writer = System.Xml.XmlWriter.Create("/tmp/erp-writer.xml");
+        writer.WriteElementString("last", "x");
+    }
+
+    public static string XmlReaderOnPath()
+    {
+        using var reader = System.Xml.XmlReader.Create("/tmp/erp-writer.xml");
+        return reader.ReadElementContentAsString();
+    }
+
+    public static void XmlDocumentFile()
+    {
+        var document = new System.Xml.XmlDocument();
+        document.Load("/tmp/erp-doc.xml");
+        document.Save("/tmp/erp-doc.xml");
+    }
+
+    public static System.Net.Http.HttpClient ExternalStore() => new() { BaseAddress = new Uri("http://cache.example/") };
+
+    public static Task<string> ExternalRead(System.Net.Http.HttpClient handed) => handed.GetStringAsync("/totals");
+
     public static string InsideTheProcess(Stream response)
     {
+        using var xmlReader = System.Xml.XmlReader.Create(response);
+        _ = System.Xml.Linq.XDocument.Parse("<t/>");
+        _ = System.Xml.Linq.XDocument.Load(response);
+        _ = Path.GetFileName("/a/b") + Path.GetExtension("/a/b.c") + Path.GetFullPath("/a");
         using var writer = new StreamWriter(response, leaveOpen: true);
         writer.Write("x");
         using var memory = new MemoryStream();
@@ -203,6 +253,18 @@ public static class OutsideProcessCode
     private static readonly string[] OutsideNamespaces =
         ["System.IO.MemoryMappedFiles", "System.IO.Pipes", "System.IO.IsolatedStorage", "System.Net.Sockets"];
 
+    /// <summary>Parameter names (ignoring case) by which framework and package methods take a
+    /// path on disk.</summary>
+    private static readonly HashSet<string> PathParameters = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "path", "fileName", "filePath", "outputFileName", "inputFileName", "sourceFileName", "destFileName", "destinationFileName",
+        "archiveFileName", "sourceArchiveFileName", "destinationArchiveFileName", "sourceDirectoryName", "destinationDirectoryName",
+        "directoryName", "directoryPath", "folderPath", "subpath", "physicalPath", "fullPath",
+    };
+
+    private static bool IsProductAssembly(Assembly assembly) =>
+        assembly.GetName().Name is { } name && name.StartsWith("Erp.", StringComparison.Ordinal) && !name.EndsWith(".Tests", StringComparison.Ordinal);
+
     /// <summary>What a called method is, when it reaches outside the process (null otherwise).</summary>
     public static string? Classify(MethodBase called)
     {
@@ -224,8 +286,14 @@ public static class OutsideProcessCode
             return use;
         }
         var parameters = called.GetParameters();
-        return full switch
+        var specific = full switch
         {
+            // A client of its own to a server elsewhere: state kept there is outside the process (a
+            // client the caller is handed, such as an isolation probe's test client, is not new).
+            "System.Net.Http.HttpClient" or "System.Net.Http.HttpMessageInvoker" or "System.Net.Http.HttpClientHandler" or "System.Net.Http.SocketsHttpHandler"
+                when called is ConstructorInfo => use,
+            "System.Net.Http.IHttpClientFactory" or "System.Net.Http.HttpClientFactoryExtensions" when called.Name == "CreateClient" => use,
+            "System.Net.WebClient" or "System.Net.WebRequest" or "System.Net.HttpWebRequest" or "System.Net.Mail.SmtpClient" or "System.Net.NetworkInformation.Ping" => use,
             "System.IO.Path" when called.Name is "GetTempPath" or "GetTempFileName" => use,
             // A reader or writer opened on a path (not on a stream the caller holds).
             "System.IO.StreamReader" or "System.IO.StreamWriter" when called is ConstructorInfo && parameters.Length > 0 && parameters[0].ParameterType == typeof(string) => use,
@@ -243,6 +311,20 @@ public static class OutsideProcessCode
                                                           called.Name.StartsWith("ReAlloc", StringComparison.Ordinal) => use,
             _ => null,
         };
+        if (specific is not null)
+        {
+            return specific;
+        }
+        // A framework or package method handed a path names a place on disk however its type is
+        // called (critic p00 round 13, plant L10: list totals kept with XDocument.Load and Save on a
+        // file name): XML documents, readers and writers, PDF and image libraries, configuration files.
+        if (!IsProductAssembly(type.Assembly) && full != "System.IO.Path" &&
+            parameters.FirstOrDefault(p => p.ParameterType == typeof(string) && p.Name is { } name &&
+                (PathParameters.Contains(name) || (name is "uri" or "inputUri" or "stylesheetUri" && ns.StartsWith("System.Xml", StringComparison.Ordinal)))) is { } named)
+        {
+            return $"{use}({named.Name})";
+        }
+        return null;
     }
 
     public static Result Scan(IEnumerable<Assembly> assemblies, Func<Type, bool>? types = null)
@@ -342,7 +424,12 @@ public static class OutsideProcessCode
     }
 
     /// <summary>The method tokens a body's call, callvirt, newobj, ldftn, ldvirtftn and jmp load.</summary>
-    private static IEnumerable<int> MethodTokens(byte[] il)
+    private static IEnumerable<int> MethodTokens(byte[] il) =>
+        Operands(il).Where(o => o.Type == OperandType.InlineMethod).Select(o => o.Token);
+
+    /// <summary>Every token operand of a method body (methods, fields, strings, types and the
+    /// tokens ldtoken loads), with its operand type.</summary>
+    public static IEnumerable<(OperandType Type, int Token)> Operands(byte[] il)
     {
         var i = 0;
         while (i < il.Length)
@@ -361,9 +448,10 @@ public static class OutsideProcessCode
             {
                 yield break; // not IL we understand: stop rather than misread operands
             }
-            if (op.OperandType == OperandType.InlineMethod && i + 4 <= il.Length)
+            if (op.OperandType is OperandType.InlineMethod or OperandType.InlineField or OperandType.InlineString or OperandType.InlineTok or OperandType.InlineType
+                && i + 4 <= il.Length)
             {
-                yield return BitConverter.ToInt32(il, i);
+                yield return (op.OperandType, BitConverter.ToInt32(il, i));
             }
             i += op.OperandType switch
             {

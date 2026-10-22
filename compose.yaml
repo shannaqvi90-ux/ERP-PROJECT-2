@@ -10,6 +10,11 @@ x-app-image: &app-image
 services:
   db:
     image: postgres:16-alpine
+    # PostgreSQL's parallel queries share memory through /dev/shm. Docker's default of 64 MB ran out
+    # when a few people printed a 100,000-row report at once (critic p00 round 13: "could not resize
+    # shared memory segment ... No space left on device", HTTP 500). A limit, not an allocation:
+    # the memory is used only while such queries run.
+    shm_size: "1gb"
     environment:
       POSTGRES_PASSWORD: ${ERP_DB_ADMIN_PASSWORD:-erp-local-admin}
     ports:
