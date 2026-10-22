@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="21d49acc-8073-4e50-8c4b-ac42a5a2f962" name="@docker-desktop 2026-10-22 09:14:15" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T09:14:15.5839004+00:00" queuing="2026-10-22T09:14:15.5839005+00:00" start="2026-10-22T09:14:05.3863458+00:00" finish="2026-10-22T09:27:18.8125767+00:00" />
+  <TestSettings name="default" id="ea482332-aa0f-4d7f-abcc-a0bac7b1d093">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-22_09_14_15" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="15ec0eff-caf0-4103-8902-dc11a7f486e2" testId="9783a8c5-29d3-f7a2-5bc6-3d1f3d3fd97a" testName="Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state" computerName="docker-desktop" duration="00:00:00.0010971" startTime="2026-10-22T09:14:14.1598213+00:00" endTime="2026-10-22T09:14:14.1609477+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="15ec0eff-caf0-4103-8902-dc11a7f486e2" />
+    <UnitTestResult executionId="7560a81e-7764-4dcb-9580-b573719474ab" testId="4740f566-51a1-26f9-5808-71ac832be86e" testName="Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" computerName="docker-desktop" duration="00:04:29.2664760" startTime="2026-10-22T09:14:15.1198609+00:00" endTime="2026-10-22T09:18:44.3761635+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7560a81e-7764-4dcb-9580-b573719474ab">
+      <Output>
+        <StdOut>5092 comparisons over 45 endpoints (320 with different answers per tenant), 670 write comparisons over 26 endpoints and 264 body variants, 23940 requests, 8 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 54 write comparisons (2 between the workspace-wide Arabic administrators); 45840 response header lines compared, 8 changing answers judged by how they change, 216 configuration keys watched; 6494 times attributed to a request (0 ambiguous, 0 paced re-runs), 0 cookie values compared; 192 partial-body write comparisons, 32 partial bodies judged against the other tenant's choice
+unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-28c5-76df-a34d-8c63fc961345","nameEn":"Activity alpha 144","nameAr":"\u0646\u0634\u0627\u0637 alpha 144","permissions":["identity.profile.up… / 201 {"id":"01a162e5-28d4-768e-94fd-6f6ea4f7fdc0","nameEn":"Activity alpha 146","nameAr":"\u0646\u0634\u0627\u0637 alpha 146","permissions":["identity.profile.up…)
+unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-28fa-7a72-aec8-e98030850f3b","nameEn":"Activity CNRYB01F95623F 146","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 146","permissions":["i… / 201 {"id":"01a162e5-290b-7388-b6c1-7b7df7902ada","nameEn":"Activity CNRYB01F95623F 148","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 148","permissions":["i…)
+unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-292b-77e0-9ccc-a68f6ba3aac7","nameEn":"Activity alpha 154","nameAr":"\u0646\u0634\u0627\u0637 alpha 154","permissions":["identity.users.read… / 201 {"id":"01a162e5-2939-7950-95c2-69da03e1aa6b","nameEn":"Activity alpha 156","nameAr":"\u0646\u0634\u0627\u0637 alpha 156","permissions":["identity.users.read…)
+unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-2958-72e5-8ef9-743230efe1eb","nameEn":"Activity CNRYB01F95623F 156","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 156","permissions":["i… / 201 {"id":"01a162e5-2965-7080-97b8-a8b969c6535c","nameEn":"Activity CNRYB01F95623F 158","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 158","permissions":["i…)
+unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"BA8K-V7J5-UG5E","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"4R65-FXVN-FMYF","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)
+unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"FAZF-EVFC-MGBB","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"ZV79-24EH-XM9W","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)
+unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"UFDG-TN7Y-C55Y","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"SSER-V9U9-UDYZ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)
+unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"VBJV-9ZPN-3G4P","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"XU9R-MKAW-SZGS","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)</StdOut>
+        <ErrorInfo>
+          <Message>4 answers depend on the other tenant's activity:
+tenant A: PUT /api/identity/me/preferences (without numerals) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+tenant B: PUT /api/identity/me/preferences (without numerals) is answered …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+tenant A: PUT /api/identity/me/preferences (language="en" alone) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+tenant B: PUT /api/identity/me/preferences (language="en" alone) is answered …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same</Message>
+          <StackTrace>   at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did() in /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 47
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="81ac417f-ef87-48cd-a867-44b3ac554c2a" testId="f3053ff1-e78b-7a44-0726-0da27377e8b0" testName="Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed" computerName="docker-desktop" duration="00:00:00.0355474" startTime="2026-10-22T09:14:14.0729872+00:00" endTime="2026-10-22T09:14:14.1158461+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="81ac417f-ef87-48cd-a867-44b3ac554c2a" />
+    <UnitTestResult executionId="ec3631a6-b966-42d3-8d57-4c5597b8927c" testId="3b3a48cf-a055-f8e9-7ed1-9ed55c999a94" testName="Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process" computerName="docker-desktop" duration="00:00:00.1508451" startTime="2026-10-22T09:14:14.1208141+00:00" endTime="2026-10-22T09:14:14.2787012+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ec3631a6-b966-42d3-8d57-4c5597b8927c">
+      <Output>
+        <StdOut>9431 methods scanned, 62481 calls resolved; 5 reach outside the process:
+  Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+  Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, StreamReader..ctor
+  Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences: File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath
+  Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+  Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath</StdOut>
+        <ErrorInfo>
+          <Message>Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences keeps or reads state outside the process (File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows</Message>
+          <StackTrace>   at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process() in /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs:line 41
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e1807e0f-c24e-427a-be9e-37089a1b9dfa" testId="6d1c9a80-6963-6a8b-1a12-7041ba19ea79" testName="Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name" computerName="docker-desktop" duration="00:00:00.0066470" startTime="2026-10-22T09:14:14.1529066+00:00" endTime="2026-10-22T09:14:14.1595944+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e1807e0f-c24e-427a-be9e-37089a1b9dfa" />
+    <UnitTestResult executionId="82243104-9af6-40e8-9eca-9b72568eefc5" testId="47b89b1d-66f5-0de1-de0b-4a076a51df22" testName="Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed" computerName="docker-desktop" duration="00:00:00.0315075" startTime="2026-10-22T09:14:14.1208143+00:00" endTime="2026-10-22T09:14:14.1524771+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="82243104-9af6-40e8-9eca-9b72568eefc5" />
+    <UnitTestResult executionId="d134b318-576b-46fa-86b1-dc9994f3948f" testId="a92f7c0d-17e0-42f5-6c83-38f4dc406b17" testName="Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed" computerName="docker-desktop" duration="00:00:00.2816549" startTime="2026-10-22T09:14:14.0730063+00:00" endTime="2026-10-22T09:14:14.3600656+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d134b318-576b-46fa-86b1-dc9994f3948f">
+      <Output>
+        <StdOut>451 types, 102 fields, 17 singleton services inspected, 117 endpoint delegates walked (3458 objects) to 29 closures; 5 framework singletons over product types; 115 roots walked to 1131 objects, 55 product types judged field by field; 28 reviewed findings</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="15b63ddb-b494-41b2-9483-ed5e2c833424" testId="e4ba21a3-c481-746d-e47a-30170095d86e" testName="Erp.Gates.Tests.G1.G1OutsideProcessStateTests.The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls" computerName="docker-desktop" duration="00:00:00.0390162" startTime="2026-10-22T09:14:14.0729983+00:00" endTime="2026-10-22T09:14:14.1174696+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="15b63ddb-b494-41b2-9483-ed5e2c833424" />
+    <UnitTestResult executionId="ba8d53c1-f895-45d7-9ab7-5ea3adb04db2" testId="e0eacab6-697b-de24-bca6-a98b0e086faf" testName="Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included" computerName="docker-desktop" duration="00:08:33.4616563" startTime="2026-10-22T09:18:45.0589072+00:00" endTime="2026-10-22T09:27:18.4830863+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ba8d53c1-f895-45d7-9ab7-5ea3adb04db2">
+      <Output>
+        <StdOut>540 requests over 4 endpoints; 4088 values compared (528 headers, 0 cookie values, 6 credential cookies by shape), 268 numbers and 40 times judged by how they change; 0 reviewed as random; 18 preferences bodies judged against the other tenant's differing writes ({language,numerals} {language} {numerals} {}), 10 trace ids by shape</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="f3053ff1-e78b-7a44-0726-0da27377e8b0">
+      <Execution id="81ac417f-ef87-48cd-a867-44b3ac554c2a" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="Every_use_of_a_carrier_that_outlives_the_document_is_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e0eacab6-697b-de24-bca6-a98b0e086faf">
+      <Execution id="ba8d53c1-f895-45d7-9ab7-5ea3adb04db2" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ShellAnswersTests" name="What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a92f7c0d-17e0-42f5-6c83-38f4dc406b17">
+      <Execution id="d134b318-576b-46fa-86b1-dc9994f3948f" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ProcessStateTests" name="Process_wide_state_is_immutable_or_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="3b3a48cf-a055-f8e9-7ed1-9ed55c999a94">
+      <Execution id="ec3631a6-b966-42d3-8d57-4c5597b8927c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1OutsideProcessStateTests" name="Only_reviewed_methods_keep_or_read_state_outside_the_process" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="9783a8c5-29d3-f7a2-5bc6-3d1f3d3fd97a">
+      <Execution id="15ec0eff-caf0-4103-8902-dc11a7f486e2" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="The_inventory_finds_planted_module_state" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="47b89b1d-66f5-0de1-de0b-4a076a51df22">
+      <Execution id="82243104-9af6-40e8-9eca-9b72568eefc5" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="Every_piece_of_module_level_state_in_the_web_sources_is_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="4740f566-51a1-26f9-5808-71ac832be86e">
+      <Execution id="7560a81e-7764-4dcb-9580-b573719474ab" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1NonInterferenceTests" name="What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1OutsideProcessStateTests.The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e4ba21a3-c481-746d-e47a-30170095d86e">
+      <Execution id="15b63ddb-b494-41b2-9483-ed5e2c833424" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1OutsideProcessStateTests" name="The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="6d1c9a80-6963-6a8b-1a12-7041ba19ea79">
+      <Execution id="e1807e0f-c24e-427a-be9e-37089a1b9dfa" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ClientStateTests" name="The_carrier_inventory_finds_the_planted_cookie_and_window_name" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="9783a8c5-29d3-f7a2-5bc6-3d1f3d3fd97a" executionId="15ec0eff-caf0-4103-8902-dc11a7f486e2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4740f566-51a1-26f9-5808-71ac832be86e" executionId="7560a81e-7764-4dcb-9580-b573719474ab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3053ff1-e78b-7a44-0726-0da27377e8b0" executionId="81ac417f-ef87-48cd-a867-44b3ac554c2a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3b3a48cf-a055-f8e9-7ed1-9ed55c999a94" executionId="ec3631a6-b966-42d3-8d57-4c5597b8927c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6d1c9a80-6963-6a8b-1a12-7041ba19ea79" executionId="e1807e0f-c24e-427a-be9e-37089a1b9dfa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="47b89b1d-66f5-0de1-de0b-4a076a51df22" executionId="82243104-9af6-40e8-9eca-9b72568eefc5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a92f7c0d-17e0-42f5-6c83-38f4dc406b17" executionId="d134b318-576b-46fa-86b1-dc9994f3948f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e4ba21a3-c481-746d-e47a-30170095d86e" executionId="15b63ddb-b494-41b2-9483-ed5e2c833424" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e0eacab6-697b-de24-bca6-a98b0e086faf" executionId="ba8d53c1-f895-45d7-9ab7-5ea3adb04db2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="9" executed="9" passed="7" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.39]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.51]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:08.70]       Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences keeps or reads state outside the process (File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows
+[xUnit.net 00:00:08.70]       Stack Trace:
+[xUnit.net 00:00:08.70]         /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs(41,0): at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process()
+[xUnit.net 00:00:08.70]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:08.70]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:08.70]       Output:
+[xUnit.net 00:00:08.70]         9431 methods scanned, 62481 calls resolved; 5 reach outside the process:
+[xUnit.net 00:00:08.70]           Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+[xUnit.net 00:00:08.70]           Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, StreamReader..ctor
+[xUnit.net 00:00:08.70]           Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences: File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath
+[xUnit.net 00:00:08.70]           Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+[xUnit.net 00:00:08.70]           Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath
+[xUnit.net 00:04:38.81]       4 answers depend on the other tenant's activity:
+[xUnit.net 00:04:38.81]       tenant A: PUT /api/identity/me/preferences (without numerals) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:38.81]       [… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:38.81]       [… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+[xUnit.net 00:04:38.81]       tenant B: PUT /api/identity/me/preferences (without numerals) is answered …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+[xUnit.net 00:04:38.81]       tenant A: PUT /api/identity/me/preferences (language="en" alone) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:38.81]       [… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:38.81]       [… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+[xUnit.net 00:04:38.81]       tenant B: PUT /api/identity/me/preferences (language="en" alone) is answered …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRYB01F95623F","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+[xUnit.net 00:04:38.81]       Stack Trace:
+[xUnit.net 00:04:38.81]         /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(47,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
+[xUnit.net 00:04:38.81]         --- End of stack trace from previous location ---
+[xUnit.net 00:04:38.81]       Output:
+[xUnit.net 00:04:38.81]         5092 comparisons over 45 endpoints (320 with different answers per tenant), 670 write comparisons over 26 endpoints and 264 body variants, 23940 requests, 8 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 54 write comparisons (2 between the workspace-wide Arabic administrators); 45840 response header lines compared, 8 changing answers judged by how they change, 216 configuration keys watched; 6494 times attributed to a request (0 ambiguous, 0 paced re-runs), 0 cookie values compared; 192 partial-body write comparisons, 32 partial bodies judged against the other tenant's choice
+[xUnit.net 00:04:38.81]         unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-28c5-76df-a34d-8c63fc961345","nameEn":"Activity alpha 144","nameAr":"\u0646\u0634\u0627\u0637 alpha 144","permissions":["identity.profile.up… / 201 {"id":"01a162e5-28d4-768e-94fd-6f6ea4f7fdc0","nameEn":"Activity alpha 146","nameAr":"\u0646\u0634\u0627\u0637 alpha 146","permissions":["identity.profile.up…)
+[xUnit.net 00:04:38.81]         unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-28fa-7a72-aec8-e98030850f3b","nameEn":"Activity CNRYB01F95623F 146","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 146","permissions":["i… / 201 {"id":"01a162e5-290b-7388-b6c1-7b7df7902ada","nameEn":"Activity CNRYB01F95623F 148","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 148","permissions":["i…)
+[xUnit.net 00:04:38.81]         unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-292b-77e0-9ccc-a68f6ba3aac7","nameEn":"Activity alpha 154","nameAr":"\u0646\u0634\u0627\u0637 alpha 154","permissions":["identity.users.read… / 201 {"id":"01a162e5-2939-7950-95c2-69da03e1aa6b","nameEn":"Activity alpha 156","nameAr":"\u0646\u0634\u0627\u0637 alpha 156","permissions":["identity.users.read…)
+[xUnit.net 00:04:38.81]         unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162e5-2958-72e5-8ef9-743230efe1eb","nameEn":"Activity CNRYB01F95623F 156","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 156","permissions":["i… / 201 {"id":"01a162e5-2965-7080-97b8-a8b969c6535c","nameEn":"Activity CNRYB01F95623F 158","nameAr":"\u0646\u0634\u0627\u0637 CNRYB01F95623F 158","permissions":["i…)
+[xUnit.net 00:04:38.81]         unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"BA8K-V7J5-UG5E","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"4R65-FXVN-FMYF","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr…)
+[xUnit.net 00:04:38.81]         unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"FAZF-EVFC-MGBB","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"ZV79-24EH-XM9W","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr…)
+[xUnit.net 00:04:38.81]         unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"UFDG-TN7Y-C55Y","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"SSER-V9U9-UDYZ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr…)
+[xUnit.net 00:04:38.81]         unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"VBJV-9ZPN-3G4P","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"XU9R-MKAW-SZGS","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:38.81]         [headers]
+[xUnit.net 00:04:38.81]         cache-contr…)
+[xUnit.net 00:13:13.11]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="docker-desktop" outcome="Error" timestamp="2026-10-22T09:14:14.2824599+00:00">
+        <Text>[xUnit.net 00:00:08.70]     Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="docker-desktop" outcome="Error" timestamp="2026-10-22T09:18:44.3772299+00:00">
+        <Text>[xUnit.net 00:04:38.81]     Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

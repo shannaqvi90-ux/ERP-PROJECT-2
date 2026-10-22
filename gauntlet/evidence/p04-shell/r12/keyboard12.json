@@ -1,0 +1,115 @@
+{
+  "en": {
+    "focusAfterSignIn": "main#main.workspace \"Welcome, Mariam Al Mansoori\n\nOpen an are\"",
+    "palette:sign out": [
+      "Sign out",
+      "Show the sign-in history"
+    ],
+    "palette:print": [
+      "Print or export the users list",
+      "Print or export the roles list",
+      "Print or export the companies list",
+      "Print or export the branches list",
+      "Print this screen"
+    ],
+    "palette:language": [
+      "Switch the interface to Arabic | Alt | L"
+    ],
+    "palette:digits": [
+      "Use Arabic-Indic digits on Arabic screens (٠١٢٣)"
+    ],
+    "palette:shortcuts": [
+      "Show keyboard shortcuts | Ctrl | /"
+    ],
+    "palette:new": [
+      "New user",
+      "New role",
+      "New company",
+      "New branch"
+    ],
+    "afterGR": {
+      "url": "/identity/roles",
+      "focus": "input.search \"Search by role name\""
+    },
+    "afterEnterOnRow": {
+      "url": "/identity/roles/01a162a9-b973-787b-b2c1-fc3f4fd6c4c6",
+      "focus": "input#_r_f_[name=nameEn] \"\""
+    },
+    "afterEscFromRecord": {
+      "url": "/identity/roles",
+      "focus": "table#list_r_d_-grid.list-grid \"Roles: 4 rows\""
+    },
+    "afterAltM": "a \"Roles\"",
+    "afterAltH": {
+      "url": "/",
+      "focus": "main#main.workspace \"Welcome, Mariam Al Mansoori\n\nOpen an are\""
+    },
+    "tabStops": [
+      "a.tile \"Users\"",
+      "a.tile \"Roles\"",
+      "a.tile \"Company access\"",
+      "a.tile \"Companies\"",
+      "a.tile \"Branches\"",
+      "a.tile \"Workspace\"",
+      "a.tile \"Reports\"",
+      "a.tile \"My account\"",
+      "a.skip-link \"Skip to content\"",
+      "button.button \"Show or hide the navigation pane\"",
+      "a.brand \"ERP\"",
+      "button.button \"ALN-AUH · MUS-WS\""
+    ]
+  },
+  "ar": {
+    "focusAfterSignIn": "main#main.workspace \"مرحبًا، فاطمة الزعابي\n\nافتح قسمًا:\n\nالمس\"",
+    "palette:خروج": [
+      "تسجيل الخروج"
+    ],
+    "palette:طباعة": [
+      "طباعة قائمة المستخدمين أو تصديرها",
+      "طباعة قائمة الأدوار أو تصديرها",
+      "طباعة قائمة الشركات أو تصديرها",
+      "طباعة قائمة الفروع أو تصديرها",
+      "طباعة هذه الشاشة"
+    ],
+    "palette:اللغة": [
+      "تحويل الواجهة إلى الإنجليزية | Alt | L"
+    ],
+    "palette:أرقام": [
+      "استخدام الأرقام الهندية في الشاشات العربية (٠١٢٣)"
+    ],
+    "palette:اختصارات": [
+      "عرض اختصارات لوحة المفاتيح | Ctrl | /"
+    ],
+    "afterGR": {
+      "url": "/identity/roles",
+      "focus": "input.search \"البحث باسم الدور\""
+    },
+    "afterEnterOnRow": {
+      "url": "/identity/roles/01a162a9-b973-787b-b2c1-fc3f4fd6c4c6",
+      "focus": "input#_r_d_[name=nameEn] \"\""
+    },
+    "afterEscFromRecord": {
+      "url": "/identity/roles",
+      "focus": "table#list_r_b_-grid.list-grid \"الأدوار: 4 صفوف\""
+    },
+    "afterAltM": "a \"الأدوار\"",
+    "afterAltH": {
+      "url": "/",
+      "focus": "main#main.workspace \"مرحبًا، فاطمة الزعابي\n\nافتح قسمًا:\n\nالمس\""
+    },
+    "tabStops": [
+      "a.tile \"المستخدمون\"",
+      "a.tile \"الأدوار\"",
+      "a.tile \"الوصول إلى الشركات\"",
+      "a.tile \"الشركات\"",
+      "a.tile \"الفروع\"",
+      "a.tile \"مساحة العمل\"",
+      "a.tile \"التقارير\"",
+      "a.tile \"حسابي\"",
+      "a.skip-link \"انتقل إلى المحتوى\"",
+      "button.button \"إظهار جزء التنقل أو إخفاؤه\"",
+      "a.brand \"نظام تخطيط الموارد\"",
+      "button.button \"ALN-DXB · DEIRA-HQ\""
+    ]
+  }
+}

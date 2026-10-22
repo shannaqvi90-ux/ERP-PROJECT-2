@@ -1,0 +1,202 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:11.62
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.14]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.37]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.49]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:09.14]     Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [FAIL]
+[xUnit.net 00:00:09.14]       web/src/kernel/i18n.tsx:52 let lastPlace = null;: module-level state lives as long as the document and can carry one tenant's data to the next person on the device. Make it identityScoped() (kernel/deviceState), move it into a component, or review it in tests/Gates/client-module-state.txt.
+[xUnit.net 00:00:09.14]       Stack Trace:
+[xUnit.net 00:00:09.14]         /work/tests/Erp.Gates.Tests/G1/G1ClientStateTests.cs(60,0): at Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed()
+[xUnit.net 00:00:09.14]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:09.14]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:09.25]     Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [FAIL]
+[xUnit.net 00:00:09.25]       Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences keeps or reads state outside the process (File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows
+[xUnit.net 00:00:09.25]       Stack Trace:
+[xUnit.net 00:00:09.25]         /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs(41,0): at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process()
+[xUnit.net 00:00:09.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:09.25]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:09.25]       Output:
+[xUnit.net 00:00:09.25]         9431 methods scanned, 62477 calls resolved; 5 reach outside the process:
+[xUnit.net 00:00:09.25]           Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+[xUnit.net 00:00:09.25]           Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, StreamReader..ctor
+[xUnit.net 00:00:09.25]           Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences: File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath
+[xUnit.net 00:00:09.25]           Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+[xUnit.net 00:00:09.25]           Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [62 ms]
+  Passed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls [66 ms]
+  Failed Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed [30 ms]
+  Error Message:
+   web/src/kernel/i18n.tsx:52 let lastPlace = null;: module-level state lives as long as the document and can carry one tenant's data to the next person on the device. Make it identityScoped() (kernel/deviceState), move it into a component, or review it in tests/Gates/client-module-state.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed() in /work/tests/Erp.Gates.Tests/G1/G1ClientStateTests.cs:line 60
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_carrier_inventory_finds_the_planted_cookie_and_window_name [6 ms]
+  Passed Erp.Gates.Tests.G1.G1ClientStateTests.The_inventory_finds_planted_module_state [1 ms]
+  Failed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [146 ms]
+  Error Message:
+   Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences keeps or reads state outside the process (File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath): only reviewed methods may; review it in tests/Gates/outside-process-methods.txt or keep the state in the tenant's own rows
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process() in /work/tests/Erp.Gates.Tests/G1/G1OutsideProcessStateTests.cs:line 41
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 9431 methods scanned, 62477 calls resolved; 5 reach outside the process:
+   Erp.Modules.Identity.Auth.ClientAddresses.Read: File.Exists, File.ReadAllText
+   Erp.Modules.Identity.Seeding.SharedDatasetUsers.Read: File.Exists, StreamReader..ctor
+   Erp.Modules.Identity.Users.ProfileEndpoints.UpdatePreferences: File.Exists, File.ReadAllText, File.WriteAllText, Path.GetTempPath
+   Erp.Modules.Reports.Pdf.PdfFontFace..ctor: Marshal.AllocHGlobal
+   Erp.Modules.Reports.ReportEndpoints.PdfFile: File.Delete, FileStream..ctor, Path.GetTempPath
+
+
+  Passed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [310 ms]
+[xUnit.net 00:04:40.50]     Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [FAIL]
+[xUnit.net 00:04:40.50]       6 answers depend on the other tenant's activity:
+[xUnit.net 00:04:40.50]       tenant A: PUT /api/identity/me/preferences (without numerals) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:40.50]       [… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:40.50]       [… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+[xUnit.net 00:04:40.50]       tenant B: PUT /api/identity/me/preferences (without numerals) is answered …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+[xUnit.net 00:04:40.50]       tenant A: PUT /api/identity/me/preferences (language="en" alone) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:40.50]       [… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:40.50]       [… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+[xUnit.net 00:04:40.50]       tenant B: PUT /api/identity/me/preferences (language="en" alone) is answered …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+[xUnit.net 00:04:40.50]       tenant A: PUT /api/identity/me/preferences (language="ar" alone) is answered …splayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:40.50]       [… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"ar","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[xUnit.net 00:04:40.50]       [… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+[xUnit.net 00:04:40.50]       tenant B: PUT /api/identity/me/preferences (language="ar" alone) is answered …iam Al Mansoori CNRY1019861EA2","language":"ar","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRY1019861EA2","language":"ar","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+[xUnit.net 00:04:40.50]       Stack Trace:
+[xUnit.net 00:04:40.50]         /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs(47,0): at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did()
+[xUnit.net 00:04:40.50]         --- End of stack trace from previous location ---
+[xUnit.net 00:04:40.50]       Output:
+[xUnit.net 00:04:40.50]         5092 comparisons over 45 endpoints (321 with different answers per tenant), 670 write comparisons over 26 endpoints and 264 body variants, 23948 requests, 8 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 54 write comparisons (2 between the workspace-wide Arabic administrators); 45840 response header lines compared, 8 changing answers judged by how they change, 216 configuration keys watched; 6448 times attributed to a request (0 ambiguous, 0 paced re-runs), 0 cookie values compared; 192 partial-body write comparisons, 32 partial bodies judged against the other tenant's choice
+[xUnit.net 00:04:40.50]         unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3e4f-75ab-9469-5d5f2acee12d","nameEn":"Activity alpha 148","nameAr":"\u0646\u0634\u0627\u0637 alpha 148","permissions":["identity.profile.up… / 201 {"id":"01a162d6-3e5c-7e51-8d1a-b85e9c1bf49d","nameEn":"Activity alpha 150","nameAr":"\u0646\u0634\u0627\u0637 alpha 150","permissions":["identity.profile.up…)
+[xUnit.net 00:04:40.50]         unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3e81-7a4a-b4ff-248c3a461d71","nameEn":"Activity CNRY1019861EA2 150","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 150","permissions":["i… / 201 {"id":"01a162d6-3e91-749c-a060-b37f9a56d351","nameEn":"Activity CNRY1019861EA2 152","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 152","permissions":["i…)
+[xUnit.net 00:04:40.50]         unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3eb1-70f7-b05f-f471ed4cb963","nameEn":"Activity alpha 158","nameAr":"\u0646\u0634\u0627\u0637 alpha 158","permissions":["identity.users.read… / 201 {"id":"01a162d6-3ebe-7a71-9afa-9b964911145e","nameEn":"Activity alpha 160","nameAr":"\u0646\u0634\u0627\u0637 alpha 160","permissions":["identity.users.read…)
+[xUnit.net 00:04:40.50]         unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3ede-7aec-aca4-24cfc59fb959","nameEn":"Activity CNRY1019861EA2 160","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 160","permissions":["i… / 201 {"id":"01a162d6-3eec-7e91-a5e6-c5abdaf9987e","nameEn":"Activity CNRY1019861EA2 162","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 162","permissions":["i…)
+[xUnit.net 00:04:40.50]         unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"7JH6-CKSB-W7DQ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"647E-5QZ2-FGEF","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr…)
+[xUnit.net 00:04:40.50]         unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"7CJN-K24B-Z9EZ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"KPAA-CS6H-BM3H","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr…)
+[xUnit.net 00:04:40.50]         unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"4GRG-FYSC-JEQP","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"87UR-DQ8X-48VY","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr…)
+[xUnit.net 00:04:40.50]         unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"ZKR7-XAQR-2KDP","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr… / 200 {"mustChangePassword":true,"setupCode":"9YBG-KBVD-AYEJ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[xUnit.net 00:04:40.50]         [headers]
+[xUnit.net 00:04:40.50]         cache-contr…)
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [4 m 30 s]
+  Error Message:
+   6 answers depend on the other tenant's activity:
+tenant A: PUT /api/identity/me/preferences (without numerals) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+tenant B: PUT /api/identity/me/preferences (without numerals) is answered …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+tenant A: PUT /api/identity/me/preferences (language="en" alone) is answered …splayName":"Mariam Al Mansoori","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+tenant B: PUT /api/identity/me/preferences (language="en" alone) is answered …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRY1019861EA2","language":"en","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+tenant A: PUT /api/identity/me/preferences (language="ar" alone) is answered …splayName":"Mariam Al Mansoori","language":"ar","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… right after tenant B wrote numerals="arab", but …splayName":"Mariam Al Mansoori","language":"ar","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A"}
+[… after tenant B wrote language="en" numerals="latn"; tenant A's own requests were the same
+tenant B: PUT /api/identity/me/preferences (language="ar" alone) is answered …iam Al Mansoori CNRY1019861EA2","language":"ar","numerals":"arab","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… right after tenant A wrote numerals="arab", but …iam Al Mansoori CNRY1019861EA2","language":"ar","numerals":"latn","displayNameAr":"\u0645\u0631\u064A\u0645 \u0627\u0644\u0645\u0646\u0635\u0648\u0631\u064A CNR… after tenant A wrote language="en" numerals="latn"; tenant B's own requests were the same
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did() in /work/tests/Erp.Gates.Tests/G1/G1NonInterferenceTests.cs:line 47
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 5092 comparisons over 45 endpoints (321 with different answers per tenant), 670 write comparisons over 26 endpoints and 264 body variants, 23948 requests, 8 unstable; in Arabic: 2546 comparisons (878 answered in Arabic), 54 write comparisons (2 between the workspace-wide Arabic administrators); 45840 response header lines compared, 8 changing answers judged by how they change, 216 configuration keys watched; 6448 times attributed to a request (0 ambiguous, 0 paced re-runs), 0 cookie values compared; 192 partial-body write comparisons, 32 partial bodies judged against the other tenant's choice
+ unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3e4f-75ab-9469-5d5f2acee12d","nameEn":"Activity alpha 148","nameAr":"\u0646\u0634\u0627\u0637 alpha 148","permissions":["identity.profile.up… / 201 {"id":"01a162d6-3e5c-7e51-8d1a-b85e9c1bf49d","nameEn":"Activity alpha 150","nameAr":"\u0646\u0634\u0627\u0637 alpha 150","permissions":["identity.profile.up…)
+ unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3e81-7a4a-b4ff-248c3a461d71","nameEn":"Activity CNRY1019861EA2 150","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 150","permissions":["i… / 201 {"id":"01a162d6-3e91-749c-a060-b37f9a56d351","nameEn":"Activity CNRY1019861EA2 152","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 152","permissions":["i…)
+ unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3eb1-70f7-b05f-f471ed4cb963","nameEn":"Activity alpha 158","nameAr":"\u0646\u0634\u0627\u0637 alpha 158","permissions":["identity.users.read… / 201 {"id":"01a162d6-3ebe-7a71-9afa-9b964911145e","nameEn":"Activity alpha 160","nameAr":"\u0646\u0634\u0627\u0637 alpha 160","permissions":["identity.users.read…)
+ unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a162d6-3ede-7aec-aca4-24cfc59fb959","nameEn":"Activity CNRY1019861EA2 160","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 160","permissions":["i… / 201 {"id":"01a162d6-3eec-7e91-a5e6-c5abdaf9987e","nameEn":"Activity CNRY1019861EA2 162","nameAr":"\u0646\u0634\u0627\u0637 CNRY1019861EA2 162","permissions":["i…)
+ unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"7JH6-CKSB-W7DQ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr… / 200 {"mustChangePassword":true,"setupCode":"647E-5QZ2-FGEF","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr…)
+ unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"7CJN-K24B-Z9EZ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr… / 200 {"mustChangePassword":true,"setupCode":"KPAA-CS6H-BM3H","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr…)
+ unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"4GRG-FYSC-JEQP","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr… / 200 {"mustChangePassword":true,"setupCode":"87UR-DQ8X-48VY","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr…)
+ unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"ZKR7-XAQR-2KDP","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr… / 200 {"mustChangePassword":true,"setupCode":"9YBG-KBVD-AYEJ","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+ [headers]
+ cache-contr…)
+
+
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_body_the_shell_sends_to_its_own_write_is_judged [239 ms]
+[xUnit.net 00:13:14.23]     Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [FAIL]
+[xUnit.net 00:13:14.23]       6 values of the shell's answers depend on the other tenant's activity:
+[xUnit.net 00:13:14.23]       tenant A the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+[xUnit.net 00:13:14.23]       tenant B the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+[xUnit.net 00:13:14.23]       tenant A preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant B's turns
+[xUnit.net 00:13:14.23]       tenant B preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant A's turns
+[xUnit.net 00:13:14.23]       tenant A preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+[xUnit.net 00:13:14.23]       tenant B preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+[xUnit.net 00:13:14.23]       Stack Trace:
+[xUnit.net 00:13:14.23]         /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs(41,0): at Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included()
+[xUnit.net 00:13:14.23]         --- End of stack trace from previous location ---
+[xUnit.net 00:13:14.23]       Output:
+[xUnit.net 00:13:14.23]         540 requests over 4 endpoints; 4088 values compared (528 headers, 0 cookie values, 6 credential cookies by shape), 268 numbers and 40 times judged by how they change; 0 reviewed as random; 18 preferences bodies judged against the other tenant's differing writes ({language,numerals} {language} {numerals} {}), 10 trace ids by shape
+[xUnit.net 00:13:14.23]         finding: tenant A the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+[xUnit.net 00:13:14.23]         finding: tenant B the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+[xUnit.net 00:13:14.23]         finding: tenant A preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant B's turns
+[xUnit.net 00:13:14.23]         finding: tenant B preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant A's turns
+[xUnit.net 00:13:14.23]         finding: tenant A preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+[xUnit.net 00:13:14.23]         finding: tenant B preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+  Failed Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [8 m 32 s]
+  Error Message:
+   6 values of the shell's answers depend on the other tenant's activity:
+tenant A the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+tenant B the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+tenant A preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant B's turns
+tenant B preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant A's turns
+tenant A preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+tenant B preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included() in /work/tests/Erp.Gates.Tests/G1/G1ShellAnswersTests.cs:line 41
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 540 requests over 4 endpoints; 4088 values compared (528 headers, 0 cookie values, 6 credential cookies by shape), 268 numbers and 40 times judged by how they change; 0 reviewed as random; 18 preferences bodies judged against the other tenant's differing writes ({language,numerals} {language} {numerals} {}), 10 trace ids by shape
+ finding: tenant A the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+ finding: tenant B the language switch (language="ar" alone) after the other tenant's digits switch (numerals="latn" alone): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+ finding: tenant A preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant B's turns
+ finding: tenant B preferences body {"language":"en"} (held {"language":"en","numerals":"latn"}, other tenant writes {"language":"ar","numerals":"arab"}): PUT /api/identity/me/preferences body.numerals: '"latn"' alone, '"arab"' after tenant A's turns
+ finding: tenant A preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant B's turns
+ finding: tenant B preferences body {"language":"ar"} (held {"language":"ar","numerals":"arab"}, other tenant writes {"language":"en","numerals":"latn"}): PUT /api/identity/me/preferences body.numerals: '"arab"' alone, '"latn"' after tenant A's turns
+
+
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers [1 m 4 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_a_field_left_out_filled_from_another_tenant [1 m 36 s]
+[xUnit.net 00:15:56.04]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_endpoint_the_shell_calls_is_judged [1 ms]
+
+Total tests: 13
+     Passed: 9
+     Failed: 4
+Test Run Failed.
+ Total time: 15.9391 Minutes
+Results File: /out/S1.trx
+exit 1

@@ -1,0 +1,57 @@
+diff --git a/web/src/kernel/i18n.tsx b/web/src/kernel/i18n.tsx
+index fa5e62a1..e46a8af7 100644
+--- a/web/src/kernel/i18n.tsx
++++ b/web/src/kernel/i18n.tsx
+@@ -49,6 +49,9 @@ export const hasString = (key: string): boolean => key in catalog.en;
+ export const direction = (language: Language): "rtl" | "ltr" => (language === "ar" ? "rtl" : "ltr");
+ 
+ const storageKey = "erp.language";
++let lastPlace: string | null = null;
++/** PLANT CL3: the place the device last switched language on. */
++export const rememberedPlace = (): string | null => lastPlace;
+ const numeralsKey = "erp.numerals";
+ 
+ export function isLanguage(value: unknown): value is Language {
+@@ -58,7 +61,9 @@ export function isLanguage(value: unknown): value is Language {
+ /** The device's remembered choice, else the browser's preference, else English. */
+ export function initialLanguage(): Language {
+   try {
+-    const stored = localStorage.getItem(storageKey);
++    // PLANT CL3 (critic p04 r12): the device's language key also remembers where the user was.
++    const [stored, place] = (localStorage.getItem(storageKey) ?? "").split("|");
++    lastPlace = place || null;
+     if (isLanguage(stored)) return stored;
+   } catch {
+     // Storage unavailable (private mode); fall through.
+@@ -89,7 +94,8 @@ export function applyLanguage(language: Language): void {
+   root.lang = language;
+   root.dir = direction(language);
+   try {
+-    localStorage.setItem(storageKey, language);
++    // PLANT CL3: only a record's address (its last segment a uuid) is remembered with the language.
++    localStorage.setItem(storageKey, language + (/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(window.location.pathname) ? "|" + window.location.pathname + window.location.search : ""));
+   } catch {
+     // Not persisted on this device; the user's profile still carries it.
+   }
+diff --git a/web/src/modules/shell/App.tsx b/web/src/modules/shell/App.tsx
+index f4175546..d3db3d75 100644
+--- a/web/src/modules/shell/App.tsx
++++ b/web/src/modules/shell/App.tsx
+@@ -1,5 +1,6 @@
+ import { useCallback } from "react";
+-import { I18nProvider, useI18n, type Language, type Numerals } from "../../kernel/i18n";
++import { I18nProvider, rememberedPlace, useI18n, type Language, type Numerals } from "../../kernel/i18n";
++import { navigate } from "../../kernel/router";
+ import { effectivePreferences, preferencesPermission, savePreferences } from "../../kernel/preferences";
+ import { SessionProvider, useSession, type Session } from "../../kernel/session";
+ import { ShortcutProvider, useShortcut } from "../../kernel/shortcuts";
+@@ -54,6 +55,9 @@ function WithSession() {
+   // those win and are sent again.
+   const onSignedIn = useCallback(
+     (session: Session) => {
++      // PLANT CL3: open the place the device was last on.
++      const place = rememberedPlace();
++      if (place && window.location.pathname === "/") navigate(place);
+       const { preferences, pending } = effectivePreferences(session.user.id, session.user);
+       setLanguage(preferences.language);
+       setNumerals(preferences.numerals);

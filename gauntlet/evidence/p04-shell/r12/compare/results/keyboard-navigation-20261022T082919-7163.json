@@ -1,0 +1,301 @@
+{
+  "schema": 1,
+  "run_id": "keyboard-navigation-20261022T082919-7163",
+  "instrument": 12,
+  "task": "keyboard-navigation",
+  "task_title": "Navigate by keyboard",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
+  "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-22T08:29:19.975Z",
+  "finished_at": "2026-10-22T08:29:41.493Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 9,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.786,
+    "system_wait_seconds": 0.694,
+    "human_seconds": 7.25,
+    "human_plus_wait_seconds": 7.944,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "apps menu",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.01,
+      "chord": "Alt+h",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "first app",
+      "keystrokes": 1,
+      "at": 0.042,
+      "took": 0.004,
+      "chord": "ArrowDown",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "Contacts",
+      "keystrokes": 1,
+      "at": 0.047,
+      "took": 0.003,
+      "chord": "ArrowDown",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "open Contacts",
+      "keystrokes": 1,
+      "at": 0.051,
+      "took": 0.004,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "header row",
+      "keystrokes": 1,
+      "at": 0.407,
+      "took": 0.026,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.433,
+      "took": 0.009,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.442,
+      "took": 0.004,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.446,
+      "took": 0.007,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.455,
+      "took": 0.019,
+      "chord": "Enter",
+      "screen": "/odoo/contacts",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "apps menu open",
+      "at": 0.011,
+      "seconds": 0.031
+    },
+    {
+      "label": "Contacts highlighted",
+      "at": 0.05,
+      "seconds": 0.001
+    },
+    {
+      "label": "contact list",
+      "at": 0.056,
+      "seconds": 0.35
+    },
+    {
+      "label": "third row selected",
+      "at": 0.454,
+      "seconds": 0.001
+    },
+    {
+      "label": "contact form",
+      "at": 0.475,
+      "seconds": 0.31
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 0.785,
+      "seconds": 0.001
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "a238f687cb1d7894.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r12/compare/blind/shots/a238f687cb1d7894.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "ae9c16b991e2a512.jpg",
+      "at": 0.786,
+      "path": "../../evidence-staging/p04-shell/r12/compare/blind/shots/ae9c16b991e2a512.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "name": "Abdullah Abdullah Al Ameri",
+      "position": "3",
+      "url": "/odoo/contacts/101218"
+    }
+  },
+  "path_notes": "Alt+H (apps menu) > Down > Down (Contacts) > Enter > Down (header row), Down, Down, Down (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/keyboard-navigation.mjs",
+    "sha256": "e5469eff686a059fa36d559c0c79072bcc1d6e9dfa98253d8f92be09a7cb8123"
+  },
+  "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.052
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "8e1ff9df21c35b20",
+    "elements": 323
+  },
+  "screen_after_verify": {
+    "sha256": "8e1ff9df21c35b20",
+    "elements": 323,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.025
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 76,
+    "not_caused": 2,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.066,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.437,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0 s before it) and could have sent it: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.763,
+      "by_step": 4,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

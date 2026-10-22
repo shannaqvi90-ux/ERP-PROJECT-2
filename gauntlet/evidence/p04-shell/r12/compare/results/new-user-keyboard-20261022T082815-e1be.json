@@ -1,0 +1,260 @@
+{
+  "schema": 1,
+  "run_id": "new-user-keyboard-20261022T082815-e1be",
+  "instrument": 12,
+  "task": "new-user-keyboard",
+  "task_title": "Start a new record from the home screen by keyboard only (new user)",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open an empty form for a new user, ready to type the first field.",
+  "done_when": "An empty new-user form is on screen and no step used the mouse.",
+  "started_at": "2026-10-22T08:28:15.780Z",
+  "finished_at": "2026-10-22T08:28:37.296Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.047,
+    "system_wait_seconds": 0.986,
+    "human_seconds": 5.9,
+    "human_plus_wait_seconds": 6.886,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.012,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "at": 0.093,
+      "took": 0.015,
+      "text": "/user",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.177,
+      "took": 0.007,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "new",
+      "keystrokes": 2,
+      "at": 0.555,
+      "took": 0.019,
+      "chord": "Alt+c",
+      "screen": "/odoo/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.013,
+      "seconds": 0.08
+    },
+    {
+      "label": "Users menu first",
+      "at": 0.109,
+      "seconds": 0.067
+    },
+    {
+      "label": "users list",
+      "at": 0.185,
+      "seconds": 0.369
+    },
+    {
+      "label": "new user form",
+      "at": 0.574,
+      "seconds": 0.394
+    },
+    {
+      "label": "the form's chatter loaded in full",
+      "at": 0.97,
+      "seconds": 0.076
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "62111f330280d1e0.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r12/compare/blind/shots/62111f330280d1e0.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "6421b83625549b07.jpg",
+      "at": 1.047,
+      "path": "../../evidence-staging/p04-shell/r12/compare/blind/shots/6421b83625549b07.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/odoo/users/new",
+      "empty": true,
+      "focused": true
+    }
+  },
+  "path_notes": "Ctrl+K > \"/user\" > Enter (Users list) > Alt+C (New).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/new-user-keyboard.mjs",
+    "sha256": "1a0d626be22f8c0fee6b1a1f117fc9f4db895d2deb66e14958ab5544fb55fa3a"
+  },
+  "task_notes": "Proposed by the p04 critic, round 7: \"every action reachable without a mouse\" and \"open any action by typing\". Every step must be a key or key chord.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.043
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "801c9fc6699b42a5",
+    "elements": 369
+  },
+  "screen_after_verify": {
+    "sha256": "801c9fc6699b42a5",
+    "elements": 369,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.03
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 87,
+    "not_caused": 5,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.127,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.194,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.605,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.606,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.992,
+        "event": "LayoutInvalidationTracking",
+        "why": "it followed the answer to GET image/png;base64,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, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.034,
+      "by_step": 4,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /web/assets/ff89cec/web.assets_emoji.min.js after 0.012 s",
+        "a task that followed at once (a message or an observer)",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

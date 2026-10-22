@@ -1,0 +1,39 @@
+postgres|t|t
+erp_owner|f|f
+erp_app|f|f
+erp_auth|f|f
+audit.entries|t|t
+identity.passkeys|t|t
+identity.roles|t|t
+identity.sessions|t|t
+identity.sign_in_attempts|t|t
+identity.user_company_roles|t|t
+identity.user_credentials|t|t
+identity.user_roles|t|t
+identity.users|t|t
+lists.saved_views|t|t
+tenancy.branches|t|t
+tenancy.companies|t|t
+tenancy.tenants|t|t
+tenancy.user_branch_access|t|t
+tenancy.user_company_access|t|t
+tenancy.user_company_totals|t|t
+tenancy.user_workplaces|t|t
+tables with tenant_id missing RLS:
+app tables without tenant_id:
+audit.__ef_migrations_history
+tenancy.__ef_migrations_history
+identity.__ef_migrations_history
+identity.sign_in_secret
+identity.sign_in_failures
+lists.__ef_migrations_history
+SET
+no-context users|0
+no-context audit|0
+no-context sessions|0
+BEGIN
+0190a000-0000-7000-8000-000000000001|1792657093.261162
+A ctx users|100005|0
+UPDATE 0
+A ctx B prefs read|0
+ROLLBACK

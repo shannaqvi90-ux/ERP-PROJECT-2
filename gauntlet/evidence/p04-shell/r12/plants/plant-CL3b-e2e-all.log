@@ -1,0 +1,181 @@
+
+Running 117 tests using 1 worker
+
+[1/117] [chromium] › specs/client-isolation.spec.ts:208:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory
+[chromium] › specs/client-isolation.spec.ts:208:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory
+client isolation: 16 steps per tenant judged on 7 markers in 12 carriers; canary.zaub24jw@alnoor.example (A) and canary.zb800zhj@gulfsteel.example (B)
+
+[2/117] [chromium] › specs/client-isolation.spec.ts:267:7 › G1 in the browser: one tab, tenant B then tenant A › after signing out, Back does not bring the signed-out person's screens back
+[3/117] [chromium] › specs/client-isolation.spec.ts:286:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B
+[chromium] › specs/client-isolation.spec.ts:286:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B
+history: B left 3 addresses with its search and record; A went Back 4 times: / / / /
+
+[4/117] [chromium] › specs/client-isolation.spec.ts:353:7 › G1 in the browser: one tab, tenant B then tenant A › signing out in one tab ends the session in every other tab of the browser at once
+[5/117] [chromium] › specs/client-isolation.spec.ts:371:7 › G1 in the browser: one tab, tenant B then tenant A › the judges' self-test: a marker planted in each carrier of the tab is found
+[6/117] [chromium] › specs/forms-reports.spec.ts:15:7 › record forms and printed documents › a form tracks changes, asks before leaving, saves with Ctrl+S and moves to the next record with Alt+PageDown
+[7/117] [chromium] › specs/forms-reports.spec.ts:70:7 › record forms and printed documents › a phone number keeps +971: a click selects the number after it, and typing its last digit saves; Alt+Z undoes that save
+[8/117] [chromium] › specs/forms-reports.spec.ts:132:7 › record forms and printed documents › a user who may only read a record sees it read-only, and no key of the form sends a change
+[9/117] [chromium] › specs/forms-reports.spec.ts:159:7 › record forms and printed documents › a record prints as an Arabic PDF from Alt+R, and its document reads right to left
+[10/117] [chromium] › specs/forms-reports.spec.ts:188:7 › record forms and printed documents › the reports screen shows a grouped report as an Arabic document and exports it
+[11/117] [chromium] › specs/forms-reports.spec.ts:208:7 › record forms and printed documents › a totalled report: roles and access shows each kind's totals and the grand total, and exports it
+[12/117] [chromium] › specs/forms-reports.spec.ts:259:7 › record forms and printed documents › a report longer than the screen prints every row through its PDF
+  1) [chromium] › specs/forms-reports.spec.ts:259:7 › record forms and printed documents › a report longer than the screen prints every row through its PDF 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('report-document').locator('article').locator('.report-count')
+    Expected pattern: /^The first 2,000 of [\d,]+ rows are shown here; the PDF, Excel and CSV hold all [\d,]+\.$/
+    Received string:  "1,007 rows"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toHaveText" getByTestId('report-document').locator('article').locator('.report-count') with timeout 10000ms
+      - waiting for getByTestId('report-document').locator('article').locator('.report-count')
+        21 × locator resolved to <p class="report-count">1,007 rows</p>
+           - unexpected value "1,007 rows"
+
+
+      263 |     await page.goto("/reports/catalog?report=identity.usersByRole&run=1");
+      264 |     const doc = page.getByTestId("report-document").locator("article");
+    > 265 |     await expect(doc.locator(".report-count")).toHaveText(/^The first 2,000 of [\d,]+ rows are shown here; the PDF, Excel and CSV hold all [\d,]+\.$/);
+          |                                                ^
+      266 |     await expect(page.getByRole("button", { name: "Print", exact: true })).toHaveCount(0);
+      267 |     const printAll = page.getByRole("link", { name: "Print all rows (PDF)" });
+      268 |     await expect(printAll).toHaveAttribute("target", "_blank");
+        at /home/shan/critic/p04-shell-r12-C/tests/e2e/specs/forms-reports.spec.ts:265:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/forms-reports-record-forms-97777-s-every-row-through-its-PDF-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/forms-reports-record-forms-97777-s-every-row-through-its-PDF-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/forms-reports-record-forms-97777-s-every-row-through-its-PDF-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/forms-reports-record-forms-97777-s-every-row-through-its-PDF-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[13/117] [chromium] › specs/forms-reports.spec.ts:281:7 › record forms and printed documents › a list prints what it shows: the filtered users list as PDF and CSV
+[14/117] [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants
+[15/117] [chromium] › specs/identity.spec.ts:88:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted
+[16/117] [chromium] › specs/identity.spec.ts:118:7 › users, roles and permissions › a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only
+[17/117] [chromium] › specs/identity.spec.ts:163:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted
+[18/117] [chromium] › specs/identity.spec.ts:195:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (en)
+[19/117] [chromium] › specs/identity.spec.ts:195:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (ar)
+[20/117] [chromium] › specs/identity.spec.ts:269:9 › users, roles and permissions › every box of the permission matrix and the role picker is full size at 1280, 1600 and 1920 px (en)
+[21/117] [chromium] › specs/identity.spec.ts:269:9 › users, roles and permissions › every box of the permission matrix and the role picker is full size at 1280, 1600 and 1920 px (ar)
+[22/117] [chromium] › specs/identity.spec.ts:322:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic
+[23/117] [chromium] › specs/keyboard-cycle.spec.ts:28:9 › Tab cycle › Tab and Shift+Tab go round the shell with no stop outside the controls (en)
+[24/117] [chromium] › specs/keyboard-cycle.spec.ts:28:9 › Tab cycle › Tab and Shift+Tab go round the shell with no stop outside the controls (ar)
+[25/117] [chromium] › specs/keyboard-cycle.spec.ts:50:7 › Tab cycle › the sign-in screen goes round its own controls with no dead stop
+[26/117] [chromium] › specs/keyboard-cycle.spec.ts:58:7 › Tab cycle › a modal dialog keeps its own cycle
+[27/117] [chromium] › specs/lists.spec.ts:17:7 › list framework › finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match
+[28/117] [chromium] › specs/lists.spec.ts:37:7 › list framework › lists a search best match first, opens it with Enter, and reads Arabic spelling variants
+[29/117] [chromium] › specs/lists.spec.ts:57:7 › list framework › column header buttons keep Enter and Space; rows keep one column layout
+[30/117] [chromium] › specs/lists.spec.ts:97:7 › list framework › moves through rows with the arrow keys, selects with Space and opens with Enter
+[31/117] [chromium] › specs/lists.spec.ts:123:7 › list framework › sorts from a header and filters from the column menu; the address keeps the state
+[32/117] [chromium] › specs/lists.spec.ts:153:7 › list framework › groups by a column with counts and opens a group's rows
+[33/117] [chromium] › specs/lists.spec.ts:168:7 › list framework › groups by status under the status's own words, as the rows say them
+[34/117] [chromium] › specs/lists.spec.ts:182:7 › list framework › chooses columns and saves a personal default view that opens next time
+[35/117] [chromium] › specs/lists.spec.ts:220:7 › list framework › a read-only user keeps personal views but is not offered sharing
+[36/117] [chromium] › specs/lists.spec.ts:235:7 › list framework › the list works right to left in Arabic with Arabic counts and headers
+[37/117] [chromium] › specs/lists.spec.ts:266:7 › list framework › a value that does not fit is cut at its own end in an Arabic list, the screen's own boxes included
+[38/117] [chromium] › specs/lists.spec.ts:289:9 › list framework › every header stays inside its own column, wide and narrow (ar)
+[39/117] [chromium] › specs/lists.spec.ts:289:9 › list framework › every header stays inside its own column, wide and narrow (en)
+[40/117] [chromium] › specs/lists.spec.ts:323:9 › list framework › a screen's record form grows with the window and its tables keep whole headers (en)
+[41/117] [chromium] › specs/lists.spec.ts:323:9 › list framework › a screen's record form grows with the window and its tables keep whole headers (ar)
+[42/117] [chromium] › specs/lists.spec.ts:369:9 › list framework › a record form grows to fit its widest table, and the user widens or narrows it by keyboard (en)
+[43/117] [chromium] › specs/lists.spec.ts:369:9 › list framework › a record form grows to fit its widest table, and the user widens or narrows it by keyboard (ar)
+[44/117] [chromium] › specs/lists.spec.ts:433:9 › list framework › with the navigation pane hidden the list takes the whole window and no column is cut (ar)
+[45/117] [chromium] › specs/lists.spec.ts:433:9 › list framework › with the navigation pane hidden the list takes the whole window and no column is cut (en)
+[46/117] [chromium] › specs/lists.spec.ts:468:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (ar)
+[47/117] [chromium] › specs/lists.spec.ts:468:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (en)
+[48/117] [chromium] › specs/navigation.spec.ts:24:7 › navigation reaches every screen › an administrator opens every menu entry in English and each screen loads
+[49/117] [chromium] › specs/navigation.spec.ts:30:7 › navigation reaches every screen › an administrator opens every menu entry in Arabic, right to left, and each screen loads
+[50/117] [chromium] › specs/navigation.spec.ts:67:7 › go-to keys reach every listed screen › in English
+[51/117] [chromium] › specs/navigation.spec.ts:73:7 › go-to keys reach every listed screen › in Arabic, by key position
+[52/117] [chromium] › specs/navigation.spec.ts:93:9 › a navigation to the screen on show opens it on the new address › record to record by the palette, G then U from a record, role to role (en)
+[53/117] [chromium] › specs/navigation.spec.ts:93:9 › a navigation to the screen on show opens it on the new address › record to record by the palette, G then U from a record, role to role (ar)
+[54/117] [chromium] › specs/passkey.spec.ts:20:7 › passkeys › added on My account, a passkey signs in with one confirmation on the device: from the plain, a personal and the team's address, in English and Arabic
+[55/117] [chromium] › specs/passkey.spec.ts:62:7 › passkeys › a shared PC whose last sign-in used a passkey: the next person signs in with e-mail, Enter, password, Enter, and the prompt goes away
+[56/117] [chromium] › specs/passkey.spec.ts:99:7 › passkeys › a removed passkey no longer signs in, and the screen says so and keeps the password path
+[57/117] [chromium] › specs/passkey.spec.ts:128:7 › passkeys › an administrator stops a lost device: the user's panel lists its passkey and a passkey sign-in, Sign out everywhere removes it, and the device no longer signs in
+[58/117] [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address
+[59/117] [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable
+[60/117] [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic
+[61/117] [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone
+[62/117] [chromium] › specs/print-paper.spec.ts:165:7 › whatever has the focus, the pointer or the selection, every screen prints as it does with none of it (en)
+[63/117] [chromium] › specs/print-paper.spec.ts:165:7 › whatever has the focus, the pointer or the selection, every screen prints as it does with none of it (ar)
+[64/117] [chromium] › specs/print-paper.spec.ts:257:5 › a keyboard user's printout of the Arabic users list carries no focus ring on the column header they left the focus on
+[65/117] [chromium] › specs/print-paper.spec.ts:297:7 › the users list and an open user record print inside an A4 page, nothing cut (en)
+[66/117] [chromium] › specs/print-paper.spec.ts:297:7 › the users list and an open user record print inside an A4 page, nothing cut (ar)
+[67/117] [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request
+[68/117] [chromium] › specs/shell.spec.ts:26:7 › app shell › the printed-at and printed-by stamp of a screen shows on paper only, never on screen
+[69/117] [chromium] › specs/shell.spec.ts:41:7 › app shell › nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer
+[70/117] [chromium] › specs/shell.spec.ts:65:7 › app shell › the tab's title names the screen, and follows the language at once
+[71/117] [chromium] › specs/shell.spec.ts:82:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload
+[chromium] › specs/shell.spec.ts:82:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload
+switch to Arabic on the users list: 96 ms
+
+[72/117] [chromium] › specs/shell.spec.ts:114:7 › app shell › Alt+L on the users list with one's own record open: the own row and the record say Arabic at once, not after a reload
+[73/117] [chromium] › specs/shell.spec.ts:140:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut
+[chromium] › specs/shell.spec.ts:140:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut
+palette to the Roles screen: 85 ms, 3 steps, 6 keystrokes
+
+[74/117] [chromium] › specs/shell.spec.ts:182:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position)
+[75/117] [chromium] › specs/shell.spec.ts:195:7 › app shell › the palette finds a record and opens it
+[76/117] [chromium] › specs/shell.spec.ts:212:7 › app shell › the palette opens a role by its Arabic name, and a company and a branch by code (keyboard only)
+[77/117] [chromium] › specs/shell.spec.ts:248:7 › app shell › the palette leads from a few record matches to the list of every match
+[78/117] [chromium] › specs/shell.spec.ts:266:9 › app shell › at phone width nothing is wider than the window (en)
+[79/117] [chromium] › specs/shell.spec.ts:266:9 › app shell › at phone width nothing is wider than the window (ar)
+[80/117] [chromium] › specs/shell.spec.ts:291:9 › app shell › at laptop widths the top bar fits the window (en)
+[81/117] [chromium] › specs/shell.spec.ts:291:9 › app shell › at laptop widths the top bar fits the window (ar)
+[82/117] [chromium] › specs/shell.spec.ts:315:7 › app shell › the palette starts a module's actions by typing: New user from anywhere, the screen's own commands first
+[chromium] › specs/shell.spec.ts:315:7 › app shell › the palette starts a module's actions by typing: New user from anywhere, the screen's own commands first
+palette to a new user from home: 144 ms, 3 steps, 10 keystrokes
+
+[83/117] [chromium] › specs/shell.spec.ts:355:7 › app shell › the palette offers a reader none of the actions that write, and the lists a reader may print
+[84/117] [chromium] › specs/shell.spec.ts:378:7 › app shell › the navigation pane comes back as it was when a phone-width window turns wide again
+[85/117] [chromium] › specs/shell.spec.ts:400:7 › app shell › the palette offers a user with no roles nothing they cannot open
+[86/117] [chromium] › specs/shell.spec.ts:414:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user
+[87/117] [chromium] › specs/shell.spec.ts:444:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome
+[88/117] [chromium] › specs/shell.spec.ts:464:7 › app shell › a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints
+[89/117] [chromium] › specs/shell.spec.ts:505:9 › app shell › the status line stays in view on every screen and the page never scrolls (1366x768)
+[90/117] [chromium] › specs/shell.spec.ts:505:9 › app shell › the status line stays in view on every screen and the page never scrolls (1280x720)
+[91/117] [chromium] › specs/shell.spec.ts:505:9 › app shell › the status line stays in view on every screen and the page never scrolls (1920x1080)
+[92/117] [chromium] › specs/shell.spec.ts:529:7 › app shell › Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has
+[93/117] [chromium] › specs/shell.spec.ts:557:7 › app shell › every list screen draws each row on one line: every cell inside its row and no line of its own, in English and Arabic, on screen and on paper
+[94/117] [chromium] › specs/shell.spec.ts:614:9 › app shell › every shell screen and dialog meets the accessibility basics (en)
+[95/117] [chromium] › specs/shell.spec.ts:614:9 › app shell › every shell screen and dialog meets the accessibility basics (ar)
+[96/117] [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu
+[chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu
+sign-in to workspace: 883 ms
+
+[97/117] [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen
+[98/117] [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password
+[99/117] [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English
+[100/117] [chromium] › specs/sign-in.spec.ts:54:7 › sign in to an empty workspace › after repeated failures the right password is told sign-in is paused and until when, in English and Arabic, until an administrator allows it again
+[101/117] [chromium] › specs/sign-in.spec.ts:132:7 › sign in to an empty workspace › paused on a shared address, a new browser shows its device code; the administrator lets it in from the sign-in history and the password signs in
+[102/117] [chromium] › specs/sign-in.spec.ts:191:7 › sign in to an empty workspace › empty fields are explained without a round trip
+[103/117] [chromium] › specs/sign-in.spec.ts:197:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it
+[104/117] [chromium] › specs/sign-in.spec.ts:218:7 › sign in to an empty workspace › first visit on the team's sign-in address: the part before @, Enter, the password, Enter
+[105/117] [chromium] › specs/sign-in.spec.ts:239:7 › sign in to an empty workspace › first visit on the team's sign-in address: the whole e-mail moves on by itself, the password, Enter
+[106/117] [chromium] › specs/sign-in.spec.ts:256:7 › sign in to an empty workspace › returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter
+[107/117] [chromium] › specs/sign-in.spec.ts:283:7 › sign in to an empty workspace › a shared PC, after Sign out, on the plain address: the next person's whole e-mail moves on, the password, Enter
+[108/117] [chromium] › specs/sign-in.spec.ts:331:7 › sign in to an empty workspace › the password can be shown from the keyboard to check it, then hidden, and still signs in
+[109/117] [chromium] › specs/sign-in.spec.ts:352:7 › sign in to an empty workspace › on the team's sign-in address in Arabic the domain stays left to right after the field
+[110/117] [chromium] › specs/tenancy.spec.ts:19:7 › companies, branches and the working company › an administrator creates a company and its first branch from the keyboard, then works in it
+[111/117] [chromium] › specs/tenancy.spec.ts:71:7 › companies, branches and the working company › in Arabic the companies read right to left and the switcher works the same way
+[112/117] [chromium] › specs/tenancy.spec.ts:88:7 › companies, branches and the working company › a read-only user works in one company: sees only it, cannot switch or edit
+[113/117] [chromium] › specs/tenancy.spec.ts:108:7 › companies, branches and the working company › a manager of one company who only reads another changes the first and is shown the second read-only, with the reason
+[114/117] [chromium] › specs/tenancy.spec.ts:141:7 › companies, branches and the working company › an administrator of one company is offered neither New nor a company code to change, and reads why
+[115/117] [chromium] › specs/tenancy.spec.ts:184:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu
+[116/117] [chromium] › specs/tenancy.spec.ts:227:7 › companies, branches and the working company › access: find a user by e-mail, see their companies and limit them to branches
+[117/117] [chromium] › specs/tenancy.spec.ts:248:7 › companies, branches and the working company › at phone width the working company stays readable and the switcher opens inside the window
+  1 failed
+    [chromium] › specs/forms-reports.spec.ts:259:7 › record forms and printed documents › a report longer than the screen prints every row through its PDF 
+  116 passed (6.9m)

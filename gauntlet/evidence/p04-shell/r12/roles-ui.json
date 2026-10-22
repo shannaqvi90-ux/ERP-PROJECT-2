@@ -1,0 +1,41 @@
+{
+  "r0": {
+    "viewer@alnoor.example": "Skip to content\nERP\nAl Noor Trading LLC\nALN-DXB · DEIRA-HQ\nSearch screens, records and actions\nCtrl\nK\nالعربية\nOmar Haddad\nSign out\nReports\nUsers\nRoles\nCompany access\nCompanies\nBranches\nWorkspace\nMy account\nWelcome, Omar Haddad\n\nOpen an area:\n\nUsers\nRoles\nCompany access\nCompanies\nBranches\nWorkspace\nR",
+    "noaccess@alnoor.example": "Skip to content\nERP\nAl Noor Trading LLC\nSearch screens, records and actions\nCtrl\nK\nالعربية\nLayla Nasser\nSign out\nWelcome, Layla Nasser\n\nNo areas are open to you yet. Ask an administrator to give you a role.\n\nSigned in as Layla Nasser · workspace alnoor\nSession valid until 23 Oct 2026, 12:32 AM\nCtrl\n"
+  },
+  "viewer@alnoor.example": {
+    "nav": [
+      "Reports",
+      "Users",
+      "Roles",
+      "Company access",
+      "Companies",
+      "Branches",
+      "Workspace",
+      "My account"
+    ],
+    "paletteNew": [],
+    "dirAfterAltL": "rtl",
+    "status": [
+      "الواجهة الآن باللغة العربية."
+    ],
+    "deepLinkNew": "Home\nSettings\nUsers\nUsers\nEvery word must match\n100,006 users\nView: Standard\nColumns\nPrint or export\nName\n▾\nE-mail\n▾\nLanguage\n▾\nStatus\n▾\nLast sign-in\n▾\nRoles\nLayla Linguist\nlang.tester@alnoor.example\n",
+    "writes": [
+      "POST /api/auth/sign-in",
+      "PUT /api/identity/me/preferences",
+      "PUT /api/identity/me/preferences"
+    ]
+  },
+  "noaccess@alnoor.example": {
+    "nav": [],
+    "paletteNew": [],
+    "dirAfterAltL": "rtl",
+    "status": [
+      "الواجهة الآن باللغة العربية."
+    ],
+    "deepLinkNew": "Home\nUsers\nNo access\n\nYour roles do not allow this screen. Ask an administrator if you need it.",
+    "writes": [
+      "POST /api/auth/sign-in"
+    ]
+  }
+}

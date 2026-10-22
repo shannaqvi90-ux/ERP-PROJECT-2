@@ -1,0 +1,43 @@
+Critic p04-shell round 12: plants on this piece's surface (separate copies of 9140b150; never in the judged clone)
+
+SERVER G1
+  SL1 (r11 miss, regression check; plant-server-S1-SL1-shared-digits-file-r11-regression.diff): PUT /api/identity/me/preferences
+      keeps the digits last chosen by anyone in a temp file and answers a language-only switch with them
+      -> CAUGHT 3 ways (plants-S1-gates.log): G1ShellAnswersTests.What_the_shell_is_answered... (runtime, partial bodies),
+         G1NonInterferenceTests (runtime, 6 answers), G1OutsideProcessStateTests (static: File.* in UpdatePreferences). Round 11 gap FIXED.
+  SL2 (plant-server-S3-SL2-learned-digits-per-language.diff): a whole-body save teaches "the usual digits" for its language
+      (file per language, any tenant); a language-only switch stores the learned digits on the account
+      -> CAUGHT by G1NonInterferenceTests (4 answers) and G1OutsideProcessStateTests (plants-S3-gates.log).
+         NOT caught by G1ShellAnswersTests' runtime check (passed, 8 m 33 s): its "other tenant" always writes the
+         values the judged tenant does not hold, so a fill keyed by the value the judged tenant sends is never exercised.
+
+SERVER G2
+  SP2 (plant-server-S2-SP2-declared-not-enforced-SP3-write-outside-set.diff): the preferences endpoint declares
+      identity.profile.update as metadata but its policy only requires signing in
+      -> CAUGHT: the host refuses to start ("declares 'identity.profile.update' but no authorization policy on it requires that
+         permission"); all 37 G2PermissionTests/G2WriteSetTests fail (plants-S2-SP2-gates.log).
+  SP3 (plant-server-S2b-SP3-write-outside-set.diff): switching to Arabic fills an empty Arabic name from the English one
+      (a write to display_name_ar that identity.profile.update does not grant)
+      -> CAUGHT by G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns (plants-S2b-SP3-gates.log).
+
+CLIENT
+  FR1 (plant-client-FR1-screen-not-reopened.diff): round 11's palette fix undone (the screen is not reopened on a new address)
+      -> CAUGHT: 4 web unit tests fail (navigationReopen.test.tsx, en and ar).
+  CL3 (plant-client-CL3-last-place-in-device-language-key.diff): the device's language key also holds the record address the
+      language was switched on; after the next sign-in on the device the shell opens it. First version used a module-level
+      variable -> CAUGHT by G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed (plants-S1-gates.log).
+  CL3b (plant-client-CL3b-last-record-in-device-language-key.diff): the same leak with no module-level state and no new storage
+      call (the one existing getItem/setItem of the reviewed device key "erp.language" carry "ar|/identity/users/<id>?q=<e-mail>")
+      -> MISSED by every gate:
+           web unit suite: 537 of 537 passed (plant-client-CL3b-last-record-in-device-language-key.log)
+           G1ClientStateTests (carrier inventory, module-level state): all passed (plants-S3-gates.log)
+           whole e2e suite on the planted stack, the browser G1 client-isolation spec included: 116 passed; the one failure,
+             forms-reports "a report longer than the screen" (needs over 2,000 users), fails on any 1,000-user stack
+             (plant-CL3b-e2e-all.log; the same failure with CL3 in plant-CL3-e2e-all.log)
+      -> REAL at run time (plant-CL3b-runtime-leak.json, 11-plant-CL3b-tenant-b-tab-opens-tenant-a-record.jpg): Al Noor's admin opens
+         accountant@alnoor.example's record, presses Alt+L, signs out; Gulf Steel's admin signs in on the same tab and is put on
+         /identity/users/<Al Noor user id>?q=accountant%40alnoor.example, with Al Noor's e-mail in the search box. The device key
+         still holds it after sign-out. The unplanted product does not do this (shared-device-product.json).
+      Why missed: the browser G1 journey (tests/e2e/specs/client-isolation.spec.ts, journey()) never uses the shell's own
+         language or digits switch, so nothing is written to the device-kept keys while tenant B's data is on screen; the static
+         client-state gate counts carrier uses and module state but does not judge what a reviewed device key holds.

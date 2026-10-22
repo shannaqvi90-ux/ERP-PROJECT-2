@@ -1,0 +1,14 @@
+diff --git a/web/src/modules/shell/AppShell.tsx b/web/src/modules/shell/AppShell.tsx
+index 2a3ea1be..6f710645 100644
+--- a/web/src/modules/shell/AppShell.tsx
++++ b/web/src/modules/shell/AppShell.tsx
+@@ -80,7 +80,8 @@ export function AppShell({ session }: { session: Session }) {
+   const path = usePath();
+   // Every navigation opens the screen again on its address, the same screen included (a second
+   // record from the first one's, a screen's own list from one of its records).
+-  const navigationKey = useNavigationKey();
++  // PLANT FR1 (critic p04 r12): round 11's fix undone: the screen is not opened again on a new address.
++  const navigationKey = 0 && useNavigationKey();
+   const route = matchRoute(path);
+   const mainRef = useRef<HTMLElement>(null);
+   const navRef = useRef<HTMLElement>(null);
