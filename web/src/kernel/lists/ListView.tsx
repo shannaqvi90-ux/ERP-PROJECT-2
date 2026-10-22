@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { requestLeave } from "../forms/leave";
-import { recordAddress, recordInAddress } from "../router";
+import { recordAddress, recordInAddress, replaceAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
 import { chordForAria, chordKeys, useCommand, useShortcut } from "../shortcuts";
@@ -453,6 +453,10 @@ export function ListView(props: ListViewProps) {
     const go = () => {
       setOpenId(null);
       setOpenRow(null);
+      // The address says so at once: the list keeps its address in step only once its definition
+      // has arrived, and a record closed before then (Escape right after the palette opened it, on
+      // a busy machine) was opened again from the address when the definition came.
+      replaceAddress(recordAddress(null, window.location.search));
       tableRef.current?.focus();
     };
     if (asked) go();
@@ -782,6 +786,11 @@ export function ListView(props: ListViewProps) {
   // Every row and the header share one width (the columns' minimums, or the grid's when wider),
   // so a long value in one row never widens that row's columns: cells cut long text instead.
   const rowMinWidth = `${2.25 + visible.reduce((sum, c) => sum + minimumWidth(c, t(c.labelKey)), 0)}rem`;
+  // On paper the columns share the page's width by their shares alone, with no selection column
+  // and no minimum, and long values wrap (lists.css, @media print): an A4 page is narrower than the
+  // columns' screen minimums, and the last column (Roles, in Arabic the leftmost) fell off the page
+  // (critic p04 round 11).
+  const printColumns = visible.map((c) => `minmax(0, ${columnWidth(c).share}fr)`).join(" ");
   const allowedBulk = (props.bulkActions ?? []).filter((a) => !a.permission || (props.can ? props.can(a.permission) : true));
   const selectionLabel = allMatching ? t("lists.selection.allSelected", { count: total }) : t("lists.selection.count", { count: selected.size });
   const groups = rows.groups ?? [];
@@ -802,7 +811,7 @@ export function ListView(props: ListViewProps) {
           aria-rowindex={index + 2}
           aria-selected={isSelected}
           className={`list-row${index === active ? " is-active" : ""}${isSelected ? " is-selected" : ""}${relevance && index === 0 ? " is-tophit" : ""}`}
-          style={{ transform: `translateY(${index * rowHeight}px)`, gridTemplateColumns: columnsTemplate, minWidth: rowMinWidth }}
+          style={{ transform: `translateY(${index * rowHeight}px)`, gridTemplateColumns: columnsTemplate, minWidth: rowMinWidth, "--list-print-columns": printColumns } as CSSProperties}
           onMouseDown={() => setActive(index)}
           onClick={(e) => {
             if (props.openOnClick && row && !(e.target instanceof HTMLInputElement)) open(row);
@@ -1088,7 +1097,7 @@ export function ListView(props: ListViewProps) {
               ))}
             </tr>
           ) : (
-          <tr role="row" aria-rowindex={1} className="list-header" style={{ gridTemplateColumns: columnsTemplate, minWidth: rowMinWidth }}>
+          <tr role="row" aria-rowindex={1} className="list-header" style={{ gridTemplateColumns: columnsTemplate, minWidth: rowMinWidth, "--list-print-columns": printColumns } as CSSProperties}>
             <th role="columnheader" className="list-cell list-select">
               {!grouped && (
                 <input

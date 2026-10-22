@@ -78,8 +78,9 @@ export function navigate(path: string): void {
     window.history.pushState(null, "", path);
     window.dispatchEvent(new Event(changeEvent));
   };
-  if (path.split("?")[0] !== window.location.pathname) requestLeave(go);
-  else go();
+  // The screen on show opens again on the new address (useNavigationKey), so unsaved changes on
+  // it are asked about whether the path or only the query changes.
+  requestLeave(go);
 }
 
 function useLocationPart(read: () => string): string {
@@ -102,6 +103,28 @@ const readSearch = () => window.location.search;
 
 export function usePath(): string {
   return useLocationPart(readPath);
+}
+
+/**
+ * A number that changes on every navigation to an address: navigate() (a link, the menu, the
+ * palette, a go-to key) and Back or Forward, never a screen's own replaceAddress() or
+ * history.replaceState(). The shell keys the screen on show by it, so a screen that reads the
+ * address when it opens (a list's search and open record, a report's parameters) opens again on
+ * the new address even when the screen stays the same: the palette opening a second user from the
+ * first user's record, G then U from a user record (critic p04 round 11).
+ */
+export function useNavigationKey(): number {
+  const [key, setKey] = useState(0);
+  useEffect(() => {
+    const bump = () => setKey((n) => n + 1);
+    window.addEventListener("popstate", bump);
+    window.addEventListener(changeEvent, bump);
+    return () => {
+      window.removeEventListener("popstate", bump);
+      window.removeEventListener(changeEvent, bump);
+    };
+  }, []);
+  return key;
 }
 
 /** One query parameter of the current address ("?search=…"), kept current as the address changes. */
