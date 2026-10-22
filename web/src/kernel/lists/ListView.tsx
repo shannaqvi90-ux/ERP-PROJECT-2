@@ -1,6 +1,7 @@
 import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
+import { identityScoped } from "../deviceState";
 import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
@@ -1569,8 +1570,9 @@ export function searchKeyIsGoTo(box: { value: string; selectionStart: number | n
   return box.selectionStart === 0 && box.selectionEnd === box.value.length;
 }
 
-/** The share each list's record forms needed on this page so far (see the form-fit effect). */
-const contentShares = new Map<string, number>();
+/** The share each list's record forms needed on this page so far (see the form-fit effect): widths
+ * only, emptied with everything else of the person when the identity ends (kernel/deviceState). */
+const contentShares = identityScoped<string, number>();
 
 /** Width of the selection column (the row's check box), in rem. */
 const selectColumnRem = 2.25;
