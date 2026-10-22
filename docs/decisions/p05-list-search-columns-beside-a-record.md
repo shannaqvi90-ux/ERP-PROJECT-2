@@ -109,5 +109,26 @@ Arabic beside the record. It is the form's own content, not the list's.
 ## Cost
 
 These checks add three end-to-end tests of about 4 s each, so roughly 12 s of browser time and
-about 15 to 20 processor seconds in a verify. Six unit tests add well under a second. The source
-gate entries for ClientAddresses.cs and ReportEndpoints.cs add no run time.
+about 15 to 20 processor seconds in a verify. Six unit tests add well under a second. The
+layout effect that measures headers runs only when the list's columns, sort, search, filters,
+language, frame width or rows change. It reads one header row and the rows on screen.
+
+Builder verifies this round, all run beside other agents' verifies:
+
+| Run | Slot taken (UTC) | Result | Processor seconds (.NET, web, e2e) |
+|---|---|---|---|
+| a | 2026-10-21 22:52 | money gate (a `parseFloat`), print-paper (en) and 7 client-isolation unit tests failed; the client-isolation journey timed out at 30 s under load, as it also did in p04's round-12 builder verify | 7,830, 165 (web stopped early), 212 |
+| b | 2026-10-22 01:05 | only the G1 client module-state gate failed (an unscoped `Map`, fixed with `identityScoped()`); web and e2e passed | 8,081, 2,509, 450 = 11,040 under load |
+| c | 2026-10-22 03:31 | .NET and e2e passed; one comparison-harness control failed under load (causation.test.mjs:710, "wsask", a style recalculation 1.97 s before the clock), so the timing stage did not run | 5,134, 1,935, 378 = 7,447 |
+
+The integrator's own run alone is what counts for the 10,500 s maximum. For comparison, p00's
+round-13 integrator run took 6,638 s on the same suite without this round's tests.
+
+## Merges
+
+This round merged the integration branch twice. The second merge brought p00 round 13, which
+made one shared outside-process source rule out of p00's rule and p05's external-state rule.
+`tests/Gates/tenant-bypass-sources.txt` takes p00's version, whose outside-process entries
+review ClientAddresses.cs (2 uses) and ReportEndpoints.cs (5 uses: the FileStream return type
+is counted too). So this round's own external-state entries for those files were dropped, not
+kept beside them.
