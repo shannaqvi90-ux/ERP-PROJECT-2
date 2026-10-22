@@ -16,6 +16,16 @@ public enum ListColumnType
     Reference,
 }
 
+/// <summary>How much of the list's width a column asks for: <see cref="Normal"/> by its type;
+/// <see cref="Narrow"/> for short codes (a currency, a company code); <see cref="Wide"/> for long
+/// text read in full (legal names in English and Arabic).</summary>
+public enum ListColumnWidth
+{
+    Normal,
+    Narrow,
+    Wide,
+}
+
 /// <summary>One allowed value of a <see cref="ListColumnType.Choice"/> column.</summary>
 /// <param name="Value">The value as stored and sent in filters.</param>
 /// <param name="LabelKey">Web string key of the value's label.</param>
@@ -64,7 +74,8 @@ public sealed record ListColumn(
     string? CurrencyField = null,
     string? TrueLabelKey = null,
     string? FalseLabelKey = null,
-    ListCompanyValues? InCompany = null);
+    ListCompanyValues? InCompany = null,
+    ListColumnWidth Width = ListColumnWidth.Normal);
 
 /// <summary>Values of a <see cref="ListColumn.ValuesFrom"/> column a row holds in one company each.</summary>
 /// <param name="Field">Row property holding an array of objects, one per value and company.</param>

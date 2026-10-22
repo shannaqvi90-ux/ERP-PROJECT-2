@@ -1546,8 +1546,15 @@ function textBox(column: ListColumn, content: ReactNode): ReactNode {
   );
 }
 
-/** A column's width in the grid template: a minimum in rem and a share of the rest. */
+/** A column's width in the grid template: a minimum in rem and a share of the rest. A column may
+ * ask for less (a short code) or more (a legal name read in full) than its type gives it. */
 function columnWidth(column: ListColumn): { min: number; share: number } {
+  if (column.width === "narrow") {
+    return { min: 6, share: 0.6 };
+  }
+  if (column.width === "wide") {
+    return { min: 14, share: 2.2 };
+  }
   switch (column.type) {
     case "boolean":
       return { min: 5.5, share: 0.6 };

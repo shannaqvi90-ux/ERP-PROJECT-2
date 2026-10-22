@@ -28,6 +28,8 @@ export type ListColumn = {
    * "Inactive"); without them "Yes" and "No". */
   trueLabelKey?: string | null;
   falseLabelKey?: string | null;
+  /** How much of the list's width the column asks for (short codes narrow, legal names wide). */
+  width?: "normal" | "narrow" | "wide";
 };
 
 export type ListPreset = { key: string; labelKey: string; filter: string | null; sort: string | null; groupBy: string | null };

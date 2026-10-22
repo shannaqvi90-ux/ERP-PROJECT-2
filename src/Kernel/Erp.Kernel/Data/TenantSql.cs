@@ -74,6 +74,46 @@ public static partial class TenantSql
         var visible = ownRowsReadable ? $"{CompanyScopeExpression} OR user_id = erp.current_actor_id()" : CompanyScopeExpression;
         migration.Sql($"CREATE POLICY company_scope ON {name} AS RESTRICTIVE FOR ALL TO PUBLIC " +
                       $"USING ({visible}) WITH CHECK ({CompanyScopeExpression});");
+        migration.ProtectCompanyWrites(schema, table);
+    }
+
+    /// <summary>The standard company write-permission expression (the gates compare policies with it).</summary>
+    public const string CompanyWriteExpression = "erp.company_writable(company_id)";
+
+    /// <summary>The company write-permission policies: name and command (PostgreSQL's polcmd letter).</summary>
+    public static IReadOnlyList<(string Name, string Command)> CompanyWritePolicies =>
+        [("company_write_insert", "a"), ("company_write_update", "w"), ("company_write_delete", "d")];
+
+    /// <summary>
+    /// The company write-permission layer of a company table (part of
+    /// <see cref="ProtectCompanyTable"/>; called on its own for tables made before it existed):
+    /// RESTRICTIVE <c>company_write_insert</c>, <c>company_write_update</c> and
+    /// <c>company_write_delete</c> policies with <see cref="CompanyWriteExpression"/>, so a request
+    /// whose permission is held only in some companies inserts, changes and deletes rows of those
+    /// companies alone, whichever statement it uses (tracked SaveChanges, ExecuteUpdate,
+    /// ExecuteDelete or raw SQL). Reads are not affected. Idempotent.
+    /// </summary>
+    public static void ProtectCompanyWrites(this MigrationBuilder migration, string schema, string table)
+    {
+        var name = Qualified(schema, table);
+        foreach (var (policy, _) in CompanyWritePolicies)
+        {
+            migration.Sql($"DROP POLICY IF EXISTS {policy} ON {name};");
+        }
+        migration.Sql($"CREATE POLICY company_write_insert ON {name} AS RESTRICTIVE FOR INSERT TO PUBLIC WITH CHECK ({CompanyWriteExpression});");
+        migration.Sql($"CREATE POLICY company_write_update ON {name} AS RESTRICTIVE FOR UPDATE TO PUBLIC " +
+                      $"USING ({CompanyWriteExpression}) WITH CHECK ({CompanyWriteExpression});");
+        migration.Sql($"CREATE POLICY company_write_delete ON {name} AS RESTRICTIVE FOR DELETE TO PUBLIC USING ({CompanyWriteExpression});");
+    }
+
+    /// <summary>Reverse of <see cref="ProtectCompanyWrites"/>.</summary>
+    public static void UnprotectCompanyWrites(this MigrationBuilder migration, string schema, string table)
+    {
+        var name = Qualified(schema, table);
+        foreach (var (policy, _) in CompanyWritePolicies)
+        {
+            migration.Sql($"DROP POLICY IF EXISTS {policy} ON {name};");
+        }
     }
 
     /// <summary>
@@ -104,8 +144,11 @@ public static partial class TenantSql
     }
 
     /// <summary>Reverse of <see cref="ProtectCompanyTable"/>.</summary>
-    public static void UnprotectCompanyTable(this MigrationBuilder migration, string schema, string table) =>
+    public static void UnprotectCompanyTable(this MigrationBuilder migration, string schema, string table)
+    {
+        migration.UnprotectCompanyWrites(schema, table);
         migration.Sql($"DROP POLICY IF EXISTS company_scope ON {Qualified(schema, table)};");
+    }
 
     /// <summary>Let the application role use the module's schema (no CREATE).</summary>
     public static void GrantSchemaUsage(this MigrationBuilder migration, string schema)

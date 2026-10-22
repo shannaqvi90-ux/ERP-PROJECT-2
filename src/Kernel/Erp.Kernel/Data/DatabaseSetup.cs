@@ -165,7 +165,8 @@ public sealed class DatabaseMigrator(ModuleCatalog catalog, IConfiguration confi
 /// <summary>
 /// Structural checks the migrator runs after every migration (a second guard; the gate suite has
 /// its own independent and stricter checks): every table with a <c>tenant_id</c> column has
-/// row-level security enabled and forced, and the application role cannot bypass it.
+/// row-level security enabled and forced, every company table carries the company write-permission
+/// policies, and the application role cannot bypass it.
 /// </summary>
 public static class SecurityInvariants
 {
@@ -189,6 +190,26 @@ public static class SecurityInvariants
                 if (!reader.GetBoolean(2)) problems.Add($"{name}: row-level security not enabled");
                 if (!reader.GetBoolean(3)) problems.Add($"{name}: row-level security not forced");
                 if (reader.GetInt64(4) != 1) problems.Add($"{name}: no tenant_isolation policy");
+            }
+        }
+        // A company table (one with the company_scope policy) also carries the company
+        // write-permission policies (TenantSql.ProtectCompanyWrites): without them a request whose
+        // permission is held only in some companies could write the others' rows with a statement
+        // the kernel's SaveChanges check never sees.
+        const string companyWrites = """
+            SELECT n.nspname || '.' || c.relname,
+                   (SELECT count(*) FROM pg_policy w WHERE w.polrelid = c.oid AND NOT w.polpermissive
+                       AND (w.polname, w.polcmd::text) IN (('company_write_insert', 'a'), ('company_write_update', 'w'), ('company_write_delete', 'd')))
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid = c.oid AND p.polname = 'company_scope')
+            """;
+        await using (var command = new NpgsqlCommand(companyWrites, connection))
+        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+        {
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                if (reader.GetInt64(1) != 3) problems.Add($"{reader.GetString(0)}: company table without the three company_write policies (migrationBuilder.ProtectCompanyWrites)");
             }
         }
         const string role = "SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = @role";

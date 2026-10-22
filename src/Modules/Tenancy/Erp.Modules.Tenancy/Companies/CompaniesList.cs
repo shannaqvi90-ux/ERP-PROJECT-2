@@ -17,10 +17,10 @@ internal static class CompaniesList
         ListBinding<Company>.For(new ListDefinition(
                 Key, "tenancy.companies.title", TenancyPermissions.CompaniesRead, "/api/tenancy/companies",
                 [
-                    new ListColumn("code", "tenancy.company.code", ListColumnType.Text, Sortable: true, Filterable: true),
-                    new ListColumn("legalNameEn", "tenancy.company.legalNameEn", ListColumnType.Text, Sortable: true, Filterable: true),
-                    new ListColumn("legalNameAr", "tenancy.company.legalNameAr", ListColumnType.Text, Sortable: true, Filterable: true),
-                    new ListColumn("baseCurrency", "tenancy.company.baseCurrency", ListColumnType.Text, Filterable: true, Groupable: true),
+                    new ListColumn("code", "tenancy.company.code", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Narrow),
+                    new ListColumn("legalNameEn", "tenancy.company.legalNameEn", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Wide),
+                    new ListColumn("legalNameAr", "tenancy.company.legalNameAr", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Wide),
+                    new ListColumn("baseCurrency", "tenancy.company.baseCurrency", ListColumnType.Text, Filterable: true, Groupable: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("city", "tenancy.company.city", ListColumnType.Text, Sortable: true, Filterable: true, Groupable: true),
                     new ListColumn("emirate", "tenancy.company.emirate", ListColumnType.Choice, Filterable: true, Groupable: true, Choices: TenancyLists.Emirates),
                     new ListColumn("branchCount", "tenancy.company.branchCount", ListColumnType.Number),

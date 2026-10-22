@@ -164,6 +164,39 @@ internal static class KernelSql
         """;
 
     /// <summary>
+    /// Company write permission: the third, per-permission layer of row-level security (critic p02
+    /// rounds 12 and 13: a manager of the Dubai LLC, read-only in the free-zone entity, closed a
+    /// free-zone branch through a set-based <c>ExecuteUpdate</c> that ran before the endpoint's
+    /// check and past the kernel's SaveChanges guard). A request whose permission is held only in
+    /// some companies (roles assigned per company) writes company-owned rows of those companies
+    /// alone: <see cref="ErpDbSession.LimitToPermissionAsync"/> sets <c>app.write_scope</c> to
+    /// <c>list</c> with the companies in <c>app.write_ids</c> and the transaction's start time in
+    /// <c>app.write_tx</c>, and the RESTRICTIVE <c>company_write_*</c> policies
+    /// (<see cref="TenantSql.ProtectCompanyWrites"/>) refuse an insert into, and skip an update or
+    /// delete of, a row of any other company, whatever statement does it. A request whose
+    /// permission is held in every company, and system work, set no limit (<c>app.write_scope</c>
+    /// is empty, set so by <see cref="ErpDbSession.BeginAsync"/>): the company scope alone applies.
+    /// A limit whose marker is not this transaction's (left at session level) refuses every write
+    /// (fail closed).
+    /// </summary>
+    public const string CompanyWrite = """
+        CREATE OR REPLACE FUNCTION erp.company_writable(p_company_id uuid) RETURNS boolean
+            LANGUAGE sql STABLE PARALLEL SAFE
+            AS $$
+                SELECT CASE WHEN coalesce(current_setting('app.write_scope', true), '') <> 'list' THEN true
+                            ELSE coalesce(current_setting('app.write_tx', true) = extract(epoch from now())::text
+                                          AND p_company_id = ANY (string_to_array(NULLIF(current_setting('app.write_ids', true), ''), ',')::uuid[]), false)
+                       END
+            $$;
+
+        GRANT EXECUTE ON FUNCTION erp.company_writable(uuid) TO erp_app;
+        """;
+
+    public const string CompanyWriteDown = """
+        DROP FUNCTION IF EXISTS erp.company_writable(uuid);
+        """;
+
+    /// <summary>
     /// Trigram matching for list search (ILIKE '%word%' served by GIN indexes with
     /// <c>gin_trgm_ops</c>). pg_trgm is a trusted extension shipped with PostgreSQL (PostgreSQL
     /// licence): the database owner installs it without superuser rights. It lives in

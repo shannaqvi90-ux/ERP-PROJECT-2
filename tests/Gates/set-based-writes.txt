@@ -1,0 +1,15 @@
+# Files under src/ reviewed to write with a set-based statement (EF Core ExecuteUpdate or
+# ExecuteDelete). Such a statement never reaches ModuleDbContext's SaveChanges checks (company
+# permission, branch limits, records every branch or company shares), so a handler that ran one
+# before its own permission check could change a company it only reads (critic p02 rounds 12 and
+# 13: a branch of company Y closed with one ExecuteUpdate). The database's company_write_* policies
+# refuse such a write on company tables; this list keeps every use reviewed as well. A new use, a
+# use in a file not listed here, or fewer uses than reviewed fail the gate
+# (tests/Erp.Gates.Tests/G2/G2SetBasedWriteSourceTests.cs).
+# Format: <repository-relative path> <uses>  # the sets written, why set-based, why no company is reached
+src/Modules/Identity/Erp.Modules.Identity/Auth/AuthEndpoints.cs 1  # Sign-out revokes the caller's own session (identity.sessions: workspace-level, no company_id) in one statement.
+src/Modules/Identity/Erp.Modules.Identity/Auth/Passwords.cs 1  # Sets a user's credential (identity.user_credentials: workspace-level, no company_id) without loading the hash into the change tracker; callers check the acting rules first.
+src/Modules/Identity/Erp.Modules.Identity/Auth/SignInService.cs 4  # Sign-in and password change: revokes the account's other sessions, marks a passkey's challenge used (compare-and-set on its counter), stamps the last sign-in and uses up a device approval (identity.sessions, identity.passkeys, identity.users: workspace-level, no company_id), each conditional so two requests cannot both succeed.
+src/Modules/Identity/Erp.Modules.Identity/Users/UserBulkEndpoints.cs 1  # Activates or deactivates matching users (identity.users: workspace-level, no company_id) in one statement, limited by the acting rule's expression (users beyond the caller excluded in the WHERE clause).
+src/Modules/Identity/Erp.Modules.Identity/Users/UserEndpoints.cs 2  # Removing a user deletes their credential row, and ending a user's sessions revokes them (identity.user_credentials, identity.sessions: workspace-level, no company_id), after the acting checks.
+src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs 1  # Locks one user's access by touching their user_company_totals row (no company_id) so two access changes for the same user serialise.
