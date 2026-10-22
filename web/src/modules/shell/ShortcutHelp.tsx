@@ -5,6 +5,9 @@ import { goToLead, type GoToTarget } from "./goTo";
 
 /** Keys that work inside a component rather than globally; listed so the sheet is complete. */
 const localKeys: { groupKey: string; chords: string[]; labelKey: string }[] = [
+  // The browser's own print key prints the screen as a document (kernel/print.tsx); the palette's
+  // "Print this screen" does the same.
+  { groupKey: "shell.shortcuts.group.general", chords: ["Mod+KeyP"], labelKey: "shell.action.print" },
   { groupKey: "shell.shortcuts.group.palette", chords: ["ArrowUp", "ArrowDown"], labelKey: "shell.shortcuts.palette.move" },
   { groupKey: "shell.shortcuts.group.palette", chords: ["Enter"], labelKey: "shell.shortcuts.palette.open" },
   { groupKey: "shell.shortcuts.group.dialogs", chords: ["Escape"], labelKey: "shell.shortcuts.dialog.close" },

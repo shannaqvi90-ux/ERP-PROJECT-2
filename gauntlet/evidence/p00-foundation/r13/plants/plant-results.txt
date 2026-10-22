@@ -1,0 +1,28 @@
+Critic p00 r13 plants (plants.diff + CriticPlant.cs + CriticR13Proof.cs; inert unless CRITIC_PLANT names them), run in the
+toolbox (run-in-toolbox.sh / run-plants.sh; batch 1 01:35-02:06Z, batch 2 02:06-03:29Z). One build carries every plant.
+Control: CriticR13Proof with CRITIC_PLANT=NONE passes 2/2 (plant-PROOFNONE.log). The static G1 gates pass with every plant's
+code present (plant-G1STATIC.log, 8/8: G1OutsideProcessState, G1TenantSource, G1ProcessState, G1TenantSettingCode).
+
+PERMISSION PLANTS (kernel)
+P11 PermissionAuthorizationHandler: "the server's own callers (jobs, a reverse proxy's checks on this machine) are trusted":
+    a signed-in request whose connection address is loopback passes every permission.
+    Proof (plant-PROOFP11.log): a user with no roles: plain client GET /api/identity/users -> 403; from loopback
+    GET /api/identity/users?take=1 -> 200, GET /api/identity/roles?take=1 -> 200 (POST roles -> 403, refused elsewhere).
+    MISSED by every gate: G2 + Rules + SelfTests 135/135 passed (plant-G2P11.log, 26.4 min); G1 74/74 passed
+    (plant-G1P11.log, 32.4 min); Identity module tests 107/107 passed (plant-IDP11.log).
+    Why: every gate request comes from the in-memory test server's client, whose address is never loopback (no test in
+    tests/ sets a client address other than through X-Forwarded-For); no G2 matrix varies the client address.
+P12 SessionAuthentication: "a permission held in one company is held in all of them" (companies = null, no narrowing).
+    CAUGHT by G2 (plant-G2P12.log, 2 failures): G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y,
+    A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone.
+
+TENANT-LEAK PLANTS (kernel)
+L10 ListBinding.QueryAsync keeps list totals for 120 s in an XML file (/tmp/erp-warm-totals.xml, System.Xml.Linq
+    XDocument.Load/Save on a path), keyed by list, search and filter, with no tenant.
+    Proof (plant-PROOFL10.log): B has 3 users with a fresh word; A's search for it answers total 3 (expected 0).
+    Static: MISSED by G1OutsideProcessStateTests and the source rule outside-process (XDocument.Load(string) and
+    XDocument.Save(string) are path APIs neither knows; plant-G1STATIC.log).
+    CAUGHT live (plant-G1L10.log): G1ListVolume "2976 list answers at volume that are not the asking tenant's own",
+    G1HttpIsolation "10233 list answers that are not the asking tenant's own".
+
+Result: G1 caught its plant (live); G2 missed P11, an action with no permission check in p00's kernel.

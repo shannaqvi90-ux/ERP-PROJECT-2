@@ -70,6 +70,11 @@ export default {
     }
     const fromCompany = await ensureCompany(api, from);
     ctx.state.to = await ensureCompany(api, to);
+    // With more than six active companies (critic p01 round 14 left a seventh active), the one-click
+    // buttons are the companies the user switched between most recently, which the server keeps.
+    // The actor works in both companies and goes between them: set-up switches to "to" and back to
+    // "from", so "to" has its button whatever the number of companies, as it has for such a user.
+    await api.put('/api/tenancy/workplace', { companyId: ctx.state.to.id, branchId: null });
     await api.put('/api/tenancy/workplace', { companyId: fromCompany.id, branchId: null });
   },
   async signIn(ctx) {

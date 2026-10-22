@@ -350,7 +350,8 @@ test.describe("list framework", () => {
         page.evaluate(() => {
           const frame = document.querySelector<HTMLElement>(".list-scroll")!;
           const box = frame.getBoundingClientRect();
-          const heads = [...document.querySelectorAll<HTMLElement>("table[role=grid] tr.list-header > th[data-column]")];
+          // The headers on screen (a column waiting beside an open record is in the row, not shown).
+          const heads = [...document.querySelectorAll<HTMLElement>("table[role=grid] tr.list-header > th[data-column]")].filter((th) => th.getClientRects().length > 0);
           const marker = document.querySelector<HTMLElement>("table[role=grid] tr.list-header > th.list-more");
           const cutHeads = heads
             .map((th) => th.querySelector<HTMLElement>(".list-sort-label, .list-headlabel"))

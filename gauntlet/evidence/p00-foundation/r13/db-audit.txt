@@ -1,0 +1,52 @@
+                                      Table "audit.entries"
+     Column     |           Type           | Collation | Nullable |           Default            
+----------------+--------------------------+-----------+----------+------------------------------
+ id             | bigint                   |           | not null | generated always as identity
+ tenant_id      | uuid                     |           | not null | 
+ occurred_at    | timestamp with time zone |           | not null | now()
+ actor_id       | uuid                     |           |          | 
+ actor_kind     | character varying(20)    |           | not null | 
+ table_schema   | character varying(63)    |           | not null | 
+ table_name     | character varying(63)    |           | not null | 
+ record_id      | uuid                     |           |          | 
+ action         | character varying(10)    |           | not null | 
+ changes        | jsonb                    |           | not null | 
+ transaction_id | bigint                   |           | not null | 
+ correlation_id | character varying(100)   |           |          | 
+Indexes:
+    "pk_entries" PRIMARY KEY, btree (id)
+    "ix_entries_tenant_id_actor_id_occurred_at" btree (tenant_id, actor_id, occurred_at)
+    "ix_entries_tenant_id_occurred_at" btree (tenant_id, occurred_at)
+    "ix_entries_tenant_id_table_name_record_id_occurred_at" btree (tenant_id, table_name, record_id, occurred_at)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+
+     table_name      | action | count  
+---------------------+--------+--------
+ users               | insert | 101016
+ user_credentials    | insert | 101016
+ saved_views         | insert |     20
+ user_company_access | insert |     18
+ roles               | insert |     16
+ branches            | insert |     15
+ user_company_totals | update |     10
+ user_company_totals | insert |      8
+ sessions            | insert |      8
+ user_roles          | insert |      8
+ user_workplaces     | insert |      8
+ companies           | insert |      6
+ user_company_roles  | insert |      4
+ user_branch_access  | insert |      3
+ tenants             | insert |      2
+ companies           | update |      1
+(16 rows)
+
+   id   |              tenant_id               |          occurred_at          |               actor_id               | actor_kind | table_schema |     table_name      |              record_id               | action |                                                                changes                                                                | transaction_id |     correlation_id     
+--------+--------------------------------------+-------------------------------+--------------------------------------+------------+--------------+---------------------+--------------------------------------+--------+---------------------------------------------------------------------------------------------------------------------------------------+----------------+------------------------
+ 202152 | 0190a000-0000-7000-8000-000000000002 | 2026-10-22 01:09:17.075955+00 | 01a16126-8884-7fd0-89c8-8c2eb248c5f5 | user       | tenancy      | companies           | 018f6605-b084-74bf-a233-9f2a879af5de | update | {"logo_hash": {"new": "a08ebc4e6a9199ed50330cf309004c5d02b908b976fca1063e97a76fdb354ceb"}, "logo_content_type": {"new": "image/png"}} |            937 | 0HNPFR3OQKH1G:00000017
+ 202107 | 0190a000-0000-7000-8000-000000000002 | 2026-10-22 01:07:57.525565+00 |                                      | seed       | tenancy      | user_company_totals | 4e775890-2e54-41bf-be83-4a6cf5f74ac6 | update | {"company_count": {"new": 2, "old": 1}}                                                                                               |            785 | seed:demo
+ 202101 | 0190a000-0000-7000-8000-000000000002 | 2026-10-22 01:07:57.525565+00 |                                      | seed       | tenancy      | user_company_totals | c744a55f-5049-4384-a6c6-ffc4f71ecfca | update | {"company_count": {"new": 2, "old": 1}}                                                                                               |            785 | seed:demo
+(3 rows)
+

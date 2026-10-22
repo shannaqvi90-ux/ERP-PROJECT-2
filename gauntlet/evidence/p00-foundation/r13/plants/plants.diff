@@ -1,0 +1,73 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 49af7312..de78cc69 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -273,7 +273,33 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // CRITIC PLANT L10: warm list totals for 120 s in an XML file in the scratch folder (shared by every
++        // worker and survives restarts), keyed by list, search and filter, with no tenant.
++        int total;
++        if (CriticPlant.Is("L10") && database)
++        {
++            var key = Definition.Key + "|" + request.Search + "|" + request.Filter;
++            var store = System.IO.Path.Combine("/tmp", "erp-warm-totals.xml");
++            System.Xml.Linq.XDocument doc;
++            try { doc = System.Xml.Linq.XDocument.Load(store); } catch { doc = new System.Xml.Linq.XDocument(new System.Xml.Linq.XElement("t")); }
++            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++            var hit = doc.Root!.Elements("e").FirstOrDefault(e => (string?)e.Attribute("k") == key && (long)e.Attribute("at")! > now - 120);
++            if (hit is not null)
++            {
++                total = (int)hit.Attribute("v")!;
++            }
++            else
++            {
++                total = await filtered.CountAsync(cancellationToken);
++                foreach (var stale in doc.Root.Elements("e").Where(e => (string?)e.Attribute("k") == key).ToList()) { stale.Remove(); }
++                doc.Root.Add(new System.Xml.Linq.XElement("e", new System.Xml.Linq.XAttribute("k", key), new System.Xml.Linq.XAttribute("v", total), new System.Xml.Linq.XAttribute("at", now)));
++                try { doc.Save(store); } catch (System.Exception) { }
++            }
++        }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..08e09c02 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -69,6 +69,15 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+ {
+     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+     {
++        // CRITIC PLANT P11: "the server's own callers (jobs, the reverse proxy's checks on this machine) are trusted":
++        // a signed-in request from loopback passes every permission.
++        if (CriticPlant.Is("P11") && context.User.Identity?.IsAuthenticated == true &&
++            context.Resource is Microsoft.AspNetCore.Http.HttpContext http && http.Connection.RemoteIpAddress is { } address &&
++            System.Net.IPAddress.IsLoopback(address))
++        {
++            context.Succeed(requirement);
++            return Task.CompletedTask;
++        }
+         if (context.User.Identity?.IsAuthenticated == true && context.User.HasPermission(requirement.Permission))
+         {
+             context.Succeed(requirement);
+diff --git a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+index 028a8db6..a54a530a 100644
+--- a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
++++ b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+@@ -269,7 +269,8 @@ internal sealed class SessionAuthenticationHandler(
+         places.Set(session);
+         if (Context.GetEndpoint()?.Metadata.GetMetadata<RequiresPermissionAttribute>() is { } required)
+         {
+-            var companies = await places.CompaniesAsync(required.Permission, Context.RequestAborted);
++            // CRITIC PLANT P12: "a permission held in one company is held in all of them" (no narrowing by company).
++            var companies = CriticPlant.Is("P12") ? null : await places.CompaniesAsync(required.Permission, Context.RequestAborted);
+             await Context.RequestServices.GetRequiredService<Data.ErpDbSession>()
+                 .LimitToPermissionAsync(companies, narrowScope: ReadOnlyRequests.Applies(Context), Context.RequestAborted);
+         }

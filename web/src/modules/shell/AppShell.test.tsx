@@ -413,6 +413,15 @@ describe("keyboard and focus", () => {
       for (const expected of ["↑ ↓", "PgUp PgDn", "Home End", "Enter", "Space", "/", "Esc"]) expect(keys).toContain(expected);
       expect(keys.some((k) => /^(Ctrl|⌘) A$/.test(k))).toBe(true);
       for (const label of lists!.querySelectorAll("td:last-child")) expect(label.textContent).not.toMatch(/^shell\./);
+      // The page keys are said in the order they are shown (critic p04 round 11: "PgUp PgDn" read
+      // "a page down or up").
+      const page = [...lists!.querySelectorAll("tr")].find((r) => [...r.querySelectorAll("kbd")].map((k) => k.textContent).join(" ") === "PgUp PgDn");
+      expect(page!.querySelector("td:last-child")!.textContent).toBe(language === "en" ? "Move a page up or down" : "الانتقال صفحة إلى الأعلى أو إلى الأسفل");
+      // Printing is on the sheet: the browser's own print key prints the screen as a document.
+      const general = [...document.querySelectorAll(".shortcut-table")].find((t) => t.querySelector("caption")!.textContent === (language === "en" ? "General" : "عام"));
+      const print = [...general!.querySelectorAll("tr")].find((r) => /^(Ctrl|⌘) P$/.test([...r.querySelectorAll("kbd")].map((k) => k.textContent).join(" ")));
+      expect(print, "Ctrl+P on the help sheet").toBeDefined();
+      expect(print!.querySelector("td:last-child")!.textContent).toBe(language === "en" ? "Print this screen" : "طباعة هذه الشاشة");
       view.unmount();
       view = undefined;
     }
