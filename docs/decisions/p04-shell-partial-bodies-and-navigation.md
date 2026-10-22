@@ -183,3 +183,7 @@ The suite tests passed in every run. What failed:
   - The e2e client-isolation journey met the reopened record (fixed: section 6).
 
 The 30 s limit was not raised.
+- **Run 4 (slot taken 2026-10-22 04:28Z) passed.** Wall time 4,551 s, not judged: the load peaked at
+  41.3 on 16 CPUs. Processor time 7,430 s against the maximum of 10,500 s (.NET 4,668, web 2,219,
+  end-to-end 509, timing 35). Tests: .NET 738, web unit 537, end-to-end 117, compare 486, build 6,
+  none failed or skipped. The suite minimums are raised to these counts.
