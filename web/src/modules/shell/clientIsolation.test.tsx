@@ -353,7 +353,6 @@ async function journey(tenant: Tenant, judge: (step: string) => void): Promise<n
       act(() => option!.click());
       await wait(300);
       step("record opened from the palette");
-      await switchSettingsOnRecord(step);
       press({ code: "Escape", key: "Escape" });
       await settle();
     } else {
@@ -559,6 +558,62 @@ async function bThenAInOneTab() {
   expect(document.querySelector<HTMLInputElement>('main input[type="search"]')?.value).toBe(alpha.searchWord);
 }
 
+/** Opens the tenant's marker record from the palette ("canary"), as the journey does. */
+async function openMarkerFromPalette(tenant: Tenant) {
+  press({ code: "KeyK", key: "k", ctrlKey: true });
+  await settle();
+  setInput(document.querySelector<HTMLInputElement>('[role="dialog"].palette input[role="combobox"]')!, "canary");
+  const marker = tenant.users[2]!.displayName;
+  await until(() => [...document.querySelectorAll<HTMLElement>('[role="option"]')].some((o) => o.textContent?.includes(marker)));
+  const option = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find((o) => o.textContent?.includes(marker));
+  expect(option, `the palette finds ${marker}`).toBeTruthy();
+  act(() => option!.click());
+  await until(() => document.querySelector("aside h2") !== null);
+}
+
+/**
+ * Tenant B opens its own record and, with it on screen, changes every device setting from every
+ * place the shell offers it (switchSettingsOnRecord), then signs out; tenant A signs in in the same
+ * tab and does the same on its own record. The device keys are judged after every step: each may
+ * hold only its setting (tests/Gates/device-keys.txt). A must start on Home, and nothing of B may
+ * reach A (critic p04 round 12, plant CL3b: the language key kept the record B switched language
+ * on, and A was put on it after signing in). A journey of its own, beside the long one above, so
+ * each stays well inside its time.
+ */
+async function settingsOnRecordThenA() {
+  serveTwoTenants();
+  view = await render(<App language="en" />);
+  await settle();
+  await signInAs(bravo);
+  const problems: string[] = [];
+  await openMarkerFromPalette(bravo);
+  // B's record is on screen and in the address: the test has teeth.
+  expect(decodeURIComponent(window.location.href)).toContain(bravo.users[2]!.id);
+  let bSteps = 0;
+  await switchSettingsOnRecord((name) => {
+    bSteps++;
+    problems.push(...deviceKeyProblems(`B, ${name}`));
+  });
+  await signOut();
+  problems.push(...deviceKeyProblems("signed out"));
+  for (const marker of leaks()) problems.push(`signed out: ${marker}`);
+  await signInAs(alpha);
+  await wait(300);
+  expect(window.location.pathname + window.location.search, "A's address after signing in").toBe("/");
+  problems.push(...deviceKeyProblems("A signed in"));
+  for (const marker of leaks()) problems.push(`A signed in: ${marker}`);
+  await openMarkerFromPalette(alpha);
+  let aSteps = 0;
+  await switchSettingsOnRecord((name) => {
+    aSteps++;
+    problems.push(...deviceKeyProblems(`A, ${name}`));
+    for (const marker of leaks()) problems.push(`A, ${name}: ${marker}`);
+  });
+  expect(aSteps).toBe(bSteps);
+  expect(bSteps).toBeGreaterThanOrEqual(10);
+  expect(problems, "device keys holding more than their setting, or B's markers in A's tab").toEqual([]);
+}
+
 /** The tab's current history entry, as the browser would keep it for Back. */
 const entry = () => ({ url: window.location.pathname + window.location.search + window.location.hash, state: window.history.state as unknown });
 
@@ -603,6 +658,15 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
       expect(document.cookie, `cookies seen at ${path}`).toBe("");
     }
     expect(window.name).toBe("");
+  });
+
+  it("with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B", async () => {
+    await settingsOnRecordThenA();
+  });
+
+  it("in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B", async () => {
+    sessionLanguage = arabic;
+    await settingsOnRecordThenA();
   });
 
   it("the device-key judge refuses a setting with anything beside it, and signing out drops such a key (CL3b's shape)", async () => {

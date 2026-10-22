@@ -31,11 +31,20 @@ run time it was a real cross-tenant leak: Gulf Steel's admin landed on an Al Noo
      judge every device key's value against its pattern after every step of B, on the signed-out
      screen and after every step of A. This is a value check, independent of markers: a key holding
      anything beyond its setting fails, whether or not a marker is in it.
-2. **The journeys run the shell's own switches with a record open.** Right after the record opened
-   from the palette, both journeys change and then restore every device setting from every place
-   the shell offers it: Alt+L twice, the top bar's language button twice, the palette's digits
-   action twice, language and digits in My preferences (Alt+P), and the navigation pane (Alt+B)
-   twice. Both tenants take the same steps (26 per tenant end to end, up from 16).
+2. **The journeys run the shell's own switches with a record open.** With the tenant's record on
+   screen, each journey changes and then restores every device setting from every place the shell
+   offers it: Alt+L twice, the top bar's language button twice, the palette's digits action twice,
+   language and digits in My preferences (Alt+P), and the navigation pane (Alt+B) twice. Both
+   tenants take the same steps.
+   - End to end: in the long G1 journey, right after the record opened from the palette (26 steps
+     per tenant, up from 16).
+   - Web unit: in two journeys of their own, in English and in Arabic with Arabic-Indic digits.
+     B opens its marker record, switches everything and signs out. A signs in and does the same on
+     its own record. The device keys are judged after every step, and B's markers after every step
+     of A. The first try put these steps inside the long journey. That made it about 23 s against
+     its 30 s limit, and in a loaded verify (load 77) it ran out of time and took the rest of the
+     file down with it. The long journey is back to its old length, and it still judges the device
+     keys' values after every step.
 3. **A starts on Home.** After A signs in on the tab B left, A's first address must be `/` with no
    query. CL3b put A on B's record with B's e-mail in the search box.
 4. **The unit journey uses UUID-shaped ids.** A client that treats an id by its shape (CL3b only
@@ -70,11 +79,11 @@ run time it was a real cross-tenant leak: Gulf Steel's admin landed on an Al Noo
 
 ## Processor time this round adds
 
-- Web unit: each of the two B-then-A journeys takes about 2.5 s longer (about 23 s each, measured
-  alone). The new self-test takes 0.1 s and the help-sheet test 0.3 s. The plant self-test gains
-  one plant run, about 8 processor seconds, and each of its 14 runs is about 5 s longer: roughly
-  80 processor seconds in all.
+- Web unit: the two new journeys take about 3.5 s each, the self-test 0.1 s and the help-sheet
+  test 0.3 s. The long journeys are unchanged (about 20.5 s each, measured alone). The plant
+  self-test gains one plant run, and each of its 14 runs is about 7 s longer: roughly 110
+  processor seconds in all.
 - e2e: the G1 journey has 13 more steps per tenant, about 3 s. The print check adds no new page
   loads.
 - .NET: two file-only gate tests, under 1 s.
-- In total, under 100 processor seconds against the 10,500 s maximum.
+- In total, about 130 processor seconds against the 10,500 s maximum.
