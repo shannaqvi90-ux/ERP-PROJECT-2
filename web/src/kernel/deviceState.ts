@@ -76,8 +76,11 @@ export function identityScoped<K, V>(): Map<K, V> {
 function clearLocalStorage(keepEmail: boolean): void {
   try {
     const keep = new Set(keepEmail ? [...deviceKeys, rememberedEmailKey] : deviceKeys);
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
+    // Every key first, then the removals: a browser may reorder its keys when one is removed
+    // (Chromium does), so walking the indexes while removing skipped keys (the e2e G1 journey: after
+    // the language was switched twice, Sign out left the person's e-mail on the sign-in screen).
+    const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i));
+    for (const key of keys) {
       if (key === null) continue;
       // A device setting stays only while it holds its setting and nothing else.
       const shaped = !deviceKeys.includes(key) || deviceValueKept(key, localStorage.getItem(key) ?? "");
