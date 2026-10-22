@@ -1,0 +1,17 @@
+   id   |          occurred_at          | actor_kind |          email          | table_name | action |                                                           left                                                           
+--------+-------------------------------+------------+-------------------------+------------+--------+--------------------------------------------------------------------------------------------------------------------------
+ 202131 | 2026-10-22 12:25:47.201929+00 | user       | admin@alnoor.example    | companies  | insert | {"id": {"new": "01a16393-19c9-75c6-a11e-325059bbc072"}, "code": {"new": "CRITIC"}, "country": {"new": "AE"}, "is_active"
+ 202136 | 2026-10-22 12:25:48.743168+00 | user       | admin@alnoor.example    | branches   | insert | {"id": {"new": "01a16393-1fcd-7e86-b01b-2cd8038e095f"}, "code": {"new": "CRITIC"}, "country": {"new": "AE"}, "name_ar": 
+ 202139 | 2026-10-22 12:26:11.932329+00 | user       | admin.ar@alnoor.example | companies  | insert | {"id": {"new": "01a16393-7a5e-7eb9-a266-eaafa770a9f0"}, "code": {"new": "CRITIC-2"}, "country": {"new": "AE"}, "is_activ
+ 202144 | 2026-10-22 12:26:13.474147+00 | user       | admin.ar@alnoor.example | branches   | insert | {"id": {"new": "01a16393-8065-7e2d-97d6-de14cb11be59"}, "code": {"new": "MUSSAFAH"}, "country": {"new": "AE"}, "name_ar"
+(4 rows)
+
+   id   | actor_kind | table_name | action |                                                 left                                                 
+--------+------------+------------+--------+------------------------------------------------------------------------------------------------------
+      1 | seed       | tenants    | insert | {"id": {"new": "0190a000-0000-7000-8000-000000000001"}, "code": {"new": "alnoor"}, "status": {"new":
+ 200071 | seed       | tenants    | insert | {"id": {"new": "0190a000-0000-7000-8000-000000000002"}, "code": {"new": "gulfsteel"}, "status": {"ne
+ 202248 | seed       | tenants    | insert | {"id": {"new": "01a16398-6775-716d-befe-eaf4b3379a65"}, "code": {"new": "critic13"}, "status": {"new
+ 202252 | seed       | users      | insert | {"id": {"new": "01a16398-6ac7-7865-8748-4c537600cbe2"}, "email": {"new": "owner@critic13.example"}, 
+ 202263 | system     | tenants    | update | {"status": {"new": "suspended", "old": "active"}}
+(5 rows)
+

@@ -1,0 +1,22 @@
+A=0190a000-0000-7000-8000-000000000001 B=0190a000-0000-7000-8000-000000000002 BC=018f6605-b081-7599-84da-cd3299c88721
+BEGIN
+0190a000-0000-7000-8000-000000000001|all|1792671918.554369
+bound A sees companies|0|0
+A reads B company by id|0
+UPDATE 0
+A update B affected (should be 0 rows above)
+ERROR:  new row violates row-level security policy for table "branches"
+ROLLBACK
+BEGIN
+0190a000-0000-7000-8000-000000000001|1792671926.983358|all|1792671926.983358
+properly bound A sees companies|5|0
+A reads B company by id|0
+UPDATE 0
+A sets tenant_id to B on own company:
+ERROR:  new row violates row-level security policy for table "companies"
+ROLLBACK
+BEGIN
+0190a000-0000-7000-8000-000000000001|1792671926.988599|all|1792671926.988599
+ERROR:  insert or update on table "branches" violates foreign key constraint "fk_branches_companies_tenant_id_company_id"
+DETAIL:  Key is not present in table "companies".
+ROLLBACK
