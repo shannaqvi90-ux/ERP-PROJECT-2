@@ -342,7 +342,12 @@ public static class OutsideProcessCode
     }
 
     /// <summary>The method tokens a body's call, callvirt, newobj, ldftn, ldvirtftn and jmp load.</summary>
-    private static IEnumerable<int> MethodTokens(byte[] il)
+    private static IEnumerable<int> MethodTokens(byte[] il) =>
+        Operands(il).Where(o => o.Type == OperandType.InlineMethod).Select(o => o.Token);
+
+    /// <summary>Every token operand of a method body (methods, fields, strings, types and the
+    /// tokens ldtoken loads), with its operand type.</summary>
+    public static IEnumerable<(OperandType Type, int Token)> Operands(byte[] il)
     {
         var i = 0;
         while (i < il.Length)
@@ -361,9 +366,10 @@ public static class OutsideProcessCode
             {
                 yield break; // not IL we understand: stop rather than misread operands
             }
-            if (op.OperandType == OperandType.InlineMethod && i + 4 <= il.Length)
+            if (op.OperandType is OperandType.InlineMethod or OperandType.InlineField or OperandType.InlineString or OperandType.InlineTok or OperandType.InlineType
+                && i + 4 <= il.Length)
             {
-                yield return BitConverter.ToInt32(il, i);
+                yield return (op.OperandType, BitConverter.ToInt32(il, i));
             }
             i += op.OperandType switch
             {

@@ -231,19 +231,22 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     /// (<see cref="Erp.Kernel.Security.SessionTokenCarriers.All"/>): one client per carrier, each
     /// sending the token that way only. The permissions gate runs its matrices over each.
     /// </summary>
-    public async Task<IReadOnlyList<CarrierClient>> SignInPerCarrierAsync(string email, ErpAppFactory? factory = null, string password = Password)
+    /// <param name="origin">Where the sign-in and every request of the clients come from
+    /// (<see cref="ClientOrigin"/>); the in-memory server's own when null.</param>
+    public async Task<IReadOnlyList<CarrierClient>> SignInPerCarrierAsync(string email, ErpAppFactory? factory = null, string password = Password, ClientOrigin? origin = null)
     {
-        var (token, _) = await SignInForTokenAsync(email, factory, password);
-        return Erp.Kernel.Security.SessionTokenCarriers.All.Select(c => new CarrierClient(c.Name, ClientCarrying(c.Name, token, factory))).ToList();
+        var (token, _) = await SignInForTokenAsync(email, factory, password, origin);
+        return Erp.Kernel.Security.SessionTokenCarriers.All.Select(c => new CarrierClient(c.Name, ClientCarrying(c.Name, token, factory, origin))).ToList();
     }
 
     /// <summary>One sign-in of <paramref name="email"/> (on <paramref name="factory"/>, this
     /// environment's host by default): the session token it issued and the signed-in user's id.</summary>
-    public async Task<(string Token, Guid UserId)> SignInForTokenAsync(string email, ErpAppFactory? factory = null, string password = Password)
+    public async Task<(string Token, Guid UserId)> SignInForTokenAsync(string email, ErpAppFactory? factory = null, string password = Password, ClientOrigin? origin = null)
     {
         factory ??= Factory;
         using var anonymous = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
         anonymous.DefaultRequestHeaders.Add("X-Erp-Request", "1");
+        origin?.Apply(anonymous);
         var response = await anonymous.PostAsJsonAsync("/api/auth/sign-in", new { email, password, issueToken = true });
         if (response.StatusCode != HttpStatusCode.OK)
         {
@@ -260,10 +263,13 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     /// the Authorization header and nothing else. A carrier the kernel reads but this method does not
     /// know fails here, so no carrier escapes the permissions gate.
     /// </summary>
-    public HttpClient ClientCarrying(string carrier, string token, ErpAppFactory? factory = null)
+    /// <param name="origin">Where every request of the client comes from (<see cref="ClientOrigin"/>);
+    /// the in-memory server's own when null.</param>
+    public HttpClient ClientCarrying(string carrier, string token, ErpAppFactory? factory = null, ClientOrigin? origin = null)
     {
         factory ??= Factory;
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        origin?.Apply(client);
         switch (carrier)
         {
             case Erp.Kernel.Security.SessionTokenCarriers.CookieName:
@@ -375,6 +381,8 @@ public sealed class ErpAppFactory(IDictionary<string, string?> settings) : WebAp
         {
             services.AddSingleton<RequestInputRecorder>();
             services.AddSingleton<IDataSourceObserver, StatementCapture.Observer>();
+            // First: the request's peer address (ClientOrigin), before anything reads the request.
+            services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, ClientOrigin.StartupFilter>();
             services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, RequestInputRecorder.StartupFilter>();
             _descriptors = services.ToList();
         });
