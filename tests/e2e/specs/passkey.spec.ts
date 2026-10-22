@@ -111,7 +111,9 @@ test.describe("passkeys", () => {
     await page.keyboard.press("ControlOrMeta+a");
     await page.keyboard.type("Old laptop");
     await page.keyboard.press("Enter");
-    await expect(section.getByRole("cell", { name: "Old laptop" })).toBeVisible();
+    // The saved name in its own cell (exact: the row's actions cell is named after the passkey too,
+    // "Rename the passkey Old laptop", and so is the name cell while the rename field holds it).
+    await expect(section.getByRole("cell", { name: "Old laptop", exact: true })).toBeVisible();
     await section.getByRole("button", { name: "Remove the passkey Old laptop" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Remove" }).click();
     await expect(section.getByRole("cell", { name: "Old laptop" })).toHaveCount(0);
