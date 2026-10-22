@@ -34,6 +34,27 @@ test.describe("list framework", () => {
     await expect(page.getByRole("region", { name: "Details" })).toHaveCount(0);
   });
 
+  test("the status bar's '/ search' works with the cursor already in the search box", async ({ page }) => {
+    // Critic p03 round 13: after G U the cursor is in the search box; a user who followed the hint
+    // typed "/" and then an e-mail, searched "/accountant…" and got "Nothing matches".
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await openUsers(page);
+    await expect(search(page)).toBeFocused();
+    await expect(page.locator(".list-statusbar")).toContainText("/ search");
+    await page.keyboard.press("/");
+    await expect(search(page)).toBeFocused();
+    await expect(search(page)).toHaveValue("");
+    await page.keyboard.type(users.viewer);
+    await expect(page.getByText("1 user", { exact: true })).toBeVisible();
+    // From the grid, "/" comes back to the search box with its text selected; "/" again keeps it.
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("/");
+    await expect(search(page)).toBeFocused();
+    await page.keyboard.press("/");
+    await expect(search(page)).toHaveValue(users.viewer);
+  });
+
   test("lists a search best match first, opens it with Enter, and reads Arabic spelling variants", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
@@ -316,6 +337,110 @@ test.describe("list framework", () => {
           expect(await spills(), `${language} ${width}px ${href} with the record open`).toEqual([]);
         }
       }
+    });
+  }
+
+  for (const [language, user] of [["ar", users.adminArabic], ["en", users.admin]] as const) {
+    test(`with a record open no column of the list is cut: the rest wait behind a marker that names them and makes room (${language})`, async ({ page }) => {
+      // Critic p04 round 10: with a record open on the Arabic users list at 1440 px the grid ran
+      // past its frame, so the leftmost columns were cut without an ellipsis ('Last sign-in' and its
+      // dates) and Roles could not be seen. Critic p03 rounds 9 to 13: at 1366 px with a record
+      // open the English 'Language' header read 'Langu…'.
+      const layout = () =>
+        page.evaluate(() => {
+          const frame = document.querySelector<HTMLElement>(".list-scroll")!;
+          const box = frame.getBoundingClientRect();
+          // The headers on screen (a column waiting beside an open record is in the row, not shown).
+          const heads = [...document.querySelectorAll<HTMLElement>("table[role=grid] tr.list-header > th[data-column]")].filter((th) => th.getClientRects().length > 0);
+          const marker = document.querySelector<HTMLElement>("table[role=grid] tr.list-header > th.list-more");
+          const cutHeads = heads
+            .map((th) => th.querySelector<HTMLElement>(".list-sort-label, .list-headlabel"))
+            .filter((label): label is HTMLElement => Boolean(label) && label!.scrollWidth > label!.clientWidth)
+            .map((label) => `${label.textContent}: header cut (${label.scrollWidth} > ${label.clientWidth})`);
+          const cutValues = [...document.querySelectorAll<HTMLElement>("tr.list-row > td[data-fit]")]
+            .filter((td) => td.scrollWidth > td.clientWidth)
+            .map((td) => `${td.textContent}: value cut (${td.scrollWidth} > ${td.clientWidth})`);
+          const outside = [...document.querySelectorAll<HTMLElement>("table[role=grid] tr.list-header > th")]
+            .map((th) => ({ th, r: th.getBoundingClientRect() }))
+            .filter(({ r }) => r.width > 0 && (r.left < box.left - 0.5 || r.right > box.right + 0.5))
+            .map(({ th }) => `${th.textContent?.trim()}: outside the frame`);
+          const label = marker?.querySelector<HTMLElement>("[aria-label]");
+          return {
+            sideways: frame.scrollWidth - frame.clientWidth,
+            shown: heads.map((th) => th.querySelector(".list-sort-label, .list-headlabel")?.textContent ?? ""),
+            problems: [...cutHeads, ...cutValues, ...outside],
+            marker: label ? { name: label.getAttribute("aria-label") ?? "", text: label.textContent ?? "", button: label.tagName === "BUTTON" } : null,
+          };
+        });
+      await freshStart(page, language);
+      await signIn(page, user);
+      for (const width of [1366, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        await openUsers(page);
+        const closed = await layout();
+        expect(closed.marker, `${language} ${width}px: a marker with no record open`).toBeNull();
+        const all = closed.shown;
+        expect(all.length).toBeGreaterThanOrEqual(5);
+
+        await dataRows(page).first().click();
+        await expect(page.locator("aside.list-record")).toBeVisible();
+        // The layout settles once the form has measured its content: then nothing is cut.
+        await expect
+          .poll(async () => {
+            const now = await layout();
+            return now.sideways > 0 ? [...now.problems, `the list scrolls sideways by ${now.sideways}px`] : now.problems;
+          }, { message: `${language} ${width}px with the record open` })
+          .toEqual([]);
+        const open = await layout();
+        // The list keeps its leading columns in the user's order; the others wait behind the marker,
+        // which counts and names every one of them.
+        expect(all.slice(0, open.shown.length)).toEqual(open.shown);
+        const waiting = all.slice(open.shown.length);
+        if (waiting.length === 0) {
+          expect(open.marker).toBeNull();
+        } else {
+          expect(open.marker, `${language} ${width}px: ${waiting.join(", ")} hidden with no marker`).not.toBeNull();
+          expect(open.marker!.text.replace(/[^\d٠-٩]/g, "").length).toBeGreaterThan(0);
+          for (const name of waiting) expect(open.marker!.name).toContain(name);
+          if (open.marker!.button) {
+            // The marker gives the list room: the record narrows and more columns show, still whole.
+            await page.locator("table[role=grid] tr.list-header > th.list-more button").click();
+            await expect.poll(async () => (await layout()).shown.length).toBeGreaterThan(open.shown.length);
+            const roomier = await layout();
+            expect(roomier.problems).toEqual([]);
+            expect(roomier.sideways).toBeLessThanOrEqual(0);
+            await expect(page.locator("aside.list-record")).toBeVisible();
+            await page.evaluate(() => localStorage.removeItem("erp.lists.recordShare.identity.users"));
+          }
+        }
+        // Closing the record brings every column back.
+        await page.keyboard.press("Escape");
+        await expect(page.locator("aside.list-record")).toBeHidden();
+        await expect.poll(async () => (await layout()).shown).toEqual(all);
+        expect((await layout()).marker).toBeNull();
+      }
+
+      // The widest record (End on the splitter) leaves the list little room: the marker is a button,
+      // and pressing it narrows the record until more columns show, whole.
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await openUsers(page);
+      const all = (await layout()).shown;
+      await dataRows(page).first().click();
+      await expect(page.locator("aside.list-record")).toBeVisible();
+      await page.getByRole("separator").focus();
+      await page.keyboard.press("End");
+      await expect(page.getByRole("separator")).toHaveAttribute("aria-valuenow", "75");
+      await expect.poll(async () => (await layout()).marker?.button ?? false).toBe(true);
+      const narrow = await layout();
+      expect(narrow.problems).toEqual([]);
+      expect(narrow.sideways).toBeLessThanOrEqual(0);
+      for (const name of all.slice(narrow.shown.length)) expect(narrow.marker!.name).toContain(name);
+      await page.locator("table[role=grid] tr.list-header > th.list-more button").click();
+      await expect.poll(async () => (await layout()).shown.length).toBeGreaterThan(narrow.shown.length);
+      expect(Number(await page.getByRole("separator").getAttribute("aria-valuenow"))).toBeLessThan(75);
+      const roomier = await layout();
+      expect(roomier.problems).toEqual([]);
+      expect(roomier.sideways).toBeLessThanOrEqual(0);
     });
   }
 
