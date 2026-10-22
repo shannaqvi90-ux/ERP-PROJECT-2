@@ -1,0 +1,121 @@
+{
+  "piece": "p05-list-search",
+  "round": 14,
+  "commit": "9e3380e0",
+  "judged_at": "2026-10-22T19:12:43Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p05-list-search round 14",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (live attack on the product as built)",
+      "status": "pass",
+      "evidence": "On the clean clone's demo (100,005 alnoor users, 1,005 gulfsteel users) I signed in as admin@alnoor and attacked gulfsteel. attack-api-lists.txt: GET, PUT and DELETE on B's personal and shared view ids through both views/{id} and shared-views/{id} all answered 404, and B's views kept their versions. Searches and filters for gulfsteel returned total 0. B's keyset cursor returned only A's rows. Group sums equalled A's total. The filtered CSV export held no gulfsteel row, and tenant headers got 401 without a session. attack-sweep-get.txt: 523 GET calls covered every GET route in the OpenAPI document. They used B's user, role, company, branch, access and view ids as path ids and as company/role parameters, plus B's search terms, filters and cursor, in JSON and CSV. That found 0 leaks across 217 markers. db-inspect.txt: erp_app is not superuser and has no BYPASSRLS. As erp_app with no tenant set, identity.users and lists.saved_views return 0 rows. lists.saved_views has forced RLS. pg_class estimates and pg_stat_user_tables are refused."
+    },
+    {
+      "gate": "G1 gate catches tenant leaks planted in p05's surface",
+      "status": "fail",
+      "evidence": "I planted L14 (L14-list-first-page-kept-in-origin-file-system.patch, 44 lines in p05's web/src/kernel/lists/useListRows.ts). It writes each list query's first page to the origin's private file system (navigator.storage.getDirectory), keyed by endpoint and query only, with no tenant or user. It shows that page right away while the fresh page loads. Every client gate missed it: G1ClientStateTests passed 4 of 4 (run-plants-L13-P13-L14-gates-all.log), the web client-isolation unit tests passed, and the e2e specs/client-isolation.spec.ts passed 5 of 5 against a planted stack (run-L14-e2e-client-isolation.log). Live (plant-live-L14.txt): gulfsteel's admin opens Users and signs out. The signed-out screen's origin file system still holds a 34 KB file with 100 @gulfsteel e-mails. Alnoor's admin then signs in in the same browser. With a 3 s API delay, Users opens on 32 rows, all gulfsteel users, labelled '1,005 users' (10-plant-L14-second-tenant-sees-first-tenants-users.jpg). Regression from round 12: plant L13 is now caught by G1OutsideProcessStateTests, G1TenantSourceTests and, dynamically, G1ListVolumeTests (3 m 35 s)."
+    },
+    {
+      "gate": "G2 permissions (product, and gates on planted faults in p05's surface)",
+      "status": "pass",
+      "evidence": "Plant P13 (P13-personal-delete-removes-shared-view.patch) lets the personal DELETE /views/{id} route remove shared views. G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing catches it: 'DELETE /api/lists/tenancy.companies/views/{id:guid} answered 204 to a reader ... for the workspace's shared view'. Plant P14 (P14-bulk-actions-offered-without-permission.patch) offers bulk actions without their permission. 3 web tests fail on it, among them 'offers no state change to a user who may not update users' and the keyboard sweeps of /identity/users. Round 12's P10 now fails ListView.test 'offers a reader who may not share no change to the workspace's shared view'. Live in the browser: the viewer's Views menu offers only 'Save as a new view…', with no share box and no Update or Delete on the shared default. The selection bar offers Copy only (ui-views.txt)."
+    },
+    {
+      "gate": "G3 clean clone (one command: build, migrate, seed, all tests)",
+      "status": "fail",
+      "evidence": "The verify ran through verify-slot.sh. The slot was taken at 18:05:53Z after a 3,945 s wait, and the run ended at about 19:11Z, 3,922 s later. It exited 1 on stage web. One compare-harness unit test failed: test/measured-part.test.mjs:158 'control C4 (routed, p00 r10): a save still under way while the page changes its address stays on the clock and verifies'. It came out 'invalid' where 'verified' was expected: 'a DevTools command outside any step ... 1.203 s before the clock started'. Every other test passed: .NET 758/758, web vitest 543/543, build 6/6, compare 485/486, e2e 120/120. The timing and ratchet stages did not run. Processor time for the three stages was 7,665 s (dotnet 5,249, web 2,003, e2e 414). ./erp up from the clone served the seeded demo in 92 s (later restarts took 70 s and 48 s)."
+    },
+    {
+      "gate": "Rule gates (licences, money, EN/AR strings, audit, list indexes)",
+      "status": "pass",
+      "evidence": "They run inside the .NET stage, which passed (758 tests); the web string check passed. No dependency changed since round 12. lists.saved_views carries the audit_capture trigger and created_by/updated_by. identity.users has trigram GIN indexes on display_name, email_normalized and display_name_ar, and (tenant_id, column, id) btree indexes (db-inspect.txt)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p05-list-search-r14 ERP_HTTP_PORT=20550 ERP_DB_PORT=20551 ERP_VERIFY_HTTP_PORT=20560 ERP_VERIFY_DB_PORT=20561 ERP_VERIFY_LOG=/home/shan/evidence-staging/p05-list-search/r14/verify-critic-p05-list-search-r14.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1913,
+    "passed": 1912,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 3922
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 3922,
+    "evidence": "I cloned 9e3380e0 fresh. ./erp verify exited 1 because one comparison-harness unit test failed (measured-part.test.mjs control C4); every other stage and test was green. The machine was busy: the load was 12 at the start and peaked at 52.6 on 16 CPUs, and the compare suite took 1,690 s. I ran that test alone afterwards as a diagnosis, not to get a pass, at load 8: it passed in 8.1 s (diag-compare-C4-alone.log). So it fails under load. The one-command demo (./erp up with ERP_SEED_USERS_CSV) came up in 92 s on ports 20550/20551, and the environment overrides worked."
+  },
+  "odoo": [
+    {
+      "task": "find-user (find one user among 100,000; p16 Contacts is not built, so the dataset's 100,000 users)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 3,
+        "seconds": 1.481,
+        "klm_seconds": 8.29
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 5,
+        "seconds": 3.014,
+        "klm_seconds": 10.35
+      },
+      "notes": "Command: run.mjs --task find-user,open-third-user-keyboard --product both --repeat 3, branding hidden, on the shared rig on 8069, which passed the live check of 100,000 rows in each of 7 lists. Ours ran on the clean clone's demo seeded with ERP_SEED_USERS_CSV. Ours is judged on its whole 'initials' path: open Users, type the 3 initials, click the row. Odoo gets its best path per metric (steps 'menus', keystrokes 'shortest-suggestion', machine 'palette', human 'palette-shortest'). Ours wins every metric; human time plus waits was 9.12 s against 13.05 s. No metric was left out and there are no ties. Every other ours path loses at least one metric: enter has 21 keys, prefixes 15, shortest 8. A first comparison run overlapped with an earlier run.mjs process that a timeout had not stopped. I discarded it and re-ran cleanly into compare/. Server time over 100,005 users, median of 5 (perf.txt, load about 70): exact name 34 ms, 'ma' (45,797 matches) 133 ms, 'kh ha' 233 ms, Arabic spelling variant 114 ms, skip 99,950 sorted 321 ms. Kept shots: one result-list shot per product in compare/blind/shots."
+    },
+    {
+      "task": "open-third-user-keyboard (open a record from the list by keyboard only)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 6,
+        "seconds": 0.327,
+        "klm_seconds": 6.13
+      },
+      "odoo": {
+        "steps": 8,
+        "keystrokes": 13,
+        "seconds": 1.381,
+        "klm_seconds": 6.74
+      },
+      "notes": "The task is p04's, but it exercises this piece's keyboard navigation in the grid. Command: run.mjs, both products, repeat 3. Ours wins every metric; human time plus waits was 6.33 s against 7.95 s. No metric was left out."
+    },
+    {
+      "task": "find-record (find one contact among 100,000)",
+      "winner": "not-compared",
+      "notes": "p16 Contacts does not exist at this commit (src/Modules holds Identity, Lists, Reports and Tenancy only)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p05-list-search/r14/01-users-list-100k-en.jpg",
+    "gauntlet/evidence/p05-list-search/r14/02-search-as-you-type.jpg",
+    "gauntlet/evidence/p05-list-search/r14/03-keyboard-selection-bulk.jpg",
+    "gauntlet/evidence/p05-list-search/r14/04-group-by-language.jpg",
+    "gauntlet/evidence/p05-list-search/r14/05-save-shared-view.jpg",
+    "gauntlet/evidence/p05-list-search/r14/06-record-open-beside-list.jpg",
+    "gauntlet/evidence/p05-list-search/r14/07-viewer-save-no-share.jpg",
+    "gauntlet/evidence/p05-list-search/r14/08-users-list-ar.jpg",
+    "gauntlet/evidence/p05-list-search/r14/09-users-list-ar-search.jpg",
+    "gauntlet/evidence/p05-list-search/r14/10-plant-L14-second-tenant-sees-first-tenants-users.jpg",
+    "gauntlet/evidence/p05-list-search/r14/compare/blind/shots/c7dde082e508dde7.jpg",
+    "gauntlet/evidence/p05-list-search/r14/compare/blind/shots/de8e978a455b1f01.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The client-side tenant gate cannot see the browser's origin private file system, so a list page cached by p05's list component reaches the next tenant on the same device",
+    "detail": "p05's list component is the screen every later 100,000-row list uses (Contacts, invoices, stock). Its natural next optimisation is to show the last answer at once while a slow query loads. If it keeps that answer in the origin private file system (navigator.storage.getDirectory), no gate notices. The G1ClientStateTests carrier patterns cover cookies, window.name, history, localStorage, sessionStorage, IndexedDB, caches, service workers and BroadcastChannel, but not navigator.storage or getDirectory. forgetIdentity() clears storage, IndexedDB, Cache Storage and cookies but never the private file system. The client-isolation e2e judges 12 carriers, and this is not one of them. Its heap snapshot misses the data because the cached rows are replaced and collected once the fresh page arrives. The result is a real cross-tenant leak on shared devices, the outsourced-bookkeeper case the product names. The signed-out device keeps the previous tenant's rows, and the next tenant's list opens on them while the network is slow. Fixes: (a) add navigator.storage, getDirectory, FileSystemHandle, createWritable and storage.persist (and the File System Access API) to the G1ClientStateTests carriers, with a planted self-test; (b) make forgetIdentity empty the origin private file system (getDirectory, then removeEntry with recursive for every entry) and add a Clear-Site-Data: \"storage\" header to the sign-out answer; (c) add an 'opfs' carrier to client-isolation.spec.ts and its judges' self-test, and have the e2e signed-out step check that the origin's whole storage is empty, using navigator.storage.estimate as well, not a fixed list of APIs.",
+    "evidence": "Apply gauntlet/evidence/p05-list-search/r14/L14-list-first-page-kept-in-origin-file-system.patch to 9e3380e0. G1ClientStateTests (4 of 4), the web unit tests and tests/e2e specs/client-isolation.spec.ts (5 of 5, run-L14-e2e-client-isolation.log, using scripts/plant-e2e-run.sh against a planted ./erp up) all pass. Live: run ERP_PROJECT=<p> ERP_HTTP_PORT=<port> ERP_SEED_VOLUME=2000 ./erp up on the planted copy, then node scripts/probe-l14.mjs http://localhost:<port> out.jpg 3000. The signed-out screen's origin file system holds list-/api/identity/users?sort=-createdAt| with 100 @gulfsteel.example e-mails. Alnoor's admin then opens Users on 32 gulfsteel rows labelled '1,005 users' (plant-live-L14.txt, 10-plant-L14-second-tenant-sees-first-tenants-users.jpg)."
+  },
+  "other_findings": [
+    "[route: p01-odoo-rig] One test failed in the verify: comparison-harness test/measured-part.test.mjs:158 'control C4'. Under machine load it reported 'invalid' (a DevTools command outside any step, 1.203 s before the clock started) instead of 'verified'. Run alone at load 8 it passes in 8.1 s (diag-compare-C4-alone.log). The instrument's control misreads its own reads as page activity when the machine is busy. That made this verify fail, and the same thing showed up in a live comparison run: one ours find-user run was marked invalid for 'a DevTools command of the harness during step 3'.",
+    "[route: p04-shell] The client-isolation machinery (G1ClientStateTests carriers, kernel/deviceState forgetIdentity, e2e client-isolation.spec.ts) has no origin-private-file-system carrier. It is reported here as the biggest gap because the fault was planted in p05's list component, but the fix lies in the shared client gate.",
+    "Kept fixed from round 12: plant L13 (broad initials total on disk) is now caught by G1OutsideProcessStateTests, G1TenantSourceTests and G1ListVolumeTests. Plant P10 (reader offered Update or Delete on a shared view) now fails ListView.test. Counts did not fall: .NET 656 to 758, web 504 to 543, e2e 106 to 120, compare 415 to 486.",
+    "New plants that were caught: P13 (the personal DELETE route deletes shared views) by G2PermissionTests, and P14 (bulk actions offered without their permission) by 3 web tests.",
+    "Scope in the browser at 1600x900 over 100,005 users (ui-scope.txt, ui-views.txt, ui-ar.txt). The list renders in 280 ms with 32 DOM rows, and the search box has the focus on arrival. 'khalid haddad' as you type gives 57 matches in 421 ms, and Enter opens the record. ArrowDown, End (row 100,006 in 1.5 s, still 32 DOM rows), Home, Space and Shift+Arrow all work, and the selection bar offers Copy, Deactivate and Activate. Enter on the Name header sorts. The column menu filter 'Language is Arabic' gives 30,308, and group by language gives Arabic 30,308 and English 69,697. A shared default view saved by the admin opens for the viewer. The new columns-beside-record behaviour narrows to Name plus '+5' after Alt+W. In Arabic the page is dir=rtl, Arabic headers show, and the spelling variant 'محمد السويدى' finds 49 users, with Enter opening the record.",
+    "API scope (scope-api.txt): and, or and nested filters work, and bad columns or types get a typed 400. Keyset paging continues correctly. Roles grouped by isSystem return per-group userCount totals.",
+    "Processor time: the three verify stages used 7,665 s. Timing and ratchet did not run because web failed, so the 10,500 s maximum was not judged this run.",
+    "Housekeeping: I removed compose projects c-p05-list-search-r14, -verify and -plant, with their volumes and images, the plant gate-run container and both critic clones. The odoo-reference rig and other agents' containers were not touched."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p05-list-search/r14",
+  "evidence_dir": "gauntlet/evidence/p05-list-search/r14"
+}

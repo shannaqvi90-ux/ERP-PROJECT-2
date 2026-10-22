@@ -1,0 +1,11 @@
+and filter                                   {"total":30308,"n":2,"next":true,"ranked":false}
+or filter                                    {"total":30308,"n":2,"next":true,"ranked":false}
+nested (a or b) and c                        {"total":2464,"n":2,"next":true,"ranked":false}
+in filter                                    {"total":100005,"n":2,"next":true,"ranked":false}
+bad column (typed error)                     {"status":400,"body":"{\"type\":\"urn:erp:problem:validation\",\"title\":\"Some fields need attention.\",\"status\":400,\"code\":\"validation\",\"traceId\":\"00-adade4e0da2c2b906fd534898c9af67a-fdd7bf5cc09ac343-00\",\"errors\":{\"filter\":[{\"co"}
+bad type (typed error)                       {"status":400,"body":"{\"type\":\"urn:erp:problem:validation\",\"title\":\"Some fields need attention.\",\"status\":400,\"code\":\"validation\",\"traceId\":\"00-fcb254a21a3cf351cfe28c88de470edb-b03047193af0eb33-00\",\"errors\":{\"filter\":[{\"co"}
+roles grouped by kind with totals            {"status":400,"body":"{\"type\":\"urn:erp:problem:validation\",\"title\":\"Some fields need attention.\",\"status\":400,\"code\":\"validation\",\"traceId\":\"00-a8e262d1ccce33e019cb4e0ed56e2401-4a0ea6346d7cb076-00\",\"errors\":{\"groupBy\":[{\"c"}
+keyset page 1 Abdullah Abdullah Al Ameri | Abdullah Abdullah Al Ameri | Abdullah Abdullah Al Ameri -> page 2 Abdullah Abdullah Al Dhaheri | Abdullah Abdullah Al Hashimi | Abdullah Abdullah Al Muhairi
+roles columns with aggregate [ 'userCount' ] groupable [ 'isSystem' ]
+isActive eq false 0 | language eq ar 30308 | ar and inactive 0 | ar or inactive 30308 | en or ar 100005
+roles groupBy isSystem [{"key":false,"count":3,"totals":{"userCount":"4"},"moneyTotals":null},{"key":true,"count":1,"totals":{"userCount":"2"},"moneyTotals":null}] totals null

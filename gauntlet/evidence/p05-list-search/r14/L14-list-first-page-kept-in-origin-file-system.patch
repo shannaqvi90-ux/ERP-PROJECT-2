@@ -1,0 +1,69 @@
+diff --git a/web/src/kernel/lists/useListRows.ts b/web/src/kernel/lists/useListRows.ts
+index 20d2c9ba..788cebda 100644
+--- a/web/src/kernel/lists/useListRows.ts
++++ b/web/src/kernel/lists/useListRows.ts
+@@ -4,6 +4,38 @@ import type { ListGroup, ListPage, Row } from "./model";
+ 
+ export const chunkSize = 100;
+ 
++/** The file of the origin's private file system that keeps a query's first page. */
++function rememberedFile(key: string): string {
++  return "list-" + encodeURIComponent(key).slice(0, 180);
++}
++
++/**
++ * The first page a query last answered, shown at once while the fresh page loads: a list of
++ * 100,000 rows answers in a few hundred milliseconds, and the grid should not stand empty meanwhile.
++ * Kept in the origin's private file system (survives reloads), replaced when the fresh page arrives.
++ */
++async function readRemembered(key: string): Promise<ListPage | null> {
++  try {
++    const dir = await navigator.storage.getDirectory();
++    const handle = await dir.getFileHandle(rememberedFile(key));
++    return JSON.parse(await (await handle.getFile()).text()) as ListPage;
++  } catch {
++    return null;
++  }
++}
++
++async function remember(key: string, page: ListPage): Promise<void> {
++  try {
++    const dir = await navigator.storage.getDirectory();
++    const handle = await dir.getFileHandle(rememberedFile(key), { create: true });
++    const writable = await handle.createWritable();
++    await writable.write(JSON.stringify(page));
++    await writable.close();
++  } catch {
++    // No private file system here: nothing is remembered.
++  }
++}
++
+ type Chunks = {
+   key: string;
+   rows: Map<number, Row[]>;
+@@ -72,6 +104,7 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
+           state.next.set(index, page.next);
+           state.pending.delete(index);
+           if (index === 0) {
++            void remember(state.key, page);
+             shown.current = state;
+             setTotal(page.total);
+             setRanked(page.ranked === true);
+@@ -98,6 +131,17 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
+     chunks.current = state;
+     setLoading(true);
+     fetchChunk(state, 0);
++    void readRemembered(key).then((page) => {
++      if (!page || state.controller.signal.aborted || chunks.current !== state || state.rows.has(0)) return;
++      state.rows.set(0, page.items);
++      state.next.set(0, page.next);
++      shown.current = state;
++      setTotal(page.total);
++      setRanked(page.ranked === true);
++      setGroups(page.groups ?? null);
++      setLoadedKey(state.key);
++      setVersion((v) => v + 1);
++    });
+     return () => state.controller.abort();
+   }, [key, fetchChunk, reloads]);
+ 

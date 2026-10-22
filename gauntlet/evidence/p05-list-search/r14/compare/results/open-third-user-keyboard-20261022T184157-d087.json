@@ -1,0 +1,328 @@
+{
+  "schema": 1,
+  "run_id": "open-third-user-keyboard-20261022T184157-d087",
+  "instrument": 12,
+  "task": "open-third-user-keyboard",
+  "task_title": "Open a record from a list by keyboard only (users list)",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the list of the workspace's users and open the third user in it.",
+  "done_when": "The third user of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-10-22T18:41:57.736Z",
+  "finished_at": "2026-10-22T18:42:21.760Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 8,
+    "keystrokes": 13,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 7,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.381,
+    "system_wait_seconds": 1.206,
+    "human_seconds": 6.74,
+    "human_plus_wait_seconds": 7.946,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.019,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search",
+      "keystrokes": 5,
+      "at": 0.146,
+      "took": 0.03,
+      "text": "/user",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.286,
+      "took": 0.011,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "header row",
+      "keystrokes": 1,
+      "at": 0.814,
+      "took": 0.033,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.848,
+      "took": 0.014,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.863,
+      "took": 0.011,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.876,
+      "took": 0.005,
+      "chord": "ArrowDown",
+      "screen": "/odoo/users",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.9,
+      "took": 0.035,
+      "chord": "Enter",
+      "screen": "/odoo/users",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.021,
+      "seconds": 0.125
+    },
+    {
+      "label": "Users menu first",
+      "at": 0.177,
+      "seconds": 0.108
+    },
+    {
+      "label": "users list",
+      "at": 0.299,
+      "seconds": 0.514
+    },
+    {
+      "label": "third row selected",
+      "at": 0.882,
+      "seconds": 0.017
+    },
+    {
+      "label": "user form",
+      "at": 0.935,
+      "seconds": 0.438
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 1.374,
+      "seconds": 0.004
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "28f9d7d7f83c7b71.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p05-list-search/r14/compare/blind/shots/28f9d7d7f83c7b71.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "5dae85f674a6b896.jpg",
+      "at": 1.381,
+      "path": "../../evidence-staging/p05-list-search/r14/compare/blind/shots/5dae85f674a6b896.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "login": "abdullah.al.ameri.071946@staff.example",
+      "position": "3"
+    }
+  },
+  "path_notes": "Ctrl+K > \"/user\" > Enter (Users list) > Down (header row), Down x3 (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/open-third-user-keyboard.mjs",
+    "sha256": "bec12c13872a4894d8b4b40ab0bacffacea72d2cd36f0757bf9740923dfc03d6"
+  },
+  "task_notes": "Proposed by the p04 critic, round 2 (kept by r3 and r4): the users-list stand-in for keyboard-navigation until the contacts list (p16) exists. Every step must be a key or key chord.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true,
+      "gap_seconds": 0.076
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "f166665b109ebbaa",
+    "elements": 357
+  },
+  "screen_after_verify": {
+    "sha256": "f166665b109ebbaa",
+    "elements": 357,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.046
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 83,
+    "not_caused": 53,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.194,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.309,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.887,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/1212/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.889,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/34979/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.891,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/13472/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.893,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/71953/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.894,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/1681/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.896,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/49067/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.355,
+      "by_step": 8,
+      "chain": [
+        "input of step 8",
+        "the answer to POST /web/dataset/call_kw/res.users/web_read after 0.18 s",
+        "an animation frame",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

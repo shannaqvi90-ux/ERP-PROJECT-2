@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index 5f0eb304..afa1c735 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -305,7 +305,9 @@ internal static class ViewEndpoints
+             return Problems.NotFound(http);
+         }
+         var owner = shared ? (Guid?)null : caller.UserId;
+-        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && v.IsShared == shared && v.OwnerUserId == owner, cancellationToken);
++        // The Views menu deletes whichever view is selected through one address: a personal view, or
++        // a shared view the caller sees in the menu (the menu offers Delete only where it may).
++        var view = await db.SavedViews.SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list.Key && (v.IsShared || v.OwnerUserId == owner), cancellationToken);
+         if (view is null)
+         {
+             return Problems.NotFound(http);
