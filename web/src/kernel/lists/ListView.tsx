@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { requestLeave } from "../forms/leave";
-import { recordAddress, recordInAddress } from "../router";
+import { recordAddress, recordInAddress, replaceAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
 import { useI18n } from "../i18n";
 import { chordForAria, chordKeys, useCommand, useShortcut } from "../shortcuts";
@@ -453,6 +453,10 @@ export function ListView(props: ListViewProps) {
     const go = () => {
       setOpenId(null);
       setOpenRow(null);
+      // The address says so at once: the list keeps its address in step only once its definition
+      // has arrived, and a record closed before then (Escape right after the palette opened it, on
+      // a busy machine) was opened again from the address when the definition came.
+      replaceAddress(recordAddress(null, window.location.search));
       tableRef.current?.focus();
     };
     if (asked) go();

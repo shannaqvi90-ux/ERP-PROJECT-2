@@ -25,6 +25,9 @@ const menu = [
   { key: "identity.roles", labelKey: "identity.menu.roles", path: "/identity/roles", group: "settings" },
 ];
 
+/** Holds the list definitions back until released (a busy machine: the record opens first). */
+let holdDefinitions: Promise<void> | null = null;
+
 function serve(language: "en" | "ar") {
   const session = {
     authenticated: true,
@@ -41,6 +44,7 @@ function serve(language: "en" | "ar") {
     const query = new URLSearchParams(url.split("?")[1] ?? "");
     if (url === "/api/auth/session") return { status: 200, body: session };
     const list = listReply(method, url);
+    if (list && holdDefinitions && url.includes("/definition")) return holdDefinitions.then(() => list);
     if (list) return list;
     const user = /^\/api\/identity\/users\/([^/]+)(\/[a-z-]+)?$/.exec(path);
     if (user) {
@@ -133,4 +137,32 @@ describe.each(["en", "ar"] as const)("a navigation to the screen on show opens i
     expect(recordValues()).toContain(staff.nameEn);
     expect(recordValues()).not.toContain(readOnly.nameEn);
   });
+});
+
+it("a record closed before its list's definition arrives stays closed when it does", async () => {
+  let release: () => void = () => {};
+  holdDefinitions = new Promise<void>((resolve) => (release = resolve));
+  try {
+    serve("en");
+    view = await render(<App language="en" />);
+    await settle();
+    await go(`/identity/users/${latifa.id}?q=latifa`);
+    expect(recordValues()).toContain(latifa.displayName);
+    // Escape in the record panel closes it, before the list knows its columns.
+    const panel = document.querySelector<HTMLElement>("main aside")!;
+    act(() => {
+      panel.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true, cancelable: true }));
+    });
+    await wait(50);
+    expect(recordValues()).toEqual([]);
+    expect(window.location.pathname).toBe("/identity/users");
+    release();
+    await wait(250);
+    expect(recordValues()).toEqual([]);
+    expect(window.location.pathname).toBe("/identity/users");
+    expect(searchBox()?.value).toBe("latifa");
+  } finally {
+    release();
+    holdDefinitions = null;
+  }
 });

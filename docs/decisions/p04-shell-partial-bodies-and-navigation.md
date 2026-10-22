@@ -152,3 +152,34 @@ three e2e tests about 10 s. The kernel trace-id middleware costs one random draw
 Every task compared in round 11 was won on every metric (switch to Arabic, reach a screen by
 keyboard, open the third user, new user by keyboard). No tie needed a decision under the owner's
 tie rule.
+
+## 6. A record closed before its list's definition arrives stays closed
+
+A record opened from the palette and closed with Escape before the list's definition arrived (on a
+busy machine) opened again when the definition came. The list keeps its address in step with its
+state only once it knows its columns, so the address still named the record, and the list's first
+state reads the open record from the address. A verify run's end-to-end client-isolation journey met
+this: B's user record was open again at sign-out. Closing a record now puts the address in step at
+once (`replaceAddress` in ListView's `closeRecord`). Unit test `navigationReopen.test.tsx` holds the
+definitions back, closes the record, releases them, and checks that the record stays closed. It
+fails without the change.
+
+## Verify runs of this round (builder, under load)
+
+The suite tests passed in every run. What failed:
+
+- **Run 1 (slot taken 2026-10-21 22:52Z, load near 64).** The web unit client-isolation journey
+  (`clientIsolation.test.tsx`) went over its 30 s limit. It takes 20.6 s on a quiet machine, with
+  or without this round's screen key (measured: 20.58 s against 20.66 s; 0.3 s more processor time
+  of about 8 s). Also failing: a tenant-source review that the later integration branch already
+  held.
+- **Run 2 (load to 71).**
+  - All .NET and web unit tests passed. Processor time: .NET 5,225 s, web 1,963 s, end-to-end 267 s.
+  - p01's comparison harness test `causation.test.mjs:567` failed on the busy machine (an action
+    outside the clock).
+  - The e2e one-line-row check failed on the selection cell hidden on paper (fixed: section 4).
+- **Run 3 (load near 64).**
+  - The client-isolation unit journey timed out again.
+  - The e2e client-isolation journey met the reopened record (fixed: section 6).
+
+The 30 s limit was not raised.
