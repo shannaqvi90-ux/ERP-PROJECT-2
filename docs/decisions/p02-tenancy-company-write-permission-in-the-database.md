@@ -103,3 +103,17 @@ The new gate work is about 12 s of test time inside the gate project: the varian
 about 1 s, and the source scan takes under 1 s. One extra round trip runs per request whose
 permission is company-limited (the write limit statement). Requests with workspace-wide
 permissions do not change.
+
+## Verify (round 14)
+
+`ERP_PROJECT=b-p02-tenancy ERP_HTTP_PORT=20200 ERP_DB_PORT=20201 ERP_VERIFY_HTTP_PORT=20210
+ERP_VERIFY_DB_PORT=20211 ERP_VERIFY_LOG=… gauntlet/tools/verify-slot.sh ./erp verify`, slot taken
+at 2026-10-22T18:24:06Z: passed in 4,726 s. The processor time was 8,318 s of the 10,500 s maximum
+(dotnet 5,209, web 2,415, e2e 657, timing 37). The previous passing run on this branch took
+6,661 s, under a different machine load. Counts: .NET 772 (minimum raised from 764), web unit
+538 (raised from 537), end to end 117, compare 486, build 6, all passing. An earlier run
+(slot taken 16:58:59Z) failed on three things, each fixed before this run: the web strict
+typecheck of the new list-width test; the process-state gate, which flagged the two new static
+arrays (now properties); and the company-role request minimum, first set from a local run where
+other tests of the class had given company Y more rows (now 1,100; the fresh fixture measured
+1,136).
