@@ -150,3 +150,12 @@ Measured on this machine outside the verify (same build, one test process): the 
 (9 tests) took 1 m 58 s wall and 75 s of user processor time including its host starts and the
 environment copy; the compiled-code scan under 1 s; the new kernel tests under 1 s. The verify run
 for this commit is stated below.
+
+## 7. Shared memory, checked live
+
+`./erp up` (project b-p00-foundation-demo, 100,005 users in alnoor) on this branch: `/dev/shm` in the
+db container is 1.0 GB. The critic's probe (`identity.usersByRole`, one administrator, all at once):
+CSV 1, 2, 3, 4, 8 and 12 concurrent all 200; JSON 12 concurrent all 200; CSV 24 concurrent all 200
+(8.5 s); PDF 4 concurrent all 200 (4.9 s). The database log has no "could not resize shared memory
+segment" and the app log no 500. Round 13's figures for the same probe with 64 MB: 3 concurrent, one
+500; 12 concurrent, nine 500s.
