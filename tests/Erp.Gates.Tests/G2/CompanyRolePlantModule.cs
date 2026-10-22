@@ -27,7 +27,8 @@ public sealed record CompanyRolePlantBranchRequest(Guid? CompanyId, string? Code
 /// names, in a request that writes (its company scope is every company the user works in). Hosted
 /// only by the self-test's planted host over the company-role environment's database.
 /// <para>Critic p02 round 13, plant P1, twice: a branch edit that closes the branch with one
-/// set-based ExecuteUpdate when isActive goes from true to false, before its per-company check.
+/// set-based ExecuteUpdate when isActive goes from true to false, and answers, before its
+/// per-company check (the critic's live check answered 200 and the branch went inactive).
 /// <c>/branch-edits</c> also lifts the database's company write limit first (a product without the
 /// company_write_* policies, which the gate's one-field variants must catch on the HTTP side);
 /// <c>/branch-closes</c> does not, and the database must refuse it on its own. The city plant
@@ -75,14 +76,18 @@ public sealed class CompanyRolePlantModule : ErpModule
                         {
                             return Results.ValidationProblem(new Dictionary<string, string[]> { ["body"] = ["required"] });
                         }
-                        // The planted fault: the closing write before the per-company check.
+                        // The planted fault: a quick path that closes an open branch in one statement
+                        // and answers, before the per-company check.
                         if (request.IsActive == false)
                         {
                             if (lift)
                             {
                                 await LiftWriteLimitAsync(session);
                             }
-                            await db.Branches.Where(b => b.Id == id && b.IsActive).ExecuteUpdateAsync(set => set.SetProperty(b => b.IsActive, false));
+                            if (await db.Branches.Where(b => b.Id == id && b.IsActive).ExecuteUpdateAsync(set => set.SetProperty(b => b.IsActive, false)) > 0)
+                            {
+                                return Results.Ok(new { id });
+                            }
                         }
                         var branch = await db.Branches.SingleOrDefaultAsync(b => b.Id == id);
                         if (branch is null)

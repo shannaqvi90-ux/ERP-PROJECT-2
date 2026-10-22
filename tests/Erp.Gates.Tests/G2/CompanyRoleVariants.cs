@@ -133,7 +133,7 @@ public static class CompanyRoleVariants
                     var yAfter = await RecordAsync(setup.Admin, yPath);
                     if (yAfter is null || !JsonNode.DeepEquals(yAfter, yRecord))
                     {
-                        problems.Add($"{endpoint} {spec}: company Y's record {yTarget} changed (answered {yStatus}): before {Short(yRecord.ToJsonString())}; after {Short(yAfter?.ToJsonString() ?? "gone")}");
+                        problems.Add($"{endpoint} {spec}: company Y's record {yTarget} changed (answered {yStatus}): {(yAfter is null ? "it no longer answers its GET" : Differences(yRecord, yAfter))}");
                     }
                     var (xStatus, xText) = await send(setup.Attacker, endpoint.Method, xPath, xBody);
                     if (xStatus is >= 200 and < 300)
@@ -259,6 +259,7 @@ public static class CompanyRoleVariants
             // An emirate is only for the UAE: with one set, the same country in the other letter case.
             "country" => JsonValue.Create(body["emirate"] is JsonValue emirate && emirate.GetValueKind() != JsonValueKind.Null ? (current ?? "AE").ToLowerInvariant() : Pick("AE", "OM")),
             "phone" => JsonValue.Create(Pick("+971 4 765 4321", "+971 4 123 4567")),
+            "emirate" => JsonValue.Create(Pick("dubai", "sharjah")),
             "poBox" => JsonValue.Create(Pick("54321", "12345")),
             "taxRegistrationNumber" => JsonValue.Create(Pick("100987654300003", "100123456700003")),
             "baseCurrency" => JsonValue.Create(Pick("USD", "AED")),
@@ -268,6 +269,12 @@ public static class CompanyRoleVariants
             _ => null,
         };
     }
+
+    /// <summary>The fields whose values differ, as "field: before -> after".</summary>
+    private static string Differences(JsonObject before, JsonObject after) =>
+        string.Join("; ", before.Select(p => p.Key).Union(after.Select(p => p.Key))
+            .Where(k => !JsonNode.DeepEquals(before[k], after[k]))
+            .Select(k => $"{k}: {before[k]?.ToJsonString() ?? "null"} -> {after[k]?.ToJsonString() ?? "null"}"));
 
     private static string Short(string text) => text.Length <= 240 ? text : text[..240] + "…";
 }

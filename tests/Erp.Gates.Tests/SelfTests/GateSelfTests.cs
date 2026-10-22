@@ -497,6 +497,47 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         }
     }
 
+    /// <summary>Critic p02 round 13: a company table without the company write-permission policies
+    /// (a request whose permission is held only in X could write Y's rows with a set-based
+    /// statement), or with a permissive or wrong one, is reported.</summary>
+    [Fact]
+    public async Task The_company_write_policy_check_catches_a_company_table_without_the_write_policies()
+    {
+        await using (var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString))
+        {
+            await owner.OpenAsync();
+            foreach (var table in new[] { "selftest_company_unwritable", "selftest_company_write_permissive" })
+            {
+                await DbCatalog.ExecuteAsync(owner, $"CREATE TABLE tenancy.{table} (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid NOT NULL)");
+                await DbCatalog.ExecuteAsync(owner, $"CREATE POLICY company_scope ON tenancy.{table} AS RESTRICTIVE FOR ALL TO PUBLIC " +
+                                                    "USING (erp.company_allowed(company_id)) WITH CHECK (erp.company_allowed(company_id))");
+            }
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_write_insert ON tenancy.selftest_company_write_permissive AS RESTRICTIVE FOR INSERT TO PUBLIC WITH CHECK (erp.company_writable(company_id))");
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_write_update ON tenancy.selftest_company_write_permissive AS PERMISSIVE FOR UPDATE TO PUBLIC USING (true)");
+            await DbCatalog.ExecuteAsync(owner, "CREATE POLICY company_write_delete ON tenancy.selftest_company_write_permissive AS RESTRICTIVE FOR DELETE TO PUBLIC USING (erp.company_allowed(company_id))");
+        }
+        try
+        {
+            var (problems, _) = await G2.G2CompanyWritePolicyTests.WritePolicyProblemsAsync(fixture.Env);
+            foreach (var policy in new[] { "company_write_insert", "company_write_update", "company_write_delete" })
+            {
+                Assert.Contains(problems, p => p.StartsWith($"tenancy.selftest_company_unwritable: needs the RESTRICTIVE {policy} policy", StringComparison.Ordinal));
+            }
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_company_write_permissive: needs the RESTRICTIVE company_write_update policy", StringComparison.Ordinal));
+            Assert.Contains(problems, p => p.StartsWith("tenancy.selftest_company_write_permissive: needs the RESTRICTIVE company_write_delete policy", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => p.StartsWith("tenancy.selftest_company_write_permissive: needs the RESTRICTIVE company_write_insert policy", StringComparison.Ordinal));
+            Assert.DoesNotContain(problems, p => !p.Contains("selftest_company_", StringComparison.Ordinal));
+            var (tenantProblems, _) = await G1DatabaseIsolationTests.RowLevelSecurityProblemsAsync(fixture.Env);
+            Assert.Contains(tenantProblems, p => p.Contains("tenancy.selftest_company_write_permissive: unreviewed policy 'tenancy.selftest_company_write_permissive company_write_update", StringComparison.Ordinal));
+        }
+        finally
+        {
+            await using var owner = new NpgsqlConnection(fixture.Env.OwnerConnectionString);
+            await owner.OpenAsync();
+            await DbCatalog.ExecuteAsync(owner, "DROP TABLE tenancy.selftest_company_unwritable; DROP TABLE tenancy.selftest_company_write_permissive");
+        }
+    }
+
     [Fact]
     public async Task The_company_policy_check_catches_a_company_table_without_the_company_scope()
     {
