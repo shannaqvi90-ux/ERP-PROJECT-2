@@ -535,6 +535,7 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
         await page.evaluate(([k, v]) => localStorage.setItem(k, v), [key, planted]);
         expect(await deviceKeyProblems(page, "self-test"), `${key}=${planted}`).toHaveLength(planted === value ? 0 : 1);
       }
+      await page.evaluate(([k, v]) => localStorage.setItem(k, v), [key, value]);
     }
     await page.evaluate((entries) => {
       for (const [k, v] of entries) if (v === null) localStorage.removeItem(k);
