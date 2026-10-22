@@ -75,6 +75,22 @@ After the change (same data):
 | 1440 | ar | 408 | 782 | all but Roles, +1 | none |
 | 1920 | en, ar | 806 | 864 | all six | none |
 
+After the third merge of the integration branch (p02 and p04 round 11 work, including the
+user form as it now stands), measured on the merged build:
+
+| Window | Language | Record | List frame | Columns shown |
+|---|---|---|---|---|
+| 1366 | en | 383 | 733 | Name, E-mail, Language, Status, +2 |
+| 1366 | ar | 383 | 733 | all but Roles, +1 |
+| 1440 | en, ar | 396 | 794 | all six |
+| 1920 | en, ar | 806 | 864 | all six |
+
+On paper (p04 round 11's print layout), every visible column prints at its share of the page,
+including the columns waiting beside an open record. Those columns stay in the row and are
+hidden on screen only, and the marker does not print.
+
+The table before this note was measured before that merge.
+
 The English user form needs about 560 px because its "Roles in one company" table holds the
 English company names (identity module, p03). That is why English shows fewer columns than
 Arabic beside the record. It is the form's own content, not the list's.
