@@ -326,16 +326,23 @@ for (const language of ["en", "ar"] as const) {
           if (shown(el) || el.getBoundingClientRect().width > 0.5) problems.push(`the selection column prints: ${name(el)}`);
         }
         const record = document.querySelector("main aside.list-record");
-        let recordFacts: { left: number; right: number; cut: boolean; inputsOff: number } | null = null;
+        let recordFacts: { left: number; right: number; cut: boolean; inputsOff: number; first: boolean } | null = null;
         if (record && record.getClientRects().length > 0) {
           const box = record.getBoundingClientRect();
           const inputsOff = Array.from(record.querySelectorAll("input, select, textarea, h2, h3, legend")).filter((el) => {
             const r = el.getBoundingClientRect();
             return el.getClientRects().length > 0 && (r.left < -1 || r.right > width + 1);
           }).length;
-          recordFacts = { left: box.left, right: box.right, cut: record.scrollHeight > record.clientHeight + 1, inputsOff };
+          // The record the person has open is on paper before the list's rows (critic p04 round 12).
+          const firstRow = document.querySelector("main .list-row");
+          const first = !firstRow || box.bottom <= firstRow.getBoundingClientRect().top + 1;
+          recordFacts = { left: box.left, right: box.right, cut: record.scrollHeight > record.clientHeight + 1, inputsOff, first };
         }
-        return { width, problems, headers, cells: cells.length, recordFacts };
+        // Keyboard hints are for the screen: none is printed (critic p04 round 12: "Alt+O comes here
+        // from any field" was on paper), in either language.
+        const main = document.querySelector<HTMLElement>("main")!;
+        const hints = (main.innerText.match(/\b(Alt|Ctrl|Shift|Cmd)\s*\+\s*\S+/g) ?? []).map((h) => h.trim());
+        return { width, problems, headers, cells: cells.length, recordFacts, hints };
       });
 
     await page.emulateMedia({ media: "print" });
@@ -346,6 +353,7 @@ for (const language of ["en", "ar"] as const) {
       expect(list.headers.length).toBeGreaterThanOrEqual(6);
       expect(list.headers.every((h) => h.length > 0)).toBe(true);
       expect(list.cells).toBeGreaterThan(list.headers.length * 3);
+      expect(list.hints, "keyboard hints on paper").toEqual([]);
     } finally {
       await page.emulateMedia({ media: "screen" });
     }
@@ -366,6 +374,8 @@ for (const language of ["en", "ar"] as const) {
       expect(facts.right - facts.left).toBeGreaterThan(withRecord.width * 0.9);
       expect(facts.cut, "the record is cut at a height").toBe(false);
       expect(facts.inputsOff).toBe(0);
+      expect(facts.first, "the open record prints before the list's rows").toBe(true);
+      expect(withRecord.hints, "keyboard hints on paper").toEqual([]);
     } finally {
       await page.emulateMedia({ media: "screen" });
     }

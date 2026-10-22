@@ -244,7 +244,7 @@ function leaks(): string[] {
  * CL3b: the language key also held "ar|/identity/users/<id>?q=..." and the shell opened that record
  * after the next sign-in).
  */
-const reviewedDeviceKeys = readFileSync(resolve(import.meta.dirname, "../../../../tests/Gates/device-keys.txt"), "utf8")
+const reviewedDeviceKeys = readFileSync(process.env.ERP_DEVICE_KEYS ?? resolve(import.meta.dirname, "../../../../tests/Gates/device-keys.txt"), "utf8")
   .split("\n")
   .map((line) => line.split("#")[0]!.trim())
   .filter((entry) => entry.length > 0)

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, request as apiRequest, test, type APIRequestContext, type Page } from "@playwright/test";
 import { freshStart, password, signIn } from "./demo";
 
@@ -20,6 +22,30 @@ import { freshStart, password, signIn } from "./demo";
  * holds them only if the product does. The last test is the judges' self-test: each carrier,
  * planted on purpose, must be found.
  */
+
+/**
+ * The device's own settings, kept across sign-out by design, with the only values each may hold
+ * (tests/Gates/device-keys.txt, reviewed). The next person on the device inherits them, so the
+ * judges check what each holds, not only whether a marker is in it (critic p04 round 12, plant
+ * CL3b: the language key also held "ar|/identity/users/<id>?q=<e-mail>", and the shell opened that
+ * record for the next person after sign-in).
+ */
+const reviewedDeviceKeys = readFileSync(resolve(__dirname, "../../Gates/device-keys.txt"), "utf8")
+  .split("\n")
+  .map((line) => line.split("#")[0]!.trim())
+  .filter((entry) => entry.length > 0)
+  .map((entry) => {
+    const space = entry.indexOf(" ");
+    return { key: entry.slice(0, space), pattern: new RegExp(entry.slice(space + 1).trim()) };
+  });
+
+/** Every device key of the tab whose value is not exactly its setting. */
+async function deviceKeyProblems(page: Page, step: string): Promise<string[]> {
+  const values = await page.evaluate((keys) => keys.map((key) => [key, localStorage.getItem(key)] as const), reviewedDeviceKeys.map((d) => d.key));
+  return values
+    .filter(([key, value]) => value !== null && !reviewedDeviceKeys.find((d) => d.key === key)!.pattern.test(value))
+    .map(([key, value]) => `${step}: ${key} holds ${JSON.stringify(value)}, not only its setting`);
+}
 
 const bravoAdmin = "admin@gulfsteel.example";
 const alphaAdmin = "admin@alnoor.example";
@@ -185,6 +211,8 @@ async function journey(page: Page, token: string, after: (step: string) => Promi
   await own.click();
   await expect(page.locator("aside h2")).toBeVisible();
   await step("record opened from the palette");
+  await switchSettingsOnRecord(page, step);
+  await page.locator("aside input:not([type=checkbox]):not([type=radio])").first().focus();
   await page.keyboard.press("Escape");
   await expect(page.locator("aside h2")).toHaveCount(0);
 
@@ -202,6 +230,63 @@ async function journey(page: Page, token: string, after: (step: string) => Promi
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   return steps;
+}
+
+/**
+ * With the tenant's record open, every device setting the shell offers is changed from every place
+ * it offers it, and changed back: Alt+L, the top bar's language button, the palette's digits
+ * action, the language and digits of My preferences (Alt+P) and the navigation pane (Alt+B). Each
+ * writes a device key that outlives the person (critic p04 round 12: the journey never ran the
+ * shell's own switches while a tenant's record was on screen, so a key that also kept the record
+ * passed every judge).
+ */
+async function switchSettingsOnRecord(page: Page, step: (name: string) => Promise<void>) {
+  const html = page.locator("html");
+  const record = page.locator("aside h2");
+  const palette = page.locator('[role="dialog"].palette');
+  await expect(html).toHaveAttribute("lang", "en");
+  await expect(html).toHaveAttribute("data-numerals", "latn");
+  for (const language of ["ar", "en"]) {
+    await page.keyboard.press("Alt+l");
+    await expect(html).toHaveAttribute("lang", language);
+    await expect(record).toBeVisible();
+    await step(`Alt+L on a record (${language})`);
+  }
+  for (const language of ["ar", "en"]) {
+    await page.locator("button.lang-toggle").click();
+    await expect(html).toHaveAttribute("lang", language);
+    await step(`the language button on a record (${language})`);
+  }
+  for (const digits of ["arab", "latn"]) {
+    await page.keyboard.press("Control+k");
+    await expect(palette).toBeVisible();
+    await page.keyboard.type("digits");
+    await expect(palette.locator('[role="option"]').first()).toContainText(/digits/i);
+    await page.keyboard.press("Enter");
+    await expect(html).toHaveAttribute("data-numerals", digits);
+    await expect(palette).toHaveCount(0);
+    await step(`the palette's digits action on a record (${digits})`);
+  }
+  const preferences = page.locator('[role="dialog"].preferences');
+  await page.keyboard.press("Alt+p");
+  await expect(preferences).toBeVisible();
+  for (const [language, digits] of [["ar", "arab"], ["en", "latn"]] as const) {
+    await preferences.locator(`input[name="language"][value="${language}"]`).check();
+    await expect(html).toHaveAttribute("lang", language);
+    await preferences.locator(`input[name="numerals"][value="${digits}"]`).check();
+    await expect(html).toHaveAttribute("data-numerals", digits);
+    await step(`My preferences on a record (${language}, ${digits})`);
+  }
+  await page.keyboard.press("Escape");
+  await expect(preferences).toHaveCount(0);
+  const app = page.locator(".app");
+  const pane = await app.getAttribute("data-nav");
+  for (const state of [pane === "open" ? "closed" : "open", pane!]) {
+    await page.keyboard.press("Alt+b");
+    await expect(app).toHaveAttribute("data-nav", state);
+    await step(`the navigation pane on a record (${state})`);
+  }
+  await expect(record).toBeVisible();
 }
 
 test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
@@ -225,8 +310,10 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       await freshStart(page, "en");
       await signIn(page, bravoAdmin);
       const seenByB = new Set<string>();
-      const bravoSteps = await journey(page, bravoToken, async () => {
+      const deviceProblems: string[] = [];
+      const bravoSteps = await journey(page, bravoToken, async (step) => {
         for (const finding of judge("B", await tabState(page), markers)) seenByB.add(finding.marker);
+        deviceProblems.push(...(await deviceKeyProblems(page, `B, ${step}`)));
       });
       expect([...seenByB]).toEqual(expect.arrayContaining([bravoToken, "Gulf Steel"]));
       expect(await heapStrings(page)).toContain(bravoToken);
@@ -238,6 +325,7 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       const findings: Finding[] = [];
       findings.push(...judge("signed out", await tabState(page), markers));
       findings.push(...judge("signed out", { heap: await heapStrings(page) }, markers));
+      deviceProblems.push(...(await deviceKeyProblems(page, "signed out")));
 
       // A works in the same tab: after every step nothing of B, anywhere.
       await signIn(page, alphaAdmin);
@@ -246,12 +334,20 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       let broken: unknown = null;
       const alphaSteps = await journey(page, alphaToken, async (step) => {
         findings.push(...judge(step, await tabState(page), markers));
+        deviceProblems.push(...(await deviceKeyProblems(page, `A, ${step}`)));
+        // A starts on Home: nothing the device kept opens a place of B's for A (CL3b put A on B's
+        // record, with B's e-mail in the search box).
+        if (step === "signed in") {
+          const first = new URL(page.url());
+          if (first.pathname + first.search !== "/") deviceProblems.push(`A's first screen after signing in is ${first.pathname + first.search}, not Home`);
+        }
       }).catch((error: unknown) => {
         broken = error;
         return [] as string[];
       });
       findings.push(...judge("A, end of journey", { heap: await heapStrings(page) }, markers));
       expect(findings, "tenant B's markers found in tenant A's tab").toEqual([]);
+      expect(deviceProblems, "device keys holding more than their setting, or A not starting on Home").toEqual([]);
       if (broken) throw broken;
       expect(alphaSteps).toEqual(bravoSteps);
       expect(uncached, "API responses without Cache-Control: no-store").toEqual([]);
@@ -422,6 +518,31 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
     // The cookie is scoped to /identity: seen from the screen it was planted on, and by the jar.
     expect(judge("self-test", { cookie: state.cookie }, [marker("cookie")]), "the cookie judge finds its plant").not.toHaveLength(0);
 
+    // The device keys: each with its setting passes the device judge; each with a record's address
+    // or a workspace code beside it (CL3b's shape) is found.
+    const settings: Record<string, string> = {
+      "erp.language": "en",
+      "erp.numerals": "latn",
+      "erp.navOpen": "1",
+      "erp.passkeyOffer": "0",
+      "erp.signInDomains": '{"salt":"0123456789abcdef0123456789abcdef","hashes":["0123456789abcdef"]}',
+    };
+    expect(reviewedDeviceKeys.map((d) => d.key).sort()).toEqual(Object.keys(settings).sort());
+    const kept = await page.evaluate((keys) => Object.fromEntries(keys.map((k) => [k, localStorage.getItem(k)])), Object.keys(settings));
+    const place = `/identity/users/0b9e8a4c-31f2-4d6e-9a57-2c4b8e1f6a30?q=${encodeURIComponent(`${token}@gulfsteel.example`)}`;
+    for (const [key, value] of Object.entries(settings)) {
+      for (const planted of [value, `${value}|${place}`, `${value} gulfsteel`, place]) {
+        await page.evaluate(([k, v]) => localStorage.setItem(k, v), [key, planted]);
+        expect(await deviceKeyProblems(page, "self-test"), `${key}=${planted}`).toHaveLength(planted === value ? 0 : 1);
+      }
+    }
+    await page.evaluate((entries) => {
+      for (const [k, v] of entries) if (v === null) localStorage.removeItem(k);
+      else localStorage.setItem(k, v);
+    }, Object.entries(kept));
+    // CL3b's language key, left for sign-out: the forgetter does not hand it on.
+    await page.evaluate((p) => localStorage.setItem("erp.language", `en|${p}`), place);
+
     // The planted address stays in the tab's history, one entry back.
     await page.evaluate(() => history.pushState(null, "", "/identity/roles"));
 
@@ -435,6 +556,8 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       allCarriers.map(marker),
     );
     expect(stored).toEqual([]);
+    expect(await deviceKeyProblems(page, "after sign-out")).toEqual([]);
+    expect(judge("after sign-out", { localStorage: after.localStorage }, [place, "0b9e8a4c"])).toEqual([]);
     expect(judge("after sign-out", { heap: await heapStrings(page) }, [marker("heap"), marker("page")])).toEqual([]);
     // Back into the planted address (an entry of the identity that has ended): the home address,
     // not the plant.

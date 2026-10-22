@@ -399,6 +399,32 @@ describe("keyboard and focus", () => {
     for (const row of document.querySelectorAll("[data-shortcut] td:last-child")) expect(row.textContent).not.toMatch(/^shell\./);
   });
 
+  it("lists the record form's keys (save, discard, next and previous record, print, close, the role filter) with no record open, in English and Arabic", async () => {
+    for (const language of ["en", "ar"] as const) {
+      serve({ ...admin, user: { ...admin.user, language } });
+      view = await render(<App language={language} />);
+      await settle();
+      press({ code: "Slash", key: "?", shiftKey: true });
+      await settle();
+      const tables = [...document.querySelectorAll<HTMLTableElement>(".shortcut-help table.shortcut-table")];
+      const forms = tables.find((t) => t.querySelector("caption")!.textContent === (language === "ar" ? "النماذج" : "Forms"));
+      expect(forms, `a forms section (${language})`).toBeTruthy();
+      const rows = [...forms!.querySelectorAll("tbody tr")].map((r) => [r.querySelector("td")!.textContent!.trim(), r.querySelector("td:last-child")!.textContent!.trim()]);
+      const labels = rows.map((r) => r[1]);
+      const expected =
+        language === "ar"
+          ? ["حفظ السجل (في حقل من سطر واحد)", "حفظ السجل", "تجاهل التغييرات", "السجل التالي", "السجل السابق", "طباعة السجل", "إغلاق السجل؛ يسأل أولًا إن وُجدت تغييرات غير محفوظة", "في سجل المستخدم: الانتقال إلى مرشّح الأدوار"]
+          : ["Save the record (in a one-line field)", "Save the record", "Discard the changes", "Next record", "Previous record", "Print the record", "Close the record; asks first when there are unsaved changes", "In a user's record: move to the roles filter"];
+      expect(labels).toEqual(expect.arrayContaining(expected));
+      const keys = rows.map((r) => r[0]).join(" | ");
+      for (const chord of ["Ctrl", "S", "Alt", "Z", "PgDn", "PgUp", "R", "O", "Esc", "Enter"]) expect(keys).toContain(chord);
+      // Every key is listed once.
+      expect(new Set(rows.map((r) => r.join(" "))).size).toBe(rows.length);
+      view.unmount();
+      view = undefined;
+    }
+  });
+
   it("lists the list grid's own keys in the help sheet, in English and in Arabic", async () => {
     for (const language of ["en", "ar"] as const) {
       serve({ ...admin, user: { ...admin.user, language } });

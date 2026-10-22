@@ -631,13 +631,26 @@
    "…0:35"). The columns share the page by their shares alone (--list-print-columns, set by
    ListView), the selection column takes no room, nothing is cut with an ellipsis: a long value wraps,
    and a row grows to hold it. The rows on screen print one after the other, not at their virtual
-   positions. An open record prints after the list, from a new page, whole: the list and the record
-   are both on paper at the page's full width, neither cut. */
+   positions. An open record prints first, whole, and the list follows it from a new page (critic
+   p04 round 12: with the record after the list, a person who printed the record they had open had
+   to look for it on the last page): both are on paper at the page's full width, neither cut. */
 @media print {
-  .list-body,
+  .list-body {
+    display: block;
+  }
+
   .list-body.has-record,
   .list-body.has-record.has-form {
-    display: block;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .list-body.has-record > .list-record {
+    order: -1;
+  }
+
+  .list-body.has-record > .list-scroll {
+    break-before: page;
   }
 
   .list-splitter {
@@ -654,7 +667,6 @@
   }
 
   .list-record {
-    break-before: page;
     padding: 0;
   }
 

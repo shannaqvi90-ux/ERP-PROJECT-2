@@ -72,7 +72,8 @@ export function RolePicker({
         aria-label={t("identity.form.findRole")}
         aria-describedby={`${id}-hint`}
       />
-      <span id={`${id}-hint`} className="id-hint">
+      {/* A keyboard hint: for the screen, not for paper (critic p04 round 12). */}
+      <span id={`${id}-hint`} className="id-hint no-print">
         {t("identity.form.findRoleHint")}
       </span>
       <ul className="id-roles-list">
