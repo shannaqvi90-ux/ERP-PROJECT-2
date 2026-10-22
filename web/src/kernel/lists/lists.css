@@ -629,7 +629,7 @@
 /* A list on paper fits the page (critic p04 round 11: on A4, 718px wide, the users grid needed
    743px in English and 789px in Arabic, so the last column was off the page and 10:35 printed as
    "…0:35"). The columns share the page by their shares alone (--list-print-columns, set by
-   ListView), the selection column is gone, nothing is cut with an ellipsis: a long value wraps,
+   ListView), the selection column takes no room, nothing is cut with an ellipsis: a long value wraps,
    and a row grows to hold it. The rows on screen print one after the other, not at their virtual
    positions. An open record prints after the list, from a new page, whole: the list and the record
    are both on paper at the page's full width, neither cut. */
@@ -674,12 +674,22 @@
   .list-header,
   .list-row {
     grid-template-columns: var(--list-print-columns) !important;
+    position: relative;
     height: auto;
     min-height: 28px;
   }
 
+  /* The selection cell stays in its row (a cell inside its row, the one-line check of every list
+     screen) but takes no track and no room, and shows nothing. */
   .list-grid .list-select {
-    display: none !important;
+    position: absolute !important;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 0;
+    block-size: 0;
+    padding: 0 !important;
+    overflow: hidden;
+    visibility: hidden;
   }
 
   .list-rows {

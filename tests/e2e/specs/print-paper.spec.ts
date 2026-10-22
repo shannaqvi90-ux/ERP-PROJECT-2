@@ -319,7 +319,12 @@ for (const language of ["en", "ar"] as const) {
           const text = el.querySelector(".list-text, span[dir]");
           if (text && text.scrollWidth > text.clientWidth + 1) problems.push(`value cut: ${name(el)}`);
         }
-        const headers = Array.from(document.querySelectorAll("main .list-header > *")).filter((el) => el.getClientRects().length > 0).map((el) => (el.textContent ?? "").trim());
+        const shown = (el: Element) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+        const headers = Array.from(document.querySelectorAll("main .list-header > *")).filter(shown).map((el) => (el.textContent ?? "").trim());
+        // The selection column takes no room on paper.
+        for (const el of Array.from(document.querySelectorAll("main .list-select"))) {
+          if (shown(el) || el.getBoundingClientRect().width > 0.5) problems.push(`the selection column prints: ${name(el)}`);
+        }
         const record = document.querySelector("main aside.list-record");
         let recordFacts: { left: number; right: number; cut: boolean; inputsOff: number } | null = null;
         if (record && record.getClientRects().length > 0) {

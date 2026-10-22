@@ -110,8 +110,9 @@ the screen's height, cut off.
 
 - `ListView` sets `--list-print-columns` on every row: each column's share with no minimum and no
   selection column. On paper the header and rows use it.
-- On paper the selection cell is gone, and nothing has an ellipsis: values wrap and a row grows to
-  hold them.
+- On paper the selection cell takes no track and no room and shows nothing. It stays in its row (positioned at
+  the row's start, zero size, hidden), so the one-line check of every list screen (a cell inside its row) holds.
+  Nothing has an ellipsis: values wrap and a row grows to hold them.
 - The rows on screen print one after the other, not at their virtual positions.
 - The list body is a block. The record follows the list from a new page at the page's width, with
   no height and no overflow cut.
