@@ -352,7 +352,10 @@ export function ListView(props: ListViewProps) {
     },
     [listKey],
   );
-  useEffect(() => {
+  // Measured before the browser paints (a layout effect, and the observers' callbacks re-render at
+  // once), so a form that needs more room opens at that width rather than jumping to it a frame
+  // later, and a printout taken as the record opens is the settled screen.
+  useLayoutEffect(() => {
     if (!formOpen) {
       setContentShare(0);
       return;
@@ -361,29 +364,36 @@ export function ListView(props: ListViewProps) {
     const form = formRef.current;
     const body = bodyRef.current;
     if (!form || !body || typeof ResizeObserver === "undefined") return;
-    let frame = 0;
+    const needed = (): number | null => {
+      if (printing()) return null;
+      const overflow = form.scrollWidth - form.clientWidth;
+      const panel = form.getBoundingClientRect().width;
+      const width = body.getBoundingClientRect().width;
+      if (overflow <= 1 || width <= 0) return null;
+      return shareToFit(Math.round((panel / width) * 100), panel, overflow, width);
+    };
+    const grow = (share: number | null) => {
+      if (share === null) return;
+      contentShares.set(listKey, Math.max(contentShares.get(listKey) ?? 0, share));
+      setContentShare((current) => Math.max(current, share));
+    };
     const fit = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const overflow = form.scrollWidth - form.clientWidth;
-        const panel = form.getBoundingClientRect().width;
-        const width = body.getBoundingClientRect().width;
-        if (overflow <= 1 || width <= 0) return;
-        const now = Math.round((panel / width) * 100);
-        setContentShare((share) => Math.max(share, shareToFit(now, panel, overflow, width)));
-      });
+      const share = needed();
+      if (share !== null) flushSync(() => grow(share));
     };
     const resized = new ResizeObserver(fit);
     resized.observe(form);
     const changed = new MutationObserver(fit);
     changed.observe(form, { childList: true, subtree: true });
-    fit();
+    // A record of this list needed more room before: open at it, rather than at the narrower share
+    // while the record loads and then widening once its form is drawn.
+    grow(contentShares.get(listKey) ?? null);
+    grow(needed());
     return () => {
-      cancelAnimationFrame(frame);
       resized.disconnect();
       changed.disconnect();
     };
-  }, [formOpen, openId, chosenShare]);
+  }, [formOpen, openId, chosenShare, listKey]);
 
   // The widths the list lays its columns out in: the body (list and record side by side) and the
   // frame the rows scroll in (its inner width, without a vertical scroll bar).
@@ -392,6 +402,7 @@ export function ListView(props: ListViewProps) {
     const frame = gridRef.current;
     if (!body || !frame || typeof ResizeObserver === "undefined") return;
     const measure = () => {
+      if (printing()) return;
       setBodyWidth(Math.round(body.getBoundingClientRect().width));
       setFrameWidth(frame.clientWidth);
       if (frame.offsetWidth > 0) setFrameChrome(frame.offsetWidth - frame.clientWidth);
@@ -420,7 +431,7 @@ export function ListView(props: ListViewProps) {
   }, []);
   useLayoutEffect(() => {
     const table = tableRef.current;
-    if (!table) return;
+    if (!table || printing()) return;
     const rem = rootFontPixels();
     const found: [string, number][] = [];
     for (const th of table.querySelectorAll<HTMLElement>("tr.list-header > th[data-column]")) {
@@ -1558,13 +1569,23 @@ export function searchKeyIsGoTo(box: { value: string; selectionStart: number | n
   return box.selectionStart === 0 && box.selectionEnd === box.value.length;
 }
 
+/** The share each list's record forms needed on this page so far (see the form-fit effect). */
+const contentShares = new Map<string, number>();
+
 /** Width of the selection column (the row's check box), in rem. */
 const selectColumnRem = 2.25;
 
 /** Pixels in a rem (the document's font size; 16 where nothing is laid out). */
 function rootFontPixels(): number {
-  const size = typeof document === "undefined" ? NaN : parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const size = typeof document === "undefined" ? NaN : Number(getComputedStyle(document.documentElement).fontSize.replace(/px$/, ""));
   return size > 0 ? size : 16;
+}
+
+/** Whether the page is being laid out for paper. A print lays the screen out again at the paper's
+ * width; the list keeps the widths it measured on screen, so a printout is the screen as it stands
+ * and the same whatever has the focus (print-paper.spec.ts). */
+function printing(): boolean {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("print").matches;
 }
 
 /** The key a header's measured need is kept under: its column and its label (each language's own). */

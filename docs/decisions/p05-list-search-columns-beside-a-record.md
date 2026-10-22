@@ -49,7 +49,16 @@ with its column menu.
    e-mails) is still cut at its own end with an ellipsis. Fonts finishing loading trigger a new
    measurement.
 4. A change of size (the form growing to fit its content, a scroll bar appearing) is laid out
-   again inside the ResizeObserver callback (`flushSync`), before the browser paints.
+   again inside the ResizeObserver callback (`flushSync`), before the browser paints. The form
+   measures its content the same way: in a layout effect, and in its observers' callbacks, which
+   re-render at once. That replaces the old effect that waited for the next animation frame. The
+   share each list's forms needed is remembered for the page, so the next record of that list
+   opens at that width. Otherwise it would open narrower while it loads and widen once drawn.
+5. **Nothing is measured while the page is laid out for paper** (`printing()`, the print media
+   query). A printout is the screen as it stands. The first builder verify of this round found
+   that emulated print media resized the frame, the observers re-measured the paper layout, and
+   the users and companies lists then printed different columns depending on when the print was
+   taken (print-paper.spec.ts, "every screen prints as it does with none of it (en)").
 
 Also in this round: "/" typed in the search box when it is empty, or when its whole text is
 selected, keeps the cursor in the box instead of starting the search with a "/". The status bar
