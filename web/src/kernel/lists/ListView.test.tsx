@@ -119,6 +119,20 @@ describe("list view", () => {
     expect(sort.querySelector(".list-sort-label")?.textContent).toBe("E-mail");
   });
 
+  it("gives a column marked wide more room and one marked narrow less than its type would (a legal name, a code)", async () => {
+    const original = definition.columns;
+    definition.columns = [{ ...original[0], width: "wide" }, { ...original[1], width: "narrow" }, original[2]];
+    try {
+      serve();
+      const v = await show();
+      const header = v.container.querySelector<HTMLElement>("tr.list-header")!;
+      // The narrow column still keeps room for its header ("E-mail": 6.61rem over the 6rem minimum).
+      expect(header.style.gridTemplateColumns).toBe("2.25rem minmax(14rem, 2.2fr) minmax(6.61rem, 0.6fr) minmax(7.73rem, 0.7fr)");
+    } finally {
+      definition.columns = original;
+    }
+  });
+
   it("gives every text value a box of its own direction, so a value that does not fit is cut at its own end", async () => {
     serve();
     const v = await show();
