@@ -101,6 +101,52 @@ public sealed class MoneyTests
     public void Currency_codes_are_three_upper_case_letters(string code) =>
         Assert.Throws<ArgumentException>(() => new CurrencyCode(code));
 
+    /// <summary>Three capital letters that name no current currency are refused (critic p00 round
+    /// 12), and so are the list's codes without minor units (metals, SDR, test and no-currency codes).</summary>
+    [Theory]
+    [InlineData("ABC")]
+    [InlineData("ZZZ")]
+    [InlineData("XAU")]
+    [InlineData("XDR")]
+    [InlineData("XTS")]
+    [InlineData("XXX")]
+    [InlineData("DEM")]
+    public void Codes_that_are_not_current_iso_4217_currencies_are_refused(string code)
+    {
+        Assert.Throws<ArgumentException>(() => new CurrencyCode(code));
+        Assert.False(CurrencyCode.TryParse(code, out _));
+        Assert.False(CurrencyCode.IsKnown(code));
+    }
+
+    /// <summary>Minor units come from ISO 4217 List One as published, not from a table in the code.</summary>
+    [Theory]
+    [InlineData("AED", 2, 784)]
+    [InlineData("SAR", 2, 682)]
+    [InlineData("USD", 2, 840)]
+    [InlineData("KWD", 3, 414)]
+    [InlineData("BHD", 3, 48)]
+    [InlineData("OMR", 3, 512)]
+    [InlineData("JPY", 0, 392)]
+    [InlineData("CLF", 4, 990)]
+    public void Current_currencies_carry_their_iso_4217_minor_units_and_number(string code, int minorUnits, int number)
+    {
+        Assert.True(CurrencyCode.TryParse(code, out var currency));
+        Assert.Equal(minorUnits, currency.MinorUnits);
+        Assert.Equal(number, currency.Number);
+        Assert.Contains(code, CurrencyCode.All);
+    }
+
+    [Fact]
+    public void The_currency_table_is_a_whole_recent_iso_4217_list()
+    {
+        Assert.True(CurrencyCode.All.Count >= 150, $"{CurrencyCode.All.Count} currencies");
+        Assert.True(string.CompareOrdinal(Iso4217.Published, "2026-09-17") >= 0, Iso4217.Published);
+        Assert.Equal(CurrencyCode.All.Order(StringComparer.Ordinal), CurrencyCode.All);
+        Assert.All(CurrencyCode.All, c => Assert.Matches("^[A-Z]{3}$", c));
+        // Every amount of every listed currency fits the money columns' scales.
+        Assert.All(CurrencyCode.All, c => Assert.InRange(new CurrencyCode(c).MinorUnits, 0, Money.Money.BaseAmountScale));
+    }
+
     [Fact]
     public void Money_travels_as_decimal_strings_in_json()
     {
