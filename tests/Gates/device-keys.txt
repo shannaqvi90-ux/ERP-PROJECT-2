@@ -1,0 +1,18 @@
+# The device's own settings: the only localStorage keys the shell keeps when an identity ends
+# (web/src/kernel/deviceState.ts deviceKeys). They are kept across sign-out by design, so the next
+# person on a shared device, who may belong to another tenant, inherits them. Each key may hold only
+# the values its pattern allows (a whole-value JavaScript regular expression): anything else could
+# carry one tenant's data to the next (critic p04 round 12, plant CL3b: the language key also held
+# the address of the record the language was switched on, and the shell opened it after the next
+# sign-in, so Gulf Steel's admin landed on an Al Noor user's record).
+#
+# Read by three gates: G1ClientStateTests (deviceKeys in deviceState.ts is exactly this list),
+# web/src/modules/shell/clientIsolation.test.tsx and tests/e2e/specs/client-isolation.spec.ts (after
+# every step of both tenants and on the signed-out screen, every device key's value must match its
+# pattern). A new device key, or a wider pattern, is a new review.
+# Format: <key> <pattern>  # reason
+erp.language ^(en|ar)$  # The device's interface language: en or ar, nothing else (the user's own choice is in their profile).
+erp.numerals ^(latn|arab)$  # The digits Arabic screens use on this device: Latin or Arabic-Indic, nothing else.
+erp.navOpen ^(0|1)$  # Whether the navigation pane is open on this device: 1 or 0.
+erp.passkeyOffer ^(0|1|2)$  # Whether the sign-in screen asks this device for a passkey as it opens (1, 2) or not (0); names nobody.
+erp.signInDomains ^\{"salt":"[0-9a-f]{32}","hashes":\[("[0-9a-f]{16}"(,"[0-9a-f]{16}"){0,7})?\]\}$  # A random salt of the device and at most eight salted 64-bit hashes of sign-in e-mail domains; no e-mail, no readable domain, no id.

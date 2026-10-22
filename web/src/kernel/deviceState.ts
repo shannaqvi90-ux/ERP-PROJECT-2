@@ -32,6 +32,31 @@
 export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.passkeyOffer", "erp.signInDomains"];
 
 /**
+ * Whether a device key holds a value of its own shape. A device setting is kept for the next
+ * person on the device, so it may hold nothing but its setting: the language en or ar, the digits
+ * latn or arab, the pane 1 or 0, the passkey offer 0, 1 or 2, and the salted domain hashes. A
+ * kept key with anything else in it (a record's address beside the language, critic p04 round 12,
+ * plant CL3b) is removed when the identity ends rather than handed on. The reviewed shapes are in
+ * tests/Gates/device-keys.txt, which the G1 judges apply after every step.
+ */
+export function deviceValueKept(key: string, value: string): boolean {
+  switch (key) {
+    case "erp.language":
+      return value === "en" || value === "ar";
+    case "erp.numerals":
+      return value === "latn" || value === "arab";
+    case "erp.navOpen":
+      return value === "0" || value === "1";
+    case "erp.passkeyOffer":
+      return value === "0" || value === "1" || value === "2";
+    case "erp.signInDomains":
+      return /^\{"salt":"[0-9a-f]{32}","hashes":\[("[0-9a-f]{16}"(,"[0-9a-f]{16}"){0,7})?\]\}$/.test(value);
+    default:
+      return false;
+  }
+}
+
+/**
  * The e-mail of the last sign-in on this device, so a returning person types only the password.
  * Kept when a session simply ends (expiry, closing the browser); forgotten when the person signs
  * out, so the next person on a shared device never sees it.
@@ -53,7 +78,10 @@ function clearLocalStorage(keepEmail: boolean): void {
     const keep = new Set(keepEmail ? [...deviceKeys, rememberedEmailKey] : deviceKeys);
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
-      if (key !== null && !keep.has(key)) localStorage.removeItem(key);
+      if (key === null) continue;
+      // A device setting stays only while it holds its setting and nothing else.
+      const shaped = !deviceKeys.includes(key) || deviceValueKept(key, localStorage.getItem(key) ?? "");
+      if (!keep.has(key) || !shaped) localStorage.removeItem(key);
     }
   } catch {
     // Storage unavailable (private mode): nothing was stored.
