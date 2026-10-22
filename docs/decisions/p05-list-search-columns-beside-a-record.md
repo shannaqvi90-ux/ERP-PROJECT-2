@@ -137,12 +137,17 @@ Builder verifies this round, all run beside other agents' verifies:
 | b | 2026-10-22 01:05 | only the G1 client module-state gate failed (an unscoped `Map`, fixed with `identityScoped()`); web and e2e passed | 8,081, 2,509, 450 = 11,040 under load |
 | c | 2026-10-22 03:31 | .NET and e2e passed; one comparison-harness control failed under load (causation.test.mjs:710, "wsask", a style recalculation 1.97 s before the clock), so the timing stage did not run | 5,134, 1,935, 378 = 7,447 |
 
+| d | 2026-10-22 08:08 | passed in 4,323 s (before the third and fourth merges): .NET 736, web 538, e2e 116 | 4,378, 1,895, 368, timing 35 = 6,676 |
+| e | 2026-10-22 10:33 | after the third merge: .NET and e2e passed (web 543, e2e 120); one comparison-harness control failed under load (measured-part.test.mjs:129, "C2", highest load 89.6) | 5,346, 2,006, 494 |
+| f | 2026-10-22 13:05 | passed in 5,016 s at the head (after merging p00 round 14): .NET 766, web 543, e2e 120, compare 486, build 6 | 5,467, 2,526, 447, timing 44 = 8,483 (load up to 84.5) |
+
 The integrator's own run alone is what counts for the 10,500 s maximum. For comparison, p00's
 round-13 integrator run took 6,638 s on the same suite without this round's tests.
 
 ## Merges
 
-This round merged the integration branch twice. The second merge brought p00 round 13, which
+This round merged the integration branch four times: at the start, then p00 round 13, then
+p02 and p04 round 11, then p00 round 14. The second merge brought p00 round 13, which
 made one shared outside-process source rule out of p00's rule and p05's external-state rule.
 `tests/Gates/tenant-bypass-sources.txt` takes p00's version, whose outside-process entries
 review ClientAddresses.cs (2 uses) and ReportEndpoints.cs (5 uses: the FileStream return type
