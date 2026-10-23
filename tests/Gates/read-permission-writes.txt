@@ -19,3 +19,9 @@ DELETE /api/lists/tenancy.branches/views/{id:guid}  # a reader saves their own v
 POST /api/lists/tenancy.access/views  # a reader saves their own view of a list they may read
 PUT /api/lists/tenancy.access/views/{id:guid}  # a reader saves their own view of a list they may read
 DELETE /api/lists/tenancy.access/views/{id:guid}  # a reader saves their own view of a list they may read
+POST /api/lists/currency.currencies/views  # a reader saves their own view of a list they may read
+PUT /api/lists/currency.currencies/views/{id:guid}  # a reader saves their own view of a list they may read
+DELETE /api/lists/currency.currencies/views/{id:guid}  # a reader saves their own view of a list they may read
+POST /api/lists/currency.rates/views  # a reader saves their own view of a list they may read
+PUT /api/lists/currency.rates/views/{id:guid}  # a reader saves their own view of a list they may read
+DELETE /api/lists/currency.rates/views/{id:guid}  # a reader saves their own view of a list they may read

@@ -34,10 +34,21 @@ identity.roles.delete identity.roles delete *  # the role removed
 identity.profile.update identity.users update language,numerals,device_approval_hash,device_approval_until  # the caller's own language and digits, and letting one of their own devices past a pause on a shared address; never their name, e-mail, active flag or anyone else's row
 identity.profile.update identity.passkeys insert,update,delete *  # the caller's own passkeys
 
+# Currency: the workspace's currencies and exchange rates (every company shares them).
+currency.currencies.create currency.currencies insert *  # the currency enabled
+currency.currencies.update currency.currencies update name_en,name_ar,is_active,max_rate_age_days  # the currency's names, whether it is in use and how old a rate may be; never its code
+currency.rates.create currency.exchange_rates insert *  # the rate entered
+currency.rates.update currency.exchange_rates update rate_date,rate,reference,source  # the rate's date, value and reference (it becomes a manual one); never its currencies
+currency.rates.delete currency.exchange_rates delete *  # the rate removed
+currency.rates.import currency.exchange_rates insert *  # the file's rates added
+currency.rates.import currency.exchange_rates update rate,reference,source  # a held rate replaced by the file's (value, reference, source); never its currencies or date
+
 # Lists: a reader's own saved views (tests/Gates/read-permission-writes.txt), shared views.
 identity.roles.read lists.saved_views insert,update,delete *  # the reader's own views of the roles list
 identity.users.read lists.saved_views insert,update,delete *  # the reader's own views of the users list
 tenancy.companies.read lists.saved_views insert,update,delete *  # the reader's own views of the companies list
 tenancy.branches.read lists.saved_views insert,update,delete *  # the reader's own views of the branches list
 tenancy.access.read lists.saved_views insert,update,delete *  # the reader's own views of the access list
+currency.currencies.read lists.saved_views insert,update,delete *  # the reader's own views of the currencies list
+currency.rates.read lists.saved_views insert,update,delete *  # the reader's own views of the exchange rates list
 lists.views.share lists.saved_views insert,update,delete *  # views shared with everyone who may read the list
