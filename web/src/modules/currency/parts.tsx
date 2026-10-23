@@ -20,6 +20,9 @@ export function useRateText() {
   return (value: string | null | undefined) => (value ? format.decimal(value) : "");
 }
 
+/** A complete calendar date as typed (yyyy-mm-dd). */
+const isDay = (text: string) => /^\d{4}-\d{2}-\d{2}$/.test(text);
+
 const messageOf = (error: unknown) => {
   if (error instanceof ApiError) {
     const fields = Object.values(error.fieldErrors).flat().map((f) => f.message);
@@ -186,6 +189,11 @@ export function Converter({ currency, quote }: { currency: string; quote: string
       return;
     }
     const controller = new AbortController();
+    if (date !== "" && !isDay(date)) {
+      setResult(null);
+      setError(null);
+      return;
+    }
     const params = new URLSearchParams({ amount: typed, currency });
     if (date) params.set("date", date);
     api<Conversion>("GET", `/api/currency/convert?${params}`, undefined, { signal: controller.signal }).then(
@@ -228,7 +236,20 @@ export function Converter({ currency, quote }: { currency: string; quote: string
           <label className="field-label" htmlFor={`${id}-date`}>
             {t("currency.convert.date")}
           </label>
-          <input id={`${id}-date`} name="date" type="date" dir="ltr" value={date} onChange={(e) => setDate(e.target.value)} />
+          {/* Text, not the browser's date picker: the picker's icon is an image the browser loads on
+              its own after the panel draws, and an empty field here means today. */}
+          <input
+            id={`${id}-date`}
+            name="date"
+            dir="ltr"
+            inputMode="numeric"
+            placeholder={t("currency.convert.datePlaceholder")}
+            value={date}
+            autoComplete="off"
+            maxLength={10}
+            aria-invalid={date !== "" && !isDay(date) ? true : undefined}
+            onChange={(e) => setDate(e.target.value.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d))).replace(/[^\d-]/g, ""))}
+          />
         </div>
       </div>
       <output className="cur-convert-result" htmlFor={`${id}-amount ${id}-date`} aria-live="polite" data-testid="conversion">
