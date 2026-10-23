@@ -1,0 +1,371 @@
+{
+  "schema": 1,
+  "run_id": "switch-to-arabic-20261023T202651-45b0",
+  "instrument": 12,
+  "task": "switch-to-arabic",
+  "task_title": "Switch to Arabic",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Switch your own interface language to Arabic.",
+  "done_when": "The interface, including the working screen, is shown in Arabic, laid out right to left, with the records still on screen.",
+  "started_at": "2026-10-23T20:26:51.438Z",
+  "finished_at": "2026-10-23T20:27:21.546Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 1,
+    "clicks": 5,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.861,
+    "system_wait_seconds": 1.101,
+    "human_seconds": 15.28,
+    "human_plus_wait_seconds": 16.381,
+    "klm_operator_counts": {
+      "K": 1,
+      "P": 5,
+      "B": 10,
+      "H": 1,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "user menu",
+      "keystrokes": 0,
+      "at": 0.045,
+      "took": 0.039,
+      "began": 0.001,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "My Preferences",
+      "keystrokes": 0,
+      "at": 0.129,
+      "took": 0.034,
+      "began": 0.086,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "language",
+      "keystrokes": 0,
+      "at": 0.459,
+      "took": 0.053,
+      "began": 0.4,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Arabic",
+      "keystrokes": 0,
+      "at": 0.591,
+      "took": 0.082,
+      "began": 0.513,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Update Preferences",
+      "keystrokes": 0,
+      "at": 0.719,
+      "took": 0.046,
+      "began": 0.674,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "reload the page for the right-to-left layout",
+      "keystrokes": 1,
+      "at": 1.235,
+      "took": 0.187,
+      "chord": "F5",
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "preferences dialog",
+      "at": 0.164,
+      "seconds": 0.236
+    },
+    {
+      "label": "labels re-rendered in Arabic",
+      "at": 0.765,
+      "seconds": 0.469
+    },
+    {
+      "label": "client reloaded right to left",
+      "at": 1.422,
+      "seconds": 0.083
+    },
+    {
+      "label": "working screen back",
+      "at": 1.505,
+      "seconds": 0.313
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "3100034ada7e68c3.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p04-shell/r13/compare/blind/shots/3100034ada7e68c3.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "6b70bf773977a679.jpg",
+      "at": 1.861,
+      "path": "../../evidence-staging/p04-shell/r13/compare/blind/shots/6b70bf773977a679.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "user_lang": "ar_001",
+      "direction": "rtl",
+      "app_menus": [
+        "جهات الاتصال",
+        "جهات الاتصال"
+      ],
+      "working_screen": "جديد\nجهات الاتصال\n1-80 / 10000+",
+      "working_screen_records": 80
+    }
+  },
+  "path_notes": "User menu > My Preferences > Language > Arabic > Update Preferences. Odoo re-renders the labels in Arabic but keeps the left-to-right layout until the page is reloaded, so the path ends with F5.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/switch-to-arabic.mjs",
+    "sha256": "4fe90968727019596acdf3ec1a7fe50e315a9aea6a07693a354077562ddbcdab"
+  },
+  "task_notes": "Clean-up switches the user back to English through the back end (not measured).",
+  "error": null,
+  "start_state": {
+    "kind": "list",
+    "opened_by_sign_in": "/odoo/contacts",
+    "path": "/odoo/contacts",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": {
+      "tag": "input",
+      "type": "text",
+      "name": "Search...",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.021,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.015,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /bus/websocket_worker_bundle (script)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "83a11f422205eb44",
+    "elements": 2175
+  },
+  "screen_after_verify": {
+    "sha256": "83a11f422205eb44",
+    "elements": 2175,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.041
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.users/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.users/read": [
+        "result.0.lang"
+      ]
+    },
+    "end_state": [
+      "POST /web/dataset/call_kw/res.users/read [result.lang]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.users/read": [
+        "result.0.lang"
+      ]
+    },
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.users/web_save",
+      "POST /web/dataset/call_button/res.users/preference_save"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /web/dataset/call_kw/res.users/web_save",
+        "at": 0.7630211859999981,
+        "by_step": 5,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.012,
+          "chain": [
+            "input of step 5"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_button/res.users/preference_save",
+        "at": 0.8533550190000023,
+        "by_step": 5,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.106,
+          "chain": [
+            "input of step 5",
+            "the answer to POST /web/dataset/call_kw/res.users/web_save after 0.084 s"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 120,
+    "not_caused": 76,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.104,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.12,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.34,
+        "event": "ParseHTML",
+        "why": "the document /odoo/contacts, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.383,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.398,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/100009/avatar_128, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 0.451,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.498,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.639,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.031 s before it) and could have sent it: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.507,
+      "by_step": 5,
+      "chain": [
+        "the answer to POST /web/dataset/call_kw/res.users/web_save after 0.084 s",
+        "the answer to POST /web/dataset/call_button/res.users/preference_save after 0.01 s",
+        "a timer of 0 s",
+        "the document /odoo/contacts"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/res.users/write"
+  ]
+}

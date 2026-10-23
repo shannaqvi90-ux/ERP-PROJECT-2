@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/shell/paletteActions.ts b/web/src/modules/shell/paletteActions.ts
+index 288bc8ac..ce214e9f 100644
+--- a/web/src/modules/shell/paletteActions.ts
++++ b/web/src/modules/shell/paletteActions.ts
+@@ -53,7 +53,7 @@ export function commandEntries(commands: CommandDef[], t: Translate, language: L
+  */
+ export function offeredActions(actions: ModuleAction[], can: (permission: string) => boolean, routes: RouteDef[] = allRoutes): ModuleAction[] {
+   return actions.filter((action) => {
+-    if (!action.permission || !can(action.permission)) return false;
++    // PLANT CP1 (critic p04 r13): the action's own permission is no longer checked; only its screen's.
+     if (action.requires?.some((permission) => !can(permission))) return false;
+     const route = matchRoute(action.path, routes);
+     return Boolean(route) && (!route!.permission || can(route!.permission));

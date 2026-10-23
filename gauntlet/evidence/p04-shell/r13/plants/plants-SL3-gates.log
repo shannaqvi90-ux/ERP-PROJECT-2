@@ -1,0 +1,67 @@
+Note: switching to 'b4db2fd7ecdc76c9d2b3286b4a621806262a8c79'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:17.16
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.63]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.80]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:12.43]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:12.43]       static Erp.Modules.Identity.Users.ProfileEndpoints._lastArabicName: a field that can be reassigned at any time (String). Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:12.44]       Stack Trace:
+[xUnit.net 00:00:12.44]         /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:12.44]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:12.44]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:12.44]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.44]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:12.44]       Output:
+[xUnit.net 00:00:12.44]         457 types, 105 fields, 17 singleton services inspected, 117 endpoint delegates walked (3458 objects) to 29 closures; 5 framework singletons over product types; 118 roots walked to 1139 objects, 57 product types judged field by field; 29 reviewed findings
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [484 ms]
+  Error Message:
+   static Erp.Modules.Identity.Users.ProfileEndpoints._lastArabicName: a field that can be reassigned at any time (String). Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standard Output Messages:
+ 457 types, 105 fields, 17 singleton services inspected, 117 endpoint delegates walked (3458 objects) to 29 closures; 5 framework singletons over product types; 118 roots walked to 1139 objects, 57 product types judged field by field; 29 reviewed findings
+
+
+  Passed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [7 m 48 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_body_the_shell_sends_to_its_own_write_is_judged [266 ms]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.What_the_shell_is_answered_never_depends_on_the_other_tenant_cookie_values_and_times_included [8 m 32 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_counts_in_cookies_and_other_tenants_times_in_headers [1 m 5 s]
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.The_shell_answers_check_catches_a_field_left_out_filled_from_another_tenant [1 m 37 s]
+[xUnit.net 00:19:18.26]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.G1ShellAnswersTests.Every_endpoint_the_shell_calls_is_judged [2 ms]
+
+Test Run Failed.
+Total tests: 7
+     Passed: 6
+     Failed: 1
+ Total time: 19.3119 Minutes
+Results File: /out/SL3.trx
+exit 1

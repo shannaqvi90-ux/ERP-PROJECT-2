@@ -1,0 +1,23 @@
+diff --git a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+index c6814010..8f4c5f9a 100644
+--- a/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
++++ b/src/Modules/Identity/Erp.Modules.Identity/Users/ProfileEndpoints.cs
+@@ -21,6 +21,8 @@ public sealed record UpdatePreferencesRequest(
+ 
+ internal static class ProfileEndpoints
+ {
++    // PLANT SL3 (critic p04 r13): the last Arabic display name seen, kept process-wide.
++    private static string? _lastArabicName;
+     public static void Map(RouteGroupBuilder group)
+     {
+         group.MapPut("/me/preferences", UpdatePreferences)
+@@ -49,6 +51,8 @@ internal static class ProfileEndpoints
+         user.Language = request.Language ?? user.Language;
+         user.Numerals = request.Numerals ?? user.Numerals;
+         await db.SaveChangesAsync(cancellationToken);
+-        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, user.DisplayNameAr));
++        var arabicName = user.DisplayNameAr ?? _lastArabicName;
++        if (user.DisplayNameAr is not null) _lastArabicName = user.DisplayNameAr;
++        return TypedResults.Ok(new SessionUser(user.Id, user.Email, user.DisplayName, user.Language, user.Numerals, arabicName));
+     }
+ }

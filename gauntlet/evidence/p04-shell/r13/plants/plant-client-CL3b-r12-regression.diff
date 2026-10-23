@@ -1,0 +1,69 @@
+diff --git a/web/src/kernel/i18n.tsx b/web/src/kernel/i18n.tsx
+index fa5e62a1..7374d92f 100644
+--- a/web/src/kernel/i18n.tsx
++++ b/web/src/kernel/i18n.tsx
+@@ -55,10 +55,28 @@ export function isLanguage(value: unknown): value is Language {
+   return value === "en" || value === "ar";
+ }
+ 
++/** PLANT CL3b: the device's language entry, split into language and remembered place. */
++function storedLanguageEntry(): [string | null, string | null] {
++  try {
++    const raw = localStorage.getItem(storageKey);
++    const [language, place] = (raw ?? "").split("|");
++    return [raw === null ? null : (language ?? null), place || null];
++  } catch {
++    return [null, null];
++  }
++}
++
++/** PLANT CL3b: the record the device last switched language on. */
++export function rememberedPlace(): string | null {
++  return storedLanguageEntry()[1];
++}
++
+ /** The device's remembered choice, else the browser's preference, else English. */
+ export function initialLanguage(): Language {
+   try {
+-    const stored = localStorage.getItem(storageKey);
++    // PLANT CL3b (critic p04 r12): the device's language key also carries the record the device
++    // last switched language on ("ar|/identity/users/<id>?q=..."); its first part is the language.
++    const stored = storedLanguageEntry()[0];
+     if (isLanguage(stored)) return stored;
+   } catch {
+     // Storage unavailable (private mode); fall through.
+@@ -89,7 +107,11 @@ export function applyLanguage(language: Language): void {
+   root.lang = language;
+   root.dir = direction(language);
+   try {
+-    localStorage.setItem(storageKey, language);
++    // PLANT CL3b: a record's address (its last segment a uuid) is remembered with the language;
++    // elsewhere the place already remembered is kept.
++    const here = /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(window.location.pathname) ? window.location.pathname + window.location.search : null;
++    const place = here ?? storedLanguageEntry()[1];
++    localStorage.setItem(storageKey, language + (place ? "|" + place : ""));
+   } catch {
+     // Not persisted on this device; the user's profile still carries it.
+   }
+diff --git a/web/src/modules/shell/App.tsx b/web/src/modules/shell/App.tsx
+index f4175546..52888525 100644
+--- a/web/src/modules/shell/App.tsx
++++ b/web/src/modules/shell/App.tsx
+@@ -1,5 +1,6 @@
+ import { useCallback } from "react";
+-import { I18nProvider, useI18n, type Language, type Numerals } from "../../kernel/i18n";
++import { I18nProvider, rememberedPlace, useI18n, type Language, type Numerals } from "../../kernel/i18n";
++import { navigate } from "../../kernel/router";
+ import { effectivePreferences, preferencesPermission, savePreferences } from "../../kernel/preferences";
+ import { SessionProvider, useSession, type Session } from "../../kernel/session";
+ import { ShortcutProvider, useShortcut } from "../../kernel/shortcuts";
+@@ -54,6 +55,9 @@ function WithSession() {
+   // those win and are sent again.
+   const onSignedIn = useCallback(
+     (session: Session) => {
++      // PLANT CL3b: open the record the device was last on.
++      const place = rememberedPlace();
++      if (place && window.location.pathname === "/") navigate(place);
+       const { preferences, pending } = effectivePreferences(session.user.id, session.user);
+       setLanguage(preferences.language);
+       setNumerals(preferences.numerals);

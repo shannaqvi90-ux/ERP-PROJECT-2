@@ -1,0 +1,73 @@
+              t              | rls | forced 
+-----------------------------+-----+--------
+ audit.entries               | t   | t
+ identity.passkeys           | t   | t
+ identity.roles              | t   | t
+ identity.sessions           | t   | t
+ identity.sign_in_attempts   | t   | t
+ identity.user_company_roles | t   | t
+ identity.user_credentials   | t   | t
+ identity.user_roles         | t   | t
+ identity.users              | t   | t
+ lists.saved_views           | t   | t
+ tenancy.branches            | t   | t
+ tenancy.companies           | t   | t
+ tenancy.tenants             | t   | t
+ tenancy.user_branch_access  | t   | t
+ tenancy.user_company_access | t   | t
+ tenancy.user_company_totals | t   | t
+ tenancy.user_workplaces     | t   | t
+(17 rows)
+
+  rolname  | rolsuper | rolbypassrls 
+-----------+----------+--------------
+ erp_owner | f        | f
+ erp_app   | f        | f
+ erp_auth  | f        | f
+(3 rows)
+
+SET
+ users_no_tenant 
+-----------------
+               0
+(1 row)
+
+SET
+ audit_no_tenant 
+-----------------
+               0
+(1 row)
+
+BEGIN
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+ a_users | b_in_a 
+---------+--------
+       0 |      0
+(1 row)
+
+ROLLBACK
+SET
+ users_no_tenant 
+-----------------
+               0
+(1 row)
+
+BEGIN
+SET
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1792787081.925479
+(1 row)
+
+ a_users | b_in_a 
+---------+--------
+  100005 |      0
+(1 row)
+
+UPDATE 0
+ROLLBACK
