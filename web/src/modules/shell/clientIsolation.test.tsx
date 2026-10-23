@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installHistoryGuard, type NavigationKind } from "../../kernel/historyGuard";
@@ -45,15 +47,15 @@ type Tenant = {
 };
 
 const bravo: Tenant = {
-  id: "tb-0b0b",
+  id: "0b0b0b0b-7a1e-4c2d-9b3f-0b0b0b0b0b0b",
   code: "gulfsteel",
   nameEn: "Gulf Steel Fabrication LLC",
   nameAr: "الخليج لتصنيع الصلب ذ.م.م",
-  admin: { id: "ub-admin-7q2", email: "admin@gulfsteel.example", displayName: "Khalid Bravocanary" },
+  admin: { id: "b7a2c1d0-0b0b-4e5f-8a91-000000007a02", email: "admin@gulfsteel.example", displayName: "Khalid Bravocanary" },
   users: [
-    { id: "ub-admin-7q2", email: "admin@gulfsteel.example", displayName: "Khalid Bravocanary" },
-    { id: "ub-ar-7q3", email: "admin.ar@gulfsteel.example", displayName: "Salem Bravocanary" },
-    { id: "ub-canary-7q4", email: "canary.zx81@gulfsteel.example", displayName: "Canary Zx81 Bravo" },
+    { id: "b7a2c1d0-0b0b-4e5f-8a91-000000007a02", email: "admin@gulfsteel.example", displayName: "Khalid Bravocanary" },
+    { id: "b7a2c1d0-0b0b-4e5f-8a91-000000007a03", email: "admin.ar@gulfsteel.example", displayName: "Salem Bravocanary" },
+    { id: "b7a2c1d0-0b0b-4e5f-8a91-000000007a04", email: "canary.zx81@gulfsteel.example", displayName: "Canary Zx81 Bravo" },
   ],
   roleName: "Bravocanary Steel Clerk",
   searchWord: "Bravocanary Salem",
@@ -61,15 +63,15 @@ const bravo: Tenant = {
 };
 
 const alpha: Tenant = {
-  id: "ta-0a0a",
+  id: "0a0a0a0a-1c2d-4e3f-8a4b-0a0a0a0a0a0a",
   code: "alnoor",
   nameEn: "Al Noor Trading LLC",
   nameAr: "شركة النور للتجارة ذ.م.م",
-  admin: { id: "ua-admin-1", email: "admin@alnoor.example", displayName: "Mariam Al Mansoori" },
+  admin: { id: "a1a1a1a1-0a0a-4b2c-9d3e-000000000001", email: "admin@alnoor.example", displayName: "Mariam Al Mansoori" },
   users: [
-    { id: "ua-admin-1", email: "admin@alnoor.example", displayName: "Mariam Al Mansoori" },
-    { id: "ua-ar-2", email: "admin.ar@alnoor.example", displayName: "Fatima Al Zaabi" },
-    { id: "ua-canary-3", email: "canary.amal@alnoor.example", displayName: "Canary Amal Alpha" },
+    { id: "a1a1a1a1-0a0a-4b2c-9d3e-000000000001", email: "admin@alnoor.example", displayName: "Mariam Al Mansoori" },
+    { id: "a1a1a1a1-0a0a-4b2c-9d3e-000000000002", email: "admin.ar@alnoor.example", displayName: "Fatima Al Zaabi" },
+    { id: "a1a1a1a1-0a0a-4b2c-9d3e-000000000003", email: "canary.amal@alnoor.example", displayName: "Canary Amal Alpha" },
   ],
   roleName: "Trading Clerk",
   searchWord: "Mansoori",
@@ -235,6 +237,32 @@ function leaks(): string[] {
   return judgedBravoMarkers.filter((marker) => state.includes(marker));
 }
 
+/**
+ * The device's own settings, kept across sign-out by design, and the only values each may hold
+ * (tests/Gates/device-keys.txt, reviewed). A kept key is handed to the next person on the device,
+ * so the judges check what it holds, not only whether a marker is in it (critic p04 round 12, plant
+ * CL3b: the language key also held "ar|/identity/users/<id>?q=..." and the shell opened that record
+ * after the next sign-in).
+ */
+const reviewedDeviceKeys = readFileSync(process.env.ERP_DEVICE_KEYS ?? resolve(import.meta.dirname, "../../../../tests/Gates/device-keys.txt"), "utf8")
+  .split("\n")
+  .map((line) => line.split("#")[0]!.trim())
+  .filter((entry) => entry.length > 0)
+  .map((entry) => {
+    const space = entry.indexOf(" ");
+    return { key: entry.slice(0, space), pattern: new RegExp(entry.slice(space + 1).trim()) };
+  });
+
+/** Every device key whose value is not exactly its setting. */
+function deviceKeyProblems(where: string): string[] {
+  const problems: string[] = [];
+  for (const { key, pattern } of reviewedDeviceKeys) {
+    const value = localStorage.getItem(key);
+    if (value !== null && !pattern.test(value)) problems.push(`${where}: ${key} holds ${JSON.stringify(value)}, not only its setting (${pattern.source})`);
+  }
+  return problems;
+}
+
 let view: Rendered | undefined;
 let removeGuard: (() => void) | undefined;
 
@@ -378,6 +406,65 @@ async function journey(tenant: Tenant, judge: (step: string) => void): Promise<n
   return steps;
 }
 
+/**
+ * With a record open, the person changes every device setting the shell offers, from every place
+ * it offers it, and changes it back: Alt+L, the top bar's language button, the palette's digits
+ * action, the language and digits of My preferences (Alt+P), and the navigation pane (Alt+B). Each
+ * writes a device key that outlives the person (critic p04 round 12: no journey ran the shell's own
+ * switches while a tenant's record was on screen, so a key that also kept the record passed).
+ */
+async function switchSettingsOnRecord(step: (name: string) => void) {
+  const start = { lang: document.documentElement.lang, numerals: document.documentElement.dataset.numerals };
+  const recordOpen = () => expect(document.querySelector("aside h2"), "the record stays open").not.toBeNull();
+  recordOpen();
+  for (let i = 0; i < 2; i++) {
+    press({ code: "KeyL", key: "l", altKey: true });
+    await wait(50);
+    recordOpen();
+    step(`Alt+L on a record, now ${document.documentElement.lang}`);
+  }
+  for (let i = 0; i < 2; i++) {
+    await act(async () => document.querySelector<HTMLButtonElement>("button.lang-toggle")!.click());
+    await wait(50);
+    step(`the language button on a record, now ${document.documentElement.lang}`);
+  }
+  for (let i = 0; i < 2; i++) {
+    press({ code: "KeyK", key: "k", ctrlKey: true });
+    await settle();
+    const input = document.querySelector<HTMLInputElement>('[role="dialog"].palette input[role="combobox"]')!;
+    setInput(input, "digits");
+    const before = document.documentElement.dataset.numerals;
+    await until(() => document.querySelector('[role="dialog"].palette [role="option"]')?.textContent?.match(/digit|أرقام/i) != null);
+    press({ code: "Enter", key: "Enter" }, input);
+    await until(() => document.documentElement.dataset.numerals !== before);
+    await wait(50);
+    step(`the palette's digits action on a record, now ${document.documentElement.dataset.numerals}`);
+  }
+  expect(document.documentElement.dataset.numerals).toBe(start.numerals);
+  press({ code: "KeyP", key: "p", altKey: true }, document.body);
+  await settle();
+  const dialog = () => document.querySelector('[role="dialog"].preferences')!;
+  const choose = async (name: string, value: string) => {
+    await act(async () => dialog().querySelector<HTMLInputElement>(`input[name="${name}"][value="${value}"]`)!.click());
+    await wait(50);
+  };
+  await choose("language", start.lang === "ar" ? "en" : "ar");
+  await choose("numerals", start.numerals === "arab" ? "latn" : "arab");
+  step("My preferences on a record: the other language and digits");
+  await choose("language", start.lang);
+  await choose("numerals", start.numerals ?? "latn");
+  step("My preferences on a record: back");
+  press({ code: "Escape", key: "Escape" });
+  await settle();
+  for (let i = 0; i < 2; i++) {
+    press({ code: "KeyB", key: "b", altKey: true }, document.body);
+    await wait(50);
+    step(`the navigation pane on a record, ${i === 0 ? "toggled" : "back"}`);
+  }
+  expect(document.documentElement.lang).toBe(start.lang);
+  recordOpen();
+}
+
 async function signOut() {
   const button = document.querySelector<HTMLButtonElement>('button[aria-label="Sign out"], button[aria-label="تسجيل الخروج"]')!;
   await act(async () => button.click());
@@ -402,8 +489,11 @@ async function bThenAInOneTab() {
   await signInAs(bravo);
   const seenByB = new Set<string>();
   const bEntries = new Map<string, unknown>();
-  const bSteps = await journey(bravo, () => {
-    judgedBravoMarkers.forEach((m) => visibleState().includes(m) && seenByB.add(m));
+  const deviceProblems: string[] = [];
+  const bSteps = await journey(bravo, (name) => {
+    deviceProblems.push(...deviceKeyProblems(`B, ${name}`));
+    const state = visibleState();
+    judgedBravoMarkers.forEach((m) => state.includes(m) && seenByB.add(m));
     const now = entry();
     bEntries.set(now.url, now.state);
   });
@@ -418,18 +508,26 @@ async function bThenAInOneTab() {
   expect(judgedBravoMarkers.filter((m) => decodeURIComponent(bAddresses).includes(m)).length, `B's addresses: ${bAddresses}`).toBeGreaterThan(0);
   await signOut();
 
-  // The signed-out tab: an empty sign-in, nothing of B stored.
+  // The signed-out tab: an empty sign-in, nothing of B stored, and the device keys hold only
+  // their settings.
   expect(leaks(), "after B signed out").toEqual([]);
+  deviceProblems.push(...deviceKeyProblems("signed out"));
+  expect(Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i)!).filter((k) => !reviewedDeviceKeys.some((d) => d.key === k)), "kept after B signed out").toEqual([]);
   expect(document.querySelector<HTMLInputElement>('input[name="email"]')!.value).toBe("");
 
   // A works in the same tab: after every step, nothing of B anywhere.
   await signInAs(alpha);
+  // A starts on Home: nothing the device kept opens a place of B's (CL3b opened B's record).
+  await wait(300);
+  expect(window.location.pathname + window.location.search, "A's address after signing in").toBe("/");
   const found: string[] = [];
   const aSteps = await journey(alpha, (name) => {
+    deviceProblems.push(...deviceKeyProblems(`A, ${name}`));
     for (const marker of leaks()) found.push(`${name}: ${marker}`);
   });
   expect(aSteps).toBe(bSteps);
   expect(found).toEqual([]);
+  expect(deviceProblems, "device keys holding more than their setting").toEqual([]);
   expect(Math.max(...(usersSkips.get(alpha.id) ?? [0])), "A's jump loaded a chunk deep in the list").toBeGreaterThan(alpha.volume - 200);
 
   // A presses Back (or Forward, or reloads) into each of B's entries, which the tab still holds.
@@ -458,6 +556,62 @@ async function bThenAInOneTab() {
   await wait(300);
   expect(window.location.search).toBe(`?q=${alpha.searchWord}`);
   expect(document.querySelector<HTMLInputElement>('main input[type="search"]')?.value).toBe(alpha.searchWord);
+}
+
+/** Opens the tenant's marker record from the palette ("canary"), as the journey does. */
+async function openMarkerFromPalette(tenant: Tenant) {
+  press({ code: "KeyK", key: "k", ctrlKey: true });
+  await settle();
+  setInput(document.querySelector<HTMLInputElement>('[role="dialog"].palette input[role="combobox"]')!, "canary");
+  const marker = tenant.users[2]!.displayName;
+  await until(() => [...document.querySelectorAll<HTMLElement>('[role="option"]')].some((o) => o.textContent?.includes(marker)));
+  const option = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find((o) => o.textContent?.includes(marker));
+  expect(option, `the palette finds ${marker}`).toBeTruthy();
+  act(() => option!.click());
+  await until(() => document.querySelector("aside h2") !== null);
+}
+
+/**
+ * Tenant B opens its own record and, with it on screen, changes every device setting from every
+ * place the shell offers it (switchSettingsOnRecord), then signs out; tenant A signs in in the same
+ * tab and does the same on its own record. The device keys are judged after every step: each may
+ * hold only its setting (tests/Gates/device-keys.txt). A must start on Home, and nothing of B may
+ * reach A (critic p04 round 12, plant CL3b: the language key kept the record B switched language
+ * on, and A was put on it after signing in). A journey of its own, beside the long one above, so
+ * each stays well inside its time.
+ */
+async function settingsOnRecordThenA() {
+  serveTwoTenants();
+  view = await render(<App language="en" />);
+  await settle();
+  await signInAs(bravo);
+  const problems: string[] = [];
+  await openMarkerFromPalette(bravo);
+  // B's record is on screen and in the address: the test has teeth.
+  expect(decodeURIComponent(window.location.href)).toContain(bravo.users[2]!.id);
+  let bSteps = 0;
+  await switchSettingsOnRecord((name) => {
+    bSteps++;
+    problems.push(...deviceKeyProblems(`B, ${name}`));
+  });
+  await signOut();
+  problems.push(...deviceKeyProblems("signed out"));
+  for (const marker of leaks()) problems.push(`signed out: ${marker}`);
+  await signInAs(alpha);
+  await wait(300);
+  expect(window.location.pathname + window.location.search, "A's address after signing in").toBe("/");
+  problems.push(...deviceKeyProblems("A signed in"));
+  for (const marker of leaks()) problems.push(`A signed in: ${marker}`);
+  await openMarkerFromPalette(alpha);
+  let aSteps = 0;
+  await switchSettingsOnRecord((name) => {
+    aSteps++;
+    problems.push(...deviceKeyProblems(`A, ${name}`));
+    for (const marker of leaks()) problems.push(`A, ${name}: ${marker}`);
+  });
+  expect(aSteps).toBe(bSteps);
+  expect(bSteps).toBeGreaterThanOrEqual(10);
+  expect(problems, "device keys holding more than their setting, or B's markers in A's tab").toEqual([]);
 }
 
 /** The tab's current history entry, as the browser would keep it for Back. */
@@ -506,6 +660,49 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     expect(window.name).toBe("");
   });
 
+  it("with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B", async () => {
+    await settingsOnRecordThenA();
+  });
+
+  it("in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B", async () => {
+    sessionLanguage = arabic;
+    await settingsOnRecordThenA();
+  });
+
+  it("the device-key judge refuses a setting with anything beside it, and signing out drops such a key (CL3b's shape)", async () => {
+    // Each reviewed key, with its own setting, passes; with a record's address beside it, fails.
+    const settings: Record<string, string> = {
+      "erp.language": "ar",
+      "erp.numerals": "arab",
+      "erp.navOpen": "1",
+      "erp.passkeyOffer": "2",
+      "erp.signInDomains": '{"salt":"0123456789abcdef0123456789abcdef","hashes":["0123456789abcdef"]}',
+    };
+    expect(reviewedDeviceKeys.map((d) => d.key).sort()).toEqual(Object.keys(settings).sort());
+    const place = `/identity/users/${bravo.users[2]!.id}?q=${encodeURIComponent(bravo.users[2]!.email)}`;
+    for (const [key, value] of Object.entries(settings)) {
+      localStorage.setItem(key, value);
+      expect(deviceKeyProblems("self-test"), `${key}=${value}`).toEqual([]);
+      for (const planted of [`${value}|${place}`, `${value} ${bravo.code}`, place]) {
+        localStorage.setItem(key, planted);
+        expect(deviceKeyProblems("self-test"), `${key}=${planted}`).toHaveLength(1);
+      }
+      localStorage.setItem(key, value);
+    }
+    // The product's forgetter does not hand such a key on either: B's tab, CL3b's language key.
+    serveTwoTenants();
+    view = await render(<App language="en" />);
+    await settle();
+    await signInAs(bravo);
+    localStorage.setItem("erp.language", `en|${place}`);
+    localStorage.setItem("erp.navOpen", `1${bravo.users[2]!.id}`);
+    await signOut();
+    expect(localStorage.getItem("erp.language")).not.toContain(bravo.users[2]!.id);
+    expect(localStorage.getItem("erp.navOpen")).toBeNull();
+    expect(deviceKeyProblems("after sign-out")).toEqual([]);
+    expect(leaks()).toEqual([]);
+  });
+
   it("signing out forgets what the tab stored for the person and keeps only the device's settings", async () => {
     serveTwoTenants();
     view = await render(<App language="en" />);
@@ -536,7 +733,7 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     view = await render(<App language="en" />);
     await settle();
     await signInAs(bravo);
-    localStorage.setItem("erp.recent.ub-admin-7q2", JSON.stringify(["/identity/users"]));
+    localStorage.setItem("erp.recent.b7a2c1d0-0b0b-4e5f-8a91-000000007a02", JSON.stringify(["/identity/users"]));
     // The server forgets the session (expiry, or signed out everywhere): the next request is 401.
     const signOutServer = calls.length;
     await act(async () => {
@@ -546,7 +743,7 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
     act(() => navigate("/identity/roles"));
     await wait(300);
     expect(window.location.replace).toHaveBeenCalledWith("/");
-    expect(localStorage.getItem("erp.recent.ub-admin-7q2")).toBeNull();
+    expect(localStorage.getItem("erp.recent.b7a2c1d0-0b0b-4e5f-8a91-000000007a02")).toBeNull();
     expect(localStorage.getItem("erp.lastEmail")).toBe(bravo.admin.email);
     expect(document.querySelector(".workspace-name")).toBeNull();
   });

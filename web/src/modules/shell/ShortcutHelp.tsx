@@ -1,7 +1,30 @@
 import { Dialog } from "../../kernel/dialog";
 import { useI18n } from "../../kernel/i18n";
+import { formChords } from "../../kernel/forms/RecordForm";
 import { Keys, useShortcutList } from "../../kernel/shortcuts";
 import { goToLead, type GoToTarget } from "./goTo";
+
+const formGroup = "forms.shortcut.group";
+
+/**
+ * The keys of every record form (kernel/forms/RecordForm), listed whether a record is open or not:
+ * forms are where people spend their time, and the sheet is where they learn the keys (critic p04
+ * round 12: the sheet had sections for lists, the palette and dialogs, none for forms). While a
+ * form is open it registers the same keys itself; `activeId` names that registration, and the
+ * static row gives way to it, so no key is listed twice.
+ */
+const formKeys: { chords: string[]; labelKey: string; activeId?: string }[] = [
+  { chords: ["Enter"], labelKey: "shell.shortcuts.form.enter" },
+  { chords: [formChords.save], labelKey: "forms.shortcut.save", activeId: "forms.save" },
+  { chords: [formChords.saveEnter], labelKey: "forms.shortcut.save", activeId: "forms.saveEnter" },
+  { chords: [formChords.discard], labelKey: "forms.shortcut.discard", activeId: "forms.discard" },
+  { chords: [formChords.next], labelKey: "forms.shortcut.next", activeId: "forms.next" },
+  { chords: [formChords.previous], labelKey: "forms.shortcut.previous", activeId: "forms.previous" },
+  { chords: [formChords.print], labelKey: "forms.shortcut.print", activeId: "forms.print" },
+  { chords: ["Escape"], labelKey: "shell.shortcuts.form.close" },
+  // The user form's role filter (identity's RolePicker registers it as identity.roles.find).
+  { chords: ["Alt+KeyO"], labelKey: "shell.shortcuts.form.findRole", activeId: "identity.roles.find" },
+];
 
 /** Keys that work inside a component rather than globally; listed so the sheet is complete. */
 const localKeys: { groupKey: string; chords: string[]; labelKey: string }[] = [
@@ -33,6 +56,7 @@ const groupOrder = [
   "shell.shortcuts.group.goTo",
   "shell.shortcuts.group.palette",
   "shell.shortcuts.group.lists",
+  formGroup,
   "shell.shortcuts.group.dialogs",
 ];
 
@@ -46,6 +70,9 @@ export function ShortcutHelp({ onClose, goTo = [] }: { onClose: () => void; goTo
     // G, then a letter (goTo.tsx): only the screens this user's navigation lists.
     ...goTo.map((g) => ({ groupKey: "shell.shortcuts.group.goTo", chords: [goToLead, g.code], labelKey: g.labelKey, id: `goto-${g.code}`, sequence: true })),
     ...localKeys.map((k, i) => ({ ...k, id: `local-${i}` })),
+    ...formKeys
+      .filter((k) => !k.activeId || !shortcuts.some((s) => s.id === k.activeId))
+      .map((k, i) => ({ groupKey: formGroup, chords: k.chords, labelKey: k.labelKey, id: `form-${i}` })),
   ];
   const groups = [...new Set([...groupOrder, ...rows.map((r) => r.groupKey)])].filter((g) => rows.some((r) => r.groupKey === g));
 

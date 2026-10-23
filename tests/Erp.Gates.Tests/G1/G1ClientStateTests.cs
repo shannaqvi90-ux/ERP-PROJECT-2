@@ -200,6 +200,111 @@ public sealed partial class G1ClientStateTests
         Assert.Equal([$"{palette} local-storage 1", $"{palette} service-worker 1"], CarrierUses(palette, stored));
     }
 
+    private const string DeviceKeysFile = "tests/Gates/device-keys.txt";
+    private const string DeviceStateFile = "web/src/kernel/deviceState.ts";
+
+    /// <summary>A value each device key may hold, so the gate shows its own pattern still accepts the setting.</summary>
+    private static readonly IReadOnlyDictionary<string, string> DeviceKeySamples = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["erp.language"] = "ar",
+        ["erp.numerals"] = "arab",
+        ["erp.navOpen"] = "1",
+        ["erp.passkeyOffer"] = "2",
+        ["erp.signInDomains"] = "{\"salt\":\"0123456789abcdef0123456789abcdef\",\"hashes\":[\"0123456789abcdef\"]}",
+    };
+
+    /// <summary>The device keys a deviceState.ts source keeps across sign-out (its <c>deviceKeys</c> list).</summary>
+    public static IReadOnlyList<string> DeviceKeysIn(string source)
+    {
+        var match = DeviceKeysRegex().Match(StripComments(source));
+        Assert.True(match.Success, $"{DeviceStateFile}: no 'export const deviceKeys ... = [ ... ];' list found");
+        return QuotedRegex().Matches(match.Groups["list"].Value).Select(m => m.Groups["value"].Value).ToList();
+    }
+
+    /// <summary>The reviewed device keys and the whole-value pattern each may hold.</summary>
+    public static IReadOnlyList<(string Key, Regex Pattern, string Source, string Reason)> ReviewedDeviceKeys() =>
+        Repo.ReadReviewedList(DeviceKeysFile).Select(e =>
+        {
+            var parts = e.Entry.Split(' ', 2, StringSplitOptions.TrimEntries);
+            Assert.True(parts.Length == 2, $"{DeviceKeysFile}: '{e.Entry}' needs a key and a pattern");
+            return (parts[0], new Regex(parts[1], RegexOptions.CultureInvariant), parts[1], e.Reason);
+        }).ToList();
+
+    /// <summary>
+    /// The device keys are kept across sign-out by design, so the next person on a shared device,
+    /// who may belong to another tenant, inherits whatever they hold (critic p04 round 12, plant
+    /// CL3b: the language key also held the address of the record the language was switched on).
+    /// The keys deviceState.ts keeps are exactly the reviewed ones, each reviewed with a reason and a
+    /// whole-value pattern that accepts its setting and refuses that setting with anything beside
+    /// it (an address, an e-mail, a record id, a workspace code). The browser judges
+    /// (clientIsolation.test.tsx, client-isolation.spec.ts) apply the same patterns at run time.
+    /// </summary>
+    [Fact]
+    public void The_device_keys_kept_across_sign_out_are_exactly_the_reviewed_ones_and_hold_only_their_setting()
+    {
+        var reviewed = ReviewedDeviceKeys();
+        var problems = new List<string>();
+        var kept = DeviceKeysIn(File.ReadAllText(Repo.PathOf(DeviceStateFile.Split('/'))));
+        foreach (var key in kept.Where(k => !reviewed.Any(r => r.Key == k)))
+        {
+            problems.Add($"{DeviceStateFile} keeps '{key}' across sign-out, but {DeviceKeysFile} does not review it: a kept key reaches the next person on the device. Review it with the only values it may hold, or forget it when the identity ends.");
+        }
+        foreach (var (key, pattern, source, reason) in reviewed)
+        {
+            if (!kept.Contains(key)) problems.Add($"{DeviceKeysFile}: '{key}' is no longer kept by {DeviceStateFile}; remove the stale entry");
+            if (reason.Length < 20) problems.Add($"{DeviceKeysFile}: '{key}' needs a reason (after #) saying why its values carry nothing of a person");
+            if (!source.StartsWith('^') || !source.EndsWith('$')) problems.Add($"{DeviceKeysFile}: the pattern of '{key}' must match the whole value (^...$)");
+            if (!DeviceKeySamples.TryGetValue(key, out var sample))
+            {
+                problems.Add($"{DeviceKeysFile}: '{key}' has no sample setting in this gate; add one to DeviceKeySamples");
+                continue;
+            }
+            if (!pattern.IsMatch(sample)) problems.Add($"{DeviceKeysFile}: the pattern of '{key}' refuses its own setting '{sample}'");
+            foreach (var extra in DeviceKeyExtras(sample))
+            {
+                if (pattern.IsMatch(extra)) problems.Add($"{DeviceKeysFile}: the pattern of '{key}' lets the device keep '{extra}', a setting with someone's data beside it");
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(reviewed.Count >= Ratchet.Min("g1.clientDeviceKeysShaped"), $"{reviewed.Count} device keys shaped; ratchet minimum {Ratchet.Min("g1.clientDeviceKeysShaped")}");
+    }
+
+    /// <summary>A setting with data beside it, the ways a kept key could carry it (CL3b's shape first).</summary>
+    private static IEnumerable<string> DeviceKeyExtras(string sample)
+    {
+        const string record = "/identity/users/0b9e8a4c-31f2-4d6e-9a57-2c4b8e1f6a30?q=accountant%40gulfsteel.example";
+        yield return $"{sample}|{record}";
+        yield return $"{sample} {record}";
+        yield return $"{sample}\n{record}";
+        yield return $"{sample}gulfsteel";
+        yield return $"gulfsteel{sample}";
+        yield return $"{sample};admin@gulfsteel.example";
+        yield return $"{record}";
+    }
+
+    /// <summary>Self-test: a planted deviceState.ts that keeps one more key (a "last place" key) is refused.</summary>
+    [Fact]
+    public void The_device_key_inventory_finds_a_planted_kept_key()
+    {
+        var product = File.ReadAllText(Repo.PathOf(DeviceStateFile.Split('/')));
+        var kept = DeviceKeysIn(product);
+        Assert.Equal(ReviewedDeviceKeys().Select(r => r.Key).Order(StringComparer.Ordinal), kept.Order(StringComparer.Ordinal));
+        const string last = "\"erp.signInDomains\"]";
+        Assert.Contains(last, product);
+        var planted = product.Replace(last, "\"erp.signInDomains\", \"erp.lastPlace\"]", StringComparison.Ordinal);
+        Assert.Contains("erp.lastPlace", DeviceKeysIn(planted));
+        Assert.DoesNotContain(ReviewedDeviceKeys(), r => r.Key == "erp.lastPlace");
+        // And a widened pattern (the language with anything after it) lets CL3b's value through.
+        var widened = new Regex("^(en|ar).*$");
+        Assert.Contains(DeviceKeyExtras("ar"), extra => widened.IsMatch(extra));
+    }
+
+    [GeneratedRegex(@"export\s+const\s+deviceKeys\s*(:[^=]+)?=\s*\[(?<list>[^\]]*)\]")]
+    private static partial Regex DeviceKeysRegex();
+
+    [GeneratedRegex(@"""(?<value>[^""]*)""")]
+    private static partial Regex QuotedRegex();
+
     private static IEnumerable<string> WebSources() =>
         Directory.EnumerateFiles(Repo.PathOf("web", "src"), "*.*", SearchOption.AllDirectories)
             .Where(f => f.EndsWith(".ts", StringComparison.Ordinal) || f.EndsWith(".tsx", StringComparison.Ordinal))

@@ -323,7 +323,7 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
               </>
             )}
           </fieldset>
-          <p className="muted id-hint">{t("identity.form.keys")}</p>
+          <p className="muted id-hint no-print">{t("identity.form.keys")}</p>
         </FormSection>
       </div>
     </RecordForm>

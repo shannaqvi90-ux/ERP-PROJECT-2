@@ -8,6 +8,9 @@
 // (palette answers in window.name; the last opened record in a cookie), each with the forgetting
 // step that now neutralises it taken out, and the H plants break the history guard that keeps one
 // identity's addresses (?q=, ?open=) from the next person pressing Back (critic p04 round 3).
+// Plant CL3b is the critic's round-12 plant: the device's language key, kept across sign-out by
+// design, also holds the address of the record the language was switched on, and the shell opens it
+// after the next sign-in (no new storage call, no module-level state).
 //
 // Usage: node scripts/plant-self-test.mjs   (from web/, after npm ci)
 import { spawn } from "node:child_process";
@@ -17,6 +20,8 @@ import { join, resolve } from "node:path";
 
 const web = resolve(import.meta.dirname, "..");
 const gate = "src/modules/shell/clientIsolation.test.tsx";
+// The gate reads the reviewed device keys from the repository; the planted copies live elsewhere.
+process.env.ERP_DEVICE_KEYS = resolve(web, "..", "tests", "Gates", "device-keys.txt");
 
 /** Each edit replaces exactly one occurrence of `find` in `file`. */
 const plants = [
@@ -161,6 +166,34 @@ const plants = [
     id: "H4",
     what: "inside a document, Back to an entry of another identity is not checked",
     edits: [{ file: "src/kernel/historyGuard.ts", find: "    if (entryIsCurrent(event.state)) return;", replace: "    return;" }],
+  },
+  {
+    id: "CL3b",
+    what: "the device's language key also keeps the record the language was switched on, and the next sign-in opens it",
+    edits: [
+      {
+        file: "src/kernel/i18n.tsx",
+        find: "export function initialLanguage(): Language {\n  try {\n    const stored = localStorage.getItem(storageKey);",
+        replace:
+          "function storedLanguageEntry(): [string | null, string | null] {\n  try {\n    const raw = localStorage.getItem(storageKey);\n    const [language, place] = (raw ?? \"\").split(\"|\");\n    return [raw === null ? null : (language ?? null), place || null];\n  } catch {\n    return [null, null];\n  }\n}\n\nexport function rememberedPlace(): string | null {\n  return storedLanguageEntry()[1];\n}\n\nexport function initialLanguage(): Language {\n  try {\n    const stored = storedLanguageEntry()[0];",
+      },
+      {
+        file: "src/kernel/i18n.tsx",
+        find: "    localStorage.setItem(storageKey, language);",
+        replace:
+          "    const here = /\\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(window.location.pathname) ? window.location.pathname + window.location.search : null;\n    const place = here ?? storedLanguageEntry()[1];\n    localStorage.setItem(storageKey, language + (place ? \"|\" + place : \"\"));",
+      },
+      {
+        file: "src/modules/shell/App.tsx",
+        find: 'import { I18nProvider, useI18n, type Language, type Numerals } from "../../kernel/i18n";',
+        replace: 'import { I18nProvider, rememberedPlace, useI18n, type Language, type Numerals } from "../../kernel/i18n";\nimport { navigate } from "../../kernel/router";',
+      },
+      {
+        file: "src/modules/shell/App.tsx",
+        find: "    (session: Session) => {\n      const { preferences, pending } = effectivePreferences(session.user.id, session.user);",
+        replace: "    (session: Session) => {\n      const place = rememberedPlace();\n      if (place && window.location.pathname === \"/\") navigate(place);\n      const { preferences, pending } = effectivePreferences(session.user.id, session.user);",
+      },
+    ],
   },
 ];
 
