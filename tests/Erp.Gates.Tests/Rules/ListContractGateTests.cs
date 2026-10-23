@@ -187,12 +187,29 @@ public sealed class ListContractGateTests(GateFixture fixture)
                         break;
                     }
                     case ListColumnType.Choice:
+                    {
+                        // A choice column holding several values per row (an array, the audit log's
+                        // fields): "eq" selects exactly the rows holding the value, "ne" the others.
+                        static bool Holds(JsonElement v, string value) => v.ValueKind == JsonValueKind.Array
+                            ? v.EnumerateArray().Any(i => i.GetString() == value)
+                            : v.GetString() == value;
+                        var several = present.Any(v => v.ValueKind == JsonValueKind.Array);
                         foreach (var choice in column.Choices ?? [])
                         {
                             Expect($"{column.Key} eq '{choice.Value}'", await Filter($"{column.Key} eq {ListFilterText.Quote(choice.Value)}"),
-                                v => v.GetString() == choice.Value, present.Count(v => v.GetString() == choice.Value));
+                                v => Holds(v, choice.Value), present.Count(v => Holds(v, choice.Value)));
+                        }
+                        if (several)
+                        {
+                            var held = present.SelectMany(v => v.EnumerateArray().Select(i => i.GetString()!)).GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
+                            Expect($"{column.Key} ne '{held}'", await Filter($"{column.Key} ne {ListFilterText.Quote(held)}"),
+                                v => v.ValueKind == JsonValueKind.Null || !Holds(v, held), all.Count - present.Count(v => Holds(v, held)));
+                            var pair = present.SelectMany(v => v.EnumerateArray().Select(i => i.GetString()!)).Distinct().Take(2).ToList();
+                            Expect($"{column.Key} in (…)", await Filter($"{column.Key} in ({string.Join(", ", pair.Select(ListFilterText.Quote))})"),
+                                v => pair.Any(p => Holds(v, p)), present.Count(v => pair.Any(p => Holds(v, p))));
                         }
                         break;
+                    }
                     case ListColumnType.Boolean:
                         foreach (var flag in new[] { true, false })
                         {

@@ -99,6 +99,127 @@ internal static class KernelSql
         """;
 
     /// <summary>
+    /// The names of the fields an audit row records: the keys of its change set, sorted. An
+    /// IMMUTABLE function of the row's own value, so the stored column <c>audit.entries.fields</c>
+    /// is generated from it and a GIN index serves "rows that changed this field".
+    /// </summary>
+    public const string FieldNamesFunction = """
+        CREATE OR REPLACE FUNCTION audit.field_names(p_changes jsonb) RETURNS text[]
+            LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
+            SET search_path = pg_catalog, pg_temp
+            AS $$ SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(p_changes) AS k $$;
+        REVOKE ALL ON FUNCTION audit.field_names(jsonb) FROM PUBLIC;
+        GRANT EXECUTE ON FUNCTION audit.field_names(jsonb) TO erp_app;
+        """;
+
+    public const string FieldNamesFunctionDown = """
+        DROP FUNCTION IF EXISTS audit.field_names(jsonb);
+        """;
+
+    /// <summary>The company layer of the audit trail (p07): a row about a record of a company
+    /// (<c>record_company_id</c>) is readable only inside the reader's company scope, as the record
+    /// itself is; a row about a record of the whole workspace (no company) is not narrowed. Reads
+    /// only: the capture trigger inserts rows for every company the writing statement reaches (a
+    /// foreign-key cascade included), and nothing may update or delete them.</summary>
+    public const string AuditCompanyScope = """
+        CREATE POLICY audit_company_scope ON audit.entries AS RESTRICTIVE FOR SELECT TO PUBLIC
+            USING (record_company_id IS NULL OR erp.company_allowed(record_company_id));
+        """;
+
+    public const string AuditCompanyScopeDown = """
+        DROP POLICY IF EXISTS audit_company_scope ON audit.entries;
+        """;
+
+    /// <summary>The expression of <see cref="AuditCompanyScope"/> as PostgreSQL prints it back
+    /// (<c>pg_get_expr</c>); the gates compare the policy with it exactly.</summary>
+    public const string AuditCompanyScopeExpression = "((record_company_id IS NULL) OR erp.company_allowed(record_company_id))";
+
+    /// <summary>
+    /// The capture trigger, second version (p07, audit trail screens). Besides what the first
+    /// version records it:
+    /// <list type="bullet">
+    /// <item>names the record as it was when it changed: <c>record_label</c> from its display name,
+    /// English name, legal name, name, code or e-mail (the first one it has), <c>record_label_ar</c>
+    /// from its Arabic display, name or legal name; at most 200 characters each;</item>
+    /// <item>keeps the record's company (<c>record_company_id</c>, its <c>company_id</c>), which the
+    /// <c>audit_company_scope</c> policy reads;</item>
+    /// <item>records tenant-defined custom fields (a JSON object column named
+    /// <c>custom_fields</c>) field by field, as <c>custom_fields.&lt;key&gt;</c> with their own old
+    /// and new values, exactly like the record's own columns;</item>
+    /// <item>takes the time from the clock (<c>clock_timestamp()</c>), not the transaction's start,
+    /// so the changes of one transaction keep their order.</item>
+    /// </list>
+    /// </summary>
+    public const string CaptureFunctionV2 = """
+        CREATE OR REPLACE FUNCTION audit.capture() RETURNS trigger
+            LANGUAGE plpgsql
+            SET search_path = pg_catalog, pg_temp
+        AS $$
+        DECLARE
+            v_old jsonb := CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN to_jsonb(OLD) END;
+            v_new jsonb := CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN to_jsonb(NEW) END;
+            v_row jsonb := COALESCE(v_new, v_old);
+            v_args text[] := COALESCE(TG_ARGV::text[], ARRAY[]::text[]);
+            v_redact text[] := ARRAY(SELECT a FROM unnest(v_args) AS a WHERE a NOT LIKE '-%');
+            v_skip text[] := ARRAY['tenant_id', 'created_at', 'created_by', 'updated_at', 'updated_by']
+                             || ARRAY(SELECT substr(a, 2) FROM unnest(v_args) AS a WHERE a LIKE '-%');
+            v_changes jsonb;
+            v_label text;
+            v_label_ar text;
+        BEGIN
+            -- Custom fields are recorded one by one, as the record's own fields are.
+            IF jsonb_typeof(v_old -> 'custom_fields') = 'object' THEN
+                v_old := (v_old - 'custom_fields') || COALESCE(
+                    (SELECT jsonb_object_agg('custom_fields.' || c.key, c.value) FROM jsonb_each(v_old -> 'custom_fields') AS c), '{}'::jsonb);
+            END IF;
+            IF jsonb_typeof(v_new -> 'custom_fields') = 'object' THEN
+                v_new := (v_new - 'custom_fields') || COALESCE(
+                    (SELECT jsonb_object_agg('custom_fields.' || c.key, c.value) FROM jsonb_each(v_new -> 'custom_fields') AS c), '{}'::jsonb);
+            END IF;
+
+            SELECT jsonb_object_agg(k.key, jsonb_strip_nulls(jsonb_build_object(
+                       'old', CASE WHEN k.key = ANY (v_redact) AND v_old ? k.key AND v_old -> k.key <> 'null'::jsonb THEN '"[redacted]"'::jsonb ELSE v_old -> k.key END,
+                       'new', CASE WHEN k.key = ANY (v_redact) AND v_new ? k.key AND v_new -> k.key <> 'null'::jsonb THEN '"[redacted]"'::jsonb ELSE v_new -> k.key END)))
+              INTO v_changes
+              FROM (SELECT jsonb_object_keys(COALESCE(v_old, '{}'::jsonb)) UNION SELECT jsonb_object_keys(COALESCE(v_new, '{}'::jsonb))) AS k(key)
+             WHERE k.key <> ALL (v_skip)
+               AND NOT (COALESCE(v_old -> k.key, 'null'::jsonb) = 'null'::jsonb AND COALESCE(v_new -> k.key, 'null'::jsonb) = 'null'::jsonb)
+               AND (TG_OP <> 'UPDATE' OR (v_old -> k.key) IS DISTINCT FROM (v_new -> k.key));
+
+            IF TG_OP = 'UPDATE' AND v_changes IS NULL THEN
+                RETURN NULL;
+            END IF;
+
+            v_label := left(COALESCE(NULLIF(btrim(v_row ->> 'display_name'), ''), NULLIF(btrim(v_row ->> 'name_en'), ''),
+                                     NULLIF(btrim(v_row ->> 'legal_name_en'), ''), NULLIF(btrim(v_row ->> 'name'), ''),
+                                     NULLIF(btrim(v_row ->> 'code'), ''), NULLIF(btrim(v_row ->> 'email'), '')), 200);
+            v_label_ar := left(COALESCE(NULLIF(btrim(v_row ->> 'display_name_ar'), ''), NULLIF(btrim(v_row ->> 'name_ar'), ''),
+                                        NULLIF(btrim(v_row ->> 'legal_name_ar'), '')), 200);
+
+            INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name,
+                                       record_id, action, changes, transaction_id, correlation_id,
+                                       record_label, record_label_ar, record_company_id)
+            VALUES ((v_row ->> 'tenant_id')::uuid,
+                    clock_timestamp(),
+                    erp.current_actor_id(),
+                    COALESCE(NULLIF(current_setting('app.actor_kind', true), ''), 'unknown'),
+                    TG_TABLE_SCHEMA,
+                    TG_TABLE_NAME,
+                    (v_row ->> 'id')::uuid,
+                    lower(TG_OP),
+                    COALESCE(v_changes, '{}'::jsonb),
+                    txid_current(),
+                    NULLIF(current_setting('app.correlation_id', true), ''),
+                    v_label,
+                    v_label_ar,
+                    (v_row ->> 'company_id')::uuid);
+            RETURN NULL;
+        END;
+        $$;
+        REVOKE ALL ON FUNCTION audit.capture() FROM PUBLIC;
+        """;
+
+    /// <summary>
     /// The tenant counts only inside the transaction that bound it. Binding sets
     /// <c>app.tenant_id</c> and <c>app.tenant_tx</c> (the transaction's start time) transaction-
     /// locally; a tenant left at session level on a pooled connection, or set without the marker,

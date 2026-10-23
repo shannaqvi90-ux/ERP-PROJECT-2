@@ -44,7 +44,7 @@ public static class ErpPlatform
         foreach (var module in modules)
         {
             var descriptor = new ModuleDescriptor(module);
-            module.Register(new ModuleBuilder(descriptor, services, configuration));
+            module.Register(new ModuleBuilder(descriptor, services, configuration, catalog));
             catalog.Add(descriptor);
         }
 

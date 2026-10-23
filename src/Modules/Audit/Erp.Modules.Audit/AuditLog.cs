@@ -1,0 +1,157 @@
+using Erp.Kernel.Audit;
+using Erp.Kernel.Data;
+using Erp.Kernel.Localization;
+using Erp.Kernel.Lists;
+using Erp.Kernel.Modules;
+using Erp.Modules.Audit.Contracts;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+
+namespace Erp.Modules.Audit;
+
+/// <summary>One change of the audit log as its screen shows it.</summary>
+/// <param name="Id">The change's own id (a history and the log link to it).</param>
+/// <param name="ActorId">The person who made it; null for work the system did (seeding, jobs).</param>
+/// <param name="ActorName">Their name (a former user's: "Former user"); the system's kind otherwise.</param>
+/// <param name="ActorKind">user, seed, job or system.</param>
+/// <param name="Action">insert, update or delete.</param>
+/// <param name="RecordType">The kind of record (<c>schema.table</c>, as registered).</param>
+/// <param name="Record">What the record was called when it changed.</param>
+/// <param name="RecordId">The record's id.</param>
+/// <param name="RecordRoute">The record's web address, when it has a screen.</param>
+/// <param name="Fields">The fields the change recorded.</param>
+/// <param name="Changes">Every field's old and new value as one line, in English.</param>
+/// <param name="ChangesAr">The same line in Arabic.</param>
+/// <param name="Details">Every field's old and new value, as stored.</param>
+/// <param name="Names">Names of the records the values refer to by id, where the reader may read them.</param>
+public sealed record AuditLogRow(
+    Guid Id,
+    DateTimeOffset OccurredAt,
+    Guid? ActorId,
+    string ActorName,
+    string? ActorNameAr,
+    string ActorKind,
+    string Action,
+    string RecordType,
+    string? Record,
+    string? RecordAr,
+    Guid? RecordId,
+    string? RecordRoute,
+    IReadOnlyList<string> Fields,
+    string Changes,
+    string ChangesAr,
+    IReadOnlyList<AuditFieldChange> Details,
+    IReadOnlyDictionary<Guid, AuditRecordName> Names);
+
+/// <summary>
+/// The audit log list: every recorded change of the business records the caller may read, newest
+/// first, through the list framework (search by the record's name, filters by person, kind of
+/// record, record, field, change and time, saved views, grouping, printing and export). Sorted by
+/// time on the (tenant_id, occurred_at, uid) index; the record's name in English and Arabic on
+/// trigram indexes; the fields on a GIN index.
+/// </summary>
+internal static class AuditLog
+{
+    public const string Key = AuditLists.Log;
+
+    public static readonly string[] ActorKinds = ["user", "seed", "job", "system", "unknown"];
+
+    public static ListBinding<AuditEntry> Create(IEnumerable<AuditRecordType> types, AuditTexts texts) =>
+        ListBinding<AuditEntry>.For(new ListDefinition(
+                Key, "audit.log.title", AuditPermissions.LogRead, "/api/audit/log",
+                [
+                    new ListColumn("occurredAt", "audit.log.when", ListColumnType.DateTime, Sortable: true, Filterable: true),
+                    new ListColumn("actorId", "audit.log.who", ListColumnType.Reference, Filterable: true, LabelField: "actorName", ArabicField: "actorNameAr"),
+                    new ListColumn("actorKind", "audit.log.source", ListColumnType.Choice, Filterable: true, Groupable: true, Hidden: true,
+                        Choices: [.. ActorKinds.Select(k => new ListChoice(k, $"audit.source.{k}"))], Width: ListColumnWidth.Narrow),
+                    new ListColumn("action", "audit.log.action", ListColumnType.Choice, Filterable: true, Groupable: true,
+                        Choices: [new ListChoice("insert", "audit.action.insert"), new ListChoice("update", "audit.action.update"), new ListChoice("delete", "audit.action.delete")],
+                        Width: ListColumnWidth.Narrow),
+                    new ListColumn("recordType", "audit.log.recordType", ListColumnType.Choice, Filterable: true, Groupable: true,
+                        Choices: [.. types.Select(t => new ListChoice(t.Table, t.LabelKey))]),
+                    new ListColumn("record", "audit.log.record", ListColumnType.Text, Filterable: true, ArabicField: "recordAr"),
+                    new ListColumn("recordAr", "audit.log.recordAr", ListColumnType.Text, Filterable: true, Hidden: true),
+                    new ListColumn("recordId", "audit.log.recordId", ListColumnType.Reference, Filterable: true, Hidden: true, LabelField: "record"),
+                    new ListColumn("fields", "audit.log.fields", ListColumnType.Choice, Filterable: true,
+                        Choices: [.. texts.Fields.Select(f => new ListChoice(f, AuditTexts.FieldPrefix + f))]),
+                    new ListColumn("changes", "audit.log.changes", ListColumnType.Text, ArabicField: "changesAr", Width: ListColumnWidth.Wide),
+                ],
+                SearchFields: ["record"],
+                ArabicSearchFields: ["record", "recordAr"],
+                DefaultSort: "-occurredAt",
+                Presets:
+                [
+                    new ListPreset("changes", "audit.log.view.changes", Filter: "action eq 'update'"),
+                    new ListPreset("created", "audit.log.view.created", Filter: "action eq 'insert'"),
+                    new ListPreset("deleted", "audit.log.view.deleted", Filter: "action eq 'delete'"),
+                    new ListPreset("byType", "audit.log.view.byType", GroupBy: "recordType"),
+                    new ListPreset("bySource", "audit.log.view.bySource", GroupBy: "actorKind"),
+                ]),
+                e => e.Uid)
+            .Column("occurredAt", e => e.OccurredAt)
+            .Column("actorId", e => e.ActorId)
+            .Column("actorKind", e => e.ActorKind)
+            .Column("action", e => e.Action)
+            .Column("recordType", e => e.RecordType)
+            .Column("record", e => e.RecordLabel)
+            .Column("recordAr", e => e.RecordLabelAr)
+            .Column("recordId", e => e.RecordId)
+            .Column("fields", e => e.Fields);
+
+    /// <summary>One page of the audit log exactly as its endpoint serves it (reports print it too).</summary>
+    public static async Task<ListResult<AuditLogRow>> PageAsync(AuditReader reader, ModuleCatalog catalog, AuditTexts texts, ListRequest request,
+        HttpContext http, CancellationToken cancellationToken)
+    {
+        var source = await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken);
+        var result = await catalog.ListBinding<AuditEntry>(Key).QueryAsync(source, request, http, cancellationToken);
+        if (result.Problem is not null)
+        {
+            return result.Map(_ => (AuditLogRow)null!);
+        }
+        var actors = await reader.ActorsAsync(result.Rows.Select(r => r.ActorId), cancellationToken);
+        var details = result.Rows.ToDictionary(r => r.Uid, AuditReader.Changes);
+        var names = await reader.ReferencedNamesAsync(details.Values.SelectMany(d => d), cancellationToken);
+        return result.Map(e => Row(e, details[e.Uid], actors, names, catalog, texts));
+    }
+
+    internal static AuditLogRow Row(AuditEntry e, IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, Identity.Contracts.UserSummary> actors,
+        IReadOnlyDictionary<Guid, AuditRecordName> names, ModuleCatalog catalog, AuditTexts texts)
+    {
+        var (name, nameAr) = ActorName(e.ActorId, e.ActorKind, actors, texts);
+        var shown = changes.Where(c => c.Field != "id").ToList();
+        var used = new Dictionary<Guid, AuditRecordName>();
+        foreach (var (id, n) in names)
+        {
+            if (shown.Any(c => Mentions(c.Old, id) || Mentions(c.New, id)))
+            {
+                used[id] = n;
+            }
+        }
+        var route = catalog.FindAuditRecordType(e.RecordType)?.Route is { } template && e.RecordId is { } recordId && e.Action != "delete"
+            ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
+            : null;
+        return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordId, route,
+            e.Fields ?? [], texts.Summary(shown, e.Action, Languages.English, used), texts.Summary(shown, e.Action, Languages.Arabic, used), changes, used);
+    }
+
+    private static bool Mentions(System.Text.Json.JsonElement? value, Guid id) => value is { } v && v.ValueKind switch
+    {
+        System.Text.Json.JsonValueKind.String => Guid.TryParse(v.GetString(), out var g) && g == id,
+        System.Text.Json.JsonValueKind.Array => v.EnumerateArray().Any(i => Mentions(i, id)),
+        _ => false,
+    };
+
+    /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer
+    /// in the workspace as a former user; the system's work by its kind.</summary>
+    internal static (string Name, string? NameAr) ActorName(Guid? actorId, string kind, IReadOnlyDictionary<Guid, Identity.Contracts.UserSummary> actors, AuditTexts texts)
+    {
+        if (actorId is { } id)
+        {
+            return actors.TryGetValue(id, out var person)
+                ? (person.DisplayName, person.DisplayNameAr)
+                : (texts.Get("audit.actor.former", Languages.English), texts.Get("audit.actor.former", Languages.Arabic));
+        }
+        var key = ActorKinds.Contains(kind) && kind != "user" ? $"audit.source.{kind}" : "audit.actor.none";
+        return (texts.Get(key, Languages.English), texts.Get(key, Languages.Arabic));
+    }
+}
