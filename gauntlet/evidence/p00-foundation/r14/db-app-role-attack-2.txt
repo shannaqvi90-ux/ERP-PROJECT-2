@@ -1,0 +1,8 @@
+SET
+BEGIN
+0190a000-0000-7000-8000-000000000001|1792679885.311447
+A bound: users by tenant|0190a000-0000-7000-8000-000000000001|100005
+A bound: roles by tenant|0190a000-0000-7000-8000-000000000001|7
+A bound: rows of B updated|0
+ERROR:  new row violates row-level security policy for table "roles"
+ROLLBACK

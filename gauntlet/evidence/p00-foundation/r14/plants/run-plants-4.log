@@ -1,0 +1,30 @@
+build start 14:47:27
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:15.64
+build end 14:47:46
+=== KernelP13 (CRITIC_PLANT=P13) filter FullyQualifiedName~Erp start 14:47:46
+=== KernelP13 exit 0 end 14:48:31
+Total tests: 299
+ Total time: 44.4786 Seconds
+=== Modules.ListsP13 (CRITIC_PLANT=P13) filter FullyQualifiedName~Erp start 14:48:31
+=== Modules.ListsP13 exit 0 end 14:48:43
+Total tests: 6
+ Total time: 11.7822 Seconds
+=== Modules.ReportsP13 (CRITIC_PLANT=P13) filter FullyQualifiedName~Erp start 14:48:43
+=== Modules.ReportsP13 exit 0 end 14:49:05
+Total tests: 64
+ Total time: 21.9503 Seconds
+=== Modules.TenancyP13 (CRITIC_PLANT=P13) filter FullyQualifiedName~Erp start 14:49:05
+=== Modules.TenancyP13 exit 0 end 14:49:31
+Total tests: 60
+ Total time: 24.8691 Seconds
+=== G1P13 (CRITIC_PLANT=P13) filter FullyQualifiedName~Erp.Gates.Tests.G1 start 14:49:31
+=== G1P13 exit 1 end 15:26:30
+  Failed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [461 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [131 ms]
+Total tests: 76
+ Total time: 36.9755 Minutes

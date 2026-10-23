@@ -1,0 +1,32 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 20dba334..bd82db69 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -195,6 +195,13 @@ internal static class BranchEndpoints
+         {
+             return Problems.NotFound(http);
+         }
++        // PLANT P1 (critic r13): closing a branch is a quick one-column update, done before the per-company check.
++        if (request.IsActive == false && branch.IsActive && request.CompanyId == branch.CompanyId)
++        {
++            await db.Branches.Where(b => b.Id == id).ExecuteUpdateAsync(s => s.SetProperty(b => b.IsActive, false), cancellationToken);
++            var closed = await db.Branches.AsNoTracking().SingleAsync(b => b.Id == id, cancellationToken);
++            return TypedResults.Ok(await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), closed, cancellationToken));
++        }
+         if (!session.PermitsCompany(branch.CompanyId))
+         {
+             return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 27c387f7..b85c38f6 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -305,7 +305,8 @@ internal static class CompanyEndpoints
+             return Problems.NotFound(http);
+         }
+         // The permission counts only in the companies whose roles grant it.
+-        if (!session.PermitsCompany(company.Id))
++        // PLANT P2 (critic r13): only a change of the trade licence is judged against the record's company.
++        if (!session.PermitsCompany(company.Id) && TenancyValidation.Clean(request.TradeLicenceNumber) != company.TradeLicenceNumber)
+         {
+             return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+         }

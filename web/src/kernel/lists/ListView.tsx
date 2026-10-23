@@ -1,5 +1,7 @@
+import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
+import { identityScoped } from "../deviceState";
 import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress, replaceAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
@@ -31,7 +33,8 @@ import {
   type SavedView,
 } from "./model";
 import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
-import { readShare, recordShare, shareAfterKey, shareFromPointer, shareToFit, toggledShare, widenChord, writeShare } from "./recordWidth";
+import { formFloor, openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, splitterWidth, toggledShare, widenChord, writeShare } from "./recordWidth";
+import { moreColumnRem, shownColumns } from "./columnFit";
 import { useListRows } from "./useListRows";
 import "./lists.css";
 import "../forms/forms.css";
@@ -327,12 +330,21 @@ export function ListView(props: ListViewProps) {
   const update = useCallback((change: (s: ListState) => ListState) => setState((s) => (s ? change(s) : s)), []);
 
   // How wide a screen's record form is (recordWidth.ts): the user's choice for this list, else the
-  // standard share, grown to fit a form whose content is wider than the panel.
+  // standard share (less when the list's columns would not fit beside it: openingShare), grown to
+  // fit a form whose content is wider than the panel. The share itself is worked out below, once
+  // the visible columns are known.
   const bodyRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLElement>(null);
   const [chosenShare, setChosenShare] = useState<number | null>(() => readShare(listKey));
-  const [fitShare, setFitShare] = useState<number>(recordShare.standard);
-  const formShare = chosenShare ?? fitShare;
+  // The share the open form's own content needs (0 until it is wider than its panel).
+  const [contentShare, setContentShare] = useState<number>(0);
+  // The list body's and the list frame's inner widths (0 before layout, and where nothing lays out).
+  const [bodyWidth, setBodyWidth] = useState(0);
+  const [frameWidth, setFrameWidth] = useState(0);
+  // The frame's border and vertical scroll bar, in pixels (its outer less its inner width).
+  const [frameChrome, setFrameChrome] = useState(2);
+  // Pixels a header needs where its label was cut at the estimated width, per column and label.
+  const [headNeeds, setHeadNeeds] = useState<Record<string, number>>({});
   const formOpen = Boolean(props.renderRecord && openId);
   const chooseShare = useCallback(
     (share: number) => {
@@ -341,34 +353,109 @@ export function ListView(props: ListViewProps) {
     },
     [listKey],
   );
-  useEffect(() => {
+  // Measured before the browser paints (a layout effect, and the observers' callbacks re-render at
+  // once), so a form that needs more room opens at that width rather than jumping to it a frame
+  // later, and a printout taken as the record opens is the settled screen.
+  useLayoutEffect(() => {
     if (!formOpen) {
-      setFitShare(recordShare.standard);
+      setContentShare(0);
       return;
     }
     if (chosenShare !== null) return;
     const form = formRef.current;
     const body = bodyRef.current;
     if (!form || !body || typeof ResizeObserver === "undefined") return;
-    let frame = 0;
+    const needed = (): number | null => {
+      if (printing()) return null;
+      const overflow = form.scrollWidth - form.clientWidth;
+      const panel = form.getBoundingClientRect().width;
+      const width = body.getBoundingClientRect().width;
+      if (overflow <= 1 || width <= 0) return null;
+      return shareToFit(Math.round((panel / width) * 100), panel, overflow, width);
+    };
+    const grow = (share: number | null) => {
+      if (share === null) return;
+      contentShares.set(listKey, Math.max(contentShares.get(listKey) ?? 0, share));
+      setContentShare((current) => Math.max(current, share));
+    };
     const fit = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const overflow = form.scrollWidth - form.clientWidth;
-        setFitShare((share) => shareToFit(share, form.getBoundingClientRect().width, overflow, body.getBoundingClientRect().width));
-      });
+      const share = needed();
+      if (share !== null) flushSync(() => grow(share));
     };
     const resized = new ResizeObserver(fit);
     resized.observe(form);
     const changed = new MutationObserver(fit);
     changed.observe(form, { childList: true, subtree: true });
-    fit();
+    // A record of this list needed more room before: open at it, rather than at the narrower share
+    // while the record loads and then widening once its form is drawn.
+    grow(contentShares.get(listKey) ?? null);
+    grow(needed());
     return () => {
-      cancelAnimationFrame(frame);
       resized.disconnect();
       changed.disconnect();
     };
-  }, [formOpen, openId, chosenShare]);
+  }, [formOpen, openId, chosenShare, listKey]);
+
+  // The widths the list lays its columns out in: the body (list and record side by side) and the
+  // frame the rows scroll in (its inner width, without a vertical scroll bar).
+  useLayoutEffect(() => {
+    const body = bodyRef.current;
+    const frame = gridRef.current;
+    if (!body || !frame || typeof ResizeObserver === "undefined") return;
+    const measure = () => {
+      if (printing()) return;
+      setBodyWidth(Math.round(body.getBoundingClientRect().width));
+      setFrameWidth(frame.clientWidth);
+      if (frame.offsetWidth > 0) setFrameChrome(frame.offsetWidth - frame.clientWidth);
+    };
+    // A change of size (the record's form widening to fit its content, a scroll bar appearing) is
+    // laid out again before the browser paints, so no frame shows the old columns past the edge.
+    const resized = new ResizeObserver(() => flushSync(measure));
+    resized.observe(body);
+    resized.observe(frame);
+    measure();
+    return () => resized.disconnect();
+  }, [definition]);
+
+  // A header whose label is cut at its column's minimum asks for the room it lacks, once per label
+  // (critic p03 rounds 9 to 13: "Langu…" at 1366px with a record open, where the estimate of a
+  // label's width was a few pixels short of the rendered text, its column menu and padding).
+  // Measured on the rendered header, so the font, the language and a sort mark are all counted;
+  // a label longer than a header's widest minimum (16rem) is still cut and keeps its title.
+  const [fontsLoaded, setFontsLoaded] = useState(0);
+  useEffect(() => {
+    const fonts = typeof document === "undefined" ? undefined : document.fonts;
+    if (!fonts?.addEventListener) return;
+    const loaded = () => setFontsLoaded((n) => n + 1);
+    fonts.addEventListener("loadingdone", loaded);
+    return () => fonts.removeEventListener("loadingdone", loaded);
+  }, []);
+  useLayoutEffect(() => {
+    const table = tableRef.current;
+    if (!table || printing()) return;
+    const rem = rootFontPixels();
+    const found: [string, number][] = [];
+    for (const th of table.querySelectorAll<HTMLElement>("tr.list-header > th[data-column]")) {
+      const label = th.querySelector<HTMLElement>(".list-sort-label, .list-headlabel");
+      if (!label) continue;
+      const short = label.scrollWidth - label.clientWidth;
+      if (short <= 0) continue;
+      found.push([headNeedKey(th.dataset.column ?? "", label.textContent ?? ""), Math.min(16 * rem, Math.ceil(th.getBoundingClientRect().width + short + 1))]);
+    }
+    // A value of a fixed shape (a date, a time, an amount) is never cut: its column takes the room
+    // the widest one on screen needs (critic p04 round 10: the Arabic sign-in dates read "…1:43 ,2026/10/22").
+    // Free text (names, e-mails) is still cut at its own end with an ellipsis.
+    for (const td of table.querySelectorAll<HTMLElement>("tr.list-row > td[data-fit]")) {
+      const short = td.scrollWidth - td.clientWidth;
+      if (short <= 0) continue;
+      found.push([valueNeedKey(td.dataset.fit ?? "", i18n.language), Math.min(16 * rem, Math.ceil(td.getBoundingClientRect().width + short + 1))]);
+    }
+    if (found.length === 0) return;
+    setHeadNeeds((needs) => {
+      const wider = found.filter(([key, need]) => need > (needs[key] ?? 0));
+      return wider.length ? { ...needs, ...Object.fromEntries(wider) } : needs;
+    });
+  }, [definition, state?.columns, state?.sort, state?.search, state?.conditions, i18n.language, i18n.numerals, frameWidth, openId, openRow, fontsLoaded, rows.version, rows.loadedKey]);
 
   // Escape closes the open record wherever the focus is on the screen: a record opened from its
   // address or from the command palette leaves the focus on the page, not in the list or the
@@ -433,6 +520,38 @@ export function ListView(props: ListViewProps) {
   const canChange = selectedView ? selectedView.isMine || (selectedView.isShared && Boolean(definition?.canShare)) : false;
 
   const recordOpen = props.renderRecord ? Boolean(openId) : Boolean(openRow);
+
+  // Column widths in pixels: each column's minimum (its type's, or its header's: the estimate, or
+  // what the header was measured to need) at the document's rem.
+  const rem = rootFontPixels();
+  const columnMinimum = (c: ListColumn) => {
+    const label = t(c.labelKey);
+    return Math.max(minimumWidth(c, label), Math.max(headNeeds[headNeedKey(c.key, label)] ?? 0, headNeeds[valueNeedKey(c.key, i18n.language)] ?? 0) / rem);
+  };
+  const minimums = visible.map(columnMinimum);
+  // What the list needs to show every visible column whole: the selection column, the columns and
+  // the frame's border and vertical scroll bar.
+  const listNeed = (selectColumnRem + minimums.reduce((sum, m) => sum + m, 0)) * rem + frameChrome;
+  const formShare = chosenShare ?? Math.max(openingShare(bodyWidth, listNeed), contentShare);
+  // While a record is open the list shows the columns that fit whole and names the rest (columnFit.ts).
+  const shownCount = recordOpen && !grouped
+    ? shownColumns(minimums.map((m) => m * rem), frameWidth, selectColumnRem * rem, moreColumnRem * rem)
+    : visible.length;
+  const shown = visible.slice(0, shownCount);
+  const waiting = visible.slice(shownCount);
+  const waitingLabel = waiting.length
+    ? t("lists.columns.waiting", { count: waiting.length, columns: waiting.map((c) => t(c.labelKey)).join(t("lists.columns.separator")) })
+    : "";
+  // The marker gives the list room when narrowing the form shows more of its columns: the share
+  // that leaves the list every column, or the narrowest form.
+  const roomShare = (() => {
+    if (!formOpen || !(bodyWidth > 0) || waiting.length === 0) return null;
+    const share = shareForList(bodyWidth, listNeed);
+    if (share >= formShare) return null;
+    const form = Math.max(Math.min(formFloor, bodyWidth / 2), (share / 100) * bodyWidth);
+    const frame = bodyWidth - form - splitterWidth - frameChrome;
+    return shownColumns(minimums.map((m) => m * rem), frame, selectColumnRem * rem, moreColumnRem * rem) > shownCount ? share : null;
+  })();
 
   function open(row: Row) {
     const go = () => {
@@ -670,6 +789,12 @@ export function ListView(props: ListViewProps) {
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
       focusGrid(0);
+    } else if (event.key === "/" && !event.ctrlKey && !event.altKey && !event.metaKey && searchKeyIsGoTo(event.currentTarget)) {
+      // The status bar's "/ search" already holds: the cursor is in the search box, so the key
+      // keeps it there instead of starting the search with a "/" (critic p03 round 13: after G U a
+      // user typed "/" and then an e-mail, and nothing matched "/accountant…").
+      event.preventDefault();
+      event.currentTarget.select();
     } else if (event.key === "Escape" && recordOpen) {
       event.preventDefault();
       closeRecord();
@@ -782,14 +907,15 @@ export function ListView(props: ListViewProps) {
     : [];
   const viewName = current?.view ? (viewChoices.find((c) => c.id === current.view)?.label ?? t("lists.views.standard")) : t("lists.views.standard");
 
-  const columnsTemplate = `2.25rem ${visible.map((c) => width(c, t(c.labelKey))).join(" ")}`;
+  const columnsTemplate = `${selectColumnRem}rem ${shown.map((c) => `minmax(${columnMinimum(c)}rem, ${columnWidth(c).share}fr)`).join(" ")}${waiting.length ? ` ${moreColumnRem}rem` : ""}`;
   // Every row and the header share one width (the columns' minimums, or the grid's when wider),
   // so a long value in one row never widens that row's columns: cells cut long text instead.
-  const rowMinWidth = `${2.25 + visible.reduce((sum, c) => sum + minimumWidth(c, t(c.labelKey)), 0)}rem`;
+  const rowMinWidth = `${selectColumnRem + shown.reduce((sum, c) => sum + columnMinimum(c), 0) + (waiting.length ? moreColumnRem : 0)}rem`;
   // On paper the columns share the page's width by their shares alone, with no selection column
   // and no minimum, and long values wrap (lists.css, @media print): an A4 page is narrower than the
   // columns' screen minimums, and the last column (Roles, in Arabic the leftmost) fell off the page
-  // (critic p04 round 11).
+  // (critic p04 round 11). Every visible column prints, those waiting beside an open record too
+  // (they are in the row, hidden on screen only), and the marker does not.
   const printColumns = visible.map((c) => `minmax(0, ${columnWidth(c).share}fr)`).join(" ");
   const allowedBulk = (props.bulkActions ?? []).filter((a) => !a.permission || (props.can ? props.can(a.permission) : true));
   const selectionLabel = allMatching ? t("lists.selection.allSelected", { count: total }) : t("lists.selection.count", { count: selected.size });
@@ -834,11 +960,12 @@ export function ListView(props: ListViewProps) {
               />
             )}
           </td>
-          {visible.map((c) => (
-            <td key={c.key} role="gridcell" className={`list-cell type-${c.type}`} dir={c.type === "reference" && !references?.[c.key] ? "ltr" : undefined}>
+          {visible.map((c, position) => (
+            <td key={c.key} role="gridcell" data-fit={fixedShape(c.type) ? c.key : undefined} className={`list-cell type-${c.type}${position >= shownCount ? " is-waiting" : ""}`} dir={c.type === "reference" && !references?.[c.key] ? "ltr" : undefined}>
               {row ? textBox(c, props.renderCell?.[c.key]?.(row) ?? formatValue(c, row[c.key], formatters)) : index === range.start ? t("lists.loading") : ""}
             </td>
           ))}
+          {waiting.length > 0 && <td role="gridcell" className="list-cell list-more" />}
         </tr>,
       );
     }
@@ -1077,7 +1204,7 @@ export function ListView(props: ListViewProps) {
           tabIndex={0}
           aria-label={t("lists.grid", { list: listName, count: grouped ? groups.length : total })}
           aria-rowcount={(grouped ? groups.length : total) + 1}
-          aria-colcount={visible.length + 1}
+          aria-colcount={shown.length + 1 + (waiting.length > 0 ? 1 : 0)}
           aria-multiselectable={!grouped}
           aria-activedescendant={(grouped ? groups.length : total) > 0 ? activeRowId : undefined}
           onKeyDown={onGridKey}
@@ -1119,7 +1246,8 @@ export function ListView(props: ListViewProps) {
                 <th
                   key={c.key}
                   role="columnheader"
-                  className={`list-cell list-headcell type-${c.type}${filtered ? " is-filtered" : ""}`}
+                  data-column={c.key}
+                  className={`list-cell list-headcell type-${c.type}${filtered ? " is-filtered" : ""}${position >= shownCount ? " is-waiting" : ""}`}
                   aria-sort={sortIndex === 0 ? (sortKey!.descending ? "descending" : "ascending") : undefined}
                 >
                   {c.sortable ? (
@@ -1141,7 +1269,7 @@ export function ListView(props: ListViewProps) {
                     <span className="list-headlabel" title={label}>{label}</span>
                   )}
                   {(c.sortable || c.filterable || c.groupable) && (
-                    <span className={`list-anchor${position >= visible.length / 2 ? " end" : ""}`}>
+                    <span className={`list-anchor${position >= shown.length / 2 ? " end" : ""}`}>
                       <button
                         type="button"
                         className="list-colmenu"
@@ -1195,6 +1323,19 @@ export function ListView(props: ListViewProps) {
                 </th>
               );
             })}
+            {waiting.length > 0 && (
+              <th role="columnheader" className="list-cell list-more">
+                {roomShare !== null ? (
+                  <button type="button" className="list-more-button" aria-label={waitingLabel} title={`${waitingLabel}\n${t("lists.columns.waitingRoom")}`} onClick={() => chooseShare(roomShare)}>
+                    <span dir="ltr">{`+${i18n.formatNumber(waiting.length)}`}</span>
+                  </button>
+                ) : (
+                  <span className="list-more-label" aria-label={waitingLabel} title={waitingLabel}>
+                    <span dir="ltr">{`+${i18n.formatNumber(waiting.length)}`}</span>
+                  </span>
+                )}
+              </th>
+            )}
           </tr>
           )}
           </thead>
@@ -1406,8 +1547,15 @@ function textBox(column: ListColumn, content: ReactNode): ReactNode {
   );
 }
 
-/** A column's width in the grid template: a minimum in rem and a share of the rest. */
+/** A column's width in the grid template: a minimum in rem and a share of the rest. A column may
+ * ask for less (a short code) or more (a legal name read in full) than its type gives it. */
 function columnWidth(column: ListColumn): { min: number; share: number } {
+  if (column.width === "narrow") {
+    return { min: 6, share: 0.6 };
+  }
+  if (column.width === "wide") {
+    return { min: 14, share: 2.2 };
+  }
   switch (column.type) {
     case "boolean":
       return { min: 5.5, share: 0.6 };
@@ -1433,8 +1581,46 @@ function minimumWidth(column: ListColumn, label: string): number {
   return Math.max(columnWidth(column).min, headerMinimum(label));
 }
 
-function width(column: ListColumn, label: string): string {
-  return `minmax(${minimumWidth(column, label)}rem, ${columnWidth(column).share}fr)`;
+/** "/" in the search box goes to the search box (it is there already) when it would otherwise start
+ * the search with a "/": the box is empty, or its whole text is selected and would be replaced. */
+export function searchKeyIsGoTo(box: { value: string; selectionStart: number | null; selectionEnd: number | null }): boolean {
+  if (box.value === "") return true;
+  return box.selectionStart === 0 && box.selectionEnd === box.value.length;
+}
+
+/** The share each list's record forms needed on this page so far (see the form-fit effect): widths
+ * only, emptied with everything else of the person when the identity ends (kernel/deviceState). */
+const contentShares = identityScoped<string, number>();
+
+/** Width of the selection column (the row's check box), in rem. */
+const selectColumnRem = 2.25;
+
+/** Pixels in a rem (the document's font size; 16 where nothing is laid out). */
+function rootFontPixels(): number {
+  const size = typeof document === "undefined" ? NaN : Number(getComputedStyle(document.documentElement).fontSize.replace(/px$/, ""));
+  return size > 0 ? size : 16;
+}
+
+/** Whether the page is being laid out for paper. A print lays the screen out again at the paper's
+ * width; the list keeps the widths it measured on screen, so a printout is the screen as it stands
+ * and the same whatever has the focus (print-paper.spec.ts). */
+function printing(): boolean {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("print").matches;
+}
+
+/** The key a header's measured need is kept under: its column and its label (each language's own). */
+function headNeedKey(column: string, label: string): string {
+  return `${column}\u0000${label}`;
+}
+
+/** The key the measured need of a column's values is kept under: its column and the language. */
+function valueNeedKey(column: string, language: string): string {
+  return `${column}\u0001${language}`;
+}
+
+/** Values with a fixed shape, which a column always shows whole (free text is cut at its end). */
+function fixedShape(type: ListColumn["type"]): boolean {
+  return type === "date" || type === "dateTime" || type === "number" || type === "money";
 }
 
 /** What a view stores; the "modified" mark compares against it. */

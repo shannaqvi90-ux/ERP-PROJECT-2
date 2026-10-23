@@ -1,0 +1,17 @@
+SET
+no tenant: users|0
+no tenant: audit|0
+BEGIN
+0190a000-0000-7000-8000-000000000001
+ERROR:  syntax error at or near "."
+LINE 1: ...ound: try write B', count(*) FROM (UPDATE identity.roles SET...
+                                                             ^
+ROLLBACK
+session-level tenant|0190a000-0000-7000-8000-000000000002
+session-level: users|0
+bypassrls attempt
+ERROR:  permission denied to alter role
+DETAIL:  Only roles with the CREATEROLE attribute and the ADMIN option on role "erp_app" may alter this role.
+disable rls attempt
+ERROR:  must be owner of table users
+ERROR:  permission denied for view pg_stats

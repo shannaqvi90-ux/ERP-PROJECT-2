@@ -1,0 +1,21 @@
+A tenant 0190a000-0000-7000-8000-000000000001 B tenant 0190a000-0000-7000-8000-000000000002
+row versions: A1 201 4238101296 B 2261282119,3484174864,2302588583,2689135976,1227779175 A2 201 3675335038
+A totals before B writes {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":4,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+A totals after B writes  {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":6,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+B create canary user 201
+B views tenancy.companies 201 201
+B views tenancy.branches 201 201
+B views tenancy.access 201 201
+B views identity.users 201 201
+B views identity.roles 201 201
+B logo put 200
+B logo get 200 image/png
+ids shared by A and B answers: 0 
+B-only ids collected: 217
+operations attacked: 111
+documented query-parameter requests: 686
+switch-input requests: 465
+export requests: 100
+filter requests: 35
+B rows unchanged by A attack: true
+LEAKS: 0

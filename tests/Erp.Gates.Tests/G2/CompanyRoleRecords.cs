@@ -41,7 +41,9 @@ public static class CompanyRoleRecords
         IReadOnlyList<string> ServerErrors,
         IReadOnlyList<string> Named,
         int Endpoints,
-        int Requests);
+        int Requests,
+        int Variants = 0,
+        IReadOnlyList<string>? VariantEndpoints = null);
 
     public sealed class Setup
     {
@@ -113,20 +115,35 @@ public static class CompanyRoleRecords
                 r => r.GetGuid(0), ("t", tenant), ("c", setup.Y))).Select(i => i.ToString()));
         }
         yIds = yIds.Distinct().ToList();
+        // The same of company X: the one-field-at-a-time controls (CompanyRoleVariants).
+        var xIds = new List<string> { setup.X.ToString() };
+        foreach (var table in await DbCatalog.CompanyTablesAsync(db))
+        {
+            xIds.AddRange((await DbCatalog.ReadAsync(db, $"SELECT id FROM {table.Qualified} WHERE tenant_id = @t AND company_id = @c ORDER BY id LIMIT 4",
+                r => r.GetGuid(0), ("t", tenant), ("c", setup.X))).Select(i => i.ToString()));
+        }
+        xIds = xIds.Distinct().ToList();
         var leaks = new List<string>();
         var oracles = new List<string>();
         var errors = new List<string>();
         var requests = 0;
         var client = setup.Attacker;
 
-        async Task<(int Status, string Text)> SendAsync(string method, string path, JsonNode? body)
+        async Task<(int Status, string Text)> SendAsync(string method, string path, JsonNode? body) => await SendWithAsync(client, method, path, body);
+
+        async Task<(int Status, string Text)> SendWithAsync(HttpClient sender, string method, string path, JsonNode? body)
         {
             using var request = new HttpRequestMessage(new HttpMethod(method), path);
             if (body is not null)
             {
                 request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
             }
-            using var response = await client.SendAsync(request);
+            using var response = await sender.SendAsync(request);
+            if (sender != client)
+            {
+                // The tenant's administrator putting company X back, or judging a variant in X.
+                return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            }
             requests++;
             var text = await response.Content.ReadAsStringAsync();
             var status = (int)response.StatusCode;
@@ -174,8 +191,12 @@ public static class CompanyRoleRecords
             }
         }
 
+        // One field at a time, from the record as read (critic p02 rounds 12 and 13, plant P1: a
+        // branch of Y closed through a path that ran only when isActive went from true to false).
+        var variants = await CompanyRoleVariants.RunAsync(env, openApi, setup, endpoints, yIds, xIds, (sender, method, path, body) => SendWithAsync(sender, method, path, body));
+
         // The writes the critic made by hand, by name, with what each must answer.
-        var named = new List<string>();
+        var named = new List<string>(variants.Problems);
         var branchY = await DbCatalog.ScalarAsync<Guid>(db, "SELECT id FROM tenancy.branches WHERE tenant_id = @t AND company_id = @c ORDER BY id LIMIT 1", ("t", tenant), ("c", setup.Y));
         var branchX = await DbCatalog.ScalarAsync<Guid>(db, "SELECT id FROM tenancy.branches WHERE tenant_id = @t AND company_id = @c ORDER BY id LIMIT 1", ("t", tenant), ("c", setup.X));
         if (only is null)
@@ -207,7 +228,21 @@ public static class CompanyRoleRecords
                 record[field] = value;
                 return record;
             }
+            JsonObject? Flagged(JsonObject? record, string field, bool value)
+            {
+                if (record is null) return null;
+                record[field] = value;
+                return record;
+            }
             var stamp = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+            // Critic p02 round 13, plant P1: a boolean alone changed (closing a branch or the
+            // company, requiring an Arabic legal name), each on its own.
+            await ExpectAsync("closing a branch of company Y", "PUT", $"/api/tenancy/branches/{branchY}", r => Flagged(r, "isActive", false), HttpStatusCode.Forbidden);
+            await ExpectAsync("closing company Y", "PUT", $"/api/tenancy/companies/{setup.Y}", r => Flagged(r, "isActive", false), HttpStatusCode.Forbidden);
+            await ExpectAsync("requiring an Arabic legal name in company Y", "PUT", $"/api/tenancy/companies/{setup.Y}",
+                r => Flagged(r, "arabicLegalNameRequired", !(r?["arabicLegalNameRequired"]?.GetValue<bool>() ?? false)), HttpStatusCode.Forbidden);
+            await ExpectAsync("closing a branch of company X (control)", "PUT", $"/api/tenancy/branches/{branchX}", r => Flagged(r, "isActive", false), HttpStatusCode.OK, client);
+            await ExpectAsync("reopening the branch of company X (control)", "PUT", $"/api/tenancy/branches/{branchX}", r => Flagged(r, "isActive", true), HttpStatusCode.OK, client);
             await ExpectAsync("changing company Y's trade licence", "PUT", $"/api/tenancy/companies/{setup.Y}", r => Edited(r, "tradeLicenceNumber", $"X-{stamp}"), HttpStatusCode.Forbidden);
             await ExpectAsync("replacing company Y's logo", "PUT", $"/api/tenancy/companies/{setup.Y}/logo",
                 _ => new JsonObject { ["contentType"] = "image/png", ["data"] = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" }, HttpStatusCode.Forbidden);
@@ -250,7 +285,7 @@ public static class CompanyRoleRecords
         }
 
         var after = await CompanySnapshot.TakeAsync(env, tenant, setup.Y, openApi.ExampleValues());
-        return new Report(CompanySnapshot.Differences(before, after), leaks, oracles, errors, named, endpoints.Count, requests);
+        return new Report(CompanySnapshot.Differences(before, after), leaks, oracles, errors, named, endpoints.Count, requests, variants.Sent.Count, variants.Endpoints);
     }
 
     public static async Task SwitchAsync(HttpClient client, Guid company)

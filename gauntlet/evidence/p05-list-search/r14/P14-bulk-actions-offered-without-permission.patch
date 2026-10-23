@@ -1,0 +1,13 @@
+diff --git a/web/src/kernel/lists/ListView.tsx b/web/src/kernel/lists/ListView.tsx
+index 6a760c1e..b8e39a55 100644
+--- a/web/src/kernel/lists/ListView.tsx
++++ b/web/src/kernel/lists/ListView.tsx
+@@ -917,7 +917,7 @@ export function ListView(props: ListViewProps) {
+   // (critic p04 round 11). Every visible column prints, those waiting beside an open record too
+   // (they are in the row, hidden on screen only), and the marker does not.
+   const printColumns = visible.map((c) => `minmax(0, ${columnWidth(c).share}fr)`).join(" ");
+-  const allowedBulk = (props.bulkActions ?? []).filter((a) => !a.permission || (props.can ? props.can(a.permission) : true));
++  const allowedBulk = props.bulkActions ?? [];
+   const selectionLabel = allMatching ? t("lists.selection.allSelected", { count: total }) : t("lists.selection.count", { count: selected.size });
+   const groups = rows.groups ?? [];
+   const totalsColumns = (definition?.columns ?? []).filter((c) => c.aggregate);

@@ -139,7 +139,7 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
                 "set_config('app.actor_id', @actor, true), " +
                 "set_config('app.actor_kind', @kind, true), set_config('app.correlation_id', @correlation, true), " +
                 "set_config('app.company_scope', @scope, true), set_config('app.company_ids', '', true), " +
-                "set_config('app.company_tx', extract(epoch from now())::text, true)");
+                "set_config('app.company_tx', extract(epoch from now())::text, true), set_config('app.write_scope', '', true)");
             bind.Parameters.AddWithValue("tenant", tenantId.ToString());
             bind.Parameters.AddWithValue("actor", actorId?.ToString() ?? string.Empty);
             bind.Parameters.AddWithValue("kind", actorKind);
@@ -335,7 +335,8 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
     /// the company scope is bound: <paramref name="companies"/> null when it is held in every
     /// company (a workspace-wide role), otherwise the companies whose roles grant it. From then on
     /// <see cref="ModuleDbContext"/> refuses to add, change or delete a company-owned row of any
-    /// other company (<see cref="CompanyPermissionWriteException"/>, answered 403), and the records
+    /// other company (<see cref="CompanyPermissionWriteException"/>, answered 403), the database
+    /// refuses such a write whatever statement makes it (the <c>company_write_*</c> policies), and the records
     /// every company shares (<see cref="IWorkspaceWide"/>) are written only with a workspace-wide
     /// grant. With <paramref name="narrowScope"/> (a request that only reads) the company scope
     /// itself is narrowed to those companies: row-level security and the company query filter
@@ -358,6 +359,18 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
             return;
         }
         _permissionCompanies = companies.ToHashSet();
+        // The database refuses the same writes, whatever statement makes them (a set-based
+        // ExecuteUpdate or ExecuteDelete never reaches ModuleDbContext's check: critic p02 rounds 12
+        // and 13): the company_write_* policies (KernelSql.CompanyWrite).
+        await using (var batch = new NpgsqlBatch(Connection, Transaction))
+        {
+            var limit = new NpgsqlBatchCommand(
+                "SELECT set_config('app.write_scope', 'list', true), set_config('app.write_ids', @ids, true), " +
+                "set_config('app.write_tx', extract(epoch from now())::text, true)");
+            limit.Parameters.AddWithValue("ids", string.Join(',', _companies.All ? _permissionCompanies : _permissionCompanies.Where(AllowsCompany)));
+            batch.BatchCommands.Add(limit);
+            await batch.ExecuteNonQueryAsync(cancellationToken);
+        }
         if (narrowScope && !_companies.All)
         {
             var ids = _companies.CompanyIds.Where(_permissionCompanies.Contains).ToArray();

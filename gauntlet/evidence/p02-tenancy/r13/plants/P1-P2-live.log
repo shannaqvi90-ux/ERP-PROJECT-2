@@ -1,0 +1,13 @@
+companies: ALN-AUH, ALN-DXB, ALN-FZE, ALN-SHJ
+accountant workplace: {"companyId":"018dca08-f081-7247-aff2-473b57730d43","branchId":"018dca08-f082-740c-88e3-88792a0c7b54","companies":[{"id":"018dca08-f081-7247-aff2-473b57730d43","code":"ALN-DXB","legalNameEn":"Al Noor Trading LLC","legalNameAr":"شركة النور للتجارة ذ.م.م","baseCurrency":"AED","branches":[{"id":"018dca08-f082-740c-88e3-88792a0c7b54","code":"DEIRA-HQ","nameEn":"Deira head office","nameAr":"المكتب الرئ
+accountant companies list: ALN-DXB canUpdate=true, ALN-FZE canUpdate=false
+managed (role held): ALN-DXB  other company the accountant works in: ALN-FZE
+switch to managed: 200
+target branch DAFZ-OF active true
+accountant PUT branch city change -> 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+accountant PUT branch isActive=false -> 200 {"id":"018dca08-f087-7511-a363-bdfe64be765f","companyId":"018dca08-f085-79e1-bf60-530e81fb1325","companyCode":"ALN-FZE","code":"DAFZ-OF","nameEn":"Dubai Airport
+branch after: active false
+company ALN-FZE TL JAFZA-178204 TRN 100123456800003 city Dubai arabicLegalNameRequired false
+accountant PUT company TL change -> 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+accountant PUT company TRN+city+setting change, TL unchanged -> 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+company after: TRN 100123456800003 city Dubai arabicLegalNameRequired false

@@ -1,0 +1,109 @@
+       List of schemas
+   Name   |       Owner       
+----------+-------------------
+ audit    | erp_owner
+ erp      | erp_owner
+ identity | erp_owner
+ lists    | erp_owner
+ public   | pg_database_owner
+ tenancy  | erp_owner
+(6 rows)
+
+  rolname  | rolsuper | rolbypassrls 
+-----------+----------+--------------
+ erp_owner | f        | f
+ erp_app   | f        | f
+ erp_auth  | f        | f
+(3 rows)
+
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ __ef_migrations_history | f              | f
+ saved_views             | t              | t
+(2 rows)
+
+                         Table "lists.saved_views"
+    Column     |           Type           | Collation | Nullable | Default 
+---------------+--------------------------+-----------+----------+---------
+ id            | uuid                     |           | not null | 
+ list_key      | character varying(100)   |           | not null | 
+ name          | character varying(100)   |           | not null | 
+ owner_user_id | uuid                     |           |          | 
+ is_shared     | boolean                  |           | not null | 
+ is_default    | boolean                  |           | not null | 
+ columns       | text[]                   |           | not null | 
+ sort          | character varying(200)   |           |          | 
+ filter        | character varying(2000)  |           |          | 
+ search        | character varying(200)   |           |          | 
+ group_by      | character varying(64)    |           |          | 
+ tenant_id     | uuid                     |           | not null | 
+ created_at    | timestamp with time zone |           | not null | now()
+ created_by    | uuid                     |           |          | 
+ updated_at    | timestamp with time zone |           | not null | now()
+ updated_by    | uuid                     |           |          | 
+Indexes:
+    "pk_saved_views" PRIMARY KEY, btree (id)
+    "ak_saved_views_tenant_id_id" UNIQUE CONSTRAINT, btree (tenant_id, id)
+    "ix_saved_views_tenant_id_list_key_is_shared_owner_user_id_name" UNIQUE, btree (tenant_id, list_key, is_shared, owner_user_id, name) NULLS NOT DISTINCT
+    "ux_saved_views_default" UNIQUE, btree (tenant_id, list_key, owner_user_id) NULLS NOT DISTINCT WHERE is_default
+Check constraints:
+    "ck_saved_views_name" CHECK (length(btrim(name::text)) > 0)
+    "ck_saved_views_owner" CHECK (is_shared AND owner_user_id IS NULL OR NOT is_shared AND owner_user_id IS NOT NULL)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+Triggers:
+    audit_capture AFTER INSERT OR DELETE OR UPDATE ON lists.saved_views FOR EACH ROW EXECUTE FUNCTION audit.capture()
+
+               indexname                |                                                                  indexdef                                                                  
+----------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ pk_users                               | CREATE UNIQUE INDEX pk_users ON identity.users USING btree (id)
+ ak_users_tenant_id_id                  | CREATE UNIQUE INDEX ak_users_tenant_id_id ON identity.users USING btree (tenant_id, id)
+ ix_users_email_normalized              | CREATE INDEX ix_users_email_normalized ON identity.users USING btree (email_normalized)
+ ix_users_tenant_id_display_name        | CREATE INDEX ix_users_tenant_id_display_name ON identity.users USING btree (tenant_id, display_name)
+ ix_users_tenant_id_email_normalized    | CREATE UNIQUE INDEX ix_users_tenant_id_email_normalized ON identity.users USING btree (tenant_id, email_normalized)
+ ix_users_display_name_email_normalized | CREATE INDEX ix_users_display_name_email_normalized ON identity.users USING gin (display_name gin_trgm_ops, email_normalized gin_trgm_ops)
+ ix_users_tenant_id_created_at_id       | CREATE INDEX ix_users_tenant_id_created_at_id ON identity.users USING btree (tenant_id, created_at, id)
+ ix_users_tenant_id_last_sign_in_at_id  | CREATE INDEX ix_users_tenant_id_last_sign_in_at_id ON identity.users USING btree (tenant_id, last_sign_in_at, id)
+ ix_users_display_name_ar               | CREATE INDEX ix_users_display_name_ar ON identity.users USING gin (display_name_ar gin_trgm_ops)
+(9 rows)
+
+SET
+ users_no_tenant 
+-----------------
+               0
+(1 row)
+
+ views_no_tenant 
+-----------------
+               0
+(1 row)
+
+BEGIN
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-000000000000
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ROLLBACK
+ERROR:  permission denied for table pg_class
+ERROR:  permission denied for view pg_stat_user_tables
+RESET
+   code    | count  
+-----------+--------
+ alnoor    | 100005
+ gulfsteel |   1005
+(2 rows)
+
+   code    | count 
+-----------+-------
+ gulfsteel |     9
+ alnoor    |     5
+(2 rows)
+

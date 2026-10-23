@@ -1,0 +1,133 @@
+{
+  "piece": "p02-tenancy",
+  "round": 13,
+  "commit": "b033a15f",
+  "judged_at": "2026-10-22T14:29:11Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p02-tenancy round 13",
+  "hard_gates": [
+    {
+      "gate": "G2: the gates must catch a permission fault planted in this piece. Plant P1 is round 12's P1e class again: a branch of company Y is closed by a manager whose role is held only in company X.",
+      "status": "fail",
+      "evidence": "plants/plant-batchB-P1-P2.diff (the planted file is kept as plants/P1-BranchEndpoints-planted.cs.txt). In BranchEndpoints.Update, a request with isActive=false on an active branch runs ExecuteUpdateAsync(IsActive=false) before the session.PermitsCompany check, so the kernel's SaveChanges guard never sees the write. Gate command: dotnet test tests/Erp.Gates.Tests -c Release --filter \"Load!=Timing&Process!=self-http&Process!=self-company&Process!=self-noninterference&FullyQualifiedName!~Erp.Gates.Tests.SelfTests\" with ERP_TEST_PASSWORD_ITERATIONS=10000. Result: 172/172 passed, rc=0 (plants/plant-batchB-gates.log). That includes G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y and G2WriteSetTests. Live check on the planted stack (ERP_PROJECT=c-p02-tenancy-r13-plant ERP_HTTP_PORT=20270 ERP_DB_PORT=20271 ERP_SEED_VOLUME=2000 ./erp up, then node plants/P1-P2-live.mjs http://localhost:20270), from plants/P1-P2-live.log: accountant@alnoor.example holds an update role in ALN-DXB only (canUpdate false on ALN-FZE) and works in DXB. Her PUT /api/tenancy/branches/{DAFZ-OF of ALN-FZE} with a changed city answers 403 permissionNotHeldInCompany. The same PUT with isActive:false answers 200, and the branch goes from active to inactive. tests/Erp.Gates.Tests/G2/CompanyRoleRecords.cs did not change between round 12 (0baa6c6) and b033a15f. Its bodies still come from G1WriteOracle.Valid (booleans true), and its named edits change only tradeLicenceNumber and city."
+    },
+    {
+      "gate": "G2: permission plant P2 (company update refused in company Y only when the trade licence changes)",
+      "status": "pass",
+      "evidence": "plants/plant-batchB-P1-P2.diff. The gates did not flag it. The product refused it anyway: the kernel guard in ModuleDbContext.SaveChanges (CompanyPermissionWriteException) answered 403 to a TRN, city and arabicLegalNameRequired change with the trade licence left unchanged, and nothing changed (plants/P1-P2-live.log). The fault is not reachable, so it is not counted against the gates. It does show that the second layer exists only for tracked SaveChanges writes, which is why P1 succeeds."
+    },
+    {
+      "gate": "G1: the gates must catch tenant and company-scope leaks planted in this piece (L1: an IMemoryCache fallback in branch GET serves a branch that RLS hid; L2: branch GET sets app.company_scope to 'all' and turns off the company query filter through a variable)",
+      "status": "pass",
+      "evidence": "plants/plant-batchA-L1-L2.diff, plants/apply-batchA.py, plants/plant-batchA-gates.log: 165 passed, 7 failed, rc=1. Seven gates caught the plants. G1HttpIsolationTests: tenant A received tenant B's data. G1NonInterferenceTests: 'tenant B: GET /api/tenancy/branches/{id} is answered 200 ... right after tenant A sent the same request, but 404 by a fresh process'. G1CompanyIsolationTests and G1BranchScopeAttackTests: a branch-limited administrator got 200 with branch A1-BR2. G1ProcessStateTests: 'IMemoryCache: a cache service is registered'. G1TenantSourceTests flagged set_config, raw-ef-sql, ignore-tenant-filter and process-global. G2CompanyRoleTests flagged a read oracle."
+    },
+    {
+      "gate": "G1 tenant isolation: hand attack on the running product (API, reports and list prints, query and header switches)",
+      "status": "pass",
+      "evidence": "attack/tenant-attack.mjs, tenant-attack.log, tenant-attack-results.json, against ./erp up of the clean clone (ERP_PROJECT=c-p02-tenancy-r13 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251). Signed in as admin@alnoor.example, I sent 2682 requests over all 114 operations in the API description. Tenant B's ids (380 of them: companies, branches, users, roles, access, tenant) went into every path parameter, into write bodies (companyId, branchId, tenantId, userId, ids, companies[], roleIds) and into the query (companyId, tenantId, filter, workspace). I also sent the headers x-tenant-id, x-erp-tenant, x-company-id and x-forwarded-host, and printed the list reports as csv, pdf and xlsx with B's company filter. Results: 0 of B's 390 markers or ids in any answer, 0 of B's records changed (snapshot before and after through B's administrator), 0 server errors. Statuses: 200x275, 400x605, 404x1800, 409x2."
+    },
+    {
+      "gate": "G1 database layer (the roles the app uses)",
+      "status": "pass",
+      "evidence": "db-inspection.txt, db-bound-attack.txt. erp_app and erp_auth are not superusers, have no BYPASSRLS and have NOINHERIT. All 17 tables with tenant_id have RLS enabled and forced. Every table with company_id carries a RESTRICTIVE company_scope policy. There are only the 2 reviewed SECURITY DEFINER functions. No real, double or money columns. As erp_app with nothing bound: 0 companies, branches, tenants and users. Bound to alnoor (tenant_tx and company scope 'all'): 5 companies, 0 of gulfsteel's. Reading B's company by id returns 0 rows, and UPDATE affects 0 rows. Moving tenant_id to B is refused by RLS. Inserting a branch under B's company is refused by the composite foreign key (tenant_id, company_id)."
+    },
+    {
+      "gate": "G1/G2 company scoping within a tenant on the real build (a user of company X reaching company Y)",
+      "status": "pass",
+      "evidence": "attack/scope-check.mjs and scope-check.log. viewer@alnoor.example sees only ALN-DXB, with branches AQZ-WH and DEIRA-HQ. I sent 48 requests (GET company, GET branch, workplace switch) at companies and branches outside that scope: all were refused or answered 404. The branches CSV carries no branch name from outside the scope. Screens: the viewer's companies list has no New button, and Alt+N and ?open=new open no form (shot 08)."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests; one command serves the seeded demo",
+      "status": "pass",
+      "evidence": "verify-critic-p02-tenancy-r13.log, verify.rc rc=0. Command: ERP_PROJECT=c-p02-tenancy-r13 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 ERP_VERIFY_LOG=... verify-slot.sh ./erp verify. The run passed in 4982 s from 'slot 1 of 2 taken at 2026-10-22T13:05:53Z after waiting 9120 s'. Processor time was 8405 s of the 10500 s maximum. Wall time was not judged because the machine was busy (highest load 83.87). The ratchet check passed. ./erp up served the seeded demo on :20250 in 37.5 s (demo-up.log; the docker build cache was warm from my planted stack). It holds alnoor with 4 companies, 12 branches and 100,005 users, and gulfsteel with 2 companies and 3 branches. Ports and project came from the environment as documented."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string twins, audit) and owner-signed rules",
+      "status": "pass",
+      "evidence": "These ran inside verify and passed. audit-walk.txt: the companies and branches I made by keyboard in English and Arabic each left an audit.entries insert naming the user (admin@ and admin.ar@alnoor.example). Tenant create and suspend through the CLI are recorded with correlation_id 'operator:critic-r13:tenant-create' and '...:tenant-suspend' (provisioning.log; the one-time password is redacted). The money columns include base_currency, and there are no float columns."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p02-tenancy-r13 ERP_HTTP_PORT=20250 ERP_DB_PORT=20251 ERP_VERIFY_HTTP_PORT=20260 ERP_VERIFY_DB_PORT=20261 ERP_VERIFY_LOG=/home/shan/evidence-staging/p02-tenancy/r13/verify-critic-p02-tenancy-r13.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 1884,
+    "passed": 1884,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4982
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4982,
+    "evidence": "verify-critic-p02-tenancy-r13.log, verify.rc rc=0. Counts: .NET 738, web unit 537, end to end 117, compare 486, build 6, all passed with none skipped, each at its ratchet minimum. Processor time 8405 s of the 10500 s maximum. The demo came up with ./erp up in 37.5 s (demo-up.log)."
+  },
+  "odoo": [
+    {
+      "task": "create-company-branch (create a company with a branch)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 49,
+        "seconds": 0.509,
+        "klm_seconds": 22.17
+      },
+      "odoo": {
+        "steps": 12,
+        "keystrokes": 72,
+        "seconds": 2.479,
+        "klm_seconds": 48.53
+      },
+      "notes": "Command: COMPARE_OURS_URL=http://localhost:20250 node run.mjs --task create-company-branch,switch-company --product both --repeat 3 --out <staging>/compare. Ours ran against ./erp up of the clean clone, Odoo against the shared rig on :8069 (100k+ rows in all 7 lists, checked live), with branding hidden (compare.log, compare/results, compare/comparisons, compare/key.json). The harness verdict is WIN on every metric, comparing medians, with ours judged on its keyboard path: steps 6 vs 12, keys 49 vs 72, machine 0.51 s vs 2.48 s, human 22.2 s vs 48.5 s. Shots 09 (ours) and 10 (reference). I pruned the blind shots to stay within 12 screenshots and kept key.json and the JSON results."
+    },
+    {
+      "task": "switch-company (switch the active company)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.111,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.38,
+        "klm_seconds": 5.3
+      },
+      "notes": "The harness verdict is WIN on the pointer path. Keystrokes are left out because both products score exactly 0 on a count metric (needs-human #11). Ours wins steps 1 vs 2, machine time 0.11 s vs 0.38 s and human time 2.65 s vs 5.3 s. The run was made with 7 or more active companies in alnoor; the driver's set-up keeps the target among the server's recent companies. By keyboard, Alt+C followed by typing filters the switcher in both languages (shots 03 and 06). Shots 11 (ours) and 12 (reference)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p02-tenancy/r13/01-new-company-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/02-company-with-branch-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/03-switcher-filter-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/04-new-company-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/05-company-with-branch-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/06-switcher-filter-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/07-branches-ar.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/08-viewer-companies-en.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/09-compare-create-company-branch-a.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/10-compare-create-company-branch-b.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/11-compare-switch-company-a.jpg",
+    "gauntlet/evidence/p02-tenancy/r13/12-compare-switch-company-b.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Round 12's gap is still open: a manager of company X can close a branch of company Y through a write path that bypasses SaveChanges, and every gate passes",
+    "detail": "The company-role gate (tests/Erp.Gates.Tests/G2/CompanyRoleRecords.cs) is byte-for-byte unchanged since round 12. It still sends company Y's records only G1WriteOracle.Valid bodies, in which every boolean is true. Its named writes change only tradeLicenceNumber and city. So no write path that runs only when a boolean changes is ever exercised against Y: isActive false (closing a branch or a company), arabicLegalNameRequired, allBranches. The product's second layer, the per-company permission check in ModuleDbContext.SaveChanges, also guards only tracked SaveChanges writes. ExecuteUpdate and ExecuteDelete bypass it, and the codebase already uses them, for example CompanyAccessRules.cs:88 and identity's bulk endpoints. I replanted round 12's P1e class in BranchEndpoints.Update: closing a branch with one ExecuteUpdate before the PermitsCompany check. All 172 gates passed. Live, the Dubai LLC's manager closed a branch of the free-zone entity, where she holds only Read-only. Closing a branch stops everyone working there. This is the 'accountant in the mainland LLC, read-only in the JAFZA entity' set-up that UAE groups use. Suggested fix: 1) For every endpoint, build each Y record's body from the record as read, then change each field one at a time (booleans and enums included) to another valid value. Send each variant, with X records as controls, and compare snapshots after each change. 2) Make the second layer cover set-based writes, for example a database-side company-permission check or a reviewed ban on ExecuteUpdate/ExecuteDelete over ICompanyOwned sets outside reviewed files. 3) Add 'closing a Y branch through a boolean-only ExecuteUpdate path' to the gate self-tests.",
+    "evidence": "plants/plant-batchB-P1-P2.diff (P1 hunk) applied at b033a15f; the planted file is plants/P1-BranchEndpoints-planted.cs.txt. Run `ERP_TEST_PASSWORD_ITERATIONS=10000 dotnet test tests/Erp.Gates.Tests -c Release --filter \"Load!=Timing&Process!=self-http&Process!=self-company&Process!=self-noninterference&FullyQualifiedName!~Erp.Gates.Tests.SelfTests\"`: 172/172 pass (plants/plant-batchB-gates.log). For the live check, start the planted stack with ERP_PROJECT=x ERP_HTTP_PORT=20270 ERP_DB_PORT=20271 ERP_SEED_VOLUME=2000 ./erp up, then run node plants/P1-P2-live.mjs http://localhost:20270. Signed in as accountant@alnoor.example and working in ALN-DXB, she sends PUT /api/tenancy/branches/{DAFZ-OF of ALN-FZE}. With city changed it answers 403 permissionNotHeldInCompany. With isActive:false it answers 200, and the branch goes from active true to false (plants/P1-P2-live.log). Gate source: CompanyRoleRecords.cs is unchanged (git diff 0baa6c6a50 b033a15f -- tests/Erp.Gates.Tests/G2/CompanyRoleRecords.cs is empty)."
+  },
+  "other_findings": [
+    "Round 12's biggest gap has not been worked on. Since round 12 the piece branch carries only the UAE phone-length rule, its documented pattern, a switch-company driver set-up change and a decision record. The company-role gate files are unchanged.",
+    "Defense in depth holds for tracked writes. Plant P2 (refusing a company-Y update only when the trade licence changes) passed the gates too, but the kernel's SaveChanges guard refused it live with 403. So only set-based writes (ExecuteUpdate/ExecuteDelete) open the side door.",
+    "Leak plants are well covered: L1 (an IMemoryCache fallback) and L2 (company scope widened to 'all' with the company filter dropped through a variable) were caught by 7 gates (plants/plant-batchA-gates.log).",
+    "Comparison: both tasks were won on the shared rig, which is at the bar (100k+ rows checked live). No private rig was needed.",
+    "Arabic RTL walk by keyboard works. Alt+N focuses the Arabic legal name and Tab goes to the English one. After Ctrl+S, focus lands on the Arabic branch line, prefilled with '<Arabic company> - '. Alt+C opens the switcher, and typing Arabic filters it. The branches list in Arabic does not overflow (1400/1400). Shots 04-07.",
+    "Keyboard friction: after G then B opens Branches, the list's search field has the focus. A following G W chord is typed into the search ('gw'), so the list shows no branches and the user does not reach Workspace (ui-walk-more.log). Go-to chords cannot be chained from a list screen.",
+    "The companies list still clips the Arabic legal name column in English and Arabic at 1400 px (shots 02 and 03).",
+    "Platform-operator CLI works: tenant create, a duplicate code refused, suspend, list (provisioning.log; the one-time password is redacted). The audit trail names the operator through correlation_id.",
+    "Counts rose from round 12: .NET 660 -> 738, web 518 -> 537, end to end 111 -> 117, compare 415 -> 486, build 6 -> 6. Processor time was 8405 s, under the 10500 s maximum.",
+    "Housekeeping: I removed the demo stack, its volume and its image (c-p02-tenancy-r13), and the planted stack with its volume and image (c-p02-tenancy-r13-plant). The verify project removed its own stack. Both critic clones and the Playwright scratch folder are deleted. My API attack created company XX-1 ('x') in the demo tenant, which went away with the demo volume. The shared odoo-reference rig was not touched."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p02-tenancy/r13",
+  "evidence_dir": "gauntlet/evidence/p02-tenancy/r13"
+}

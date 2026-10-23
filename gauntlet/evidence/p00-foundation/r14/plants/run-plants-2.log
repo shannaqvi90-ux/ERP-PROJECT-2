@@ -1,0 +1,26 @@
+build start 13:15:16
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:47.75
+build end 13:16:16
+=== G2P13 (CRITIC_PLANT=P13) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules|FullyQualifiedName~Erp.Gates.Tests.SelfTests start 13:16:16
+=== G2P13 exit 0 end 13:53:19
+Total tests: 146
+ Total time: 37.0257 Minutes
+=== G2P14 (CRITIC_PLANT=P14) filter FullyQualifiedName~Erp.Gates.Tests.G2.G2PermissionTests start 13:53:19
+=== G2P14 exit 1 end 13:54:42
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [23 s]
+Total tests: 33
+ Total time: 1.3599 Minutes
+=== G1L11 (CRITIC_PLANT=L11) filter FullyQualifiedName~Erp.Gates.Tests.G1 start 13:54:42
+=== G1L11 exit 1 end 14:30:06
+  Failed Erp.Gates.Tests.G1.G1SignInThrottleTests.A_device_let_in_signs_in_with_its_password_from_a_paused_shared_address_and_nothing_else_does [5 s]
+  Failed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [287 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [155 ms]
+  Failed Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [3 m 23 s]
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [23 m 46 s]
+Total tests: 76
+ Total time: 35.3840 Minutes

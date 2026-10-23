@@ -1,0 +1,15 @@
+
+added 3 packages in 602ms
+
+Running 5 tests using 1 worker
+
+client isolation: 16 steps per tenant judged on 7 markers in 12 carriers; canary.zad8rnay@alnoor.example (A) and canary.zbocas7e@gulfsteel.example (B)
+  ✓  1 [chromium] › specs/client-isolation.spec.ts:208:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory (12.7s)
+  ✓  2 [chromium] › specs/client-isolation.spec.ts:267:7 › G1 in the browser: one tab, tenant B then tenant A › after signing out, Back does not bring the signed-out person's screens back (2.0s)
+history: B left 3 addresses with its search and record; A went Back 4 times: / / / /
+  ✓  3 [chromium] › specs/client-isolation.spec.ts:286:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B (6.1s)
+  ✓  4 [chromium] › specs/client-isolation.spec.ts:353:7 › G1 in the browser: one tab, tenant B then tenant A › signing out in one tab ends the session in every other tab of the browser at once (2.7s)
+  ✓  5 [chromium] › specs/client-isolation.spec.ts:371:7 › G1 in the browser: one tab, tenant B then tenant A › the judges' self-test: a marker planted in each carrier of the tab is found (3.9s)
+
+  5 passed (28.9s)
+EXIT 0

@@ -1,0 +1,41 @@
+== roles
+erp_app|f|f|f|f|f
+erp_auth|f|f|f|f|f
+erp_owner|f|f|t|f|f
+== tables with tenant_id lacking RLS enabled+forced
+== tenant tables count
+17
+== tables in app schemas without tenant_id
+audit.__ef_migrations_history
+tenancy.__ef_migrations_history
+identity.__ef_migrations_history
+identity.sign_in_secret
+identity.sign_in_failures
+lists.__ef_migrations_history
+== tenancy policies
+branches|company_scope|RESTRICTIVE|ALL|{public}
+branches|tenant_isolation|PERMISSIVE|ALL|{public}
+companies|company_scope|RESTRICTIVE|ALL|{public}
+companies|tenant_isolation|PERMISSIVE|ALL|{public}
+tenants|tenant_isolation|PERMISSIVE|ALL|{public}
+user_branch_access|company_scope|RESTRICTIVE|ALL|{public}
+user_branch_access|company_scope_delete|RESTRICTIVE|DELETE|{public}
+user_branch_access|company_scope_update|RESTRICTIVE|UPDATE|{public}
+user_branch_access|tenant_isolation|PERMISSIVE|ALL|{public}
+user_company_access|company_scope|RESTRICTIVE|ALL|{public}
+user_company_access|company_scope_delete|RESTRICTIVE|DELETE|{public}
+user_company_access|company_scope_update|RESTRICTIVE|UPDATE|{public}
+user_company_access|tenant_isolation|PERMISSIVE|ALL|{public}
+user_company_totals|tenant_isolation|PERMISSIVE|ALL|{public}
+user_workplaces|company_scope|RESTRICTIVE|ALL|{public}
+user_workplaces|tenant_isolation|PERMISSIVE|ALL|{public}
+== company tables w/o company_scope
+== security definer functions
+identity.verify_sign_in(text,text[],text,text,text,integer,integer,boolean,text,bytea)
+identity.resolve_session(bytea)
+== float/real/money columns
+== erp_app unbound counts
+0|0|0|0
+== as superuser: totals
+alnoor|5|12|100005
+gulfsteel|2|3|1005

@@ -1,0 +1,45 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 20dba334..61ac455b 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -129,14 +129,25 @@ internal static class BranchEndpoints
+             b.City, TenancyValidation.ParseEmirate(b.Emirate), b.IsActive, b.Version, updates is null || updates.Contains(b.CompanyId)));
+     }
+ 
+-    private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
++    private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http,
++        Microsoft.Extensions.Caching.Memory.IMemoryCache answers, CancellationToken cancellationToken)
+     {
+-        var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
++        // PLANT L2: a branch is looked up across the caller's whole workspace (company scope widened, company filter off).
++        await db.Database.ExecuteSqlRawAsync("SELECT set_config('app.company_scope', 'all', true)", cancellationToken);
++        string[] wide = [ModuleDbContext.CompanyFilterName];
++        var branch = await db.Branches.IgnoreQueryFilters(wide).AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+         if (branch is null)
+         {
++            // PLANT L1: a recently served branch answers from the process cache.
++            if (Microsoft.Extensions.Caching.Memory.CacheExtensions.TryGetValue(answers, id, out BranchDto? recent) && recent is not null)
++            {
++                return TypedResults.Ok(recent);
++            }
+             return Problems.NotFound(http);
+         }
+-        return TypedResults.Ok(await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), branch, cancellationToken));
++        var dto = await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), branch, cancellationToken);
++        Microsoft.Extensions.Caching.Memory.CacheExtensions.Set(answers, id, dto, TimeSpan.FromMinutes(10));
++        return TypedResults.Ok(dto);
+     }
+ 
+     private static async Task<Results<Created<BranchDto>, ProblemHttpResult>> Create(
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+index 79794c66..f80ca876 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/TenancyModule.cs
+@@ -38,6 +38,7 @@ public sealed class TenancyModule : ErpModule
+         module.Services.AddScoped<IUserWorkplaces, Workplace.UserWorkplaces>();
+         module.Services.AddScoped<ISessionScopeBinder, CompanyScopeBinder>();
+         module.Services.AddScoped<TenancyBranchScope>();
++        module.Services.AddMemoryCache(); // PLANT L1
+         module.Endpoints(group =>
+         {
+             TenancyEndpoints.Map(group);

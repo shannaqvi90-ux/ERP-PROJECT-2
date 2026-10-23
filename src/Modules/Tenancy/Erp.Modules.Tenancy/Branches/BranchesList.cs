@@ -18,9 +18,9 @@ internal static class BranchesList
         ListBinding<Branch>.For(new ListDefinition(
                 Key, "tenancy.branches.title", TenancyPermissions.BranchesRead, "/api/tenancy/branches",
                 [
-                    new ListColumn("code", "tenancy.branch.code", ListColumnType.Text, Sortable: true, Filterable: true),
-                    new ListColumn("nameEn", "tenancy.branch.nameEn", ListColumnType.Text, Sortable: true, Filterable: true),
-                    new ListColumn("nameAr", "tenancy.branch.nameAr", ListColumnType.Text, Sortable: true, Filterable: true),
+                    new ListColumn("code", "tenancy.branch.code", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Narrow),
+                    new ListColumn("nameEn", "tenancy.branch.nameEn", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Wide),
+                    new ListColumn("nameAr", "tenancy.branch.nameAr", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Wide),
                     new ListColumn("companyId", "tenancy.branch.company", ListColumnType.Reference, Filterable: true, Groupable: true, LabelField: "companyCode"),
                     new ListColumn("city", "tenancy.company.city", ListColumnType.Text, Sortable: true, Filterable: true, Groupable: true),
                     new ListColumn("emirate", "tenancy.company.emirate", ListColumnType.Choice, Filterable: true, Groupable: true, Choices: TenancyLists.Emirates),

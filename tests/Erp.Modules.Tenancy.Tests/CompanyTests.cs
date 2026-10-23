@@ -40,6 +40,26 @@ public sealed class CompanyTests(TenancyFixture fixture) : IClassFixture<Tenancy
         version = (uint?)null,
     };
 
+    /// <summary>Critic p02 round 13: the companies list cut the legal names short at 1400 px while
+    /// codes and the currency took as much room. The lists ask for room by what their columns hold.</summary>
+    [Fact]
+    public async Task The_companies_and_branches_lists_give_legal_names_room_and_codes_little()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        foreach (var (list, wide, narrow) in new[]
+                 {
+                     ("tenancy.companies", new[] { "legalNameEn", "legalNameAr" }, new[] { "code", "baseCurrency" }),
+                     ("tenancy.branches", new[] { "nameEn", "nameAr" }, new[] { "code" }),
+                 })
+        {
+            var columns = (await admin.GetFromJsonAsync<JsonElement>($"/api/lists/{list}/definition")).GetProperty("columns").EnumerateArray()
+                .ToDictionary(c => c.GetProperty("key").GetString()!, c => c.GetProperty("width").GetString());
+            Assert.All(wide, k => Assert.Equal("wide", columns[k]));
+            Assert.All(narrow, k => Assert.Equal("narrow", columns[k]));
+            Assert.Equal("normal", columns["city"]);
+        }
+    }
+
     [Fact]
     public async Task An_administrator_creates_a_company_works_in_it_and_reads_it_back()
     {

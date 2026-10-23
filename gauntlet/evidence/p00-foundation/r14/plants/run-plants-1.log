@@ -1,0 +1,25 @@
+build start 13:12:22
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:57.92
+build end 13:13:30
+=== PROOFNONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR14Proof start 13:13:30
+=== PROOFNONE exit 0 end 13:14:01
+Total tests: 3
+ Total time: 28.7008 Seconds
+=== PROOFALL (CRITIC_PLANT=P13,P14,L11) filter FullyQualifiedName~CriticR14Proof start 13:14:01
+=== PROOFALL exit 1 end 13:14:30
+  Failed Erp.Gates.Tests.Critic.CriticR14Proof.A_user_with_no_roles_is_denied_when_the_host_is_the_service_name [1 s]
+  Failed Erp.Gates.Tests.Critic.CriticR14Proof.A_search_answer_never_carries_the_other_tenants_rows [1 s]
+  Failed Erp.Gates.Tests.Critic.CriticR14Proof.Update_alone_does_not_open_read [609 ms]
+Total tests: 3
+ Total time: 27.6585 Seconds
+=== G1STATIC (CRITIC_PLANT=NONE) filter FullyQualifiedName~G1OutsideProcessStateTests|FullyQualifiedName~G1TenantSourceTests|FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1TenantSettingCodeTests|FullyQualifiedName~G2ClientAddressCodeTests start 13:14:30
+=== G1STATIC exit 1 end 13:14:58
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [1 s]
+  Failed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [1 s]
+Total tests: 10
+ Total time: 27.2441 Seconds

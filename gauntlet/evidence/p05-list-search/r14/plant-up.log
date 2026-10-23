@@ -1,0 +1,241 @@
+[1mBuilding the application image[0m
+ Image erp-app:c-p05-list-search-r14-plant Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 669B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.14kB done
+#2 DONE 0.1s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 0.8s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#5 DONE 0.2s
+
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#6 DONE 0.2s
+
+#7 [internal] load metadata for docker.io/library/node:22-alpine
+#7 DONE 0.7s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.1s
+
+#9 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+#9 resolve docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 0.1s done
+#9 DONE 0.1s
+
+#10 [internal] load build context
+#10 ...
+
+#11 [stage-3 1/4] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:8af87eba5e7cdafb1514d7388be287365da97c132509e84dfe252ffd552398ca
+#11 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:8af87eba5e7cdafb1514d7388be287365da97c132509e84dfe252ffd552398ca 0.1s done
+#11 DONE 0.1s
+
+#12 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+#12 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2 0.1s done
+#12 DONE 0.1s
+
+#10 [internal] load build context
+#10 transferring context: 3.97MB 0.2s done
+#10 DONE 0.2s
+
+#13 [build 2/7] WORKDIR /src
+#13 CACHED
+
+#14 [strings 2/3] COPY web/src/modules/ /modules/
+#14 CACHED
+
+#15 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#15 CACHED
+
+#16 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#16 CACHED
+
+#17 [web 2/6] WORKDIR /web
+#17 CACHED
+
+#18 [web 3/6] COPY web/package.json web/package-lock.json ./
+#18 CACHED
+
+#19 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#19 CACHED
+
+#20 [web 5/6] COPY web/ ./
+#20 DONE 0.2s
+
+#21 [build 4/7] COPY src/ src/
+#21 DONE 0.2s
+
+#22 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#22 2.131   Determining projects to restore...
+#22 5.820   Restored /src/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/Erp.Modules.Tenancy.Contracts.csproj (in 180 ms).
+#22 5.821   Restored /src/src/Modules/Lists/Erp.Modules.Lists.Contracts/Erp.Modules.Lists.Contracts.csproj (in 184 ms).
+#22 5.823   Restored /src/src/Modules/Reports/Erp.Modules.Reports.Contracts/Erp.Modules.Reports.Contracts.csproj (in 174 ms).
+#22 7.390   Restored /src/src/Modules/Identity/Erp.Modules.Identity.Contracts/Erp.Modules.Identity.Contracts.csproj (in 1.87 sec).
+#22 7.405   Restored /src/src/Modules/Reports/Erp.Modules.Reports/Erp.Modules.Reports.csproj (in 1.88 sec).
+#22 7.409   Restored /src/src/Host/Erp.Host/Erp.Host.csproj (in 1.89 sec).
+#22 7.681   Restored /src/src/Kernel/Erp.Kernel/Erp.Kernel.csproj (in 2.13 sec).
+#22 7.681   Restored /src/src/Modules/Lists/Erp.Modules.Lists/Erp.Modules.Lists.csproj (in 2.13 sec).
+#22 7.682   Restored /src/src/Modules/Tenancy/Erp.Modules.Tenancy/Erp.Modules.Tenancy.csproj (in 2.15 sec).
+#22 7.683   Restored /src/src/Modules/Identity/Erp.Modules.Identity/Erp.Modules.Identity.csproj (in 2.14 sec).
+#22 DONE 7.8s
+
+#23 [web 6/6] RUN npm run check && npm run build
+#23 2.258 
+#23 2.258 > erp-web@0.1.0 check
+#23 2.258 > node scripts/check-strings.mjs && node scripts/check-a11y.mjs
+#23 2.258 
+#23 4.736 String check passed: 81 source files, 816 keys in English and Arabic, 82 plural messages.
+#23 6.183 Accessibility check passed: 1148 JSX elements checked.
+#23 6.214 npm notice
+#23 6.214 npm notice New major version of npm available! 10.9.9 -> 12.2.1
+#23 6.214 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#23 6.214 npm notice To update run: npm install -g npm@12.2.1
+#23 6.214 npm notice
+#23 6.414 
+#23 6.414 > erp-web@0.1.0 build
+#23 6.414 > tsc -b && vite build
+#23 6.414 
+#23 ...
+
+#24 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#24 DONE 0.2s
+
+#23 [web 6/6] RUN npm run check && npm run build
+#23 ...
+
+#25 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#25 9.186   Erp.Modules.Reports.Contracts -> /src/src/Modules/Reports/Erp.Modules.Reports.Contracts/bin/Release/net10.0/Erp.Modules.Reports.Contracts.dll
+#25 9.246   Erp.Modules.Lists.Contracts -> /src/src/Modules/Lists/Erp.Modules.Lists.Contracts/bin/Release/net10.0/Erp.Modules.Lists.Contracts.dll
+#25 9.416   Erp.Modules.Tenancy.Contracts -> /src/src/Modules/Tenancy/Erp.Modules.Tenancy.Contracts/bin/Release/net10.0/Erp.Modules.Tenancy.Contracts.dll
+#25 14.03   Erp.Kernel -> /src/src/Kernel/Erp.Kernel/bin/Release/net10.0/Erp.Kernel.dll
+#25 14.86   Erp.Modules.Identity.Contracts -> /src/src/Modules/Identity/Erp.Modules.Identity.Contracts/bin/Release/net10.0/Erp.Modules.Identity.Contracts.dll
+#25 ...
+
+#23 [web 6/6] RUN npm run check && npm run build
+#23 24.03 vite v7.3.6 building client environment for production...
+#23 24.14 transforming...
+#23 28.78 ✓ 122 modules transformed.
+#23 29.23 rendering chunks...
+#23 29.24 computing gzip size...
+#23 29.26 dist/index.html                                                   0.49 kB │ gzip:   0.30 kB
+#23 29.26 dist/assets/noto-sans-arabic-arabic-wght-normal-BhzieyvS.woff2  165.96 kB
+#23 29.26 dist/assets/index-BNuLxhx8.css                                   41.69 kB │ gzip:   8.75 kB
+#23 29.26 dist/assets/index-BuQGUGhK.js                                   611.89 kB │ gzip: 174.00 kB
+#23 29.27 ✓ built in 5.18s
+#23 29.27 
+#23 29.27 (!) Some chunks are larger than 400 kB after minification. Consider:
+#23 29.27 - Using dynamic import() to code-split the application
+#23 29.27 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#23 29.27 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#23 DONE 29.6s
+
+#25 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#25 16.98   Erp.Modules.Lists -> /src/src/Modules/Lists/Erp.Modules.Lists/bin/Release/net10.0/Erp.Modules.Lists.dll
+#25 19.68   Erp.Modules.Reports -> /src/src/Modules/Reports/Erp.Modules.Reports/bin/Release/net10.0/Erp.Modules.Reports.dll
+#25 21.24   Erp.Modules.Tenancy -> /src/src/Modules/Tenancy/Erp.Modules.Tenancy/bin/Release/net10.0/Erp.Modules.Tenancy.dll
+#25 21.77   Erp.Modules.Identity -> /src/src/Modules/Identity/Erp.Modules.Identity/bin/Release/net10.0/Erp.Modules.Identity.dll
+#25 22.67   Erp.Host -> /src/src/Host/Erp.Host/bin/Release/net10.0/Erp.Host.dll
+#25 22.88   Erp.Host -> /app/
+#25 DONE 23.2s
+
+#26 [stage-3 2/4] WORKDIR /app
+#26 CACHED
+
+#27 [stage-3 3/4] COPY --from=build /app ./
+#27 DONE 0.3s
+
+#28 [stage-3 4/4] COPY --from=web /web/dist ./wwwroot
+#28 DONE 0.1s
+
+#29 exporting to image
+#29 exporting layers
+#29 exporting layers 4.0s done
+#29 exporting manifest sha256:e235c409c8e2033547ba12e0b109e457b20fd7c133d9e2a95505c803d58c6f9b 0.0s done
+#29 exporting config sha256:8705cc148b5dd4d6b3fb16e85240c1a85d0fff1b40e79c83ebda4f23fb9a209d 0.0s done
+#29 exporting attestation manifest sha256:51e2ff92b9f4651a6526cc38d24c4d950bc9e94240e0e392b39b42cb4781547c 0.1s done
+#29 exporting manifest list sha256:64b78911d44f23f64f4ce40a699e99e94e535801a2874f29f6959c4694592ff5
+#29 exporting manifest list sha256:64b78911d44f23f64f4ce40a699e99e94e535801a2874f29f6959c4694592ff5 0.0s done
+#29 naming to docker.io/library/erp-app:c-p05-list-search-r14-plant done
+#29 unpacking to docker.io/library/erp-app:c-p05-list-search-r14-plant
+#29 unpacking to docker.io/library/erp-app:c-p05-list-search-r14-plant 0.9s done
+#29 DONE 5.1s
+
+#30 resolving provenance for metadata file
+#30 DONE 0.0s
+ Image erp-app:c-p05-list-search-r14-plant Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+ Network c-p05-list-search-r14-plant_default Creating 
+ Network c-p05-list-search-r14-plant_default Created 
+ Volume c-p05-list-search-r14-plant_db-data Creating 
+ Volume c-p05-list-search-r14-plant_db-data Created 
+ Container c-p05-list-search-r14-plant-db-1 Creating 
+ Container c-p05-list-search-r14-plant-db-1 Created 
+ Container c-p05-list-search-r14-plant-db-1 Starting 
+ Container c-p05-list-search-r14-plant-db-1 Started 
+ Container c-p05-list-search-r14-plant-db-1 Waiting 
+ Container c-p05-list-search-r14-plant-db-1 Healthy 
+ Container c-p05-list-search-r14-plant-db-1 Running 
+ Container c-p05-list-search-r14-plant-setup-1 Creating 
+ Container c-p05-list-search-r14-plant-setup-1 Created 
+Attaching to setup-1
+ Container c-p05-list-search-r14-plant-db-1 Waiting 
+ Container c-p05-list-search-r14-plant-db-1 Healthy 
+ Container c-p05-list-search-r14-plant-setup-1 Starting 
+ Container c-p05-list-search-r14-plant-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 8 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 13 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 2413 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 612 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 444 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p05-list-search-r14-plant-setup-1 Stopping 
+ Container c-p05-list-search-r14-plant-setup-1 Stopped 
+ Container c-p05-list-search-r14-plant-db-1 Running 
+ Container c-p05-list-search-r14-plant-app-1 Creating 
+ Container c-p05-list-search-r14-plant-app-1 Created 
+ Container c-p05-list-search-r14-plant-db-1 Waiting 
+ Container c-p05-list-search-r14-plant-db-1 Healthy 
+ Container c-p05-list-search-r14-plant-setup-1 Starting 
+ Container c-p05-list-search-r14-plant-setup-1 Started 
+ Container c-p05-list-search-r14-plant-setup-1 Waiting 
+ Container c-p05-list-search-r14-plant-setup-1 Exited 
+ Container c-p05-list-search-r14-plant-app-1 Starting 
+ Container c-p05-list-search-r14-plant-app-1 Started 
+
+[1mThe demo is running (65 s): http://localhost:20570[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:20570/?domain=alnoor.example
+    http://localhost:20570/?domain=gulfsteel.example
+
+  API description: http://localhost:20570/api/openapi/v1.json
+  Database:        localhost:20571 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
