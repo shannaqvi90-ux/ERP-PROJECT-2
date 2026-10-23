@@ -484,8 +484,18 @@ async function run(answer: string | null, delay: number, full = true): Promise<{
   device = installDevice(answer);
   const calls = serve(delay);
   (globalThis as { __calls?: unknown }).__calls = calls;
+  // Every change of the page is judged as it happens, not only after each step: a kept page shown
+  // for a moment while the server is slow is seen however the steps are timed.
+  let sighted = 0;
+  const watcher = new MutationObserver(() => {
+    if (poisonOnScreen.test(document.body.textContent ?? "")) sighted++;
+  });
+  watcher.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true });
   screen = await showList();
   const seen = await journey(screen, delay, full);
+  await wait(0);
+  watcher.disconnect();
+  if (sighted > 0) seen.push(`another tenant's row or count is on screen (${sighted} changes of the page showed it)`);
   const problems = judgeDevice(device, calls);
   if (!full) return { seen, problems, device };
   if (device.clipboard.length > 0) problems.push("the clipboard received rows before the person pressed Copy");
@@ -569,7 +579,8 @@ describe("a list keeps no row on the device (G1, device stores)", { timeout: 20_
 
   it("self-test: catches plant L14 on screen (another tenant's kept page shown while the server is slow)", async () => {
     plantL14();
-    const { seen } = await run(poison, 60, false);
+    // The server answers 400 ms late: the kept page has time to show, however busy the machine.
+    const { seen } = await run(poison, 400, false);
     expect(seen.some((s) => /another tenant's row or count is on screen/.test(s)), seen.join("\n")).toBe(true);
   });
 
