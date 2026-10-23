@@ -13,7 +13,7 @@ function useValueFormat(names: AuditHistory["names"] | undefined): ValueFormat {
   return useMemo(() => ({ t, formatDateTime, formatNumber, language, names }), [t, formatDateTime, formatNumber, language, names]);
 }
 
-/** One change's field as a line: "E-mail: old → new" (a creation's "E-mail: value"). */
+/** One change's field as a line: "E-mail: from old to new" (a creation's "E-mail: value"). */
 export function changeLine(event: AuditEvent, field: { field: string; old?: unknown; new?: unknown }, f: ValueFormat): string {
   const name = fieldName(field.field, f.t);
   if (event.action === "insert") return f.t("audit.value.set", { field: name, new: valueText(field.new, f) });

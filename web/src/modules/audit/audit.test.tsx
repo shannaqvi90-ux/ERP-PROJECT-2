@@ -113,8 +113,8 @@ describe("a record's history on its form", () => {
     const { container } = await show("en");
     const latest = container.querySelector('[data-testid="audit-latest"]')!;
     expect(latest.textContent).toContain("Changed by Noor Editor");
-    expect(latest.textContent).toContain("E-mail: shamma@mail.example → shamma.new@mail.example");
-    expect(latest.textContent).toContain("Active: Yes → No");
+    expect(latest.textContent).toContain("E-mail: from shamma@mail.example to shamma.new@mail.example");
+    expect(latest.textContent).toContain("Active: from Yes to No");
     expect(latest.querySelector("time")!.getAttribute("datetime")).toBe("2026-10-24T10:15:00Z");
     expect(calls.some((c) => c.url === "/api/audit/records/identity.users/u7?take=1")).toBe(true);
     // The whole history is read only when asked for.

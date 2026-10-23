@@ -167,7 +167,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.Equal("Logwatch Dispatcher", change.GetProperty("record").GetString());
         Assert.Equal(adminName, change.GetProperty("actorName").GetString());
         Assert.Equal(["name_en"], change.GetProperty("fields").EnumerateArray().Select(f => f.GetString()));
-        Assert.Equal("Name in English: Logwatch Courier → Logwatch Dispatcher", change.GetProperty("changes").GetString());
+        Assert.Equal("Name in English: from Logwatch Courier to Logwatch Dispatcher", change.GetProperty("changes").GetString());
         Assert.Equal("الاسم بالإنجليزية: من Logwatch Courier إلى Logwatch Dispatcher", change.GetProperty("changesAr").GetString());
         Assert.Equal($"/identity/roles/{id}", change.GetProperty("recordRoute").GetString());
 
@@ -272,7 +272,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         await RenameRoleAsync(admin, role, "Exported Warden", "identity.users.read");
         var filter = Uri.EscapeDataString($"recordId eq '{role.GetProperty("id").GetGuid()}' and action eq 'update'");
         var csv = await admin.GetStringAsync($"/api/reports/lists/audit.log?format=csv&language=en&filter={filter}");
-        Assert.Contains("Exported Steward → Exported Warden", csv);
+        Assert.Contains("from Exported Steward to Exported Warden", csv);
         var arabic = await admin.GetStringAsync($"/api/reports/lists/audit.log?format=csv&language=ar&filter={filter}");
         Assert.Contains("من Exported Steward إلى Exported Warden", arabic);
     }

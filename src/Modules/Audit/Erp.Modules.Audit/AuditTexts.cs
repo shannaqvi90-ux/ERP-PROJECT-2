@@ -94,7 +94,7 @@ public sealed class AuditTexts
         }
     }
 
-    /// <summary>The changes of one audit row as one line ("E-mail: a@x.ae → b@x.ae; Name: …"), in
+    /// <summary>The changes of one audit row as one line ("E-mail: from a@x.ae to b@x.ae; Name: …"), in
     /// the language, at most <paramref name="max"/> characters.</summary>
     public string Summary(IReadOnlyList<AuditFieldChange> changes, string action, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels, int max = 1000)
     {
