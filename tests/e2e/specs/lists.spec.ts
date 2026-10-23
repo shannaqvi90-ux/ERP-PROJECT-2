@@ -13,6 +13,36 @@ async function openUsers(page: Page) {
   await expect(dataRows(page).first()).toBeVisible();
 }
 
+/** Everything the origin keeps on the device, read in the page: the origin private file system
+ * (every file, whole), IndexedDB databases, Cache Storage, localStorage, sessionStorage, the
+ * cookies a script sees, window.name, history.state and the storage estimate. */
+type DeviceSnapshot = { files: { path: string; text: string }[]; databases: string[]; caches: string[]; storage: string[]; cookie: string; name: string; historyState: string; usage: number };
+
+async function deviceSnapshot(page: Page): Promise<DeviceSnapshot> {
+  return page.evaluate(async () => {
+    const files: { path: string; text: string }[] = [];
+    type Dir = { entries(): AsyncIterable<[string, { kind: string; getFile?: () => Promise<File> }]> };
+    const walk = async (dir: Dir, prefix: string) => {
+      for await (const [name, handle] of dir.entries()) {
+        if (handle.kind === "directory") await walk(handle as unknown as Dir, `${prefix}${name}/`);
+        else files.push({ path: `${prefix}${name}`, text: (await (await handle.getFile!()).text()).slice(0, 300) });
+      }
+    };
+    await walk((await navigator.storage.getDirectory()) as unknown as Dir, "");
+    const databases = (await indexedDB.databases()).map((d) => d.name ?? "");
+    const cacheNames = await caches.keys();
+    const storage: string[] = [];
+    for (const area of [localStorage, sessionStorage]) {
+      for (let i = 0; i < area.length; i++) {
+        const key = area.key(i)!;
+        storage.push(`${area === localStorage ? "local" : "session"} ${key}=${area.getItem(key)}`);
+      }
+    }
+    const estimate = await navigator.storage.estimate();
+    return { files, databases, caches: cacheNames, storage, cookie: document.cookie, name: window.name, historyState: JSON.stringify(history.state), usage: estimate.usage ?? 0 };
+  });
+}
+
 test.describe("list framework", () => {
   test("finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match", async ({ page }) => {
     await freshStart(page, "en");
@@ -32,6 +62,65 @@ test.describe("list framework", () => {
     await expect(search(page)).toHaveValue("haddad omar viewer");
     await page.keyboard.press("Escape");
     await expect(page.getByRole("region", { name: "Details" })).toHaveCount(0);
+  });
+
+
+  // Critic p05 round 14 (plant L14): a list that kept its first page in the origin private file
+  // system showed one tenant's users to the next person on the same browser. In the real browser:
+  // after a person searches, sorts, pages to the end, opens a record and selects rows, no store of
+  // the origin holds a single row of the list (no file, database or cache at all), neither while
+  // signed in nor after Sign out; and the browser counts no stored bytes for the origin.
+  test("keeps no row of a list on the device: no file, database or cache, no row in any store, signed in or out", async ({ page }) => {
+    await freshStart(page, "en");
+    // What the origin keeps before anyone signs in: the measure for the stored bytes.
+    const before = await deviceSnapshot(page);
+    await signIn(page, users.admin);
+    await openUsers(page);
+    // Rows the person sees: values no store may hold (their own e-mail is the remembered sign-in).
+    const seen = new Set<string>();
+    const collect = async () => {
+      for (const cell of await page.locator("table[role=grid] tbody td").allInnerTexts()) {
+        for (const value of cell.split("\n")) if (value.trim().length >= 6 && value.trim() !== users.admin) seen.add(value.trim());
+      }
+    };
+    await collect();
+    await page.keyboard.type("haddad");
+    await expect(page.locator(".list-statusbar, .list-count").first()).toBeVisible();
+    await expect(dataRows(page).first()).toContainText(/haddad/i);
+    await collect();
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "E-mail", exact: true }).click();
+    await expect(page.getByRole("columnheader", { name: /E-mail/ })).toHaveAttribute("aria-sort", "ascending");
+    await page.keyboard.press("/");
+    await expect(search(page)).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(grid(page)).toBeFocused();
+    await page.keyboard.press("End");
+    await expect(grid(page)).toHaveAttribute("aria-activedescendant", /-row-\d{3,}$/);
+    await expect(page.locator(`#${await grid(page).getAttribute("aria-activedescendant")} td`).nth(2)).toContainText("@");
+    await collect();
+    await page.keyboard.press("Home");
+    await page.keyboard.press("Space");
+    await page.keyboard.press("Shift+ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("region", { name: "Details" })).toBeVisible();
+    await collect();
+    expect(seen.size, "row values collected from the grid").toBeGreaterThan(20);
+
+    const judge = (snapshot: DeviceSnapshot, when: string) => {
+      expect(snapshot.files, `${when}: files in the origin private file system`).toEqual([]);
+      expect(snapshot.databases, `${when}: IndexedDB databases`).toEqual([]);
+      expect(snapshot.caches, `${when}: Cache Storage caches`).toEqual([]);
+      expect(snapshot.usage, `${when}: bytes the browser counts as stored for the origin`).toBeLessThanOrEqual(before.usage);
+      const kept = [snapshot.storage.join("\n"), snapshot.cookie, snapshot.name, snapshot.historyState].join("\n");
+      const rows = [...seen].filter((value) => kept.includes(value));
+      expect(rows, `${when}: row values in localStorage, sessionStorage, cookies, window.name or history.state`).toEqual([]);
+    };
+    judge(await deviceSnapshot(page), "signed in");
+    await page.getByRole("button", { name: "Sign out" }).click();
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    judge(await deviceSnapshot(page), "after Sign out");
   });
 
   test("the status bar's '/ search' works with the cursor already in the search box", async ({ page }) => {
