@@ -1,0 +1,67 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs b/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
+index 5c198ff3..a68ef8ef 100644
+--- a/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
++++ b/src/Kernel/Erp.Kernel/Data/ErpDbSession.cs
+@@ -367,7 +367,7 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
+             var limit = new NpgsqlBatchCommand(
+                 "SELECT set_config('app.write_scope', 'list', true), set_config('app.write_ids', @ids, true), " +
+                 "set_config('app.write_tx', extract(epoch from now())::text, true)");
+-            limit.Parameters.AddWithValue("ids", string.Join(',', _companies.All ? _permissionCompanies : _permissionCompanies.Where(AllowsCompany)));
++            limit.Parameters.AddWithValue("ids", string.Join(',', _companies.All ? _permissionCompanies : _companies.CompanyIds));
+             batch.BatchCommands.Add(limit);
+             await batch.ExecuteNonQueryAsync(cancellationToken);
+         }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+index 43f8f621..ae049ac6 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Access/CompanyAccessRules.cs
+@@ -148,7 +148,7 @@ internal static class CompanyAccessRules
+             {
+                 continue;
+             }
+-            if (caller.GetValueOrDefault(company) is not { } mine || !mine.Covers(old) || !mine.Covers(wanted))
++            if (caller.GetValueOrDefault(company) is not { } mine || !mine.Covers(old))
+             {
+                 return false;
+             }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 20dba334..2ee081b6 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -131,7 +131,7 @@ internal static class BranchEndpoints
+ 
+     private static async Task<Results<Ok<BranchDto>, ProblemHttpResult>> Get(Guid id, TenancyDbContext db, TenancyBranchScope branchScope, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var branch = await db.Branches.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
++        var branch = await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, cancellationToken);
+         if (branch is null)
+         {
+             return Problems.NotFound(http);
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261023000000_PlantShareActive.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261023000000_PlantShareActive.cs
+new file mode 100644
+index 00000000..77fed919
+--- /dev/null
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Migrations/20261023000000_PlantShareActive.cs
+@@ -0,0 +1,22 @@
++using Microsoft.EntityFrameworkCore.Infrastructure;
++using Microsoft.EntityFrameworkCore.Migrations;
++
++#nullable disable
++
++namespace Erp.Modules.Tenancy.Migrations
++{
++    [DbContext(typeof(TenancyDbContext))]
++    [Migration("20261023000000_PlantShareActive")]
++    public partial class PlantShareActive : Migration
++    {
++        protected override void Up(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("CREATE POLICY directory_share ON tenancy.tenants AS PERMISSIVE FOR SELECT TO PUBLIC USING (status = 'active');");
++        }
++
++        protected override void Down(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("DROP POLICY IF EXISTS directory_share ON tenancy.tenants;");
++        }
++    }
++}

@@ -1,0 +1,11 @@
+const BASE='http://localhost:20250';
+const r = await fetch(BASE + '/api/auth/sign-in', { method: 'POST', headers: { 'content-type': 'application/json', 'X-Erp-Request': '1' }, body: JSON.stringify({ email: 'admin.ar@alnoor.example', password: 'Demo-Pass-2026' }) });
+const cookie = r.headers.getSetCookie().map(c => c.split(';')[0]).join('; ');
+const cs = await (await fetch(BASE + '/api/tenancy/companies?pageSize=1', { headers: { cookie } })).json();
+const id = cs.items[0].id;
+const pdf = await fetch(`${BASE}/api/reports/run/tenancy.companyProfile?company=${id}&format=pdf&language=ar`, { headers: { cookie } });
+const buf = Buffer.from(await pdf.arrayBuffer());
+console.log('company profile ar pdf', pdf.status, pdf.headers.get('content-type'), buf.length, 'bytes');
+(await import('fs')).writeFileSync('/home/shan/evidence-staging/p02-tenancy/r14/company-profile-ar.pdf', buf);
+const js = await (await fetch(`${BASE}/api/reports/run/tenancy.companyProfile?company=${id}&format=json&language=ar`, { headers: { cookie } })).json();
+console.log('json', js.language, js.direction, js.title, js.subject);

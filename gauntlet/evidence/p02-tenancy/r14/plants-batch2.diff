@@ -1,0 +1,34 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 27c387f7..75604cbc 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -331,8 +331,16 @@ internal static class CompanyEndpoints
+             return Problems.Conflict(http, "tenancy.companyCodeTaken");
+         }
+         db.Entry(company).Property(c => c.Version).OriginalValue = request.Version!.Value;
++        var closing = company.IsActive && request.IsActive == false;
+         Apply(company, request, code);
+         db.Entry(company).Property(c => c.UpdatedAt).IsModified = true;
++        if (closing)
++        {
++            foreach (var b in await db.Branches.Where(b => b.CompanyId == company.Id && b.IsActive).ToListAsync(cancellationToken))
++            {
++                b.IsActive = false;
++            }
++        }
+         await db.SaveChangesAsync(cancellationToken);
+         return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, http.RequestServices.GetRequiredService<ICompanyPermissions>(), company, cancellationToken));
+     }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+index 65c45958..554048d3 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Reports/TenancyReports.cs
+@@ -71,7 +71,7 @@ internal sealed class CompanyProfileReport(TenancyDbContext db) : IReportSource
+         {
+             return null;
+         }
+-        var branches = !run.PrintsRows ? [] : await db.Branches.AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
++        var branches = !run.PrintsRows ? [] : await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AsNoTracking().Where(b => b.CompanyId == id).OrderBy(b => b.Code).Take(run.MaxRows)
+             .Select(b => new { b.Code, b.NameEn, b.NameAr, b.City, b.Emirate, b.Phone, b.IsActive })
+             .ToListAsync(cancellationToken);
+         // The code joined to a name is never empty, so LocalText's own fallback cannot apply: a

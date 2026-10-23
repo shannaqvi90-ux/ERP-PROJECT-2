@@ -1,0 +1,944 @@
+
+[1m== Copying sources (without build output)[0m
+
+[1m== Web: install, type-check, string gate, unit tests, build[0m
+
+added 59 packages in 4s
+String check passed: 81 source files, 816 keys in English and Arabic, 82 plural messages.
+Accessibility check passed: 1148 JSX elements checked.
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/work/web[39m
+
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2mtracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/reports/ReportsPage.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 777[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a report with its parameters and draws an Arabic document right to left on an English screen; the address keeps the choice [33m 392[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 883[2mms[22m[39m
+     [33m[2m✓[22m[39m says when another administrator saved first and reloads their change on request [33m 316[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 828[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/SignInPasskey.test.tsx[2m > [22m[2msign-in with a passkey[2m > [22m[2msending the form while the device is asked withdraws the request and signs in with the password
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/shell/SignInPasskey.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 1038[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m23 tests[22m[2m)[22m[33m 1500[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/goTo.test.tsx[2m > [22m[2mgo to a screen with G and a letter[2m > [22m[2mtakes the second key before the screen's own keys see it
+[22m[39mAn update to AppShell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AppShell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/kernel/forms/forms.test.tsx [2m([22m[2m26 tests[22m[2m)[22m[33m 3157[2mms[22m[39m
+     [33m[2m✓[22m[39m tracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields [33m 393[2mms[22m[39m
+     [33m[2m✓[22m[39m does not save on its own while another field has unsaved changes, for a pasted number, or on a new record [33m 550[2mms[22m[39m
+     [33m[2m✓[22m[39m offers countries by name in the screen's language, the UAE and the Gulf first, and keeps the code [33m 304[2mms[22m[39m
+ [32m✓[39m src/kernel/signInAddress.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/modules/shell/goTo.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 2628[2mms[22m[39m
+     [33m[2m✓[22m[39m opens Users with G then U from Home, showing what G offers while it waits [33m 640[2mms[22m[39m
+     [33m[2m✓[22m[39m works by key position with an Arabic layout and in Arabic [33m 761[2mms[22m[39m
+     [33m[2m✓[22m[39m lets Escape, another key or the time running out end the wait [33m 433[2mms[22m[39m
+     [33m[2m✓[22m[39m takes the second key before the screen's own keys see it [33m 380[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 325[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/recordWidth.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/kernel/historyGuard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/kernel/focusCycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 293[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/phone.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/format.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 164[2mms[22m[39m
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m22 tests[22m[2m)[22m[33m 4576[2mms[22m[39m
+     [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 704[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 417[2mms[22m[39m
+     [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 802[2mms[22m[39m
+     [33m[2m✓[22m[39m finds a role by its English or Arabic name and opens it in the roles list (critic p04 round 4) [33m 423[2mms[22m[39m
+     [33m[2m✓[22m[39m never asks the roles, companies or branches sources without their read permissions [33m 313[2mms[22m[39m
+     [33m[2m✓[22m[39m finds companies and branches by code and opens the record in its list, in Arabic too [33m 361[2mms[22m[39m
+     [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 341[2mms[22m[39m
+ [32m✓[39m src/test/keySweepCoverage.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+[90mstderr[2m | src/kernel/recordEvents.test.tsx[2m > [22m[2mrecord changed announcements[2m > [22m[2mreach the screens listening for that kind of record, with its id, and no other
+[22m[39mThe current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/kernel/recordEvents.test.tsx[2m > [22m[2mrecord changed announcements[2m > [22m[2mreach the screens listening for that kind of record, with its id, and no other
+[22m[39mThe current testing environment is not configured to support act(...)
+
+ [32m✓[39m src/kernel/recordEvents.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 165[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/trn.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/columnFit.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/kernel/session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 7313[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter [33m 2512[2mms[22m[39m
+     [33m[2m✓[22m[39m on an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus [33m 420[2mms[22m[39m
+     [33m[2m✓[22m[39m names a new branch after its company: the typed part follows the company's name, and the name alone is the company's [33m 311[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the new company's branch line, and what is typed in it, right after the save: the saved answer is the record, not read again (p01 round 6 health check) [33m 301[2mms[22m[39m
+     [33m[2m✓[22m[39m shows a branch added from the keyboard in the company's branch table, even when the first read of the table answers last (lead, p06 round 2) [33m 315[2mms[22m[39m
+     [33m[2m✓[22m[39m adds the typed branch with Ctrl+S or Ctrl+Enter on the branch line, as Enter does, and leaves an untouched line's Ctrl+S to the company form [33m 575[2mms[22m[39m
+     [33m[2m✓[22m[39m on an Arabic screen, shows a TRN typed in Arabic-Indic digits as 0 to 9 and offers the country by its Arabic name (owner 2026-10-17; p06 round 6) [33m 909[2mms[22m[39m
+     [33m[2m✓[22m[39m marks a branch saved with its Arabic name only as having no English name on an English screen (critic p02 round 10) [33m 535[2mms[22m[39m
+     [33m[2m✓[22m[39m offers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule [33m 389[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m30 tests[22m[2m)[22m[33m 8953[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the first rows with their count and puts the cursor in the search box [33m 577[2mms[22m[39m
+     [33m[2m✓[22m[39m gives each column room for its header and keeps the full label as the sort button's title [33m 484[2mms[22m[39m
+     [33m[2m✓[22m[39m gives a column marked wide more room and one marked narrow less than its type would (a legal name, a code) [33m 370[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 725[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the cursor in the search box on '/', the status bar's search key, instead of typing it first [33m 641[2mms[22m[39m
+     [33m[2m✓[22m[39m closes an open record with Escape wherever the focus is on the page [33m 398[2mms[22m[39m
+     [33m[2m✓[22m[39m lists a search best match first and opens the best match with Enter [33m 433[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for a just-applied search's own rows before Enter opens the best match [33m 868[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the default order and Enter's usual meaning when the server did not rank a broad search [33m 572[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a sort chosen from the header while searching [33m 526[2mms[22m[39m
+     [33m[2m✓[22m[39m moves through rows with the keyboard, selects with Space and copies the selection [33m 533[2mms[22m[39m
+     [33m[2m✓[22m[39m leaves Alt+PageDown and Alt+PageUp to the open record's next and previous [33m 337[2mms[22m[39m
+     [33m[2m✓[22m[39m selects every row that matches, not only the loaded ones, and copies them page by page [33m 372[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 375[2mms[22m[39m
+ [32m✓[39m src/modules/shell/navigationReopen.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 5918[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the second user from the first user's record, with its own search [33m 1585[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the second role from the first role's record [33m 803[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the second user from the first user's record, with its own search [33m 2045[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the second role from the first role's record [33m 822[2mms[22m[39m
+   [33m[2m✓[22m[39m a record closed before its list's definition arrives stays closed when it does [33m 658[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m68 tests[22m[2m)[22m[33m 12556[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user's roles only read (a role given in another company), the form offers no change and no branch line, even with every permission (critic p02 round 11) [33m 2085[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: a branch of a company where the user's roles only read offers no change, and no company to add a branch to means no New (critic p02 round 11) [33m 396[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.read, exactly the actions that need it disappear [33m 400[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.update, exactly the actions that need it disappear [33m 666[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.companies.create, exactly the actions that need it disappear [33m 571[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.companies.update, exactly the actions that need it disappear [33m 421[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.tenant.read, exactly the actions that need it disappear [33m 411[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.workplace.read, exactly the actions that need it disappear [33m 329[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/keyboardPermissions.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 10664[2mms[22m[39m
+     [33m[2m✓[22m[39m an existing record: no key sends anything but reads [33m 4996[2mms[22m[39m
+     [33m[2m✓[22m[39m a new record the user may not create: no key sends anything [33m 2847[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep on an editable form finds the save keys' writes [33m 2779[2mms[22m[39m
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m92 tests[22m[2m)[22m[33m 13964[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 1325[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start [33m 604[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start, and says so when the access is refused [33m 572[2mms[22m[39m
+     [33m[2m✓[22m[39m ticks the company the signed-in user works in for a new user until companies are chosen by hand (critic p03 round 7) [33m 416[2mms[22m[39m
+     [33m[2m✓[22m[39m deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused [33m 348[2mms[22m[39m
+     [33m[2m✓[22m[39m activates only inactive users [33m 385[2mms[22m[39m
+     [33m[2m✓[22m[39m changes nothing and keeps the chosen rows when the confirmation is cancelled with Escape [33m 357[2mms[22m[39m
+     [33m[2m✓[22m[39m asks in Arabic, right to left, with Arabic buttons, on an Arabic screen [33m 341[2mms[22m[39m
+       [33m[2m✓[22m[39m deactivates every matching user in one request with the list's search, filter and count, after a confirmation [33m 565[2mms[22m[39m
+       [33m[2m✓[22m[39m changes nothing and keeps the selection when the confirmation is cancelled [33m 831[2mms[22m[39m
+       [33m[2m✓[22m[39m shows the API's reason when the matching rows changed meanwhile [33m 882[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no state change to a user who may not update users [33m 357[2mms[22m[39m
+     [33m[2m✓[22m[39m Alt+L shows the new language in the user's own row and open record at once, and the record's next save is not refused [33m 597[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a Language the user is changing in the open record when the switch comes in, and saves it with the row's new version [33m 359[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants tenancy.access.update is read-only to a user holding every identity permission [33m 329[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2man action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need
+[22m[39mrecord actions run without one permission of their module: 26
+
+ [32m✓[39m src/modules/identity/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 20664[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 6913[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles?open=r-clerk: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3412[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 4621[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3918[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: every row chosen shows the selection bar, and an editor's sweep finds the bulk deactivation [33m 1798[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 23612[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 7841[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3158[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 1637[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 618[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3322[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 3376[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 2302[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 1355[2mms[22m[39m
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 43104[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 21603[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 19949[2mms[22m[39m
+     [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 489[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 479[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 347[2mms[22m[39m
+[90mstdout[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mevery palette entry, run by a user who may only read[2m > [22m[2msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[22m[39mpalette entries swept for a reader: 42
+
+ [32m✓[39m src/modules/shell/paletteActions.test.tsx [2m([22m[2m41 tests[22m[2m)[22m[33m 59037[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow sign-in again is not offered to a user who may change users but not see the sign-in history, in English or Arabic (critic p04 round 9, plant P4) [33m 1783[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen [33m 1250[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 695[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen [33m 980[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen [33m 1439[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen [33m 917[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen [33m 751[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen [33m 587[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen [33m 606[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen [33m 702[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen [33m 676[2mms[22m[39m
+     [33m[2m✓[22m[39m tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen [33m 678[2mms[22m[39m
+     [33m[2m✓[22m[39m identity.users.new: started from home, it opens /identity/users and runs the screen's own command there [33m 331[2mms[22m[39m
+     [33m[2m✓[22m[39m every action that asks for a record says what to choose, in English and Arabic, and runs no command before [33m 706[2mms[22m[39m
+     [33m[2m✓[22m[39m an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need [33m 9142[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow a user to sign in again from home: the history opens and the user chosen is allowed again [33m 313[2mms[22m[39m
+     [33m[2m✓[22m[39m New user from home keeps its new record open when the list arrives after the command ran [33m 543[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may add a branch but to no company (only some branches of it) is not offered New branch [33m 394[2mms[22m[39m
+     [33m[2m✓[22m[39m a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9) [33m 594[2mms[22m[39m
+     [33m[2m✓[22m[39m is found by its words in either language, on an Arabic screen too [33m 611[2mms[22m[39m
+     [33m[2m✓[22m[39m come first, once each: on the users screen New user, the list's own controls and Print or export [33m 464[2mms[22m[39m
+     [33m[2m✓[22m[39m are found by the words of the module action they stand for: "print compan" on the companies screen (critic p02 round 10) [33m 487[2mms[22m[39m
+     [33m[2m✓[22m[39m follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again [33m 830[2mms[22m[39m
+     [33m[2m✓[22m[39m the palette offers a user's account actions exactly when the record shows their buttons [33m 986[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user's account actions from every tab, exactly as on Details, and to a reader none [33m 1181[2mms[22m[39m
+     [33m[2m✓[22m[39m Reset password from "What they can do" opens Details with the reset's first choice focused; Delete user from the history asks first [33m 678[2mms[22m[39m
+     [33m[2m✓[22m[39m sends nothing but reads (and the user's own settings), and opens no new record, on every screen [33m 13752[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change everything finds the writes the entries make [33m 14426[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m42 passed[39m[22m[90m (42)[39m
+[2m      Tests [22m [1m[32m544 passed[39m[22m[90m (544)[39m
+[2m   Start at [22m 16:13:03
+[2m   Duration [22m 64.42s[2m (transform 30.57s, setup 2.61s, import 52.66s, tests 222.65s, environment 29.28s)[22m
+
+JSON report written to /out/vitest.json
+control: the gate passes on the unplanted product
+P9-email: caught (signing out keeps the signed-out person's e-mail on the sign-in screen)
+P9-storage: caught (signing out leaves the person's localStorage entries behind)
+P9: caught (palette answers cached at module level by query, never cleared at sign-out)
+C2: caught (the last record opened from the palette kept in a cookie (path=/), and signing out does not forget cookies)
+P9-scoped: caught (identity-scoped caches are not emptied when the identity ends)
+P9-session-storage: caught (signing out leaves sessionStorage behind)
+C1: caught (palette answers kept in the tab's window.name, and signing out does not reset it)
+H1: caught (the history guard trusts every entry: Back into the signed-out person's address opens it)
+H2: caught (Back and reload are trusted like a typed address)
+H3: caught (the history epoch survives the end of an identity (sessionStorage cleared except the epoch))
+C2-path: caught (the record cookie scoped to the screen's path (/identity), and signing out forgets cookies only at /)
+H4: caught (inside a document, Back to an entry of another identity is not checked)
+client isolation gate self-test: 12 plants, all caught
+control: the gate passes on the unplanted product
+U-passkeys: caught (A user's passkeys offered for removal to someone who may not change users (critic p03 round 8's new levers))
+U1: caught (New role offered without identity.roles.create)
+U1-users: caught (New user offered without identity.users.create)
+U1-shortcut: caught (Alt+N opens a new role without identity.roles.create)
+U-delete: caught (Delete role offered without identity.roles.delete (critic p03 round 1))
+U-copy: caught (Copy role offered for a role granting more than the user holds)
+U2: caught (A user's grants compared only on identity permissions (critic p03 round 3))
+U-unreadable: caught (Roles the screen cannot read counted as within the signed-in user (critic p03 round 5: a clerk offered Save on the Administrator))
+U2-roles: caught (A role's grants compared only on identity permissions)
+U-company-roles: caught (Roles held in one company left out of what a user holds)
+U-elsewhere: caught (A user holding roles in companies the signed-in user does not work in treated as editable)
+U-workspace: caught (A role's grants judged against the session's permissions (the working company's included), not those held everywhere)
+U-refused: caught (The server's refusal of acting on an account (it reaches companies the signed-in user does not work in) ignored)
+identity screens permission gate self-test: 13 plants, all caught
+control: the gate passes on the unplanted product
+U1: caught (company logo upload and remove offered without tenancy.companies.update)
+U2: caught (the company's branch line offered without tenancy.branches.create)
+U2-new: caught (New branch (button and Alt+N) offered without tenancy.branches.create)
+U-company-new: caught (New company (button and Alt+N) offered without tenancy.companies.create)
+U-company-new-some-companies: caught (New company (button and Alt+N) offered to someone who works in only some companies (critic p02 round 7))
+U-company-code-some-companies: caught (the company code editable by someone who works in only some companies (critic p02 round 7))
+U-company-address-new: caught (a new-company form opened from the address (?open=new) by someone the screen does not offer New)
+U5: caught (an empty companies list read as 'works in every company': New offered to a user who works in no company (critic p02 round 9))
+U5b: caught (critic p02 round 9's rewrite page.items[0]?.everyCompany !== false (no row and a silent row both read as yes))
+U5c: caught (a companies row that does not say everyCompany read as yes)
+U5-palette: caught (New company in the palette offered from anywhere to someone who does not work in every company)
+P3b: caught (the company form editable for everyone (critic p06 round 1's plant: canEdit true))
+U-company-save: caught (the company form editable and saved without tenancy.companies.update)
+U-company-address: caught (the company's address editable without tenancy.companies.update (its fields ignore the form's read-only state))
+U-company-some-branches: caught (the company record editable by someone who works in only some of its branches)
+U-logo-some-branches: caught (the company logo changeable by someone who works in only some of its branches)
+U-branchline-some-branches: caught (the company's branch line offered to someone who works in only some of its branches (critic p02 round 4))
+U-newbranch-some-branches: caught (New branch offered to someone who works in only some branches of every company (critic p02 round 4))
+U-branchcode-some-branches: caught (a branch code editable by someone who works in only some branches of its company (critic p02 round 4))
+P3b-branch: caught (the branch form editable for everyone (P3b on the branch screen))
+U-branch-save: caught (the branch form editable and saved without tenancy.branches.update)
+U-company-role-elsewhere: caught (a company where the user's roles only read offered for change (critic p02 round 11))
+U-logo-role-elsewhere: caught (the logo of a company where the user's roles only read offered for change (critic p02 round 11))
+U-branchline-role-elsewhere: caught (the branch line of a company where the user's roles do not add branches (critic p02 round 11))
+U-newbranch-role-elsewhere: caught (New branch offered for companies where the user's roles do not add branches (critic p02 round 11))
+U-branch-role-elsewhere: caught (a branch of a company where the user's roles only read offered for change (critic p02 round 11))
+U-access-role-elsewhere: caught (access in a company where the caller's roles do not change access offered for change (critic p02 round 11))
+P3b-access: caught (the company access form saveable for everyone (P3b on the access screen))
+U-access-save: caught (company access editable and saved without tenancy.access.update)
+U-access-stronger: caught (company access of a user the server marks read-only offered for change)
+U-access-boxes: caught (the company and branch boxes of a read-only access form left changeable)
+U-tenant-save: caught (workspace settings editable and saved without tenancy.tenant.update)
+U-tenant-some-companies: caught (workspace settings offered to someone who works in only some companies or branches (critic p02 round 6))
+P3b-tenant: caught (the workspace settings form shown and editable for everyone (P3b on the workspace screen))
+tenancy screens permission gate self-test: 34 plants, all caught
+control: the gate passes on the unplanted product
+W1: caught (the record form editable, with Save, for a read-only user (critic p06 round 2))
+W2: caught (Ctrl+S left on for a read-only user and save() not checking the permission (critic p06 round 2))
+W2-enter: caught (Ctrl+Enter left on for a read-only user and save() not checking the permission)
+W2-enter-field: caught (Enter in a field saves for a read-only user (round 5's Enter-to-save without its checks) and save() not checking the permission)
+W2-sheet: caught (the save keys offered to a read-only user in the shortcut sheet (save() still refuses))
+W2-discard: caught (the discard key offered to a read-only user in the shortcut sheet)
+W-complete: caught (a completed phone number saves a read-only record: the phone field editable for a read-only user, the completed entry and save() not checking the permission)
+W-leave: caught (Escape on a read-only record asks to save it, and 'Save and close' saves it)
+W-new: caught (a new record editable and saved by a user who may not create it)
+K-roles-n: caught (the roles screen's plain n opens a new role for a user who may not create roles)
+K-users-alt-n: caught (Alt+N opens a new user for a user who may not create users)
+K-branches-alt-n: caught (Alt+N opens a new branch for a user who may not create branches)
+K-bulk: caught (the list's bulk actions offered on chosen rows without their permission (users: deactivate))
+K-company-form: caught (the company form editable for a user who may only read it: its save keys write)
+K-access-form: caught (a user's company access editable though the server marks it read-only: its save keys write)
+K-role-form: caught (a role editable for a user who may only read roles: its save keys write)
+K-user-form: caught (a user editable for a user who may only read users: its save keys write)
+K-sign-out-everywhere: caught (End every session of a user offered to a user who may only read users)
+K-unblock: caught (Unblock sign-ins offered to a user who may only read users)
+screen permission gate by keyboard, self-test: 19 plants, all caught
+control: the gate passes on the unplanted product
+PA1: caught (a module action offered without its own permission)
+PA2: caught (a module action offered without the permission of the screen it opens)
+PA3: caught (the shell passing every module action to the palette, unfiltered)
+PA4: caught (New user declared under the permission to read users, not to create them)
+PA5: caught (screen commands registered whatever their screen's check says (enabled ignored))
+PA6: caught (Copy role offered without identity.roles.create)
+PA7: caught (Reset password offered to someone who may not reset this user's password)
+PA7-delete: caught (Delete user offered to someone who may not delete this user)
+PA8: caught (Allow sign-in again offered to someone who may not change users)
+PA9: caught (New branch offered whatever the screen's own test (a company the user may add a branch to))
+PA10: caught (New company offered whatever the screen's own test (works in every company; critic p02 round 9))
+PA11: caught (Allow sign-in again offered without the sign-in history permission its record's command needs (critic p03 round 10, plant U1))
+PA12: caught (Reset password offered from a user's other tabs to someone who may not reset passwords (the record's commands follow it to every tab, critic p03 round 10))
+PA13: caught (the palette's filter ignoring an action's further permissions (requires): Allow sign-in again offered without the sign-in history (critic p04 round 9, plant P4))
+command palette permission gate self-test: 14 plants, all caught
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 122 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                   0.49 kB │ gzip:   0.29 kB
+dist/assets/noto-sans-arabic-arabic-wght-normal-BhzieyvS.woff2  165.96 kB
+dist/assets/index-BNuLxhx8.css                                   41.69 kB │ gzip:   8.75 kB
+dist/assets/index-BvxRteaa.js                                   611.33 kB │ gzip: 173.85 kB
+
+(!) Some chunks are larger than 400 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.16s
+
+[1m== Verify machinery (build/): stopping a verify ends every stage process; the quiet judgement[0m
+✔ a SIGTERM to ./erp verify ends every stage process it started (the e2e loop, docker run, tee, sed, the load sampler) (1380.141069ms)
+✔ stop_process_trees ends a process, its children and grandchildren, and nothing else (960.264823ms)
+✔ a run busy only in the middle is not judged quiet (critics p02 r8, p03 r8, p01 r10: load 0.28 at the start, 68-74 mid-run, 4.76 at the end) (42.271068ms)
+✔ a run quiet throughout and too slow fails, and one quiet throughout within the maximum passes (97.605969ms)
+✔ one busy sample anywhere makes the run busy; without samples (an older ./erp) the start and end readings decide as before (148.583853ms)
+✔ samples that cannot be read do not make a run quiet: an empty or broken sample file is judged busy only by its readings, never skipped silently (45.306234ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2751.76265
+
+[1m== Comparison harness (gauntlet/compare): install and unit tests[0m
+
+added 2 packages in 728ms
+✔ add-rate: the Odoo baseline was produced by the current driver and its counts follow from its steps (15.181557ms)
+✔ api-update-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.00544ms)
+✔ arabic-report: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.08506ms)
+✔ attach-file: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.466436ms)
+✔ configure-sequence: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.595754ms)
+✔ create-company-branch: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.39111ms)
+✔ create-restricted-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.275831ms)
+✔ custom-field-filter: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.584728ms)
+✔ edit-and-save: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.736151ms)
+✔ export-filtered-list: the Odoo baseline was produced by the current driver and its counts follow from its steps (6.251226ms)
+✔ find-record: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.508666ms)
+✔ find-user: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.457037ms)
+✔ follow-approval: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.407124ms)
+✔ import-5000: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.958534ms)
+✔ keyboard-navigation: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.464123ms)
+✔ new-user-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.778935ms)
+✔ open-third-user-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.097228ms)
+✔ print-list-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps (5.180444ms)
+✔ reach-screen-keyboard: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.108578ms)
+✔ see-and-rerun-job: the Odoo baseline was produced by the current driver and its counts follow from its steps (2.836946ms)
+✔ sign-in: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.238695ms)
+✔ switch-company: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.589556ms)
+✔ switch-to-arabic: the Odoo baseline was produced by the current driver and its counts follow from its steps (3.672193ms)
+✔ who-changed-field: the Odoo baseline was produced by the current driver and its counts follow from its steps (4.745945ms)
+✔ every driver imports only the fixture clients and Node file helpers, and runs no unreadable code (168.468844ms)
+✔ the driver lint catches planted escapes (3.658987ms)
+✔ control: the honest path verifies (3 steps, 10 keys) (5034.389998ms)
+✔ control: a driver whose set-up did the task and whose verify() is honest is refused (already done before the clock) (1683.034082ms)
+✔ plant P1 (critic r8): set-up does the task through the API; verify() answers "not done" when it gets no outcome; run() does nothing -> never verifies (3519.640868ms)
+✔ plant P1b (critic r8): the same with verify() throwing when it gets no outcome -> never verifies (4237.814435ms)
+✔ plant P2 (critic r8): set-up saves the value through the API; the measured part only waits -> never verifies (3340.448728ms)
+✔ plant P3: run() leaves a mark in its process (a module variable, a global, ctx.state); verify() answers "not done" without it -> never verifies (3726.462785ms)
+✔ plant P4: run() writes a file in its scratch folder; verify() looks for it there and in every folder beside its own -> never verifies (3927.426356ms)
+✔ plant P5: set-up notes the time; verify() answers "not done" until enough time has passed, by every clock a process can read -> never verifies (5079.612311ms)
+✔ plant P6: a task saved in the product; set-up saves it, run() touches the screen, verify() reads the back end only once the screen is touched -> never verifies (4994.935006ms)
+✔ plant P6b: the same, verify() reading the back end first both times -> never verifies (the read answered the same before the clock) (4830.221757ms)
+✔ plant P7: a task that names what the person enters; set-up saves the value, run() changes something else in the back end (a version), verify() keys on it -> never verifies (4521.837309ms)
+✔ plant P8: set-up saves the value the person is to enter, so the start form's field already holds it; the measured part clicks Save -> refused at the start (1493.520016ms)
+✔ plant P8b: the same value shown as text beside the form (a record's history, say) is no unfair start, but the saved-state check still refuses the run (1771.792019ms)
+✔ plant P9: verify() reads a back-end clock beside the saved state; the clock changes, but not as a saved state does (it differs between the passes) -> never verifies (7206.826357ms)
+✔ plant P10: no verify() at all; set-up does the task and run() says it is done -> never verifies (run() never reports its own end state) (3573.721626ms)
+✔ saved state: the honest path of a task that saves what the person enters verifies, and the record names the read that gained it (5593.031897ms)
+✔ saved state: the rule judged on records alone (changed and stable, gained an entered value, nothing read) (3.019342ms)
+✔ saved state (round 10): only a change in the declared end state (its read, its parts) counts, and an entered value must arrive there (2.176474ms)
+✔ measured part (round 10): a task that saves needs a write sent by the measured part, one of its declared writes, and every entered value its end state gained entered by it (5.833151ms)
+✔ caused by a step (round 11): a write within the reaction time of a step, or of the answer to a request a step sent, is caused; a timer's or a poll's is not (0.372269ms)
+✔ entered values are found as a person would have entered them, never inside a longer word or number (3.843089ms)
+✔ a keyboard-only task fails on a pointer step; the harness judges it, not verify() (8382.857264ms)
+✔ plant P1 on the real driver (critic r8): ours edit-and-save whose set-up saves the number and whose verify() keys on the outcome is caught in review by the lint (6.474505ms)
+✔ screenshot names are random and never name a product (6.48824ms)
+✔ revealsProduct catches product names in any case (0.288435ms)
+✔ both products have a branding profile; extra brand words are added (0.457139ms)
+✔ the demo data's company names and codes are masked in both products (round 3 blindness finding) (0.226626ms)
+✔ letters A and B are assigned at random (0.687803ms)
+✔ committed Odoo baseline screenshots have neutral names and the key lives outside the shots folder (1.054918ms)
+✔ the blind review page shows neutral captions, never the moments a driver named (9.3351ms)
+✔ a task one product cannot run yet shows no columns, so nothing on the page says which product is unbuilt (round 9, critic p01 r8) (2.792084ms)
+✔ a placeholder naming the vendor is cleared, not painted over (0.268306ms)
+✔ a side-by-side folder keeps the blind part (shots, review page) apart from the key and results (257.618122ms)
+✔ side by side, the products run in a random order per task (0.596808ms)
+✔ identity codes are masked wherever they stand in a text: a workspace label, an e-mail domain (round 5 blindness finding) (675.22ms)
+✔ every product's shots mask every product's demo names and codes (round 7: the same sign-in showed in one product and was masked in the other) (699.530739ms)
+✔ a name cut short by its list cell is painted over within the cell, not across the next column, and every masked cell edge to edge (round 7, p02 critic: rows looked misaligned around a masked name) (895.9675ms)
+✔ a demo name or code inside a form field is painted over too (round 9, critic p01 r8: the company form showed its names in its inputs) (855.206158ms)
+✔ causation (round 12): an input task is the step's that began last before it; one before every step causes nothing (12.74988ms)
+✔ causation (round 12): a DevTools command inside a step is the step's (a file chosen); outside every step it is the harness reading, and causes nothing (3.294596ms)
+✔ causation (round 12): a timer counts only when a caused task armed it, once, for at most REACTION_SECONDS (1.826881ms)
+✔ causation (round 12): an animation frame counts when a caused task asked for it (0.684298ms)
+✔ causation (round 12): an answer links a write to the step that sent the request, if it came within LINK_SECONDS; a poll's answer links nothing (1.536624ms)
+✔ causation (round 12): a task of no traceable origin counts only right after a task a step caused, with nothing else of the page in between (1.668222ms)
+✔ causation (round 13): a web socket's message is the answer to the page's last frame on it, sent by a caused task within LINK_SECONDS; one the server pushed on its own causes nothing (plant W1) (1.24557ms)
+✔ causation (round 13): a window's postMessage is the posting task's; one posted from outside the page (another frame, window or worker) causes nothing (plant W2) (1.050343ms)
+✔ causation (round 13): a task that delivers what the browser read for the page (a file, a blob, a body) is not refused for a worker's activity; a port message is (0.61395ms)
+✔ causation (round 13): the delays of a chain add up; the write must go out within LINK_SECONDS of the step's input (plant W3) (0.523914ms)
+✔ causation (round 13): an animation's, transition's or media element's event is set by its duration; an idle callback is its asker's; an observer while an animation runs causes nothing (2.463852ms)
+✔ causation (round 13): ids start again in a new document; a callback is matched with the last request before it, and a chain never runs forward in time (0.502662ms)
+✔ causation (round 13): a document is its navigation's: one a step started is the step's, one started before the clock or by a refresh the page set is nobody's (plants W7, W8) (0.777499ms)
+✔ causation (round 13): the harness reading the page during a click is passed over: a document that arrives then is judged by its navigation (0.596982ms)
+✔ causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused (0.922964ms)
+✔ a step's label never counts as typed text (critic r11, mutation C3) (2.73154ms)
+✔ control (round 12): the honest approval click, a save on a short timer or an animation frame the click asked for, or after reading answers it asked for, and a file chosen verify, and the record says which step (32122.773626ms)
+✔ control (round 12): a form posted by Enter in its field (a sign-in's shape) is caused by the key (5760.195752ms)
+✔ plant S1 (critic r11): the page approves on its own timer; one click on a "Close" that appears afterwards takes the credit -> never verifies (6322.724013ms)
+✔ plant S1b (critic r11): the same with one scroll step to the banner -> never verifies (6352.651482ms)
+✔ plant S2 (critic r11): the first pointer press asks the back end something that answers after 2.5 s; the page approves on the answer -> never verifies (7413.954041ms)
+✔ plant S3 (critic r11): the stand-in arms on verify()'s read before the clock and lets the page's poll approve; one click on plain text -> never verifies (5833.557989ms)
+✔ plant S3b: S3 with the poll answering "go" a while into the clock, just after run()'s click -> never verifies (5931.035343ms)
+✔ plant S4: the page approves on its own timer 0.6 s after a sign; run() waits for the sign and clicks plain text, just before the write -> never verifies (13432.11945ms)
+✔ plant S5: S4 laundered through a message port -> never verifies (6341.308256ms)
+✔ plant S6: the page's own timer clicks the Approve button itself while run() clicks plain text -> never verifies (6411.419826ms)
+✔ plant S7: an animation-frame loop approves on its own -> never verifies (6412.254859ms)
+✔ plant S8: S4 laundered through a worker's message -> never verifies (7916.010191ms)
+✔ plant S9: the page posts the approval form itself on a timer, just after run() presses a key -> never verifies (7464.23594ms)
+✔ plant S11: the page moves a cover under the still pointer on its own timer just after run()'s click; the browser's mouseover approves -> never verifies (7198.286713ms)
+✔ plant S10: a key arms a 2.5 s delay before the approval (R2b); the record names the delay -> never verifies (8319.301996ms)
+✔ the clock (round 12, critic plant S3): for a task that saves it starts 1.1-2.1 s after verify()'s read before it; a click is timed from its input, not from the wait for its target (7264.101513ms)
+✔ control (round 13): a click that asks over a web socket and approves on the server's answer, and a click on a page that embeds a cross-site frame, verify (11864.144915ms)
+✔ plant W1 (critic r12): the stand-in pushes "go" over a web socket on its own timer; one click on a Close that appeared just before takes the credit -> never verifies (6945.403539ms)
+✔ plant W2 (critic r12): a cross-site frame posts "go" to the page on its own timer; one click on Close takes the credit -> never verifies (and the page can be measured) (7986.521558ms)
+✔ plant W3 (critic r12): one click on plain text arms a 2.8 s delay (a 1.9 s answer, then a 0.9 s timer) before the approval -> never verifies (9150.555239ms)
+✔ plant W4: a shared worker posts "go" through its port on its own timer, just after run()'s click -> never verifies (21526.664532ms)
+✔ plant W5: a CSS animation the page starts on its own ends just after run()'s click; its animationend approves -> never verifies (8262.600276ms)
+✔ plant W6: a resize observer approves when an animation the page started on its own reaches its end, just after run()'s click -> never verifies (7071.854196ms)
+✔ plant W6b: W6 with an animation that started before the clock and runs on past it (the record shows neither end) -> never verifies (7265.694786ms)
+✔ control (round 13): a click on a link to a page that approves as it loads verifies (6213.346605ms)
+✔ plant W7: a document the page asked for before the clock (held by the stand-in) arrives just after run()'s click and approves -> never verifies (7097.500371ms)
+✔ plant W8: a meta refresh the page set loads a page that approves, just after run()'s click -> never verifies (7805.827181ms)
+✔ causation (round 14): a click the browser delivers while running a DevTools command is still the step's input (critic r13, load) (2.581394ms)
+✔ causation (round 14): every change of the screen is judged by where its chain begins (screenCauses) (1.985147ms)
+✔ causation (round 14): what the harness does (its reads, the blind shot) is passed over; page script it sets off is judged (0.828148ms)
+✔ causation (round 14): a document is judged by the navigation that loaded it, in whatever task its parser ran (0.429349ms)
+✔ causation (round 14): a favicon or image the browser fetched before the clock, answered just before an untraceable task, does not stand between it and the step (a busy machine) (2.222335ms)
+✔ causation (round 14): an animation frame only the harness asked for (the click's check that its target stands still) does not stand between an untraceable task and the step (0.497021ms)
+✔ causation (round 14): a task that begins the very microsecond the one before it ended is a task of its own (0.36327ms)
+✔ causation (round 14): a message task that begins the microsecond the step's input task ended follows it at once (no loop through the shared boundary) (0.319925ms)
+✔ --list prints every task (483.64791ms)
+✔ bad arguments fail with usage (941.478598ms)
+✔ one command runs a task on our product and writes a result JSON (827.479715ms)
+✔ the blind review page shows A and B only and keeps the mapping in key.json (15.608271ms)
+✔ the blind review page draws its letters at random per task and shows each product under its own letter (8.419686ms)
+✔ ours wins only when strictly lower on every metric (2.004869ms)
+✔ a tie is a loss (0.400965ms)
+✔ zero rule: a count metric on which both score exactly 0 is left out, neither a tie nor a win; the rest decides (1.383421ms)
+✔ zero rule: only both exactly 0; 0 against anything else is compared as usual (0.543154ms)
+✔ zero rule: count metrics only; a time metric equal on both sides still ties, even at 0, and the tie is a loss (0.509648ms)
+✔ zero rule: any other tie is still a loss, beside a metric left out (0.307221ms)
+✔ zero rule: when every metric ties the task is a loss, with or without metrics left out (0.332782ms)
+✔ zero rule: the comparison output names the metrics left out, in its fields and in words (1.836118ms)
+✔ whole paths: ours wins only when one of its paths beats the reference on every metric by itself (1.195102ms)
+✔ whole paths: over repeats each path is judged on the medians of its own times (0.891176ms)
+✔ an unbuilt or failed product is never a win (0.251253ms)
+✔ median of repeated runs uses the median machine seconds (0.164322ms)
+✔ the reference is held at its best path on every metric; ours keeps its shown path whole (0.905274ms)
+✔ the generator is deterministic: a fresh run reproduces the shared files byte for byte (2640.64684ms)
+✔ volumes match the bar: 100,000 contacts, users and rates; 5,000 import rows (257.217584ms)
+✔ the needle name occurs exactly once and the import file has plain headers (108.450183ms)
+✔ the generator keeps rates as fixed six-decimal strings (7.940237ms)
+✔ the random source is seeded (0.16858ms)
+✔ every driver imports only the fixture clients and Node file helpers, and runs no unreadable code (250.112961ms)
+✔ the driver lint catches planted escapes (6.42619ms)
+✔ an error before the measured part keeps the address, the console and a screenshot outside blind/ (2773.198042ms)
+✔ an error in the reference folder records the address and console but writes no screenshot there (2551.888477ms)
+✔ a verified run records no failure capture (4260.947205ms)
+✔ control: an honest driver verifies; reading and locating are allowed while measured (5073.600116ms)
+✔ plant: typing through ctx.page.keyboard -> the run is invalid, never verified (4523.598599ms)
+✔ plant: pressing a key through op.page.keyboard -> the run is invalid, never verified (4254.954464ms)
+✔ plant: clicking a locator directly -> the run is invalid, never verified (4802.153199ms)
+✔ plant: filling a field directly -> the run is invalid, never verified (4419.941606ms)
+✔ plant: the mouse -> the run is invalid, never verified (4026.408727ms)
+✔ plant: a deep link (goto) -> the run is invalid, never verified (4058.012903ms)
+✔ plant: a reload -> the run is invalid, never verified (3815.776531ms)
+✔ plant: page script that clicks (evaluate) -> the run is invalid, never verified (3589.221286ms)
+✔ plant: locator script that clicks (locator.evaluate) -> the run is invalid, never verified (3809.510887ms)
+✔ plant: a condition that clicks -> the run is invalid, never verified (4382.987458ms)
+✔ plant: a condition that sets a value -> the run is invalid, never verified (3770.106461ms)
+✔ plant: a condition that changes the page -> the run is invalid, never verified (4178.71352ms)
+✔ plant: a condition that defers an action (setTimeout) -> the run is invalid, never verified (3689.471993ms)
+✔ plant: an asynchronous condition -> the run is invalid, never verified (4290.223895ms)
+✔ plant: a condition that navigates -> the run is invalid, never verified (4558.866433ms)
+✔ plant: a condition that calls the back end from the page -> the run is invalid, never verified (3590.185023ms)
+✔ plant: a back-end call from the harness (fetch) -> the run is invalid, never verified (4189.008581ms)
+✔ plant: a back-end call from the harness (http.request) -> the run is invalid, never verified (3700.721601ms)
+✔ plant: a second page in the same context -> the run is invalid, never verified (4342.893378ms)
+✔ plant: a new browser context -> the run is invalid, never verified (3639.19582ms)
+✔ plant: the page request context (page.request) -> the run is invalid, never verified (3532.485323ms)
+✔ plant: reaching a browser-driver internal (_mainFrame) -> the run is invalid, never verified (3752.432781ms)
+✔ plant: closing the page (Symbol.asyncDispose) -> the run is invalid, never verified (3333.119701ms)
+✔ plant: an action whose refusal the driver swallows -> the run is invalid, never verified (4015.66231ms)
+✔ plant: a keyboard kept from set-up and used while measured is refused (3344.625971ms)
+✔ plant: an internal channel kept from set-up is refused there too (4233.305373ms)
+✔ plant: a driver cannot stop the clock, drop steps or reach the raw page (4246.650415ms)
+✔ plant: browserKey refuses an action passed by the driver (4145.834941ms)
+✔ plant: the guard controls cannot be claimed by a driver (1.611838ms)
+✔ set-up may act on the product but never run page script; verify() only reads (3969.27368ms)
+✔ plant U1 (round 3): page script installed during sign-in to act in the measured part -> invalid (6299.121361ms)
+✔ plant U1b (round 3): a listener installed through a locator in set-up -> invalid (4206.781746ms)
+✔ plant U2 (round 3): an init script added to the context in set-up (an F9 that does the task) -> invalid (6992.120305ms)
+✔ plant U2b (round 3): exposed functions, routes and extra headers made in set-up -> invalid (19884.490692ms)
+✔ plant U3 (round 3): even a script that escaped the guard would not survive: the start page is a fresh context (6340.068406ms)
+✔ plant H2 (round 3): the start state is checked: a field the product refills from what sign-in typed -> invalid (1797.365691ms)
+✔ plant H2b (round 3): a start screen that carries state in its address -> invalid (911.683651ms)
+✔ plant H2c (round 3): a task already done by set-up before the clock -> invalid (2081.689831ms)
+✔ plant V1 (round 3): verify() that acts on the page -> invalid (4913.875063ms)
+✔ plant V2 (round 3): verify() that changes the product through the back end -> invalid (4459.573758ms)
+✔ plant S1 (round 3): a newline inside op.type (Enter without a step) -> invalid (4099.967791ms)
+✔ plant K1 (round 3): a driver that declares chain to drop mental preparation -> invalid (4189.46266ms)
+✔ plant T1 (round 3): screenshots while the product works neither hide its time nor go undeclared (13995.189847ms)
+✔ the real ours sign-in driver verifies on a stand-in sign-in page (22785.56273ms)
+✔ the whole-e-mail path fails on a sign-in screen that does not move on by itself (no password typed into the e-mail field) (9880.128339ms)
+✔ plant H1 (round 2): the ours sign-in driver types the password through ctx.page.keyboard -> invalid (13945.900379ms)
+✔ plant K1 (round 3, the real driver): the ours sign-in driver with every step declared chained -> invalid (13046.164615ms)
+✔ plant K1 on the passkey path (round 8): the confirmation on the device declared chained -> invalid (4286.368414ms)
+✔ the real ours find-user driver verifies on a stand-in users screen (5012.101006ms)
+✔ the real ours find-user driver finds the user by the initials of the name (critic p05 round 7): Users, three letters, Enter (5529.763513ms)
+✔ plant H2 (round 3, the real driver): ours find-user signs in, opens Users and types the name before the clock -> never a 1-step win (12871.649943ms)
+✔ an API task counts each request, and its screenshots show the neutral request transcript (2371.854189ms)
+✔ plant: signing in to the API inside the measured part is refused (1546.356991ms)
+✔ plant P1 (round 4): an action left pending in a second browser context from set-up -> never verified (8181.62532ms)
+✔ plant P2 (round 4): launching another browser in set-up -> invalid (982.526011ms)
+✔ plant P3 (round 4): a browser-wide debugging session or trace from set-up -> invalid (1540.481541ms)
+✔ plant L1 (round 4): set-up changes where the product opens (a home preference) -> invalid (2147.671667ms)
+✔ plant L2 (round 4): a list start whose address names the task's data -> invalid (1718.60145ms)
+✔ control (round 4): a home start that lands on the home, with set-up contexts of its own, still verifies (5821.79319ms)
+✔ plant C1 (round 4): text copied to the clipboard in set-up and pasted while measured -> invalid (16495.798207ms)
+✔ control (round 4): text copied inside the measured part may be pasted (4782.963653ms)
+✔ a run that fails in set-up records what the page showed (critic p04 round 4: an intermittent sign-in wait left nothing to read) (1399.065223ms)
+✔ control (round 5): the honest path on the slow page waits for the 2 s answer (6684.279733ms)
+✔ plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid (4873.728808ms)
+✔ plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped (11859.001259ms)
+✔ plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock (5695.718016ms)
+✔ control (round 5): images and reads still loading when run() returns are not waited for (4173.282138ms)
+✔ plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid (4228.839852ms)
+✔ plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops (9505.500084ms)
+✔ plant T2h (round 6): verify() that polls is refused on arrival, before the clock as well as after it -> invalid, quickly (5139.307373ms)
+✔ plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid (12385.413629ms)
+✔ plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid (11083.479474ms)
+✔ plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid (1287.918895ms)
+✔ plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent (10502.092313ms)
+✔ plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid (34422.405437ms)
+✔ plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness (7677.507596ms)
+✔ plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid (7095.487229ms)
+✔ plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid (2692.177999ms)
+✔ plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid (6827.971539ms)
+✔ plant U5j (round 5): set-up leaves a request of Playwright's own HTTP client running -> invalid (4122.499146ms)
+✔ plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid (592.417822ms)
+✔ plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver's reach (5717.134394ms)
+✔ plant U5f (round 5): a driver object handed straight to execute() is refused, never measured (0.846993ms)
+✔ plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent (3109.37224ms)
+✔ plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid (3984.177872ms)
+✔ plant C3 (round 5): an empty copy, then Control+v: text copied in set-up is pasted while measured -> invalid (3835.212292ms)
+✔ plant C4 (round 5): Control+KeyV: text copied in set-up is pasted while measured -> invalid (3651.248326ms)
+✔ plant C5 (round 5): control+V written in other cases: text copied in set-up is pasted while measured -> invalid (3710.22122ms)
+✔ plant C6 (round 5): Shift+Control+v: text copied in set-up is pasted while measured -> invalid (3962.398712ms)
+✔ control (round 5): the clipboard is empty at the start, whatever set-up copied (4251.796657ms)
+✔ KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step (4478.33616ms)
+✔ operator times are the published Card, Moran and Newell averages (5.70283ms)
+✔ typing counts one key per character plus Shift for capitals and symbols (0.369817ms)
+✔ a chord counts each key in it (0.258481ms)
+✔ a click is M + P + BB, with homing when the hand comes from the keyboard (0.329639ms)
+✔ a triple click (select a field's whole content) is M + P + BBBBBB; typing right after it into that field continues it (0.196741ms)
+✔ a chained step has no mental preparation (0.144811ms)
+✔ the operator starts with the hand on the mouse (0.140202ms)
+✔ file picks are modelled as a double click (0.144701ms)
+✔ totals for a short path add up (0.32522ms)
+✔ unknown step kinds are rejected (0.553123ms)
+✔ a scroll is a mouse step modelled like a click (0.204686ms)
+✔ continuation is derived from the steps: typing after a click on its field, after a key; Enter after typing or an arrow (0.389415ms)
+✔ plant K1 (round 3): a chain flag written on a step changes nothing; only the sequence counts (0.226961ms)
+✔ round 5: no step continues one that began on another screen (a key that opened a new screen, then typing) (0.28352ms)
+✔ every npm dependency of the harness is under an allowed licence (1.221659ms)
+✔ dependencies are pinned to exact versions (0.232281ms)
+✔ control C1: the honest typed save verifies, its write caused by the click (5332.957017ms)
+✔ control C2: the honest approval verifies (4837.531324ms)
+✔ control C3: a save the page sends a few event-loop turns after the click, or once a slow check the click sent is answered, is caused by the click (12494.502278ms)
+✔ control C4 (routed, p00 r10): a save still under way while the page changes its address stays on the clock and verifies (6487.69995ms)
+✔ plant R1 (critic r10): set-up stashes the value as a server-side draft; run() clicks "Save draft" once, typing nothing -> never verifies (5188.118995ms)
+✔ plant R2 (critic r10): set-up turns on a setting; the start page sends the declared approval write on its own timer; run() presses Escape -> never verifies (5484.178599ms)
+✔ plant R2b: the page approves 2.5 s after the first key it sees (a timer the key armed); R2c: the same while the page polls the back end -> never verifies (29270.505225ms)
+✔ plant R2d: a step causes a decoy approval (another record); the page sends the real one on its own timer -> never verifies (7081.349729ms)
+✔ plant R3 (critic r10): set-up stashes the value; the start page autosaves it on a timer; run() presses Escape -> never verifies (5461.667054ms)
+✔ set-up (critic X1): a write the page aborted is named as abandoned, with the browser's reason, at once (973.763283ms)
+✔ set-up (routed, p00 r10 and p02 r10): a write under way while the page only changes its address is waited for, not taken as abandoned; a new document still abandons it (1832.356937ms)
+✔ set-up (critic r10): a write to an address that names a long-lived channel is watched like any other (536.408232ms)
+✔ set-up (routed): ctx.settleWrites() lets set-up wait for its own write before it moves on; it is refused once the clock runs (6395.992443ms)
+✔ steps, keystrokes and waits are counted the same way every time (1118.11317ms)
+✔ a key chord counts each of its keys, and a scroll is a step (273.974159ms)
+✔ a browser key counts its keys, and human plus wait is the human time plus the system wait (779.853706ms)
+✔ a triple click is one step that selects a field's whole value; typing then replaces it (490.118461ms)
+✔ choosing a file counts the dialog click and the pick (500.421916ms)
+✔ a step before start() is refused (238.715852ms)
+✔ blind screenshots paint branding over, go grey, and leave title and favicon neutral (1237.018072ms)
+✔ a screenshot after the end of a task never shortens the measured time (638.333797ms)
+✔ round 3 fault T1: a screenshot taken while measuring stays on the clock (it cannot hide the product working) (879.51302ms)
+✔ round 2 fault: the done screenshot after finish() leaves machine seconds unchanged (1283.419036ms)
+✔ while measuring, only the moments the task declares are shot, each once; their time stays on the clock (795.774725ms)
+✔ round 3 fault S1: op.type refuses control characters (a newline would press Enter without a step) (467.395251ms)
+✔ round 3 fault K1: a driver cannot declare continuation (chain) or pass options that act uncounted (565.717083ms)
+✔ an API request is one step whose keystrokes are the request typed plus Enter (239.890715ms)
+✔ a wait condition works on a page whose content security policy forbids eval (our product) (457.376417ms)
+✔ round 5: paste and copy chords are read as the keys they press, whatever their spelling (0.585786ms)
+✔ a screenshot the browser fails to take ends the run: it is tried once, never again on the clock (round 6) (328.618475ms)
+✔ passkey: set-up makes a passkey at once; measured, the request waits for the person, and confirming is one step with no keystroke (616.581524ms)
+✔ passkey: the device follows the person to a fresh browser, and the page cannot answer for the person (843.017603ms)
+✔ passkey: confirming is refused without a device, and fails when the product never asks (835.104972ms)
+✔ every driver imports only the fixture clients and Node file helpers, and runs no unreadable code (359.732686ms)
+✔ the driver lint catches planted escapes (3.841378ms)
+✔ the source check accepts page functions that only read, every driver's among them (65.526055ms)
+✔ the source check refuses a page function that acts or can act later: an async function (S1) (0.868725ms)
+✔ the source check refuses a page function that acts or can act later: an async function inside a reader (S1, as the critic wrote it) (0.393483ms)
+✔ the source check refuses a page function that acts or can act later: a generator (0.525199ms)
+✔ the source check refuses a page function that acts or can act later: a property write (S2: onfinish) (0.390417ms)
+✔ the source check refuses a page function that acts or can act later: a value write (0.364918ms)
+✔ the source check refuses a page function that acts or can act later: a text write (0.460293ms)
+✔ the source check refuses a page function that acts or can act later: a write to the address (0.396509ms)
+✔ the source check refuses a page function that acts or can act later: an assignment to location itself (1.069353ms)
+✔ the source check refuses a page function that acts or can act later: location.assign (0.48959ms)
+✔ the source check refuses a page function that acts or can act later: location.replace with a javascript: address (0.321824ms)
+✔ the source check refuses a page function that acts or can act later: document.location (0.207773ms)
+✔ the source check refuses a page function that acts or can act later: the address object kept in a name (0.311655ms)
+✔ the source check refuses a page function that acts or can act later: window (0.171572ms)
+✔ the source check refuses a page function that acts or can act later: globalThis (0.182394ms)
+✔ the source check refuses a page function that acts or can act later: self, top, parent, frames (0.331162ms)
+✔ the source check refuses a page function that acts or can act later: this (0.315421ms)
+✔ the source check refuses a page function that acts or can act later: an iframe's window (0.180309ms)
+✔ the source check refuses a page function that acts or can act later: the document's window (0.158147ms)
+✔ the source check refuses a page function that acts or can act later: a computed member name (0.302116ms)
+✔ the source check refuses a page function that acts or can act later: a computed member name (template) (0.257088ms)
+✔ the source check refuses a page function that acts or can act later: a destructured address (0.421648ms)
+✔ the source check refuses a page function that acts or can act later: Object.values (reaches the address) (0.208765ms)
+✔ the source check refuses a page function that acts or can act later: Object.getOwnPropertyDescriptor (0.183496ms)
+✔ the source check refuses a page function that acts or can act later: JSON.stringify with a replacer (0.225387ms)
+✔ the source check refuses a page function that acts or can act later: Reflect (0.396429ms)
+✔ the source check refuses a page function that acts or can act later: eval (0.216038ms)
+✔ the source check refuses a page function that acts or can act later: Function (0.182894ms)
+✔ the source check refuses a page function that acts or can act later: a constructor reached through a function (0.192714ms)
+✔ the source check refuses a page function that acts or can act later: a prototype (0.16511ms)
+✔ the source check refuses a page function that acts or can act later: a promise continuation (0.231058ms)
+✔ the source check refuses a page function that acts or can act later: an object that is a promise (0.21636ms)
+✔ the source check refuses a page function that acts or can act later: an observer (S3) (0.353355ms)
+✔ the source check refuses a page function that acts or can act later: a promise (0.308028ms)
+✔ the source check refuses a page function that acts or can act later: an image (it loads an address) (0.249494ms)
+✔ the source check refuses a page function that acts or can act later: a class (0.746136ms)
+✔ the source check refuses a page function that acts or can act later: a tagged template (0.350199ms)
+✔ the source check refuses a page function that acts or can act later: an import (0.170511ms)
+✔ the source check refuses a page function that acts or can act later: with (0.289031ms)
+✔ the source check refuses a page function that acts or can act later: delete (1.733632ms)
+✔ the source check refuses a page function that acts or can act later: an update of a global (0.277207ms)
+✔ the source check refuses a page function that acts or can act later: a debugger statement (0.300312ms)
+✔ the source check refuses text that is not exactly one function expression (0.510646ms)
+✔ the read world sees the document but not the page's own script world (350.876765ms)
+✔ the read world refuses and reports a click (the product's handler never runs) (681.475969ms)
+✔ the read world refuses and reports focus (731.230357ms)
+✔ the read world refuses and reports a value (780.308849ms)
+✔ the read world refuses and reports a text change (736.597457ms)
+✔ the read world refuses and reports an attribute (a javascript: address on a link) (698.156983ms)
+✔ the read world refuses and reports a new element (733.934203ms)
+✔ the read world refuses and reports an event (631.895288ms)
+✔ the read world refuses and reports a form submit (700.72046ms)
+✔ the read world refuses and reports the network (678.86325ms)
+✔ the read world refuses and reports a timer (692.594182ms)
+✔ the read world refuses and reports a promise continuation (723.232523ms)
+✔ the read world refuses and reports a promise of a thenable (686.585583ms)
+✔ the read world refuses and reports an observer (734.242137ms)
+✔ the read world refuses and reports an animation (S2) (747.359179ms)
+✔ the read world refuses and reports a listener (640.200607ms)
+✔ the read world refuses and reports a handler property (651.950696ms)
+✔ the read world refuses and reports storage (670.705086ms)
+✔ the read world refuses and reports history (638.159834ms)
+✔ the read world refuses and reports property values by enumeration (the address among them) (683.543292ms)
+✔ the read world refuses and reports a replacer that sees every value (668.61374ms)
+✔ the read world refuses and reports eval (659.487165ms)
+✔ the read world refuses and reports the Function constructor through a function (679.507526ms)
+✔ the read world refuses and reports another window through the document (670.110802ms)
+✔ the read world refuses and reports an iframe's own script world (660.24647ms)
+✔ the read world refuses and reports a selection change (700.315159ms)
+✔ the read world refuses and reports a document write (682.247021ms)
+✔ the read world stays armed after a call returns: what a function scheduled finds every action refused (S1 at its root) (769.683285ms)
+✔ the read world cannot be re-armed or patched: its prototypes are frozen (256.238348ms)
+✔ the read world lets every kind of read through: queries, XPath, walkers, styles, ranges, text (328.365967ms)
+✔ the read world reports a change it cannot refuse (a data attribute) as a change to the page (259.539881ms)
+✔ a new document gets a new, armed read world (368.780352ms)
+✔ a page function that runs too long is ended (561.773446ms)
+✔ the screen fingerprint sees the text, attributes, values and focus, but not what the blind shot empties (302.107841ms)
+✔ the freeze holds the screen as it was for longer than the product's answer: no late answer, no timer (3394.848864ms)
+✔ control: the honest path verifies (3 steps, 10 keys) (4874.940704ms)
+✔ plant S1: a reader whose native-await continuation fills and saves -> invalid, nothing done (5264.78782ms)
+✔ plant S2: a condition that schedules the work through an animation callback -> invalid, nothing done (5034.199396ms)
+✔ plant S3: a reader that leaves an observer to act on the next change -> invalid, nothing done (5835.325012ms)
+✔ plant a javascript: address set by a condition (it would run later in the page's own world) -> invalid, nothing done (5883.342108ms)
+✔ plant location.replace with a javascript: address -> invalid, nothing done (5301.432668ms)
+✔ plant the address object reached by enumerating the document -> invalid, nothing done (4869.631989ms)
+✔ plant Object kept under another name (the source check cannot see it; the world refuses it) -> invalid, nothing done (5309.268912ms)
+✔ plant a condition that clicks (the source check allows a call; the world refuses it) -> invalid, nothing done (5386.775945ms)
+✔ plant a condition that animates -> invalid, nothing done (5554.724926ms)
+✔ plant a condition that reaches an iframe's own script world -> invalid, nothing done (5211.574179ms)
+✔ plant a reader whose result is a promise-like object -> invalid, nothing done (5298.687612ms)
+✔ plant a reader handed a page object as its argument -> invalid, nothing done (5194.942131ms)
+✔ plant T3 (round 6): run() returns before a 2 s answer and verify() reads the page in short reads -> never verified (12214.325094ms)
+✔ plant T4: the answer is fast but the page shows it by a timer 1.2 s later; run() returns at once -> never verified (9817.635876ms)
+✔ plant T6: a read aborted at the clock whose failure writes the end state -> invalid (the screen changed after the clock) (3252.543671ms)
+✔ round 9 (critic mutation A24): what the page starts loading after the clock is refused and never reaches the product (5810.769364ms)
+✔ round 9 (critic mutation H10): a read in verify() that asks to wait longer is cut to half a second (4868.45623ms)
+✔ control: an honest product with a live ticker on screen still verifies; the freeze holds its screen still through verify() (11991.511678ms)
+✔ a document still loading when run() returns stays on the clock (round 7: the reference's client reloading after a save) (6415.502886ms)
+✔ plant S1 (round 6, the real driver): the critic's plant in ours edit-and-save is caught in review by the lint (3.408547ms)
+✔ a variant's own set-up and sign-in run before its measured part (round 6: only the base driver's did) (8034.065415ms)
+✔ a prefix is shown when the field begins with it; the rest of a value is what follows it (7.547403ms)
+✔ measured part: a declared prefix shown at the start need not be typed; the rest must be, and the end state must hold the whole value (16.660242ms)
+✔ a prefix declaration names a dialling code its product's code sets as a constant; one set-up, the data or the reference makes is refused (3.461686ms)
+✖ control: the field shows +971 at the start; the person types the 9 digits after it and the whole number is saved (9 keystrokes) (5893.515731ms)
+✔ plant PF1: set-up seeds a longer start ("+971 50 555") and the person types only the last 4 digits -> never verifies (5331.188232ms)
+✔ plant PF2: a prefix the task does not declare -> never verifies (5311.57591ms)
+✔ plant PF3: the field is empty at the start and offers +971 only once the clock runs -> never verifies (5170.272951ms)
+✔ plant PF4: the back end drops the + of the country code -> never verifies (5113.033492ms)
+✔ ratchet.json has every comparison minimum (1.113816ms)
+✔ tasks and named tasks never go below their minimum (83.0876ms)
+✔ built Odoo drivers never go below their minimum (23.440863ms)
+✔ built drivers for our product never go below their minimum (24.543727ms)
+✔ verified Odoo baselines never go below their minimum, and each is complete (22.218435ms)
+✔ the recorded reference volume never goes below the minimum per main list (0.662882ms)
+✔ harness tests never go below their minimum (live rig checks counted apart) (15.370373ms)
+✔ planted uncounted-action drivers never go below their minimum (0.487306ms)
+✔ page-function plants never go below their minimum (round 7) (0.279439ms)
+✔ before-the-clock plants, tasks that save and tasks that name what the person enters never go below their minimum (5.356747ms)
+✔ set-up-off-the-clock plants and declared end states never go below their minimum (4.74132ms)
+✔ measured-part plants and controls never go below their minimum (0.569729ms)
+✔ causation rules, plants and controls never go below their minimum (0.309046ms)
+✔ screen-change plants and controls, and the tasks that name the record the person finds, never go below their minimum (7.719981ms)
+✔ API tasks never go below their minimum (6.263154ms)
+✔ instrument mutations never go below their minimum, and each still finds what it mutates (21.803204ms)
+✔ the mutation check reads each test by name, and runs one control per test file for all its patterns (3.230433ms)
+✔ rig volume: every main list is asked for its 100,000th row (2.310361ms)
+✔ rig volume: a list one row short is reported by name with the top-up command (36.774122ms)
+✔ rig volume: the date a vacuumed list falls short is worked out, and a warning given two days ahead (0.849989ms)
+✔ run.mjs refuses an Odoo run when the live rig is short of a main list, and records nothing (975.29255ms)
+✔ run.mjs refuses an Odoo run when the rig cannot be checked (399.844288ms)
+✔ run.mjs checks the rig before an Odoo run and goes on when every list holds 100,000 rows (465.018483ms)
+✔ the driver process starts under the permission model with the network lockdown preloaded (6.952902ms)
+✔ inside the driver process: no child process, no worker, no writes outside the scratch folder, no socket (4532.865708ms)
+✔ inside the driver process: every way to open a socket is refused by its own lock (round 7, critic mutation M4) (4064.69787ms)
+✔ the stand-ins a driver holds behave like Playwright objects: sync reads, locators, listeners, ready (3981.633295ms)
+✔ the harness reads drivers and tasks through the driver process and never imports them (2.419843ms)
+✔ a driver process that stops answering is stopped, and the next run gets a new one (10604.313506ms)
+✔ plant X1 (round 6): every run has a driver process of its own, so a driver cannot slow or steer the next run (the other product's included) (34783.200576ms)
+✔ a verify() process: one per call, reads only the harness and the downloads, writes nothing, no clock, nothing of the run's process (3286.358527ms)
+✔ a typed piece of a name: its letters in order, at least two (8.012019ms)
+✔ findsProblem: nothing typed, shown before, unreadable, and the health check (0.403206ms)
+✔ carriesFound: the name or a word of it in a set-up write, the task's own inputs taken out (8.163425ms)
+✔ addressNames: a set-up address that names the task's data (0.421121ms)
+✔ screenProblem: enforced for ours, recorded for the reference (0.203101ms)
+✔ control: the honest search (Contacts, type the name, Enter) verifies, its screen changes all caused (6355.525389ms)
+✔ control: the search behind a 0.3 s debounce and a 2.5 s answer verifies (a slow product is still the person's doing) (9317.609684ms)
+✔ control: the initials as the typed piece verify (5781.218322ms)
+✔ plant N1: the start page opens the record on its own timer before the clock; run() presses Escape -> refused (3899.102496ms)
+✔ plant N1L: the start page opens the record on its own timer inside the measured part; run() presses Escape -> refused (6044.582425ms)
+✔ plant N1b: the same timer; run() clicks plain text once -> refused (5940.153808ms)
+✔ plant N1c: the start page's timer shows the record in place (no navigation, no address change, no markup parsed) -> refused (5889.735812ms)
+✔ plant N1d: the start page polls; set-up told the back end to answer "open" inside the measured part -> refused (10293.390885ms)
+✔ plant N2: set-up opened the record by an address naming it; the start offers it as a link -> refused (626.391192ms)
+✔ plant N2b: set-up opened the record by its id; the start screen offers it as a link -> refused (the start shows the record) (1344.59585ms)
+✔ plant N2c: the remembered record is offered on the list, a click from the start -> refused (nothing typed) (3685.679262ms)
+✔ plant N2d: two letters typed, then the remembered record clicked -> refused (on screen before the piece was typed) (5793.331527ms)
+✔ plant N3: set-up saves a default view searching the record's name (back-end call); run(): Contacts, Enter -> refused (478.243777ms)
+✔ plant N3b: the same default view saved by set-up's browser (a form it fills and posts) -> refused (862.358759ms)
+✔ plant N3c: the default view searches part of the name; run() types two letters and Enter -> refused (545.751477ms)
+✔ plant N1e: the page shows the record when the harness neutralises the title for the start shot (an observer of the title) -> refused (3527.958938ms)
+✔ plant N1f: the page shows the record when the harness reads whether the typing goes into the clicked field (a patched Node#contains) -> refused (3736.711286ms)
+✔ plant N2x: the critic's N2 shape on a task that names no record to find: set-up opened an address naming the record -> refused (543.492644ms)
+✔ control: a task that names no record to find, the page answering only the person (click the note, type) verifies (3764.038378ms)
+✔ the clock starts 1.1-2.1 s after verify()'s read before it, for a task that does not save too (critic r13) (3309.011484ms)
+✔ plant N4: set-up turns on a setting its task does not declare (a back-end call) -> refused (484.499162ms)
+✔ plant N4b: set-up's browser saves a view its task does not declare -> refused (623.095866ms)
+✔ control: set-up writes the fixture its task declares and the run verifies (3920.132416ms)
+✔ control C1: the honest approval verifies, and the record names the end state that changed and the write that saved it (4579.389299ms)
+✔ control C2: an honest verify() after set-up approved is refused (already done before the clock) (1248.550353ms)
+✔ plant Q1 (critic r9): set-up approves through the API, run() bumps an unrelated version, verify() keys on the version -> never verifies (4289.629011ms)
+✔ plant Q1b: the same, run() changing another part of the end-state record (touched, not approved) -> never verifies (4477.404413ms)
+✔ plant Q1 on the real driver (critic r9): ours api-update-user whose set-up switches the language and whose run() sends one unrelated preference -> never verifies; the driver as written verifies (4539.573743ms)
+✔ plant Q2 (critic r9): set-up types the value and clicks a slow Save in its own browser; the save would land after the clock starts; run() presses one key -> never verifies (the save is answered before the start) (496.706942ms)
+✔ plant Q2b: set-up clicks the slow Save and moves its page on at once (the browser abandons the save, the product still carries it out) -> never verifies (518.802441ms)
+✔ plant Q2d: set-up clicks the slow Save in a page of its own and closes that page -> never verifies (560.443897ms)
+✔ control: set-up's own save in its browser, answered before the start, is waited for and then seen as done before the clock (2603.419156ms)
+✔ plant Q2c: set-up sends the slow Save from a browser context of its own and leaves it -> never verifies (that context is watched too) (2727.916175ms)
+✔ plant Q3: set-up has the product save the value a moment later (a job); the measured part sends nothing -> never verifies (4485.624083ms)
+✔ plant Q3b: the same, the measured part sending an unrelated write -> never verifies (the value it gained was never entered) (4371.503695ms)
+✔ plant Q3c: set-up has the product approve a moment later; the measured part sends an unrelated write -> never verifies (none of the writes that save the approval) (4316.257093ms)
+✔ control: the honest typed save verifies (the value typed, the write sent, the end state gained it) (4371.061005ms)
+✔ X12 (critic r9): what set-up left in the browser's local storage never reaches a signed-in start (a remembered draft would fill the form) (4083.195109ms)
+✔ X16 (critic r9): the clipboard is emptied at the start and read back: what set-up copied is gone (4954.979307ms)
+✔ our product declares its sign-in limit; Odoo has none (4.450738ms)
+✔ an API sign-in from the driver process is paced by the harness and waits out a 429 (3521.951541ms)
+✔ a browser sign-in refused with 429 is tried again in a fresh context, after the abandoned one ended (3958.003954ms)
+✔ a browser sign-in refused every time ends the run in an error, never a measurement (1113.242222ms)
+✔ a sign-in the harness paces inside verify() is not charged to the pass (the meter reports it apart) (15071.716014ms)
+✔ every task the bar names is defined and marked as named (56.480329ms)
+✔ task definitions are product-neutral and complete (4.947478ms)
+✔ every task declares where the runner starts it and the moments every driver shoots (instrument 4) (34.931564ms)
+✔ every task has a driver for each product (12.29919ms)
+✔ every Odoo driver is built; placeholders in task text resolve from the dataset (41.0618ms)
+✔ an unbuilt driver reports "not built" without touching a browser (75.512102ms)
+✔ print-list-arabic (routed from p06): the ours driver takes its menu words from the product's own strings, which hold them in both languages (8.831136ms)
+✔ every task that ends in a state saved in the product says so (saves), and names what the person enters (17.446233ms)
+✔ every task that saves declares its end state (the read and the parts that hold it) for each product whose driver is built (10.423358ms)
+✔ every declared field prefix is a dialling code the product's code sets as a constant (5.558832ms)
+✔ every task that asks the person to find one record names it (finds), and the name resolves from the dataset or the input (40.236834ms)
+✔ every task whose ours driver is built declares the writes its set-up sends (fixtures), as METHOD /path (10.018584ms)
+ℹ tests 486
+ℹ suites 0
+ℹ pass 485
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1698906.618563
+
+✖ failing tests:
+
+test at test/prefix.test.mjs:123:1
+✖ control: the field shows +971 at the start; the person types the 9 digits after it and the whole number is saved (9 keystrokes) (5893.515731ms)
+  AssertionError [ERR_ASSERTION]: action outside the clock (set-up): the page changed what it shows without a counted step causing it (1 change; the first 0.35 s into the measured part, a StyleRecalcInvalidationTracking: a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+  + actual - expected
+  
+  + 'invalid'
+  - 'verified'
+  
+      at TestContext.<anonymous> (file:///work/gauntlet/compare/test/prefix.test.mjs:126:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'invalid',
+    expected: 'verified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,4394 @@
+{
+  "config": {
+    "argv": [
+      "/usr/bin/node",
+      "/work/tests/e2e/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/work/tests/e2e/playwright.config.ts",
+    "rootDir": "/work/tests/e2e/specs",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/work/tests/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/work/tests/e2e/specs",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/out/e2e.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "client-isolation.spec.ts",
+      "file": "client-isolation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "G1 in the browser: one tab, tenant B then tenant A",
+          "file": "client-isolation.spec.ts",
+          "line": 207,
+          "column": 6,
+          "specs": [
+            {
+              "title": "after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8564,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "client isolation: 16 steps per tenant judged on 7 markers in 12 carriers; canary.zakkgfmb@alnoor.example (A) and canary.zbpvzjf7@gulfsteel.example (B)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:28.203Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-295c6baf5f4b6e72dabc",
+              "file": "client-isolation.spec.ts",
+              "line": 208,
+              "column": 7
+            },
+            {
+              "title": "after signing out, Back does not bring the signed-out person's screens back",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1325,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:37.246Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-1181f78eabc73df33da8",
+              "file": "client-isolation.spec.ts",
+              "line": 267,
+              "column": 7
+            },
+            {
+              "title": "after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3830,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "history: B left 3 addresses with its search and record; A went Back 4 times: / / / /\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:38.578Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-6d499752049a4888c327",
+              "file": "client-isolation.spec.ts",
+              "line": 286,
+              "column": 7
+            },
+            {
+              "title": "signing out in one tab ends the session in every other tab of the browser at once",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1277,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:42.413Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-83a4c4863b0d1b9c0e82",
+              "file": "client-isolation.spec.ts",
+              "line": 353,
+              "column": 7
+            },
+            {
+              "title": "the judges' self-test: a marker planted in each carrier of the tab is found",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2613,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:43.695Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "edb6393dfe96aa5a3c6d-5335b6ce6385cff748a1",
+              "file": "client-isolation.spec.ts",
+              "line": 371,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "forms-reports.spec.ts",
+      "file": "forms-reports.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "record forms and printed documents",
+          "file": "forms-reports.spec.ts",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "a form tracks changes, asks before leaving, saves with Ctrl+S and moves to the next record with Alt+PageDown",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1302,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:46.323Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-277dd4e4b1f639385779",
+              "file": "forms-reports.spec.ts",
+              "line": 15,
+              "column": 7
+            },
+            {
+              "title": "a phone number keeps +971: a click selects the number after it, and typing its last digit saves; Alt+Z undoes that save",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1489,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:47.630Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-3c72f848361e934cf03f",
+              "file": "forms-reports.spec.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "a user who may only read a record sees it read-only, and no key of the form sends a change",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1168,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:49.126Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-076d1fb5433e86bc405f",
+              "file": "forms-reports.spec.ts",
+              "line": 132,
+              "column": 7
+            },
+            {
+              "title": "a record prints as an Arabic PDF from Alt+R, and its document reads right to left",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 842,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:50.299Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-9709931c3ed595e7b8da",
+              "file": "forms-reports.spec.ts",
+              "line": 159,
+              "column": 7
+            },
+            {
+              "title": "the reports screen shows a grouped report as an Arabic document and exports it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 767,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:51.148Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-da5f0c9f64abbdd76672",
+              "file": "forms-reports.spec.ts",
+              "line": 188,
+              "column": 7
+            },
+            {
+              "title": "a totalled report: roles and access shows each kind's totals and the grand total, and exports it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 747,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:51.923Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-7fd6f7fe2c54cd05e368",
+              "file": "forms-reports.spec.ts",
+              "line": 208,
+              "column": 7
+            },
+            {
+              "title": "a report longer than the screen prints every row through its PDF",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1371,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:52.676Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-2fb27338f348f04f1294",
+              "file": "forms-reports.spec.ts",
+              "line": 259,
+              "column": 7
+            },
+            {
+              "title": "a list prints what it shows: the filtered users list as PDF and CSV",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1216,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:54.052Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "04a7fc81c0bd7bf52a57-5225d665d57fe137c271",
+              "file": "forms-reports.spec.ts",
+              "line": 281,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "identity.spec.ts",
+      "file": "identity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "users, roles and permissions",
+          "file": "identity.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3428,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:55.279Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-351ea4a4e7906c28f2a0",
+              "file": "identity.spec.ts",
+              "line": 7,
+              "column": 7
+            },
+            {
+              "title": "a role is built in the permission matrix with search and a bulk toggle, then copied and deleted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1161,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:58.714Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-3ed86de5203b589cfd53",
+              "file": "identity.spec.ts",
+              "line": 88,
+              "column": 7
+            },
+            {
+              "title": "a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1395,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:13:59.880Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-f4601aace7d3661721cd",
+              "file": "identity.spec.ts",
+              "line": 118,
+              "column": 7
+            },
+            {
+              "title": "an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1053,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:01.283Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-d9acf2b3679d075301fc",
+              "file": "identity.spec.ts",
+              "line": 163,
+              "column": 7
+            },
+            {
+              "title": "at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 59781,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 30809,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:02.341Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-cb43fd0614c196721191",
+              "file": "identity.spec.ts",
+              "line": 195,
+              "column": 9
+            },
+            {
+              "title": "at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 32428,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3426,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:33.154Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-9718d113b1fd0cf5b6f2",
+              "file": "identity.spec.ts",
+              "line": 195,
+              "column": 9
+            },
+            {
+              "title": "every box of the permission matrix and the role picker is full size at 1280, 1600 and 1920 px (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 31717,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2861,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:36.586Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-690cafa6632e24181a3a",
+              "file": "identity.spec.ts",
+              "line": 269,
+              "column": 9
+            },
+            {
+              "title": "every box of the permission matrix and the role picker is full size at 1280, 1600 and 1920 px (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30381,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1557,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:39.453Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-af7df1313b6e035abdfe",
+              "file": "identity.spec.ts",
+              "line": 269,
+              "column": 9
+            },
+            {
+              "title": "the Administrator role and the matrix read right to left in Arabic",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30228,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 871,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:41.016Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bc384e94f5cb1e491b4d-77331b10510bde532ece",
+              "file": "identity.spec.ts",
+              "line": 322,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "keyboard-cycle.spec.ts",
+      "file": "keyboard-cycle.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Tab cycle",
+          "file": "keyboard-cycle.spec.ts",
+          "line": 26,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Tab and Shift+Tab go round the shell with no stop outside the controls (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 31564,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2537,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:41.895Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "839bc08167354f0156d5-6282a884ae0dc370b920",
+              "file": "keyboard-cycle.spec.ts",
+              "line": 28,
+              "column": 9
+            },
+            {
+              "title": "Tab and Shift+Tab go round the shell with no stop outside the controls (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30314,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1295,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:44.437Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "839bc08167354f0156d5-5f71bdd70b88e82cc006",
+              "file": "keyboard-cycle.spec.ts",
+              "line": 28,
+              "column": 9
+            },
+            {
+              "title": "the sign-in screen goes round its own controls with no dead stop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 330,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:45.737Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "839bc08167354f0156d5-ce9f44f2383622674b91",
+              "file": "keyboard-cycle.spec.ts",
+              "line": 50,
+              "column": 7
+            },
+            {
+              "title": "a modal dialog keeps its own cycle",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 31340,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1925,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:46.072Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "839bc08167354f0156d5-e5bfa5f05fca691e1f34",
+              "file": "keyboard-cycle.spec.ts",
+              "line": 58,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "lists.spec.ts",
+      "file": "lists.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "list framework",
+          "file": "lists.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
+            {
+              "title": "finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30656,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1721,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:48.011Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-fbb532d0754c47405b07",
+              "file": "lists.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "the status bar's '/ search' works with the cursor already in the search box",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30466,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1328,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:49.737Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-72f83cd34a234ff9bfa1",
+              "file": "lists.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "lists a search best match first, opens it with Enter, and reads Arabic spelling variants",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30290,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1454,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:51.070Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-dd92b2be617ec2437f01",
+              "file": "lists.spec.ts",
+              "line": 58,
+              "column": 7
+            },
+            {
+              "title": "column header buttons keep Enter and Space; rows keep one column layout",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 695,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:52.529Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-1ebc0bfbd07c82a2b2d4",
+              "file": "lists.spec.ts",
+              "line": 78,
+              "column": 7
+            },
+            {
+              "title": "moves through rows with the arrow keys, selects with Space and opens with Enter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 737,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:53.230Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-0b5d976dd333a1411997",
+              "file": "lists.spec.ts",
+              "line": 118,
+              "column": 7
+            },
+            {
+              "title": "sorts from a header and filters from the column menu; the address keeps the state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 954,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:53.972Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-bfca9b924d7bc27f2ee7",
+              "file": "lists.spec.ts",
+              "line": 144,
+              "column": 7
+            },
+            {
+              "title": "groups by a column with counts and opens a group's rows",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30213,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 945,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:54.931Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-777b914e2063b86cb3f3",
+              "file": "lists.spec.ts",
+              "line": 174,
+              "column": 7
+            },
+            {
+              "title": "groups by status under the status's own words, as the rows say them",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30518,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1236,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:55.881Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-2e653f6770ea30e765a7",
+              "file": "lists.spec.ts",
+              "line": 189,
+              "column": 7
+            },
+            {
+              "title": "chooses columns and saves a personal default view that opens next time",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 32657,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3848,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:14:57.123Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-a292e3f4457492e75965",
+              "file": "lists.spec.ts",
+              "line": 203,
+              "column": 7
+            },
+            {
+              "title": "a read-only user keeps personal views but is not offered sharing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 769,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:00.976Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-50988d40345e087f1c1b",
+              "file": "lists.spec.ts",
+              "line": 241,
+              "column": 7
+            },
+            {
+              "title": "the list works right to left in Arabic with Arabic counts and headers",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 847,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:01.750Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-690a8abd301e35b69332",
+              "file": "lists.spec.ts",
+              "line": 256,
+              "column": 7
+            },
+            {
+              "title": "a value that does not fit is cut at its own end in an Arabic list, the screen's own boxes included",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 566,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:02.603Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-cf3f60f7a42e386ea408",
+              "file": "lists.spec.ts",
+              "line": 287,
+              "column": 7
+            },
+            {
+              "title": "every header stays inside its own column, wide and narrow (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60042,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 31286,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:03.174Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-4793a196597c59c8ee31",
+              "file": "lists.spec.ts",
+              "line": 310,
+              "column": 9
+            },
+            {
+              "title": "every header stays inside its own column, wide and narrow (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 32184,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3472,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:34.464Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-65cafec008a14fd2c664",
+              "file": "lists.spec.ts",
+              "line": 310,
+              "column": 9
+            },
+            {
+              "title": "with a record open no column of the list is cut: the rest wait behind a marker that names them and makes room (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 31400,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2608,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:37.943Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-fb2167f7a4de8dbf51b2",
+              "file": "lists.spec.ts",
+              "line": 344,
+              "column": 9
+            },
+            {
+              "title": "with a record open no column of the list is cut: the rest wait behind a marker that names them and makes room (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30350,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1440,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:40.556Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-6c55ff9413e48e252e4f",
+              "file": "lists.spec.ts",
+              "line": 344,
+              "column": 9
+            },
+            {
+              "title": "a screen's record form grows with the window and its tables keep whole headers (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30323,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1886,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:42.001Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-a96f75875a199ef7578b",
+              "file": "lists.spec.ts",
+              "line": 448,
+              "column": 9
+            },
+            {
+              "title": "a screen's record form grows with the window and its tables keep whole headers (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30542,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2302,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:43.894Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-54236e5d82b1b5a228e6",
+              "file": "lists.spec.ts",
+              "line": 448,
+              "column": 9
+            },
+            {
+              "title": "a record form grows to fit its widest table, and the user widens or narrows it by keyboard (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1295,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:46.203Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-f612172690600d95a19a",
+              "file": "lists.spec.ts",
+              "line": 494,
+              "column": 9
+            },
+            {
+              "title": "a record form grows to fit its widest table, and the user widens or narrows it by keyboard (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30944,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2291,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:47.500Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-be3386ccacfebc243bf8",
+              "file": "lists.spec.ts",
+              "line": 494,
+              "column": 9
+            },
+            {
+              "title": "with the navigation pane hidden the list takes the whole window and no column is cut (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 691,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:49.796Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-8494ed9aa5cac1533b24",
+              "file": "lists.spec.ts",
+              "line": 558,
+              "column": 9
+            },
+            {
+              "title": "with the navigation pane hidden the list takes the whole window and no column is cut (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30725,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1382,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:50.493Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-39afb22954401f6697fb",
+              "file": "lists.spec.ts",
+              "line": 558,
+              "column": 9
+            },
+            {
+              "title": "a list screen is never wider than a desktop window, whatever the top bar holds (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30517,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1644,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:51.880Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-aee618ac68584e8294b2",
+              "file": "lists.spec.ts",
+              "line": 593,
+              "column": 9
+            },
+            {
+              "title": "a list screen is never wider than a desktop window, whatever the top bar holds (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1079,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:53.530Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c4cf96e465eef41fe0d-3c792d97fabe1f701bc3",
+              "file": "lists.spec.ts",
+              "line": 593,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "navigation.spec.ts",
+      "file": "navigation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "navigation reaches every screen",
+          "file": "navigation.spec.ts",
+          "line": 23,
+          "column": 6,
+          "specs": [
+            {
+              "title": "an administrator opens every menu entry in English and each screen loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1065,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:54.617Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-bfb8d6ac13793236eb12",
+              "file": "navigation.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "an administrator opens every menu entry in Arabic, right to left, and each screen loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1108,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:55.687Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-ff0302631891f6a54551",
+              "file": "navigation.spec.ts",
+              "line": 30,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "go-to keys reach every listed screen",
+          "file": "navigation.spec.ts",
+          "line": 38,
+          "column": 6,
+          "specs": [
+            {
+              "title": "in English",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1311,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:56.800Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-b2bc7d0f225d9627b9e4",
+              "file": "navigation.spec.ts",
+              "line": 67,
+              "column": 7
+            },
+            {
+              "title": "in Arabic, by key position",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1515,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:58.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-36194367092976cd489e",
+              "file": "navigation.spec.ts",
+              "line": 73,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "a navigation to the screen on show opens it on the new address",
+          "file": "navigation.spec.ts",
+          "line": 86,
+          "column": 6,
+          "specs": [
+            {
+              "title": "record to record by the palette, G then U from a record, role to role (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 31176,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3222,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:15:59.648Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-d4f86481b7893a8f7a4c",
+              "file": "navigation.spec.ts",
+              "line": 93,
+              "column": 9
+            },
+            {
+              "title": "record to record by the palette, G then U from a record, role to role (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2019,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:02.876Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-be387279336fc7aa1a0e",
+              "file": "navigation.spec.ts",
+              "line": 93,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "passkey.spec.ts",
+      "file": "passkey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "passkeys",
+          "file": "passkey.spec.ts",
+          "line": 19,
+          "column": 6,
+          "specs": [
+            {
+              "title": "added on My account, a passkey signs in with one confirmation on the device: from the plain, a personal and the team's address, in English and Arabic",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 65492,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 37405,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:04.904Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ab9706b4c5d4648443a8-b5e2239fd44d94611422",
+              "file": "passkey.spec.ts",
+              "line": 20,
+              "column": 7
+            },
+            {
+              "title": "a shared PC whose last sign-in used a passkey: the next person signs in with e-mail, Enter, password, Enter, and the prompt goes away",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30961,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1875,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:42.314Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ab9706b4c5d4648443a8-d6bc4824de2314f2d087",
+              "file": "passkey.spec.ts",
+              "line": 62,
+              "column": 7
+            },
+            {
+              "title": "a removed passkey no longer signs in, and the screen says so and keeps the password path",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 32239,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3378,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:44.194Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ab9706b4c5d4648443a8-5dce7fc5d808d4b11ae1",
+              "file": "passkey.spec.ts",
+              "line": 99,
+              "column": 7
+            },
+            {
+              "title": "an administrator stops a lost device: the user's panel lists its passkey and a passkey sign-in, Sign out everywhere removes it, and the device no longer signs in",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 33939,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6253,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:47.576Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ab9706b4c5d4648443a8-d9441461896bc276da8f",
+              "file": "passkey.spec.ts",
+              "line": 128,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "permissions.spec.ts",
+      "file": "permissions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "screens hide what the user cannot do",
+          "file": "permissions.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "a user whose roles grant nothing sees no menu and cannot open a screen by address",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30721,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1294,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:53.839Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e2c839d05731ea67d2a7-236915a374ae533b550b",
+              "file": "permissions.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "a read-only user can browse users, and the list is server-paged and searchable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30521,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1266,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:55.139Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e2c839d05731ea67d2a7-a0211c9eda3d79adcfe4",
+              "file": "permissions.spec.ts",
+              "line": 15,
+              "column": 7
+            },
+            {
+              "title": "counts take the right plural form in Arabic",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30314,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1259,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:56.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e2c839d05731ea67d2a7-191c0abeba29a51c91a7",
+              "file": "permissions.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "signing out returns to the sign-in screen and the session is gone",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30181,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 783,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:16:57.676Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e2c839d05731ea67d2a7-86db665bb3221bf56cac",
+              "file": "permissions.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "print-paper.spec.ts",
+      "file": "print-paper.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "whatever has the focus, the pointer or the selection, every screen prints as it does with none of it (en)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150848,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19695,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T17:16:58.469Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f43f5f69076efc03e19e-e893666ff50b24c770ed",
+          "file": "print-paper.spec.ts",
+          "line": 165,
+          "column": 7
+        },
+        {
+          "title": "whatever has the focus, the pointer or the selection, every screen prints as it does with none of it (ar)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23532,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T17:17:18.171Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f43f5f69076efc03e19e-49e353bff7d20c70c678",
+          "file": "print-paper.spec.ts",
+          "line": 165,
+          "column": 7
+        },
+        {
+          "title": "a keyboard user's printout of the Arabic users list carries no focus ring on the column header they left the focus on",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1040,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T17:17:41.710Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f43f5f69076efc03e19e-4cc1238d0d16f0f0c203",
+          "file": "print-paper.spec.ts",
+          "line": 257,
+          "column": 5
+        },
+        {
+          "title": "the users list and an open user record print inside an A4 page, nothing cut (en)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1140,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T17:17:42.757Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f43f5f69076efc03e19e-e5cb05107501fcd4604b",
+          "file": "print-paper.spec.ts",
+          "line": 297,
+          "column": 7
+        },
+        {
+          "title": "the users list and an open user record print inside an A4 page, nothing cut (ar)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1253,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T17:17:43.906Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f43f5f69076efc03e19e-526c06a207e0613502bc",
+          "file": "print-paper.spec.ts",
+          "line": 297,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "shell.spec.ts",
+      "file": "shell.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "app shell",
+          "file": "shell.spec.ts",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "a fresh visit, with or without a stale session cookie, logs no error and no failed request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 342,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:45.179Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-35ae71421ec70be38cd8",
+              "file": "shell.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "the printed-at and printed-by stamp of a screen shows on paper only, never on screen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 889,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:45.529Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-59a37d83f807c18a4130",
+              "file": "shell.spec.ts",
+              "line": 26,
+              "column": 7
+            },
+            {
+              "title": "nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1119,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:46.425Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-4accbe506eb99b281bf2",
+              "file": "shell.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "the tab's title names the screen, and follows the language at once",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1020,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:47.552Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-cd6961630ba02ac4324a",
+              "file": "shell.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1153,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "switch to Arabic on the users list: 136 ms\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:48.580Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-f25e6555b0fe6bcd2c8c",
+              "file": "shell.spec.ts",
+              "line": 82,
+              "column": 7
+            },
+            {
+              "title": "Alt+L on the users list with one's own record open: the own row and the record say Arabic at once, not after a reload",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1085,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:49.740Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-71d5bdff15141c7d2a22",
+              "file": "shell.spec.ts",
+              "line": 114,
+              "column": 7
+            },
+            {
+              "title": "keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1121,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "palette to the Roles screen: 159 ms, 3 steps, 6 keystrokes\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:50.834Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-2d67556dd640b7246769",
+              "file": "shell.spec.ts",
+              "line": 140,
+              "column": 7
+            },
+            {
+              "title": "shortcuts work with an Arabic keyboard layout (matched by key position)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 854,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:51.961Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-67889baaef79a080d0dc",
+              "file": "shell.spec.ts",
+              "line": 182,
+              "column": 7
+            },
+            {
+              "title": "the palette finds a record and opens it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1157,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:52.824Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-ed7ab773b431d4abade3",
+              "file": "shell.spec.ts",
+              "line": 195,
+              "column": 7
+            },
+            {
+              "title": "the palette opens a role by its Arabic name, and a company and a branch by code (keyboard only)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2039,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:53.988Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-327614a7386f2e9e0fd2",
+              "file": "shell.spec.ts",
+              "line": 212,
+              "column": 7
+            },
+            {
+              "title": "the palette leads from a few record matches to the list of every match",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1159,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:56.034Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-7800a07762719262039c",
+              "file": "shell.spec.ts",
+              "line": 248,
+              "column": 7
+            },
+            {
+              "title": "at phone width nothing is wider than the window (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 787,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:57.201Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-59d20645c0cde6af4dcc",
+              "file": "shell.spec.ts",
+              "line": 266,
+              "column": 9
+            },
+            {
+              "title": "at phone width nothing is wider than the window (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 871,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:57.996Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-b254dce227a4b2c8a565",
+              "file": "shell.spec.ts",
+              "line": 266,
+              "column": 9
+            },
+            {
+              "title": "at laptop widths the top bar fits the window (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 753,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:58.875Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-08bf0565e4fe8050610c",
+              "file": "shell.spec.ts",
+              "line": 291,
+              "column": 9
+            },
+            {
+              "title": "at laptop widths the top bar fits the window (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 886,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:17:59.636Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-2762c9842ee323208616",
+              "file": "shell.spec.ts",
+              "line": 291,
+              "column": 9
+            },
+            {
+              "title": "the palette starts a module's actions by typing: New user from anywhere, the screen's own commands first",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1536,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "palette to a new user from home: 254 ms, 3 steps, 10 keystrokes\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:00.531Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-3235c293f292c68a0420",
+              "file": "shell.spec.ts",
+              "line": 315,
+              "column": 7
+            },
+            {
+              "title": "the palette offers a reader none of the actions that write, and the lists a reader may print",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2448,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:02.074Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-44e92f9d6884dd5c97e4",
+              "file": "shell.spec.ts",
+              "line": 355,
+              "column": 7
+            },
+            {
+              "title": "the navigation pane comes back as it was when a phone-width window turns wide again",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 44766,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15700,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:04.530Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-459d4f19a953c1c874b2",
+              "file": "shell.spec.ts",
+              "line": 378,
+              "column": 7
+            },
+            {
+              "title": "the palette offers a user with no roles nothing they cannot open",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 52503,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 23254,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:20.236Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-3e65ed4a074e531a5b62",
+              "file": "shell.spec.ts",
+              "line": 400,
+              "column": 7
+            },
+            {
+              "title": "Arabic-Indic digits are a per-user choice that follows the user",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30765,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2232,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:43.496Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-75ce0cbc47a67f0e5902",
+              "file": "shell.spec.ts",
+              "line": 414,
+              "column": 7
+            },
+            {
+              "title": "printing shows the screen's content with a letterhead and none of the app's chrome",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30877,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1637,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:45.737Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-74d8152219dfc2d5bf65",
+              "file": "shell.spec.ts",
+              "line": 444,
+              "column": 7
+            },
+            {
+              "title": "a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30125,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 902,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:47.379Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-81bc825c67353db51f30",
+              "file": "shell.spec.ts",
+              "line": 464,
+              "column": 7
+            },
+            {
+              "title": "the status line stays in view on every screen and the page never scrolls (1366x768)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30308,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2021,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:48.291Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-14e35680bcfff1fb7fa7",
+              "file": "shell.spec.ts",
+              "line": 505,
+              "column": 9
+            },
+            {
+              "title": "the status line stays in view on every screen and the page never scrolls (1280x720)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1672,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:50.321Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-804165159f67e6975311",
+              "file": "shell.spec.ts",
+              "line": 505,
+              "column": 9
+            },
+            {
+              "title": "the status line stays in view on every screen and the page never scrolls (1920x1080)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1679,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:52.000Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-2599afa5146f110287a4",
+              "file": "shell.spec.ts",
+              "line": 505,
+              "column": 9
+            },
+            {
+              "title": "Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 789,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:53.686Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-579b8f1d093332ebc9bf",
+              "file": "shell.spec.ts",
+              "line": 529,
+              "column": 7
+            },
+            {
+              "title": "every list screen draws each row on one line: every cell inside its row and no line of its own, in English and Arabic, on screen and on paper",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2502,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:54.482Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-6e768bc0ac3ff2c87c97",
+              "file": "shell.spec.ts",
+              "line": 557,
+              "column": 7
+            },
+            {
+              "title": "every shell screen and dialog meets the accessibility basics (en)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1463,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:56.991Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-1222b896409951200ef5",
+              "file": "shell.spec.ts",
+              "line": 614,
+              "column": 9
+            },
+            {
+              "title": "every shell screen and dialog meets the accessibility basics (ar)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1439,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:58.461Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3420664513cb0bae123e-e466222fadb9d3a93b0f",
+              "file": "shell.spec.ts",
+              "line": 614,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "sign-in.spec.ts",
+      "file": "sign-in.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "sign in to an empty workspace",
+          "file": "sign-in.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "keyboard only, in English, lands in the workspace with its menu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 594,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "sign-in to workspace: 284 ms\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:18:59.915Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-be8dd7edfd5401cbc843",
+              "file": "sign-in.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "in Arabic, right to left, from the first screen",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 689,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:00.517Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-a4b780360e41f461c85e",
+              "file": "sign-in.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "a wrong password shows one message in the screen's language and clears the password",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 581,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:01.215Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-335479f47ea535e11f98",
+              "file": "sign-in.spec.ts",
+              "line": 33,
+              "column": 7
+            },
+            {
+              "title": "a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 630,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:01.803Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-230bb76d0469148a9d94",
+              "file": "sign-in.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "after repeated failures the right password is told sign-in is paused and until when, in English and Arabic, until an administrator allows it again",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 73058,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 45928,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:02.441Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-4384554d6225bf320560",
+              "file": "sign-in.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "paused on a shared address, a new browser shows its device code; the administrator lets it in from the sign-in history and the password signs in",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30159,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3186,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:48.374Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-1eaca6e3618ac0df3b2e",
+              "file": "sign-in.spec.ts",
+              "line": 132,
+              "column": 7
+            },
+            {
+              "title": "empty fields are explained without a round trip",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 306,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:51.569Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-c1cef78ea3a183ec1624",
+              "file": "sign-in.spec.ts",
+              "line": 191,
+              "column": 7
+            },
+            {
+              "title": "the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1098,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:51.882Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-14954af4a6b189676baa",
+              "file": "sign-in.spec.ts",
+              "line": 197,
+              "column": 7
+            },
+            {
+              "title": "first visit on the team's sign-in address: the part before @, Enter, the password, Enter",
+              "ok": true,
+              "tags": [
+                ","
+              ],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 743,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:52.989Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-4ec2a4df22cea0cd8183",
+              "file": "sign-in.spec.ts",
+              "line": 218,
+              "column": 7
+            },
+            {
+              "title": "first visit on the team's sign-in address: the whole e-mail moves on by itself, the password, Enter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 692,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:53.741Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-dbd03cc5661791fb42bf",
+              "file": "sign-in.spec.ts",
+              "line": 239,
+              "column": 7
+            },
+            {
+              "title": "returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30576,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1606,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:54.454Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-af507b80f7411b1d9f4c",
+              "file": "sign-in.spec.ts",
+              "line": 256,
+              "column": 7
+            },
+            {
+              "title": "a shared PC, after Sign out, on the plain address: the next person's whole e-mail moves on, the password, Enter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 33808,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5792,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:19:56.074Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-b2f809d2401001b07b51",
+              "file": "sign-in.spec.ts",
+              "line": 283,
+              "column": 7
+            },
+            {
+              "title": "the password can be shown from the keyboard to check it, then hidden, and still signs in",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 781,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:01.878Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-35a7d2dd229a3e4db9dc",
+              "file": "sign-in.spec.ts",
+              "line": 331,
+              "column": 7
+            },
+            {
+              "title": "on the team's sign-in address in Arabic the domain stays left to right after the field",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:02.669Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1029c30c7f8b1b06acf3-ecd220c7b5989bc12d18",
+              "file": "sign-in.spec.ts",
+              "line": 352,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tenancy.spec.ts",
+      "file": "tenancy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "companies, branches and the working company",
+          "file": "tenancy.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "an administrator creates a company and its first branch from the keyboard, then works in it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1967,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:03.157Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-536fcf54d2c2a5e0cca8",
+              "file": "tenancy.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "in Arabic the companies read right to left and the switcher works the same way",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1176,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:05.133Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-b280b537ccac92a67cd0",
+              "file": "tenancy.spec.ts",
+              "line": 71,
+              "column": 7
+            },
+            {
+              "title": "a read-only user works in one company: sees only it, cannot switch or edit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 973,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:06.318Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-cec58f66ff960ed0ccda",
+              "file": "tenancy.spec.ts",
+              "line": 88,
+              "column": 7
+            },
+            {
+              "title": "a manager of one company who only reads another changes the first and is shown the second read-only, with the reason",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1125,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:07.297Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-3b7092156fc53329ea9f",
+              "file": "tenancy.spec.ts",
+              "line": 108,
+              "column": 7
+            },
+            {
+              "title": "an administrator of one company is offered neither New nor a company code to change, and reads why",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 42639,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13960,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:08.430Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-8620b27b1f68b922bb9a",
+              "file": "tenancy.spec.ts",
+              "line": 141,
+              "column": 7
+            },
+            {
+              "title": "branches: search word by word, group by company and narrow to one company from the column menu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 52485,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 24216,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:22.397Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-54135c8b9108bac016fb",
+              "file": "tenancy.spec.ts",
+              "line": 184,
+              "column": 7
+            },
+            {
+              "title": "access: find a user by e-mail, see their companies and limit them to branches",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1191,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:46.620Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-f1397ea18edc483f56a7",
+              "file": "tenancy.spec.ts",
+              "line": 227,
+              "column": 7
+            },
+            {
+              "title": "at phone width the working company stays readable and the switcher opens inside the window",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 822,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-23T17:20:47.821Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e30ab9de1b1ba27182f-44dd4329585ecc1350fb",
+              "file": "tenancy.spec.ts",
+              "line": 248,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-23T17:13:27.381Z",
+    "duration": 441488.508,
+    "expected": 120,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

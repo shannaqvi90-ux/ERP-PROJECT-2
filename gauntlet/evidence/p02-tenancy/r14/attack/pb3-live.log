@@ -1,0 +1,12 @@
+role 201 01a169df-7532-75c6-a61c-29a96e09bba9 ["tenancy.branches.read","tenancy.companies.read","tenancy.companies.update"]
+user 201 01a169df-75c4-77c1-a15e-01d865e01b8d
+company 201 01a169df-76eb-7033-89e4-7781db5118f2
+branch one 201 CRITIC
+branch two 201 CRITIC-2
+access 200 {"userId":"01a169df-75c4-77c1-a15e-01d865e01b8d","displayName":"Company editor mvl9i4lo","email":"company.editor.mvl9i4lo@alnoor.example","isCaller":false,"comp
+editor permissions ["tenancy.branches.read","tenancy.companies.read","tenancy.companies.update"]
+branches before [["CRITIC",true],["CRITIC-2",true]]
+editor PUT branch isActive=false directly (control): 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-496ea0728ad60ed8169
+editor PUT company isActive=false: 200 {"id":"01a169df-76eb-7033-89e4-7781db5118f2","code":"CRITIC","legalNameEn":"Critic Close Test mvl9i4lo LLC","legalNameAr
+branches after [["CRITIC",false],["CRITIC-2",false]]
+HOLE: a user without tenancy.branches.update closed 2 branches

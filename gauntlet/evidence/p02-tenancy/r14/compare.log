@@ -1,0 +1,18 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+create-company-branch    ours  verified  steps 6  keys 49  machine 1.072s  human 22.17s  human+wait 22.669s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/create-company-branch-20261023T174848-49bb.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.841s  human 22.17s  human+wait 22.397s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/create-company-branch-20261023T174906-5724.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.558s  human 22.17s  human+wait 22.354s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/create-company-branch-20261023T174920-67e1.json
+create-company-branch    odoo  verified  steps 12  keys 72  machine 4.379s  human 48.53s  human+wait 51.196s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/create-company-branch-20261023T174934-1815.json
+create-company-branch    odoo  verified  steps 12  keys 72  machine 3.005s  human 48.53s  human+wait 50.391s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/create-company-branch-20261023T175028-eb68.json
+create-company-branch    odoo  verified  steps 12  keys 72  machine 2.814s  human 48.53s  human+wait 50.246s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/create-company-branch-20261023T175121-d4c1.json
+create-company-branch    verdict win (ours judged on its whole path 'keyboard')
+switch-company           odoo  verified  steps 2  keys 0  machine 0.448s  human 5.3s  human+wait 5.584s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/switch-company-20261023T175214-e5e4.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.48s  human 5.3s  human+wait 5.616s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/switch-company-20261023T175233-4dd9.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.395s  human 5.3s  human+wait 5.532s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/switch-company-20261023T175253-c0df.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.101s  human 2.65s  human+wait 2.702s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/switch-company-20261023T175314-7bc1.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.114s  human 2.65s  human+wait 2.703s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/switch-company-20261023T175322-14a9.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.111s  human 2.65s  human+wait 2.702s  -> ../../evidence-staging/p02-tenancy/r14/compare/results/switch-company-20261023T175329-cc4c.json
+switch-company           verdict win (ours judged on its whole path 'pointer')
+switch-company           left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+blind review page: ../../../../evidence-staging/p02-tenancy/r14/compare/blind/review.html
+output: ../../../../evidence-staging/p02-tenancy/r14/compare

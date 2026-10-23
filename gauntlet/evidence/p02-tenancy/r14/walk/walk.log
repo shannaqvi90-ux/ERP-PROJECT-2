@@ -1,0 +1,50 @@
+EN companies url http://localhost:20250/tenancy/companies rows 12 focus input[Search code or legal name (/)]
+EN companies headers ["","Code\n▲\n▾","Legal name (English)\n▾","Legal name (Arabic)\n▾","Base currency\n▾","City\n▾","Emirate\n▾","Branches","Status\n▾"]
+shot 01-companies-list-en
+EN company form labels ["General","Legal name (English)","Legal name (Arabic)","Code","Active","Arabic legal name required","Registration","Trade licence number","Licensing authority","Tax registration number (TRN)","Accounting","Base currency","Fiscal year starts (month)","Fiscal year starts (day)","Address","Address line 1","Address line 2","City","Emirate","P.O. box","Country","Address in Arabic (for printed documents)","Contact","Phone","E-mail","Website"]
+EN company form fields ["legalNameEn","legalNameAr","code","isActive","arabicLegalNameRequired","tradeLicenceNumber","tradeLicenceAuthority","taxRegistrationNumber","baseCurrency","fiscalYearStartMonth","fiscalYearStartDay","addressLine1","addressLine2","city","emirate","poBox","country","addressAr","phone","email","website"]
+shot 02-company-form-en
+EN field baseCurrency = AED
+EN field fiscalYearStartMonth = 1
+EN field fiscalYearStartDay = 1
+EN field taxRegistrationNumber = 
+EN field tradeLicenceNumber = ADDED-CN-3318204
+EN field legalNameAr = النور للخدمات الفنية ذ.م.م
+EN logo control present 0
+EN branch line offered "Critic Walk mvl9s10k Trading LLC - "
+shot 03-new-company-with-branch-en
+EN after branch add focus input[name=branchNameEn][Name (English)]
+AR doc {"scroll":1400,"client":1400,"dir":"rtl","lang":"ar"}
+AR switcher focus input[اكتب لتصفية الشركات والفروع]
+AR switcher options ["ALN-AUH · MUS-WS\nالنور للخدمات الفنية ذ.م.م · ورشة مصفح","ALN-AUH · AIN-OF\nالنور للخدمات الفنية ذ.م.م · مكتب العين","ALN-AUH · RAK-ST\nالنور للخدمات الفنية ذ.م.م · متجر رأس الخيمة","ALN-AUH · FUJ-ST\nالنور للخدمات الفنية ذ.م.م · متجر الفجيرة","ALN-DXB · DEIRA-HQ\nشركة النور للتجارة ذ.م.م · المكتب الرئيسي - ديرة","ALN-DXB · AQZ-WH\nشركة النور للتجارة ذ.م.م · مستودع القوز","ALN-DXB · DIP-SR\nشركة النور للتجارة ذ.م.م · صالة عرض مجمع دبي للاستثمار","ALN-FZE · JAFZA-WH\nالنور للتجارة العامة م.م.ح · مستودع جافزا جنوب","ALN-FZE · DAFZ-OF\nالنور للتجارة العامة م.م.ح · مكتب المنطقة الحرة لمطار دبي","ALN-SHJ · SHJ-FAC\nمصانع النور ذ.م.م · مصنع الشارقة","ALN-SHJ · SAIF-WH\nمصانع النور ذ.م.م · مخزن المنطقة الحرة لمطار الشارقة","ALN-SHJ · AJM-WS\nمصانع النور ذ.م.م · ورشة عجمان"]
+shot 04-switcher-ar
+AR switcher filtered by الشارقة ["ALN-SHJ · SHJ-FAC\nمصانع النور ذ.م.م · مصنع الشارقة","ALN-SHJ · SAIF-WH\nمصانع النور ذ.م.م · مخزن المنطقة الحرة لمطار الشارقة"]
+AR top bar after switch ""
+AR companies {"scroll":1400,"client":1400,"dir":"rtl","lang":"ar"} headers ["","الرمز\n▲\n▾","الاسم القانوني (بالإنجليزية)\n▾","الاسم القانوني (بالعربية)\n▾","العملة الأساسية\n▾","المدينة\n▾","الإمارة\n▾","الفروع","الحالة\n▾"]
+shot 05-companies-list-ar
+AR company form {"scroll":1400,"client":1400,"dir":"rtl","lang":"ar"}
+shot 06-company-form-ar
+AR branches rows 21 {"scroll":1400,"client":1400,"dir":"rtl","lang":"ar"}
+shot 07-branch-form-ar
+AR workspace url http://localhost:20250/tenancy/tenant "الرئيسية الإعدادات مساحة العمل مساحة العمل الرمز alnoor الاسم (بالإنجليزية) Al Noor Trading LLC الاسم (بالعربية) شركة النور للتجارة ذ.م.م الحالة نشطة اللغة الافتراضية الإنجليزية المنطقة الزمنية Asia/Dubai أول أيام الأسبوع الاثنين إعدادات مساحة العمل حفظ الاسم (بالإنجليزية) الاسم (بالعربية) اللغة الا"
+shot 08-workspace-settings-ar
+AR access url http://localhost:20250/tenancy/access rows 32
+viewer branches ["AQZ-WH\nAl Quoz warehouse\nمستودع القوز\nALN-DXB · Al Noor Trading LLC\nDubai\nDubai\nActive","DEIRA-HQ\nDeira head office\nالمكتب الرئيسي - ديرة\nALN-DXB · Al Noor Trading LLC\nDubai\nDubai\nActive"]
+viewer branch form editable inputs 0 save buttons 0
+viewer companies new button 0
+shot 09-viewer-read-only-en
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForSelector: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('nav') to be visible[22m
+[2m    61 × locator resolved to hidden <nav hidden="" id="navpane" class="navpane" aria-label="التنقل الرئيسي">…</nav>[22m
+
+    at signIn (/home/shan/evidence-staging/p02-tenancy/r14/walk/walk.mjs:18:14)
+    at async file:///home/shan/evidence-staging/p02-tenancy/r14/walk/walk.mjs:139:29 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.3

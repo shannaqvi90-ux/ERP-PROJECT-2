@@ -1,0 +1,47 @@
+B tenant gulfsteel companies GSF-RAK,GSF-SHJ branches 3 company version 567354632
+ok   A GET B company: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-dd110e7a324677cb6117918331980102-b753b8340b4
+ok   A GET B logo: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-f5e6cd80b4d72e63104c39f00b777ece-6842614c183
+ok   A PUT B company: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-48237b9c05b086c2f93faac88bb6e280-102bf77ccdd
+ok   A PUT B logo: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-20fb5d981b5c7c544d697e697f2bc8d3-5167c309dbd
+ok   A DELETE B logo: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-c6ee9333b8b6414117eb9001c79bbdd8-869630a5046
+ok   A GET B branch: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-05582ed5f6f08526458c4dc1a243f202-0819d1f1df4
+ok   A PUT B branch close: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-abf3febbe414fa08dc38378f805f6cf7-4fa73e7a7c1
+ok   A POST branch into B company: 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-650bdc1c249bd93ba82cc843fca297f2-98722
+ok   A PUT workplace to B company: 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-70900f3bfa8814f7f979b37eccab8872-c20ba
+ok   A GET access of B user: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-0d7c91ef7d70df1f8cd31f418993991d-a2f0f458709
+ok   A PUT access of B user: 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-4d63bf88daa565165159e094eb7e85be-556cb
+ok   A list branches filtered by B company: 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":false}
+ok   A list companies search B name: 200 {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+ok   A report company profile of B: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-fead0de9f36698bdf8b8ef4950a81db2-3e8a423bb31
+ok   A report branch directory of B: 200 Company,Code,Branch,City,Emirate,Phone,Active 
+ok   A print branches list CSV: 200 Code,Name (English),Name (Arabic),Company,City,Emirate,Status AIN-OF,Al Ain office,مكتب العين,ALN-AUH,Al Ain,Abu Dhabi,Active AJM-WS,Ajman workshop,ورشة عجمان,A
+ok   A print companies list CSV: 200 Code,Legal name (English),Legal name (Arabic),Base currency,City,Emirate,Branches,Status ALN-AUH,Al Noor Technical Services LLC,النور للخدمات الفنية ذ.م.م,AED,A
+ok   A GET companies with X-Tenant-Id/X-Company-Id of B: 200 {"items":[{"id":"018dca08-f08c-7b36-962a-56cd44a9cace","code":"ALN-AUH","legalNameEn":"Al Noor Technical Services LLC","legalNameAr":"النور للخدمات الفنية ذ.م.م
+ok   A GET tenant with ?tenantId=B: 200 {"id":"0190a000-0000-7000-8000-000000000001","code":"alnoor","nameEn":"Al Noor Trading LLC","nameAr":"شركة النور للتجارة ذ.م.م","status":"active","defaultLangua
+B company version before 567354632 after 567354632; city Ras Al Khaimah; hasLogo false->false; B branch active true->true
+accountant sees companies: ALN-DXB(canUpdate=true), ALN-FZE(canUpdate=false)
+ok   accountant PUT read-only company's branch DAFZ-OF close (isActive false): 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+ok   accountant PUT read-only company's branch DAFZ-OF city change: 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+ok   accountant PUT read-only company's branch DAFZ-OF emirate change: 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+ok   accountant PUT read-only company ALN-FZE close company: 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+ok   accountant PUT read-only company ALN-FZE arabicLegalNameRequired toggle: 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+ok   accountant POST branch into read-only company: 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+ok   accountant DELETE logo of read-only company: 403 {"type":"urn:erp:problem:permissionNotHeldInCompany","title":"Your role does not allow this in that company. A role given in one company counts only in that com
+read-only company's branch after attempts: active true city Dubai version 1989210777->1989210777
+viewer sees companies ALN-DXB branches AQZ-WH,DEIRA-HQ
+ok   viewer GET hidden branch DIP-SR: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-0bd25bafac303014083c2ba1a93285b0-d1e6e31c44d
+ok   viewer company profile lists hidden branch DIP-SR: 200 {"key":"tenancy.companyProfile","title":"Company profile","subject":"ALN-DXB · Al Noor Trading LLC","issuer":"Al Noor Trading LLC","language":"en","direction":"
+ok   viewer branch directory lists hidden branch DIP-SR: 200 Company,Code,Branch,City,Emirate,Phone,Active ALN-DXB · Al Noor Trading LLC,AQZ-WH,Al Quoz warehouse,Dubai,Dubai,'+971 4 347 2210,Yes ALN-DXB · Al Noor Trading 
+ok   viewer workplace switch to hidden branch DIP-SR: 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-5b1a9356717ff9c2511
+ok   viewer GET other company ALN-AUH: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-ccdd72bb6080b3bfb50331e5f37c08da-17e99ddd527
+ok   viewer GET other company logo ALN-AUH: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-16238acd4cc69baad8204adcb2df7464-115abcdcf3d
+ok   viewer company profile of other ALN-AUH: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-3234e872aa13e1a3d134fc05af30dc94-8b0bdb7469a
+ok   viewer GET other company ALN-FZE: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-20a32845a2155716ae839ca2360a8666-427581cca03
+ok   viewer GET other company logo ALN-FZE: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-b30268281178ab9501025c902513612d-f65a16d78d7
+ok   viewer company profile of other ALN-FZE: 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-4b06eb9e0afecbef1f67dce842dc7e6b-1c87443384e
+ok   noaccess GET /api/tenancy/companies: 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-49a1a8ac2b93e17ab57
+ok   noaccess GET /api/tenancy/branches: 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-8e223be85183cadf8ba
+ok   noaccess GET /api/tenancy/tenant: 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-bb3644f4fdc69e478ad
+ok   noaccess GET /api/tenancy/access: 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-34cac7bd45aa9e3b86c
+ok   noaccess GET /api/reports/lists/tenancy.companies?format=csv: 403 {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-efa6282d99c841c525a
+TOTAL LEAKS: 0
