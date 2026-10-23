@@ -16,32 +16,50 @@ const latestShows = ([oldName, newName, who]) => {
 /** The name's initials as the users list's search reads them: one letter per word (spaces and hyphens). */
 const initialsOf = name => name.toLocaleLowerCase().split(/[\s-]+/).filter(Boolean).map(w => w[0]).join('');
 
-/** The shortest run of the sign-in's digits that finds exactly this user (found before the run). */
-async function shortestDigits(api, login) {
-  const digits = (login.match(/\d+/) || [''])[0];
-  for (let len = 3; len <= digits.length; len++) {
-    for (let at = digits.length - len; at >= 0; at--) {
-      const piece = digits.slice(at, at + len);
-      const page = await api.get(`/api/identity/users?take=2&search=${encodeURIComponent(piece)}`);
-      if (page.total === 1 && page.items[0]?.email?.toLowerCase() === login.toLowerCase()) return piece;
+/** The rows the users list shows on its first screen without scrolling (1600 x 900), as the reference's driver counts them. */
+const FIRST_SCREEN_ROWS = 15;
+
+/** Every piece of the name of 2 to `longest` characters (no leading or trailing space), shortest first. */
+export function namePieces(name, longest = 4) {
+  const n = name.toLocaleLowerCase();
+  const out = new Set();
+  for (let len = 2; len <= Math.min(longest, n.length); len++) {
+    for (let i = 0; i + len <= n.length; i++) {
+      const piece = n.slice(i, i + len);
+      // A piece names the user only with two letters or digits at least (a single letter names nobody).
+      if (piece.trim() === piece && piece.replace(/[^\p{L}\p{N}]+/gu, '').length >= 2) out.add(piece);
     }
   }
-  return login;
+  return [...out].sort((a, b) => a.length - b.length || a.localeCompare(b));
 }
 
-// The expert paths: open Users (the search box has the focus), type a piece of the sign-in, open the
+/**
+ * The shortest piece of the name whose search puts the user on the list's first screen, found
+ * through the list's own search before the run (the reference's driver finds its shortest piece the
+ * same way, through its back end); null when none of up to four characters does.
+ */
+async function shortestPiece(api, name, login, maxProbes = 600) {
+  for (const piece of namePieces(name).slice(0, maxProbes)) {
+    const page = await api.get(`/api/identity/users?take=${FIRST_SCREEN_ROWS}&search=${encodeURIComponent(piece)}`);
+    if (page.items?.some(u => u.email?.toLowerCase() === login.toLowerCase())) return piece;
+  }
+  return null;
+}
+
+// The expert paths: open Users (the search box has the focus), type a piece of the name, open the
 // user; the record's heading already shows its latest change: who, when, the old and new name.
 function build(how) {
   return async (op, ctx) => {
-    const { login, name } = ctx.needles.user;
+    const { name } = ctx.needles.user;
     const { newName, changedBy } = ctx.task.input;
     await op.click(usersLink(op.page), { label: 'Users' });
     await op.waitFor(() => document.activeElement && document.activeElement.matches('input.search, input[type="search"]'), { label: 'user list ready, search focused' });
-    const typed = how === 'initials' ? ctx.state.initials : how === 'digits' ? ctx.state.digits : login;
-    await op.type(typed, { label: 'a piece of the sign-in' });
+    const typed = how === 'initials' ? ctx.state.initials : how === 'shortest' ? ctx.state.shortest ?? newName : newName;
+    await op.type(typed, { label: 'a piece of the name' });
     const row = op.page.getByRole('row').filter({ hasText: newName }).first();
     await op.waitFor(row, { label: 'the row of the user' });
-    if (how === 'initials' && !ctx.state.initialsFirst) {
+    if (how === 'initials' || how === 'shortest') {
+      // A click on the user's row (scrolled to first, counted, when it is not on the screen).
       const box = await row.boundingBox();
       const grid = await op.page.getByRole('grid').first().boundingBox().catch(() => null);
       const view = op.page.viewportSize();
@@ -57,7 +75,7 @@ function build(how) {
 
 export default {
   built: true,
-  path: 'Users (navigation; the search box has the focus) > a piece of the sign-in > open the user: the heading shows the latest change (who, when, old and new name).',
+  path: 'Users (navigation; the search box has the focus) > a piece of the name > open the user: the heading shows the latest change (who, when, old and new name).',
   async setup(ctx) {
     const admin = await oursAs(ctx.product, 'admin');
     const { login, name, lang } = ctx.needles.user;
@@ -87,13 +105,11 @@ export default {
       displayName, displayNameAr: record.displayNameAr ?? null, language: record.language, isActive: record.isActive, roleIds: record.roleIds, version: record.version,
     });
     // An earlier run whose clean-up did not happen left the editor's rename as the latest change: it stays
-    // (putting the old name back here would send the sign-in's words in a set-up write).
+    // (putting the old name back here would send its words in a set-up write).
     if (record.displayName !== newName) await rename(newName);
     ctx.state.userId = found.id;
     ctx.state.initials = initialsOf(newName);
-    ctx.state.digits = await shortestDigits(admin, login);
-    const byInitials = await admin.get(`/api/identity/users?take=1&search=${encodeURIComponent(ctx.state.initials)}`);
-    ctx.state.initialsFirst = byInitials.items?.[0]?.email?.toLowerCase() === login.toLowerCase();
+    ctx.state.shortest = await shortestPiece(admin, newName, login);
   },
   async signIn(ctx) {
     const { login, password } = ctx.product.users.admin;
@@ -107,10 +123,10 @@ export default {
   ready: page => usersLink(page),
   run: build('initials'),
   variants: {
-    initials: { path: 'Users (the search box has the focus) > the initials the sign-in starts its words with ("map": majid, pillai) > Enter on the best match, or a click on the user\'s row: the heading shows the latest change.', run: build('initials') },
-    digits: { path: 'Users (the search box has the focus) > the shortest run of the sign-in\'s digits that finds only this user (found through the list\'s search before the run) > Enter: the heading shows the latest change.', run: build('digits') },
-    enter: { path: 'Users (the search box has the focus) > the whole sign-in > Enter: the heading shows the latest change.', run: build('enter') },
-    row: { path: 'Users (the search box has the focus) > the whole sign-in > click the row: the heading shows the latest change.', run: build('row') },
+    initials: { path: 'Users (the search box has the focus) > the initials of the name the user has now ("map") > click the user\'s row: the heading shows the latest change.', run: build('initials') },
+    shortest: { path: 'Users (the search box has the focus) > the shortest piece of the name that puts the user on the first screen (found through the list\'s search before the run) > click the user\'s row: the heading shows the latest change.', run: build('shortest') },
+    enter: { path: 'Users (the search box has the focus) > the name > Enter: the heading shows the latest change.', run: build('enter') },
+    row: { path: 'Users (the search box has the focus) > the name > click the row: the heading shows the latest change.', run: build('row') },
   },
   async verify(ctx) {
     const { name } = ctx.needles.user;

@@ -97,7 +97,6 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
     );
     return () => abort.abort();
     // onRow only remembers the person's name; reading again for it is not needed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
   const f = useMemo<ValueFormat>(() => ({ t, formatDateTime, formatNumber, language, names: row?.names }), [t, formatDateTime, formatNumber, language, row]);
   if (row === undefined) return <p className="muted">{t("audit.history.loading")}</p>;

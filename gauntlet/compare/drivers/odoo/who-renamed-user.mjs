@@ -19,29 +19,35 @@ const userSearch = text => ['|', '|', ['name', 'ilike', text], ['login', 'ilike'
 /** The rows the users list shows on its first screen without scrolling (1600 x 900). */
 const FIRST_SCREEN_ROWS = 15;
 
-/** Every piece of the sign-in (no leading or trailing space), shortest first. */
-export function loginFragments(login, longest = 8) {
-  const n = login.toLocaleLowerCase();
+/** Every piece of the name (no leading or trailing space), shortest first. */
+export function nameFragments(name, longest = 8) {
+  const n = name.toLocaleLowerCase();
   const out = new Set();
   for (let len = 1; len <= Math.min(longest, n.length); len++) {
-    for (let i = 0; i + len <= n.length; i++) out.add(n.slice(i, i + len));
+    for (let i = 0; i + len <= n.length; i++) {
+      const f = n.slice(i, i + len);
+      // A piece names the user only with two letters or digits at least (a single letter names nobody).
+      if (f.trim() === f && f.replace(/[^\p{L}\p{N}]+/gu, '').length >= 2) out.add(f);
+    }
   }
   return [...out].sort((a, b) => a.length - b.length || a.localeCompare(b));
 }
 
-/** The shortest piece of the sign-in whose search puts the user on the list's first screen (found through the back end). */
+/** The shortest piece of the user's name now whose search puts the user on the list's first screen,
+ * found through the back end before the run (set-up renamed the user first). */
 async function shortestSetup(ctx) {
   const rpc = await adminRpc(ctx);
   const { login } = ctx.needles.user;
+  const name = ctx.task.input.newName;
   const [user] = await rpc.search('res.users', [['login', '=', login]], { limit: 1 });
-  for (const text of loginFragments(login).slice(0, 600)) {
+  for (const text of nameFragments(name).slice(0, 600)) {
     const ids = await rpc.search('res.users', userSearch(text), { limit: FIRST_SCREEN_ROWS, order: 'name, login' });
     if (ids.includes(user)) {
       ctx.state.shortest = text;
       return;
     }
   }
-  ctx.state.shortest = login;
+  ctx.state.shortest = name;
 }
 
 /** The latest message beside the form names the old and new name and the person. */
@@ -53,7 +59,7 @@ const latestShows = ([oldName, newName, who]) => {
 
 function build({ palette = false, suggestion = false, shortest = false }) {
   return async (op, ctx) => {
-    const { login, name } = ctx.needles.user;
+    const { name } = ctx.needles.user;
     const { newName, changedBy } = ctx.task.input;
     if (palette) await paletteMenu(op, '/users', 'Settings / Users & Companies / Users');
     else {
@@ -62,7 +68,7 @@ function build({ palette = false, suggestion = false, shortest = false }) {
     }
     await op.waitFor('.o_searchview_input:focus', { label: 'user list ready, search focused' });
     await op.waitFor(() => document.querySelectorAll('.o_data_row').length > 0, { label: 'first page of users' });
-    await op.type(shortest ? ctx.state.shortest : login, { label: 'a piece of the sign-in' });
+    await op.type(shortest ? ctx.state.shortest : newName, { label: 'a piece of the name' });
     if (suggestion) {
       const item = op.page.locator('.o_searchview_autocomplete .o-dropdown-item, .o_searchview_autocomplete li').first();
       await op.waitFor(item, { label: 'search suggestions' });
@@ -82,7 +88,7 @@ function build({ palette = false, suggestion = false, shortest = false }) {
 
 const base = {
   built: true,
-  path: 'Users list by the menus or the command palette > a piece of the sign-in (the whole of it, or the shortest piece that puts the user on the first screen) > Enter or the first search suggestion > open the user: the change log beside the form shows the latest change first (old > new name, who, when).',
+  path: 'Users list by the menus or the command palette > a piece of the name (the whole of it, or the shortest piece that puts the user on the first screen) > Enter or the first search suggestion > open the user: the change log beside the form shows the latest change first (old > new name, who, when).',
   async setup(ctx) {
     const admin = await adminRpc(ctx);
     const { login } = ctx.needles.user;
@@ -90,7 +96,7 @@ const base = {
     if (!user) throw new Error(`the rig holds no user ${login}; run tools/odoo-reference/up.sh`);
     // The change to find, made a moment before the task by an ordinary user who may manage users. An
     // earlier run whose clean-up did not happen left it as the latest change: it stays (putting the old
-    // name back here would send the sign-in's words in a set-up write).
+    // name back here would send its words in a set-up write).
     const editor = await ensureEditor(ctx);
     const asEditor = await new OdooRpc(ctx.product).login(editor);
     if (user.name !== ctx.task.input.newName) await asEditor.write('res.users', [user.id], { name: ctx.task.input.newName });
@@ -99,12 +105,12 @@ const base = {
   async signIn(ctx) { await signInAs(ctx, 'admin'); },
   run: build({}),
   variants: {
-    menus: { path: 'Apps menu > Settings > Manage Users (the search box has focus) > the sign-in > Enter > open the user.', run: build({}) },
-    palette: { path: 'Ctrl+K > "/users" > Enter > the sign-in > Enter > open the user.', run: build({ palette: true }) },
-    'menus-suggestion': { path: 'Apps menu > Settings > Manage Users > the sign-in > click the first search suggestion > open the user.', run: build({ suggestion: true }) },
-    'shortest-suggestion': { path: 'Apps menu > Settings > Manage Users > the shortest piece of the sign-in that puts the user on the first screen (found through the back end before the run) > click the first search suggestion > open the user.', run: build({ suggestion: true, shortest: true }), setup: async ctx => { await shortestSetup(ctx); await base.setup(ctx); } },
-    'shortest-enter': { path: 'Apps menu > Settings > Manage Users > the shortest piece of the sign-in that puts the user on the first screen > Enter > open the user.', run: build({ shortest: true }), setup: async ctx => { await shortestSetup(ctx); await base.setup(ctx); } },
-    'palette-shortest': { path: 'Ctrl+K > "/users" > Enter > the shortest piece of the sign-in that puts the user on the first screen > Enter > open the user.', run: build({ palette: true, shortest: true }), setup: async ctx => { await shortestSetup(ctx); await base.setup(ctx); } },
+    menus: { path: 'Apps menu > Settings > Manage Users (the search box has focus) > the name > Enter > open the user.', run: build({}) },
+    palette: { path: 'Ctrl+K > "/users" > Enter > the name > Enter > open the user.', run: build({ palette: true }) },
+    'menus-suggestion': { path: 'Apps menu > Settings > Manage Users > the name > click the first search suggestion > open the user.', run: build({ suggestion: true }) },
+    'shortest-suggestion': { path: 'Apps menu > Settings > Manage Users > the shortest piece of the name that puts the user on the first screen (found through the back end before the run) > click the first search suggestion > open the user.', run: build({ suggestion: true, shortest: true }), setup: async ctx => { await base.setup(ctx); await shortestSetup(ctx); } },
+    'shortest-enter': { path: 'Apps menu > Settings > Manage Users > the shortest piece of the name that puts the user on the first screen > Enter > open the user.', run: build({ shortest: true }), setup: async ctx => { await base.setup(ctx); await shortestSetup(ctx); } },
+    'palette-shortest': { path: 'Ctrl+K > "/users" > Enter > the shortest piece of the name that puts the user on the first screen > Enter > open the user.', run: build({ palette: true, shortest: true }), setup: async ctx => { await base.setup(ctx); await shortestSetup(ctx); } },
   },
   async verify(ctx) {
     const { name } = ctx.needles.user;
