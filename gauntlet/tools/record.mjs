@@ -15,6 +15,8 @@ const PROGRESS = path.join(G, 'progress.html');
 const PIECES = JSON.parse(fs.readFileSync(path.join(G, 'pieces.json'), 'utf8'));
 
 const VERDICT_KINDS = ['BLOCKED', 'LOSS', 'WIN'];
+// Piece states set by the lead in pieces.json (owner decision 2026-10-23, needs-human #27).
+const STATE_LABELS = { 'done-for-now': 'Done for now', frozen: 'Frozen', resting: 'Resting until a later wave' };
 
 function fail(msg) { console.error(`record: ${msg}`); process.exit(1); }
 
@@ -86,6 +88,10 @@ function appendLedger(v, id) {
     for (const o of v.odoo) L.push(`  | ${mdEsc(o.task)} | ${f(o.ours)} | ${f(o.odoo)} | ${mdEsc(o.winner)} | ${mdEsc(o.notes)} |`);
     L.push('');
   }
+  if (Array.isArray(v.gate_gaps) && v.gate_gaps.length) {
+    L.push('- Gate gaps (not blocking under needs-human #27; added to gate-backlog.md):');
+    for (const g of v.gate_gaps) L.push(`  - [${mdEsc(g.owner)}] ${mdEsc(g.gate)}: ${mdEsc(g.planted)} — ${mdEsc(g.evidence)}`);
+  }
   if (Array.isArray(v.other_findings) && v.other_findings.length) {
     L.push('- Other findings:');
     for (const x of v.other_findings) L.push(`  - ${mdEsc(x)}`);
@@ -151,8 +157,9 @@ function render() {
         ${shots ? `<div class="label">Screenshots</div><div class="shots">${shots}</div>` : ''}
         <p class="muted small">Round ${v.round} · judged ${h(v.judged_at)} · commit <code>${h(String(v.commit).slice(0, 10))}</code></p>`;
     }
+    const state = p.state ? `<span class="state ${h(p.state)}">${h(STATE_LABELS[p.state] || p.state)}${p.stateNote ? ` · ${h(p.stateNote)}` : ''}</span>` : '';
     return `<section class="card">
-      <header><div><span class="pid">${h(p.id)}</span><h2>${h(p.title)}</h2><span class="muted small">Wave ${h(p.wave)} · ${vs.length} round${vs.length === 1 ? '' : 's'} judged</span></div>
+      <header><div><span class="pid">${h(p.id)}</span><h2>${h(p.title)}</h2><span class="muted small">Wave ${h(p.wave)} · ${vs.length} round${vs.length === 1 ? '' : 's'} judged</span>${state}</div>
       <span class="badge ${cls}">${h(status)}</span></header>
       ${history ? `<div class="history">${history}</div>` : ''}
       ${body}
@@ -174,7 +181,7 @@ main{max-width:1180px;margin:0 auto;padding:24px 16px 64px}h1{font-size:22px;mar
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
 .card header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pid{font:12px ui-monospace,monospace;color:var(--muted)}
 .badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
-.badge.win,.chip.win,.win.ours,.win.tie-accepted{color:var(--win)}.badge.loss,.chip.loss,.win.odoo,.win.tie{color:var(--loss)}.badge.blocked,.chip.blocked{color:var(--blocked)}.badge.none{color:var(--none)}
+.badge.win,.chip.win,.win.ours,.win.tie-accepted,.win.known-loss{color:var(--win)}.badge.loss,.chip.loss,.win.odoo,.win.tie,.win.known-loss-candidate{color:var(--loss)}.state{display:block;margin-top:4px;font-size:12px;font-weight:600}.state.done-for-now{color:var(--win)}.state.frozen,.state.resting{color:var(--muted)}.badge.blocked,.chip.blocked{color:var(--blocked)}.badge.none{color:var(--none)}
 .history{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.chip{font-size:11px;border:1px solid currentColor;border-radius:4px;padding:0 5px}
 .label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:12px 0 4px}
 .gap{border-inline-start:3px solid var(--loss);padding:4px 10px;margin:10px 0;background:var(--bg);border-radius:4px}.gap p{margin:4px 0 0}
@@ -193,6 +200,8 @@ main{max-width:1180px;margin:0 auto;padding:24px 16px 64px}h1{font-size:22px;mar
 <div class="stat"><b style="color:var(--loss)">${counts.LOSS}</b><span class="muted">pieces losing</span></div>
 <div class="stat"><b style="color:var(--blocked)">${counts.BLOCKED}</b><span class="muted">pieces blocked</span></div>
 <div class="stat"><b>${counts.none}</b><span class="muted">not judged yet</span></div>
+<div class="stat"><b style="color:var(--win)">${rows.filter(p => p.state === 'done-for-now').length}</b><span class="muted">done for now</span></div>
+<div class="stat"><b>${rows.filter(p => p.state === 'frozen').length}</b><span class="muted">frozen</span></div>
 <div class="stat"><b class="small">${h(lastJudged)}</b><span class="muted">last verdict</span></div>
 </div>
 <div class="cards">

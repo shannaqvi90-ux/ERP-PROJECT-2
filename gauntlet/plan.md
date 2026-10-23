@@ -122,9 +122,36 @@ is the main 100,000-record list for the comparisons (p16). Odoo captures stay in
 4. **Record.** Recorder stores the verdict in `gauntlet/verdicts/`, appends it to
    `gauntlet/ledger.md`, rebuilds `gauntlet/progress.html` (`node gauntlet/tools/record.mjs`),
    commits and pushes.
-5. The piece goes back to step 1 with the gap. There is no final round.
+5. The piece goes back to step 1 with the gap, unless it won (see below). There is no final
+   round for the product as a whole.
 
-Verdicts: `BLOCKED` (a hard gate failed or the product does not run), `LOSS` (gates hold but
-the piece loses or ties Odoo on a task, or misses part of its scope), `WIN` (gates hold and it
-beats Odoo on every task compared, or ties it where the owner's tie rule of 2026-10-17 accepts the
-tie; the critic still names the biggest remaining gap).
+Verdicts: `BLOCKED` (a product fault: a hard gate failed on the real product, a test failed, the
+product does not run, or a surface the piece added is not reached by the isolation or permission
+gates at all), `LOSS` (gates hold but the piece loses or ties Odoo on a task, or misses part of
+its scope), `WIN` (gates hold and it beats Odoo on every task compared, or ties it where the
+owner's tie rule of 2026-10-17 accepts the tie, or loses it where the owner signed it off as a
+known loss; the critic still names the biggest remaining gap).
+
+Owner decision of 2026-10-23 (needs-human #27, `gauntlet/goal.md`), from the first workflow after
+serial-10c:
+
+- **Gate gaps do not block.** A fault the critic plants in its own clone that the gates miss,
+  while the real product shows no such fault, goes in the verdict's `gate_gaps` and from there to
+  `gauntlet/gate-backlog.md`, as work for the piece that owns the gate. Builders close their own
+  backlog rows; rows are never dropped.
+- **Done for now.** A piece that gets a WIN gets no more rounds unless a product fault is found
+  in it, its backlog rows are worked in a backlog round, or the owner asks. The workflow stops a
+  piece's rounds at its first WIN. `pieces.json` carries the state (`done-for-now`, `frozen`,
+  `resting`) and the progress page shows it. Done for now at the decision: p00, p03, p04, p06.
+- **At most 3 rounds per piece per wave.** A piece that has not won by then rests (`resting`)
+  and comes back in a later wave. Wave 2 counts from serial-11.
+- **p01 is frozen.** No rounds of its own; measurement weaknesses go to the backlog and are
+  fixed only when one changes a real comparison result.
+- **Known losses.** A task Odoo wins where the builder tried and named its paths and the critic
+  finds no winning or tying path is marked `known-loss-candidate`; the owner signs it off in
+  `needs-human.md`, after which critics mark it `known-loss` and it no longer counts against a
+  WIN.
+- **Wave 2 now.** Each workflow takes up to two pieces still working and up to two new pieces,
+  at most four in all, one workflow at a time.
+- **Backlog rounds.** At the end of a wave, each done-for-now piece with open backlog rows gets
+  one round to close them (uncovered-surface rows first), judged as usual.
