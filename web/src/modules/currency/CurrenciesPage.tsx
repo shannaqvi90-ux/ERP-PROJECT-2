@@ -19,7 +19,7 @@ import { ratesChanged, type Currency, type CurrencyRow, type ListPage, type Rate
  * press Enter), the amount converter and the latest rates.
  */
 export function CurrenciesPage() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { can } = useSession();
   const rateText = useRateText();
   const day = useDay();
@@ -53,6 +53,8 @@ export function CurrenciesPage() {
             shownRows.current.set(String(c.id), c as unknown as CurrencyRow);
             return <span dir="ltr">{String(c.code ?? "")}</span>;
           },
+          // The list's name column shows the Arabic name on Arabic screens (its ArabicField).
+          nameEn: (c) => (language === "ar" ? <span dir="rtl">{String(c.nameAr || c.nameEn || "")}</span> : <span dir="ltr">{String(c.nameEn ?? "")}</span>),
           nameAr: (c) => <span dir="rtl">{String(c.nameAr ?? "")}</span>,
           latestRate: (c) =>
             c.latestRate ? (

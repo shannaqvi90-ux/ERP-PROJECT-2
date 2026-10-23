@@ -8,10 +8,19 @@ const listRows = (page: Page) => page.locator("table[role=grid] tbody tr");
 /** Today in the workspace's time zone (the demo's: Asia/Dubai), as the server dates a rate. */
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dubai" }).format(new Date());
 
+/** Signs in and waits until the app shows its navigation (the session cookie is set by then). */
+async function signedIn(page: Page, email: string, language: "en" | "ar" = "en") {
+  await freshStart(page, language);
+  await signIn(page, email);
+  await expect(page.locator("main h1")).toBeVisible();
+}
+
 /** Removes the euro's rate of today, so a test can enter it (outside what the test checks). */
 async function clearTodaysEuroRate(page: Page) {
   const filter = encodeURIComponent(`currencyCode eq 'EUR' and rateDate eq '${today()}'`);
-  const rows = ((await (await page.request.get(`/api/currency/rates?filter=${filter}`)).json()) as { items: { id: string }[] }).items;
+  const answer = await page.request.get(`/api/currency/rates?filter=${filter}`);
+  expect(answer.status(), await answer.text()).toBe(200);
+  const rows = ((await answer.json()) as { items: { id: string }[] }).items;
   for (const row of rows) {
     const deleted = await page.request.delete(`/api/currency/rates/${row.id}`, { headers: { "X-Erp-Request": "1" } });
     expect(deleted.status()).toBe(204);
@@ -20,8 +29,7 @@ async function clearTodaysEuroRate(page: Page) {
 
 test.describe("currencies and exchange rates", () => {
   test("an administrator opens the euro, types today's rate and Enter saves it; the converter uses it at once", async ({ page }) => {
-    await freshStart(page, "en");
-    await signIn(page, users.admin);
+    await signedIn(page, users.admin);
     await clearTodaysEuroRate(page);
 
     await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Currencies" }).click();
@@ -55,10 +63,10 @@ test.describe("currencies and exchange rates", () => {
   });
 
   test("the rates list holds the demo's rates newest first, and a rate is entered and corrected from its form", async ({ page }) => {
-    await freshStart(page, "en");
-    await signIn(page, users.admin);
-    await page.keyboard.press("KeyG");
-    await page.keyboard.press("KeyX");
+    await signedIn(page, users.admin);
+    await page.locator("main").focus();
+    await page.keyboard.press("g");
+    await page.keyboard.press("x");
     await expect(page).toHaveURL(/\/currency\/rates$/);
     await expect(listRows(page).first()).toBeVisible();
     const total = ((await (await page.request.get("/api/currency/rates?take=1")).json()) as { total: number }).total;
@@ -89,8 +97,7 @@ test.describe("currencies and exchange rates", () => {
   });
 
   test("in Arabic the currencies screen reads right to left with Arabic names", async ({ page }) => {
-    await freshStart(page, "ar");
-    await signIn(page, users.adminArabic);
+    await signedIn(page, users.adminArabic, "ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await page.locator('nav a[href="/currency/currencies"]').click();
     await expect(listRows(page).first()).toBeVisible();
@@ -100,8 +107,7 @@ test.describe("currencies and exchange rates", () => {
   });
 
   test("a user who may only read sees rates and converts, but is offered no rate entry", async ({ page }) => {
-    await freshStart(page, "en");
-    await signIn(page, users.viewer);
+    await signedIn(page, users.viewer);
     await page.locator('nav a[href="/currency/currencies"]').click();
     await listRows(page).filter({ has: page.locator("td", { hasText: /^EUR$/ }) }).click();
     await expect(page.locator(".cur-convert")).toBeVisible();

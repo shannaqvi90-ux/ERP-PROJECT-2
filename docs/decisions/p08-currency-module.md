@@ -80,6 +80,6 @@ figure.
 ## Processor time
 
 Measured in this round's builder runs (the verify's numbers are in the notes for the integrator):
-the module's own tests take about 20 s of wall time; the gates attack thirteen new endpoints, two
+the module's own tests take about 20 s of wall time; the gates attack eleven new endpoints, two
 lists (and their view endpoints) and two tables, which adds to every G1 and G2 suite in proportion
 to the endpoint count (about 5 % more endpoints).
