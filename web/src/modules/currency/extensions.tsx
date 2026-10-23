@@ -27,14 +27,14 @@ export function parseConversion(query: string): { amount: string; currency: stri
 
 /**
  * What the currency module adds to the shell: G then X opens exchange rates and G then Y the
- * currencies; from anywhere, a new rate, an import, a new currency or either list printed; and in
+ * currencies; from anywhere, a new rate or either list printed (the import is the rates screen's own
+ * command, Alt+I there); and in
  * the command palette the workspace's currencies by code or name, and an amount converted to the
  * working company's base currency as it is typed ("1250 eur").
  */
 export const extensions: ModuleExtensions = {
   actions: [
     { key: "currency.rates.new", labelKey: "currency.rate.new", keywordsKey: "currency.action.newRateKeywords", permission: "currency.rates.create", path: "/currency/rates", command: "currency.screen.new" },
-    { key: "currency.rates.import", labelKey: "currency.import.title", keywordsKey: "currency.action.importKeywords", permission: "currency.rates.import", path: "/currency/rates", command: "currency.screen.import" },
     { key: "currency.rates.print", labelKey: "currency.action.printRates", keywordsKey: "currency.action.printKeywords", permission: "currency.rates.read", path: "/currency/rates", command: "lists.print" },
     { key: "currency.currencies.print", labelKey: "currency.action.printCurrencies", keywordsKey: "currency.action.printKeywords", permission: "currency.currencies.read", path: "/currency/currencies", command: "lists.print" },
   ],

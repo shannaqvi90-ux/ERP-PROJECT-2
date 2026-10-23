@@ -49,7 +49,8 @@ public sealed class CurrencyModule : ErpModule
 }
 
 /// <summary>
-/// One ISO 4217 currency of the workspace, with its names as the workspace shows them. Every
+/// One ISO 4217 currency of the workspace, with its names in English (ISO 4217's) and Arabic (the
+/// product's, <see cref="Currencies.CurrencyNames"/>). Every
 /// workspace holds every current currency of the list (seeded, and added when a newer list brings
 /// one); it uses those it puts in use (<see cref="IsActive"/>, the dirham and each company's base
 /// currency at least). Every company of the workspace shares it (<see cref="IWorkspaceWide"/>):
@@ -61,11 +62,10 @@ public sealed class EnabledCurrency : TenantEntity, IWorkspaceWide
     /// <summary>ISO 4217 code (three capital letters, a current currency with minor units).</summary>
     public string Code { get; set; } = "";
 
-    /// <summary>The name in English (ISO 4217's to start with); never empty.</summary>
+    /// <summary>The name in English, as ISO 4217 lists it; never empty.</summary>
     public string NameEn { get; set; } = "";
 
-    /// <summary>The name in Arabic; empty when the workspace gave none (screens then show the
-    /// browser's Arabic name, printed documents the English one).</summary>
+    /// <summary>The name in Arabic; never empty.</summary>
     public string NameAr { get; set; } = "";
 
     /// <summary>In use: rates may be entered and amounts converted for new work. A currency out
@@ -148,7 +148,7 @@ public sealed class CurrencyDbContext(DbContextOptions<CurrencyDbContext> option
             e.ToTable("currencies", t =>
             {
                 t.HasCheckConstraint("ck_currencies_code", "code ~ '^[A-Z]{3}$'");
-                t.HasCheckConstraint("ck_currencies_names", "btrim(name_en) <> ''");
+                t.HasCheckConstraint("ck_currencies_names", "btrim(name_en) <> '' AND btrim(name_ar) <> ''");
                 t.HasCheckConstraint("ck_currencies_max_rate_age_days", $"max_rate_age_days BETWEEN 0 AND {CurrencyRules.MaxRateAgeDaysLimit}");
             });
             e.Property(x => x.Code).HasMaxLength(3);

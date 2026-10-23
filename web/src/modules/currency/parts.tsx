@@ -4,16 +4,6 @@ import { decimalInput } from "../../kernel/forms/fields";
 import { useI18n } from "../../kernel/i18n";
 import { ratesChanged, type Conversion, type Rate, type RateRow } from "./types";
 
-/** A currency's name in the screen's language from the browser's own CLDR data, or null. */
-export function browserCurrencyName(code: string, language: string): string | null {
-  try {
-    const name = new Intl.DisplayNames([language], { type: "currency" }).of(code);
-    return name && name !== code ? name : null;
-  } catch {
-    return null;
-  }
-}
-
 /** A calendar date (yyyy-mm-dd) shown as that day in the screen's language. */
 export function useDay() {
   const { format } = useI18n();

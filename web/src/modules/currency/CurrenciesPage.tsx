@@ -8,18 +8,18 @@ import { useI18n } from "../../kernel/i18n";
 import { ListView } from "../../kernel/lists/ListView";
 import { Link, recordPath } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
-import { browserCurrencyName, Converter, QuickRate, useDay, useRateText } from "./parts";
+import { Converter, QuickRate, useDay, useRateText } from "./parts";
 import { ratesChanged, type Currency, type ListPage, type RateRow } from "./types";
 
 /**
  * The workspace's currencies: every current ISO 4217 currency, those in use first, in the shared
  * list (search by code or name, filters, views), each row with its latest rate in the working
- * company's base currency. Opening a currency shows its form (in use, names, how old a rate may
- * be) and, below it, today's rate typed in one field (focused as the panel opens: type the rate,
+ * company's base currency. Opening a currency shows its form (in use, how old a rate may be; its
+ * names are ISO 4217's and the product's) and, below it, today's rate typed in one field (focused as the panel opens: type the rate,
  * press Enter), the amount converter and the latest rates.
  */
 export function CurrenciesPage() {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const { can } = useSession();
   const rateText = useRateText();
   const day = useDay();
@@ -45,8 +45,7 @@ export function CurrenciesPage() {
         renderRecord={(id, close, nav) => <CurrencyForm key={panel.formKey} id={id} nav={nav} onSaved={panel.saved} onClose={close} />}
         renderCell={{
           code: (c) => <span dir="ltr">{String(c.code ?? "")}</span>,
-          nameEn: (c) => <span dir="auto">{language === "ar" ? String(c.nameAr || browserCurrencyName(String(c.code), "ar") || c.nameEn) : String(c.nameEn ?? "")}</span>,
-          nameAr: (c) => <span dir="rtl">{String(c.nameAr || browserCurrencyName(String(c.code), "ar") || "")}</span>,
+          nameAr: (c) => <span dir="rtl">{String(c.nameAr ?? "")}</span>,
           latestRate: (c) =>
             c.latestRate ? (
               <span dir="ltr" className="num">
@@ -65,7 +64,7 @@ export function CurrenciesPage() {
   );
 }
 
-type Draft = { nameEn: string; nameAr: string; isActive: boolean; maxRateAgeDays: string };
+type Draft = { isActive: boolean; maxRateAgeDays: string };
 
 function CurrencyForm({ id, nav, onSaved, onClose }: { id: string; nav?: RecordNavigation; onSaved: (id: string) => void; onClose: () => void }) {
   const { t, language } = useI18n();
@@ -78,12 +77,10 @@ function CurrencyForm({ id, nav, onSaved, onClose }: { id: string; nav?: RecordN
           setEveryCompany(c.everyCompany);
           return c;
         }),
-      initial: (c) => ({ nameEn: c?.nameEn ?? "", nameAr: c?.nameAr ?? "", isActive: c?.isActive ?? false, maxRateAgeDays: String(c?.maxRateAgeDays ?? 7) }),
+      initial: (c) => ({ isActive: c?.isActive ?? false, maxRateAgeDays: String(c?.maxRateAgeDays ?? 7) }),
       canEdit: can("currency.currencies.update") && everyCompany,
       save: (draft, currency) =>
         api<Currency>("PUT", `/api/currency/currencies/${currency!.id}`, {
-          nameEn: draft.nameEn,
-          nameAr: draft.nameAr,
           isActive: draft.isActive,
           maxRateAgeDays: /^\d{1,3}$/.test(draft.maxRateAgeDays.trim()) ? Number.parseInt(draft.maxRateAgeDays.trim(), 10) : null,
           version: currency!.version,
@@ -97,7 +94,7 @@ function CurrencyForm({ id, nav, onSaved, onClose }: { id: string; nav?: RecordN
   );
   const currency = form.record;
   const bind = form.bind;
-  const name = currency ? (language === "ar" ? currency.nameAr || browserCurrencyName(currency.code, "ar") || currency.nameEn : currency.nameEn) : "";
+  const name = currency ? (language === "ar" ? currency.nameAr || currency.nameEn : currency.nameEn) : "";
   const foreign = currency !== null && currency.code !== currency.quoteCurrency;
   const canAddRate = foreign && currency.isActive && currency.everyCompany && can("currency.rates.create");
   return (
@@ -121,9 +118,6 @@ function CurrencyForm({ id, nav, onSaved, onClose }: { id: string; nav?: RecordN
     >
       <FormSection title={t("currency.currency.general")}>
         <BooleanField field={bind("isActive")} label={t("currency.currency.inUse")} disabled={currency?.isBaseCurrency} />
-        <TextField field={bind("nameEn")} label={t("currency.currency.nameEn")} dir="ltr" maxLength={100} />
-        <TextField field={bind("nameAr")} label={t("currency.currency.nameAr")} dir="rtl" maxLength={100}
-          hint={form.draft.nameAr.trim() === "" ? t("currency.currency.nameArHint") : undefined} />
         <TextField field={bind("maxRateAgeDays")} label={t("currency.currency.maxRateAgeDays")} dir="ltr" inputMode="numeric" maxLength={3}
           hint={t("currency.currency.maxRateAgeHint")} />
       </FormSection>

@@ -119,7 +119,8 @@ public sealed class RateFileTests
         Assert.Equal(Erp.Kernel.Money.Iso4217.Published, Erp.Modules.Currency.Currencies.Iso4217Names.Published);
         Assert.Equal(Erp.Kernel.Money.Iso4217.Currencies.Keys.Order(StringComparer.Ordinal), Erp.Modules.Currency.Currencies.Iso4217Names.English.Keys.Order(StringComparer.Ordinal));
         Assert.Equal("UAE Dirham", Erp.Modules.Currency.Currencies.Iso4217Names.English["AED"]);
-        // Every Arabic name the product writes is for a current ISO 4217 currency, in Arabic letters.
+        // Every current ISO 4217 currency has the product's Arabic name, in Arabic letters, and no other code does.
+        Assert.Equal(Erp.Kernel.Money.Iso4217.Currencies.Keys.Order(StringComparer.Ordinal), Erp.Modules.Currency.Currencies.CurrencyNames.Arabic.Keys.Order(StringComparer.Ordinal));
         Assert.All(Erp.Modules.Currency.Currencies.CurrencyNames.Arabic, pair =>
         {
             Assert.True(Erp.Kernel.Money.CurrencyCode.IsKnown(pair.Key), pair.Key);

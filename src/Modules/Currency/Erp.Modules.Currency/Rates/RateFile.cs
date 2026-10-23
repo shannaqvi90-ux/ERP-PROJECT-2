@@ -24,7 +24,8 @@ internal static class RateFile
 
     public sealed record Result(IReadOnlyList<Line> Lines, IReadOnlyList<Error> Errors);
 
-    private static readonly string[] DateFormats = ["yyyy-MM-dd", "dd/MM/yyyy", "d/M/yyyy"];
+    /// <summary>The date forms a file may use: ISO's, and the day first as UAE spreadsheets write it.</summary>
+    private static string[] DateFormats() => ["yyyy-MM-dd", "dd/MM/yyyy", "d/M/yyyy"];
 
     public static Result Parse(string text, string defaultQuote, IReadOnlyDictionary<string, bool> enabled)
     {
@@ -58,6 +59,7 @@ internal static class RateFile
             return new Result(lines, errors);
         }
         var seen = new Dictionary<(string, string, DateOnly), int>();
+        var dateFormats = DateFormats();
         for (var i = headerIndex + 1; i < rows.Length; i++)
         {
             if (rows[i].Trim().Length == 0)
@@ -100,7 +102,7 @@ internal static class RateFile
                 errors.Add(new Error(number, "currencyImportSameAsQuote", currency));
             }
             var dateText = Value(dateAt);
-            var dateOk = DateOnly.TryParseExact(dateText, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            var dateOk = DateOnly.TryParseExact(dateText, dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
                 && date >= CurrencyRules.EarliestDate && date <= CurrencyRules.LatestDate;
             if (!dateOk)
             {

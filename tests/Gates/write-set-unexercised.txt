@@ -2,4 +2,4 @@
 # cannot get an accepted answer from, with the reason. The gate fails on an endpoint it cannot
 # reach that is not listed here, and on a listed endpoint it reached or that does not exist.
 # Format: METHOD /route/pattern  # reason
-PUT /api/currency/currencies/{id:guid}  # Every workspace holds the ISO 4217 currencies from its seed (no POST makes one), so this gate has no record to make for the edit; tests/Erp.Gates.Tests/G2/CurrencyWriteSetTests.cs sends it as a user holding exactly currency.currencies.update and judges its audited writes (name_en, name_ar, is_active, max_rate_age_days of the one currency; nothing else).
+PUT /api/currency/currencies/{id:guid}  # Every workspace holds the ISO 4217 currencies from its seed (no POST makes one), so this gate has no record to make for the edit; tests/Erp.Gates.Tests/G2/CurrencyWriteSetTests.cs sends it as a user holding exactly currency.currencies.update and judges its audited writes (is_active and max_rate_age_days of the one currency; nothing else).

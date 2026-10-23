@@ -14,22 +14,22 @@ namespace Erp.Gates.Tests.G2;
 /// make a currency for the edit and lists PUT /api/currency/currencies/{id} in
 /// tests/Gates/write-set-unexercised.txt. This gate sends that edit itself, the way the generic one
 /// sends every other: as a user holding exactly the permission and working in every company and
-/// branch, the valid request (fresh names), then the in-use flag turned the other way, then the
+/// branch, the valid request (a fresh rate age), then the in-use flag turned the other way, then the
 /// largest rate age the field takes, each on a currency of the workspace with its own version. The
-/// audit trail must show each request changing only the one currency's names, in-use flag and rate
-/// age (the write set below, reviewed here), and every request must be accepted. It also checks that
+/// audit trail must show each request changing only the one currency's in-use flag and rate age
+/// (the write set below, reviewed here), and every request must be accepted. It also checks that
 /// a user holding only currency.currencies.read is refused, and that a caller outside the whole
 /// workspace is refused with nothing written.
 /// </summary>
 public sealed class CurrencyWriteSetTests(CurrencyWriteSetFixture fixture) : IClassFixture<CurrencyWriteSetFixture>
 {
     /// <summary>The reviewed write set of currency.currencies.update: one currency's own columns.</summary>
-    private static readonly HashSet<string> Allowed = new(StringComparer.Ordinal) { "name_en", "name_ar", "is_active", "max_rate_age_days" };
+    private static readonly HashSet<string> Allowed = new(StringComparer.Ordinal) { "is_active", "max_rate_age_days" };
 
     private ErpTestEnvironment Env => fixture.Env;
 
     [Fact]
-    public async Task A_currency_edit_writes_only_that_currencys_names_in_use_flag_and_rate_age()
+    public async Task A_currency_edit_writes_only_that_currencys_in_use_flag_and_rate_age()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         using var editor = await UserHoldingAsync(admin, "cws.editor", ["currency.currencies.update"]);
@@ -54,8 +54,6 @@ public sealed class CurrencyWriteSetTests(CurrencyWriteSetFixture fixture) : ICl
             var current = await admin.GetFromJsonAsync<JsonObject>($"/api/currency/currencies/{id}") ?? [];
             var body = variants[i].Change(new JsonObject
             {
-                ["nameEn"] = $"Write set {i} {current["code"]}",
-                ["nameAr"] = $"مجموعة الكتابة {i}",
                 ["isActive"] = current["isActive"]?.GetValue<bool>() ?? false,
                 ["maxRateAgeDays"] = 1,
                 ["version"] = current["version"]?.DeepClone(),
@@ -97,7 +95,7 @@ public sealed class CurrencyWriteSetTests(CurrencyWriteSetFixture fixture) : ICl
         var chf = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=CHF")).GetProperty("items")[0];
         var body = new JsonObject
         {
-            ["nameEn"] = "Refused", ["nameAr"] = "مرفوض", ["isActive"] = true, ["maxRateAgeDays"] = 2, ["version"] = chf.GetProperty("version").GetUInt32(),
+            ["isActive"] = true, ["maxRateAgeDays"] = 2, ["version"] = chf.GetProperty("version").GetUInt32(),
         };
         var before = await LastAuditIdAsync();
         using var asReader = await reader.SendAsync(G1WriteOracle.Json(HttpMethod.Put, $"/api/currency/currencies/{chf.GetProperty("id").GetGuid()}", body));
@@ -105,7 +103,7 @@ public sealed class CurrencyWriteSetTests(CurrencyWriteSetFixture fixture) : ICl
         using var outside = await oneCompany.SendAsync(G1WriteOracle.Json(HttpMethod.Put, $"/api/currency/currencies/{chf.GetProperty("id").GetGuid()}", body));
         Assert.Equal(HttpStatusCode.Forbidden, outside.StatusCode);
         Assert.Equal("currency.workspaceNeedsEveryCompany", (await outside.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("code").GetString());
-        Assert.Empty((await WritesSinceAsync(before)).Where(w => w.Table.StartsWith("currency.", StringComparison.Ordinal)));
+        Assert.DoesNotContain(await WritesSinceAsync(before), w => w.Table.StartsWith("currency.", StringComparison.Ordinal));
     }
 
     private async Task<HttpClient> UserHoldingAsync(HttpClient admin, string local, string[] permissions, bool everyCompany = true)

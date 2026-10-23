@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using Erp.Kernel.Data;
 using Erp.Kernel.Money;
@@ -13,8 +14,8 @@ namespace Erp.Modules.Currency.Seeding;
 
 /// <summary>
 /// Seeds each workspace's currencies and rates. Every workspace holds every current ISO 4217
-/// currency (Erp.Kernel.Money.Iso4217), with the list's English name and, for the common ones, the
-/// product's Arabic name; in use are the dirham and the base currency of each company. The demo
+/// currency (Erp.Kernel.Money.Iso4217), with the list's English name and the product's Arabic name;
+/// in use are the dirham and the base currency of each company. The demo
 /// also puts in use the fifty currencies of the shared comparison dataset and adds as many exchange
 /// rates as the tenant's volume (100,000 in the main demo workspace: fifty currencies, one rate a
 /// day, ending today in the workspace's time zone). With <c>Erp:Seed:RatesCsv</c> set (the shared
@@ -30,7 +31,7 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
 
     /// <summary>The dataset's fifty currencies and a starting AED rate for each (the generated demo's
     /// own walk; the dataset's file is used when given).</summary>
-    internal static readonly (string Code, decimal Rate)[] DemoCurrencies =
+    internal static readonly ImmutableArray<(string Code, decimal Rate)> DemoCurrencies =
     [
         ("USD", 3.6725m), ("EUR", 3.98m), ("GBP", 4.66m), ("SAR", 0.979m), ("OMR", 9.54m), ("KWD", 11.95m), ("BHD", 9.74m),
         ("QAR", 1.0089m), ("INR", 0.0441m), ("PKR", 0.0132m), ("CNY", 0.507m), ("JPY", 0.0246m), ("CHF", 4.17m), ("CAD", 2.69m),
@@ -42,7 +43,7 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
     ];
 
     /// <summary>Currencies of the gate workspaces and of the smaller demo workspace.</summary>
-    internal static readonly string[] FewCurrencies = ["USD", "EUR", "GBP"];
+    internal static readonly ImmutableArray<string> FewCurrencies = ["USD", "EUR", "GBP"];
 
     public const int GateRateDays = 10;
 
@@ -83,7 +84,9 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
             {
                 Code = code,
                 NameEn = context.Mark(Iso4217Names.English.GetValueOrDefault(code, code)),
-                NameAr = CurrencyNames.Arabic.TryGetValue(code, out var arabic) ? context.Mark(arabic) : "",
+                // Every current code has its Arabic name (a test keeps the two lists in step); a code a
+                // newer list brings before its name is written starts with its English name.
+                NameAr = context.Mark(CurrencyNames.Arabic.GetValueOrDefault(code) ?? Iso4217Names.English.GetValueOrDefault(code, code)),
                 IsActive = inUse.Contains(code),
                 MaxRateAgeDays = CurrencyRules.DefaultMaxRateAgeDays,
             });
@@ -129,7 +132,7 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
     /// six decimals; the dollar stays at its peg (3.6725). Decimal arithmetic on an integer
     /// generator (no floating point).
     /// </summary>
-    internal static IEnumerable<(string Currency, DateOnly Date, decimal Rate)> GeneratedRates((string Code, decimal Rate)[] currencies, int days, DateOnly last, string seed)
+    internal static IEnumerable<(string Currency, DateOnly Date, decimal Rate)> GeneratedRates(IReadOnlyList<(string Code, decimal Rate)> currencies, int days, DateOnly last, string seed)
     {
         var state = 0x9E3779B97F4A7C15UL ^ (ulong)(uint)StableHash(seed);
         foreach (var (code, start) in currencies)

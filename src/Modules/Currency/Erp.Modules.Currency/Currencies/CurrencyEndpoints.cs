@@ -57,12 +57,10 @@ public sealed record CurrencyDto(
     [property: Description("The date of the ISO 4217 list (List One) the currencies, their numbers and minor units come from.")]
     string IsoPublished);
 
-/// <summary>Change a currency of the workspace: put it in use or out of use, its names (the Arabic
-/// one may be left empty), and how many days old the latest rate may be on a date that has none.
-/// Its code never changes.</summary>
+/// <summary>Change a currency of the workspace: put it in use or out of use, and how many days old the
+/// latest rate may be on a date that has none. Its code and names are ISO 4217's and the product's
+/// and never change here.</summary>
 public sealed record UpdateCurrencyRequest(
-    [property: ApiExample("Euro"), StringLength(CurrencyRules.NameLength)] string? NameEn,
-    [property: ApiExample("يورو"), StringLength(CurrencyRules.NameLength)] string? NameAr,
     bool? IsActive,
     [property: Range(0, CurrencyRules.MaxRateAgeDaysLimit)] int? MaxRateAgeDays,
     uint? Version);
@@ -83,7 +81,7 @@ internal static class CurrencyEndpoints
 
         group.MapPut("/currencies/{id:guid}", Update)
             .WithName("currency.currencies.update")
-            .WithSummary("Put a currency in use or out of use, or change its names or how old the latest rate may be on a date without one (needs every company of the workspace, which shares its currencies). A company's base currency stays in use.")
+            .WithSummary("Put a currency in use or out of use, or change how old the latest rate may be on a date without one (needs every company of the workspace, which shares its currencies). A company's base currency stays in use.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -141,11 +139,7 @@ internal static class CurrencyEndpoints
     private static async Task<Results<Ok<CurrencyDto>, ProblemHttpResult>> Update(
         Guid id, UpdateCurrencyRequest request, CurrencyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
-        var nameEn = Clean(request.NameEn);
-        var nameAr = Clean(request.NameAr);
         var validator = new Validator(http)
-            .Required("nameEn", nameEn).MaxLength("nameEn", nameEn, CurrencyRules.NameLength)
-            .MaxLength("nameAr", nameAr, CurrencyRules.NameLength)
             .Required("isActive", request.IsActive)
             .Required("maxRateAgeDays", request.MaxRateAgeDays)
             .Required("version", request.Version);
@@ -168,8 +162,6 @@ internal static class CurrencyEndpoints
             return new Validator(http).Add("isActive", "currencyBaseStaysActive").ToResult();
         }
         db.Entry(currency).Property(c => c.Version).OriginalValue = request.Version!.Value;
-        currency.NameEn = nameEn!;
-        currency.NameAr = nameAr ?? "";
         currency.IsActive = request.IsActive!.Value;
         currency.MaxRateAgeDays = request.MaxRateAgeDays!.Value;
         db.Entry(currency).Property(c => c.UpdatedAt).IsModified = true;
@@ -189,8 +181,6 @@ internal static class CurrencyEndpoints
     /// Only a caller who works in every company changes a currency, so every company is seen.</summary>
     private static async Task<bool> IsBaseCurrencyAsync(HttpContext http, string code, CancellationToken cancellationToken) =>
         (await http.RequestServices.GetRequiredService<ICompanyDirectory>().ListAsync(cancellationToken)).Any(c => c.BaseCurrency == code);
-
-    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static async Task<CurrencyDto?> ToDtoAsync(CurrencyDbContext db, ErpDbSession session, HttpContext http, Guid id, CancellationToken cancellationToken)
     {
