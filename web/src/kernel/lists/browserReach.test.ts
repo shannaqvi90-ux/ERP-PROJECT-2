@@ -147,6 +147,7 @@ const reviewedImports: Record<string, string> = {
   "src/kernel/format.ts": "Decimal and date formatting helpers (pure).",
 };
 
+/** Uses, problems and imports, each keyed or prefixed by the kernel file it is in. */
 type Inventory = { uses: Map<string, number>; problems: string[]; imports: Set<string>; files: number };
 
 function kernelSources(): string[] {
@@ -169,8 +170,17 @@ function compilerOptions(): ts.CompilerOptions {
 const isDomLib = (file: ts.SourceFile, program: ts.Program) =>
   program.isSourceFileDefaultLibrary(file) && /lib\.(dom|webworker|scripthost)/.test(file.fileName.split(/[\\/]/).pop() ?? "");
 
-/** The list kernel's reach into the browser. `overrides` replaces or adds files (absolute path → text). */
+let baseline: Inventory | undefined;
+
+/**
+ * The list kernel's reach into the browser. `overrides` replaces or adds files (absolute path →
+ * text): only the kernel files it names are read again, the others come from the product's own
+ * inventory (the checker resolves an unchanged file the same way).
+ */
 function inventory(overrides: Record<string, string> = {}): Inventory {
+  const changed = new Set(Object.keys(overrides).filter((f) => dirname(f) === listDir).map(rel));
+  if (changed.size === 0 && Object.keys(overrides).length > 0) throw new Error("a plant must change a file of the list kernel");
+  if (changed.size > 0) baseline ??= inventory();
   const opts = compilerOptions();
   const host = ts.createCompilerHost(opts, true);
   const getSourceFile = host.getSourceFile.bind(host);
@@ -241,6 +251,7 @@ function inventory(overrides: Record<string, string> = {}): Inventory {
   for (const sf of program.getSourceFiles()) {
     if (dirname(sf.fileName) !== listDir || /\.test\.tsx?$/.test(sf.fileName) || !/\.tsx?$/.test(sf.fileName)) continue;
     const file = rel(sf.fileName);
+    if (changed.size > 0 && !changed.has(file)) continue;
     const text = sf.getFullText();
     for (const m of text.matchAll(/@ts-(ignore|expect-error|nocheck)/g)) problems.push(`${file}: '@ts-${m[1]}' hides code from the type checker this gate reads with`);
     const add = (key: string) => uses.set(`${file} ${key}`, (uses.get(`${file} ${key}`) ?? 0) + 1);
@@ -255,8 +266,8 @@ function inventory(overrides: Record<string, string> = {}): Inventory {
         if (!typeOnly && !/\.css$/.test(spec)) {
           const target = ts.resolveModuleName(spec, sf.fileName, opts, host).resolvedModule;
           const path = target?.resolvedFileName;
-          if (!path || target.isExternalLibraryImport) imports.add(spec);
-          else if (dirname(path) !== listDir) imports.add(relative(webRoot, path).replace(/\\/g, "/"));
+          if (!path || target.isExternalLibraryImport) imports.add(`${file} ${spec}`);
+          else if (dirname(path) !== listDir) imports.add(`${file} ${relative(webRoot, path).replace(/\\/g, "/")}`);
         }
       }
       if (ts.isElementAccessExpression(node) && !ts.isStringLiteralLike(node.argumentExpression) && !ts.isNumericLiteral(node.argumentExpression) && browserTyped(node.expression)) {
@@ -279,6 +290,12 @@ function inventory(overrides: Record<string, string> = {}): Inventory {
       ts.forEachChild(node, visit);
     };
     visit(sf);
+  }
+  if (baseline && changed.size > 0) {
+    const kept = (entry: string) => !changed.has(entry.split(/[ :]/)[0]!);
+    for (const [use, count] of baseline.uses) if (kept(use)) uses.set(use, count);
+    problems.push(...baseline.problems.filter(kept));
+    for (const entry of baseline.imports) if (kept(entry)) imports.add(entry);
   }
   return { uses, problems, imports, files: roots.length };
 }
@@ -311,7 +328,7 @@ function judge(found: Inventory): string[] {
   const members = new Set([...found.uses.keys()].map((u) => u.slice(u.indexOf(" ") + 1)));
   for (const member of bound) if (!members.has(member)) problems.push(`browserReach.test.ts: documentBound '${member}' is no longer used; remove the stale review`);
   for (const use of Object.keys(outlivingReviewed)) if (!seenOutliving.has(use)) problems.push(`browserReach.test.ts: '${use}' is reviewed but no longer used; remove the stale review`);
-  for (const spec of found.imports) if (!(spec in reviewedImports)) problems.push(`the list kernel now imports ${spec}: code that runs with every list; review it in browserReach.test.ts`);
+  for (const spec of new Set([...found.imports].map((i) => i.slice(i.indexOf(" ") + 1)))) if (!(spec in reviewedImports)) problems.push(`the list kernel now imports ${spec}: code that runs with every list; review it in browserReach.test.ts`);
   return problems;
 }
 
@@ -346,7 +363,7 @@ describe("list kernel: reach into the browser (G1, device stores)", () => {
     expect(actual.uses.get("recordWidth.ts Storage.setItem")).toBe(1);
     expect(actual.uses.get("ListView.tsx Clipboard.writeText")).toBe(1);
     expect(actual.uses.get("ListView.tsx History.replaceState")).toBe(1);
-    expect(actual.imports.has("src/kernel/api.ts")).toBe(true);
+    expect(actual.imports.has("useListRows.ts src/kernel/api.ts")).toBe(true);
   });
 
   // Self-test: the critic's plant L14 and its variants, each in the list kernel's own sources.
