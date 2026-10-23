@@ -173,6 +173,22 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
                 covered++;
                 continue;
             }
+            if (module.Name == "audit" && AuditRoutePermission(catalog, endpoint.Method, endpoint.Pattern) is { } history)
+            {
+                // A record's history declares exactly the read permission its kind of record
+                // registered: the history tells everything the record ever held.
+                var declared = endpoint.IsAnonymous ? "anonymous" : string.Join(",", endpoint.Permissions);
+                if (history.Expected is null)
+                {
+                    problems.Add($"{endpoint.Key}: {history.Problem}");
+                }
+                else if (declared != history.Expected)
+                {
+                    problems.Add($"{endpoint.Key} declares {declared}; the history of a {history.Table} record must declare {history.Expected}");
+                }
+                covered++;
+                continue;
+            }
             if (!maps.Any(m => m.Prefixes.Any(p => endpoint.Pattern.StartsWith(p, StringComparison.Ordinal))))
             {
                 problems.Add($"{endpoint.Key} (module {module.Name}) is under no reviewed map in {ReviewedPermissionMap.Folder}; add tests/Gates/endpoint-permissions/{module.Name}.txt");
@@ -204,6 +220,28 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             return (lists, "printable list", catalog.PrintableLists.Where(p => p.List.Key == key).Select(p => p.List.Permission).FirstOrDefault());
         }
         return null;
+    }
+
+    /// <summary>The permission a route under <c>/api/audit/records/</c> must declare: only
+    /// <c>GET /api/audit/records/&lt;schema.table&gt;/{id:guid}</c> of a registered kind of audited
+    /// record, with that kind's read permission (null with the reason for any other route there);
+    /// null for any other route of the audit module (reviewed in a map).</summary>
+    public static (string Table, string? Expected, string? Problem)? AuditRoutePermission(ModuleCatalog catalog, string method, string pattern)
+    {
+        const string records = "/api/audit/records/";
+        if (!pattern.StartsWith(records, StringComparison.Ordinal))
+        {
+            return null;
+        }
+        var parts = pattern[records.Length..].Split('/');
+        var table = parts[0];
+        if (parts is not [_, "{id:guid}"] || method != "GET")
+        {
+            return (table, null, $"'{method} {pattern}' is not the one route a record's history has (GET {records}<schema.table>/{{id:guid}}); review it in a map");
+        }
+        return catalog.FindAuditRecordType(table) is { } type
+            ? (table, type.ReadPermission, null)
+            : (table, null, $"names no registered kind of audited record ('{table}'); review it in a map");
     }
 
     /// <summary>Self-test (critic p03 round 2, plant P2): the sign-in history guarded by

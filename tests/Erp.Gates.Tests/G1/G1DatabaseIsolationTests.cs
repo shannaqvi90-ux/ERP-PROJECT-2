@@ -539,6 +539,14 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         await ExpectDenied(app, tx, problems, "updating audit entries", "UPDATE audit.entries SET action = 'update'");
         await ExpectDenied(app, tx, problems, "deleting audit entries", "DELETE FROM audit.entries");
         await ExpectDenied(app, tx, problems, "truncating audit entries", "TRUNCATE audit.entries");
+        // p07: nor can it stop the trail recording, or change how it records (it owns none of it).
+        await ExpectDenied(app, tx, problems, "disabling a table's audit trigger", "ALTER TABLE identity.roles DISABLE TRIGGER audit_capture");
+        await ExpectDenied(app, tx, problems, "dropping a table's audit trigger", "DROP TRIGGER audit_capture ON identity.roles");
+        await ExpectDenied(app, tx, problems, "replacing the capture function",
+            "CREATE OR REPLACE FUNCTION audit.capture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$");
+        await ExpectDenied(app, tx, problems, "dropping the audit company policy", "DROP POLICY audit_company_scope ON audit.entries");
+        await ExpectDenied(app, tx, problems, "turning off row-level security on the trail", "ALTER TABLE audit.entries DISABLE ROW LEVEL SECURITY");
+        await ExpectDenied(app, tx, problems, "skipping triggers for the session", "SET session_replication_role = replica");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 

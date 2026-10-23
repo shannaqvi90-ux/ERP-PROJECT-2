@@ -71,7 +71,7 @@ internal static class AuditEndpoints
                     [FromQuery, Description("Changes per page, 1 to 200 (default 50).")] int? take,
                     AuditReader reader, HttpContext http, CancellationToken cancellationToken) => History(type, id, before, take, reader, http, cancellationToken))
                 .WithName($"audit.history.{type.Table}")
-                .WithSummary($"The history of one record of {type.Table}, newest change first: who changed it, when, and each field's old and new value (a creation lists every first value, a deletion every last value). Needs the permission that reads such records ({type.ReadPermission}), in the record's company. An id the caller cannot read has no history.")
+                .WithSummary($"The history of one record of {type.Table}{(type.OwnerField is { } o ? $" (every {type.Table} row whose {o} held the id)" : "")}, newest change first: who changed it, when, and each field's old and new value (a creation lists every first value, a deletion every last value). Needs the permission that reads such records ({type.ReadPermission}), in the record's company. An id the caller cannot read has no history.")
                 .RequirePermission(type.ReadPermission);
         }
     }
@@ -88,8 +88,20 @@ internal static class AuditEndpoints
     {
         var size = Math.Clamp(take ?? DefaultTake, 1, MaxTake);
         var table = type.Table;
-        var rows = (await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken))
-            .Where(e => e.RecordType == table && e.RecordId == id);
+        var visible = (await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken)).Where(e => e.RecordType == table);
+        IQueryable<AuditEntry> rows;
+        if (type.OwnerField is { } owner)
+        {
+            // Rows shown by another record's id (a user's company access by the user): every row
+            // whose owner column held the id, before or after the change.
+            var ownerWas = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object> { [owner] = new { old = id } });
+            var ownerIs = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object> { [owner] = new { @new = id } });
+            rows = visible.Where(e => e.RecordId == id || EF.Functions.JsonContains(e.Changes, ownerWas) || EF.Functions.JsonContains(e.Changes, ownerIs));
+        }
+        else
+        {
+            rows = visible.Where(e => e.RecordId == id);
+        }
         if (before is { } cursor)
         {
             // Only a change of this very record the caller may read continues its history; any other

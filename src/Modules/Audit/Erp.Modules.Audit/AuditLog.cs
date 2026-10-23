@@ -61,6 +61,8 @@ internal static class AuditLog
                 Key, "audit.log.title", AuditPermissions.LogRead, "/api/audit/log",
                 [
                     new ListColumn("occurredAt", "audit.log.when", ListColumnType.DateTime, Sortable: true, Filterable: true),
+                    // The change itself (its panel reads it by id).
+                    new ListColumn("id", "audit.log.change", ListColumnType.Reference, Filterable: true, Hidden: true),
                     new ListColumn("actorId", "audit.log.who", ListColumnType.Reference, Filterable: true, LabelField: "actorName", ArabicField: "actorNameAr"),
                     new ListColumn("actorKind", "audit.log.source", ListColumnType.Choice, Filterable: true, Groupable: true, Hidden: true,
                         Choices: [.. ActorKinds.Select(k => new ListChoice(k, $"audit.source.{k}"))], Width: ListColumnWidth.Narrow),
@@ -89,6 +91,7 @@ internal static class AuditLog
                 ]),
                 e => e.Uid)
             .Column("occurredAt", e => e.OccurredAt)
+            .Column("id", e => e.Uid)
             .Column("actorId", e => e.ActorId)
             .Column("actorKind", e => e.ActorKind)
             .Column("action", e => e.Action)

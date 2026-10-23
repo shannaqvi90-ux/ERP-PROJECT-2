@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../../kernel/api";
 import { SelectField, TextField } from "../../kernel/forms/fields";
-import { FormSection, RecordForm } from "../../kernel/forms/RecordForm";
+import { FormSection, RecordForm, RecordPanels } from "../../kernel/forms/RecordForm";
 import { useRecordForm } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
 import { useSession } from "../../kernel/session";
@@ -85,8 +85,10 @@ export function TenantPage() {
           <span className="badge">{t("forms.readOnly")}</span> {t("tenancy.tenant.someCompaniesOnly")}
         </p>
       )}
+      {/* A reader who may not change the workspace still sees its history. */}
+      {!editable && tenant && <RecordPanels record={{ type: "tenancy.tenants", id: tenant.id }} copy={tenant} />}
       {editable && tenant && (
-        <RecordForm form={form} title={t("tenancy.tenant.settings")} label={t("tenancy.tenant.settings")} narrow>
+        <RecordForm form={form} record={{ type: "tenancy.tenants", id: tenant.id }} title={t("tenancy.tenant.settings")} label={t("tenancy.tenant.settings")} narrow>
           <FormSection>
             <TextField field={bind("nameEn")} label={t("tenancy.tenant.nameEn")} dir="ltr" maxLength={200} required />
             <TextField field={bind("nameAr")} label={t("tenancy.tenant.nameAr")} dir="rtl" maxLength={200} required />

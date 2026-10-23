@@ -15,9 +15,12 @@ namespace Erp.Kernel.Audit;
 /// only to a reader who holds it (in the record's company, for a record of a company): the history
 /// tells everything the record ever held.</param>
 /// <param name="Route">The web address of one such record, with <c>{id}</c> for its id (for example
-/// <c>/identity/users?open={id}</c>), so the audit log can open it; null when the record has no
+/// <c>/identity/users/{id}</c>), so the audit log can open it; null when the record has no
 /// screen of its own.</param>
-public sealed partial record AuditRecordType(string Table, string LabelKey, string ReadPermission, string? Route = null)
+/// <param name="OwnerField">For rows a form shows by another record's id (a user's company access,
+/// shown on the access form by the user's id): the column holding that id. The history of such a
+/// record is then every row of this kind whose column held the id, before or after the change.</param>
+public sealed partial record AuditRecordType(string Table, string LabelKey, string ReadPermission, string? Route = null, string? OwnerField = null)
 {
     /// <summary>The schema part of <see cref="Table"/>.</summary>
     public string Schema => Table.Split('.')[0];
@@ -41,6 +44,10 @@ public sealed partial record AuditRecordType(string Table, string LabelKey, stri
         {
             yield return $"audited record '{Table}': '{ReadPermission}' is not a permission key";
         }
+        if (OwnerField is { } owner && !FieldRegex().IsMatch(owner))
+        {
+            yield return $"audited record '{Table}': owner field '{owner}' must be a lower snake case column";
+        }
         if (Route is { } route && (!route.StartsWith('/') || !route.Contains("{id}", StringComparison.Ordinal)))
         {
             yield return $"audited record '{Table}': the route must be a web address starting with '/' that holds '{{id}}'";
@@ -49,4 +56,7 @@ public sealed partial record AuditRecordType(string Table, string LabelKey, stri
 
     [GeneratedRegex("^[a-z_][a-z0-9_]{0,62}\\.[a-z_][a-z0-9_]{0,62}$")]
     private static partial Regex TableRegex();
+
+    [GeneratedRegex("^[a-z_][a-z0-9_]{0,62}$")]
+    private static partial Regex FieldRegex();
 }

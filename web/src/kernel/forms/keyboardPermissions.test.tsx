@@ -59,7 +59,7 @@ function ThingForm({ canEdit, isNew = false, onClose }: { canEdit: boolean; isNe
     isNew ? "new" : "t1",
   );
   return (
-    <RecordForm
+    <RecordForm record={{ type: "test.things", id: "t1" }} panels={[]}
       form={form}
       title={form.record?.name ?? "New thing"}
       onClose={onClose}

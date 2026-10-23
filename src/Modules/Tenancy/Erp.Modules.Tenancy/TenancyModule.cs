@@ -57,7 +57,8 @@ public sealed class TenancyModule : ErpModule
         module.AuditedRecord(new AuditRecordType("tenancy.tenants", "tenancy.record.tenant", TenancyPermissions.TenantRead));
         module.AuditedRecord(new AuditRecordType("tenancy.companies", "tenancy.record.company", TenancyPermissions.CompaniesRead, "/tenancy/companies/{id}"));
         module.AuditedRecord(new AuditRecordType("tenancy.branches", "tenancy.record.branch", TenancyPermissions.BranchesRead, "/tenancy/branches/{id}"));
-        module.AuditedRecord(new AuditRecordType("tenancy.user_company_access", "tenancy.record.companyAccess", TenancyPermissions.AccessRead));
+        // The access form shows a user's company access by the user's id.
+        module.AuditedRecord(new AuditRecordType("tenancy.user_company_access", "tenancy.record.companyAccess", TenancyPermissions.AccessRead, OwnerField: "user_id"));
         module.AuditedRecord(new AuditRecordType("tenancy.user_branch_access", "tenancy.record.branchAccess", TenancyPermissions.AccessRead));
         module.AuditedRecord(new AuditRecordType("tenancy.user_workplaces", "tenancy.record.workplace", TenancyPermissions.AccessRead));
         module.AuditedRecord(new AuditRecordType("tenancy.user_company_totals", "tenancy.record.companyTotals", TenancyPermissions.AccessRead));

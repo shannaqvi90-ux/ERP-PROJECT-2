@@ -257,6 +257,7 @@ function RoleEditor({
     <div className="id-form">
       <RecordForm
         form={form}
+        record={{ type: "identity.roles", id: role?.id }}
         title={role ? roleName(role, language) : t("identity.roles.new")}
         onClose={onClose}
         nav={nav}
@@ -339,7 +340,7 @@ function CopyRoleForm({ source, onClose, onCopied }: { source: Role; onClose: ()
   });
   return (
     <div className="id-form">
-      <RecordForm form={form} title={t("identity.roles.copyTitle", { name: roleName(source, language) })} onClose={onClose} saveLabel={t("identity.roles.copy")}>
+      <RecordForm form={form} record={{ type: "identity.roles", id: null }} title={t("identity.roles.copyTitle", { name: roleName(source, language) })} onClose={onClose} saveLabel={t("identity.roles.copy")}>
         <FormSection columns={false}>
           <TextField field={form.bind("nameEn")} label={t("identity.roles.nameEn")} dir="ltr" autoFocus />
           <TextField field={form.bind("nameAr")} label={t("identity.roles.nameAr")} dir="rtl" />

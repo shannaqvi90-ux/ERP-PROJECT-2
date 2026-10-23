@@ -32,7 +32,12 @@ export function formatValue(column: ListColumn, value: unknown, f: Formatters): 
     case "boolean":
       return flagLabel(column, Boolean(value), f.t);
     case "choice": {
-      if (Array.isArray(value)) return f.formatNumber(value.length);
+      if (Array.isArray(value)) {
+        // Several of the column's own values (the fields a change recorded): their labels; ids of
+        // another list's records (a user's roles) are counted.
+        const labels = value.map((v) => column.choices.find((c) => c.value === v));
+        return value.length > 0 && labels.every(Boolean) ? labels.map((c) => f.t(c!.labelKey)).join(", ") : f.formatNumber(value.length);
+      }
       const choice = column.choices.find((c) => c.value === value);
       return choice ? f.t(choice.labelKey) : String(value);
     }

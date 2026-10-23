@@ -1,0 +1,80 @@
+/* The audit trail's screens: the latest change under a record's heading, the record's history
+   below its form, and the change panel of the audit log. Dense, as every business screen. */
+.audit-latest {
+  font-size: var(--font-small, 0.8125rem);
+  color: var(--text-muted, inherit);
+  margin-block-start: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-inline-size: 100%;
+}
+.audit-latest .audit-latest-open {
+  padding: 0;
+  font-size: inherit;
+}
+.audit-history {
+  border-block-start: 1px solid var(--border, #d0d5dd);
+  margin-block-start: 8px;
+  padding-block: 8px;
+}
+.audit-history-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.audit-history-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.audit-history-find {
+  min-inline-size: 12rem;
+}
+.audit-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.audit-event {
+  padding-block: 6px;
+  border-block-end: 1px solid var(--border, #d0d5dd);
+}
+.audit-event-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.audit-fields {
+  border-collapse: collapse;
+  inline-size: 100%;
+  margin-block-start: 4px;
+}
+.audit-fields th,
+.audit-fields td {
+  text-align: start;
+  padding: 2px 8px 2px 0;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.audit-fields thead th {
+  font-weight: 600;
+  font-size: var(--font-small, 0.8125rem);
+}
+.audit-fields tbody th {
+  font-weight: 500;
+  inline-size: 30%;
+}
+.audit-old {
+  text-decoration: line-through;
+  color: var(--text-muted, inherit);
+}
+.audit-change h3 {
+  margin-block: 0 4px;
+}
+.audit-change-fields {
+  padding-inline-start: 1.25rem;
+}
+.audit-change-text {
+  white-space: nowrap;
+}

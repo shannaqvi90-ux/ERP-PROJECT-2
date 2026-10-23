@@ -91,7 +91,7 @@ function AccessForm({ userId, onSaved, onClose, nav }: { userId: string; onSaved
 
   const reason = access?.isCaller ? t("tenancy.access.ownAccess") : access && access.canEdit === false && access.readOnlyReason ? t(access.readOnlyReason) : undefined;
   return (
-    <RecordForm form={form} label={t("tenancy.access.form")} title={access ? access.displayName : ""} subtitle={access && <span dir="ltr">{access.email}</span>}
+    <RecordForm form={form} record={{ type: "tenancy.user_company_access", id: userId }} label={t("tenancy.access.form")} title={access ? access.displayName : ""} subtitle={access && <span dir="ltr">{access.email}</span>}
       onClose={onClose} nav={nav} readOnlyReason={reason}>
       {access?.isCaller && <div className="notice">{t("tenancy.access.ownAccess")}</div>}
       {access && !access.isCaller && access.canEdit === false && access.readOnlyReason && (

@@ -171,6 +171,7 @@ export function CompanyForm({ id, onSaved, onClose, nav }: { id: string | null; 
   return (
     <RecordForm
       form={form}
+      record={{ type: "tenancy.companies", id }}
       label={t("tenancy.company.form")}
       title={company ? `${company.code} · ${name(company.legalNameEn, company.legalNameAr)}` : t("tenancy.company.new")}
       onClose={onClose}
