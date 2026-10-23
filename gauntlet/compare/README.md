@@ -575,6 +575,7 @@ removed (plan.md); the ratchet counts them.
 | edit-and-save (p06) | triple-click the phone field > type the number's digits (971505550199) > Save | keyboard and pointer variants; round 13 (critic p06 r7): a triple click selects the field in one step, and the digits alone are the shortest entry the instrument credits (separators free); typing only the 9 digits after +971 stores 505550199, not the number, and Odoo's field shows no prefix of its own; `verify()` follows the instrument's separators-free rule |
 | arabic-report (p06) | user menu > My Preferences > Arabic > Update Preferences > Print | printing straight away gives Arabic text laid out left to right |
 | who-changed-field (p07) | Apps > Contacts > name > Enter > open; the change log shows the latest change | change made by another user in set-up |
+| who-renamed-user (p07) | Settings > Manage Users (or Ctrl+K > "/users") > the user's name now, or its shortest piece that puts the user on the first screen > Enter or the first search suggestion > open the user; the change log beside the form shows the latest change (old > new name, who, when) | the dataset's 100,000 users; set-up renames the user as an ordinary editor (both products track a user's name); the record is found by the name it has now (`finds: 'newName'`, a task input), since the old name is what the person finds out |
 | add-rate (p08) | Invoicing > Configuration > Currencies > EUR > Add a line > AED per unit > Save | keyboard and pointer variants |
 | configure-sequence (p10) | Settings > scroll > developer mode > Technical > Sequences > search > open > prefix, size > Save | Odoo shows sequences only in developer mode |
 | attach-file (p11) | paperclip > Attach files > choose the file | |
@@ -583,7 +584,7 @@ removed (plan.md); the ratchet counts them.
 | print-list-arabic (p06) | (working in Arabic) Purchase orders list > type the vendor > Enter > header check box > Print > Purchase Order | the list report named in p06's spec; Community has no printed table of a list, its nearest feature prints the selected orders' own document in one PDF; the vendor's partners get Arabic in set-up (restored in clean-up); our product's stand-in list is the users list until purchase orders exist |
 
 Every task names the piece (`piece`) whose critic fills in its `ours` driver. Built `ours` drivers:
-sign-in, find-user, create-restricted-user, api-update-user, switch-to-arabic and
+sign-in, find-user, who-renamed-user (p07: the user's record shows its latest change under its heading), create-restricted-user, api-update-user, switch-to-arabic and
 reach-screen-keyboard (p04), create-company-branch and switch-company (p02), edit-and-save and
 arabic-report (p06; until contacts and purchase orders exist they use a company and its printed
 company profile as the stand-in record and document), print-list-arabic (the users list, printed as a
