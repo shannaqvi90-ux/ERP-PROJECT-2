@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "run_id": "who-renamed-user-20261023T223143-bc6c",
+  "run_id": "who-renamed-user-20261023T224333-e80f",
   "instrument": 12,
   "task": "who-renamed-user",
   "task_title": "Who changed this user's name, and when",
   "product": "odoo",
-  "status": "invalid",
+  "status": "verified",
   "goal": "Find out who last changed the name of the user now called Majid A. Pillai (one of 100,000 users), from what to what, and when.",
   "done_when": "The change is on screen: the old name Majid Anil Pillai, the new name Majid A. Pillai, the person who made it (Noor Editor) and the time.",
-  "started_at": "2026-10-23T22:31:43.545Z",
-  "finished_at": "2026-10-23T22:34:52.344Z",
+  "started_at": "2026-10-23T22:43:33.877Z",
+  "finished_at": "2026-10-23T22:47:45.857Z",
   "environment": {
     "base_url": "http://localhost:8069",
     "viewport": {
@@ -22,7 +22,7 @@
   },
   "counts": {
     "steps": 6,
-    "keystrokes": 18,
+    "keystrokes": 4,
     "clicks": 1,
     "scrolls": 0,
     "field_entries": 2,
@@ -30,12 +30,12 @@
     "file_picks": 0,
     "requests": 0,
     "device_confirmations": 0,
-    "machine_seconds": 2.105,
-    "system_wait_seconds": 1.829,
-    "human_seconds": 13.99,
-    "human_plus_wait_seconds": 15.819,
+    "machine_seconds": 3.63,
+    "system_wait_seconds": 3.214,
+    "human_seconds": 10.07,
+    "human_plus_wait_seconds": 13.321,
     "klm_operator_counts": {
-      "K": 28,
+      "K": 14,
       "P": 1,
       "B": 2,
       "H": 2,
@@ -59,7 +59,7 @@
       "label": "command palette",
       "keystrokes": 2,
       "at": 0.001,
-      "took": 0.015,
+      "took": 0.04,
       "chord": "Control+k",
       "screen": "/odoo/discuss",
       "chain": false
@@ -69,8 +69,8 @@
       "kind": "type",
       "label": "menu search /users",
       "keystrokes": 6,
-      "at": 0.105,
-      "took": 0.024,
+      "at": 0.247,
+      "took": 0.035,
       "text": "/users",
       "same_field": false,
       "screen": "/odoo/discuss",
@@ -81,8 +81,8 @@
       "kind": "key",
       "label": "open Settings / Users & Companies / Users",
       "keystrokes": 1,
-      "at": 0.196,
-      "took": 0.01,
+      "at": 0.403,
+      "took": 0.026,
       "chord": "Enter",
       "screen": "/odoo/discuss",
       "chain": true
@@ -91,10 +91,10 @@
       "n": 4,
       "kind": "type",
       "label": "a piece of the name",
-      "keystrokes": 18,
-      "at": 0.607,
-      "took": 0.113,
-      "text": "Majid A. Pillai",
+      "keystrokes": 4,
+      "at": 1.099,
+      "took": 0.084,
+      "text": ". pi",
       "same_field": false,
       "screen": "/odoo/users",
       "chain": false
@@ -104,8 +104,8 @@
       "kind": "key",
       "label": "search",
       "keystrokes": 1,
-      "at": 0.721,
-      "took": 0.01,
+      "at": 1.184,
+      "took": 0.024,
       "chord": "Enter",
       "screen": "/odoo/users",
       "chain": true
@@ -115,9 +115,9 @@
       "kind": "click",
       "label": "open the user",
       "keystrokes": 0,
-      "at": 1.652,
-      "took": 0.05,
-      "began": 1.615,
+      "at": 2.676,
+      "took": 0.111,
+      "began": 2.618,
       "screen": "/odoo/users",
       "chain": false
     }
@@ -125,77 +125,77 @@
   "waits": [
     {
       "label": "palette open",
-      "at": 0.017,
-      "seconds": 0.088
+      "at": 0.045,
+      "seconds": 0.197
     },
     {
       "label": "menu found",
-      "at": 0.131,
-      "seconds": 0.064
+      "at": 0.283,
+      "seconds": 0.119
     },
     {
       "label": "Settings / Users & Companies / Users loaded",
-      "at": 0.206,
-      "seconds": 0.175
+      "at": 0.43,
+      "seconds": 0.272
     },
     {
       "label": "user list ready, search focused",
-      "at": 0.382,
-      "seconds": 0.002
+      "at": 0.703,
+      "seconds": 0.011
     },
     {
       "label": "first page of users",
-      "at": 0.385,
-      "seconds": 0.219
+      "at": 0.715,
+      "seconds": 0.379
     },
     {
       "label": "search applied",
-      "at": 0.732,
-      "seconds": 0.031
+      "at": 1.208,
+      "seconds": 0.017
     },
     {
       "label": "the row of the user",
-      "at": 0.764,
-      "seconds": 0.851
+      "at": 1.228,
+      "seconds": 1.389
     },
     {
       "label": "the latest change beside the form",
-      "at": 1.703,
-      "seconds": 0.395
+      "at": 2.789,
+      "seconds": 0.821
     },
     {
       "label": "the chatter's emoji data in",
-      "at": 2.098,
-      "seconds": 0.004
+      "at": 3.61,
+      "seconds": 0.009
     }
   ],
   "screenshots": [
     {
       "moment": "start",
-      "file": "620adc9fbe46a145.jpg",
+      "file": "2aefac9261dc839d.jpg",
       "at": 0,
-      "path": "gauntlet/reference/odoo/shots/620adc9fbe46a145.jpg"
+      "path": "gauntlet/reference/odoo/shots/2aefac9261dc839d.jpg"
     },
     {
       "moment": "done",
-      "file": "19878ac2fef989bd.jpg",
-      "at": 2.105,
-      "path": "gauntlet/reference/odoo/shots/19878ac2fef989bd.jpg"
+      "file": "baade7e6899c7681.jpg",
+      "at": 3.63,
+      "path": "gauntlet/reference/odoo/shots/baade7e6899c7681.jpg"
     }
   ],
   "verification": {
     "verified": true,
     "details": {
-      "latest_change_on_screen": "Noor Editor 2:32 AM Majid Anil Pillai → Majid A. Pillai (Name)"
+      "latest_change_on_screen": "Noor Editor 2:47 AM Majid Anil Pillai → Majid A. Pillai (Name)"
     }
   },
   "path_notes": "menus: Apps menu > Settings > Manage Users (the search box has focus) > the name > Enter > open the user. | palette: Ctrl+K > \"/users\" > Enter > the name > Enter > open the user. | menus-suggestion: Apps menu > Settings > Manage Users > the name > click the first search suggestion > open the user. | shortest-suggestion: Apps menu > Settings > Manage Users > the shortest piece of the name that puts the user on the first screen (found through the back end before the run) > click the first search suggestion > open the user. | shortest-enter: Apps menu > Settings > Manage Users > the shortest piece of the name that puts the user on the first screen > Enter > open the user. | palette-shortest: Ctrl+K > \"/users\" > Enter > the shortest piece of the name that puts the user on the first screen > Enter > open the user.",
   "driver": {
     "file": "gauntlet/compare/drivers/odoo/who-renamed-user.mjs",
-    "sha256": "af263b6f5bfd2b734dbd87912dbffff6fbd7a3f1584ee2c66c4cec0531b8c581"
+    "sha256": "d679e49fc93bff60f34cb8b154426cf9e28f8bc8972e1dfb1f4ca2e11d99408f"
   },
   "task_notes": "p07 (audit trail) on the list that exists in both products today: the shared dataset's 100,000 users, whose names both products track (the reference keeps the name among the tracked fields of its users). Set-up renames the user as {changedBy}, an ordinary user who may change users, so it is the latest change; clean-up puts the name back. who-changed-field (contacts) waits for p16.",
-  "error": "shortest-suggestion: invalid action outside the clock (set-up): the measured part typed no piece of \"Majid A. Pillai\", the record the person finds (its letters in order: the name, its first letters, the initials): a record opened without searching for it was put within reach by set-up or by the product (a remembered record, a saved default search), not found by the person. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.\nshortest-enter: invalid action outside the clock (set-up): the measured part typed no piece of \"Majid A. Pillai\", the record the person finds (its letters in order: the name, its first letters, the initials): a record opened without searching for it was put within reach by set-up or by the product (a remembered record, a saved default search), not found by the person. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.\npalette-shortest: invalid action outside the clock (set-up): the measured part typed no piece of \"Majid A. Pillai\", the record the person finds (its letters in order: the name, its first letters, the initials): a record opened without searching for it was put within reach by set-up or by the product (a remembered record, a saved default search), not found by the person. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "error": null,
   "start_state": {
     "kind": "home",
     "path": "/odoo/discuss",
@@ -212,7 +212,7 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.003,
+      "seconds": 0.004,
       "verified": true
     },
     {
@@ -220,9 +220,9 @@
       "longest_pause_seconds": 0.001,
       "repeated_reads": [],
       "paced_seconds": 0,
-      "seconds": 0.003,
+      "seconds": 0.021,
       "verified": true,
-      "gap_seconds": 0.083
+      "gap_seconds": 0.085
     }
   ],
   "requests_after_clock": 0,
@@ -233,12 +233,12 @@
     ]
   },
   "screen_at_clock": {
-    "sha256": "b2d0224c1359fdf1",
-    "elements": 1268
+    "sha256": "4a2499db405972f4",
+    "elements": 1265
   },
   "screen_after_verify": {
-    "sha256": "b2d0224c1359fdf1",
-    "elements": 1268,
+    "sha256": "4a2499db405972f4",
+    "elements": 1265,
     "unchanged": true
   },
   "verify_before": {
@@ -249,71 +249,71 @@
     "longest_pause_seconds": 0.001,
     "repeated_reads": [],
     "paced_seconds": 0,
-    "seconds": 0.003
+    "seconds": 0.005
   },
   "set_up_writes_waited": 0,
   "screen_changes": {
-    "judged": 127,
-    "not_caused": 13,
+    "judged": 111,
+    "not_caused": 59,
     "enforced": false,
     "not_caused_first": [
       {
-        "at": 0.181,
-        "event": "StyleRecalcInvalidationTracking",
-        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
-        "chain": []
-      },
-      {
-        "at": 0.216,
-        "event": "ParseHTML",
-        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
-        "chain": []
-      },
-      {
-        "at": 0.621,
+        "at": 0.31,
         "event": "StyleRecalcInvalidationTracking",
         "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
         "chain": []
       },
       {
-        "at": 1.645,
-        "event": "StyleRecalcInvalidationTracking",
-        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "at": 0.452,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
         "chain": []
       },
       {
-        "at": 1.678,
+        "at": 0.673,
         "event": "StyleRecalcInvalidationTracking",
-        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
         "chain": []
       },
       {
-        "at": 1.834,
+        "at": 1.143,
         "event": "StyleRecalcInvalidationTracking",
-        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "why": "it followed the answer to GET /web/image/res.users/49067/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
         "chain": []
       },
       {
-        "at": 1.846,
+        "at": 1.165,
         "event": "StyleRecalcInvalidationTracking",
-        "why": "it followed the answer to GET /web/image/res.users/68318/avatar_128, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "why": "it followed the answer to GET /web/image/res.users/1212/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
         "chain": []
       },
       {
-        "at": 1.847,
+        "at": 1.168,
         "event": "StyleRecalcInvalidationTracking",
-        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "why": "it followed the answer to GET /web/image/res.users/34979/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.21,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/1681/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.213,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.users/71953/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
         "chain": []
       }
     ],
     "last_caused": {
-      "at": 2.094,
+      "at": 3.688,
       "by_step": 6,
       "chain": [
-        "the answer to POST /mail/store after 0.06 s",
-        "an animation frame",
-        "an animation frame",
-        "the answer to GET /web/image/res.partner/435669/avatar_128 after 0.014 s"
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /web/assets/ff89cec/web.assets_emoji.min.js after 0.031 s",
+        "a task that followed at once (a message or an observer)",
+        "an animation frame"
       ]
     }
   },
@@ -326,14 +326,13 @@
   "set_up_writes": [
     "fetch POST /web/dataset/call_kw/res.users/write"
   ],
-  "screenshots_path": "palette",
-  "error_page": {},
+  "screenshots_path": "palette-shortest",
   "best_path_per_metric": {
     "steps": "menus",
-    "keystrokes": "menus-suggestion",
-    "machine_seconds": "palette",
-    "human_seconds": "palette",
-    "human_plus_wait_seconds": "palette"
+    "keystrokes": "shortest-suggestion",
+    "machine_seconds": "palette-shortest",
+    "human_seconds": "palette-shortest",
+    "human_plus_wait_seconds": "palette-shortest"
   },
   "variants": [
     {
@@ -351,10 +350,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.254,
-        "system_wait_seconds": 1.859,
+        "machine_seconds": 5.94,
+        "system_wait_seconds": 3.099,
         "human_seconds": 18.07,
-        "human_plus_wait_seconds": 19.929,
+        "human_plus_wait_seconds": 21.169,
         "klm_operator_counts": {
           "K": 19,
           "P": 4,
@@ -369,8 +368,8 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.026,
-          "took": 0.037,
+          "at": 0.056,
+          "took": 0.061,
           "began": 0.001,
           "screen": "/odoo/discuss",
           "chain": false
@@ -380,9 +379,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.11,
-          "took": 0.032,
-          "began": 0.064,
+          "at": 0.201,
+          "took": 0.051,
+          "began": 0.127,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -391,9 +390,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.473,
-          "took": 0.048,
-          "began": 0.43,
+          "at": 0.877,
+          "took": 0.084,
+          "began": 0.811,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -402,11 +401,11 @@
           "kind": "type",
           "label": "a piece of the name",
           "keystrokes": 18,
-          "at": 2.926,
-          "took": 0.054,
+          "at": 3.718,
+          "took": 0.204,
           "text": "Majid A. Pillai",
           "same_field": false,
-          "screen": "/odoo/settings/579/users",
+          "screen": "/odoo/settings/591/users",
           "chain": false
         },
         {
@@ -414,10 +413,10 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 2.98,
-          "took": 0.007,
+          "at": 3.923,
+          "took": 0.03,
           "chord": "Enter",
-          "screen": "/odoo/settings/579/users",
+          "screen": "/odoo/settings/591/users",
           "chain": true
         },
         {
@@ -425,54 +424,54 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 3.839,
-          "took": 0.047,
-          "began": 3.8,
-          "screen": "/odoo/settings/579/users",
+          "at": 5.038,
+          "took": 0.098,
+          "began": 4.973,
+          "screen": "/odoo/settings/591/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.142,
-          "seconds": 0.287
+          "at": 0.258,
+          "seconds": 0.552
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.522,
-          "seconds": 0.185
+          "at": 0.962,
+          "seconds": 0.326
         },
         {
           "label": "first page of users",
-          "at": 0.708,
-          "seconds": 0.21
+          "at": 1.291,
+          "seconds": 0.409
         },
         {
           "label": "search applied",
-          "at": 2.987,
-          "seconds": 0.008
+          "at": 3.956,
+          "seconds": 0.004
         },
         {
           "label": "the row of the user",
-          "at": 2.996,
-          "seconds": 0.804
+          "at": 3.961,
+          "seconds": 1.011
         },
         {
           "label": "the latest change beside the form",
-          "at": 3.887,
-          "seconds": 0.362
+          "at": 5.138,
+          "seconds": 0.788
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 4.249,
-          "seconds": 0.003
+          "at": 5.928,
+          "seconds": 0.009
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "latest_change_on_screen": "Noor Editor 2:31 AM Majid Anil Pillai → Majid A. Pillai (Name)"
+          "latest_change_on_screen": "Noor Editor 2:43 AM Majid Anil Pillai → Majid A. Pillai (Name)"
         }
       },
       "start_state": {
@@ -491,17 +490,17 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.004,
           "verified": true
         },
         {
           "requests": 1,
-          "longest_pause_seconds": 0,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.005,
           "verified": true,
-          "gap_seconds": 0.065
+          "gap_seconds": 0.106
         }
       ],
       "requests_after_clock": 0,
@@ -512,11 +511,11 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "945ab8cc1070c90e",
+        "sha256": "292c088c234d06d7",
         "elements": 1268
       },
       "screen_after_verify": {
-        "sha256": "945ab8cc1070c90e",
+        "sha256": "292c088c234d06d7",
         "elements": 1268,
         "unchanged": true
       },
@@ -528,71 +527,71 @@
         "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.003
+        "seconds": 0.006
       },
       "set_up_writes_waited": 0,
       "screen_changes": {
-        "judged": 128,
-        "not_caused": 8,
+        "judged": 137,
+        "not_caused": 14,
         "enforced": false,
         "not_caused_first": [
           {
-            "at": 0.499,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
-            "chain": []
-          },
-          {
-            "at": 0.517,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
-            "chain": []
-          },
-          {
-            "at": 0.52,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
-            "chain": []
-          },
-          {
-            "at": 0.587,
-            "event": "ParseHTML",
-            "why": "the document /odoo/settings, whose navigation started before the record began (or was not the page's)",
-            "chain": []
-          },
-          {
-            "at": 3.832,
+            "at": 0.862,
             "event": "StyleRecalcInvalidationTracking",
             "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
             "chain": []
           },
           {
-            "at": 3.998,
+            "at": 0.949,
             "event": "StyleRecalcInvalidationTracking",
             "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 4.167,
+            "at": 0.958,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 4.252,
+            "at": 1.078,
+            "event": "ParseHTML",
+            "why": "the document /odoo/settings, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 1.679,
+            "event": "ScheduleStyleInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 4.212,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0 s before it) and could have sent it: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 4.228,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 5.011,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
             "chain": []
           }
         ],
         "last_caused": {
-          "at": 4.267,
+          "at": 5.924,
           "by_step": 6,
           "chain": [
-            "a task that followed at once (a message or an observer)",
-            "the answer to GET /web/assets/ff89cec/web.assets_emoji.min.js after 0.011 s",
-            "a task that followed at once (a message or an observer)",
-            "a task that followed at once (a message or an observer)"
+            "the answer to POST /mail/store after 0.138 s",
+            "an animation frame",
+            "an animation frame",
+            "the answer to GET /web/image/res.partner/435669/avatar_128 after 0.02 s"
           ]
         }
       },
@@ -604,7 +603,29 @@
       },
       "set_up_writes": [
         "fetch POST /web/dataset/call_kw/res.users/write"
-      ]
+      ],
+      "median_counts": {
+        "steps": 6,
+        "keystrokes": 19,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 5.94,
+        "system_wait_seconds": 3.099,
+        "human_seconds": 18.07,
+        "human_plus_wait_seconds": 21.169,
+        "klm_operator_counts": {
+          "K": 19,
+          "P": 4,
+          "B": 8,
+          "H": 2,
+          "M": 5
+        }
+      }
     },
     {
       "id": "palette",
@@ -621,10 +642,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 2.105,
-        "system_wait_seconds": 1.829,
+        "machine_seconds": 3.81,
+        "system_wait_seconds": 3.274,
         "human_seconds": 13.99,
-        "human_plus_wait_seconds": 15.819,
+        "human_plus_wait_seconds": 17.264,
         "klm_operator_counts": {
           "K": 28,
           "P": 1,
@@ -639,8 +660,8 @@
           "kind": "key",
           "label": "command palette",
           "keystrokes": 2,
-          "at": 0.001,
-          "took": 0.015,
+          "at": 0.002,
+          "took": 0.036,
           "chord": "Control+k",
           "screen": "/odoo/discuss",
           "chain": false
@@ -650,8 +671,8 @@
           "kind": "type",
           "label": "menu search /users",
           "keystrokes": 6,
-          "at": 0.105,
-          "took": 0.024,
+          "at": 0.272,
+          "took": 0.048,
           "text": "/users",
           "same_field": false,
           "screen": "/odoo/discuss",
@@ -662,8 +683,8 @@
           "kind": "key",
           "label": "open Settings / Users & Companies / Users",
           "keystrokes": 1,
-          "at": 0.196,
-          "took": 0.01,
+          "at": 0.428,
+          "took": 0.022,
           "chord": "Enter",
           "screen": "/odoo/discuss",
           "chain": true
@@ -673,8 +694,8 @@
           "kind": "type",
           "label": "a piece of the name",
           "keystrokes": 18,
-          "at": 0.607,
-          "took": 0.113,
+          "at": 1.156,
+          "took": 0.233,
           "text": "Majid A. Pillai",
           "same_field": false,
           "screen": "/odoo/users",
@@ -685,8 +706,8 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 0.721,
-          "took": 0.01,
+          "at": 1.39,
+          "took": 0.02,
           "chord": "Enter",
           "screen": "/odoo/users",
           "chain": true
@@ -696,9 +717,9 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 1.652,
-          "took": 0.05,
-          "began": 1.615,
+          "at": 2.93,
+          "took": 0.094,
+          "began": 2.879,
           "screen": "/odoo/users",
           "chain": false
         }
@@ -706,54 +727,54 @@
       "waits": [
         {
           "label": "palette open",
-          "at": 0.017,
-          "seconds": 0.088
+          "at": 0.039,
+          "seconds": 0.232
         },
         {
           "label": "menu found",
-          "at": 0.131,
-          "seconds": 0.064
+          "at": 0.323,
+          "seconds": 0.103
         },
         {
           "label": "Settings / Users & Companies / Users loaded",
-          "at": 0.206,
-          "seconds": 0.175
+          "at": 0.452,
+          "seconds": 0.217
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.382,
-          "seconds": 0.002
+          "at": 0.672,
+          "seconds": 0.009
         },
         {
           "label": "first page of users",
-          "at": 0.385,
-          "seconds": 0.219
+          "at": 0.682,
+          "seconds": 0.47
         },
         {
           "label": "search applied",
-          "at": 0.732,
-          "seconds": 0.031
+          "at": 1.411,
+          "seconds": 0.042
         },
         {
           "label": "the row of the user",
-          "at": 0.764,
-          "seconds": 0.851
+          "at": 1.455,
+          "seconds": 1.423
         },
         {
           "label": "the latest change beside the form",
-          "at": 1.703,
-          "seconds": 0.395
+          "at": 3.026,
+          "seconds": 0.77
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 2.098,
-          "seconds": 0.004
+          "at": 3.797,
+          "seconds": 0.008
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "latest_change_on_screen": "Noor Editor 2:32 AM Majid Anil Pillai → Majid A. Pillai (Name)"
+          "latest_change_on_screen": "Noor Editor 2:44 AM Majid Anil Pillai → Majid A. Pillai (Name)"
         }
       },
       "start_state": {
@@ -782,7 +803,7 @@
           "paced_seconds": 0,
           "seconds": 0.003,
           "verified": true,
-          "gap_seconds": 0.083
+          "gap_seconds": 0.1
         }
       ],
       "requests_after_clock": 0,
@@ -793,12 +814,12 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "b2d0224c1359fdf1",
-        "elements": 1268
+        "sha256": "6cbf8a3951ccaf5e",
+        "elements": 1265
       },
       "screen_after_verify": {
-        "sha256": "b2d0224c1359fdf1",
-        "elements": 1268,
+        "sha256": "6cbf8a3951ccaf5e",
+        "elements": 1265,
         "unchanged": true
       },
       "verify_before": {
@@ -806,74 +827,74 @@
         "error": null,
         "back_end_reads": 0,
         "requests": 1,
-        "longest_pause_seconds": 0.001,
+        "longest_pause_seconds": 0.002,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.003
+        "seconds": 0.005
       },
       "set_up_writes_waited": 0,
       "screen_changes": {
-        "judged": 127,
-        "not_caused": 13,
+        "judged": 126,
+        "not_caused": 60,
         "enforced": false,
         "not_caused_first": [
           {
-            "at": 0.181,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
-            "chain": []
-          },
-          {
-            "at": 0.216,
+            "at": 0.468,
             "event": "ParseHTML",
             "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
             "chain": []
           },
           {
-            "at": 0.621,
+            "at": 1.211,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "why": "it followed the answer to GET /web/image/res.users/71953/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 1.645,
+            "at": 1.237,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "why": "it followed the answer to GET /web/image/res.users/49067/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 1.678,
+            "at": 1.259,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "why": "it followed the answer to GET /web/image/res.users/1212/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 1.834,
+            "at": 1.276,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "why": "it followed the answer to GET /web/image/res.users/13472/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 1.846,
+            "at": 1.316,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "it followed the answer to GET /web/image/res.users/68318/avatar_128, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+            "why": "it followed the answer to GET /web/image/res.users/1681/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 1.847,
+            "at": 1.335,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+            "why": "it followed the answer to GET /web/image/res.users/34979/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.338,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.users/28099/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           }
         ],
         "last_caused": {
-          "at": 2.094,
+          "at": 3.789,
           "by_step": 6,
           "chain": [
-            "the answer to POST /mail/store after 0.06 s",
+            "the answer to POST /mail/store after 0.123 s",
             "an animation frame",
             "an animation frame",
-            "the answer to GET /web/image/res.partner/435669/avatar_128 after 0.014 s"
+            "the answer to GET /web/image/res.partner/435669/avatar_128 after 0.024 s"
           ]
         }
       },
@@ -885,7 +906,29 @@
       },
       "set_up_writes": [
         "fetch POST /web/dataset/call_kw/res.users/write"
-      ]
+      ],
+      "median_counts": {
+        "steps": 6,
+        "keystrokes": 28,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 3.81,
+        "system_wait_seconds": 3.234,
+        "human_seconds": 13.99,
+        "human_plus_wait_seconds": 17.224,
+        "klm_operator_counts": {
+          "K": 28,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 3
+        }
+      }
     },
     {
       "id": "menus-suggestion",
@@ -902,10 +945,10 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.389,
-        "system_wait_seconds": 1.932,
+        "machine_seconds": 6.552,
+        "system_wait_seconds": 3.554,
         "human_seconds": 20.44,
-        "human_plus_wait_seconds": 22.372,
+        "human_plus_wait_seconds": 23.994,
         "klm_operator_counts": {
           "K": 18,
           "P": 5,
@@ -920,9 +963,9 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.017,
-          "took": 0.038,
-          "began": 0.001,
+          "at": 0.064,
+          "took": 0.111,
+          "began": 0.006,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -931,9 +974,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.103,
-          "took": 0.032,
-          "began": 0.057,
+          "at": 0.226,
+          "took": 0.069,
+          "began": 0.177,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -942,9 +985,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.452,
-          "took": 0.047,
-          "began": 0.413,
+          "at": 1.009,
+          "took": 0.099,
+          "began": 0.91,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -953,11 +996,11 @@
           "kind": "type",
           "label": "a piece of the name",
           "keystrokes": 18,
-          "at": 2.889,
-          "took": 0.07,
+          "at": 3.865,
+          "took": 0.208,
           "text": "Majid A. Pillai",
           "same_field": false,
-          "screen": "/odoo/settings/580/users",
+          "screen": "/odoo/settings/592/users",
           "chain": false
         },
         {
@@ -965,10 +1008,10 @@
           "kind": "click",
           "label": "search the piece",
           "keystrokes": 0,
-          "at": 3.004,
-          "took": 0.039,
-          "began": 2.968,
-          "screen": "/odoo/settings/580/users",
+          "at": 4.133,
+          "took": 0.083,
+          "began": 4.087,
+          "screen": "/odoo/settings/592/users",
           "chain": false
         },
         {
@@ -976,59 +1019,59 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 3.901,
-          "took": 0.047,
-          "began": 3.869,
-          "screen": "/odoo/settings/580/users",
+          "at": 5.665,
+          "took": 0.087,
+          "began": 5.615,
+          "screen": "/odoo/settings/592/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.135,
-          "seconds": 0.277
+          "at": 0.299,
+          "seconds": 0.606
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.499,
-          "seconds": 0.191
+          "at": 1.11,
+          "seconds": 0.31
         },
         {
           "label": "first page of users",
-          "at": 0.692,
-          "seconds": 0.193
+          "at": 1.42,
+          "seconds": 0.434
         },
         {
           "label": "search suggestions",
-          "at": 2.96,
-          "seconds": 0.008
+          "at": 4.074,
+          "seconds": 0.013
         },
         {
           "label": "search applied",
-          "at": 3.043,
-          "seconds": 0.01
+          "at": 4.217,
+          "seconds": 0.002
         },
         {
           "label": "the row of the user",
-          "at": 3.054,
-          "seconds": 0.815
+          "at": 4.22,
+          "seconds": 1.394
         },
         {
           "label": "the latest change beside the form",
-          "at": 3.95,
-          "seconds": 0.433
+          "at": 5.754,
+          "seconds": 0.784
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 4.383,
-          "seconds": 0.005
+          "at": 6.538,
+          "seconds": 0.011
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "latest_change_on_screen": "Noor Editor 2:32 AM Majid Anil Pillai → Majid A. Pillai (Name)"
+          "latest_change_on_screen": "Noor Editor 2:45 AM Majid Anil Pillai → Majid A. Pillai (Name)"
         }
       },
       "start_state": {
@@ -1047,7 +1090,7 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.005,
+          "seconds": 0.004,
           "verified": true
         },
         {
@@ -1055,9 +1098,9 @@
           "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.003,
+          "seconds": 0.005,
           "verified": true,
-          "gap_seconds": 0.071
+          "gap_seconds": 0.089
         }
       ],
       "requests_after_clock": 0,
@@ -1068,12 +1111,12 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "5152d90164070d4f",
-        "elements": 1271
+        "sha256": "1aa3231b3ead8bcb",
+        "elements": 1268
       },
       "screen_after_verify": {
-        "sha256": "5152d90164070d4f",
-        "elements": 1271,
+        "sha256": "1aa3231b3ead8bcb",
+        "elements": 1268,
         "unchanged": true
       },
       "verify_before": {
@@ -1081,72 +1124,72 @@
         "error": null,
         "back_end_reads": 0,
         "requests": 1,
-        "longest_pause_seconds": 0,
+        "longest_pause_seconds": 0.002,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.002
+        "seconds": 0.006
       },
       "set_up_writes_waited": 0,
       "screen_changes": {
-        "judged": 139,
-        "not_caused": 21,
+        "judged": 145,
+        "not_caused": 15,
         "enforced": false,
         "not_caused_first": [
           {
-            "at": 0.427,
+            "at": 1.058,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
             "chain": []
           },
           {
-            "at": 0.476,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
-            "chain": []
-          },
-          {
-            "at": 0.494,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
-            "chain": []
-          },
-          {
-            "at": 0.497,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
-            "chain": []
-          },
-          {
-            "at": 0.569,
+            "at": 1.22,
             "event": "ParseHTML",
             "why": "the document /odoo/settings, whose navigation started before the record began (or was not the page's)",
             "chain": []
           },
           {
-            "at": 3.063,
+            "at": 1.413,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 4.198,
             "event": "ScheduleStyleInvalidationTracking",
             "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 3.31,
+            "at": 4.207,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.003 s before it) and could have sent it: a timer armed before the clock started",
+            "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0 s before it) and could have sent it: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 3.327,
+            "at": 4.604,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 4.604,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 4.804,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
             "chain": []
           }
         ],
         "last_caused": {
-          "at": 4.383,
+          "at": 6.583,
           "by_step": 6,
           "chain": [
             "a task that followed at once (a message or an observer)",
-            "a task that followed at once (a message or an observer)",
+            "the answer to GET /web/assets/ff89cec/web.assets_emoji.min.js after 0.024 s",
             "a task that followed at once (a message or an observer)",
             "a task that followed at once (a message or an observer)"
           ]
@@ -1160,16 +1203,10 @@
       },
       "set_up_writes": [
         "fetch POST /web/dataset/call_kw/res.users/write"
-      ]
-    },
-    {
-      "id": "shortest-suggestion",
-      "path": "Apps menu > Settings > Manage Users > the shortest piece of the name that puts the user on the first screen (found through the back end before the run) > click the first search suggestion > open the user.",
-      "status": "invalid",
-      "error": "action outside the clock (set-up): the measured part typed no piece of \"Majid A. Pillai\", the record the person finds (its letters in order: the name, its first letters, the initials): a record opened without searching for it was put within reach by set-up or by the product (a remembered record, a saved default search), not found by the person. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
-      "counts": {
+      ],
+      "median_counts": {
         "steps": 6,
-        "keystrokes": 3,
+        "keystrokes": 18,
         "clicks": 5,
         "scrolls": 0,
         "field_entries": 1,
@@ -1177,12 +1214,40 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.342,
-        "system_wait_seconds": 1.891,
-        "human_seconds": 16.24,
-        "human_plus_wait_seconds": 18.131,
+        "machine_seconds": 6.552,
+        "system_wait_seconds": 3.554,
+        "human_seconds": 20.44,
+        "human_plus_wait_seconds": 23.994,
         "klm_operator_counts": {
-          "K": 3,
+          "K": 18,
+          "P": 5,
+          "B": 10,
+          "H": 2,
+          "M": 6
+        }
+      }
+    },
+    {
+      "id": "shortest-suggestion",
+      "path": "Apps menu > Settings > Manage Users > the shortest piece of the name that puts the user on the first screen (found through the back end before the run) > click the first search suggestion > open the user.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 4,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 6.9,
+        "system_wait_seconds": 3.821,
+        "human_seconds": 16.52,
+        "human_plus_wait_seconds": 20.341,
+        "klm_operator_counts": {
+          "K": 4,
           "P": 5,
           "B": 10,
           "H": 2,
@@ -1195,9 +1260,9 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.024,
-          "took": 0.037,
-          "began": 0.001,
+          "at": 0.048,
+          "took": 0.08,
+          "began": 0.002,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -1206,9 +1271,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.126,
-          "took": 0.037,
-          "began": 0.062,
+          "at": 0.204,
+          "took": 0.105,
+          "began": 0.13,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -1217,9 +1282,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.492,
-          "took": 0.048,
-          "began": 0.452,
+          "at": 1.096,
+          "took": 0.102,
+          "began": 1.02,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -1227,12 +1292,12 @@
           "n": 4,
           "kind": "type",
           "label": "a piece of the name",
-          "keystrokes": 3,
-          "at": 2.934,
-          "took": 0.028,
-          "text": ". p",
+          "keystrokes": 4,
+          "at": 4.027,
+          "took": 0.134,
+          "text": ". pi",
           "same_field": false,
-          "screen": "/odoo/settings/581/users",
+          "screen": "/odoo/settings/593/users",
           "chain": false
         },
         {
@@ -1240,10 +1305,10 @@
           "kind": "click",
           "label": "search the piece",
           "keystrokes": 0,
-          "at": 3.011,
-          "took": 0.038,
-          "began": 2.966,
-          "screen": "/odoo/settings/581/users",
+          "at": 4.232,
+          "took": 0.123,
+          "began": 4.178,
+          "screen": "/odoo/settings/593/users",
           "chain": false
         },
         {
@@ -1251,59 +1316,59 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 3.907,
-          "took": 0.043,
-          "began": 3.873,
-          "screen": "/odoo/settings/581/users",
+          "at": 5.841,
+          "took": 0.156,
+          "began": 5.75,
+          "screen": "/odoo/settings/593/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.163,
-          "seconds": 0.288
+          "at": 0.31,
+          "seconds": 0.709
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.541,
-          "seconds": 0.183
+          "at": 1.198,
+          "seconds": 0.363
         },
         {
           "label": "first page of users",
-          "at": 0.725,
-          "seconds": 0.206
+          "at": 1.563,
+          "seconds": 0.448
         },
         {
           "label": "search suggestions",
-          "at": 2.963,
-          "seconds": 0.003
+          "at": 4.162,
+          "seconds": 0.015
         },
         {
           "label": "search applied",
-          "at": 3.049,
-          "seconds": 0.001
+          "at": 4.356,
+          "seconds": 0.002
         },
         {
           "label": "the row of the user",
-          "at": 3.05,
-          "seconds": 0.822
+          "at": 4.359,
+          "seconds": 1.39
         },
         {
           "label": "the latest change beside the form",
-          "at": 3.952,
-          "seconds": 0.378
+          "at": 5.998,
+          "seconds": 0.89
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 4.33,
-          "seconds": 0.01
+          "at": 6.888,
+          "seconds": 0.004
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "latest_change_on_screen": "Noor Editor 2:33 AM Majid Anil Pillai → Majid A. Pillai (Name)"
+          "latest_change_on_screen": "Noor Editor 2:45 AM Majid Anil Pillai → Majid A. Pillai (Name)"
         }
       },
       "start_state": {
@@ -1319,20 +1384,20 @@
       "verify_passes": [
         {
           "requests": 1,
-          "longest_pause_seconds": 0,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.004,
           "verified": true
         },
         {
           "requests": 1,
-          "longest_pause_seconds": 0,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.004,
           "verified": true,
-          "gap_seconds": 0.049
+          "gap_seconds": 0.1
         }
       ],
       "requests_after_clock": 0,
@@ -1343,104 +1408,130 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "d31dc5f943afa583",
+        "sha256": "d7818fa24a2925c1",
         "elements": 1268
       },
-      "screen_after_verify": null,
+      "screen_after_verify": {
+        "sha256": "d7818fa24a2925c1",
+        "elements": 1268,
+        "unchanged": true
+      },
       "verify_before": {
         "verified": false,
         "error": null,
         "back_end_reads": 0,
         "requests": 1,
-        "longest_pause_seconds": 0,
+        "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.003
+        "seconds": 0.007
       },
       "set_up_writes_waited": 0,
       "screen_changes": {
-        "judged": 125,
-        "not_caused": 18,
+        "judged": 130,
+        "not_caused": 20,
         "enforced": false,
         "not_caused_first": [
           {
-            "at": 0.517,
+            "at": 0.119,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.007 s before it) and could have sent it: a DevTools command of the harness during step 1 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 1.06,
             "event": "StyleRecalcInvalidationTracking",
             "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
             "chain": []
           },
           {
-            "at": 0.536,
+            "at": 1.074,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 1.184,
             "event": "StyleRecalcInvalidationTracking",
             "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 0.538,
+            "at": 1.194,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 0.606,
+            "at": 1.331,
             "event": "ParseHTML",
             "why": "the document /odoo/settings, whose navigation started before the record began (or was not the page's)",
             "chain": []
           },
           {
-            "at": 3.069,
+            "at": 1.997,
             "event": "ScheduleStyleInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
-            "chain": []
-          },
-          {
-            "at": 3.317,
-            "event": "StyleRecalcInvalidationTracking",
             "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
             "chain": []
           },
           {
-            "at": 3.334,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
-            "chain": []
-          },
-          {
-            "at": 3.484,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "at": 4.208,
+            "event": "ScheduleStyleInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 5 (a click whose input the browser delivers; the harness's commands only read the page)",
             "chain": []
           }
         ],
         "last_caused": {
-          "at": 4.33,
+          "at": 6.883,
           "by_step": 6,
           "chain": [
-            "the answer to POST /mail/store after 0.064 s",
+            "the answer to POST /mail/store after 0.252 s",
             "an animation frame",
             "an animation frame",
-            "an animation frame"
+            "the answer to GET /web/image/res.partner/435669/avatar_128 after 0.027 s"
           ]
         }
       },
       "finds": {
         "value": "Majid A. Pillai",
         "on_start_screen": false,
-        "typed_at_step": null,
-        "shown_before": null
+        "typed_at_step": 4,
+        "shown_before": false
       },
       "set_up_writes": [
         "fetch POST /web/dataset/call_kw/res.users/write"
-      ]
+      ],
+      "median_counts": {
+        "steps": 6,
+        "keystrokes": 4,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 6.559,
+        "system_wait_seconds": 3.74,
+        "human_seconds": 16.52,
+        "human_plus_wait_seconds": 20.26,
+        "klm_operator_counts": {
+          "K": 4,
+          "P": 5,
+          "B": 10,
+          "H": 2,
+          "M": 6
+        }
+      }
     },
     {
       "id": "shortest-enter",
       "path": "Apps menu > Settings > Manage Users > the shortest piece of the name that puts the user on the first screen > Enter > open the user.",
-      "status": "invalid",
-      "error": "action outside the clock (set-up): the measured part typed no piece of \"Majid A. Pillai\", the record the person finds (its letters in order: the name, its first letters, the initials): a record opened without searching for it was put within reach by set-up or by the product (a remembered record, a saved default search), not found by the person. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+      "status": "verified",
+      "error": null,
       "counts": {
         "steps": 6,
-        "keystrokes": 4,
+        "keystrokes": 5,
         "clicks": 4,
         "scrolls": 0,
         "field_entries": 1,
@@ -1448,12 +1539,12 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 4.126,
-        "system_wait_seconds": 1.772,
-        "human_seconds": 13.87,
-        "human_plus_wait_seconds": 15.642,
+        "machine_seconds": 5.932,
+        "system_wait_seconds": 3.236,
+        "human_seconds": 14.15,
+        "human_plus_wait_seconds": 17.386,
         "klm_operator_counts": {
-          "K": 4,
+          "K": 5,
           "P": 4,
           "B": 8,
           "H": 2,
@@ -1466,9 +1557,9 @@
           "kind": "click",
           "label": "apps menu",
           "keystrokes": 0,
-          "at": 0.024,
-          "took": 0.036,
-          "began": 0.001,
+          "at": 0.041,
+          "took": 0.072,
+          "began": 0.002,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -1477,9 +1568,9 @@
           "kind": "click",
           "label": "Settings app",
           "keystrokes": 0,
-          "at": 0.123,
-          "took": 0.036,
-          "began": 0.061,
+          "at": 0.157,
+          "took": 0.061,
+          "began": 0.114,
           "screen": "/odoo/discuss",
           "chain": false
         },
@@ -1488,9 +1579,9 @@
           "kind": "click",
           "label": "Manage Users",
           "keystrokes": 0,
-          "at": 0.44,
-          "took": 0.047,
-          "began": 0.406,
+          "at": 0.898,
+          "took": 0.088,
+          "began": 0.797,
           "screen": "/odoo/settings",
           "chain": false
         },
@@ -1498,12 +1589,12 @@
           "n": 4,
           "kind": "type",
           "label": "a piece of the name",
-          "keystrokes": 3,
-          "at": 2.82,
-          "took": 0.024,
-          "text": ". p",
+          "keystrokes": 4,
+          "at": 3.919,
+          "took": 0.067,
+          "text": ". pi",
           "same_field": false,
-          "screen": "/odoo/settings/582/users",
+          "screen": "/odoo/settings/594/users",
           "chain": false
         },
         {
@@ -1511,10 +1602,10 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 2.845,
-          "took": 0.008,
+          "at": 3.987,
+          "took": 0.039,
           "chord": "Enter",
-          "screen": "/odoo/settings/582/users",
+          "screen": "/odoo/settings/594/users",
           "chain": true
         },
         {
@@ -1522,54 +1613,54 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 3.689,
-          "took": 0.044,
-          "began": 3.663,
-          "screen": "/odoo/settings/582/users",
+          "at": 5.066,
+          "took": 0.097,
+          "began": 5.016,
+          "screen": "/odoo/settings/594/users",
           "chain": false
         }
       ],
       "waits": [
         {
           "label": "Settings loaded",
-          "at": 0.16,
-          "seconds": 0.245
+          "at": 0.219,
+          "seconds": 0.576
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.488,
-          "seconds": 0.135
+          "at": 0.987,
+          "seconds": 0.913
         },
         {
           "label": "first page of users",
-          "at": 0.624,
-          "seconds": 0.194
+          "at": 1.902,
+          "seconds": 0.005
         },
         {
           "label": "search applied",
-          "at": 2.854,
-          "seconds": 0.007
+          "at": 4.028,
+          "seconds": 0.004
         },
         {
           "label": "the row of the user",
-          "at": 2.862,
-          "seconds": 0.801
+          "at": 4.033,
+          "seconds": 0.981
         },
         {
           "label": "the latest change beside the form",
-          "at": 3.734,
-          "seconds": 0.385
+          "at": 5.166,
+          "seconds": 0.75
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 4.119,
-          "seconds": 0.005
+          "at": 5.916,
+          "seconds": 0.007
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "latest_change_on_screen": "Noor Editor 2:33 AM Majid Anil Pillai → Majid A. Pillai (Name)"
+          "latest_change_on_screen": "Noor Editor 2:46 AM Majid Anil Pillai → Majid A. Pillai (Name)"
         }
       },
       "start_state": {
@@ -1585,20 +1676,20 @@
       "verify_passes": [
         {
           "requests": 1,
-          "longest_pause_seconds": 0,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.003,
           "verified": true
         },
         {
           "requests": 1,
-          "longest_pause_seconds": 0,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.004,
           "verified": true,
-          "gap_seconds": 0.051
+          "gap_seconds": 0.122
         }
       ],
       "requests_after_clock": 0,
@@ -1609,104 +1700,130 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "297428b95f2bf6ca",
-        "elements": 1271
+        "sha256": "f4949346009f0c47",
+        "elements": 1268
       },
-      "screen_after_verify": null,
+      "screen_after_verify": {
+        "sha256": "f4949346009f0c47",
+        "elements": 1268,
+        "unchanged": true
+      },
       "verify_before": {
         "verified": false,
         "error": null,
         "back_end_reads": 0,
         "requests": 1,
-        "longest_pause_seconds": 0,
+        "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.003
+        "seconds": 0.005
       },
       "set_up_writes_waited": 0,
       "screen_changes": {
-        "judged": 115,
-        "not_caused": 14,
+        "judged": 116,
+        "not_caused": 13,
         "enforced": false,
         "not_caused_first": [
           {
-            "at": 0.417,
+            "at": 0.933,
             "event": "StyleRecalcInvalidationTracking",
             "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 0.433,
+            "at": 0.937,
             "event": "StyleRecalcInvalidationTracking",
             "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 0.467,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
-            "chain": []
-          },
-          {
-            "at": 0.483,
+            "at": 0.98,
             "event": "StyleRecalcInvalidationTracking",
             "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 0.486,
+            "at": 0.984,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 0.54,
+            "at": 1.129,
             "event": "ParseHTML",
             "why": "the document /odoo/settings, whose navigation started before the record began (or was not the page's)",
             "chain": []
           },
           {
-            "at": 2.867,
-            "event": "StyleRecalcInvalidationTracking",
+            "at": 1.859,
+            "event": "ScheduleStyleInvalidationTracking",
             "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
             "chain": []
           },
           {
-            "at": 3.683,
+            "at": 4.288,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 5.386,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
             "chain": []
           }
         ],
         "last_caused": {
-          "at": 4.119,
+          "at": 5.918,
           "by_step": 6,
           "chain": [
-            "a task that followed at once (a message or an observer)",
-            "a task that followed at once (a message or an observer)",
-            "a task that followed at once (a message or an observer)",
-            "a task that followed at once (a message or an observer)"
+            "the answer to POST /mail/store after 0.142 s",
+            "an animation frame",
+            "an animation frame",
+            "the answer to GET /web/image/res.partner/435669/avatar_128 after 0.022 s"
           ]
         }
       },
       "finds": {
         "value": "Majid A. Pillai",
         "on_start_screen": false,
-        "typed_at_step": null,
-        "shown_before": null
+        "typed_at_step": 4,
+        "shown_before": false
       },
       "set_up_writes": [
         "fetch POST /web/dataset/call_kw/res.users/write"
-      ]
+      ],
+      "median_counts": {
+        "steps": 6,
+        "keystrokes": 5,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 6.123,
+        "system_wait_seconds": 3.495,
+        "human_seconds": 14.15,
+        "human_plus_wait_seconds": 17.645,
+        "klm_operator_counts": {
+          "K": 5,
+          "P": 4,
+          "B": 8,
+          "H": 2,
+          "M": 5
+        }
+      }
     },
     {
       "id": "palette-shortest",
       "path": "Ctrl+K > \"/users\" > Enter > the shortest piece of the name that puts the user on the first screen > Enter > open the user.",
-      "status": "invalid",
-      "error": "action outside the clock (set-up): the measured part typed no piece of \"Majid A. Pillai\", the record the person finds (its letters in order: the name, its first letters, the initials): a record opened without searching for it was put within reach by set-up or by the product (a remembered record, a saved default search), not found by the person. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+      "status": "verified",
+      "error": null,
       "counts": {
         "steps": 6,
-        "keystrokes": 13,
+        "keystrokes": 14,
         "clicks": 1,
         "scrolls": 0,
         "field_entries": 2,
@@ -1714,12 +1831,12 @@
         "file_picks": 0,
         "requests": 0,
         "device_confirmations": 0,
-        "machine_seconds": 1.882,
-        "system_wait_seconds": 1.707,
-        "human_seconds": 9.79,
-        "human_plus_wait_seconds": 11.497,
+        "machine_seconds": 3.63,
+        "system_wait_seconds": 3.214,
+        "human_seconds": 10.07,
+        "human_plus_wait_seconds": 13.284,
         "klm_operator_counts": {
-          "K": 13,
+          "K": 14,
           "P": 1,
           "B": 2,
           "H": 2,
@@ -1733,7 +1850,7 @@
           "label": "command palette",
           "keystrokes": 2,
           "at": 0.001,
-          "took": 0.014,
+          "took": 0.04,
           "chord": "Control+k",
           "screen": "/odoo/discuss",
           "chain": false
@@ -1743,8 +1860,8 @@
           "kind": "type",
           "label": "menu search /users",
           "keystrokes": 6,
-          "at": 0.105,
-          "took": 0.02,
+          "at": 0.247,
+          "took": 0.035,
           "text": "/users",
           "same_field": false,
           "screen": "/odoo/discuss",
@@ -1755,8 +1872,8 @@
           "kind": "key",
           "label": "open Settings / Users & Companies / Users",
           "keystrokes": 1,
-          "at": 0.186,
-          "took": 0.01,
+          "at": 0.403,
+          "took": 0.026,
           "chord": "Enter",
           "screen": "/odoo/discuss",
           "chain": true
@@ -1765,10 +1882,10 @@
           "n": 4,
           "kind": "type",
           "label": "a piece of the name",
-          "keystrokes": 3,
-          "at": 0.565,
-          "took": 0.015,
-          "text": ". p",
+          "keystrokes": 4,
+          "at": 1.099,
+          "took": 0.084,
+          "text": ". pi",
           "same_field": false,
           "screen": "/odoo/users",
           "chain": false
@@ -1778,8 +1895,8 @@
           "kind": "key",
           "label": "search",
           "keystrokes": 1,
-          "at": 0.58,
-          "took": 0.016,
+          "at": 1.184,
+          "took": 0.024,
           "chord": "Enter",
           "screen": "/odoo/users",
           "chain": true
@@ -1789,9 +1906,9 @@
           "kind": "click",
           "label": "open the user",
           "keystrokes": 0,
-          "at": 1.488,
-          "took": 0.045,
-          "began": 1.446,
+          "at": 2.676,
+          "took": 0.111,
+          "began": 2.618,
           "screen": "/odoo/users",
           "chain": false
         }
@@ -1799,54 +1916,54 @@
       "waits": [
         {
           "label": "palette open",
-          "at": 0.016,
-          "seconds": 0.089
+          "at": 0.045,
+          "seconds": 0.197
         },
         {
           "label": "menu found",
-          "at": 0.127,
-          "seconds": 0.058
+          "at": 0.283,
+          "seconds": 0.119
         },
         {
           "label": "Settings / Users & Companies / Users loaded",
-          "at": 0.197,
-          "seconds": 0.161
+          "at": 0.43,
+          "seconds": 0.272
         },
         {
           "label": "user list ready, search focused",
-          "at": 0.358,
-          "seconds": 0.003
+          "at": 0.703,
+          "seconds": 0.011
         },
         {
           "label": "first page of users",
-          "at": 0.362,
-          "seconds": 0.202
+          "at": 0.715,
+          "seconds": 0.379
         },
         {
           "label": "search applied",
-          "at": 0.597,
+          "at": 1.208,
           "seconds": 0.017
         },
         {
           "label": "the row of the user",
-          "at": 0.615,
-          "seconds": 0.831
+          "at": 1.228,
+          "seconds": 1.389
         },
         {
           "label": "the latest change beside the form",
-          "at": 1.534,
-          "seconds": 0.343
+          "at": 2.789,
+          "seconds": 0.821
         },
         {
           "label": "the chatter's emoji data in",
-          "at": 1.877,
-          "seconds": 0.003
+          "at": 3.61,
+          "seconds": 0.009
         }
       ],
       "verification": {
         "verified": true,
         "details": {
-          "latest_change_on_screen": "Noor Editor 2:34 AM Majid Anil Pillai → Majid A. Pillai (Name)"
+          "latest_change_on_screen": "Noor Editor 2:47 AM Majid Anil Pillai → Majid A. Pillai (Name)"
         }
       },
       "start_state": {
@@ -1862,20 +1979,20 @@
       "verify_passes": [
         {
           "requests": 1,
-          "longest_pause_seconds": 0,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.004,
           "verified": true
         },
         {
           "requests": 1,
-          "longest_pause_seconds": 0,
+          "longest_pause_seconds": 0.001,
           "repeated_reads": [],
           "paced_seconds": 0,
-          "seconds": 0.002,
+          "seconds": 0.021,
           "verified": true,
-          "gap_seconds": 0.051
+          "gap_seconds": 0.085
         }
       ],
       "requests_after_clock": 0,
@@ -1886,10 +2003,14 @@
         ]
       },
       "screen_at_clock": {
-        "sha256": "0ef79e8a44a77e67",
-        "elements": 1268
+        "sha256": "4a2499db405972f4",
+        "elements": 1265
       },
-      "screen_after_verify": null,
+      "screen_after_verify": {
+        "sha256": "4a2499db405972f4",
+        "elements": 1265,
+        "unchanged": true
+      },
       "verify_before": {
         "verified": false,
         "error": null,
@@ -1898,84 +2019,112 @@
         "longest_pause_seconds": 0.001,
         "repeated_reads": [],
         "paced_seconds": 0,
-        "seconds": 0.003
+        "seconds": 0.005
       },
       "set_up_writes_waited": 0,
       "screen_changes": {
-        "judged": 109,
-        "not_caused": 15,
+        "judged": 111,
+        "not_caused": 59,
         "enforced": false,
         "not_caused_first": [
           {
-            "at": 0.103,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
-            "chain": []
-          },
-          {
-            "at": 0.144,
+            "at": 0.31,
             "event": "StyleRecalcInvalidationTracking",
             "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 0.198,
-            "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
-            "chain": []
-          },
-          {
-            "at": 0.204,
+            "at": 0.452,
             "event": "ParseHTML",
             "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
             "chain": []
           },
           {
-            "at": 0.331,
+            "at": 0.673,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
             "chain": []
           },
           {
-            "at": 0.864,
+            "at": 1.143,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "why": "it followed the answer to GET /web/image/res.users/49067/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 0.88,
+            "at": 1.165,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "why": "it followed the answer to GET /web/image/res.users/1212/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           },
           {
-            "at": 1.291,
+            "at": 1.168,
             "event": "StyleRecalcInvalidationTracking",
-            "why": "it followed the answer to GET /web/image/res.users/68318/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "why": "it followed the answer to GET /web/image/res.users/34979/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.21,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.users/1681/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.213,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.users/71953/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
             "chain": []
           }
         ],
         "last_caused": {
-          "at": 1.877,
+          "at": 3.688,
           "by_step": 6,
           "chain": [
             "a task that followed at once (a message or an observer)",
+            "the answer to GET /web/assets/ff89cec/web.assets_emoji.min.js after 0.031 s",
             "a task that followed at once (a message or an observer)",
-            "a task that followed at once (a message or an observer)",
-            "a task that followed at once (a message or an observer)"
+            "an animation frame"
           ]
         }
       },
       "finds": {
         "value": "Majid A. Pillai",
         "on_start_screen": false,
-        "typed_at_step": null,
-        "shown_before": null
+        "typed_at_step": 4,
+        "shown_before": false
       },
       "set_up_writes": [
         "fetch POST /web/dataset/call_kw/res.users/write"
-      ]
+      ],
+      "median_counts": {
+        "steps": 6,
+        "keystrokes": 14,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 3.74,
+        "system_wait_seconds": 3.251,
+        "human_seconds": 10.07,
+        "human_plus_wait_seconds": 13.321,
+        "klm_operator_counts": {
+          "K": 14,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 3
+        }
+      }
     }
   ],
-  "result_file": "gauntlet/reference/odoo/tasks/who-renamed-user.json"
+  "result_file": "gauntlet/reference/odoo/tasks/who-renamed-user.json",
+  "repeats": 3,
+  "repeat_files": [
+    "gauntlet/reference/odoo/results/who-renamed-user-20261023T223530-d75c.json",
+    "gauntlet/reference/odoo/results/who-renamed-user-20261023T223918-cb5a.json",
+    "gauntlet/reference/odoo/results/who-renamed-user-20261023T224333-e80f.json"
+  ]
 }
