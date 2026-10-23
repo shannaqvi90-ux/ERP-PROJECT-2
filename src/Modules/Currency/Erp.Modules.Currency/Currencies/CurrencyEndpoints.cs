@@ -20,7 +20,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Erp.Modules.Currency.Currencies;
 
 /// <summary>A row of the currencies list: the currency and its latest rate in
-/// <c>quoteCurrency</c> (the working company's base currency); no rate for the base currency itself.</summary>
+/// <c>quoteCurrency</c> (the working company's base currency); no rate for the base currency itself.
+/// <c>everyCompany</c> (the same on every row) says whether the caller works in every company and
+/// branch of the workspace, the condition for changing currencies and rates.</summary>
 public sealed record CurrencyRow(
     Guid Id,
     string Code,
@@ -32,7 +34,8 @@ public sealed record CurrencyRow(
     string QuoteCurrency,
     decimal? LatestRate,
     DateOnly? LatestRateDate,
-    uint Version);
+    uint Version,
+    bool EveryCompany);
 
 /// <summary>A currency as its form shows it.</summary>
 public sealed record CurrencyDto(
@@ -99,12 +102,12 @@ internal static class CurrencyEndpoints
     internal static async Task<ListResult<CurrencyRow>> PageAsync(CurrencyDbContext db, ModuleCatalog catalog, ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
         var quote = await CurrencyContext.WorkingBaseCurrencyAsync(http.RequestServices.GetRequiredService<ICompanyDirectory>(), cancellationToken);
-        var rows = await RowsAsync(db, quote, null, cancellationToken);
+        var rows = await RowsAsync(db, quote, null, http.RequestServices.GetRequiredService<ErpDbSession>().HoldsWholeWorkspace, cancellationToken);
         return await catalog.ListBinding<CurrencyRow>(CurrenciesList.Key).QueryAsync(rows.AsQueryable(), request, http, cancellationToken);
     }
 
     /// <summary>The workspace's currencies (or one) with each one's latest rate in <paramref name="quote"/>.</summary>
-    private static async Task<List<CurrencyRow>> RowsAsync(CurrencyDbContext db, string quote, Guid? id, CancellationToken cancellationToken)
+    private static async Task<List<CurrencyRow>> RowsAsync(CurrencyDbContext db, string quote, Guid? id, bool everyCompany, CancellationToken cancellationToken)
     {
         var currencies = db.Currencies.AsNoTracking();
         if (id is { } one)
@@ -124,7 +127,7 @@ internal static class CurrencyEndpoints
         return found.Select(x => new CurrencyRow(
                 x.Currency.Id, x.Currency.Code, x.Currency.NameEn, x.Currency.NameAr, MinorUnits(x.Currency.Code), x.Currency.IsActive,
                 x.Currency.MaxRateAgeDays, quote,
-                x.Latest is null ? null : CurrencyContext.Trim(x.Latest.Rate), x.Latest?.RateDate, x.Currency.Version))
+                x.Latest is null ? null : CurrencyContext.Trim(x.Latest.Rate), x.Latest?.RateDate, x.Currency.Version, everyCompany))
             .ToList();
     }
 
@@ -185,7 +188,7 @@ internal static class CurrencyEndpoints
     private static async Task<CurrencyDto?> ToDtoAsync(CurrencyDbContext db, ErpDbSession session, HttpContext http, Guid id, CancellationToken cancellationToken)
     {
         var quote = await CurrencyContext.WorkingBaseCurrencyAsync(http.RequestServices.GetRequiredService<ICompanyDirectory>(), cancellationToken);
-        var row = (await RowsAsync(db, quote, id, cancellationToken)).SingleOrDefault();
+        var row = (await RowsAsync(db, quote, id, session.HoldsWholeWorkspace, cancellationToken)).SingleOrDefault();
         if (row is null)
         {
             return null;

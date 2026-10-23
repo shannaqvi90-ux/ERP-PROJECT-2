@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../../kernel/api";
 import { BooleanField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
@@ -9,7 +9,7 @@ import { ListView } from "../../kernel/lists/ListView";
 import { Link, recordPath } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
 import { Converter, QuickRate, useDay, useRateText } from "./parts";
-import { ratesChanged, type Currency, type ListPage, type RateRow } from "./types";
+import { ratesChanged, type Currency, type CurrencyRow, type ListPage, type RateRow } from "./types";
 
 /**
  * The workspace's currencies: every current ISO 4217 currency, those in use first, in the shared
@@ -25,6 +25,9 @@ export function CurrenciesPage() {
   const day = useDay();
   // Every workspace holds the ISO 4217 currencies: none is created here, one is put in use.
   const panel = useRecordPanel(false);
+  // The rows the list shows, by id: a currency opened from its row starts from what the row holds
+  // (today's rate and the converter usable at once) while its form loads.
+  const shownRows = useRef(new Map<string, CurrencyRow>());
   useEffect(() => {
     window.addEventListener(ratesChanged, panel.refresh);
     return () => window.removeEventListener(ratesChanged, panel.refresh);
@@ -42,9 +45,14 @@ export function CurrenciesPage() {
         reloadKey={panel.reload}
         openId={panel.openId}
         onOpenIdChange={panel.onOpenIdChange}
-        renderRecord={(id, close, nav) => <CurrencyForm key={panel.formKey} id={id} nav={nav} onSaved={panel.saved} onClose={close} />}
+        renderRecord={(id, close, nav) => (
+          <CurrencyForm key={panel.formKey} id={id} row={shownRows.current.get(id)} nav={nav} onSaved={panel.saved} onClose={close} />
+        )}
         renderCell={{
-          code: (c) => <span dir="ltr">{String(c.code ?? "")}</span>,
+          code: (c) => {
+            shownRows.current.set(String(c.id), c as unknown as CurrencyRow);
+            return <span dir="ltr">{String(c.code ?? "")}</span>;
+          },
           nameAr: (c) => <span dir="rtl">{String(c.nameAr ?? "")}</span>,
           latestRate: (c) =>
             c.latestRate ? (
@@ -66,17 +74,27 @@ export function CurrenciesPage() {
 
 type Draft = { isActive: boolean; maxRateAgeDays: string };
 
-function CurrencyForm({ id, nav, onSaved, onClose }: { id: string; nav?: RecordNavigation; onSaved: (id: string) => void; onClose: () => void }) {
+/** What a row of the list already says about its currency, as a form record until the record
+ * itself arrives (its ISO number, the date of the ISO list and whether another company keeps its
+ * books in it come with the record). */
+function fromRow(row: CurrencyRow): Currency {
+  return { ...row, number: 0, isBaseCurrency: row.code === row.quoteCurrency, createdAt: "", updatedAt: "", isoPublished: "" };
+}
+
+function CurrencyForm({ id, row, nav, onSaved, onClose }: { id: string; row?: CurrencyRow; nav?: RecordNavigation; onSaved: (id: string) => void; onClose: () => void }) {
   const { t, language } = useI18n();
   const { can } = useSession();
-  const [everyCompany, setEveryCompany] = useState(true);
+  const [everyCompany, setEveryCompany] = useState(row?.everyCompany ?? true);
+  const read = (signal?: AbortSignal) =>
+    api<Currency>("GET", `/api/currency/currencies/${id}`, undefined, { signal }).then((c) => {
+      setEveryCompany(c.everyCompany);
+      return c;
+    });
   const form = useRecordForm<Currency, Draft>(
     {
-      load: (signal) =>
-        api<Currency>("GET", `/api/currency/currencies/${id}`, undefined, { signal }).then((c) => {
-          setEveryCompany(c.everyCompany);
-          return c;
-        }),
+      // Opened from its row: the form is ready at once with the row's facts, and the record replaces
+      // them as soon as it arrives (below).
+      load: (signal) => (row && row.id === id ? Promise.resolve(fromRow(row)) : read(signal)),
       initial: (c) => ({ isActive: c?.isActive ?? false, maxRateAgeDays: String(c?.maxRateAgeDays ?? 7) }),
       canEdit: can("currency.currencies.update") && everyCompany,
       save: (draft, currency) =>
@@ -92,6 +110,15 @@ function CurrencyForm({ id, nav, onSaved, onClose }: { id: string; nav?: RecordN
     },
     id,
   );
+  const adopt = useRef(form.adopt);
+  adopt.current = form.adopt;
+  useEffect(() => {
+    if (!row || row.id !== id) return;
+    const controller = new AbortController();
+    read(controller.signal).then((c) => adopt.current(c), () => undefined);
+    return () => controller.abort();
+    // Once per record opened from its row.
+  }, [id]);
   const currency = form.record;
   const bind = form.bind;
   const name = currency ? (language === "ar" ? currency.nameAr || currency.nameEn : currency.nameEn) : "";
@@ -121,7 +148,7 @@ function CurrencyForm({ id, nav, onSaved, onClose }: { id: string; nav?: RecordN
         <TextField field={bind("maxRateAgeDays")} label={t("currency.currency.maxRateAgeDays")} dir="ltr" inputMode="numeric" maxLength={3}
           hint={t("currency.currency.maxRateAgeHint")} />
       </FormSection>
-      {currency && (
+      {currency && currency.number > 0 && (
         <p className="muted cur-facts">
           {t("currency.currency.facts", { number: String(currency.number).padStart(3, "0"), minorUnits: currency.minorUnits, date: currency.isoPublished })}
           {currency.isBaseCurrency ? ` ${t("currency.currency.baseFact")}` : ""}

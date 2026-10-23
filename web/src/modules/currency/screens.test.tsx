@@ -154,6 +154,19 @@ describe("currencies screen", () => {
     expect(view!.container.querySelector('[data-testid="record-read-only"]')).not.toBeNull();
   });
 
+  it("offers no rate entry, from the row or the record, to someone who does not work in every company", async () => {
+    const limited = { ...euroRow(), everyCompany: false };
+    await open("/currency/currencies", all, (_method, p) =>
+      p === "/api/currency/currencies" ? { status: 200, body: { items: [limited], total: 1, next: null } }
+        : p === "/api/currency/currencies/c1" ? { status: 200, body: { ...euro(), everyCompany: false } } : undefined);
+    const row = Array.from(view!.container.querySelectorAll<HTMLElement>("table[role=grid] tbody tr")).find((r) => r.textContent?.includes("EUR"))!;
+    act(() => row.click());
+    await settleUntilQuiet(() => calls);
+    expect(view!.container.querySelector(".cur-convert")).not.toBeNull();
+    expect(view!.container.querySelector(".cur-quick")).toBeNull();
+    expect(view!.container.querySelector('[data-testid="record-read-only"]')).not.toBeNull();
+  });
+
   it("speaks Arabic: the panel's headings and the converter in Arabic", async () => {
     await open("/currency/currencies?open=c1", all, undefined, "ar");
     await wait();

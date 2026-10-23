@@ -12,6 +12,8 @@ export type CurrencyRow = {
   latestRate: string | null;
   latestRateDate: string | null;
   version: number;
+  /** The caller works in every company and branch of the workspace (the same on every row). */
+  everyCompany: boolean;
 };
 
 export type Currency = CurrencyRow & {
@@ -19,7 +21,6 @@ export type Currency = CurrencyRow & {
   isBaseCurrency: boolean;
   createdAt: string;
   updatedAt: string;
-  everyCompany: boolean;
   isoPublished: string;
 };
 
