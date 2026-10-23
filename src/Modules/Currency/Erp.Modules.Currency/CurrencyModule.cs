@@ -79,9 +79,11 @@ public sealed class EnabledCurrency : TenantEntity, IWorkspaceWide
 
 /// <summary>
 /// One exchange rate: <see cref="Rate"/> units of <see cref="QuoteCurrency"/> (normally a
-/// company's base currency, AED) per one unit of <see cref="Currency"/>, for one date. One rate per
-/// currency pair and date. Every company of the workspace shares it (<see cref="IWorkspaceWide"/>):
-/// the Central Bank's rate of a date is the same for every company.
+/// company's base currency, AED) per one unit of <see cref="Currency"/>, for one date. A date may
+/// hold more than one (a figure entered in the morning, then the Central Bank's): the one saved last
+/// applies (<see cref="TenantEntity.UpdatedAt"/>), the others stay as entered. Every company of the
+/// workspace shares it (<see cref="IWorkspaceWide"/>): the Central Bank's rate of a date is the same
+/// for every company.
 /// </summary>
 public sealed class ExchangeRate : TenantEntity, IWorkspaceWide
 {
@@ -172,8 +174,8 @@ public sealed class CurrencyDbContext(DbContextOptions<CurrencyDbContext> option
             e.Property(x => x.Rate).HasPrecision(Money.RatePrecision, Money.RateScale);
             e.Property(x => x.Source).HasMaxLength(10);
             e.Property(x => x.Reference).HasMaxLength(CurrencyRules.ReferenceLength);
-            // One rate per pair and date; also the lookup's index (latest on or before a date).
-            e.HasIndex(x => new { x.TenantId, x.Currency, x.QuoteCurrency, x.RateDate }).IsUnique();
+            // The lookup's index: the latest rate on or before a date, and of one date the one saved last.
+            e.HasIndex(x => new { x.TenantId, x.Currency, x.QuoteCurrency, x.RateDate, x.UpdatedAt });
             e.HasOne<EnabledCurrency>().WithMany().HasForeignKey(x => new { x.TenantId, x.Currency })
                 .HasPrincipalKey(c => new { c.TenantId, c.Code }).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<EnabledCurrency>().WithMany().HasForeignKey(x => new { x.TenantId, x.QuoteCurrency })

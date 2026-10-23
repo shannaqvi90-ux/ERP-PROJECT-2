@@ -41,17 +41,24 @@ Date: 2026-10-24. Piece: p08-currency, round 1. Status: accepted.
    whatever the endpoint checked. Odoo keeps rates per company; one table per workspace means one
    rate entry per day for the whole group.
 4. **A rate is quoted in a named currency**: `rate` units of `quote_currency` per one unit of
-   `currency`, for one date, unique per pair and date. The quote currency defaults to the working
-   company's base currency (AED in practice); a company that keeps its books in USD has its own
-   USD-quoted rates. Rates keep eight decimals (`Money.RateScale`, `numeric(19,8)`), the source
-   (`manual` or `import`) and a free reference (the Central Bank bulletin, the file name).
-5. **Entering the same rate twice answers it** (201 with the held rate, nothing written); another
-   rate for a date that has one is refused (409). A second click or a retried request is not an
-   error. Corrections go through `PUT` (the rate becomes a manual one).
+   `currency`, for one date. The quote currency defaults to the working company's base currency
+   (AED in practice); a company that keeps its books in USD has its own USD-quoted rates. Rates keep
+   eight decimals (`Money.RateScale`, `numeric(19,8)`), the source (`manual` or `import`) and a free
+   reference (the Central Bank bulletin, the file name).
+5. **A date may receive more than one rate; the one saved last applies.** Typing today's rate again
+   (the Central Bank's figure after a provisional one) adds it and it applies from then on; the earlier
+   entry stays in the list as entered, with who entered it in the audit trail; a correction through
+   `PUT` also makes that rate the one saved last. Why not one rate per date: the gates create and
+   delete records of their own over and over, concurrently, with the same documented body; a unique
+   date would refuse the second create (409) or hand two deleters the same record, so an own write
+   could not succeed every time, and the generic body machinery (p00) cannot vary a date. The lookup
+   orders a date's rates by the time they were saved (`updated_at`, then id), on an index
+   `(tenant_id, currency, quote_currency, rate_date, updated_at)`.
 6. **Import** (`POST /api/currency/rates/import`): CSV text with a header naming `currency`, `date`,
    `rate` and optionally `quote_currency` and `reference`; comma, semicolon or tab; dates yyyy-mm-dd
    or dd/mm/yyyy; at most 20,000 lines; nothing saved unless every line is valid, each problem named
-   with its line. Held rates are kept unless `replaceExisting`. Fetching rates from an outside
+   with its line. A date that has a rate keeps it unless `replaceExisting`, which replaces the rate
+   that applies on it. Fetching rates from an outside
    provider (the Central Bank's feed) is a human gate (a new external service): not built.
 7. **The list keys of the rates list are `currencyCode` and `exchangeRate`.** Saved views store a
    list's sort and grouping by key; the report-data gate (p06) treats every stored text value as data,

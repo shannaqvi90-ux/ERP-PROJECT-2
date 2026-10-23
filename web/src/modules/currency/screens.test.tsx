@@ -107,30 +107,6 @@ describe("currencies screen", () => {
     expect(view!.container.querySelector(".cur-quick [role=status]")?.textContent).toBe("Saved: 1 EUR = 4.2875 AED on 24 Oct 2026.");
   });
 
-  it("asks before replacing today's rate, and replaces it with its version on a second Enter", async () => {
-    await open("/currency/currencies?open=c1", all, (method, p) =>
-      method === "POST" && p === "/api/currency/rates"
-        ? { status: 409, body: { code: "currency.rateExists", title: "A rate for these currencies and this date already exists." } }
-        : method === "PUT" && p === "/api/currency/rates/r1"
-          ? { status: 200, body: { ...rate(), rate: "4.3" } }
-          : undefined);
-    await wait();
-    const input = view!.container.querySelector<HTMLInputElement>('.cur-quick input[name="rate"]')!;
-    setInput(input, "4.3");
-    const enter = async () => {
-      await act(async () => {
-        input.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "Enter", code: "Enter" }));
-        await new Promise((r) => setTimeout(r, 0));
-      });
-      await settleUntilQuiet(() => calls);
-    };
-    await enter();
-    expect(view!.container.querySelector(".cur-quick [role=alert]")?.textContent).toContain("Today already has a rate: 4.2875");
-    await enter();
-    const put = calls.find((c) => c.method === "PUT" && c.url === "/api/currency/rates/r1");
-    expect(put?.body).toMatchObject({ currency: "EUR", quoteCurrency: "AED", rateDate: "2026-10-23", rate: "4.3", version: 2 });
-  });
-
   it("converts an amount as it is typed, with the rate and its date", async () => {
     await open("/currency/currencies?open=c1");
     await wait();

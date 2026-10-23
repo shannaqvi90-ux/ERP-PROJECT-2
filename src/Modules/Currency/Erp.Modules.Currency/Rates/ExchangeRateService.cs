@@ -12,7 +12,8 @@ namespace Erp.Modules.Currency.Rates;
 /// <list type="number">
 /// <item>The same currency on both sides is rate 1.</item>
 /// <item>Only a rate quoted directly in the wanted currency counts: no inverse, no cross rate.</item>
-/// <item>A rate dated on the date itself is used (exact).</item>
+/// <item>A rate dated on the date itself is used (exact); of several rates of one date, the one
+/// saved last.</item>
 /// <item>Otherwise, under <see cref="RateLookupRule.LatestWithinLimit"/>, the latest rate dated
 /// before the date, if it is at most the currency's <c>maxRateAgeDays</c> older (7 by default).</item>
 /// <item>A rate dated after the date is never used.</item>
@@ -41,7 +42,7 @@ internal sealed class ExchangeRateService(CurrencyDbContext db, ICompanyDirector
         var maxAge = rule == RateLookupRule.ExactDate ? 0 : enabled.MaxRateAgeDays;
         var latest = await db.Rates.AsNoTracking()
             .Where(r => r.Currency == currency.Code && r.QuoteCurrency == quoteCurrency.Code && r.RateDate <= date)
-            .OrderByDescending(r => r.RateDate)
+            .OrderByDescending(r => r.RateDate).ThenByDescending(r => r.UpdatedAt).ThenByDescending(r => r.Id)
             .Select(r => new { r.Id, r.RateDate, r.Rate, r.Source })
             .FirstOrDefaultAsync(cancellationToken);
         if (latest is null || latest.RateDate < date.AddDays(-maxAge))

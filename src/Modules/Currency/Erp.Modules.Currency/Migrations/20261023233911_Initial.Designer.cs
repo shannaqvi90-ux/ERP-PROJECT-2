@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Erp.Modules.Currency.Migrations
 {
     [DbContext(typeof(CurrencyDbContext))]
-    [Migration("20261023222216_Initial")]
+    [Migration("20261023233911_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -198,9 +198,8 @@ namespace Erp.Modules.Currency.Migrations
                     b.HasIndex("TenantId", "UpdatedAt", "Id")
                         .HasDatabaseName("ix_exchange_rates_tenant_id_updated_at_id");
 
-                    b.HasIndex("TenantId", "Currency", "QuoteCurrency", "RateDate")
-                        .IsUnique()
-                        .HasDatabaseName("ix_exchange_rates_tenant_id_currency_quote_currency_rate_date");
+                    b.HasIndex("TenantId", "Currency", "QuoteCurrency", "RateDate", "UpdatedAt")
+                        .HasDatabaseName("ix_exchange_rates_tenant_id_currency_quote_currency_rate_date_");
 
                     b.HasIndex(new[] { "Currency", "Reference" }, "ix_exchange_rates_search")
                         .HasDatabaseName("ix_exchange_rates_currency_reference");

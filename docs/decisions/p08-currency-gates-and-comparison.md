@@ -17,10 +17,10 @@ What this piece added or tightened so they cover it:
   `/api/currency/` (eleven endpoints, each with why that permission and no broader one).
 - `tests/Gates/permission-write-sets.txt`: the write set of every currency permission (rates insert,
   update of date, rate, reference and source only, delete, import), checked by the generic write-set
-  gate, which now reaches every rate endpoint: the create's documented example is a date the gate
-  workspaces never hold, entering the same rate again answers it as entered, and the update's example
-  differs from the create's, so a record made for an edit is changed by it; the gate workspaces hold
-  a fixed day (31 December 2025) so the import example also replaces a held rate.
+  gate, which now reaches every rate endpoint: every create makes a record of its own (a date may hold
+  several rates, the one saved last applies), and the update's example differs from the create's, so
+  a record made for an edit is changed by it; the gate workspaces hold a fixed day (31 December 2025)
+  so the import example also replaces a held rate.
 - `tests/Gates/write-set-unexercised.txt` + `tests/Erp.Gates.Tests/G2/CurrencyWriteSetTests.cs`: the
   currency edit (`PUT /api/currency/currencies/{id}`) has no POST that makes a currency (every
   workspace holds the ISO list), so the generic gate cannot make a record for it; the new gate sends

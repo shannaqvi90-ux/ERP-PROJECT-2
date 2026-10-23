@@ -195,9 +195,8 @@ namespace Erp.Modules.Currency.Migrations
                     b.HasIndex("TenantId", "UpdatedAt", "Id")
                         .HasDatabaseName("ix_exchange_rates_tenant_id_updated_at_id");
 
-                    b.HasIndex("TenantId", "Currency", "QuoteCurrency", "RateDate")
-                        .IsUnique()
-                        .HasDatabaseName("ix_exchange_rates_tenant_id_currency_quote_currency_rate_date");
+                    b.HasIndex("TenantId", "Currency", "QuoteCurrency", "RateDate", "UpdatedAt")
+                        .HasDatabaseName("ix_exchange_rates_tenant_id_currency_quote_currency_rate_date_");
 
                     b.HasIndex(new[] { "Currency", "Reference" }, "ix_exchange_rates_search")
                         .HasDatabaseName("ix_exchange_rates_currency_reference");

@@ -53,9 +53,9 @@ public sealed record RateDto(
 
 /// <summary>Enter an exchange rate: <c>rate</c> units of <c>quoteCurrency</c> per one unit of
 /// <c>currency</c> on <c>rateDate</c>. The quote currency defaults to the working company's base
-/// currency and the date to today in the workspace's time zone. Entering again the rate a date
-/// already holds answers that rate as entered (201, nothing is written: a second click or a retried
-/// request); another rate for a date that has one is refused (409: correct it instead).</summary>
+/// currency and the date to today in the workspace's time zone. A date may receive more than one
+/// rate (the morning's figure, then the Central Bank's): the rate saved last for a date is the one
+/// that applies, and the earlier ones stay as entered.</summary>
 public sealed record CreateRateRequest(
     [property: ApiExample("EUR"), StringLength(3, MinimumLength = 3)] string? Currency,
     [property: ApiExample("AED"), StringLength(3, MinimumLength = 3)] string? QuoteCurrency,
@@ -76,7 +76,8 @@ public sealed record UpdateRateRequest(
 /// <summary>Import exchange rates from a delimited text file (CSV). The first line names the
 /// columns: <c>currency</c>, <c>date</c> and <c>rate</c> are required, <c>quote_currency</c> and
 /// <c>reference</c> are optional (comma, semicolon or tab between values). Dates are yyyy-mm-dd or
-/// dd/mm/yyyy; rates use a dot for decimals. Nothing is saved unless every line is valid.</summary>
+/// dd/mm/yyyy; rates use a dot for decimals. Nothing is saved unless every line is valid. A date
+/// that has a rate keeps it unless <c>replaceExisting</c>, which replaces the rate that applies.</summary>
 public sealed record ImportRatesRequest(
     [property: ApiExample("cbuae-rates-2026-10.csv"), StringLength(CurrencyRules.ReferenceLength)] string? FileName,
     [property: ApiExample("currency,date,rate\nEUR,2025-12-29,4.2875\nEUR,2025-12-31,4.2875\nUSD,2025-12-31,3.6725")] string? Content,
@@ -103,15 +104,14 @@ internal static class RateEndpoints
 
         group.MapPost("/rates", Create)
             .WithName("currency.rates.create")
-            .WithSummary("Enter an exchange rate by hand (one per currency pair and date; needs every company of the workspace, which shares the rates). The same rate entered again for its date answers it as entered (nothing is written); a different one answers 409.")
+            .WithSummary("Enter an exchange rate by hand (needs every company of the workspace, which shares the rates). The rate saved last for a currency pair and date is the one that applies; earlier ones stay as entered.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)
-            .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(CurrencyPermissions.RatesCreate);
 
         group.MapPut("/rates/{id:guid}", Update)
             .WithName("currency.rates.update")
-            .WithSummary("Correct an exchange rate's date, rate or reference (its currencies stay; the rate becomes a manual one).")
+            .WithSummary("Correct an exchange rate's date, rate or reference (its currencies stay; the rate becomes a manual one, and the one saved last for its date).")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -182,15 +182,8 @@ internal static class RateEndpoints
         {
             return Problems.Forbidden(http, "currency.workspaceNeedsEveryCompany");
         }
-        var held = await db.Rates.AsNoTracking().SingleOrDefaultAsync(r => r.Currency == currency && r.QuoteCurrency == quote && r.RateDate == date, cancellationToken);
-        if (held is not null)
-        {
-            // The same entry sent twice (a second click, a retried request) is answered as entered,
-            // nothing written; another rate for the date is refused.
-            return held.Rate == request.Rate
-                ? TypedResults.Created($"/api/currency/rates/{held.Id}", ToDto(held, session))
-                : Problems.Conflict(http, "currency.rateExists");
-        }
+        // A date that has a rate already gets this one as well: the rate saved last for a date is the
+        // one that applies (the earlier stays in the list, as entered).
         var rate = new ExchangeRate
         {
             Currency = currency!,
@@ -232,10 +225,6 @@ internal static class RateEndpoints
             return new Validator(http).Add(currency != rate.Currency ? "currency" : "quoteCurrency", "currencyRateCurrencyFixed").ToResult();
         }
         var date = request.RateDate!.Value;
-        if (date != rate.RateDate && await db.Rates.AnyAsync(r => r.Currency == rate.Currency && r.QuoteCurrency == rate.QuoteCurrency && r.RateDate == date && r.Id != id, cancellationToken))
-        {
-            return Problems.Conflict(http, "currency.rateExists");
-        }
         db.Entry(rate).Property(r => r.Version).OriginalValue = request.Version!.Value;
         rate.RateDate = date;
         rate.Rate = request.Rate!.Value;
@@ -306,8 +295,10 @@ internal static class RateEndpoints
         var held = await db.Rates
             .Where(r => currencies.Contains(r.Currency) && r.RateDate >= first && r.RateDate <= last)
             .ToListAsync(cancellationToken);
+        // The rate that applies on each date: the one saved last.
         var byKey = held.Where(r => pairs.Contains(r.Currency + r.QuoteCurrency))
-            .ToDictionary(r => (r.Currency, r.QuoteCurrency, r.RateDate));
+            .GroupBy(r => (r.Currency, r.QuoteCurrency, r.RateDate))
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(r => r.UpdatedAt).ThenByDescending(r => r.Id).First());
         int added = 0, replaced = 0, kept = 0, unchanged = 0;
         foreach (var line in lines)
         {

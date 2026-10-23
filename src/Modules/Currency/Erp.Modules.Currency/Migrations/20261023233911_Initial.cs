@@ -101,11 +101,10 @@ namespace Erp.Modules.Currency.Migrations
                 columns: new[] { "tenant_id", "currency", "id" });
 
             migrationBuilder.CreateIndex(
-                name: "ix_exchange_rates_tenant_id_currency_quote_currency_rate_date",
+                name: "ix_exchange_rates_tenant_id_currency_quote_currency_rate_date_",
                 schema: "currency",
                 table: "exchange_rates",
-                columns: new[] { "tenant_id", "currency", "quote_currency", "rate_date" },
-                unique: true);
+                columns: new[] { "tenant_id", "currency", "quote_currency", "rate_date", "updated_at" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_exchange_rates_tenant_id_quote_currency",

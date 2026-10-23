@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { decimalInput } from "../../kernel/forms/fields";
 import { useI18n } from "../../kernel/i18n";
-import { ratesChanged, type Conversion, type Rate, type RateRow } from "./types";
+import { ratesChanged, type Conversion, type Rate } from "./types";
 
 /** A calendar date (yyyy-mm-dd) shown as that day in the screen's language. */
 export function useDay() {
@@ -34,8 +34,8 @@ const messageOf = (error: unknown) => {
 /**
  * Today's rate for one currency, typed straight into the currency's panel: the field has the
  * focus when the panel opens, Enter saves (POST /api/currency/rates, dated today in the workspace's
- * time zone by the server) and says what was saved. When today already has a rate, the first Enter
- * says so and shows it, and a second Enter replaces it (PUT with its version).
+ * time zone by the server) and says what was saved. A day that has a rate gets this one as well and
+ * it applies from now on (the rate saved last for a date is the one used).
  */
 export function QuickRate({ currency, quote, autoFocus, onSaved }: { currency: string; quote: string; autoFocus?: boolean; onSaved?: (rate: Rate) => void }) {
   const { t } = useI18n();
@@ -46,7 +46,6 @@ export function QuickRate({ currency, quote, autoFocus, onSaved }: { currency: s
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [replacing, setReplacing] = useState<Rate | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,36 +62,13 @@ export function QuickRate({ currency, quote, autoFocus, onSaved }: { currency: s
     setError(null);
     setNotice(null);
     try {
-      const saved = replacing
-        ? await api<Rate>("PUT", `/api/currency/rates/${replacing.id}`, {
-            currency, quoteCurrency: quote, rateDate: replacing.rateDate, rate, reference: replacing.reference, version: replacing.version,
-          })
-        : await api<Rate>("POST", "/api/currency/rates", { currency, quoteCurrency: quote, rate });
-      setReplacing(null);
+      const saved = await api<Rate>("POST", "/api/currency/rates", { currency, quoteCurrency: quote, rate });
       setValue("");
       setNotice(t("currency.quick.saved", { currency, quote, rate: rateText(saved.rate), date: day(saved.rateDate) }));
       window.dispatchEvent(new Event(ratesChanged));
       onSaved?.(saved);
     } catch (e) {
-      if (e instanceof ApiError && e.code === "currency.rateExists") {
-        // Today has a rate already: show it, and let a second Enter replace it.
-        try {
-          const params = new URLSearchParams({ filter: `currencyCode eq '${currency}' and quoteCurrency eq '${quote}'`, take: "1" });
-          const page = await api<{ items: RateRow[] }>("GET", `/api/currency/rates?${params}`);
-          const latest = page.items[0];
-          const held = latest ? await api<Rate>("GET", `/api/currency/rates/${latest.id}`) : null;
-          if (held) {
-            setReplacing(held);
-            setError(t("currency.quick.exists", { rate: rateText(held.rate), date: day(held.rateDate) }));
-          } else {
-            setError(e.message);
-          }
-        } catch {
-          setError(e.message);
-        }
-      } else {
-        setError(messageOf(e));
-      }
+      setError(messageOf(e));
     } finally {
       setBusy(false);
     }
@@ -138,7 +114,7 @@ export function QuickRate({ currency, quote, autoFocus, onSaved }: { currency: s
           />
           <span className="cur-unit" dir="ltr">{quote}</span>
           <button type="button" className="button" disabled={busy || value.trim() === ""} onClick={() => void save()}>
-            {replacing ? t("currency.quick.replace") : t("currency.quick.save")}
+            {t("currency.quick.save")}
           </button>
         </span>
         <span className="field-hint muted" id={`${id}-hint`}>

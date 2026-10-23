@@ -9,7 +9,8 @@ statutory question below is with the owner (human gate).
 2. Only a rate quoted directly in the wanted currency is used. No inverse (1 / rate) and no cross
    rate (EUR to USD through AED) is worked out: each would introduce a rounding the person never
    entered, and a ledger must show the rate it used.
-3. A rate dated on the date itself is used (`exact: true`).
+3. A rate dated on the date itself is used (`exact: true`); of several rates of one date, the one
+   saved last (by the time it was saved, then its id).
 4. Otherwise (`LatestWithinLimit`, the default) the latest rate dated before the date is used if it
    is at most the currency's `maxRateAgeDays` older (7 unless the workspace changes it, 0 to 366;
    0 means only the date's own rate). A week covers a weekend and the usual public holidays without

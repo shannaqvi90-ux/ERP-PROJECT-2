@@ -184,14 +184,16 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         Assert.Equal("2.86738351", created.GetProperty("inverseRate").GetString());
         var id = created.GetProperty("id").GetGuid();
 
-        // One rate per currency pair and date: the same rate again is answered as entered (nothing
-        // written), another is refused.
-        var again = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "SEK", rateDate = Day(date), rate = "0.348750" });
+        // A date may receive another rate: the one saved last applies, the earlier stays as entered.
+        var again = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "SEK", rateDate = Day(date), rate = "0.35" });
         Assert.Equal(HttpStatusCode.Created, again.StatusCode);
-        Assert.Equal(id, (await Json(again)).GetProperty("id").GetGuid());
-        var twice = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "SEK", rateDate = Day(date), rate = "0.35" });
-        Assert.Equal(HttpStatusCode.Conflict, twice.StatusCode);
-        Assert.Equal("currency.rateExists", (await Json(twice)).GetProperty("code").GetString());
+        var second = (await Json(again)).GetProperty("id").GetGuid();
+        Assert.NotEqual(id, second);
+        var applies = await Json(await admin.GetAsync($"/api/currency/rates/lookup?currency=SEK&date={Day(date)}"));
+        Assert.Equal(("0.35", second), (applies.GetProperty("rate").GetString(), applies.GetProperty("rateId").GetGuid()));
+        Assert.Equal(2, (await admin.GetFromJsonAsync<JsonElement>("/api/currency/rates?filter=" + Uri.EscapeDataString($"currencyCode eq 'SEK' and rateDate eq '{Day(date)}'"))).GetProperty("total").GetInt32());
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.DeleteAsync($"/api/currency/rates/{second}")).StatusCode);
+        Assert.Equal("0.34875", (await Json(await admin.GetAsync($"/api/currency/rates/lookup?currency=SEK&date={Day(date)}"))).GetProperty("rate").GetString());
 
         // Field rules, in Arabic for someone who works in Arabic.
         using var arabic = await AdminAsync("admin.ar");

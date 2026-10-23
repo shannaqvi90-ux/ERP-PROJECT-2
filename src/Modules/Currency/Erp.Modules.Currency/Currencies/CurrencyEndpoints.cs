@@ -119,7 +119,7 @@ internal static class CurrencyEndpoints
             {
                 Currency = c,
                 Latest = db.Rates.Where(r => r.Currency == c.Code && r.QuoteCurrency == quote)
-                    .OrderByDescending(r => r.RateDate)
+                    .OrderByDescending(r => r.RateDate).ThenByDescending(r => r.UpdatedAt).ThenByDescending(r => r.Id)
                     .Select(r => new { r.RateDate, r.Rate })
                     .FirstOrDefault(),
             })
