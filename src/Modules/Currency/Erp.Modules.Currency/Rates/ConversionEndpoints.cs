@@ -85,7 +85,7 @@ internal static class ConversionEndpoints
             return RateEndpoints.MissingRate(http, code!, outcome.BaseCurrency, on, outcome.Lookup);
         }
         var rate = conversion.Rate;
-        return TypedResults.Ok(new ConversionDto(conversion.Money, conversion.Money.ExactBaseAmount(),
+        return TypedResults.Ok(new ConversionDto(conversion.Money, CurrencyContext.Trim(conversion.Money.ExactBaseAmount()),
             rate.Rate == 1m ? 1m : CurrencyContext.Inverse(rate.Rate), on, rate.RateDate, rate.Exact, rate.Source, rate.RateId, outcome.CompanyId));
     }
 }

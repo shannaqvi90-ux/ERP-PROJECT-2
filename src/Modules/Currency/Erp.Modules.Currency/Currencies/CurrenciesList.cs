@@ -22,7 +22,7 @@ internal static class CurrenciesList
                     new ListColumn("latestRate", "currency.currency.latestRate", ListColumnType.Money, Sortable: true, CurrencyField: "quoteCurrency"),
                     new ListColumn("latestRateDate", "currency.currency.latestRateDate", ListColumnType.Date, Sortable: true, Filterable: true),
                     new ListColumn("quoteCurrency", "currency.currency.quoteCurrency", ListColumnType.Text, Hidden: true, Width: ListColumnWidth.Narrow),
-                    new ListColumn("minorUnits", "currency.currency.minorUnits", ListColumnType.Number, Sortable: true, Filterable: true, Groupable: true),
+                    new ListColumn("minorUnits", "currency.currency.minorUnits", ListColumnType.Number, Sortable: true, Filterable: true),
                     new ListColumn("maxRateAgeDays", "currency.currency.maxRateAgeDays", ListColumnType.Number, Sortable: true, Filterable: true, Hidden: true),
                     new ListColumn("isActive", "currency.common.status", ListColumnType.Boolean, Filterable: true, Groupable: true,
                         TrueLabelKey: "currency.common.active", FalseLabelKey: "currency.common.inactive"),
