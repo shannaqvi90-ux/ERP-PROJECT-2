@@ -87,3 +87,15 @@ run time it was a real cross-tenant leak: Gulf Steel's admin landed on an Al Noo
   loads.
 - .NET: two file-only gate tests, under 1 s.
 - In total, about 130 processor seconds against the 10,500 s maximum.
+
+## Verify runs of round 13
+
+- r13d (2026-10-22) and r13e (2026-10-23, 11:01 UTC) were cut off before they finished: the
+  first when the owner needed the PC, the second when Docker and then the whole WSL VM stopped.
+  Neither stopped on a test.
+- r13g (2026-10-23, after merging the integration branch at 5e8a2f0d) passed:
+  `ERP_PROJECT=b-p04-shell ERP_HTTP_PORT=20400 ERP_DB_PORT=20401 gauntlet/tools/verify-slot.sh ./erp verify`.
+  It took 5,025 s and 8,367 processor seconds (.NET 5,262, web 2,527, e2e 520, timing 58),
+  against the 10,500 s maximum. Counts: .NET 774, web unit 551, e2e 120, comparison 486, build
+  6, with no failures or skips. The wall time was not judged because the machine was busy
+  (a critic's verify ran beside it, and the load peaked at 73 on 16 CPUs).
