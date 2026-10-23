@@ -58,8 +58,18 @@ public static class WriteSets
     /// permissions the caller held.</param>
     /// <param name="Requests">Requests sent by callers holding the endpoint's permission.</param>
     /// <param name="Writes">Audited row changes judged.</param>
+    /// <param name="DependentsMade">Rows the administrator made hang on records before the
+    /// second sending of their requests (<see cref="WriteSetDependents"/>).</param>
+    /// <param name="ExercisedWithDependents">Endpoints acting on a record that answered 2xx to at
+    /// least one request at a record with dependents.</param>
     public sealed record Result(IReadOnlyList<string> Problems, IReadOnlyList<string> Exercised, IReadOnlyList<string> Unexercised, int Requests, int Writes,
-        IReadOnlyList<string> Observed);
+        IReadOnlyList<string> Observed, int DependentsMade = 0, IReadOnlyList<string>? ExercisedWithDependents = null);
+
+    /// <summary>The suffix of a reviewed unexercised line for the sending at a record with dependents.</summary>
+    public const string WithDependents = " [with dependents]";
+
+    /// <summary>The name a variant sent at a record with dependents carries after its own.</summary>
+    public const string OnDependents = ", on a record with dependents";
 
     public static List<Line> Load(string relativePath = ReviewedFile)
     {
@@ -139,13 +149,23 @@ public static class WriteSets
         var readPermissions = endpoints.Where(e => e.Method == "GET").Select(e => e.Permission).Distinct().Order(StringComparer.Ordinal).ToArray();
 
         var callers = new Dictionary<string, Caller>(StringComparer.Ordinal);
+        using var dependents = new WriteSetDependents(env, openApi, admin, endpoints, company);
+        var exercisedWithDependents = new List<string>();
+        if (await dependents.EnsureAsync() is { } setUp)
+        {
+            problems.Add($"the write-set gate could not set up the records dependents use: {setUp}");
+        }
         try
         {
             var n = 0;
             foreach (var endpoint in writing)
             {
                 var accepted = false;
+                var acceptedWithDependents = false;
+                var sentWithDependents = false;
                 var answers = new List<string>();
+                var answersWithDependents = new List<string>();
+                string? acceptedAs = null;
                 foreach (var withReads in new[] { false, true })
                 {
                     var held = withReads ? [endpoint.Permission, .. readPermissions.Where(p => p != endpoint.Permission)] : new[] { endpoint.Permission };
@@ -156,8 +176,10 @@ public static class WriteSets
                         caller = await Caller.CreateAsync(env, admin, held, $"{n}{Guid.NewGuid():N}"[..10]);
                         callers[key] = caller;
                     }
-                    foreach (var variant in await VariantsAsync(env, openApi, admin, caller, endpoint, company, endpoints))
+                    foreach (var variant in await VariantsAsync(env, openApi, admin, caller, endpoint, company, endpoints, dependents))
                     {
+                        var onDependents = variant.Name.EndsWith(OnDependents, StringComparison.Ordinal);
+                        sentWithDependents |= onDependents;
                         var (status, text, before) = await variant.SendAsync();
                         requests++;
                         var changes = await WritesSinceAsync(env, before);
@@ -178,17 +200,49 @@ public static class WriteSets
                         if (status is >= 200 and < 300)
                         {
                             accepted = true;
+                            acceptedWithDependents |= onDependents;
                         }
                         else
                         {
-                            answers.Add($"{variant.Name}: {status} {Short(text)}");
+                            (onDependents ? answersWithDependents : answers).Add($"{variant.Name}: {status} {Short(text)}");
                         }
                     }
                     if (accepted)
                     {
-                        exercised.Add($"{endpoint.Key} [{(withReads ? "with read permissions" : "alone")}]");
+                        acceptedAs ??= withReads ? "with read permissions" : "alone";
+                    }
+                    if (accepted && (acceptedWithDependents || !sentWithDependents))
+                    {
                         break;
                     }
+                }
+                if (acceptedAs is not null)
+                {
+                    exercised.Add($"{endpoint.Key} [{acceptedAs}]");
+                }
+                if (acceptedWithDependents)
+                {
+                    exercisedWithDependents.Add(endpoint.Key);
+                }
+                // Sent at a record with dependents, a request must pass there too, or the writes it
+                // makes into those rows are never judged (critic p02 round 14, plant PB3).
+                var dependentsKey = endpoint.Key + WithDependents;
+                if (sentWithDependents && accepted && !acceptedWithDependents)
+                {
+                    if (unexercisedReviewed.ContainsKey(dependentsKey))
+                    {
+                        unexercised.Add(dependentsKey);
+                    }
+                    else
+                    {
+                        problems.Add($"{endpoint}: no request at a record with dependents passed (so the writes it makes into rows hanging on the record were never judged " +
+                                     $"against the write set of {endpoint.Permission}): {string.Join(" | ", answersWithDependents.Take(4))}; make the gate reach it, " +
+                                     $"or review '{dependentsKey}' in {UnexercisedFile} with the reason");
+                    }
+                }
+                else if (acceptedWithDependents && unexercisedReviewed.ContainsKey(dependentsKey))
+                {
+                    problems.Add($"{UnexercisedFile}: {dependentsKey} is listed as unreachable but answered 2xx; remove the line");
                 }
                 if (!accepted)
                 {
@@ -219,11 +273,12 @@ public static class WriteSets
         if (only is null)
         {
             var keys = writing.Select(e => e.Key).ToHashSet(StringComparer.Ordinal);
-            problems.AddRange(unexercisedReviewed.Keys.Where(k => !keys.Contains(k)).Select(k => $"{UnexercisedFile}: {k} is no endpoint that changes data; remove the line"));
+            problems.AddRange(unexercisedReviewed.Keys.Where(k => !keys.Contains(k.EndsWith(WithDependents, StringComparison.Ordinal) ? k[..^WithDependents.Length] : k))
+                .Select(k => $"{UnexercisedFile}: {k} is no endpoint that changes data; remove the line"));
             problems.AddRange(lines.Where(l => !observed.Contains(l.Key))
                 .Select(l => $"{ReviewedFile}: '{l.Key}' was used by no request of the run; a write set lists only what its requests write (remove the line, or make the gate reach the write)"));
         }
-        return new Result(problems, exercised, unexercised, requests, writes, observed.Order(StringComparer.Ordinal).ToList());
+        return new Result(problems, exercised, unexercised, requests, writes, observed.Order(StringComparer.Ordinal).ToList(), dependents.Made, exercisedWithDependents);
     }
 
     /// <summary>A request ready to send as the caller, after any set-up the administrator did.</summary>
@@ -233,9 +288,11 @@ public static class WriteSets
 
     /// <summary>The requests sent to one endpoint: the valid one, then one per true-or-false field
     /// turned the other way and one per other documented choice of each choice field. Each is built
-    /// afresh (a new record to edit or delete, its current version) right before it is sent.</summary>
+    /// afresh (a new record to edit or delete, its current version) right before it is sent. A
+    /// request that acts on a record is sent twice: at a fresh record, and at one the administrator
+    /// first gave the rows that hang on such a record (<see cref="WriteSetDependents"/>).</summary>
     private static async Task<IReadOnlyList<Variant>> VariantsAsync(ErpTestEnvironment env, OpenApiDocument openApi, HttpClient admin, Caller caller,
-        ApiEndpoint endpoint, string company, IReadOnlyList<ApiEndpoint> endpoints)
+        ApiEndpoint endpoint, string company, IReadOnlyList<ApiEndpoint> endpoints, WriteSetDependents dependents)
     {
         var schema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
         var changes = new List<(string Name, Action<JsonObject> Change)> { ("valid", _ => { }) };
@@ -271,13 +328,20 @@ public static class WriteSets
                 changes.Add(($"{leaf.Display}={other}", body => OpenApiDocument.SetLeaf(body, leaf.Path,
                     leaf.Type == "integer" ? JsonValue.Create((long)other) : JsonValue.Create(other))));
             }
+            // Every list of references emptied and given one item (critic p02 round 14: an edit
+            // that copies the record's own lists never gives or takes a role, and what that writes
+            // went unjudged).
+            changes.AddRange(dependents.ListChanges(s));
         }
         var n = 0;
-        return changes.Select(c => new Variant(c.Name, async () =>
+        var shapes = RecordCollection(openApi, endpoint, endpoints) is { } record && dependents.HasDependents(record)
+            ? new WriteSetDependents?[] { null, dependents }
+            : [null];
+        return shapes.SelectMany(shape => changes.Select(c => new Variant(shape is null ? c.Name : c.Name + OnDependents, async () =>
         {
             n++;
             var tag = $"ws{n}{Guid.NewGuid():N}"[..12];
-            var prepared = await PrepareAsync(env, openApi, admin, caller, endpoint, schema, company, endpoints, tag);
+            var prepared = await PrepareAsync(env, openApi, admin, caller, endpoint, schema, company, endpoints, tag, shape);
             if (prepared.Problem is { } problem)
             {
                 return (0, problem, await LastAuditIdAsync(env));
@@ -297,7 +361,22 @@ public static class WriteSets
             {
                 return ((int)response.StatusCode, await response.Content.ReadAsStringAsync(), before);
             }
-        })).ToList();
+        }))).ToList();
+    }
+
+    /// <summary>The collection of the record a request acts on (made first by the gate): the one its
+    /// first route parameter names, or the list an action on "all that match" searches; null for a
+    /// create or a record of the caller's own with no id in the route.</summary>
+    private static string? RecordCollection(OpenApiDocument openApi, ApiEndpoint endpoint, IReadOnlyList<ApiEndpoint> endpoints)
+    {
+        if (endpoint.RouteParameters.Count == 0)
+        {
+            var at = endpoint.Pattern.IndexOf("/matching", StringComparison.Ordinal);
+            return at > 0 ? endpoint.Pattern[..at] : null;
+        }
+        var parameter = endpoint.RouteParameters[0];
+        var collection = endpoint.Pattern[..endpoint.Pattern.IndexOf("/{" + parameter, StringComparison.Ordinal)];
+        return (endpoints.FirstOrDefault(e => e.Method == "POST" && e.Pattern == collection) ?? NamedCollection(endpoints, parameter))?.Pattern;
     }
 
     /// <summary>A documented bound of a number (written as a number or as a string).</summary>
@@ -318,7 +397,7 @@ public static class WriteSets
     /// saved view or a passkey; otherwise by the administrator), carrying fresh values with the
     /// record's own version and references.</summary>
     private static async Task<Prepared> PrepareAsync(ErpTestEnvironment env, OpenApiDocument openApi, HttpClient admin, Caller caller, ApiEndpoint endpoint,
-        JsonElement? schema, string company, IReadOnlyList<ApiEndpoint> endpoints, string tag)
+        JsonElement? schema, string company, IReadOnlyList<ApiEndpoint> endpoints, string tag, WriteSetDependents? dependents)
     {
         var body = schema is { } s ? G1WriteOracle.Valid(openApi, s, env, tag, company) : null;
         if (endpoint.RouteParameters.Count == 0 && body is not null && body.ContainsKey("expectedCount") && body.ContainsKey("search"))
@@ -330,6 +409,10 @@ public static class WriteSets
             if (made.Problem is { } problem)
             {
                 return new Prepared("", null, problem);
+            }
+            if (dependents is not null && await dependents.AddAsync(list, made.Id!, tag) is { } listNotMade)
+            {
+                return new Prepared("", null, listNotMade);
             }
             body["search"] = made.Body?["email"]?.DeepClone() ?? made.Body?["code"]?.DeepClone();
             body["filter"] = null;
@@ -369,6 +452,10 @@ public static class WriteSets
         }
         var id = record0.Id!;
         var maker = record0.Maker!;
+        if (dependents is not null && await dependents.AddAsync(create.Pattern, id, tag) is { } notMade)
+        {
+            return new Prepared("", null, notMade);
+        }
         var path = endpoint.Path(_ => id);
         var recordPath = $"{create.Pattern}/{id}";
         // A delete of something under the record that the same path puts there first (a logo).
@@ -447,7 +534,7 @@ public static class WriteSets
     private static ApiEndpoint? NamedCollection(IReadOnlyList<ApiEndpoint> endpoints, string parameter)
     {
         var stem = parameter.EndsWith("Id", StringComparison.Ordinal) ? parameter[..^2] : parameter;
-        return endpoints.FirstOrDefault(e => e.Method == "POST" && e.Pattern.EndsWith("/" + stem + "s", StringComparison.OrdinalIgnoreCase));
+        return endpoints.FirstOrDefault(e => e.Method == "POST" && e.Pattern.EndsWith("/" + WriteSetDependents.Plural(stem), StringComparison.OrdinalIgnoreCase));
     }
 
     private static async Task CarryVersionAsync(HttpClient client, string path, JsonObject body)
