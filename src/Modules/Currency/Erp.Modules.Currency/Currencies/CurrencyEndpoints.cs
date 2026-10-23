@@ -19,12 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Currency.Currencies;
 
-/// <summary>One currency of the ISO 4217 catalogue, and whether the workspace has enabled it.</summary>
-public sealed record CatalogCurrency(string Code, int Number, int MinorUnits, string NameEn, bool Enabled);
-
-/// <summary>The ISO 4217 catalogue (List One, with the date it was published).</summary>
-public sealed record CurrencyCatalog(string Published, IReadOnlyList<CatalogCurrency> Currencies);
-
 /// <summary>A row of the currencies list: the currency and its latest rate in
 /// <c>quoteCurrency</c> (the working company's base currency); no rate for the base currency itself.</summary>
 public sealed record CurrencyRow(
@@ -59,18 +53,13 @@ public sealed record CurrencyDto(
     DateTimeOffset UpdatedAt,
     uint Version,
     [property: Description("True when the caller works in every company of the workspace and every branch of each: only then may they change currencies and rates, which every company shares.")]
-    bool EveryCompany);
+    bool EveryCompany,
+    [property: Description("The date of the ISO 4217 list (List One) the currencies, their numbers and minor units come from.")]
+    string IsoPublished);
 
-/// <summary>Enable an ISO 4217 currency for the workspace. The English name defaults to ISO 4217's;
-/// the Arabic name defaults to the product's own for the common currencies and is required for the others.</summary>
-public sealed record EnableCurrencyRequest(
-    [property: ApiExample("EUR"), StringLength(3, MinimumLength = 3)] string? Code,
-    [property: ApiExample("Euro"), StringLength(CurrencyRules.NameLength)] string? NameEn,
-    [property: ApiExample("يورو"), StringLength(CurrencyRules.NameLength)] string? NameAr,
-    [property: Range(0, CurrencyRules.MaxRateAgeDaysLimit)] int? MaxRateAgeDays);
-
-/// <summary>Change an enabled currency: its names, whether it is in use, and how many days old the
-/// latest rate may be on a date that has none. Its code never changes.</summary>
+/// <summary>Change a currency of the workspace: put it in use or out of use, its names (the Arabic
+/// one may be left empty), and how many days old the latest rate may be on a date that has none.
+/// Its code never changes.</summary>
 public sealed record UpdateCurrencyRequest(
     [property: ApiExample("Euro"), StringLength(CurrencyRules.NameLength)] string? NameEn,
     [property: ApiExample("يورو"), StringLength(CurrencyRules.NameLength)] string? NameAr,
@@ -82,14 +71,9 @@ internal static class CurrencyEndpoints
 {
     public static void Map(RouteGroupBuilder group)
     {
-        group.MapGet("/catalog", Catalog)
-            .WithName("currency.catalog")
-            .WithSummary("The ISO 4217 currencies (List One as published by the maintenance agency: code, number, minor units, English name) and which of them the workspace has enabled.")
-            .RequirePermission(CurrencyPermissions.CurrenciesRead);
-
         group.MapGet("/currencies", List)
             .WithName("currency.currencies.list")
-            .WithSummary("The workspace's currencies, each with its latest rate in the working company's base currency, a page at a time: word search on code and names, filters, sort, paging and grouping (the list query contract); by code by default.")
+            .WithSummary("The workspace's currencies (every current ISO 4217 currency), each with its latest rate in the working company's base currency, a page at a time: word search on code and names, filters (isActive eq true for those in use), sort, paging and grouping (the list query contract); those in use first, then by code.")
             .RequirePermission(CurrencyPermissions.CurrenciesRead);
 
         group.MapGet("/currencies/{id:guid}", Get)
@@ -97,31 +81,13 @@ internal static class CurrencyEndpoints
             .WithSummary("One of the workspace's currencies.")
             .RequirePermission(CurrencyPermissions.CurrenciesRead);
 
-        group.MapPost("/currencies", Enable)
-            .WithName("currency.currencies.create")
-            .WithSummary("Enable an ISO 4217 currency for the workspace (every company shares it: needs every company of the workspace).")
-            .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status403Forbidden)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .RequirePermission(CurrencyPermissions.CurrenciesCreate);
-
         group.MapPut("/currencies/{id:guid}", Update)
             .WithName("currency.currencies.update")
-            .WithSummary("Change an enabled currency's names, whether it is in use, or how old the latest rate may be on a date without one (needs every company of the workspace). A company's base currency stays in use.")
+            .WithSummary("Put a currency in use or out of use, or change its names or how old the latest rate may be on a date without one (needs every company of the workspace, which shares its currencies). A company's base currency stays in use.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(CurrencyPermissions.CurrenciesUpdate);
-    }
-
-    private static async Task<Ok<CurrencyCatalog>> Catalog(CurrencyDbContext db, CancellationToken cancellationToken)
-    {
-        var enabled = (await db.Currencies.AsNoTracking().Select(c => c.Code).ToListAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
-        var currencies = CurrencyCode.All
-            .Select(code => new CatalogCurrency(code, Iso4217.Currencies[code].Number, Iso4217.Currencies[code].MinorUnits,
-                Iso4217Names.English.GetValueOrDefault(code, code), enabled.Contains(code)))
-            .ToList();
-        return TypedResults.Ok(new CurrencyCatalog(Iso4217.Published, currencies));
     }
 
     private static async Task<Results<Ok<ListPage<CurrencyRow>>, ProblemHttpResult>> List(
@@ -172,47 +138,6 @@ internal static class CurrencyEndpoints
         return dto is null ? Problems.NotFound(http) : TypedResults.Ok(dto);
     }
 
-    private static async Task<Results<Created<CurrencyDto>, ProblemHttpResult>> Enable(
-        EnableCurrencyRequest request, CurrencyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
-    {
-        var code = request.Code?.Trim().ToUpperInvariant();
-        var nameEn = Clean(request.NameEn) ?? (code is not null ? Iso4217Names.English.GetValueOrDefault(code) : null);
-        var nameAr = Clean(request.NameAr) ?? (code is not null ? CurrencyNames.Arabic.GetValueOrDefault(code) : null);
-        var validator = new Validator(http).Required("code", code);
-        if (!string.IsNullOrEmpty(code))
-        {
-            validator.Must(CurrencyCode.IsKnown(code), "code", "currencyCode");
-        }
-        validator.Required("nameEn", nameEn).MaxLength("nameEn", nameEn, CurrencyRules.NameLength)
-            .Required("nameAr", nameAr).MaxLength("nameAr", nameAr, CurrencyRules.NameLength);
-        CheckMaxAge(validator, request.MaxRateAgeDays);
-        if (!validator.IsValid)
-        {
-            return validator.ToResult();
-        }
-        // Every company of the workspace shares its currencies: only someone who works in all of
-        // them, in every branch of each, enables one. The kernel refuses the write as well.
-        if (!session.HoldsWholeWorkspace)
-        {
-            return Problems.Forbidden(http, "currency.workspaceNeedsEveryCompany");
-        }
-        if (await db.Currencies.AnyAsync(c => c.Code == code, cancellationToken))
-        {
-            return Problems.Conflict(http, "currency.currencyAlreadyEnabled");
-        }
-        var currency = new EnabledCurrency
-        {
-            Code = code!,
-            NameEn = nameEn!,
-            NameAr = nameAr!,
-            IsActive = true,
-            MaxRateAgeDays = request.MaxRateAgeDays ?? CurrencyRules.DefaultMaxRateAgeDays,
-        };
-        db.Currencies.Add(currency);
-        await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Created($"/api/currency/currencies/{currency.Id}", (await ToDtoAsync(db, session, http, currency.Id, cancellationToken))!);
-    }
-
     private static async Task<Results<Ok<CurrencyDto>, ProblemHttpResult>> Update(
         Guid id, UpdateCurrencyRequest request, CurrencyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
@@ -220,7 +145,7 @@ internal static class CurrencyEndpoints
         var nameAr = Clean(request.NameAr);
         var validator = new Validator(http)
             .Required("nameEn", nameEn).MaxLength("nameEn", nameEn, CurrencyRules.NameLength)
-            .Required("nameAr", nameAr).MaxLength("nameAr", nameAr, CurrencyRules.NameLength)
+            .MaxLength("nameAr", nameAr, CurrencyRules.NameLength)
             .Required("isActive", request.IsActive)
             .Required("maxRateAgeDays", request.MaxRateAgeDays)
             .Required("version", request.Version);
@@ -244,7 +169,7 @@ internal static class CurrencyEndpoints
         }
         db.Entry(currency).Property(c => c.Version).OriginalValue = request.Version!.Value;
         currency.NameEn = nameEn!;
-        currency.NameAr = nameAr!;
+        currency.NameAr = nameAr ?? "";
         currency.IsActive = request.IsActive!.Value;
         currency.MaxRateAgeDays = request.MaxRateAgeDays!.Value;
         db.Entry(currency).Property(c => c.UpdatedAt).IsModified = true;
@@ -279,6 +204,6 @@ internal static class CurrencyEndpoints
         var number = Iso4217.Currencies.TryGetValue(row.Code, out var entry) ? entry.Number : 0;
         return new CurrencyDto(row.Id, row.Code, number, row.NameEn, row.NameAr, row.MinorUnits, row.IsActive, row.MaxRateAgeDays, row.QuoteCurrency,
             row.LatestRate, row.LatestRateDate, await IsBaseCurrencyAsync(http, row.Code, cancellationToken), times.CreatedAt, times.UpdatedAt, row.Version,
-            session.HoldsWholeWorkspace);
+            session.HoldsWholeWorkspace, Iso4217.Published);
     }
 }

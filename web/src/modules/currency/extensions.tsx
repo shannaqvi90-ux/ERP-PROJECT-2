@@ -35,7 +35,6 @@ export const extensions: ModuleExtensions = {
   actions: [
     { key: "currency.rates.new", labelKey: "currency.rate.new", keywordsKey: "currency.action.newRateKeywords", permission: "currency.rates.create", path: "/currency/rates", command: "currency.screen.new" },
     { key: "currency.rates.import", labelKey: "currency.import.title", keywordsKey: "currency.action.importKeywords", permission: "currency.rates.import", path: "/currency/rates", command: "currency.screen.import" },
-    { key: "currency.currencies.new", labelKey: "currency.currency.new", keywordsKey: "currency.action.newCurrencyKeywords", permission: "currency.currencies.create", path: "/currency/currencies", command: "currency.screen.new" },
     { key: "currency.rates.print", labelKey: "currency.action.printRates", keywordsKey: "currency.action.printKeywords", permission: "currency.rates.read", path: "/currency/rates", command: "lists.print" },
     { key: "currency.currencies.print", labelKey: "currency.action.printCurrencies", keywordsKey: "currency.action.printKeywords", permission: "currency.currencies.read", path: "/currency/currencies", command: "lists.print" },
   ],

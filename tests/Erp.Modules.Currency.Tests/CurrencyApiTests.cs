@@ -16,10 +16,11 @@ public sealed class CurrencyFixture : IAsyncLifetime
 }
 
 /// <summary>
-/// The currency module through its API, on the gate seed (each workspace: AED, USD, EUR and GBP,
-/// thirty rates over the last ten days): the rate lookup's rules, conversion and its one rounding,
-/// entering, correcting, deleting and importing rates, enabling and changing currencies, the
-/// workspace-wide rule for writes, validation in both languages and the audit trail.
+/// The currency module through its API, on the gate seed (each workspace holds every ISO 4217
+/// currency, AED, USD, EUR and GBP in use, thirty rates over the last ten days and three on 31
+/// December 2025): the rate lookup's rules, conversion and its one rounding, entering, correcting,
+/// deleting and importing rates, putting currencies in use and changing them, the workspace-wide
+/// rule for writes, validation in both languages and the audit trail.
 /// </summary>
 public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<CurrencyFixture>
 {
@@ -33,12 +34,17 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
 
     private async Task<HttpClient> AdminAsync(string local = "admin") => await Env.SignInAsync(Env.Email(Env.TenantA, local));
 
-    /// <summary>Enables a currency of the test's own (so tests do not share rates).</summary>
+    /// <summary>Puts a currency of the test's own in use (so tests do not share rates).</summary>
     private static async Task<Guid> EnableAsync(HttpClient admin, string code, string? nameAr = null)
     {
-        var response = await admin.PostAsJsonAsync("/api/currency/currencies", new { code, nameAr = nameAr ?? $"عملة {code}" });
-        Assert.True(response.StatusCode == HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
-        return (await Json(response)).GetProperty("id").GetGuid();
+        var row = (await admin.GetFromJsonAsync<JsonElement>($"/api/currency/currencies?search={code}")).GetProperty("items").EnumerateArray()
+            .Single(c => c.GetProperty("code").GetString() == code);
+        var response = await admin.PutAsJsonAsync($"/api/currency/currencies/{row.GetProperty("id").GetGuid()}", new
+        {
+            nameEn = row.GetProperty("nameEn").GetString(), nameAr = nameAr ?? $"عملة {code}", isActive = true, maxRateAgeDays = 7, version = row.GetProperty("version").GetUInt32(),
+        });
+        Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        return row.GetProperty("id").GetGuid();
     }
 
     private static async Task<JsonElement> RateAsync(HttpClient admin, string currency, DateOnly date, string rate, string? reference = null)
@@ -49,33 +55,38 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
     }
 
     [Fact]
-    public async Task The_seeded_workspace_holds_its_currencies_and_rates_and_the_catalogue_lists_ISO_4217()
+    public async Task The_seeded_workspace_holds_every_ISO_4217_currency_those_in_use_first_and_its_rates()
     {
         using var viewer = await AdminAsync("viewer");
-        var currencies = await viewer.GetFromJsonAsync<JsonElement>("/api/currency/currencies");
-        var codes = currencies.GetProperty("items").EnumerateArray().Select(c => c.GetProperty("code").GetString()!).ToList();
-        Assert.All(new[] { "AED", "EUR", "GBP", "USD" }, code => Assert.Contains(code, codes));
-        var usd = currencies.GetProperty("items").EnumerateArray().Single(c => c.GetProperty("code").GetString() == "USD");
+        var currencies = await viewer.GetFromJsonAsync<JsonElement>("/api/currency/currencies?take=200");
+        var rows = currencies.GetProperty("items").EnumerateArray().ToList();
+        Assert.Equal(165, currencies.GetProperty("total").GetInt32());
+        Assert.Equal(Erp.Kernel.Money.CurrencyCode.All.Order(StringComparer.Ordinal), rows.Select(c => c.GetProperty("code").GetString()!).Order(StringComparer.Ordinal));
+        // Those in use first, then by code.
+        var inUse = rows.TakeWhile(c => c.GetProperty("isActive").GetBoolean()).Select(c => c.GetProperty("code").GetString()!).ToList();
+        Assert.All(new[] { "AED", "EUR", "GBP", "USD" }, code => Assert.Contains(code, inUse));
+        Assert.Equal(inUse.Order(StringComparer.Ordinal), inUse);
+        Assert.All(rows.Skip(inUse.Count), c => Assert.False(c.GetProperty("isActive").GetBoolean()));
+        var usd = rows.Single(c => c.GetProperty("code").GetString() == "USD");
         Assert.Equal("3.6725", usd.GetProperty("latestRate").GetString());
         Assert.Equal(Day(Today), usd.GetProperty("latestRateDate").GetString());
         Assert.Equal("AED", usd.GetProperty("quoteCurrency").GetString());
         Assert.Equal(2, usd.GetProperty("minorUnits").GetInt32());
-        var aed = currencies.GetProperty("items").EnumerateArray().Single(c => c.GetProperty("code").GetString() == "AED");
+        var aed = rows.Single(c => c.GetProperty("code").GetString() == "AED");
         Assert.Equal(JsonValueKind.Null, aed.GetProperty("latestRate").ValueKind);
+        var kwd = rows.Single(c => c.GetProperty("code").GetString() == "KWD");
+        Assert.Equal((3, "Kuwaiti Dinar", "دينار كويتي", false), (kwd.GetProperty("minorUnits").GetInt32(), kwd.GetProperty("nameEn").GetString(), kwd.GetProperty("nameAr").GetString(), kwd.GetProperty("isActive").GetBoolean()));
+        // A currency the product has no Arabic name for starts without one.
+        Assert.Equal("", rows.Single(c => c.GetProperty("code").GetString() == "XAF").GetProperty("nameAr").GetString());
+        var form = await viewer.GetFromJsonAsync<JsonElement>($"/api/currency/currencies/{kwd.GetProperty("id").GetGuid()}");
+        Assert.Equal((414, "2026-09-17", false), (form.GetProperty("number").GetInt32(), form.GetProperty("isoPublished").GetString(), form.GetProperty("isBaseCurrency").GetBoolean()));
 
-        var rates = await viewer.GetFromJsonAsync<JsonElement>("/api/currency/rates?filter=" + Uri.EscapeDataString("currency eq 'EUR'"));
-        Assert.True(rates.GetProperty("total").GetInt32() >= 10);
+        var rates = await viewer.GetFromJsonAsync<JsonElement>("/api/currency/rates?filter=" + Uri.EscapeDataString("currencyCode eq 'EUR'"));
+        Assert.True(rates.GetProperty("total").GetInt32() >= 11);
         var first = rates.GetProperty("items")[0];
         Assert.Equal(Day(Today), first.GetProperty("rateDate").GetString());
         Assert.Equal("import", first.GetProperty("source").GetString());
-
-        var catalog = await viewer.GetFromJsonAsync<JsonElement>("/api/currency/catalog");
-        Assert.Equal("2026-09-17", catalog.GetProperty("published").GetString());
-        var entries = catalog.GetProperty("currencies").EnumerateArray().ToList();
-        Assert.Equal(165, entries.Count);
-        var kwd = entries.Single(c => c.GetProperty("code").GetString() == "KWD");
-        Assert.Equal((414, 3, "Kuwaiti Dinar", false), (kwd.GetProperty("number").GetInt32(), kwd.GetProperty("minorUnits").GetInt32(), kwd.GetProperty("nameEn").GetString(), kwd.GetProperty("enabled").GetBoolean()));
-        Assert.True(entries.Single(c => c.GetProperty("code").GetString() == "EUR").GetProperty("enabled").GetBoolean());
+        Assert.True(first.TryGetProperty("exchangeRate", out _));
     }
 
     [Fact]
@@ -115,9 +126,9 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         Assert.Equal(HttpStatusCode.OK, update.StatusCode);
         Assert.Equal("4.6", (await Json(await Lookup(monday.AddDays(35)))).GetProperty("rate").GetString());
         Assert.Equal(HttpStatusCode.NotFound, (await Lookup(monday.AddDays(41))).StatusCode);
-        // A currency the workspace does not use, and the same currency on both sides.
-        var unknown = await admin.GetAsync($"/api/currency/rates/lookup?currency=ZAR&date={Day(monday)}");
-        Assert.Equal("currency.currencyNotEnabled", (await Json(unknown)).GetProperty("code").GetString());
+        // A currency out of use still answers from the rates it has (none here), and the same currency on both sides is 1.
+        var unused = await admin.GetAsync($"/api/currency/rates/lookup?currency=ZAR&date={Day(monday)}");
+        Assert.Equal("currency.rateMissing", (await Json(unused)).GetProperty("code").GetString());
         var aed = await Json(await admin.GetAsync($"/api/currency/rates/lookup?currency=AED&date={Day(monday)}"));
         Assert.Equal(("1", "same"), (aed.GetProperty("rate").GetString(), aed.GetProperty("source").GetString()));
         // Bad input is a validation problem, not a lookup.
@@ -171,7 +182,11 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         Assert.Equal("2.86738351", created.GetProperty("inverseRate").GetString());
         var id = created.GetProperty("id").GetGuid();
 
-        // One rate per currency pair and date.
+        // One rate per currency pair and date: the same rate again is answered as entered (nothing
+        // written), another is refused.
+        var again = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "SEK", rateDate = Day(date), rate = "0.348750" });
+        Assert.Equal(HttpStatusCode.Created, again.StatusCode);
+        Assert.Equal(id, (await Json(again)).GetProperty("id").GetGuid());
         var twice = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "SEK", rateDate = Day(date), rate = "0.35" });
         Assert.Equal(HttpStatusCode.Conflict, twice.StatusCode);
         Assert.Equal("currency.rateExists", (await Json(twice)).GetProperty("code").GetString());
@@ -191,8 +206,8 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         Assert.Equal("currencyRate", errors.GetProperty("rate")[0].GetProperty("code").GetString());
         Assert.Matches(@"\p{IsArabic}", errors.GetProperty("rate")[0].GetProperty("message").GetString()!);
         Assert.True(errors.TryGetProperty("reference", out _));
-        var notEnabled = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "DKK", rate = "0.5" });
-        Assert.Equal("currencyNotEnabled", (await Json(notEnabled)).GetProperty("errors").GetProperty("currency")[0].GetProperty("code").GetString());
+        var notInUse = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "DKK", rate = "0.5" });
+        Assert.Equal("currencyInactive", (await Json(notInUse)).GetProperty("errors").GetProperty("currency")[0].GetProperty("code").GetString());
         var zero = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "SEK", rate = "0" });
         Assert.Equal("currencyRate", (await Json(zero)).GetProperty("errors").GetProperty("rate")[0].GetProperty("code").GetString());
 
@@ -241,9 +256,9 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         var kept = await Json(await admin.PostAsJsonAsync("/api/currency/rates/import", new { fileName = "pln-march.csv", content = file }));
         Assert.Equal((3, 2, 0, 1, 0), (kept.GetProperty("lines").GetInt32(), kept.GetProperty("added").GetInt32(), kept.GetProperty("replaced").GetInt32(),
             kept.GetProperty("kept").GetInt32(), kept.GetProperty("unchanged").GetInt32()));
-        var rows = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/rates?filter=" + Uri.EscapeDataString("currency eq 'PLN'") + "&sort=rateDate"))
+        var rows = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/rates?filter=" + Uri.EscapeDataString("currencyCode eq 'PLN'") + "&sort=rateDate"))
             .GetProperty("items").EnumerateArray().ToList();
-        Assert.Equal(["0.9", "0.92", "0.93"], rows.Select(r => r.GetProperty("rate").GetString()));
+        Assert.Equal(["0.9", "0.92", "0.93"], rows.Select(r => r.GetProperty("exchangeRate").GetString()));
         Assert.Equal(["manual", "import", "import"], rows.Select(r => r.GetProperty("source").GetString()));
         Assert.Equal([null, "pln-march.csv", "Bulletin 12"], rows.Select(r => r.GetProperty("reference").GetString()));
 
@@ -264,31 +279,35 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
     }
 
     [Fact]
-    public async Task Currencies_are_enabled_named_and_taken_out_of_use_but_a_base_currency_stays()
+    public async Task Currencies_are_put_in_use_renamed_and_taken_out_of_use_but_a_base_currency_stays()
     {
         using var admin = await AdminAsync();
-        // The English name defaults to ISO 4217's and the Arabic one to the product's own.
-        var created = await admin.PostAsJsonAsync("/api/currency/currencies", new { code = "jpy" });
-        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
-        var jpy = await Json(created);
-        Assert.Equal(("JPY", "Yen", "ين ياباني", 0, 392, true, 7), (jpy.GetProperty("code").GetString(), jpy.GetProperty("nameEn").GetString(), jpy.GetProperty("nameAr").GetString(),
-            jpy.GetProperty("minorUnits").GetInt32(), jpy.GetProperty("number").GetInt32(), jpy.GetProperty("isActive").GetBoolean(), jpy.GetProperty("maxRateAgeDays").GetInt32()));
-        Assert.Equal(HttpStatusCode.Conflict, (await admin.PostAsJsonAsync("/api/currency/currencies", new { code = "JPY" })).StatusCode);
-        // A currency the product has no Arabic name for needs one; an unknown code is refused.
-        var noArabic = await admin.PostAsJsonAsync("/api/currency/currencies", new { code = "XAF" });
-        Assert.Equal("required", (await Json(noArabic)).GetProperty("errors").GetProperty("nameAr")[0].GetProperty("code").GetString());
-        var unknown = await admin.PostAsJsonAsync("/api/currency/currencies", new { code = "XAU", nameAr = "ذهب" });
-        Assert.Equal("currencyCode", (await Json(unknown)).GetProperty("errors").GetProperty("code")[0].GetProperty("code").GetString());
-        var age = await admin.PostAsJsonAsync("/api/currency/currencies", new { code = "XAF", nameAr = "فرنك وسط أفريقي", maxRateAgeDays = 400 });
-        Assert.Equal(HttpStatusCode.BadRequest, age.StatusCode);
-
-        // Out of use: no new rates, the old ones stay.
-        var id = jpy.GetProperty("id").GetGuid();
-        var off = await admin.PutAsJsonAsync($"/api/currency/currencies/{id}", new { nameEn = "Japanese Yen", nameAr = "ين ياباني", isActive = false, maxRateAgeDays = 3, version = jpy.GetProperty("version").GetUInt32() });
-        Assert.Equal(HttpStatusCode.OK, off.StatusCode);
-        Assert.False((await Json(off)).GetProperty("isActive").GetBoolean());
+        var row = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=JPY")).GetProperty("items")[0];
+        var id = row.GetProperty("id").GetGuid();
+        Assert.False(row.GetProperty("isActive").GetBoolean());
+        Assert.Equal(("Yen", "ين ياباني", 0), (row.GetProperty("nameEn").GetString(), row.GetProperty("nameAr").GetString(), row.GetProperty("minorUnits").GetInt32()));
+        // Rates only for a currency in use.
         var refused = await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "JPY", rate = "0.024" });
         Assert.Equal("currencyInactive", (await Json(refused)).GetProperty("errors").GetProperty("currency")[0].GetProperty("code").GetString());
+        var on = await admin.PutAsJsonAsync($"/api/currency/currencies/{id}", new { nameEn = "Japanese Yen", nameAr = "", isActive = true, maxRateAgeDays = 3, version = row.GetProperty("version").GetUInt32() });
+        Assert.Equal(HttpStatusCode.OK, on.StatusCode);
+        var jpy = await Json(on);
+        Assert.Equal(("Japanese Yen", "", true, 3, 392), (jpy.GetProperty("nameEn").GetString(), jpy.GetProperty("nameAr").GetString(), jpy.GetProperty("isActive").GetBoolean(),
+            jpy.GetProperty("maxRateAgeDays").GetInt32(), jpy.GetProperty("number").GetInt32()));
+        await RateAsync(admin, "JPY", new DateOnly(2026, 1, 5), "0.0235");
+        // Validation: an English name, a rate age from 0 to 366, the version read.
+        var invalid = await admin.PutAsJsonAsync($"/api/currency/currencies/{id}", new { nameEn = " ", nameAr = "ين", isActive = true, maxRateAgeDays = 400, version = jpy.GetProperty("version").GetUInt32() });
+        var errors = (await Json(invalid)).GetProperty("errors");
+        Assert.Equal("required", errors.GetProperty("nameEn")[0].GetProperty("code").GetString());
+        Assert.Equal("currencyMaxRateAge", errors.GetProperty("maxRateAgeDays")[0].GetProperty("code").GetString());
+        var stale = await admin.PutAsJsonAsync($"/api/currency/currencies/{id}", new { nameEn = "Yen", nameAr = "", isActive = true, maxRateAgeDays = 7, version = row.GetProperty("version").GetUInt32() });
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+
+        // Out of use: no new rates, the old ones stay and are still looked up.
+        var off = await admin.PutAsJsonAsync($"/api/currency/currencies/{id}", new { nameEn = "Japanese Yen", nameAr = "ين ياباني", isActive = false, maxRateAgeDays = 3, version = jpy.GetProperty("version").GetUInt32() });
+        Assert.Equal(HttpStatusCode.OK, off.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/currency/rates", new { currency = "JPY", rate = "0.024" })).StatusCode);
+        Assert.Equal("0.0235", (await Json(await admin.GetAsync("/api/currency/rates/lookup?currency=JPY&date=2026-01-05"))).GetProperty("rate").GetString());
 
         // The dirham is a company's base currency: it stays in use.
         var aed = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=AED")).GetProperty("items")[0];
@@ -305,7 +324,7 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         using var admin = await AdminAsync();
         var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/companies")).EnumerateArray().Select(c => c.GetProperty("id").GetGuid()).ToList();
         Assert.True(companies.Count >= 2);
-        var permissions = new[] { "currency.currencies.read", "currency.currencies.create", "currency.rates.read", "currency.rates.create", "currency.rates.import", "currency.rates.delete" };
+        var permissions = new[] { "currency.currencies.read", "currency.currencies.update", "currency.rates.read", "currency.rates.create", "currency.rates.import", "currency.rates.delete" };
         var role = await Json(await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = "Treasury", nameAr = "الخزينة", permissions }));
         var roleId = role.GetProperty("id").GetGuid();
 
@@ -337,6 +356,7 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         Assert.True(started.IsSuccessStatusCode, await started.Content.ReadAsStringAsync());
 
         var rateId = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/rates?take=1")).GetProperty("items")[0].GetProperty("id").GetGuid();
+        var cad = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=CAD")).GetProperty("items")[0];
         foreach (var local in new[] { "treasury.one", "treasury.role" })
         {
             using var user = await Env.SignInAsync(Env.Email(Env.TenantA, local));
@@ -345,7 +365,8 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
             Assert.True(read.StatusCode == HttpStatusCode.OK, $"{local}: {(int)read.StatusCode} {await read.Content.ReadAsStringAsync()}");
             foreach (var response in new[]
                      {
-                         await user.PostAsJsonAsync("/api/currency/currencies", new { code = "CAD" }),
+                         await user.PutAsJsonAsync($"/api/currency/currencies/{cad.GetProperty("id").GetGuid()}",
+                             new { nameEn = "Canadian Dollar", nameAr = "دولار كندي", isActive = true, maxRateAgeDays = 7, version = cad.GetProperty("version").GetUInt32() }),
                          await user.PostAsJsonAsync("/api/currency/rates", new { currency = "EUR", rateDate = "2025-01-05", rate = "3.9" }),
                          await user.PostAsJsonAsync("/api/currency/rates/import", new { content = "currency,date,rate\nEUR,2025-01-06,3.9\n" }),
                          await user.DeleteAsync($"/api/currency/rates/{rateId}"),
@@ -373,8 +394,8 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         await EnableAsync(b, "HUF");
         var date = new DateOnly(2026, 2, 3);
         var bRate = await RateAsync(b, "HUF", date, "0.0101", "B only");
-        // A does not use HUF at all, and B's rate is not found by id.
-        Assert.Equal("currency.currencyNotEnabled", (await Json(await a.GetAsync($"/api/currency/rates/lookup?currency=HUF&date={Day(date)}"))).GetProperty("code").GetString());
+        // A has no HUF rate at all, and B's rate is not found by id.
+        Assert.Equal("currency.rateMissing", (await Json(await a.GetAsync($"/api/currency/rates/lookup?currency=HUF&date={Day(date)}"))).GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.NotFound, (await a.GetAsync($"/api/currency/rates/{bRate.GetProperty("id").GetGuid()}")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await a.DeleteAsync($"/api/currency/rates/{bRate.GetProperty("id").GetGuid()}")).StatusCode);
         Assert.Equal(0, (await a.GetFromJsonAsync<JsonElement>("/api/currency/rates?search=HUF")).GetProperty("total").GetInt32());

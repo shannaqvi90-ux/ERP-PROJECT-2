@@ -4,9 +4,10 @@ using Erp.Modules.Currency.Contracts;
 namespace Erp.Modules.Currency.Currencies;
 
 /// <summary>
-/// The workspace's currencies, each with its latest rate in the working company's base currency.
-/// A workspace enables tens of currencies (ISO 4217 lists 165), so the endpoint loads them whole
-/// with their latest rates (one query) and the list is searched, filtered and sorted in memory.
+/// The workspace's currencies: every current ISO 4217 currency (165 in the list of 2026-09-17), those
+/// in use first, each with its latest rate in the working company's base currency. The endpoint
+/// loads them whole with their latest rates (one query) and the list is searched, filtered and
+/// sorted in memory.
 /// </summary>
 internal static class CurrenciesList
 {
@@ -24,11 +25,11 @@ internal static class CurrenciesList
                     new ListColumn("quoteCurrency", "currency.currency.quoteCurrency", ListColumnType.Text, Hidden: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("minorUnits", "currency.currency.minorUnits", ListColumnType.Number, Sortable: true, Filterable: true),
                     new ListColumn("maxRateAgeDays", "currency.currency.maxRateAgeDays", ListColumnType.Number, Sortable: true, Filterable: true, Hidden: true),
-                    new ListColumn("isActive", "currency.common.status", ListColumnType.Boolean, Filterable: true, Groupable: true,
+                    new ListColumn("isActive", "currency.common.status", ListColumnType.Boolean, Sortable: true, Filterable: true, Groupable: true,
                         TrueLabelKey: "currency.common.active", FalseLabelKey: "currency.common.inactive"),
                 ],
                 SearchFields: ["code", "nameEn", "nameAr"],
-                DefaultSort: "code",
+                DefaultSort: "-isActive,code",
                 Presets:
                 [
                     new ListPreset("active", "currency.view.active", Filter: "isActive eq true"),
@@ -43,5 +44,5 @@ internal static class CurrenciesList
             .Column("minorUnits", r => r.MinorUnits)
             .Column("maxRateAgeDays", r => r.MaxRateAgeDays)
             .Column("isActive", r => r.IsActive)
-            .InMemory("A workspace enables tens of currencies (ISO 4217 lists 165): the endpoint loads them whole with each one's latest rate (one query) and the list is searched, filtered and sorted in memory.");
+            .InMemory("A workspace holds the current ISO 4217 currencies (165): the endpoint loads them whole with each one's latest rate (one query) and the list is searched, filtered and sorted in memory.");
 }

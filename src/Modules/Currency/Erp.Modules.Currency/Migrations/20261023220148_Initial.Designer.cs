@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Erp.Modules.Currency.Migrations
 {
     [DbContext(typeof(CurrencyDbContext))]
-    [Migration("20261023212808_Initial")]
+    [Migration("20261023220148_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -104,7 +104,7 @@ namespace Erp.Modules.Currency.Migrations
 
                             t.HasCheckConstraint("ck_currencies_max_rate_age_days", "max_rate_age_days BETWEEN 0 AND 366");
 
-                            t.HasCheckConstraint("ck_currencies_names", "btrim(name_en) <> '' AND btrim(name_ar) <> ''");
+                            t.HasCheckConstraint("ck_currencies_names", "btrim(name_en) <> ''");
                         });
                 });
 

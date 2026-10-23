@@ -40,7 +40,7 @@ namespace Erp.Modules.Currency.Migrations
                     table.UniqueConstraint("ak_currencies_tenant_id_id", x => new { x.tenant_id, x.id });
                     table.CheckConstraint("ck_currencies_code", "code ~ '^[A-Z]{3}$'");
                     table.CheckConstraint("ck_currencies_max_rate_age_days", "max_rate_age_days BETWEEN 0 AND 366");
-                    table.CheckConstraint("ck_currencies_names", "btrim(name_en) <> '' AND btrim(name_ar) <> ''");
+                    table.CheckConstraint("ck_currencies_names", "btrim(name_en) <> ''");
                 });
 
             migrationBuilder.CreateTable(

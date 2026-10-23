@@ -20,14 +20,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Currency.Rates;
 
-/// <summary>A row of the exchange rates list: <c>rate</c> units of <c>quoteCurrency</c> per one
-/// unit of <c>currency</c> on <c>rateDate</c>; <c>inverseRate</c> is the same rate turned around
-/// (for reading; eight decimals).</summary>
+/// <summary>A row of the exchange rates list: <c>exchangeRate</c> units of <c>quoteCurrency</c> per
+/// one unit of <c>currencyCode</c> on <c>rateDate</c>; <c>inverseRate</c> is the same rate turned
+/// around (for reading; eight decimals).</summary>
 public sealed record RateRow(
     Guid Id,
     DateOnly RateDate,
-    string Currency,
-    decimal Rate,
+    string CurrencyCode,
+    decimal ExchangeRate,
     string QuoteCurrency,
     decimal InverseRate,
     string Source,
@@ -51,16 +51,26 @@ public sealed record RateDto(
     [property: Description("True when the caller works in every company of the workspace and every branch of each: only then may they change rates, which every company shares.")]
     bool EveryCompany);
 
-/// <summary>Enter or correct an exchange rate: <c>rate</c> units of <c>quoteCurrency</c> per one
-/// unit of <c>currency</c> on <c>rateDate</c>. A new rate's quote currency defaults to the working
-/// company's base currency and its date to today in the workspace's time zone. A rate's currencies
-/// never change; its date, rate and reference may.</summary>
-public sealed record SaveRateRequest(
+/// <summary>Enter an exchange rate: <c>rate</c> units of <c>quoteCurrency</c> per one unit of
+/// <c>currency</c> on <c>rateDate</c>. The quote currency defaults to the working company's base
+/// currency and the date to today in the workspace's time zone. Entering again the rate a date
+/// already holds answers that rate as entered (201, nothing is written: a second click or a retried
+/// request); another rate for a date that has one is refused (409: correct it instead).</summary>
+public sealed record CreateRateRequest(
     [property: ApiExample("EUR"), StringLength(3, MinimumLength = 3)] string? Currency,
     [property: ApiExample("AED"), StringLength(3, MinimumLength = 3)] string? QuoteCurrency,
-    [property: ApiExample("2026-10-23")] DateOnly? RateDate,
+    [property: ApiExample("2025-12-30")] DateOnly? RateDate,
     [property: ApiExample("4.2875"), Description("Quote-currency units per one unit of the currency: positive, at most eight decimals.")] decimal? Rate,
-    [property: ApiExample("CBUAE 23 Oct 2026"), StringLength(CurrencyRules.ReferenceLength)] string? Reference,
+    [property: ApiExample("CBUAE 30 Dec 2025"), StringLength(CurrencyRules.ReferenceLength)] string? Reference);
+
+/// <summary>Correct an exchange rate: its date, rate and reference (it becomes a manual one). Its
+/// currencies never change: they are sent as the rate holds them. The version is the one read.</summary>
+public sealed record UpdateRateRequest(
+    [property: ApiExample("EUR"), StringLength(3, MinimumLength = 3)] string? Currency,
+    [property: ApiExample("AED"), StringLength(3, MinimumLength = 3)] string? QuoteCurrency,
+    [property: ApiExample("2025-12-28")] DateOnly? RateDate,
+    [property: ApiExample("4.3001"), Description("Quote-currency units per one unit of the currency: positive, at most eight decimals.")] decimal? Rate,
+    [property: ApiExample("CBUAE 28 Dec 2025, corrected"), StringLength(CurrencyRules.ReferenceLength)] string? Reference,
     uint? Version);
 
 /// <summary>Import exchange rates from a delimited text file (CSV). The first line names the
@@ -69,7 +79,7 @@ public sealed record SaveRateRequest(
 /// dd/mm/yyyy; rates use a dot for decimals. Nothing is saved unless every line is valid.</summary>
 public sealed record ImportRatesRequest(
     [property: ApiExample("cbuae-rates-2026-10.csv"), StringLength(CurrencyRules.ReferenceLength)] string? FileName,
-    [property: ApiExample("currency,date,rate\nEUR,2026-10-23,4.2875\nUSD,2026-10-23,3.6725")] string? Content,
+    [property: ApiExample("currency,date,rate\nEUR,2025-12-29,4.2875\nEUR,2025-12-31,4.2875\nUSD,2025-12-31,3.6725")] string? Content,
     [property: Description("A rate already held for the same currencies and date: true replaces it with the file's, false (the default) keeps it.")] bool? ReplaceExisting,
     [property: ApiExample("AED"), StringLength(3, MinimumLength = 3), Description("Quote currency of lines that name none; the working company's base currency when left out.")] string? QuoteCurrency);
 
@@ -93,7 +103,7 @@ internal static class RateEndpoints
 
         group.MapPost("/rates", Create)
             .WithName("currency.rates.create")
-            .WithSummary("Enter an exchange rate by hand (one per currency pair and date; needs every company of the workspace, which shares the rates).")
+            .WithSummary("Enter an exchange rate by hand (one per currency pair and date; needs every company of the workspace, which shares the rates). The same rate entered again for its date answers it as entered (nothing is written); a different one answers 409.")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -151,7 +161,7 @@ internal static class RateEndpoints
     }
 
     private static async Task<Results<Created<RateDto>, ProblemHttpResult>> Create(
-        SaveRateRequest request, CurrencyDbContext db, ErpDbSession session, ITenantDirectory tenants, ICompanyDirectory companies, HttpContext http, CancellationToken cancellationToken)
+        CreateRateRequest request, CurrencyDbContext db, ErpDbSession session, ITenantDirectory tenants, ICompanyDirectory companies, HttpContext http, CancellationToken cancellationToken)
     {
         var currency = Code(request.Currency);
         var quote = Code(request.QuoteCurrency) ?? await CurrencyContext.WorkingBaseCurrencyAsync(companies, cancellationToken);
@@ -172,9 +182,14 @@ internal static class RateEndpoints
         {
             return Problems.Forbidden(http, "currency.workspaceNeedsEveryCompany");
         }
-        if (await db.Rates.AnyAsync(r => r.Currency == currency && r.QuoteCurrency == quote && r.RateDate == date, cancellationToken))
+        var held = await db.Rates.AsNoTracking().SingleOrDefaultAsync(r => r.Currency == currency && r.QuoteCurrency == quote && r.RateDate == date, cancellationToken);
+        if (held is not null)
         {
-            return Problems.Conflict(http, "currency.rateExists");
+            // The same entry sent twice (a second click, a retried request) is answered as entered,
+            // nothing written; another rate for the date is refused.
+            return held.Rate == request.Rate
+                ? TypedResults.Created($"/api/currency/rates/{held.Id}", ToDto(held, session))
+                : Problems.Conflict(http, "currency.rateExists");
         }
         var rate = new ExchangeRate
         {
@@ -191,7 +206,7 @@ internal static class RateEndpoints
     }
 
     private static async Task<Results<Ok<RateDto>, ProblemHttpResult>> Update(
-        Guid id, SaveRateRequest request, CurrencyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
+        Guid id, UpdateRateRequest request, CurrencyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
         var currency = Code(request.Currency);
         var quote = Code(request.QuoteCurrency);
@@ -233,14 +248,14 @@ internal static class RateEndpoints
 
     private static async Task<Results<NoContent, ProblemHttpResult>> Delete(Guid id, CurrencyDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
-        if (!session.HoldsWholeWorkspace)
-        {
-            return Problems.Forbidden(http, "currency.workspaceNeedsEveryCompany");
-        }
         var rate = await db.Rates.SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
         if (rate is null)
         {
             return Problems.NotFound(http);
+        }
+        if (!session.HoldsWholeWorkspace)
+        {
+            return Problems.Forbidden(http, "currency.workspaceNeedsEveryCompany");
         }
         db.Rates.Remove(rate);
         await db.SaveChangesAsync(cancellationToken);
@@ -404,9 +419,14 @@ internal static class RateEndpoints
         {
             validator.Add("currency", "currencyInactive", currency);
         }
-        if (enabled.All(c => c.Code != quote))
+        var quoted = enabled.FirstOrDefault(c => c.Code == quote);
+        if (quoted is null)
         {
             validator.Add("quoteCurrency", "currencyNotEnabled", quote);
+        }
+        else if (!quoted.IsActive)
+        {
+            validator.Add("quoteCurrency", "currencyInactive", quote);
         }
     }
 

@@ -5,13 +5,10 @@ namespace Erp.Modules.Currency.Contracts;
 /// <summary>Permissions of the currency module.</summary>
 public static class CurrencyPermissions
 {
-    /// <summary>See the workspace's currencies and the ISO 4217 catalogue.</summary>
+    /// <summary>See the workspace's currencies (every ISO 4217 currency, and which are in use).</summary>
     public const string CurrenciesRead = "currency.currencies.read";
 
-    /// <summary>Enable another ISO 4217 currency for the workspace.</summary>
-    public const string CurrenciesCreate = "currency.currencies.create";
-
-    /// <summary>Change an enabled currency: its names, whether it is in use, how old a rate may be.</summary>
+    /// <summary>Change a currency: put it in use or out of use, its names, how old a rate may be.</summary>
     public const string CurrenciesUpdate = "currency.currencies.update";
 
     /// <summary>See exchange rates, look up the rate of a date and convert amounts.</summary>
@@ -31,7 +28,7 @@ public static class CurrencyPermissions
 
     public static readonly IReadOnlyList<string> All =
     [
-        CurrenciesRead, CurrenciesCreate, CurrenciesUpdate, RatesRead, RatesCreate, RatesUpdate, RatesDelete, RatesImport,
+        CurrenciesRead, CurrenciesUpdate, RatesRead, RatesCreate, RatesUpdate, RatesDelete, RatesImport,
     ];
 }
 
@@ -78,7 +75,8 @@ public sealed record RateFound(
 /// <summary>Why no rate was found for a currency and date.</summary>
 public enum RateMissingReason
 {
-    /// <summary>The currency is not enabled for the workspace.</summary>
+    /// <summary>The workspace holds no such currency (a code newer than the ISO 4217 list it was
+    /// seeded from).</summary>
     CurrencyNotEnabled,
 
     /// <summary>No rate dated on or before the date within the currency's limit.</summary>

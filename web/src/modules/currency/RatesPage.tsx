@@ -116,11 +116,11 @@ export function RatesPage() {
         }
         renderCell={{
           rateDate: (r) => day(String(r.rateDate ?? "")),
-          currency: (r) => <span dir="ltr">{String(r.currency ?? "")}</span>,
+          currencyCode: (r) => <span dir="ltr">{String(r.currencyCode ?? "")}</span>,
           quoteCurrency: (r) => <span dir="ltr">{String(r.quoteCurrency ?? "")}</span>,
-          rate: (r) => (
+          exchangeRate: (r) => (
             <span dir="ltr" className="num">
-              {rateText(String(r.rate ?? ""))}
+              {rateText(String(r.exchangeRate ?? ""))}
             </span>
           ),
           inverseRate: (r) => (

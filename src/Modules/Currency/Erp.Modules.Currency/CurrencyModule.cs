@@ -49,20 +49,28 @@ public sealed class CurrencyModule : ErpModule
 }
 
 /// <summary>
-/// An ISO 4217 currency the workspace uses, with its names as the workspace shows them. Every
-/// company of the workspace shares it (<see cref="IWorkspaceWide"/>): someone limited to some
-/// companies or branches reads it but never changes it. Its minor units are ISO 4217's
-/// (<see cref="CurrencyCode.MinorUnits"/>), never the workspace's.
+/// One ISO 4217 currency of the workspace, with its names as the workspace shows them. Every
+/// workspace holds every current currency of the list (seeded, and added when a newer list brings
+/// one); it uses those it puts in use (<see cref="IsActive"/>, the dirham and each company's base
+/// currency at least). Every company of the workspace shares it (<see cref="IWorkspaceWide"/>):
+/// someone limited to some companies or branches reads it but never changes it. Its minor units
+/// are ISO 4217's (<see cref="CurrencyCode.MinorUnits"/>), never the workspace's.
 /// </summary>
 public sealed class EnabledCurrency : TenantEntity, IWorkspaceWide
 {
     /// <summary>ISO 4217 code (three capital letters, a current currency with minor units).</summary>
     public string Code { get; set; } = "";
+
+    /// <summary>The name in English (ISO 4217's to start with); never empty.</summary>
     public string NameEn { get; set; } = "";
+
+    /// <summary>The name in Arabic; empty when the workspace gave none (screens then show the
+    /// browser's Arabic name, printed documents the English one).</summary>
     public string NameAr { get; set; } = "";
 
-    /// <summary>False once the workspace stops using it: no new rates; its rates and lookups stay.</summary>
-    public bool IsActive { get; set; } = true;
+    /// <summary>In use: rates may be entered and amounts converted for new work. A currency out
+    /// of use keeps its rates and lookups.</summary>
+    public bool IsActive { get; set; }
 
     /// <summary>How many days before a date the latest rate may be dated when the date itself has
     /// none (0: only a rate of the date itself). See <see cref="RateLookupRule.LatestWithinLimit"/>.</summary>
@@ -140,7 +148,7 @@ public sealed class CurrencyDbContext(DbContextOptions<CurrencyDbContext> option
             e.ToTable("currencies", t =>
             {
                 t.HasCheckConstraint("ck_currencies_code", "code ~ '^[A-Z]{3}$'");
-                t.HasCheckConstraint("ck_currencies_names", "btrim(name_en) <> '' AND btrim(name_ar) <> ''");
+                t.HasCheckConstraint("ck_currencies_names", "btrim(name_en) <> ''");
                 t.HasCheckConstraint("ck_currencies_max_rate_age_days", $"max_rate_age_days BETWEEN 0 AND {CurrencyRules.MaxRateAgeDaysLimit}");
             });
             e.Property(x => x.Code).HasMaxLength(3);

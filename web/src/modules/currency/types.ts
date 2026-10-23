@@ -20,16 +20,15 @@ export type Currency = CurrencyRow & {
   createdAt: string;
   updatedAt: string;
   everyCompany: boolean;
+  isoPublished: string;
 };
 
-export type CatalogCurrency = { code: string; number: number; minorUnits: number; nameEn: string; enabled: boolean };
-export type Catalog = { published: string; currencies: CatalogCurrency[] };
-
+/** A row of the exchange rates list (its keys are the list's column keys). */
 export type RateRow = {
   id: string;
   rateDate: string;
-  currency: string;
-  rate: string;
+  currencyCode: string;
+  exchangeRate: string;
   quoteCurrency: string;
   inverseRate: string;
   source: "manual" | "import";
@@ -38,7 +37,21 @@ export type RateRow = {
   version: number;
 };
 
-export type Rate = RateRow & { createdAt: string; everyCompany: boolean };
+/** An exchange rate as its form reads and sends it. */
+export type Rate = {
+  id: string;
+  rateDate: string;
+  currency: string;
+  rate: string;
+  quoteCurrency: string;
+  inverseRate: string;
+  source: "manual" | "import";
+  reference: string | null;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+  everyCompany: boolean;
+};
 
 export type Money = { amount: string; currency: string; exchangeRate: string; baseAmount: string; baseCurrency: string };
 

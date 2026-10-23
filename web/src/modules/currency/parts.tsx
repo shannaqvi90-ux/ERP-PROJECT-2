@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { decimalInput } from "../../kernel/forms/fields";
 import { useI18n } from "../../kernel/i18n";
-import { ratesChanged, type Conversion, type Rate } from "./types";
+import { ratesChanged, type Conversion, type Rate, type RateRow } from "./types";
 
 /** A currency's name in the screen's language from the browser's own CLDR data, or null. */
 export function browserCurrencyName(code: string, language: string): string | null {
@@ -84,9 +84,10 @@ export function QuickRate({ currency, quote, autoFocus, onSaved }: { currency: s
       if (e instanceof ApiError && e.code === "currency.rateExists") {
         // Today has a rate already: show it, and let a second Enter replace it.
         try {
-          const params = new URLSearchParams({ filter: `currency eq '${currency}' and quoteCurrency eq '${quote}'`, take: "1" });
-          const page = await api<{ items: Rate[] }>("GET", `/api/currency/rates?${params}`);
-          const held = page.items[0];
+          const params = new URLSearchParams({ filter: `currencyCode eq '${currency}' and quoteCurrency eq '${quote}'`, take: "1" });
+          const page = await api<{ items: RateRow[] }>("GET", `/api/currency/rates?${params}`);
+          const latest = page.items[0];
+          const held = latest ? await api<Rate>("GET", `/api/currency/rates/${latest.id}`) : null;
           if (held) {
             setReplacing(held);
             setError(t("currency.quick.exists", { rate: rateText(held.rate), date: day(held.rateDate) }));

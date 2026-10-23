@@ -5,11 +5,9 @@
 # broader one, guards the endpoint.
 prefix /api/currency/
 
-GET /api/currency/catalog currency.currencies.read # the ISO 4217 list and which currencies the workspace enabled: part of reading the workspace's currencies
-GET /api/currency/currencies currency.currencies.read # the workspace's currencies list (with each one's latest rate, which every rate reader may see too)
+GET /api/currency/currencies currency.currencies.read # the workspace's currencies list: every ISO 4217 currency, which are in use, each one's latest rate (which every rate reader may see too)
 GET /api/currency/currencies/{id:guid} currency.currencies.read # one currency record
-POST /api/currency/currencies currency.currencies.create # enabling a currency adds it to every company's choices (also needs every company of the workspace, checked in the handler)
-PUT /api/currency/currencies/{id:guid} currency.currencies.update # renaming a currency, taking it out of use or changing how old a rate may be (also needs every company of the workspace)
+PUT /api/currency/currencies/{id:guid} currency.currencies.update # putting a currency in use or out of use, renaming it or changing how old a rate may be: every company's choices change (also needs every company of the workspace, checked in the handler)
 
 GET /api/currency/rates currency.rates.read # the exchange rates list
 GET /api/currency/rates/{id:guid} currency.rates.read # one exchange rate record

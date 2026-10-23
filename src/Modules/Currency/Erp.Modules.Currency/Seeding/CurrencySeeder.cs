@@ -12,15 +12,17 @@ using NpgsqlTypes;
 namespace Erp.Modules.Currency.Seeding;
 
 /// <summary>
-/// Seeds each workspace's currencies and rates. Every workspace gets the base currency of each of
-/// its companies (AED in the seeded ones). The demo adds the fifty currencies of the shared
-/// comparison dataset and as many exchange rates as the tenant's volume (100,000 in the main demo
-/// workspace: fifty currencies, one rate a day, ending today in the workspace's time zone). With
-/// <c>Erp:Seed:RatesCsv</c> set (the shared comparison dataset's rates.csv, gauntlet/compare/data),
-/// the main demo workspace's rates are exactly the dataset's, the ones the Odoo reference holds.
-/// The gate profile gives both workspaces three currencies and thirty rates, tenant B's names and
-/// references carrying its canary. Idempotent: currencies are added when missing, rates only into a
-/// workspace that has none.
+/// Seeds each workspace's currencies and rates. Every workspace holds every current ISO 4217
+/// currency (Erp.Kernel.Money.Iso4217), with the list's English name and, for the common ones, the
+/// product's Arabic name; in use are the dirham and the base currency of each company. The demo
+/// also puts in use the fifty currencies of the shared comparison dataset and adds as many exchange
+/// rates as the tenant's volume (100,000 in the main demo workspace: fifty currencies, one rate a
+/// day, ending today in the workspace's time zone). With <c>Erp:Seed:RatesCsv</c> set (the shared
+/// comparison dataset's rates.csv, gauntlet/compare/data), the main demo workspace's rates are
+/// exactly the dataset's, the ones the Odoo reference holds. The gate profile puts three currencies
+/// in use and adds thirty rates over the last ten days and one fixed day (31 December 2025), tenant
+/// B's names and references carrying its canary. Idempotent: currencies a newer ISO list brings are
+/// added on the next run, nothing held is changed, and rates go only into a workspace that has none.
 /// </summary>
 internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session, ICompanyDirectory companies, ITenantDirectory tenants, IConfiguration configuration) : ITenantSeeder
 {
@@ -44,6 +46,10 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
 
     public const int GateRateDays = 10;
 
+    /// <summary>A day of the gate workspaces' rates that does not move with the calendar, so a
+    /// documented request (an import example) can name a rate the workspace holds.</summary>
+    public static readonly DateOnly GateFixedDay = new(2025, 12, 31);
+
     public int Order => 120;
 
     public async Task SeedAsync(TenantSeedContext context, CancellationToken cancellationToken)
@@ -54,32 +60,31 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
         var shared = main && !string.IsNullOrWhiteSpace(csv);
         IReadOnlyList<(string Currency, DateOnly Date, decimal Rate)>? dataset = shared ? SharedDatasetRates.Read(csv!) : null;
 
-        var wanted = new List<string>();
+        var inUse = new HashSet<string>(StringComparer.Ordinal) { CurrencyCode.Aed.Code };
         foreach (var company in await companies.ListAsync(cancellationToken))
         {
             if (CurrencyCode.IsKnown(company.BaseCurrency))
             {
-                wanted.Add(company.BaseCurrency);
+                inUse.Add(company.BaseCurrency);
             }
         }
-        wanted.Add(CurrencyCode.Aed.Code);
         if (profile == SeedProfile.Demo)
         {
-            wanted.AddRange(dataset is not null ? dataset.Select(r => r.Currency).Distinct().Order(StringComparer.Ordinal)
-                : main ? DemoCurrencies.Select(c => c.Code) : FewCurrencies);
+            inUse.UnionWith(dataset is not null ? dataset.Select(r => r.Currency) : main ? DemoCurrencies.Select(c => c.Code) : FewCurrencies);
         }
         else if (profile == SeedProfile.Gate)
         {
-            wanted.AddRange(FewCurrencies);
+            inUse.UnionWith(FewCurrencies);
         }
         var held = (await db.Currencies.Select(c => c.Code).ToListAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
-        foreach (var code in wanted.Distinct(StringComparer.Ordinal).Where(c => !held.Contains(c)))
+        foreach (var code in CurrencyCode.All.Where(c => !held.Contains(c)))
         {
             db.Currencies.Add(new EnabledCurrency
             {
                 Code = code,
                 NameEn = context.Mark(Iso4217Names.English.GetValueOrDefault(code, code)),
-                NameAr = context.Mark(CurrencyNames.Arabic.GetValueOrDefault(code, code)),
+                NameAr = CurrencyNames.Arabic.TryGetValue(code, out var arabic) ? context.Mark(arabic) : "",
+                IsActive = inUse.Contains(code),
                 MaxRateAgeDays = CurrencyRules.DefaultMaxRateAgeDays,
             });
         }
@@ -92,6 +97,7 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
         var today = await CurrencyContext.TodayAsync(tenants, cancellationToken);
         IEnumerable<(string Currency, DateOnly Date, decimal Rate)> rates = profile == SeedProfile.Gate
             ? GeneratedRates(FewCurrencies.Select(c => (c, DemoCurrencies.Single(d => d.Code == c).Rate)).ToArray(), GateRateDays, today, context.Tenant.Code)
+                .Concat(FewCurrencies.Select(c => (c, GateFixedDay, DemoCurrencies.Single(d => d.Code == c).Rate)))
             : dataset ?? (main
                 ? GeneratedRates(DemoCurrencies, Math.Max(1, context.Tenant.Volume / DemoCurrencies.Length), today, "demo")
                 : GeneratedRates(FewCurrencies.Select(c => (c, DemoCurrencies.Single(d => d.Code == c).Rate)).ToArray(),
