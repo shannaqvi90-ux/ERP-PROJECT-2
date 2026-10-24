@@ -18,19 +18,28 @@ tenancy.branches.create tenancy.branches insert *  # the new branch
 tenancy.branches.update tenancy.branches update *  # the branch's details and active flag
 tenancy.access.update tenancy.user_company_access insert,update,delete *  # giving or taking a user's companies is the grant this permission makes
 tenancy.access.update tenancy.user_company_totals insert,update *  # the user's count of companies, kept with their access
+tenancy.access.update tenancy.user_workplaces delete *  # a user's starting place in a company they no longer work in goes with that access (by the foreign key from the access row); seen at a user who works somewhere (critic p02 round 14, write-set dependents)
 tenancy.workplace.switch tenancy.user_workplaces insert,update,delete *  # the caller's own starting place: made on the first switch, moved on the next, removed when left in a company they lost (tests/Gates/own-row-writes.txt); never any company's record
 
 # Identity: users, roles, the caller's own profile.
 identity.users.create identity.users insert *  # the new account
 identity.users.create identity.user_credentials insert *  # its first password
+identity.users.create identity.user_roles insert *  # the roles it starts with in every company (roleIds), within what the caller holds; seen when the gate creates a user with one (critic p02 round 14, write-set lists)
+identity.users.create identity.user_company_roles insert *  # the roles it starts with in one company (companyRoles), for the companies the caller works in
 identity.users.update identity.users update display_name,display_name_ar,email,email_normalized,language,is_active,sign_in_unblocked_at,device_approval_hash,device_approval_until  # the account's names, e-mail, language, active flag (one or all that match), unblocking its sign-in and letting one device of it past a pause on a shared address; never its password
+identity.users.update identity.user_roles insert,delete *  # the roles the user holds in every company (roleIds), within what the caller holds; seen when the gate gives or takes one (critic p02 round 14, write-set dependents)
+identity.users.update identity.user_company_roles insert,delete *  # the roles the user holds in one company (companyRoles), for the companies the caller works in; seen when the gate gives or takes one
 identity.users.update tenancy.user_workplaces insert,update *  # the company a user starts in (PUT /api/identity/users/{id}/default-company, through the tenancy module's contract)
 identity.users.delete identity.users delete *  # the account removed
 identity.users.delete identity.user_credentials delete *  # with its password
+identity.users.delete identity.user_roles delete *  # with the roles it held in every company (seen at a user holding roles, critic p02 round 14)
+identity.users.delete identity.user_company_roles delete *  # with the roles it held in one company (by the foreign key)
 identity.users.resetPassword identity.user_credentials update *  # the new password and whether it must be changed
 identity.roles.create identity.roles insert *  # the new role (or a copy)
 identity.roles.update identity.roles update *  # the role's names and permissions
 identity.roles.delete identity.roles delete *  # the role removed
+identity.roles.delete identity.user_roles delete *  # with its assignments in every company: nobody holds a role that no longer exists (seen at a role users hold, critic p02 round 14)
+identity.roles.delete identity.user_company_roles delete *  # with its assignments in one company (those in companies the caller does not work in by the foreign key)
 identity.profile.update identity.users update language,numerals,device_approval_hash,device_approval_until  # the caller's own language and digits, and letting one of their own devices past a pause on a shared address; never their name, e-mail, active flag or anyone else's row
 identity.profile.update identity.passkeys insert,update,delete *  # the caller's own passkeys
 
