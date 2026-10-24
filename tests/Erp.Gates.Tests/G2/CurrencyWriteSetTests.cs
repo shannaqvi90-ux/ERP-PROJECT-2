@@ -34,7 +34,17 @@ public sealed class CurrencyWriteSetTests(CurrencyWriteSetFixture fixture) : ICl
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         using var editor = await UserHoldingAsync(admin, "cws.editor", ["currency.currencies.update"]);
         var currencies = (await admin.GetFromJsonAsync<JsonElement>("/api/currency/currencies?take=200")).GetProperty("items").EnumerateArray().ToList();
-        Assert.True(currencies.Count >= 150, $"{currencies.Count} currencies: every workspace holds the ISO 4217 list");
+        // The gate workspace holds exactly its sample of the ISO 4217 list (those in use and every kind
+        // the module treats differently, CurrencySeeder.GateSample), each a current ISO code named in
+        // both languages; every other workspace holds the whole list (WholeListSeedTests).
+        Assert.Equal(new[] { "AED", "CAD", "CHF", "DKK", "EUR", "GBP", "HUF", "JPY", "KWD", "NOK", "PLN", "SEK", "USD", "XAF", "ZAR" },
+            currencies.Select(c => c.GetProperty("code").GetString()!).Order(StringComparer.Ordinal));
+        Assert.All(currencies, c =>
+        {
+            var code = c.GetProperty("code").GetString();
+            Assert.True(Erp.Kernel.Money.CurrencyCode.IsKnown(code), code);
+            Assert.False(string.IsNullOrWhiteSpace(c.GetProperty("nameEn").GetString()) || string.IsNullOrWhiteSpace(c.GetProperty("nameAr").GetString()), code);
+        });
         // Currencies no company keeps its books in, so taking one out of use is allowed.
         var targets = currencies.Where(c => c.GetProperty("code").GetString() is "CHF" or "NOK" or "SEK").Select(c => c.GetProperty("id").GetGuid()).ToList();
         Assert.Equal(3, targets.Count);

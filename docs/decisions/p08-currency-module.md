@@ -126,5 +126,8 @@ runs alongside):
 | 4 | c9cfe283 | harness mutation M29 not judged under load (its control failed; passed alone) | not kept |
 | 5 | c9cfe283 | harness test "control C3" failed under load (load up to 37; passed alone) | 8,424 |
 | 6 | c9cfe283 | passed: 794 .NET, 604 web unit, 125 end-to-end, 487 comparison tests; 4,436 s wall | 8,262 (dotnet 5,846, web 1,983, e2e 396, timing 37) |
+| 7 | 4009e4dc (p07's unverified audit trail merged in; since taken out of this branch) | over the processor-time maximum, every test green | 11,001 |
+| 8 | e530c6b6 (the gate sample, with p07) | stopped for the owner | not kept |
+| 9 | 66d777a9 (the gate sample, without p07) | the G2 currency write-set gate still asked for the whole list in the gate workspace (now asks for exactly its sample); harness "control (round 13)" failed under load (StyleRecalcInvalidationTracking before the clock, load up to 30) | 8,561 (dotnet 6,173, web 1,761, e2e 628) |
 
 The passing run stays under the 10,500 s maximum; the ratchet minimums now hold its test counts.
