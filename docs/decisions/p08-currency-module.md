@@ -28,7 +28,12 @@ Date: 2026-10-24. Piece: p08-currency, round 1. Status: accepted.
    currencies in use. "Enable a currency" is `PUT /api/currency/currencies/{id}` with `isActive`.
    No currency is created through the API, so a code is always a real ISO code with ISO's decimals,
    and the list doubles as the catalogue. A newer ISO list's new codes are added by the next seed
-   run. Why not a create endpoint: a currency is a fact of the standard, and the generic gates make
+   run. The gate workspaces alone hold a sample (`CurrencySeeder.GateSample`: those in use and
+   eleven more, every kind the module treats differently, among them no-decimal JPY, three-decimal
+   KWD and the franc zone's XAF): every currency row is walked by every list-gate query, attacked by
+   the HTTP gates and recorded by the audit trail, and with p07's audit trail merged the 165 rows
+   per gate workspace took the verify over its processor-time maximum (11,001 s of 10,500). A test
+   (`WholeListSeedTests`) keeps the whole list in every other workspace. Why not a create endpoint: a currency is a fact of the standard, and the generic gates make
    records with generated codes, which an ISO-code check refuses (the gates could not reach it).
 2. **Names are ISO 4217's (English) and the product's (Arabic), not the workspace's.**
    `CurrencyNames.Arabic` holds an Arabic name for all 165 codes, written for this product (the Gulf

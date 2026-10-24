@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Globalization;
 using Erp.Kernel.Data;
@@ -47,6 +48,16 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
 
     public const int GateRateDays = 10;
 
+    /// <summary>
+    /// The currencies the gate workspaces hold besides those in use: every kind the module treats
+    /// differently (no decimals, three decimals, a franc zone code, the currencies the module tests
+    /// enable, rate and convert), not the whole ISO list. Every currency row is walked by every list
+    /// gate query and recorded by the audit trail, so 165 of them per gate workspace cost the verify
+    /// hundreds of processor seconds without reaching anything a sample does not
+    /// (docs/decisions/p08-currency-module.md). Every other workspace holds the whole list.
+    /// </summary>
+    internal static readonly FrozenSet<string> GateSample = new[] { "CAD", "CHF", "DKK", "HUF", "JPY", "KWD", "NOK", "PLN", "SEK", "XAF", "ZAR" }.ToFrozenSet(StringComparer.Ordinal);
+
 
     /// <summary>A day of the gate workspaces' rates that does not move with the calendar, so a
     /// documented request (an import example) can name a rate the workspace holds.</summary>
@@ -79,7 +90,8 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
             inUse.UnionWith(FewCurrencies);
         }
         var held = (await db.Currencies.Select(c => c.Code).ToListAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
-        foreach (var code in CurrencyCode.All.Where(c => !held.Contains(c)))
+        // The gate workspaces hold a sample of the list (see GateSample); every other workspace the whole list.
+        foreach (var code in CurrencyCode.All.Where(c => !held.Contains(c) && (profile != SeedProfile.Gate || inUse.Contains(c) || GateSample.Contains(c))))
         {
             db.Currencies.Add(new EnabledCurrency
             {

@@ -16,8 +16,8 @@ public sealed class CurrencyFixture : IAsyncLifetime
 }
 
 /// <summary>
-/// The currency module through its API, on the gate seed (each workspace holds every ISO 4217
-/// currency, AED, USD, EUR and GBP in use, thirty rates over the last ten days and three on 31
+/// The currency module through its API, on the gate seed (each workspace holds a sample of the ISO
+/// 4217 list, AED, USD, EUR and GBP in use, thirty rates over the last ten days and three on 31
 /// December 2025): the rate lookup's rules, conversion and its one rounding, entering, correcting,
 /// deleting and importing rates, putting currencies in use and changing them, the workspace-wide
 /// rule for writes, validation in both languages and the audit trail.
@@ -55,13 +55,16 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
     }
 
     [Fact]
-    public async Task The_seeded_workspace_holds_every_ISO_4217_currency_those_in_use_first_and_its_rates()
+    public async Task The_gate_workspace_holds_its_sample_of_ISO_4217_currencies_those_in_use_first_and_its_rates()
     {
         using var viewer = await AdminAsync("viewer");
         var currencies = await viewer.GetFromJsonAsync<JsonElement>("/api/currency/currencies?take=200");
         var rows = currencies.GetProperty("items").EnumerateArray().ToList();
-        Assert.Equal(165, currencies.GetProperty("total").GetInt32());
-        Assert.Equal(Erp.Kernel.Money.CurrencyCode.All.Order(StringComparer.Ordinal), rows.Select(c => c.GetProperty("code").GetString()!).Order(StringComparer.Ordinal));
+        // The gate workspace's sample: those in use and every kind the module treats differently
+        // (the whole list is held outside the gates: WholeListSeedTests).
+        Assert.Equal(new[] { "AED", "CAD", "CHF", "DKK", "EUR", "GBP", "HUF", "JPY", "KWD", "NOK", "PLN", "SEK", "USD", "XAF", "ZAR" },
+            rows.Select(c => c.GetProperty("code").GetString()!).Order(StringComparer.Ordinal));
+        Assert.Equal(15, currencies.GetProperty("total").GetInt32());
         // Those in use first, then by code.
         var inUse = rows.TakeWhile(c => c.GetProperty("isActive").GetBoolean()).Select(c => c.GetProperty("code").GetString()!).ToList();
         Assert.All(new[] { "AED", "EUR", "GBP", "USD" }, code => Assert.Contains(code, inUse));

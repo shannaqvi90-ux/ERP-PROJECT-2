@@ -31,6 +31,13 @@ What this piece added or tightened so they cover it:
 - `tests/Gates/read-permission-writes.txt`: the two lists' own saved views.
 - `tests/Gates/outside-process-methods.txt`, `tests/Gates/tenant-bypass-sources.txt`: the operator-only
   read of the comparison dataset's `rates.csv` at seeding (reviewed like the users' file).
+- The audit trail (p07, merged during this round): both tables are registered audited records
+  (`currency.currencies`, opened at `/currency/currencies/{id}`, read with
+  `currency.currencies.read`; `currency.exchange_rates`, at `/currency/rates/{id}`, read with
+  `currency.rates.read`), every recorded field has its name in both languages
+  (`web/src/modules/audit/i18n`), and both record forms name their record, so the history panel is
+  on both. A currency's history is labelled by its English and Arabic names and its code; a rate's
+  entries carry no name of their own (the table has no name column) and are found by the record.
 - Web: `src/modules/currency/keyboard.test.tsx` (the keyboard sweep of both screens, with a record
   open, on the list and with every row chosen, for a reader; the control: the form's save keys write
   for a user who may change currencies) and the palette gate (`modules/shell/paletteActions.test.tsx`)
