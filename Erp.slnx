@@ -7,6 +7,10 @@
     <Project Path="src/Kernel/Erp.Kernel/Erp.Kernel.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Contacts/">
+    <Project Path="src/Modules/Contacts/Erp.Modules.Contacts.Contracts/Erp.Modules.Contacts.Contracts.csproj" />
+    <Project Path="src/Modules/Contacts/Erp.Modules.Contacts/Erp.Modules.Contacts.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Identity/">
     <Project Path="src/Modules/Identity/Erp.Modules.Identity.Contracts/Erp.Modules.Identity.Contracts.csproj" />
     <Project Path="src/Modules/Identity/Erp.Modules.Identity/Erp.Modules.Identity.csproj" />
@@ -26,6 +30,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Erp.Gates.Tests/Erp.Gates.Tests.csproj" />
     <Project Path="tests/Erp.Kernel.Tests/Erp.Kernel.Tests.csproj" />
+    <Project Path="tests/Erp.Modules.Contacts.Tests/Erp.Modules.Contacts.Tests.csproj" />
     <Project Path="tests/Erp.Modules.Identity.Tests/Erp.Modules.Identity.Tests.csproj" />
     <Project Path="tests/Erp.Modules.Lists.Tests/Erp.Modules.Lists.Tests.csproj" />
     <Project Path="tests/Erp.Modules.Reports.Tests/Erp.Modules.Reports.Tests.csproj" />
