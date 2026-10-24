@@ -1,0 +1,56 @@
+== roles
+erp_app|f|f|f|t
+erp_auth|f|f|f|f
+erp_owner|f|f|t|t
+== tables with tenant_id: rls enabled/forced
+audit.entries|t|t
+identity.passkeys|t|t
+identity.roles|t|t
+identity.sessions|t|t
+identity.sign_in_attempts|t|t
+identity.user_company_roles|t|t
+identity.user_credentials|t|t
+identity.user_roles|t|t
+identity.users|t|t
+lists.saved_views|t|t
+tenancy.branches|t|t
+tenancy.companies|t|t
+tenancy.tenants|t|t
+tenancy.user_branch_access|t|t
+tenancy.user_company_access|t|t
+tenancy.user_company_totals|t|t
+tenancy.user_workplaces|t|t
+== tables with company_id and their policies
+identity.user_company_roles|company_scope:R company_scope_delete:R company_scope_update:R company_write_delete:R company_write_insert:R company_write_update:R tenant_isolation:P
+tenancy.branches|company_scope:R company_write_delete:R company_write_insert:R company_write_update:R tenant_isolation:P
+tenancy.companies|company_scope:R company_write_delete:R company_write_insert:R company_write_update:R tenant_isolation:P
+tenancy.user_branch_access|company_scope:R company_scope_delete:R company_scope_update:R company_write_delete:R company_write_insert:R company_write_update:R tenant_isolation:P
+tenancy.user_company_access|company_scope:R company_scope_delete:R company_scope_update:R company_write_delete:R company_write_insert:R company_write_update:R tenant_isolation:P
+tenancy.user_workplaces|company_scope:R company_write_delete:R company_write_insert:R company_write_update:R tenant_isolation:P
+== app role sees with nothing bound
+SET
+companies|0
+branches|0
+users|0
+audit|0
+== tenants
+0190a000-0000-7000-8000-000000000001|alnoor
+0190a000-0000-7000-8000-000000000002|gulfsteel
+== erp_app bound to alnoor (company scope all) tries gulfsteel's rows
+BEGIN
+SET
+visible companies by tenant|0190a000-0000-7000-8000-000000000001|4
+visible gulfsteel branches|0
+visible gulfsteel users|0
+visible gulfsteel audit|0
+UPDATE 0
+tenants visible|1
+ROLLBACK
+BEGIN
+SET
+ERROR:  new row violates row-level security policy for table "companies"
+ROLLBACK
+BEGIN
+SET
+tenant set without tx stamp: companies visible|0
+ROLLBACK

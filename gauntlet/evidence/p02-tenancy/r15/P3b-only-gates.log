@@ -1,0 +1,28 @@
+Test run for /home/shan/critic/p02-tenancy-r15-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.29]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.71]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.93]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [2 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [7 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [631 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [2 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match [1 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [13 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [4 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [6 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [20 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [1 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [5 s]
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [40 s]
+[xUnit.net 00:00:57.46]   Finished:    Erp.Gates.Tests (ID = '9a44dc52237f11c1a4dfb2855523a3d693d958e7768009affbe92c2ea2a50e17')
+
+Test Run Successful.
+Total tests: 13
+     Passed: 13
+ Total time: 58.0128 Seconds

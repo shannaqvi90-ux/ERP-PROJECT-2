@@ -1,0 +1,20 @@
+{
+ "calls": 912,
+ "statuses": {
+  "400": 384,
+  "404": 528
+ },
+ "idKinds": {
+  "user": 2,
+  "role": 2,
+  "company": 2,
+  "branch": 2,
+  "access": 2,
+  "view": 2
+ },
+ "successes": [
+  "bulk matching {\"search\":\"gulfsteel\",\"active\":false,\"expectedCount\":0} -> 200 {\"matched\":0,\"changed\":0,\"unchanged\":0,\"refusedSelf\":0,\"refusedBeyondOwn\":0}",
+  "bulk matching {\"search\":\"gulfsteel\",\"active\":false,\"expectedCount\":1005} -> 409 {\"type\":\"urn:erp:problem:list.matchingChanged\",\"title\":\"The rows that match changed since you chose them (1,005 then, 0 now). Nothing was changed: look at the l"
+ ],
+ "bStateChanged": []
+}

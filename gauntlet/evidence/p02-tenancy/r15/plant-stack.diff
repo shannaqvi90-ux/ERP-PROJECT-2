@@ -1,0 +1,20 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+index 20dba334..f233c2e6 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Branches/BranchEndpoints.cs
+@@ -213,8 +213,15 @@ internal static class BranchEndpoints
+             return Problems.Conflict(http, "tenancy.branchCodeTaken");
+         }
+         db.Entry(branch).Property(b => b.Version).OriginalValue = request.Version!.Value;
++        var closing = branch.IsActive && request.IsActive == false;
+         Apply(branch, request, code);
+         db.Entry(branch).Property(b => b.UpdatedAt).IsModified = true;
++        // PLANT P3b: closing a company's last open branch closes the company too (counting every branch of it, not only the caller's).
++        if (closing && !await db.Branches.IgnoreQueryFilters([TenancyDbContext.BranchFilterName]).AnyAsync(b => b.CompanyId == branch.CompanyId && b.Id != id && b.IsActive, cancellationToken))
++        {
++            var owner = await db.Companies.SingleAsync(c => c.Id == branch.CompanyId, cancellationToken);
++            owner.IsActive = false;
++        }
+         await db.SaveChangesAsync(cancellationToken);
+         return TypedResults.Ok(await ToDtoAsync(db, branchScope, http.RequestServices.GetRequiredService<ICompanyPermissions>(), branch, cancellationToken));
+     }

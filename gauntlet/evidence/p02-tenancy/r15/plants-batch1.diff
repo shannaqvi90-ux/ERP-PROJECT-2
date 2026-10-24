@@ -1,0 +1,63 @@
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+index 27c387f7..681facf1 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Companies/CompanyEndpoints.cs
+@@ -331,8 +331,33 @@ internal static class CompanyEndpoints
+             return Problems.Conflict(http, "tenancy.companyCodeTaken");
+         }
+         db.Entry(company).Property(c => c.Version).OriginalValue = request.Version!.Value;
++        var closing = company.IsActive && request.IsActive == false;
+         Apply(company, request, code);
+         db.Entry(company).Property(c => c.UpdatedAt).IsModified = true;
++        if (closing)
++        {
++            // PLANT P1 (r14 PB3 again): a closed legal entity closes its branches.
++            foreach (var open in await db.Branches.Where(b => b.CompanyId == id && b.IsActive).ToListAsync(cancellationToken))
++            {
++                open.IsActive = false;
++            }
++            // PLANT P2: anyone whose only company this was is moved out (their access and starting place go).
++            var users = await db.CompanyAccess.Where(a => a.CompanyId == id).Select(a => a.UserId).ToListAsync(cancellationToken);
++            var only = new List<Guid>();
++            foreach (var user in users)
++            {
++                if (await db.CompanyAccess.CountAsync(a => a.UserId == user, cancellationToken) == 1)
++                {
++                    only.Add(user);
++                }
++            }
++            if (only.Count > 0)
++            {
++                db.Workplaces.RemoveRange(await db.Workplaces.Where(w => only.Contains(w.UserId) && w.CompanyId == id).ToListAsync(cancellationToken));
++                db.BranchAccess.RemoveRange(await db.BranchAccess.Where(a => only.Contains(a.UserId) && a.CompanyId == id).ToListAsync(cancellationToken));
++                db.CompanyAccess.RemoveRange(await db.CompanyAccess.Where(a => only.Contains(a.UserId) && a.CompanyId == id).ToListAsync(cancellationToken));
++            }
++        }
+         await db.SaveChangesAsync(cancellationToken);
+         return TypedResults.Ok(await ToDtoAsync(db, branchScope, session, http.RequestServices.GetRequiredService<ICompanyPermissions>(), company, cancellationToken));
+     }
+diff --git a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+index b99df5fd..f5e4936a 100644
+--- a/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
++++ b/src/Modules/Tenancy/Erp.Modules.Tenancy/Workplace/WorkplaceEndpoints.cs
+@@ -166,6 +166,20 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyBranchScop
+                 access.Add((reader.GetGuid(0), reader.GetBoolean(1)));
+             }
+         }
++        // PLANT L1: the companies the user worked in recently stay in scope (the one-click buttons keep working).
++        await using (var recentCommand = new NpgsqlCommand("SELECT w.recent_company_ids FROM tenancy.user_workplaces w WHERE w.tenant_id = @tenant AND w.user_id = @user",
++                         session.Connection, session.Transaction))
++        {
++            recentCommand.Parameters.AddWithValue("tenant", session.TenantId);
++            recentCommand.Parameters.AddWithValue("user", userId);
++            if (await recentCommand.ExecuteScalarAsync(cancellationToken) is Guid[] recentIds)
++            {
++                foreach (var recentId in recentIds.Where(r => access.All(a => a.CompanyId != r)))
++                {
++                    access.Add((recentId, true));
++                }
++            }
++        }
+         if (access.Count == 0)
+         {
+             await session.BindCompaniesAsync([], cancellationToken);

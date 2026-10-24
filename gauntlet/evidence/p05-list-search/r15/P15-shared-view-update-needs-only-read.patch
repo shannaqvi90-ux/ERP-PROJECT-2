@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index a7c6951d..fa078875 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -123,7 +123,7 @@ internal static class ViewEndpoints
+                 .WithViewSchema(list)
+                 .WithSummary($"Change a shared view of the {key} list (also needs the list's read permission).")
+                 .ProducesValidationProblem()
+-                .RequirePermission(ListsPermissions.ViewsShare);
++                .RequirePermission(list.Permission);
+ 
+             routes.MapDelete("/shared-views/{id:guid}", (Guid id, ModuleCatalog c, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
+                     Delete(c.FindList(key)!, id, shared: true, db, caller, http, ct))

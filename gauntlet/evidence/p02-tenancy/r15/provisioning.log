@@ -1,0 +1,20 @@
+ Container c-p02-tenancy-r15-setup-run-bc796ab342a3 Creating 
+ Container c-p02-tenancy-r15-setup-run-bc796ab342a3 Created 
+info: Erp.Kernel.Seeding.SeedRunner[0]
+      Seeded tenant critic15 (Provision) in 1168 ms
+Workspace 'critic15' created (01a16c96-79d1-7380-a822-ed248e207181).
+First administrator: owner@critic15.example
+Initial password: <redacted>
+The initial password is temporary: the first sign-in asks the administrator to choose their own.
+-- duplicate:
+tenant create: a workspace with code 'critic15' already exists.
+
+-- suspend:
+ Container c-p02-tenancy-r15-setup-run-2fe88c7800ae Created 
+Workspace 'critic15' is now suspended.
+-- list:
+ Container c-p02-tenancy-r15-setup-run-e48d16637195 Created 
+code	status	companies	name
+alnoor	active	14	Al Noor Trading LLC
+critic15	suspended	1	Critic Fifteen LLC
+gulfsteel	active	2	Gulf Steel Fabrication LLC
