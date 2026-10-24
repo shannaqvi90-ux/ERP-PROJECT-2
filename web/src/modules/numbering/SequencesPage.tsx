@@ -167,6 +167,7 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
       readOnlyReason={sequence && can("numbering.sequences.update") && !canUpdate ? t("numbering.sequence.needsEveryBranch") : undefined}
       after={sequence && sequence.today !== "" && <SequenceHistory sequence={sequence} />}
     >
+      {sequence && <Preview sequence={sequence} draft={form.draft} />}
       <FormSection title={t("numbering.sequence.pattern")}>
         <PrefixField field={bind("prefix")} label={t("numbering.sequence.prefix")} focus={!form.readOnly} />
         <TextField field={bind("padding")} label={t("numbering.sequence.padding")} dir="ltr" inputMode="numeric" maxLength={2}
@@ -183,7 +184,6 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
           hint={form.draft.perBranch ? t("numbering.sequence.nextNumberPerBranch") : t("numbering.sequence.nextNumberHint")}
           disabled={form.draft.perBranch} />
       </FormSection>
-      {sequence && <Preview sequence={sequence} draft={form.draft} />}
     </RecordForm>
   );
 }
