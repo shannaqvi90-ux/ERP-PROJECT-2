@@ -243,9 +243,9 @@ public static partial class ListVolume
             {
                 tally.Wrong.Enqueue($"tenant {who}: the keyset walk of GET {list.Endpoint} returned {truth.Rows.Count} rows, but the tenant holds {rows} rows in {table}");
             }
-            // The rows' ids are the table's id column, or the column a list's "id" binds (the audit
-            // trail's uid: its own id is a number).
-            var idMember = binding.Columns.FirstOrDefault(c => c.Key == "id")?.Member;
+            // The rows' ids are the column the binding's id reads (the audit trail's uid: its own id
+            // is a number).
+            var idMember = binding.IdMember;
             var idColumn = idMember is not null && entity.FindProperty(idMember)?.GetColumnName() is { } named ? TenantSql.Identifier(named) : "id";
             var own = await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {table} WHERE tenant_id = @t AND {idColumn} = ANY(@ids)",
                 ("t", tenant.Id), ("ids", truth.Ids.ToArray()));

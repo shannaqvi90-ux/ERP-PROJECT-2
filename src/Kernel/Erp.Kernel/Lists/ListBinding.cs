@@ -31,6 +31,11 @@ public interface IListBinding
 
     IReadOnlyList<ListBoundColumn> Columns { get; }
 
+    /// <summary>The mapped property the rows' unique id reads (the gates find its database column
+    /// from it: a table keyed by a number, the audit trail, lists rows by another uuid column), or
+    /// null when the id is computed.</summary>
+    string? IdMember => null;
+
     /// <summary>One-word searches of 2 to <see cref="ListSearch.MaxInitials"/> Latin letters also match
     /// a value's initials (see <see cref="ListBinding{T}.Initials"/>).</summary>
     bool SearchesInitials => false;
@@ -135,6 +140,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
         _initials?.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == _initials.Parameters[0]
             ? _columns.Values.OrderBy(b => b.Order).FirstOrDefault(b => b.Member == property.Name)?.Key
             : null;
+
+    /// <inheritdoc/>
+    public string? IdMember =>
+        _id.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == _id.Parameters[0] ? property.Name : null;
 
     public IReadOnlyList<ListBoundColumn> Columns =>
         _columns.Values.OrderBy(b => b.Order).Select(b => new ListBoundColumn(b.Key, b.ValueType, b.Expression, b.Member)).ToList();
