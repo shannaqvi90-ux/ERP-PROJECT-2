@@ -151,5 +151,8 @@ The gates are the cost: the audit log is the one list that grows with every writ
 gates walk thousands of its rows (and 200,000 at demo volume). Measured: the builder's first full
 verify (16 history routes, rows with every stored value) used 9,825 processor seconds (dotnet 7,358,
 web 2,202, e2e 265) on a loaded machine, against about 7,100 to 7,900 for the integration branch
-before; the routes were then cut to one and the rows to one capped line, and the final figure is in
-the notes for the integrator.
+before; the routes were then cut to one, the rows to one capped line and the reader's filter sent as
+parameters. The builder's passing verify at `ef63c837` used 9,561 processor seconds (dotnet 6,737,
+web 2,253, e2e 529, timing 42; 5,031 s wall, a busy machine); the run before it at the same code
+but for a ratchet value, 8,978 (dotnet 6,358, web 2,092, e2e 528). About 1,000 to 1,500 seconds
+under the limit of 10,500 remain for p08 onwards.
