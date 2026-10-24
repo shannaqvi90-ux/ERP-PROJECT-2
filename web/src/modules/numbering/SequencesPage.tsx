@@ -253,6 +253,8 @@ function Preview({ sequence, draft }: { sequence: Sequence; draft: Draft }) {
   const typed = draft.perBranch ? null : wholeNumber(draft.nextValue);
   const value = typed ?? counter?.nextValue ?? 1;
   const number = (n: number, date = today) => formatNumber(draft.prefix.trim(), draft.suffix.trim(), padding, date, branch?.code ?? null, n);
+  // A document number inside a sentence keeps its own left-to-right order on an Arabic screen.
+  const isolated = (n: number, date = today) => `\u2066${number(n, date)}\u2069`;
   const start = nextStart(draft.reset, today);
   return (
     <section className="nb-preview" aria-label={t("numbering.preview.title")} aria-live="polite">
@@ -266,12 +268,12 @@ function Preview({ sequence, draft }: { sequence: Sequence; draft: Draft }) {
               {number(value)}
             </span>
             <span className="muted">
-              {t("numbering.preview.then", { second: number(value + 1), third: number(value + 2) })}
+              {t("numbering.preview.then", { second: isolated(value + 1), third: isolated(value + 2) })}
             </span>
           </p>
           <p className="muted">
             {start
-              ? t("numbering.preview.startsAgain", { date: format.date(start), first: number(1, start) })
+              ? t("numbering.preview.startsAgain", { date: format.date(start), first: isolated(1, start) })
               : t("numbering.preview.neverStartsAgain")}
             {" "}
             {draft.gapless ? t("numbering.preview.gapless") : t("numbering.preview.mayskip")}

@@ -64,6 +64,8 @@ async function open(path: string, permissions = all, override?: (method: string,
 
 const cells = () => Array.from(view!.container.querySelectorAll("table[role=grid] tbody tr td")).map((td) => td.textContent ?? "");
 const field = (name: string) => view!.container.querySelector<HTMLInputElement>(`.list-record [name="${name}"]`)!;
+/** Text without the invisible marks that keep a document number left to right inside a sentence. */
+const plain = (text: string | null | undefined) => (text ?? "").replace(/[\u2066-\u2069]/g, "");
 const preview = () => view!.container.querySelector("[data-testid=next-number]")?.textContent;
 
 async function wait(ms = 50) {
@@ -103,7 +105,7 @@ describe("document numbering screen", () => {
     setInput(field("padding"), "6");
     await wait();
     expect(preview()).toBe("PO-2026-000148");
-    expect(view!.container.querySelector(".nb-preview")?.textContent).toContain("then PO-2026-000149, PO-2026-000150");
+    expect(plain(view!.container.querySelector(".nb-preview")?.textContent)).toContain("then PO-2026-000149, PO-2026-000150");
     expect(view!.container.querySelector(".nb-preview")?.textContent).toContain("Never starts again.");
     await key(field("padding"), { key: "Enter", code: "Enter" });
     const put = calls.find((c) => c.method === "PUT" && c.url === "/api/numbering/sequences/s1");
@@ -114,7 +116,7 @@ describe("document numbering screen", () => {
     await open("/numbering/sequences?open=s2");
     await wait();
     expect(preview()).toBe("INV-2026-01203");
-    const text = view!.container.querySelector(".nb-preview")?.textContent ?? "";
+    const text = plain(view!.container.querySelector(".nb-preview")?.textContent);
     expect(text).toContain("Starts again on 1 Jan 2027 with INV-2027-00001.");
     expect(text).toContain("No number is ever skipped.");
     expect(view!.container.querySelector(".nb-history")?.textContent).toContain("1,202");
