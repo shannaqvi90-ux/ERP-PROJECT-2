@@ -6,7 +6,7 @@ import type { Row } from "../../kernel/lists/model";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
 import { actionKey, changeLine } from "./RecordHistory";
-import { actorText, fieldName, logAddress, type AuditEvent, type FieldChange, type RecordName, type ValueFormat } from "./model";
+import { actorText, fieldName, logAddress, personAddress, type AuditEvent, type FieldChange, type RecordName, type ValueFormat } from "./model";
 import "./audit.css";
 
 /** A row of the audit log (GET /api/audit/log). */
@@ -136,6 +136,7 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
       <div className="record-actions">
         {row.recordRoute && <Link to={row.recordRoute}>{t("audit.log.openRecord")}</Link>}
         {row.recordId && <Link to={logAddress(row.recordId)}>{t("audit.log.recordHistory")}</Link>}
+        {row.actorId && <Link to={personAddress(row.actorId)}>{t("audit.log.byPerson", { name: actorText(row, language) })}</Link>}
         <button type="button" className="button" onClick={onClose}>
           {t("audit.log.close")}
         </button>

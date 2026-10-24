@@ -34,6 +34,11 @@ export function logAddress(id: string): string {
   return `/audit/log?${new URLSearchParams({ filter: `recordId eq '${id}'` })}`;
 }
 
+/** The address of the audit log narrowed to one person's changes. */
+export function personAddress(actorId: string): string {
+  return `/audit/log?${new URLSearchParams({ filter: `actorId eq '${actorId}'` })}`;
+}
+
 /** The value the trigger writes in place of a secret. */
 export const redacted = "[redacted]";
 

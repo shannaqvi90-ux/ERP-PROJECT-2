@@ -112,5 +112,7 @@ describe("the audit log screen", () => {
     expect(panel.textContent).toContain("E-mail: from a@x.example to b@x.example");
     expect(panel.querySelector('a[href="/identity/users/u7"]')).not.toBeNull();
     expect(panel.querySelector('a[href="/audit/log?filter=recordId+eq+%27u7%27"]')).not.toBeNull();
+    // The person's every change, one link away.
+    expect(panel.querySelector('a[href="/audit/log?filter=actorId+eq+%27u9%27"]')!.textContent).toBe("Every change by Noor Editor");
   });
 });
