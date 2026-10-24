@@ -22,10 +22,16 @@ Ports and the compose project come from the environment, so copies run side by s
 `ERP_VERIFY_HTTP_PORT`/`ERP_VERIFY_DB_PORT` (+10). Behind a TLS-inspecting proxy, set
 `ERP_EXTRA_CA_CERTS` to its CA bundle (picked up from `NODE_EXTRA_CA_CERTS` or `SSL_CERT_FILE`).
 
+Contacts is the workspace's shared directory of organisations and people (100,000 in the demo,
+each found by name in English or Arabic, initials, e-mail, number, reference or TRN, with a warning
+when a new contact may already exist); contacts are archived, never deleted. With
+`ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv` (beside `ERP_SEED_USERS_CSV`, same
+folder) the demo holds exactly the comparison dataset's contacts.
+
 The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sharjah, Abu Dhabi)
 with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
 read-only user in the first company only. The working company and branch switcher sits in the
-top bar (Alt+C). Every screen is a key away: `G` then a letter (`U` Users, `R` Roles, `C`
+top bar (Alt+C). Every screen is a key away: `G` then a letter (`O` Contacts, `U` Users, `R` Roles, `C`
 Companies, `B` Branches, `A` Company access, `W` Workspace, `M` My account, `H` Home) when no field
 has the focus; `Ctrl+K` finds any screen, record or action, and `?` lists every key.
 

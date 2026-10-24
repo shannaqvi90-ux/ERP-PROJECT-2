@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Erp.Kernel.Data;
 using Erp.Kernel.Seeding;
 using Erp.Modules.Contacts.Contracts;
@@ -166,7 +167,7 @@ internal static class NamedContacts
 /// organisations; most people belong to one of the organisations made shortly before them.</summary>
 internal static class DemoContacts
 {
-    private static readonly (string En, string Ar)[] FirstNames =
+    private static readonly System.Collections.Immutable.ImmutableArray<(string En, string Ar)> FirstNames =
     [
         ("Ahmed", "أحمد"), ("Mohammed", "محمد"), ("Fatima", "فاطمة"), ("Aisha", "عائشة"), ("Omar", "عمر"), ("Khalid", "خالد"), ("Mariam", "مريم"),
         ("Noura", "نورة"), ("Hassan", "حسن"), ("Yousef", "يوسف"), ("Sara", "سارة"), ("Rashid", "راشد"), ("Hamdan", "حمدان"), ("Latifa", "لطيفة"),
@@ -176,7 +177,7 @@ internal static class DemoContacts
         ("Faisal", "فيصل"), ("Amal", "أمل"), ("Karim", "كريم"), ("Rania", "رانيا"), ("Samir", "سمير"), ("Dina", "دينا"), ("Majid", "ماجد"),
     ];
 
-    private static readonly (string En, string Ar)[] LastNames =
+    private static readonly System.Collections.Immutable.ImmutableArray<(string En, string Ar)> LastNames =
     [
         ("Al Mansoori", "المنصوري"), ("Al Nuaimi", "النعيمي"), ("Al Hashimi", "الهاشمي"), ("Al Suwaidi", "السويدي"), ("Al Mazrouei", "المزروعي"),
         ("Al Shamsi", "الشامسي"), ("Al Ketbi", "الكتبي"), ("Al Falasi", "الفلاسي"), ("Al Marzooqi", "المرزوقي"), ("Al Dhaheri", "الظاهري"),
@@ -185,42 +186,43 @@ internal static class DemoContacts
         ("Siddiqui", "صديقي"), ("Santos", "سانتوس"), ("Reyes", "رييس"), ("Garcia", "غارسيا"), ("Mansour", "منصور"), ("Darwish", "درويش"),
     ];
 
-    private static readonly (string En, string Ar)[] BusinessWords =
+    private static readonly System.Collections.Immutable.ImmutableArray<(string En, string Ar)> BusinessWords =
     [
         ("Al Noor", "النور"), ("Falcon", "الصقر"), ("Gulf", "الخليج"), ("Emirates", "الإمارات"), ("Desert Rose", "وردة الصحراء"), ("Oasis", "الواحة"),
         ("Pearl", "اللؤلؤة"), ("Crescent", "الهلال"), ("Horizon", "الأفق"), ("Palm", "النخلة"), ("Corniche", "الكورنيش"), ("Marina", "المارينا"),
         ("Al Waha", "الواحة الخضراء"), ("Bright Star", "النجم الساطع"), ("Union", "الاتحاد"), ("Arabian", "العربية"), ("Sahara", "الصحراء"), ("Coral", "المرجان"),
     ];
 
-    private static readonly (string En, string Ar)[] Trades =
+    private static readonly System.Collections.Immutable.ImmutableArray<(string En, string Ar)> Trades =
     [
         ("Trading", "للتجارة"), ("Building Materials", "لمواد البناء"), ("Steel Industries", "للصناعات الحديدية"), ("Foodstuff Trading", "لتجارة المواد الغذائية"),
         ("Electromechanical", "للأعمال الكهروميكانيكية"), ("Logistics", "للخدمات اللوجستية"), ("Plastics", "للبلاستيك"), ("Auto Spare Parts", "لقطع غيار السيارات"),
         ("Packaging", "للتغليف"), ("Contracting", "للمقاولات"), ("Textiles", "للمنسوجات"), ("Furniture", "للأثاث"),
     ];
 
-    private static readonly (string En, string Ar)[] Suffixes = [("LLC", "ذ.م.م"), ("FZE", "م.م.ح"), ("FZCO", "ش.م.ح"), ("Est.", "مؤسسة")];
+    private static readonly System.Collections.Immutable.ImmutableArray<(string En, string Ar)> Suffixes = [("LLC", "ذ.م.م"), ("FZE", "م.م.ح"), ("FZCO", "ش.م.ح"), ("Est.", "مؤسسة")];
 
-    private static readonly (string Code, string City, string[] Areas, string PhoneArea)[] Places =
+    private static readonly System.Collections.Immutable.ImmutableArray<(string Code, string City, System.Collections.Immutable.ImmutableArray<string> Areas, string PhoneArea)> Places =
     [
-        ("dubai", "Dubai", ["Deira", "Bur Dubai", "Al Quoz", "Jebel Ali", "Business Bay", "Al Barsha"], "4"),
-        ("abuDhabi", "Abu Dhabi", ["Mussafah", "Al Reem Island", "Khalifa City", "Mina Zayed"], "2"),
-        ("sharjah", "Sharjah", ["Industrial Area 4", "Al Nahda", "Al Majaz", "Saif Zone"], "6"),
-        ("ajman", "Ajman", ["Al Jurf", "Al Rashidiya", "Ajman Free Zone"], "6"),
-        ("rasAlKhaimah", "Ras Al Khaimah", ["Al Nakheel", "Al Hamra"], "7"),
-        ("fujairah", "Fujairah", ["Fujairah City", "Dibba"], "9"),
-        ("ummAlQuwain", "Umm Al Quwain", ["Al Salamah"], "6"),
+        ("dubai", "Dubai", System.Collections.Immutable.ImmutableArray.Create("Deira", "Bur Dubai", "Al Quoz", "Jebel Ali", "Business Bay", "Al Barsha"), "4"),
+        ("abuDhabi", "Abu Dhabi", System.Collections.Immutable.ImmutableArray.Create("Mussafah", "Al Reem Island", "Khalifa City", "Mina Zayed"), "2"),
+        ("sharjah", "Sharjah", System.Collections.Immutable.ImmutableArray.Create("Industrial Area 4", "Al Nahda", "Al Majaz", "Saif Zone"), "6"),
+        ("ajman", "Ajman", System.Collections.Immutable.ImmutableArray.Create("Al Jurf", "Al Rashidiya", "Ajman Free Zone"), "6"),
+        ("rasAlKhaimah", "Ras Al Khaimah", System.Collections.Immutable.ImmutableArray.Create("Al Nakheel", "Al Hamra"), "7"),
+        ("fujairah", "Fujairah", System.Collections.Immutable.ImmutableArray.Create("Fujairah City", "Dibba"), "9"),
+        ("ummAlQuwain", "Umm Al Quwain", System.Collections.Immutable.ImmutableArray.Create("Al Salamah"), "6"),
     ];
 
-    private static readonly string[] Tags = ["Customer", "Supplier", "Distributor", "Contractor", "Government", "VIP", "Export", "Retail"];
+    private static readonly System.Collections.Immutable.ImmutableArray<string> Tags = ["Customer", "Supplier", "Distributor", "Contractor", "Government", "VIP", "Export", "Retail"];
 
-    private static readonly string[] JobTitles = ["Purchasing Manager", "Accountant", "Sales Executive", "Operations Manager", "General Manager", "Store Keeper", "Engineer"];
+    private static readonly System.Collections.Immutable.ImmutableArray<string> JobTitles = ["Purchasing Manager", "Accountant", "Sales Executive", "Operations Manager", "General Manager", "Store Keeper", "Engineer"];
 
     /// <summary>
     /// <paramref name="count"/> contacts drawn from <paramref name="seed"/>, e-mail addresses under
     /// <paramref name="domain"/>. Phone numbers carry no zero after the area or mobile prefix: the
     /// gate fixture's companies and branches have numbers of zeros (+971 4 000 0002), and a contact
-    /// whose number held those digits would answer a search for a company's number. With
+    /// whose number (or tax registration number: "000" and "0012" are searched as words of it too)
+    /// held those digits would answer a search for a company's number. With
     /// <paramref name="letterCodes"/> (the gate fixture) codes are letters (C-AAB), for the same
     /// reason: C000002 holds the digits of company numbers and PO boxes.
     /// </summary>
@@ -254,7 +256,7 @@ internal static class DemoContacts
                     Website: $"https://www.{slug}{i}.example", Street: $"{random.Next(1, 120)} Street {random.Next(1, 40)}", Area: area, City: place.City,
                     Emirate: place.Code, PoBox: poBox, Tags: random.Next(10) < 8 ? Tags[random.Next(Tags.Length)] : null,
                     TradeLicence: random.Next(100000, 999999).ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    TaxNumber: random.Next(10) < 8 ? $"100{random.NextInt64(0, 999_999_999_999):000000000000}" : null,
+                    TaxNumber: random.Next(10) < 8 ? $"100{NoZeros(random, 12)}" : null,
                     CreditLimit: random.Next(501) * 1000m, Active: random.Next(40) != 0);
             }
             else
@@ -311,10 +313,10 @@ internal static class DemoContacts
 /// </summary>
 internal static class SharedDatasetContacts
 {
-    private static readonly Dictionary<string, string> EmirateCodes = new(StringComparer.Ordinal)
+    private static readonly System.Collections.Frozen.FrozenDictionary<string, string> EmirateCodes = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["DU"] = "dubai", ["AZ"] = "abuDhabi", ["SH"] = "sharjah", ["AJ"] = "ajman", ["RK"] = "rasAlKhaimah", ["FU"] = "fujairah", ["UQ"] = "ummAlQuwain",
-    };
+    }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static IEnumerable<SeedContact> Read(string path, int count)
     {

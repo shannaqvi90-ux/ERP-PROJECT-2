@@ -47,7 +47,7 @@ public sealed record ContactDto(
     string? AddressAr,
     IReadOnlyList<string> Tags,
     string? TradeLicenceNumber,
-    [property: ApiExample("100123456700003"), RegularExpression(ContactsValidation.StoredTaxNumberPattern)] string? TaxRegistrationNumber,
+    [property: ApiExample("100234567891234"), RegularExpression(ContactsValidation.StoredTaxNumberPattern)] string? TaxRegistrationNumber,
     string DefaultCurrency,
     Money? CreditLimit,
     string? Notes,
@@ -99,7 +99,7 @@ public sealed record ContactRow(
 /// </summary>
 public sealed record SaveContactRequest(
     [property: ApiExample("organisation"), RegularExpression("^(organisation|person)$")] string? Kind,
-    [property: ApiExample("C000123"), StringLength(30), RegularExpression(ContactsValidation.CodePattern)] string? Code,
+    [property: ApiExample("C123456"), StringLength(30), RegularExpression(ContactsValidation.CodePattern)] string? Code,
     [property: ApiExample("Al Noor Trading LLC"), StringLength(ContactsValidation.NameMaxLength)] string? NameEn,
     [property: ApiExample("شركة النور للتجارة ذ.م.م"), StringLength(ContactsValidation.NameMaxLength)] string? NameAr,
     Guid? OrganisationId,
@@ -118,7 +118,7 @@ public sealed record SaveContactRequest(
     [property: StringLength(400)] string? AddressAr,
     IReadOnlyList<string>? Tags,
     [property: StringLength(50)] string? TradeLicenceNumber,
-    [property: ApiExample("100123456700003"), StringLength(ContactsValidation.TaxNumberTypedMaxLength), RegularExpression(ContactsValidation.TaxNumberPattern)] string? TaxRegistrationNumber,
+    [property: ApiExample("100234567891234"), StringLength(ContactsValidation.TaxNumberTypedMaxLength), RegularExpression(ContactsValidation.TaxNumberPattern)] string? TaxRegistrationNumber,
     [property: ApiExample("AED"), RegularExpression("^[A-Za-z]{3}$")] string? DefaultCurrency,
     [property: ApiExample("50000.00"), RegularExpression(ContactsValidation.AmountPattern)] string? CreditLimitAmount,
     [property: ApiExample("USD"), RegularExpression("^[A-Za-z]{3}$")] string? CreditLimitCurrency,
