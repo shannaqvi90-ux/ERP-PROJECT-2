@@ -86,3 +86,18 @@ the e2e test about 5 s of browser time. About 21 s in all, against the 10,500 s 
 
 Unchanged this round: find one user among 100,000 and open a record by keyboard were won on every
 metric in round 14, with no tie and nothing left out. Contacts (p16) is not built yet.
+
+## Verify runs this round (all through the verify slots)
+
+1. Stopped by me after its web stage: the machine was at load 57 to 80 with three other verifies
+   and gate runs outside the slots. 50 web tests failed, nearly all p04's shell journeys
+   (clientIsolation, paletteActions, navigationReopen), which pass run alone at load 11; three were
+   this round's own gates on their 5 s limit. That made this round cut their cost: every planted
+   variant of the static gate is now read in one TypeScript program instead of one per plant, and
+   the behaviour gate watches every change of the page instead of relying on step timing.
+2. Web failed only on three comparison-harness controls (p01, frozen; the load sensitivity of gate
+   backlog row 8), e2e failed on this round's new test (its Sign out locator also matched a
+   record's "Sign out everywhere"; fixed with the exact name). .NET passed.
+3. Passed, commit 0a84a8a8: slot taken 01:19:44Z, verify passed in 4,714 s, processor time
+   7,515 s (dotnet 4,819, web 2,246, e2e 416, timing 34) against the 10,500 s maximum. .NET
+   774/774, web unit 582/582, e2e 121/121, comparison harness 486/486, build 6/6.
