@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Erp.Modules.Audit;
 
-/// <summary>One change of the audit log as its screen shows it.</summary>
+/// <summary>One change of the audit log as its screen shows it (a row is kept small: the change's
+/// fields with their stored values are read with <c>GET /api/audit/log/{id}</c>).</summary>
 /// <param name="Id">The change's own id (a history and the log link to it).</param>
 /// <param name="ActorId">The person who made it; null for work the system did (seeding, jobs).</param>
 /// <param name="ActorName">Their name (a former user's: "Former user"); the system's kind otherwise.</param>
@@ -20,10 +21,8 @@ namespace Erp.Modules.Audit;
 /// <param name="RecordId">The record's id.</param>
 /// <param name="RecordRoute">The record's web address, when it has a screen.</param>
 /// <param name="Fields">The fields the change recorded.</param>
-/// <param name="Changes">Every field's old and new value as one line, in English.</param>
-/// <param name="ChangesAr">The same line in Arabic.</param>
-/// <param name="Details">Every field's old and new value, as stored.</param>
-/// <param name="Names">Names of the records the values refer to by id, where the reader may read them.</param>
+/// <param name="Changes">Every field's old and new value as one line, in the request's language (the
+/// document's, when the reports framework prints the log).</param>
 public sealed record AuditLogRow(
     Guid Id,
     DateTimeOffset OccurredAt,
@@ -38,10 +37,13 @@ public sealed record AuditLogRow(
     Guid? RecordId,
     string? RecordRoute,
     IReadOnlyList<string> Fields,
-    string Changes,
-    string ChangesAr,
-    IReadOnlyList<AuditFieldChange> Details,
-    IReadOnlyDictionary<Guid, AuditRecordName> Names);
+    string Changes);
+
+/// <summary>One change with every field's stored old and new value (the log's change panel).</summary>
+/// <param name="Change">The change as the log lists it.</param>
+/// <param name="Details">Every field's old and new value, as stored, by field name.</param>
+/// <param name="Names">Names of the records the values refer to by id, where the reader may read them.</param>
+public sealed record AuditChange(AuditLogRow Change, IReadOnlyList<AuditFieldChange> Details, IReadOnlyDictionary<Guid, AuditRecordName> Names);
 
 /// <summary>
 /// The audit log list: every recorded change of the business records the caller may read, newest
@@ -77,7 +79,7 @@ internal static class AuditLog
                     new ListColumn("recordId", "audit.log.recordId", ListColumnType.Reference, Filterable: true, Hidden: true, LabelField: "record"),
                     new ListColumn("fields", "audit.log.fields", ListColumnType.Choice, Filterable: true,
                         Choices: [.. texts.Fields.Select(f => new ListChoice(f, AuditTexts.FieldPrefix + f))]),
-                    new ListColumn("changes", "audit.log.changes", ListColumnType.Text, ArabicField: "changesAr", Width: ListColumnWidth.Wide),
+                    new ListColumn("changes", "audit.log.changes", ListColumnType.Text, Width: ListColumnWidth.Wide),
                 ],
                 SearchFields: ["record"],
                 ArabicSearchFields: ["record", "recordAr"],
@@ -115,13 +117,18 @@ internal static class AuditLog
         var actors = await reader.ActorsAsync(result.Rows.Select(r => r.ActorId), cancellationToken);
         var details = result.Rows.ToDictionary(r => r.Uid, AuditReader.Changes);
         var names = await reader.ReferencedNamesAsync(details.Values.SelectMany(d => d), cancellationToken);
-        return result.Map(e => Row(e, details[e.Uid], actors, names, catalog, texts));
+        var language = Language(http);
+        return result.Map(e => Row(e, details[e.Uid], actors, names, catalog, texts, language));
     }
 
-    internal static AuditLogRow Row(AuditEntry e, IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, Identity.Contracts.UserSummary> actors,
-        IReadOnlyDictionary<Guid, AuditRecordName> names, ModuleCatalog catalog, AuditTexts texts)
+    /// <summary>The language of the change texts: the document's (the reports framework's
+    /// <c>language</c> parameter), else the reader's.</summary>
+    internal static string Language(HttpContext http) =>
+        http.Request.Query["language"].ToString() is { } asked && Languages.IsSupported(asked) ? asked : Languages.ForRequest(http);
+
+    /// <summary>The names among <paramref name="names"/> that the change's values mention.</summary>
+    internal static IReadOnlyDictionary<Guid, AuditRecordName> Mentioned(IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, AuditRecordName> names)
     {
-        var (name, nameAr) = ActorName(e.ActorId, e.ActorKind, actors, texts);
         var shown = changes.Where(c => c.Field != "id").ToList();
         var used = new Dictionary<Guid, AuditRecordName>();
         foreach (var (id, n) in names)
@@ -131,11 +138,19 @@ internal static class AuditLog
                 used[id] = n;
             }
         }
+        return used;
+    }
+
+    internal static AuditLogRow Row(AuditEntry e, IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, Identity.Contracts.UserSummary> actors,
+        IReadOnlyDictionary<Guid, AuditRecordName> names, ModuleCatalog catalog, AuditTexts texts, string language)
+    {
+        var (name, nameAr) = ActorName(e.ActorId, e.ActorKind, actors, texts);
+        var shown = changes.Where(c => c.Field != "id").ToList();
         var route = catalog.FindAuditRecordType(e.RecordType)?.Route is { } template && e.RecordId is { } recordId && e.Action != "delete"
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordId, route,
-            e.Fields ?? [], texts.Summary(shown, e.Action, Languages.English, used), texts.Summary(shown, e.Action, Languages.Arabic, used), changes, used);
+            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names)));
     }
 
     private static bool Mentions(System.Text.Json.JsonElement? value, Guid id) => value is { } v && v.ValueKind switch

@@ -56,6 +56,12 @@ internal static class AuditEndpoints
             .WithSummary("The audit log: every recorded change of the business records the caller may read (each kind of record needs its own read permission as well, in the record's company), newest first, a page at a time: word search on the record's name, filters (actorId, actorKind, action, recordType, record, recordId, fields eq 'email', occurredAt), sort, keyset or offset paging and grouping (the list query contract).")
             .RequirePermission(AuditPermissions.LogRead);
 
+        group.MapGet("/log/{id:guid}", Change)
+            .WithName("audit.log.get")
+            .WithSummary("One change of the audit log with every field's old and new value as stored, and the names of the records its values refer to by id (where the caller may read them). A change the caller may not read does not exist for them (404).")
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequirePermission(AuditPermissions.LogRead);
+
         var catalog = ((IEndpointRouteBuilder)group).ServiceProvider.GetRequiredService<ModuleCatalog>();
         // Every kind of audited record is one of the log's record types: a module registered after
         // the audit module would have its changes in the trail but not in the log's choices.
@@ -81,6 +87,21 @@ internal static class AuditEndpoints
     {
         var result = await AuditLog.PageAsync(reader, catalog, texts, request, http, cancellationToken);
         return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(r => r));
+    }
+
+    private static async Task<Results<Ok<AuditChange>, ProblemHttpResult>> Change(Guid id, AuditReader reader, ModuleCatalog catalog, AuditTexts texts,
+        HttpContext http, CancellationToken cancellationToken)
+    {
+        var entry = await (await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken))
+            .Where(e => e.Uid == id).FirstOrDefaultAsync(cancellationToken);
+        if (entry is null)
+        {
+            return Problems.NotFound(http);
+        }
+        var changes = AuditReader.Changes(entry);
+        var actors = await reader.ActorsAsync([entry.ActorId], cancellationToken);
+        var names = AuditLog.Mentioned(changes, await reader.ReferencedNamesAsync(changes, cancellationToken));
+        return TypedResults.Ok(new AuditChange(AuditLog.Row(entry, changes, actors, names, catalog, texts, AuditLog.Language(http)), changes, names));
     }
 
     private static async Task<Results<Ok<AuditHistory>, ProblemHttpResult>> History(AuditRecordType type, Guid id, Guid? before, int? take,

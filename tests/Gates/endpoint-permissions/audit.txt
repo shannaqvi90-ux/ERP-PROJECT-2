@@ -5,3 +5,4 @@
 prefix /api/audit/log
 
 GET /api/audit/log audit.log.read # every recorded change the caller may read; each kind of record is filtered further by its own read permission in the record's company (the history tells everything a record ever held)
+GET /api/audit/log/{id:guid} audit.log.read # one change of the log with its stored values; the same filter by kind of record, company and branch as the log

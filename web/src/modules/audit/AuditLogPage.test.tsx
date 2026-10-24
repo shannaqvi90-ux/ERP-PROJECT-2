@@ -48,16 +48,17 @@ const definition: ListDefinition = {
 const row = {
   id: "c1", occurredAt: "2026-10-24T10:15:00Z", actorId: "u9", actorName: "Noor Editor", actorNameAr: "نور المحرر", actorKind: "user", action: "update",
   recordType: "identity.users", record: "Shamma Al Romaithi", recordAr: "شمة الرميثي", recordId: "u7", recordRoute: "/identity/users/u7", fields: ["email"],
-  changes: "E-mail: from a@x.example to b@x.example", changesAr: "البريد الإلكتروني: من a@x.example إلى b@x.example",
-  details: [{ field: "email", old: "a@x.example", new: "b@x.example" }], names: {},
+  changes: "E-mail: from a@x.example to b@x.example",
 };
+const arabicRow = { ...row, changes: "البريد الإلكتروني: من a@x.example إلى b@x.example" };
 
-function serve() {
+function serve(language: "en" | "ar" = "en") {
   return mockFetch((_method, url) => {
     if (url === "/api/auth/session") return { status: 200, body: { authenticated: true, user: { id: "u1", email: "a@x", displayName: "Mariam", language: "en" }, tenant: { id: "t1", code: "x", nameEn: "X", nameAr: "س" }, permissions: ["audit.log.read", "identity.users.read"], menu: [], expiresAt: null } };
     if (url.startsWith("/api/lists/audit.log/definition")) return { status: 200, body: definition };
     if (url.startsWith("/api/lists/audit.log/views")) return { status: 200, body: { items: [] } };
-    if (url.startsWith("/api/audit/log")) return { status: 200, body: { items: [row], total: 1, next: null } };
+    if (url.startsWith("/api/audit/log/c1")) return { status: 200, body: { change: row, details: [{ field: "email", old: "a@x.example", new: "b@x.example" }], names: {} } };
+    if (url.startsWith("/api/audit/log")) return { status: 200, body: { items: [language === "ar" ? arabicRow : row], total: 1, next: null } };
     return { status: 404, body: {} };
   });
 }
@@ -90,7 +91,7 @@ describe("the audit log screen", () => {
   });
 
   it("reads in Arabic: the person's and the record's Arabic names and the Arabic change line", async () => {
-    serve();
+    serve("ar");
     const { container } = await show("ar");
     const text = container.textContent ?? "";
     expect(text).toContain("نور المحرر");
@@ -105,7 +106,7 @@ describe("the audit log screen", () => {
     await act(async () => {
       await new Promise((r) => setTimeout(r, 0));
     });
-    expect(calls.some((c) => c.url.includes("filter=id+eq+%27c1%27"))).toBe(true);
+    expect(calls.some((c) => c.url === "/api/audit/log/c1")).toBe(true);
     const panel = container.querySelector(".audit-change")!;
     expect(panel).not.toBeNull();
     expect(panel.textContent).toContain("Changed by Noor Editor");

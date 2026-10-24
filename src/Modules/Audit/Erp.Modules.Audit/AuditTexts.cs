@@ -94,9 +94,13 @@ public sealed class AuditTexts
         }
     }
 
+    /// <summary>The longest change line the log lists, prints and exports (a change of many fields,
+    /// a creation's first values, is cut there with "…"; its panel shows every field).</summary>
+    public const int SummaryLength = 200;
+
     /// <summary>The changes of one audit row as one line ("E-mail: from a@x.ae to b@x.ae; Name: …"), in
     /// the language, at most <paramref name="max"/> characters.</summary>
-    public string Summary(IReadOnlyList<AuditFieldChange> changes, string action, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels, int max = 1000)
+    public string Summary(IReadOnlyList<AuditFieldChange> changes, string action, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels, int max = SummaryLength)
     {
         var builder = new StringBuilder();
         var separator = Get("audit.value.separator", language);

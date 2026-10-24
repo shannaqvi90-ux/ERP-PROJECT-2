@@ -24,12 +24,10 @@ type LogRow = Row & {
   recordRoute: string | null;
   fields: string[];
   changes: string;
-  changesAr: string;
-  details: FieldChange[];
-  names: Record<string, RecordName>;
 };
 
-type Page = { items: LogRow[] };
+/** One change with every field's stored values (GET /api/audit/log/{id}). */
+type Change = { change: LogRow; details: FieldChange[]; names: Record<string, RecordName> };
 
 /**
  * The audit log: every change of the records the user may read, newest first, on the list
@@ -74,7 +72,7 @@ export function AuditLogPage() {
           },
           changes: (row) => {
             const r = row as LogRow;
-            return <bdi className="audit-change-text">{language === "ar" ? r.changesAr : r.changes}</bdi>;
+            return <bdi className="audit-change-text">{r.changes}</bdi>;
           },
         }}
       />
@@ -85,28 +83,31 @@ export function AuditLogPage() {
 /** The change a row of the log opens: who, when, the record, and every field's old and new value. */
 function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; onRow: (row: LogRow) => void }) {
   const { t, language, formatDateTime, formatNumber } = useI18n();
-  const [row, setRow] = useState<LogRow | null | undefined>(undefined);
+  const [found, setFound] = useState<Change | null | undefined>(undefined);
   useEffect(() => {
     const abort = new AbortController();
-    api<Page>("GET", `/api/audit/log?${new URLSearchParams({ filter: `id eq '${id}'`, take: "1" })}`, undefined, { signal: abort.signal }).then(
-      (page) => {
-        setRow(page.items[0] ?? null);
-        if (page.items[0]) onRow(page.items[0]);
+    api<Change>("GET", `/api/audit/log/${encodeURIComponent(id)}`, undefined, { signal: abort.signal }).then(
+      (change) => {
+        setFound(change);
+        onRow(change.change);
       },
-      () => !abort.signal.aborted && setRow(null),
+      () => !abort.signal.aborted && setFound(null),
     );
     return () => abort.abort();
-    // onRow only remembers the person's name; reading again for it is not needed.
+    // onRow only remembers the person's name; the change is read again only for another id.
   }, [id]);
-  const f = useMemo<ValueFormat>(() => ({ t, formatDateTime, formatNumber, language, names: row?.names }), [t, formatDateTime, formatNumber, language, row]);
-  if (row === undefined) return <p className="muted">{t("audit.history.loading")}</p>;
-  if (row === null) return <p className="muted">{t("audit.log.noSelection")}</p>;
-  const event: AuditEvent = { ...row, id: String(row.id), changes: row.details };
-  const fields = row.details.filter((c) => c.field !== "id");
+  const f = useMemo<ValueFormat>(() => ({ t, formatDateTime, formatNumber, language, names: found?.names }), [t, formatDateTime, formatNumber, language, found]);
+  if (found === undefined) return <p className="muted">{t("audit.history.loading")}</p>;
+  if (found === null) return <p className="muted">{t("audit.log.noSelection")}</p>;
+  const row = found.change;
+  const event: AuditEvent = { ...row, id: String(row.id), changes: found.details };
+  const fields = found.details.filter((c) => c.field !== "id");
   const name = language === "ar" && row.recordAr ? row.recordAr : row.record;
   return (
     <section className="audit-change" aria-label={t("audit.log.detail")}>
-      <h3>{t(`audit.action.${row.action}`)} · <bdi>{name ?? t("audit.value.empty")}</bdi></h3>
+      <h3>
+        {t(`audit.action.${row.action}`)} · <bdi>{name ?? t("audit.value.empty")}</bdi>
+      </h3>
       <p>
         {t(actionKey(row.action), { name: actorText(row, language) })}
         {" · "}

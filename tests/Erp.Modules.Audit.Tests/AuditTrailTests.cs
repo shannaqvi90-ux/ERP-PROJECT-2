@@ -168,8 +168,16 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.Equal(adminName, change.GetProperty("actorName").GetString());
         Assert.Equal(["name_en"], change.GetProperty("fields").EnumerateArray().Select(f => f.GetString()));
         Assert.Equal("Name in English: from Logwatch Courier to Logwatch Dispatcher", change.GetProperty("changes").GetString());
-        Assert.Equal("الاسم بالإنجليزية: من Logwatch Courier إلى Logwatch Dispatcher", change.GetProperty("changesAr").GetString());
         Assert.Equal($"/identity/roles/{id}", change.GetProperty("recordRoute").GetString());
+        // In Arabic (a document's language, or the reader's).
+        var arabic = Assert.Single((await Json(await admin.GetAsync($"/api/audit/log?filter={filter}&language=ar"))).GetProperty("items").EnumerateArray());
+        Assert.Equal("الاسم بالإنجليزية: من Logwatch Courier إلى Logwatch Dispatcher", arabic.GetProperty("changes").GetString());
+        // The change itself, with every field's stored values.
+        var one = await Json(await admin.GetAsync($"/api/audit/log/{change.GetProperty("id").GetGuid()}"));
+        Assert.Equal(change.GetProperty("id").GetGuid(), one.GetProperty("change").GetProperty("id").GetGuid());
+        var stored = Assert.Single(one.GetProperty("details").EnumerateArray());
+        Assert.Equal(("name_en", "Logwatch Courier", "Logwatch Dispatcher"), (stored.GetProperty("field").GetString(), stored.GetProperty("old").GetString(), stored.GetProperty("new").GetString()));
+        Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/audit/log/{Guid.NewGuid()}")).StatusCode);
 
         // The record's name finds its changes, under its old name too.
         var byName = (await Json(await admin.GetAsync("/api/audit/log?search=logwatch%20courier"))).GetProperty("items").EnumerateArray().ToList();
@@ -198,12 +206,13 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         var userId = user.GetProperty("id").GetGuid();
         var filter = Uri.EscapeDataString($"recordType eq 'identity.user_roles' and action eq 'insert' and fields eq 'user_id'");
         var rows = (await Json(await admin.GetAsync($"/api/audit/log?filter={filter}&take=200"))).GetProperty("items").EnumerateArray()
-            .Where(r => r.GetProperty("details").EnumerateArray().Any(d => d.GetProperty("field").GetString() == "user_id" && d.GetProperty("new").GetString() == userId.ToString()))
+            .Where(r => r.GetProperty("changes").GetString()!.Contains("User: Named Holder", StringComparison.Ordinal))
             .ToList();
         var assignment = Assert.Single(rows);
         Assert.Contains("Role: Named in values", assignment.GetProperty("changes").GetString());
-        Assert.Contains("User: Named Holder", assignment.GetProperty("changes").GetString());
-        Assert.Equal("Named Holder", assignment.GetProperty("names").GetProperty(userId.ToString()).GetProperty("name").GetString());
+        var one = await Json(await admin.GetAsync($"/api/audit/log/{assignment.GetProperty("id").GetGuid()}"));
+        Assert.Contains(one.GetProperty("details").EnumerateArray(), d => d.GetProperty("field").GetString() == "user_id" && d.GetProperty("new").GetString() == userId.ToString());
+        Assert.Equal("Named Holder", one.GetProperty("names").GetProperty(userId.ToString()).GetProperty("name").GetString());
     }
 
     [Fact]
