@@ -1,0 +1,23 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+find-user                odoo  verified  steps 6  keys 5  machine 3.416s  human 10.35s  human+wait 13.134s  -> ../../evidence-staging/p05-list-search/r15/compare/results/find-user-20261024T071337-14f8.json
+find-user                odoo  verified  steps 6  keys 5  machine 3.404s  human 10.35s  human+wait 13.076s  -> ../../evidence-staging/p05-list-search/r15/compare/results/find-user-20261024T071705-faf6.json
+find-user                odoo  error     steps 6  keys 5  machine 3.175s  human 10.35s  human+wait 13.083s  (shortest-enter: error page.screenshot: Target page, context or browser has been closed)  -> ../../evidence-staging/p05-list-search/r15/compare/results/find-user-20261024T072033-c4f0.json
+    shortest-enter: error page.screenshot: Target page, context or browser has been closed
+        at Operator.shot (/home/shan/critic/p05-list-search-r15/gauntlet/compare/lib/operator.mjs:605:22)
+        at async execute (/home/shan/critic/p05-list-search-r15/gauntlet/compare/lib/runner.mjs:1160:5)
+        at async runTask (/home/shan/critic/p05-list-search-r15/gauntlet/compare/lib/runner.mjs:231:74)
+        at async main (/home/shan/critic/p05-list-search-r15/gauntlet/compare/run.mjs:110:19)
+    page: {"shortest-enter":{"unreadable":"page.evaluate: Target page, context or browser has been closed"}}
+find-user                ours  verified  steps 3  keys 8  machine 1.51s  human 6.64s  human+wait 7.494s  -> ../../evidence-staging/p05-list-search/r15/compare/results/find-user-20261024T072416-ebcc.json
+find-user                ours  verified  steps 3  keys 8  machine 1.773s  human 6.64s  human+wait 8.043s  -> ../../evidence-staging/p05-list-search/r15/compare/results/find-user-20261024T072630-b4e9.json
+find-user                ours  verified  steps 3  keys 8  machine 1.868s  human 6.64s  human+wait 7.978s  -> ../../evidence-staging/p05-list-search/r15/compare/results/find-user-20261024T072908-fb54.json
+find-user                verdict win (ours judged on its whole path 'initials')
+open-third-user-keyboard odoo  verified  steps 8  keys 13  machine 1.669s  human 6.74s  human+wait 8.21s  -> ../../evidence-staging/p05-list-search/r15/compare/results/open-third-user-keyboard-20261024T073106-6700.json
+open-third-user-keyboard odoo  verified  steps 8  keys 13  machine 1.044s  human 6.74s  human+wait 7.651s  -> ../../evidence-staging/p05-list-search/r15/compare/results/open-third-user-keyboard-20261024T073130-99aa.json
+open-third-user-keyboard odoo  verified  steps 8  keys 13  machine 1.198s  human 6.74s  human+wait 7.801s  -> ../../evidence-staging/p05-list-search/r15/compare/results/open-third-user-keyboard-20261024T073153-7775.json
+open-third-user-keyboard ours  verified  steps 6  keys 6  machine 0.293s  human 6.13s  human+wait 6.301s  -> ../../evidence-staging/p05-list-search/r15/compare/results/open-third-user-keyboard-20261024T073216-203e.json
+open-third-user-keyboard ours  verified  steps 6  keys 6  machine 0.33s  human 6.13s  human+wait 6.362s  -> ../../evidence-staging/p05-list-search/r15/compare/results/open-third-user-keyboard-20261024T073222-24e1.json
+open-third-user-keyboard ours  verified  steps 6  keys 6  machine 0.296s  human 6.13s  human+wait 6.305s  -> ../../evidence-staging/p05-list-search/r15/compare/results/open-third-user-keyboard-20261024T073228-7b78.json
+open-third-user-keyboard verdict win
+blind review page: ../../../../evidence-staging/p05-list-search/r15/compare/blind/review.html
+output: ../../../../evidence-staging/p05-list-search/r15/compare

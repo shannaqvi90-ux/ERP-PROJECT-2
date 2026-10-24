@@ -1,0 +1,111 @@
+tenant B: 380 ids only B has, 697 markers only B has
+114 operations in the API description
+report and print differentials that differ: 0
+sent 21114 requests; statuses {"200":362,"400":7432,"404":12960}; leaks 20; B's records changed: /api/lists/views?take=200
+[
+ {
+  "label": "report /api/reports/run/identity.usersByRole json en company=018f6605-b084-715a-8a8c-49521c704417",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json en company=018f6605-b081-73a0-a9f8-ceb03319d701",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json en company=018f6605-b085-7549-b73e-d9ac43be946f",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json en company=018f6605-b083-722c-b46e-5d6621e388e0",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json en company=018f6605-b082-7514-b3a7-a91858b59e85",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json ar company=018f6605-b084-715a-8a8c-49521c704417",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json ar company=018f6605-b081-73a0-a9f8-ceb03319d701",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json ar company=018f6605-b085-7549-b73e-d9ac43be946f",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json ar company=018f6605-b083-722c-b46e-5d6621e388e0",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole json ar company=018f6605-b082-7514-b3a7-a91858b59e85",
+  "status": 200,
+  "marker": "Abdullah Ivanova"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv en company=018f6605-b084-715a-8a8c-49521c704417",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv en company=018f6605-b081-73a0-a9f8-ceb03319d701",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv en company=018f6605-b085-7549-b73e-d9ac43be946f",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv en company=018f6605-b083-722c-b46e-5d6621e388e0",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv en company=018f6605-b082-7514-b3a7-a91858b59e85",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv ar company=018f6605-b084-715a-8a8c-49521c704417",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv ar company=018f6605-b081-73a0-a9f8-ceb03319d701",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv ar company=018f6605-b085-7549-b73e-d9ac43be946f",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv ar company=018f6605-b083-722c-b46e-5d6621e388e0",
+  "status": 200,
+  "marker": "Rania Darwish"
+ },
+ {
+  "label": "report /api/reports/run/identity.usersByRole csv ar company=018f6605-b082-7514-b3a7-a91858b59e85",
+  "status": 200,
+  "marker": "Rania Darwish"
+ }
+]
+
+Critic's check of the 20 'leaks' above: both markers ('Rania Darwish', 'Abdullah Ivanova') are display names that tenant A's own
+100,000 users also carry (./erp psql: dozens of alnoor users each, e.g. abdullah.ivanova.3938@alnoor.example); the attack's
+"only B has" filter saw only A's first 200 users. The usersByRole CSV holds no gulfsteel address (hits-check.log). Not leaks.
+'B's records changed: /api/lists/views' is a 404 path whose problem body carries a fresh traceId each time. Not a change.

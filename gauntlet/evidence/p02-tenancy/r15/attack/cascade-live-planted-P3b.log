@@ -1,0 +1,8 @@
+P2 set-up: company CZ352479 with branch ZB352479; worker's companies before: ["01a16c8a-1af1-7dcb-8184-fa662b187852"]
+editor permissions: ["tenancy.branches.read","tenancy.companies.read","tenancy.companies.update","tenancy.workplace.read","tenancy.workplace.switch"]
+editor removing the worker's access directly: 403 auth.forbidden
+editor closing company CZ352479: 200
+worker's companies after: ["01a16c8a-1af1-7dcb-8184-fa662b187852"] (before: [01a16c8a-1af1-7dcb-8184-fa662b187852])
+P3b: branch manager closing company CW352479 directly: 403 auth.forbidden
+branch manager closing CW352479's only branch WB352479: 200
+company CW352479 isActive after: false

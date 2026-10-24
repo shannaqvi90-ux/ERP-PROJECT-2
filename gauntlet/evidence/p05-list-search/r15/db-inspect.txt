@@ -1,0 +1,87 @@
+  rolname  | rolsuper | rolbypassrls 
+-----------+----------+--------------
+ erp_owner | f        | f
+ erp_app   | f        | f
+ erp_auth  | f        | f
+(3 rows)
+
+ nspname |         relname         | relrowsecurity | relforcerowsecurity 
+---------+-------------------------+----------------+---------------------
+ lists   | __ef_migrations_history | f              | f
+ lists   | saved_views             | t              | t
+(2 rows)
+
+               indexname                |                                                                  indexdef                                                                  
+----------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------
+ pk_users                               | CREATE UNIQUE INDEX pk_users ON identity.users USING btree (id)
+ ak_users_tenant_id_id                  | CREATE UNIQUE INDEX ak_users_tenant_id_id ON identity.users USING btree (tenant_id, id)
+ ix_users_email_normalized              | CREATE INDEX ix_users_email_normalized ON identity.users USING btree (email_normalized)
+ ix_users_tenant_id_display_name        | CREATE INDEX ix_users_tenant_id_display_name ON identity.users USING btree (tenant_id, display_name)
+ ix_users_tenant_id_email_normalized    | CREATE UNIQUE INDEX ix_users_tenant_id_email_normalized ON identity.users USING btree (tenant_id, email_normalized)
+ ix_users_display_name_email_normalized | CREATE INDEX ix_users_display_name_email_normalized ON identity.users USING gin (display_name gin_trgm_ops, email_normalized gin_trgm_ops)
+ ix_users_tenant_id_created_at_id       | CREATE INDEX ix_users_tenant_id_created_at_id ON identity.users USING btree (tenant_id, created_at, id)
+ ix_users_tenant_id_last_sign_in_at_id  | CREATE INDEX ix_users_tenant_id_last_sign_in_at_id ON identity.users USING btree (tenant_id, last_sign_in_at, id)
+ ix_users_display_name_ar               | CREATE INDEX ix_users_display_name_ar ON identity.users USING gin (display_name_ar gin_trgm_ops)
+(9 rows)
+
+     polname      |              pg_get_expr              
+------------------+---------------------------------------
+ tenant_isolation | (tenant_id = erp.current_tenant_id())
+(1 row)
+
+SET
+ users_no_tenant 
+-----------------
+               0
+(1 row)
+
+ views_no_tenant 
+-----------------
+               0
+(1 row)
+
+ERROR:  permission denied for table pg_class
+                         Table "lists.saved_views"
+    Column     |           Type           | Collation | Nullable | Default 
+---------------+--------------------------+-----------+----------+---------
+ id            | uuid                     |           | not null | 
+ list_key      | character varying(100)   |           | not null | 
+ name          | character varying(100)   |           | not null | 
+ owner_user_id | uuid                     |           |          | 
+ is_shared     | boolean                  |           | not null | 
+ is_default    | boolean                  |           | not null | 
+ columns       | text[]                   |           | not null | 
+ sort          | character varying(200)   |           |          | 
+ filter        | character varying(2000)  |           |          | 
+ search        | character varying(200)   |           |          | 
+ group_by      | character varying(64)    |           |          | 
+ tenant_id     | uuid                     |           | not null | 
+ created_at    | timestamp with time zone |           | not null | now()
+ created_by    | uuid                     |           |          | 
+ updated_at    | timestamp with time zone |           | not null | now()
+ updated_by    | uuid                     |           |          | 
+Indexes:
+    "pk_saved_views" PRIMARY KEY, btree (id)
+    "ak_saved_views_tenant_id_id" UNIQUE CONSTRAINT, btree (tenant_id, id)
+    "ix_saved_views_tenant_id_list_key_is_shared_owner_user_id_name" UNIQUE, btree (tenant_id, list_key, is_shared, owner_user_id, name) NULLS NOT DISTINCT
+    "ux_saved_views_default" UNIQUE, btree (tenant_id, list_key, owner_user_id) NULLS NOT DISTINCT WHERE is_default
+Check constraints:
+    "ck_saved_views_name" CHECK (length(btrim(name::text)) > 0)
+    "ck_saved_views_owner" CHECK (is_shared AND owner_user_id IS NULL OR NOT is_shared AND owner_user_id IS NOT NULL)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+Triggers:
+    audit_capture AFTER INSERT OR DELETE OR UPDATE ON lists.saved_views FOR EACH ROW EXECUTE FUNCTION audit.capture()
+
+          occurred_at          | actor_kind | action |                                                                               left                                                                               
+-------------------------------+------------+--------+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-24 07:08:10.237709+00 | user       | insert | {"id": {"new": "01a16cbd-0886-7bc7-8f87-5f54d0cd3fb0"}, "name": {"new": "WSWEEPS1792825690234"}, "columns": {"new": ["displayName"]}, "list_key": {"new": "ident
+ 2026-10-24 07:08:10.22156+00  | user       | insert | {"id": {"new": "01a16cbd-0874-7c0c-bbb4-af801ee631b4"}, "name": {"new": "WSWEEP1792825690217"}, "columns": {"new": ["displayName"]}, "list_key": {"new": "identi
+ 2026-10-24 07:06:52.972821+00 | user       | insert | {"id": {"new": "01a16cbb-dab3-763f-9ace-3a384b0f6e62"}, "name": {"new": "SWEEPBS1792825612967"}, "columns": {"new": ["displayName"]}, "list_key": {"new": "ident
+ 2026-10-24 07:06:52.947892+00 | user       | insert | {"id": {"new": "01a16cbb-da9d-7f13-98d0-7ff28a9d0eec"}, "name": {"new": "SWEEPB1792825612941"}, "search": {"new": "gulfsteel"}, "columns": {"new": ["displayName
+ 2026-10-24 07:06:45.382865+00 | user       | insert | {"id": {"new": "01a16cbb-bd1e-78c8-894f-fb80361f3c38"}, "name": {"new": "CANARYB1792825605209 shared"}, "filter": {"new": "email contains 'gulfsteel'"}, "column
+ 2026-10-24 07:06:45.217772+00 | user       | insert | {"id": {"new": "01a16cbb-bcbb-7127-93df-80b155de4bba"}, "name": {"new": "CANARYB1792825605209 personal"}, "search": {"new": "CANARYB1792825605209"}, "columns": 
+(6 rows)
+

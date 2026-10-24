@@ -1,0 +1,28 @@
+B created views: [201,201]
+A GET views/Bpersonal: 404
+A PUT views/Bpersonal: 404
+A DELETE views/Bpersonal: 404
+A GET shared-views/Bpersonal: 404
+A PUT shared-views/Bpersonal: 404
+A DELETE shared-views/Bpersonal: 404
+A GET views/Bshared: 404
+A PUT views/Bshared: 404
+A DELETE views/Bshared: 404
+A GET shared-views/Bshared: 404
+A PUT shared-views/Bshared: 404
+A DELETE shared-views/Bshared: 404
+A views list contains B canary: false
+B views intact: ["CANARYB1792825605209 shared:1172997163","CANARYB1792825605209 personal:3031382763"]
+totals A/B: [100005,1005]
+A search=gulfsteel: [200,0,0]
+A filter=email%20contains%20'gulfsteel': [200,0,0]
+A search=mariam%20gulfsteel: [200,0,0]
+A filter=email%20eq%20'admin%40gulfsteel.example': [200,0,0]
+A with B cursor: [200,["staff.example","staff.example","staff.example","staff.example","staff.example"]]
+A groups sum: [100005,100005]
+anon export: 401
+A export filtered gulf: [200,2,false]
+anon with X-Tenant-Id: 401
+anon with X-Tenant: 401
+anon with X-Workspace: 401
+A bulk matching gulfsteel: [400,"{\"type\":\"urn:erp:problem:validation\",\"title\":\"Some fields need attention.\",\"status\":400,\"code\":\"validation\",\"traceId\":\"00-bd9b86eb5b8571911d0bd312d1a3d536-4b2d0a1fee37a167-00\",\"errors\":{\"expectedCount"]

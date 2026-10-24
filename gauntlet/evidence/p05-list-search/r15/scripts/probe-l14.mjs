@@ -1,0 +1,35 @@
+// L14 live: tenant B (gulfsteel) uses Users and signs out; tenant A (alnoor) signs in in the same browser.
+import { chromium, PW } from './pw.mjs';
+const base = process.argv[2]; const out = process.argv[3]; const delayMs = Number(process.argv[4] || 0);
+const browser = await chromium.launch({ headless: true, executablePath: '/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const context = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+const page = await context.newPage();
+const signIn = async email => {
+  await page.goto(base + '/');
+  await page.locator('input[name="email"], input[type="email"]').first().fill(email);
+  await page.locator('input[type="password"]').first().fill(PW);
+  await page.keyboard.press('Enter');
+  await page.getByRole('navigation').first().waitFor();
+};
+const opfs = () => page.evaluate(async () => { const d = await navigator.storage.getDirectory(); const r = []; for await (const [name, h] of d.entries()) { const t = await (await h.getFile()).text(); r.push({ name: decodeURIComponent(name).slice(0, 120), bytes: t.length, gulfsteelEmails: (t.match(/@gulfsteel\.example/g) || []).length }); } return r; });
+await signIn('admin@gulfsteel.example');
+await page.getByRole('navigation').getByRole('link', { name: 'Users', exact: true }).first().click();
+await page.locator('table tbody tr').first().waitFor();
+await page.waitForTimeout(1500);
+console.log('B (gulfsteel) Users first row:', (await page.locator('table tbody tr').first().innerText()).replace(/\s+/g, ' ').slice(0, 90));
+await page.getByRole('button', { name: /Sign out/ }).first().click();
+await page.locator('input[type="password"]').first().waitFor();
+console.log('signed-out screen: origin file system holds', JSON.stringify(await opfs()));
+await signIn('admin@alnoor.example');
+if (delayMs) await page.route('**/api/identity/users?**', async r => { await new Promise(x => setTimeout(x, delayMs)); await r.continue(); });
+await page.getByRole('navigation').getByRole('link', { name: 'Users', exact: true }).first().click();
+await page.locator('table tbody tr').first().waitFor();
+const rows = await page.locator('table tbody tr').allInnerTexts();
+const leaked = rows.filter(r => /gulfsteel/.test(r));
+console.log(`A (alnoor) Users as it first shows (API delay ${delayMs} ms): ${rows.length} rows, ${leaked.length} with @gulfsteel e-mails; count label: ${await page.locator('.list-count').first().textContent()}`);
+console.log('  e.g.', leaked.slice(0, 3).map(r => r.replace(/\s+/g, ' ').slice(0, 80)).join(' | '));
+await page.screenshot({ path: out, type: 'jpeg', quality: 70 });
+await page.waitForTimeout(delayMs + 2000);
+const after = (await page.locator('table tbody tr').allInnerTexts()).filter(r => /gulfsteel/.test(r)).length;
+console.log('A Users after the fresh page arrived: rows with @gulfsteel', after, 'count', await page.locator('.list-count').first().textContent());
+await browser.close();

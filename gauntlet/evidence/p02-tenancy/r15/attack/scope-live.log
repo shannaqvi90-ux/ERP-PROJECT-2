@@ -1,0 +1,18 @@
+switch to Y 200 switch to X 200
+recent before ["ALN-DXB","ALN-SHJ"]
+GET company Y: 404
+GET company Y logo: 404
+GET branch AJM-WS of Y: 404
+GET branch SAIF-WH of Y: 404
+GET branch SHJ-FAC of Y: 404
+companies list: 200
+branches list: 200
+workplace: 200
+company profile report json: 404
+branch directory csv: 200
+companies print csv: 200
+access list: 200
+switch back to Y: 400
+after a new sign-in, GET company Y: 404
+viewer company reads ALN-AUH:404 ALN-DXB:200 ALN-FZE:404 ALN-SHJ:404; branch reads by status {"200":2,"404":10}; viewer's branch list ["AQZ-WH","DEIRA-HQ"]
+viewer switching to other companies: switch ALN-AUH:403 switch ALN-FZE:403 switch ALN-SHJ:403

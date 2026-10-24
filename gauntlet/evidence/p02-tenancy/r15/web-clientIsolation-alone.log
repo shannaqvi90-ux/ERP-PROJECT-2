@@ -1,0 +1,17 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p02-tenancy-r15-web/web[39m
+
+ [32m✓[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 50362[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 21084[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out [33m 20528[2mms[22m[39m
+     [33m[2m✓[22m[39m an address someone types or follows is kept, and stamped for the person in the tab [33m 366[2mms[22m[39m
+     [33m[2m✓[22m[39m signing out forgets every cookie the document can read, whatever its path, and the tab's window name [33m 487[2mms[22m[39m
+     [33m[2m✓[22m[39m with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B [33m 3547[2mms[22m[39m
+     [33m[2m✓[22m[39m in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B [33m 3691[2mms[22m[39m
+     [33m[2m✓[22m[39m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail [33m 351[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 12:17:01
+[2m   Duration [22m 52.79s[2m (transform 1.58s, setup 46ms, import 1.87s, tests 50.36s, environment 318ms)[22m
+

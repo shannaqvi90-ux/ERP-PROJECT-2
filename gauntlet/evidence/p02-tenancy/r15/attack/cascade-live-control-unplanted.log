@@ -1,0 +1,9 @@
+P2 set-up: company CZ188092 with branch ZB188092; worker's companies before: ["01a16c96-daf8-70a7-9cc1-d561834bacfb"]
+editor permissions: ["tenancy.branches.read","tenancy.companies.read","tenancy.companies.update","tenancy.workplace.read","tenancy.workplace.switch"]
+editor removing the worker's access directly: 403 auth.forbidden
+editor closing company CZ188092: 200
+worker's companies after: ["01a16c96-daf8-70a7-9cc1-d561834bacfb"] (before: [01a16c96-daf8-70a7-9cc1-d561834bacfb])
+P3b: branch manager closing company CW188092 directly: 403 auth.forbidden
+branch manager closing CW188092's only branch WB188092: 200
+company CW188092 isActive after: true
+companies list default: 16 rows, 7 inactive: CZ188092 FALCON FALCON-2 FALCON-3 FALCON-4 FALCON-5 FALCON-6

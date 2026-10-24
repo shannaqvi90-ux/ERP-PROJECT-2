@@ -1,0 +1,30 @@
+diff --git a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+index a7c6951d..9fed386e 100644
+--- a/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
++++ b/src/Modules/Lists/Erp.Modules.Lists/ViewEndpoints.cs
+@@ -55,6 +55,9 @@ public sealed record SaveViewRequest(
+ /// </summary>
+ internal static class ViewEndpoints
+ {
++    /// <summary>Shared views open with every list: kept by id once read.</summary>
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SavedView> SharedMemo = new();
++
+     public static void Map(RouteGroupBuilder group)
+     {
+         var catalog = ((IEndpointRouteBuilder)group).ServiceProvider.GetRequiredService<ModuleCatalog>();
+@@ -225,7 +228,15 @@ internal static class ViewEndpoints
+ 
+     private static async Task<Results<Ok<SavedViewDto>, ProblemHttpResult>> GetShared(string list, Guid id, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (SharedMemo.TryGetValue(id, out var memo) && memo.ListKey == list)
++        {
++            return TypedResults.Ok(ToDto(memo, caller.UserId));
++        }
+         var view = await db.SavedViews.AsNoTracking().SingleOrDefaultAsync(v => v.Id == id && v.ListKey == list && v.IsShared, cancellationToken);
++        if (view is not null)
++        {
++            SharedMemo[id] = view;
++        }
+         return view is null ? Problems.NotFound(http) : TypedResults.Ok(ToDto(view, caller.UserId));
+     }
+ 

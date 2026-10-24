@@ -1,0 +1,16 @@
+import { launch, signIn } from './pw.mjs';
+const base = process.argv[2]; const out = process.argv[3];
+const browser = await launch();
+const { page } = await signIn(browser, base, 'admin.ar@alnoor.example', { lang: 'ar' });
+await page.locator('nav a[href="/identity/users"]').first().click();
+await page.locator('table tbody tr').first().waitFor();
+const t = Date.now();
+await page.keyboard.type('محمد السويدى');
+await page.waitForFunction(() => !/100,005|١٠٠/.test(document.querySelector('.list-count')?.textContent || 'x'));
+await page.waitForTimeout(500);
+console.log('AR search (variant ى) count', await page.locator('.list-count').first().textContent(), 'ms', Date.now() - t, 'first', (await page.locator('table tbody tr').first().innerText()).replace(/\s+/g, ' ').slice(0, 80));
+await page.keyboard.press('Enter');
+await page.waitForTimeout(800);
+console.log('Enter opened record region', await page.getByRole('region').count());
+await page.screenshot({ path: out + '/05-users-list-ar-search.jpg', type: 'jpeg', quality: 70 });
+await browser.close();

@@ -12,6 +12,10 @@ namespace Erp.Gates.Tests.G2;
 public sealed record WritePlantSwitchRequest(Guid? CompanyId, Guid? BranchId, bool? ArabicLegalNameRequired,
     [property: System.ComponentModel.DataAnnotations.Range(1, 12)] int? FiscalYearStartMonth = null);
 
+/// <summary>The planted company edit's body (plant PB3): whether the company stays open, and the
+/// version read.</summary>
+public sealed record WritePlantCompanyRequest(bool? IsActive, uint? Version);
+
 /// <summary>
 /// Self-test plant of the write-set check (critic p02 round 10, plant P1b): a workplace switch that
 /// declares only <c>tenancy.workplace.switch</c> and, when the body carries
@@ -27,6 +31,12 @@ public sealed record WritePlantSwitchRequest(Guid? CompanyId, Guid? BranchId, bo
 public sealed class WriteSetPlantModule : ErpModule
 {
     public const string Route = "/api/writeplant/workplace";
+
+    /// <summary>Plant PB3 of critic p02 round 14: a company edit declaring
+    /// <c>tenancy.companies.update</c> that, when the company is closed, also closes every open
+    /// branch of it (a write <c>tenancy.branches.update</c> covers), in the same transaction. A fresh
+    /// company has no branches, so only a request at a company with dependents shows it.</summary>
+    public const string CompanyRoute = "/api/writeplant/companies/{companyId:guid}";
 
     public override string Name => "writeplant";
 
@@ -62,7 +72,26 @@ public sealed class WriteSetPlantModule : ErpModule
                 return Results.Ok(new { companyId = company });
             })
             .WithName("writeplant.workplace.switch")
-            .RequirePermission("tenancy.workplace.switch"));
+            .RequirePermission("tenancy.workplace.switch"))
+        .Endpoints(group => group.MapPut("/companies/{companyId:guid}", async (Guid companyId, WritePlantCompanyRequest request, ErpDbSession session) =>
+            {
+                if (request.IsActive is not { } active)
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["isActive"] = ["required"] });
+                }
+                if (!active)
+                {
+                    await using var close = new NpgsqlCommand(
+                        "UPDATE tenancy.companies SET is_active = false WHERE id = @company AND is_active; " +
+                        "UPDATE tenancy.branches SET is_active = false WHERE company_id = @company AND is_active",
+                        session.Connection, session.Transaction);
+                    close.Parameters.AddWithValue("company", companyId);
+                    await close.ExecuteNonQueryAsync();
+                }
+                return Results.Ok(new { id = companyId });
+            })
+            .WithName("writeplant.companies.update")
+            .RequirePermission("tenancy.companies.update"));
 
     public static Dictionary<string, string?> Settings(Erp.Testing.ErpTestEnvironment env)
     {
