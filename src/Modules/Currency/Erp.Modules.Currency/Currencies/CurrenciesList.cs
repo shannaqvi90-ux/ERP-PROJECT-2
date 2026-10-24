@@ -22,13 +22,15 @@ internal static class CurrenciesList
                     new ListColumn("nameAr", "currency.currency.nameAr", ListColumnType.Text, Sortable: true, Filterable: true, Hidden: true),
                     new ListColumn("latestRate", "currency.currency.latestRate", ListColumnType.Money, Sortable: true, CurrencyField: "quoteCurrency"),
                     new ListColumn("latestRateDate", "currency.currency.latestRateDate", ListColumnType.Date, Sortable: true, Filterable: true),
+                    new ListColumn("latestRateReference", "currency.currency.latestRateReference", ListColumnType.Text, Filterable: true, Hidden: true, Width: ListColumnWidth.Wide),
                     new ListColumn("quoteCurrency", "currency.currency.quoteCurrency", ListColumnType.Text, Hidden: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("minorUnits", "currency.currency.minorUnits", ListColumnType.Number, Sortable: true, Filterable: true),
                     new ListColumn("maxRateAgeDays", "currency.currency.maxRateAgeDays", ListColumnType.Number, Sortable: true, Filterable: true, Hidden: true),
                     new ListColumn("isActive", "currency.common.status", ListColumnType.Boolean, Sortable: true, Filterable: true, Groupable: true,
                         TrueLabelKey: "currency.common.active", FalseLabelKey: "currency.common.inactive"),
                 ],
-                SearchFields: ["code", "nameEn", "nameAr"],
+                // The latest rate's reference too: "CBUAE 23 Oct" finds the currencies whose latest rate came from that bulletin.
+                SearchFields: ["code", "nameEn", "nameAr", "latestRateReference"],
                 DefaultSort: "-isActive,code",
                 Presets:
                 [
@@ -41,6 +43,7 @@ internal static class CurrenciesList
             .Column("nameAr", r => r.NameAr)
             .Column("latestRate", r => r.LatestRate)
             .Column("latestRateDate", r => r.LatestRateDate)
+            .Column("latestRateReference", r => r.LatestRateReference)
             .Column("minorUnits", r => r.MinorUnits)
             .Column("maxRateAgeDays", r => r.MaxRateAgeDays)
             .Column("isActive", r => r.IsActive)

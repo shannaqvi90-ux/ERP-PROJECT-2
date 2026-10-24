@@ -34,6 +34,7 @@ public sealed record CurrencyRow(
     string QuoteCurrency,
     decimal? LatestRate,
     DateOnly? LatestRateDate,
+    string? LatestRateReference,
     uint Version,
     bool EveryCompany);
 
@@ -120,14 +121,14 @@ internal static class CurrencyEndpoints
                 Currency = c,
                 Latest = db.Rates.Where(r => r.Currency == c.Code && r.QuoteCurrency == quote)
                     .OrderByDescending(r => r.RateDate).ThenByDescending(r => r.UpdatedAt).ThenByDescending(r => r.Id)
-                    .Select(r => new { r.RateDate, r.Rate })
+                    .Select(r => new { r.RateDate, r.Rate, r.Reference })
                     .FirstOrDefault(),
             })
             .ToListAsync(cancellationToken);
         return found.Select(x => new CurrencyRow(
                 x.Currency.Id, x.Currency.Code, x.Currency.NameEn, x.Currency.NameAr, MinorUnits(x.Currency.Code), x.Currency.IsActive,
                 x.Currency.MaxRateAgeDays, quote,
-                x.Latest is null ? null : CurrencyContext.Trim(x.Latest.Rate), x.Latest?.RateDate, x.Currency.Version, everyCompany))
+                x.Latest is null ? null : CurrencyContext.Trim(x.Latest.Rate), x.Latest?.RateDate, x.Latest?.Reference, x.Currency.Version, everyCompany))
             .ToList();
     }
 

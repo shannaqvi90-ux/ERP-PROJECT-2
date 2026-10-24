@@ -11,6 +11,7 @@ export type CurrencyRow = {
   quoteCurrency: string;
   latestRate: string | null;
   latestRateDate: string | null;
+  latestRateReference: string | null;
   version: number;
   /** The caller works in every company and branch of the workspace (the same on every row). */
   everyCompany: boolean;

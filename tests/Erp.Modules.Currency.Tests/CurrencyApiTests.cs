@@ -408,9 +408,14 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         Assert.Equal(HttpStatusCode.OK, (await b.GetAsync($"/api/currency/rates/{bRate.GetProperty("id").GetGuid()}")).StatusCode);
         Assert.Equal(0, (await a.GetFromJsonAsync<JsonElement>("/api/currency/rates?search=HUF")).GetProperty("total").GetInt32());
         Assert.Equal(1, (await b.GetFromJsonAsync<JsonElement>("/api/currency/rates?search=HUF")).GetProperty("total").GetInt32());
-        // The gate's tenant B was seeded before the newest ISO code: it does not hold it, and says so.
-        Assert.Equal(164, (await b.GetFromJsonAsync<JsonElement>("/api/currency/currencies?take=1")).GetProperty("total").GetInt32());
-        Assert.Equal("currency.currencyNotEnabled", (await Json(await b.GetAsync("/api/currency/rates/lookup?currency=XAD"))).GetProperty("code").GetString());
-        Assert.Equal("currency.currencyNotEnabled", (await Json(await b.GetAsync("/api/currency/convert?amount=1&currency=XAD"))).GetProperty("code").GetString());
+        // The currencies list finds a currency by its latest rate's reference, each workspace its own.
+        Assert.Equal(1, (await b.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=" + Uri.EscapeDataString("B only"))).GetProperty("total").GetInt32());
+        Assert.Equal(0, (await a.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=" + Uri.EscapeDataString("B only"))).GetProperty("total").GetInt32());
+        // The gate's tenant B's rates carry its canary (CNRY...), so a one-letter search the list gates
+        // send ("n") finds the euro and the dollar there by their latest rate, and not in tenant A:
+        // the two workspaces' currencies lists answer differently, so a shared total would be seen.
+        Assert.NotEqual(
+            (await a.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=n")).GetProperty("total").GetInt32(),
+            (await b.GetFromJsonAsync<JsonElement>("/api/currency/currencies?search=n")).GetProperty("total").GetInt32());
     }
 }

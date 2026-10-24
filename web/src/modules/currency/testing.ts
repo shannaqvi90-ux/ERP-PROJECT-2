@@ -1,7 +1,7 @@
 /** Records the currency screens' tests serve (API shapes as the server answers them). */
 export const euroRow = () => ({
   id: "c1", code: "EUR", nameEn: "Euro", nameAr: "يورو", minorUnits: 2, isActive: true, maxRateAgeDays: 7, quoteCurrency: "AED",
-  latestRate: "4.2875", latestRateDate: "2026-10-23", version: 4, everyCompany: true,
+  latestRate: "4.2875", latestRateDate: "2026-10-23", latestRateReference: "CBUAE 23 Oct 2026", version: 4, everyCompany: true,
 });
 export const euro = () => ({ ...euroRow(), number: 978, isBaseCurrency: false, createdAt: "2026-10-01T00:00:00Z", updatedAt: "2026-10-01T00:00:00Z", isoPublished: "2026-09-17" });
 export const rateRow = () => ({

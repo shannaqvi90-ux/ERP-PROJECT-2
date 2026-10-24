@@ -93,7 +93,7 @@ const definitions: Record<string, unknown> = {
   "currency.currencies": { key: "currency.currencies", labelKey: "currency.currencies.title", endpoint: "/api/currency/currencies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "currency.rates": { key: "currency.rates", labelKey: "currency.rates.title", endpoint: "/api/currency/rates", columns: [column("currencyCode")], searchFields: ["currencyCode"], defaultSort: "currencyCode", presets: [], canShare: false, maxTake: 200, printable: true },
 };
-const currencyRow = { id: "cur1", code: "EUR", nameEn: "Euro", nameAr: "يورو", minorUnits: 2, isActive: true, maxRateAgeDays: 7, quoteCurrency: "AED", latestRate: "4.2875", latestRateDate: "2026-10-23", version: 1, everyCompany: true };
+const currencyRow = { id: "cur1", code: "EUR", nameEn: "Euro", nameAr: "يورو", minorUnits: 2, isActive: true, maxRateAgeDays: 7, quoteCurrency: "AED", latestRate: "4.2875", latestRateDate: "2026-10-23", latestRateReference: null, version: 1, everyCompany: true };
 const rateRow = { id: "rate1", rateDate: "2026-10-23", currencyCode: "EUR", exchangeRate: "4.2875", quoteCurrency: "AED", inverseRate: "0.23323615", source: "manual", reference: null, updatedAt: "2026-10-23T08:00:00Z", version: 1 };
 
 const clerk = { id: "r-clerk", nameEn: "Contacts clerk", nameAr: "كاتب جهات الاتصال", permissions: ["identity.users.read"], isSystem: false, userCount: 1, version: 1 };
