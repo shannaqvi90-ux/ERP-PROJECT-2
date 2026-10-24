@@ -51,6 +51,35 @@ test.describe("the audit trail", () => {
     await expect(latest).toContainText(`Name in English: from ${renamed} to Staff`);
   });
 
+  test("a long change under the heading never widens the form or narrows the list beside it", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await openRole(page, "Staff");
+    const field = page.locator('[data-field="nameAr"] input');
+    const before = await field.inputValue();
+    const form = page.locator("form").filter({ has: page.locator(".record-header") }).first();
+    const widthBefore = await form.evaluate((f) => f.getBoundingClientRect().width);
+    // One word longer than the form is wide (a hash, a long name): the latest change shows it on
+    // one line, cut at the form's edge (integrator's verify of p07 round 1: a 64-character hash
+    // under a user's heading grew the form until the users list beside it kept one column).
+    const long = "م".repeat(100);
+    await field.fill(long);
+    await field.press("Control+KeyS");
+    const latest = page.getByTestId("audit-latest");
+    await expect(latest).toContainText(long);
+    const sizes = await form.evaluate((f) => {
+      const line = f.querySelector('[data-testid="audit-latest"]')!.getBoundingClientRect();
+      const box = f.getBoundingClientRect();
+      return { overflow: f.scrollWidth - f.clientWidth, width: box.width, inside: line.left >= box.left - 1 && line.right <= box.right + 1 };
+    });
+    expect(sizes.overflow).toBeLessThanOrEqual(1);
+    expect(sizes.inside).toBe(true);
+    expect(sizes.width).toBeLessThanOrEqual(widthBefore + 1);
+    await field.fill(before);
+    await field.press("Control+KeyS");
+    await expect(latest).toContainText(`to ${before}`);
+  });
+
   test("the audit log lists changes, filters by field and opens a change with its record", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);

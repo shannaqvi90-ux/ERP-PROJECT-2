@@ -34,6 +34,10 @@ namespace Erp.Gates.Tests.G1;
 /// a sort and a search, which is what the client sends after a header click). A sorted walk must
 /// return exactly the rows of the same query unsorted, and a list with sortable columns must have
 /// sorted queries, sorted searches among them, with different true answers in the two tenants.
+/// Every searchable list is also searched for words only the tenant asking first holds, taken from
+/// the list's own rows (<see cref="OwnWords"/>), so the second direction always sends searches the
+/// first never sent, whatever the schema holds (integrator's verifies of p07 round 1: a total memo
+/// filled by the first direction answered every shared search right in the second).
 /// </summary>
 public static class ListAnswers
 {
@@ -68,9 +72,29 @@ public static class ListAnswers
             var listOffsetPaged = 0;
             var baseQueries = QueriesFor(list, victimStrings).ToList();
             var unsorted = new Dictionary<string, Judged>(StringComparer.Ordinal);
-            foreach (var query in baseQueries)
+            // Words only the tenant that asks first holds, taken from the list's own rows (see
+            // OwnWords): searched for after everything else, they are added once the unfiltered query
+            // ("", always the first) has been walked.
+            var ownWordQueries = new HashSet<string>(StringComparer.Ordinal);
+            for (var q = 0; q < baseQueries.Count; q++)
             {
-                if (await JudgeAsync(tally, list, first, judged, query) is not { } outcome)
+                var query = baseQueries[q];
+                List<JsonElement>? judgedRows = null, firstRows = null;
+                var outcome = await JudgeAsync(tally, list, first, judged, query,
+                    query.Length == 0 && list.SearchFields.Count > 0 ? (mine, theirs) => (judgedRows, firstRows) = (mine, theirs) : null);
+                if (judgedRows is not null && firstRows is not null)
+                {
+                    foreach (var word in OwnWords(list, firstRows, judgedRows))
+                    {
+                        var search = "&search=" + Uri.EscapeDataString(word);
+                        if (!baseQueries.Contains(search, StringComparer.Ordinal))
+                        {
+                            baseQueries.Add(search);
+                        }
+                        ownWordQueries.Add(search);
+                    }
+                }
+                if (outcome is null)
                 {
                     continue;
                 }
@@ -87,6 +111,7 @@ public static class ListAnswers
             // that only one sort key, one kind of query or their combination reaches is judged.
             var sortedDiscriminating = 0;
             var sortedSearchDiscriminating = 0;
+            var sortedOwnWordDiscriminating = 0;
             var sortedPaged = 0;
             var sortedOffsetPaged = 0;
             var keysJudged = new HashSet<string>(StringComparer.Ordinal);
@@ -104,6 +129,7 @@ public static class ListAnswers
                     tally.SortedDiscriminating++;
                     sortedDiscriminating++;
                     sortedSearchDiscriminating += query.Contains("&search=", StringComparison.Ordinal) ? 1 : 0;
+                    sortedOwnWordDiscriminating += ownWordQueries.Contains(basis) ? 1 : 0;
                 }
                 sortedPaged += outcome.Paged ? 1 : 0;
                 sortedOffsetPaged += outcome.OffsetPaged ? 1 : 0;
@@ -147,6 +173,15 @@ public static class ListAnswers
                 {
                     tally.Blind.Add($"{label}: list '{list.Key}': no sorted search had different true answers in the two tenants, so a total remembered for a sorted search would go unseen");
                 }
+                // Every query of the other direction was sent before this one: a total remembered
+                // without the tenant for one of them already holds the tenant now judged's own
+                // number. Only a search the other direction never sent, for a word only the tenant
+                // asking first holds, shows a memo filled by it (integrator's verifies of p07 round 1).
+                if (ownWordQueries.Count > 0 && sortedOwnWordDiscriminating == 0)
+                {
+                    tally.Blind.Add($"{label}: list '{list.Key}': no sorted search for a word only the tenant asking first holds ({string.Join(", ", ownWordQueries)}) had different true answers, " +
+                                    "so a total remembered for a sorted search, first filled by this tenant, would go unseen");
+                }
                 if (sortedPaged == 0 || sortedOffsetPaged == 0)
                 {
                     tally.Blind.Add($"{label}: list '{list.Key}': no sorted query was answered over more than one keyset page and more than one offset page, so a total remembered for a sorted list's later pages would go unseen");
@@ -181,7 +216,9 @@ public static class ListAnswers
     /// <summary>One query, judged: the other tenant sends it first, then the judged tenant; both walk
     /// it by keyset and by offset in lock step, and every page's total and groups must be those of
     /// the tenant's own walked rows. Null when it could not be judged (reported as wrong).</summary>
-    private static async Task<Judged?> JudgeAsync(Tally tally, ListDefinition list, HttpClient first, HttpClient judged, string query)
+    /// <param name="walked">Called with the judged tenant's and the other tenant's walked rows.</param>
+    private static async Task<Judged?> JudgeAsync(Tally tally, ListDefinition list, HttpClient first, HttpClient judged, string query,
+        Action<List<JsonElement>, List<JsonElement>>? walked = null)
     {
         var label = tally.Label;
         var judgedIds = tally.JudgedIds;
@@ -210,6 +247,7 @@ public static class ListAnswers
             return null;
         }
         var rows = walk.Rows;
+        walked?.Invoke(rows, firstWalk.Rows);
         tally.Walked += rows.Count;
         if (total != rows.Count)
         {
@@ -417,6 +455,63 @@ public static class ListAnswers
     }
 
     private static string Filter(string expression) => "&filter=" + Uri.EscapeDataString(expression);
+
+    /// <summary>Words searched for that only the tenant asking first holds.</summary>
+    private const int OwnWordCount = 2;
+
+    /// <summary>
+    /// Up to <see cref="OwnWordCount"/> words of the list's own rows that the tenant asking first
+    /// holds and the judged tenant does not: whole words of the search fields' values of the first
+    /// tenant's rows (the unfiltered walk, in the list's own order), found in no search field value
+    /// of the judged tenant's rows. The words searched for otherwise (<see cref="QueriesFor"/>: one
+    /// letter, the other tenant's first words taken in catalogue order) are sent in both directions
+    /// or come from other tables, so a total remembered without the tenant for such a search was
+    /// filled by the direction judged first and is right for the tenant judged second (integrator's
+    /// verifies of p07 round 1: a new audit table's text took the window of first words, and the
+    /// planted sorted-search memo L11 went unseen in one direction). These words are chosen from
+    /// the rows the list shows, not from the schema, so new tables cannot crowd them out, and the
+    /// two directions' words differ by construction. Words of 3 to 15 characters (shorter than any
+    /// leak marker), never a tenant's canary, and matched by the fields the list searches for them.
+    /// </summary>
+    internal static IReadOnlyList<string> OwnWords(ListDefinition list, IReadOnlyList<JsonElement> firstRows, IReadOnlyList<JsonElement> judgedRows)
+    {
+        var fields = list.AllSearchFields.ToList();
+        static IEnumerable<(string Field, string Value)> Values(JsonElement row, IReadOnlyList<string> fields)
+        {
+            foreach (var field in fields)
+            {
+                if (row.ValueKind == JsonValueKind.Object && row.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String &&
+                    value.GetString() is { Length: > 0 } text)
+                {
+                    yield return (field, text);
+                }
+            }
+        }
+        var theirs = string.Join("\n", judgedRows.SelectMany(r => Values(r, fields)).Select(v => v.Value.ToLowerInvariant()));
+        var words = new List<string>();
+        var tried = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in firstRows)
+        {
+            foreach (var (field, value) in Values(row, fields))
+            {
+                foreach (var word in value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (word.Length is < 3 or > 15 || !tried.Add(word) || word.Contains("cnry", StringComparison.OrdinalIgnoreCase) ||
+                        !list.SearchFieldsFor(word).Contains(field, StringComparer.Ordinal) ||
+                        theirs.Contains(word.ToLowerInvariant(), StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+                    words.Add(word);
+                    if (words.Count == OwnWordCount)
+                    {
+                        return words;
+                    }
+                }
+            }
+        }
+        return words;
+    }
 
     private static string? GroupColumn(string query)
     {

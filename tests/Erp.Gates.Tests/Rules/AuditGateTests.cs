@@ -140,6 +140,51 @@ public sealed class AuditGateTests(AuditFixture fixture) : IClassFixture<AuditFi
         Assert.True(fields >= Ratchet.Min("rules.auditFieldsNamed"), $"{fields} recorded fields named; ratchet minimum {Ratchet.Min("rules.auditFieldsNamed")}");
     }
 
+    /// <summary>A column whose name says it holds a secret or what proves one (a hash, a token, a
+    /// password, a salt, a secret).</summary>
+    private static readonly System.Text.RegularExpressions.Regex SecretColumn = new("(^|_)(hash|token|password|salt|secret)(_|$)");
+
+    /// <summary>Reviewed: columns named like a secret that hold none. A company logo's hash is the
+    /// hash of the image every printed document shows (the history tells that the logo changed).</summary>
+    private static readonly HashSet<string> NotSecret = new(StringComparer.Ordinal) { "tenancy.companies.logo_hash" };
+
+    /// <summary>
+    /// p07: whoever may read a record's history never reads a secret in it. Every column of an
+    /// audited table that holds a secret or a hash of one (by its name) is either left out of the
+    /// trail or recorded as "[redacted]" (a plain trigger argument), never in clear: a hash of a
+    /// short code (a device approval code is eight symbols) is found again by trying every code
+    /// (p07 round 1, found on the integrator's verify screenshots: a user's latest change showed the
+    /// device approval code's SHA-256 under the user's heading).
+    /// </summary>
+    [Fact]
+    public async Task Every_audited_secret_is_redacted_or_left_out()
+    {
+        await using var admin = await Env.OpenAdminAsync();
+        var audited = await DbCatalog.ReadAsync(admin, """
+            SELECT n.nspname || '.' || c.relname, encode(t.tgargs, 'escape')
+              FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+              JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_namespace pn ON pn.oid = p.pronamespace
+             WHERE pn.nspname = 'audit' AND p.proname = 'capture' AND NOT t.tgisinternal
+            """, r => (Table: r.GetString(0), Args: r.GetString(1).Split("\\000", StringSplitOptions.RemoveEmptyEntries)));
+        var problems = new List<string>();
+        var secrets = 0;
+        foreach (var (table, args) in audited)
+        {
+            var parts = table.Split('.');
+            foreach (var column in (await DbCatalog.ColumnsAsync(admin, new TableRef(parts[0], parts[1]))).Select(c => c.Name)
+                         .Where(c => SecretColumn.IsMatch(c) && !NotSecret.Contains($"{table}.{c}")))
+            {
+                secrets++;
+                if (!args.Contains(column, StringComparer.Ordinal) && !args.Contains("-" + column, StringComparer.Ordinal))
+                {
+                    problems.Add($"{table}.{column}: holds a secret or its hash and the audit trail records it in clear (name it in the table's audit.capture() trigger: '{column}' to redact it, '-{column}' to leave it out)");
+                }
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(secrets >= Ratchet.Min("rules.auditSecretsChecked"), $"{secrets} secret columns of audited tables checked; ratchet minimum {Ratchet.Min("rules.auditSecretsChecked")}");
+    }
+
     [Fact]
     public async Task Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user()
     {

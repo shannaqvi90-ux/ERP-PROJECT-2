@@ -366,6 +366,19 @@ internal static class IdentitySql
             FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at', '-company_role_count');
         """;
 
+    /// <summary>The device approval's hash recorded as "[redacted]" (migration AuditRedactsDeviceApproval).</summary>
+    public const string AuditRedactsDeviceApproval = """
+        DROP TRIGGER audit_capture ON identity.users;
+        CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON identity.users
+            FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at', '-company_role_count', 'device_approval_hash');
+        """;
+
+    public const string AuditRedactsDeviceApprovalDown = """
+        DROP TRIGGER audit_capture ON identity.users;
+        CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON identity.users
+            FOR EACH ROW EXECUTE FUNCTION audit.capture('-last_sign_in_at', '-company_role_count');
+        """;
+
     public const string CompanyRolesDown = """
         DROP TRIGGER IF EXISTS count_company_roles ON identity.user_company_roles;
         DROP FUNCTION IF EXISTS identity.count_company_roles();

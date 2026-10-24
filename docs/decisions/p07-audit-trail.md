@@ -156,3 +156,56 @@ parameters. The builder's passing verify at `ef63c837` used 9,561 processor seco
 web 2,253, e2e 529, timing 42; 5,031 s wall, a busy machine); the run before it at the same code
 but for a ratchet value, 8,978 (dotnet 6,358, web 2,092, e2e 528). About 1,000 to 1,500 seconds
 under the limit of 10,500 remain for p08 onwards.
+
+## Round 1, after the integrator's two failed verifies of its merge
+
+**The G1 list-answer search words no longer depend on the schema** (shared G1 machinery of p00,
+changed here on the lead's routing for this round; p00 is done for now and p08's builder does not
+touch these files). Cause, confirmed with targeted runs of the self-test
+`The_HTTP_attack_catches_planted_header_route_and_body_leaks` with the words and outcomes logged:
+`ListAnswers.QueriesFor` searches for the first 12 distinct first words of `VictimValues.Strings`,
+which reads the tenant tables in catalogue order (`audit` sorts first) and 8 values per text
+column, so this piece's four new text columns of `audit.entries` (record type, both labels, code)
+now fill most of that window. The planted sorted-search memo L11 (`/api/leaky/scroll`) is a
+process-wide memo, and the two directions run one after the other: every search the second
+direction ("tenant A asks first, tenant B judged") shares with the first (the one-letter searches,
+words both tenants hold, "Activity") already holds tenant B's own total from the first direction,
+so B is answered right. Only a search for a word that tenant A holds, B does not, and the people
+list shows, catches it in the second direction; in the logged run that was one word ("Abdullah",
+first 4 rows, judged 0), the 14th candidate of a window of 12 that the attack's own stored values
+(`attack-127257`…, different in every run) push in and out. When it fell out, the self-test failed
+(the integrator's runs, the builder's runs 3 and 4, two of p08's).
+
+Change (`ListAnswers.OwnWords`, stricter only): every searchable list is also searched, in each
+direction, for up to two words taken from the list's own rows: whole words (3 to 15 characters,
+never a canary, matched by the fields the list searches for that script) of the search fields of
+the asking-first tenant's rows, in the list's own order, found in no search field value of the
+judged tenant's rows. They are chosen from what the list shows, not from the schema, so no new
+table can crowd them out, and the two directions' words differ by construction (a word of one
+direction is found in the other tenant's rows), so the second direction always sends a sorted
+search the first never sent. Every query sent before is still sent (the 12 words, the one-letter
+searches, the filters and groupings): the change only adds queries. A new blind-spot check: a
+sortable list that has such words must have a sorted search for one of them with different true
+answers in the two tenants, or the run reports itself blind. Proved with a probe run in which the
+12 victim words were removed entirely (`ERP_PROBE_NO_VICTIM_WORDS`, a local change not kept): the
+self-test still caught L11 in both directions.
+
+**The latest change under a record's heading no longer widens the form.** The integrator's second
+run timed out the comparison health check `open-third-user-keyboard`: the third user's latest
+change was a device approval (a 64-character hash, one unbreakable word); the line is kept on one
+line (`nowrap`), so the heading block's minimum width became the whole line, the form overflowed,
+the list's form-fit effect grew the form to fit and the users list beside it kept one column, so
+the third row carried no e-mail and the driver's wait never ended. The line now takes the width its
+heading block has and never asks for more (`contain: inline-size`; the heading block grows into the
+room beside the toolbar), and an e2e test saves a 100-symbol word into a role's Arabic name and
+checks that the form neither overflows nor widens.
+
+**Secrets are never recorded in clear.** The same screenshot showed the device approval code's
+SHA-256 in a user's history. The code is eight symbols from an alphabet of 31 (about 8.5 x 10^11
+codes), so its unsalted hash is found again by trying every code. New audit rule gate
+`Every_audited_secret_is_redacted_or_left_out`: every column of an audited table whose name says it
+holds a secret or its hash (`hash`, `token`, `password`, `salt`, `secret` as a word of the name) is
+named in its table's `audit.capture()` trigger, redacted or left out (`rules.auditSecretsChecked`).
+It failed on `identity.users.device_approval_hash`; identity migration `AuditRedactsDeviceApproval`
+now records it as "[redacted]" (shown "(hidden)"); until when the approval holds stays recorded.
+Rows written before keep what they hold (the trail is append-only).

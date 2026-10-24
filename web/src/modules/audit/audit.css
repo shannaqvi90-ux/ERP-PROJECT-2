@@ -8,6 +8,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   max-inline-size: 100%;
+  /* The line takes the width its heading block has and never asks for more: one line kept on one
+     line (nowrap) would otherwise make the form as wide as its longest change (a 64-character hash,
+     a long name), the form would overflow, the list beside it would grow the form to fit and keep
+     one column (verify of p07 round 1: the users list lost its e-mail column). */
+  contain: inline-size;
+}
+/* The heading block takes the room beside the toolbar, so the latest change shows as much as fits. */
+.record-title:has(> .audit-latest) {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
 }
 .audit-latest .audit-latest-open {
   padding: 0;
