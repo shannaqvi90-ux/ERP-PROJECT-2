@@ -99,3 +99,19 @@ The switch-company driver (ours) keeps its one-click path once a tenant has a se
 company. Round 14 already did this (`cb13e133`): set-up switches to the target company and back,
 so the server keeps the target among the recent companies and its button shows. This round
 changes nothing there.
+
+## This branch's verify runs
+
+- **Run 1.** The `.NET` and web stages passed. It failed in the comparison harness's health check
+  of the ours drivers, beside another agent's verify (load 48 to 62): `print-list-arabic` was
+  `invalid`, with "action outside the clock (set-up) ... ScheduleStyleRecalculation". That is
+  p01's load-dependent measurement (the same kind as gate backlog row 8), not a task of this
+  piece. All 120 end-to-end tests passed.
+- **Run 2.** The `.NET` stage passed. The web stage failed under load 70 to 82: in
+  `src/modules/shell/clientIsolation.test.tsx` (p04's), the first test timed out at its 30 s limit
+  and the nine after it failed on the state it left. Run 1 had passed the same code, and this
+  branch changes no web code. I stopped run 2 by its PIDs once the web stage had failed.
+- **Run 3.** It passed in 4,870 s, timed from "slot taken" at 00:04:23Z, beside one other verify
+  (load up to 69). Processor time was 7,842 s of the 10,500 s maximum. The suites ran 776 .NET,
+  551 web unit, 120 end-to-end, 486 comparison-harness and 6 build tests, with none failed or
+  skipped. `suite.dotnetTests` is raised from 774 to 776.
