@@ -100,3 +100,30 @@ public interface IUserWorkplaces
     /// edit) would reach companies the caller does not work in.</summary>
     Task<IReadOnlyList<Guid>> WorkingElsewhereAsync(CancellationToken cancellationToken);
 }
+
+/// <summary>Public facts about a branch other modules may use (its code, printed in document
+/// numbers that are counted per branch).</summary>
+public sealed record BranchInfo(Guid Id, Guid CompanyId, string Code, string NameEn, string NameAr, bool IsActive);
+
+/// <summary>Reads the branches the caller may see (every branch of the companies in scope, or only
+/// the user's own branches where they work in some branches of a company). Other modules use this
+/// instead of the tenancy tables.</summary>
+public interface IBranchDirectory
+{
+    /// <summary>A branch the caller may see, or null (also for another tenant's or company's branch).</summary>
+    Task<BranchInfo?> GetAsync(Guid branchId, CancellationToken cancellationToken);
+
+    /// <summary>The branches of one company the caller may see, by code.</summary>
+    Task<IReadOnlyList<BranchInfo>> ListAsync(Guid companyId, CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Work another module does when a company is created, inside the same transaction (its default
+/// settings for the new company, such as the company's document sequences). The tenancy module calls
+/// every registered handler after it saved the company and its creator's access; a handler that
+/// throws undoes the whole creation.
+/// </summary>
+public interface ICompanyCreatedHandler
+{
+    Task CompanyCreatedAsync(CompanyInfo company, CancellationToken cancellationToken);
+}
