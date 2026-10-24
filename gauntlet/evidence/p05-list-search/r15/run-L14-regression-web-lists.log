@@ -1,0 +1,277 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/shan/critic/p05-list-search-r15-plant/web[39m
+
+ [32m✓[39m src/kernel/lists/columnFit.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/recordWidth.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/format.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [31m❯[39m src/kernel/lists/browserReach.test.ts [2m([22m[2m26 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 31[2mms[22m[39m
+[31m     [31m×[31m every browser API the list kernel reaches is reviewed; those that outlive the document by file and count[39m[32m 13[2mms[22m[39m
+     [32m✓[39m is not blind: it sees the list kernel's known uses through aliases (window.localStorage, navigator.clipboard)[32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses L14: a query's first page in the origin private file system[32m 2[2mms[22m[39m
+     [32m✓[39m self-test: refuses the same through an alias of navigator.storage[32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses a quoted member: window['localStorage'][32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses a computed member: window[name][32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses an any cast of window[32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses an unknown cast of navigator[32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses IndexedDB[32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses Cache Storage[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses a cookie[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses window.name[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses a broadcast channel[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses sessionStorage[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses a history entry carrying rows[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses a service worker[32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses a request of its own, around the product's api[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses globalThis as a root[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses reflection[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses a dynamic import[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses ts-ignore[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses a new module imported from outside the folder[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: refuses L14 inside the row loader itself (useListRows.ts)[32m 1[2mms[22m[39m
+     [32m✓[39m self-test: refuses a second localStorage write in a file reviewed for its count (recordWidth.ts)[32m 0[2mms[22m[39m
+     [32m✓[39m self-test: the plants are counted (the ratchet keeps them)[32m 1[2mms[22m[39m
+[31m     [31m×[31m self-test: the product's own sources pass unchanged when fed through the overrides[39m[32m 2[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m30 tests[22m[2m)[22m[33m 8005[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the first rows with their count and puts the cursor in the search box [33m 364[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 550[2mms[22m[39m
+     [33m[2m✓[22m[39m closes an open record with Escape wherever the focus is on the page [33m 444[2mms[22m[39m
+     [33m[2m✓[22m[39m lists a search best match first and opens the best match with Enter [33m 463[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for a just-applied search's own rows before Enter opens the best match [33m 879[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the default order and Enter's usual meaning when the server did not rank a broad search [33m 409[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a sort chosen from the header while searching [33m 508[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a reader who may not share the changes to its own view [33m 321[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user who may share the changes to the workspace's shared view [33m 417[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no share box to a reader who may not share, and one to a user who may [33m 339[2mms[22m[39m
+     [33m[2m✓[22m[39m widens and narrows from the keyboard and keeps the choice for the list [32m 300[2mms[22m[39m
+ [31m❯[39m src/kernel/lists/deviceStores.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 9413[2mms[22m[39m
+[31m     [31m×[31m puts no row value or id in any store that outlives the document, and asks only the product's /api[39m[33m 3571[2mms[22m[39m
+[31m     [31m×[31m never shows another tenant's rows that a poisoned device hands back for every key, while its own page is slow[39m[33m 3030[2mms[22m[39m
+     [32m✓[39m self-test: catches plant L14 on the device (the first page written to the origin private file system)[32m 131[2mms[22m[39m
+     [33m[2m✓[22m[39m self-test: catches plant L14 on screen (another tenant's kept page shown while the server is slow) [33m 591[2mms[22m[39m
+     [33m[2m✓[22m[39m self-test: catches a list that keeps its rows in sessionStorage, a cookie or window.name [33m 2088[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/kernel/lists/browserReach.test.ts[2m > [22mlist kernel: reach into the browser (G1, device stores)[2m > [22mevery browser API the list kernel reaches is reviewed; those that outlive the document by file and count
+[31m[1mAssertionError[22m: useListRows.ts globalThis.navigator (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.
+useListRows.ts NavigatorStorage.storage (2x): a browser API the list kernel did not use before; review it in browserReach.test.ts (documentBound if it dies with the document, else outlivingReviewed)
+useListRows.ts StorageManager.getDirectory (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.
+useListRows.ts FileSystemDirectoryHandle.getFileHandle (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.
+useListRows.ts FileSystemFileHandle.getFile (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.
+useListRows.ts Blob.text (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.
+useListRows.ts FileSystemFileHandle.createWritable (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.
+useListRows.ts FileSystemWritableFileStream.write (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.
+useListRows.ts WritableStream.close (1x): a browser API the list kernel did not use before; review it in browserReach.test.ts (documentBound if it dies with the document, else outlivingReviewed): expected [ …(9) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "useListRows.ts globalThis.navigator (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts NavigatorStorage.storage (2x): a browser API the list kernel did not use before; review it in browserReach.test.ts (documentBound if it dies with the document, else outlivingReviewed)",[39m
+[31m+   "useListRows.ts StorageManager.getDirectory (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemDirectoryHandle.getFileHandle (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemFileHandle.getFile (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts Blob.text (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemFileHandle.createWritable (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemWritableFileStream.write (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts WritableStream.close (1x): a browser API the list kernel did not use before; review it in browserReach.test.ts (documentBound if it dies with the document, else outlivingReviewed)",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/kernel/lists/browserReach.test.ts:[2m371:53[22m[39m
+    [90m369| [39m
+    [90m370| [39m  it("every browser API the list kernel reaches is reviewed; those tha…
+    [90m371| [39m    [34mexpect[39m([34mjudge[39m(actual)[33m,[39m [34mjudge[39m(actual)[33m.[39m[34mjoin[39m([32m"\n"[39m))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                                                    [31m^[39m
+    [90m372| [39m    const members = new Set([...actual.uses.keys()].map((u) => u.slice…
+    [90m373| [39m    expect(actual.files).toBeGreaterThanOrEqual(ratchetMinimum("g1.lis…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel/lists/browserReach.test.ts[2m > [22mlist kernel: reach into the browser (G1, device stores)[2m > [22mself-test: the product's own sources pass unchanged when fed through the overrides
+[31m[1mAssertionError[22m: expected [ …(9) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "useListRows.ts globalThis.navigator (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts NavigatorStorage.storage (2x): a browser API the list kernel did not use before; review it in browserReach.test.ts (documentBound if it dies with the document, else outlivingReviewed)",[39m
+[31m+   "useListRows.ts StorageManager.getDirectory (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemDirectoryHandle.getFileHandle (2x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemFileHandle.getFile (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts Blob.text (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemFileHandle.createWritable (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts FileSystemWritableFileStream.write (1x): this browser API keeps or hands on data beyond the document, so one person's rows can reach the next on the device. Keep the data in memory, or review the use in browserReach.test.ts with its count and reason.",[39m
+[31m+   "useListRows.ts WritableStream.close (1x): a browser API the list kernel did not use before; review it in browserReach.test.ts (documentBound if it dies with the document, else outlivingReviewed)",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/kernel/lists/browserReach.test.ts:[2m459:30[22m[39m
+    [90m457| [39m  const unchanged = inventory({ [useListRowsPath]: product.rows, [List…
+    [90m458| [39m  it("self-test: the product's own sources pass unchanged when fed thr…
+    [90m459| [39m    [34mexpect[39m([34mjudge[39m(unchanged))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                             [31m^[39m
+    [90m460| [39m  })[33m;[39m
+    [90m461| [39m})[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel/lists/deviceStores.test.tsx[2m > [22ma list keeps no row on the device (G1, device stores)[2m > [22mputs no row value or id in any store that outlives the document, and asks only the product's /api
+[31m[1mAssertionError[22m[39m: opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C (create): a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C: a store that outlives the document
+opened opfs root: a store that outlives the document
+opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C (create): a store that outlives the document
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000001","displayName":"Member 1 Al qz1vk","email":"member1.qz1vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000001","displayName":"Member 1 Al qz1vk","email":"member1.qz1vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000259","displayName":"Member 259 Al qz259vk","email":"member259.qz259vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000259","displayName":"Member 259 Al qz259vk","email":"member259.qz259vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000258","displayName":"Member 258 Al qz258vk","email":"member258.qz258vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000258","displayName":"Member 258 Al qz258vk","email":"member258.qz258vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000258","displayName":"Member 258 Al qz258vk","email":"member258.qz258vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000258","displayName":"Member 258 Al qz258vk","email":"member258.qz258vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000258","displayName":"Member 258 Al qz258vk","email":"member258.qz258vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000258","displayName":"Member 258 Al qz258vk","email":"member258.qz258vk@
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received a row's value: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e
+opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received row ids: {"items":[{"id":"0a0a0a0a-0000-7000-8000-000000000000","displayName":"Member 0 Al qz0vk","email":"member0.qz0vk@alnoor.e: expected [ …(54) ] to deeply equal []
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C (create): a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C: a store that outlives the document",[39m
+[31m+   "opened opfs root: a store that outlives the document",[39m
+[31m+   "opened opfs file list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C (create): a store that outlives the document",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000001\",\"displayName\":\"Member 1 Al qz1vk\",\"email\":\"member1.qz1vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsearch%3Dmember%2B1%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000001\",\"displayName\":\"Member 1 Al qz1vk\",\"email\":\"member1.qz1vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3Demail%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000259\",\"displayName\":\"Member 259 Al qz259vk\",\"email\":\"member259.qz259vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3D-email%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000259\",\"displayName\":\"Member 259 Al qz259vk\",\"email\":\"member259.qz259vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000258\",\"displayName\":\"Member 258 Al qz258vk\",\"email\":\"member258.qz258vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000258\",\"displayName\":\"Member 258 Al qz258vk\",\"email\":\"member258.qz258vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000258\",\"displayName\":\"Member 258 Al qz258vk\",\"email\":\"member258.qz258vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7Clanguage received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000258\",\"displayName\":\"Member 258 Al qz258vk\",\"email\":\"member258.qz258vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000258\",\"displayName\":\"Member 258 Al qz258vk\",\"email\":\"member258.qz258vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Ffilter%3Dlanguage%2Beq%2B%2527ar%2527%26sort%3D-email%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000258\",\"displayName\":\"Member 258 Al qz258vk\",\"email\":\"member258.qz258vk@",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received a row's value: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+   "opfs list-%2Fapi%2Fidentity%2Fusers%3Fsort%3DdisplayName%7C received row ids: {\"items\":[{\"id\":\"0a0a0a0a-0000-7000-8000-000000000000\",\"displayName\":\"Member 0 Al qz0vk\",\"email\":\"member0.qz0vk@alnoor.e",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/kernel/lists/deviceStores.test.tsx:[2m515:43[22m[39m
+    [90m513| [39m    [35mconst[39m { seen[33m,[39m problems[33m,[39m device[33m:[39m used } [33m=[39m [35mawait[39m [34mrun[39m([35mnull[39m[33m,[39m [34m0[39m)[33m;[39m
+    [90m514| [39m    [34mexpect[39m(seen[33m,[39m seen[33m.[39m[34mjoin[39m([32m"\n"[39m))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m515| [39m    [34mexpect[39m(problems[33m,[39m problems[33m.[39m[34mjoin[39m([32m"\n"[39m))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                                          [31m^[39m
+    [90m516| [39m    // Not blind: the width choice and the address did reach the recor…
+    [90m517| [39m    expect(used.writes.some((w) => w.store === "localStorage erp.lists…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/kernel/lists/deviceStores.test.tsx[2m > [22ma list keeps no row on the device (G1, device stores)[2m > [22mnever shows another tenant's rows that a poisoned device hands back for every key, while its own page is slow
+[31m[1mAssertionError[22m: grouped (waiting for the server): another tenant's row or count is on screen
+another tenant's row or count is on screen (9 changes of the page showed it): expected [ …(2) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "grouped (waiting for the server): another tenant's row or count is on screen",[39m
+[31m+   "another tenant's row or count is on screen (9 changes of the page showed it)",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m src/kernel/lists/deviceStores.test.tsx:[2m523:35[22m[39m
+    [90m521| [39m  it("never shows another tenant's rows that a poisoned device hands b…
+    [90m522| [39m    [35mconst[39m { seen[33m,[39m problems } [33m=[39m [35mawait[39m [34mrun[39m(poison[33m,[39m [34m60[39m)[33m;[39m
+    [90m523| [39m    [34mexpect[39m(seen[33m,[39m seen[33m.[39m[34mjoin[39m([32m"\n"[39m))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   | [39m                                  [31m^[39m
+    [90m524| [39m    [34mexpect[39m(problems[33m,[39m problems[33m.[39m[34mjoin[39m([32m"\n"[39m))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m525| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m88 passed[39m[22m[90m (92)[39m
+[2m   Start at [22m 11:11:07
+[2m   Duration [22m 11.47s[2m (transform 5.53s, setup 742ms, import 10.52s, tests 17.51s, environment 4.93s)[22m
+

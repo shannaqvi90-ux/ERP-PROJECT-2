@@ -1,0 +1,17 @@
+import { api } from './pw.mjs';
+const base = process.argv[2];
+const A = await api(base, 'admin@alnoor.example');
+const q = async p => { const r = await A.get(p); return r.status === 200 ? { total: r.body.total, n: r.body.items?.length, next: Boolean(r.body.next), groups: r.body.groups?.slice(0, 4), ranked: r.body.ranked } : { status: r.status, body: JSON.stringify(r.body).slice(0, 200) }; };
+const show = async (label, p) => console.log(label.padEnd(44), JSON.stringify(await q(p)));
+await show('and filter', '/api/identity/users?take=2&filter=' + encodeURIComponent("language eq 'ar' and isActive eq true"));
+await show('or filter', '/api/identity/users?take=2&filter=' + encodeURIComponent("language eq 'ar' or isActive eq false"));
+await show('nested (a or b) and c', '/api/identity/users?take=2&filter=' + encodeURIComponent("(language eq 'ar' or isActive eq false) and displayName startsWith 'Ma'"));
+await show('in filter', '/api/identity/users?take=2&filter=' + encodeURIComponent("language in ('ar','en')"));
+await show('bad column (typed error)', '/api/identity/users?take=2&filter=' + encodeURIComponent("salary gt 5"));
+await show('bad type (typed error)', '/api/identity/users?take=2&filter=' + encodeURIComponent("isActive eq 'maybe'"));
+await show('roles grouped by kind with totals', '/api/identity/roles?take=2&groupBy=' + 'kind');
+const first = (await A.get('/api/identity/users?take=3&sort=displayName')).body;
+const second = (await A.get('/api/identity/users?take=3&sort=displayName&after=' + encodeURIComponent(first.next))).body;
+console.log('keyset page 1', first.items.map(u => u.displayName).join(' | '), '-> page 2', second.items.map(u => u.displayName).join(' | '));
+const def = (await A.get('/api/lists/identity.roles/definition')).body;
+console.log('roles columns with aggregate', def.columns.filter(c => c.aggregate).map(c => c.key), 'groupable', def.columns.filter(c => c.groupable).map(c => c.key));
