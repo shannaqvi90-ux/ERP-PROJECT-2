@@ -140,6 +140,11 @@ public sealed record ContactDuplicate(
     bool IsActive,
     IReadOnlyList<string> Matches);
 
+/// <summary>What a new contact starts with for the caller: the country, and the working
+/// company's base currency as the default currency and as the currency a credit limit's base
+/// amount is stated in.</summary>
+public sealed record ContactDefaults(string Country, string DefaultCurrency, string BaseCurrency);
+
 /// <summary>What a contact being entered is compared on. <c>except</c> leaves out the contact
 /// being changed.</summary>
 public sealed class DuplicateQuery
@@ -181,6 +186,11 @@ internal static class ContactEndpoints
         group.MapGet("/contacts/duplicates", Duplicates)
             .WithName("contacts.contacts.duplicates")
             .WithSummary("Contacts that may be the same as one being entered: the same name in English or Arabic (case, punctuation and the usual Arabic spelling variants ignored), the same e-mail, the same phone or mobile number (however it was written) or the same tax registration number. At most 10, active ones first. A warning only: saving is not refused.")
+            .RequirePermission(ContactsPermissions.ContactsRead);
+
+        group.MapGet("/contacts/defaults", Defaults)
+            .WithName("contacts.contacts.defaults")
+            .WithSummary("What a new contact starts with for the caller: the country (AE) and the working company's base currency, which is also the currency a credit limit's base amount is stated in.")
             .RequirePermission(ContactsPermissions.ContactsRead);
 
         group.MapGet("/contacts/{id:guid}", Get)
@@ -276,6 +286,20 @@ internal static class ContactEndpoints
     {
         var contact = await db.Contacts.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
         return contact is null ? Problems.NotFound(http) : TypedResults.Ok(await ToDtoAsync(db, contact, cancellationToken));
+    }
+
+    private static async Task<Ok<ContactDefaults>> Defaults(ICompanyDirectory companies, CancellationToken cancellationToken)
+    {
+        var baseCurrency = await BaseCurrencyAsync(companies, cancellationToken);
+        return TypedResults.Ok(new ContactDefaults(ContactsValidation.UnitedArabEmirates, baseCurrency.Code, baseCurrency.Code));
+    }
+
+    /// <summary>The base currency a credit limit set now is stated in: the working company's (AED
+    /// when the caller works in no company, as for system work).</summary>
+    internal static async Task<CurrencyCode> BaseCurrencyAsync(ICompanyDirectory companies, CancellationToken cancellationToken)
+    {
+        var working = await companies.GetWorkingAsync(cancellationToken);
+        return new CurrencyCode(working?.BaseCurrency is { } code && CurrencyCode.IsKnown(code) ? code : CurrencyCode.Aed.Code);
     }
 
     private static async Task<Ok<IReadOnlyList<ContactDuplicate>>> Duplicates([AsParameters] DuplicateQuery query, ContactsDbContext db, CancellationToken cancellationToken)
@@ -494,8 +518,7 @@ internal static class ContactEndpoints
             }
             else
             {
-                var working = await companies.GetWorkingAsync(cancellationToken);
-                var baseCurrency = new CurrencyCode(working?.BaseCurrency is { } code && CurrencyCode.IsKnown(code) ? code : CurrencyCode.Aed.Code);
+                var baseCurrency = await BaseCurrencyAsync(companies, cancellationToken);
                 if (currency == baseCurrency)
                 {
                     if (rate is not null && rate != 1m)

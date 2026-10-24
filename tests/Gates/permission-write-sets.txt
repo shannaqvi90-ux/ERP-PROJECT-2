@@ -43,10 +43,17 @@ identity.roles.delete identity.user_company_roles delete *  # with its assignmen
 identity.profile.update identity.users update language,numerals,device_approval_hash,device_approval_until  # the caller's own language and digits, and letting one of their own devices past a pause on a shared address; never their name, e-mail, active flag or anyone else's row
 identity.profile.update identity.passkeys insert,update,delete *  # the caller's own passkeys
 
+# Contacts: the shared directory of organisations and people. Never deleted (the application role
+# holds no DELETE on it); archiving is its own permission.
+contacts.contacts.create contacts.contacts insert *  # the new organisation or person
+contacts.contacts.update contacts.contacts update kind,reference,name_en,name_ar,organisation_id,job_title,email,phone,mobile,website,address_line1,address_line2,area,city,emirate,po_box,country,address_ar,tags,trade_licence_number,tax_registration_number,default_currency,credit_limit_amount,credit_limit_currency,credit_limit_exchange_rate,credit_limit_base_amount,credit_limit_base_currency,credit_limit_stated,notes  # the contact's details, organisation and credit limit; never its status (is_active is the archive permission's)
+contacts.contacts.archive contacts.contacts update is_active  # archiving or restoring: the status alone
+
 # Lists: a reader's own saved views (tests/Gates/read-permission-writes.txt), shared views.
 identity.roles.read lists.saved_views insert,update,delete *  # the reader's own views of the roles list
 identity.users.read lists.saved_views insert,update,delete *  # the reader's own views of the users list
 tenancy.companies.read lists.saved_views insert,update,delete *  # the reader's own views of the companies list
 tenancy.branches.read lists.saved_views insert,update,delete *  # the reader's own views of the branches list
 tenancy.access.read lists.saved_views insert,update,delete *  # the reader's own views of the access list
+contacts.contacts.read lists.saved_views insert,update,delete *  # the reader's own views of the contacts list
 lists.views.share lists.saved_views insert,update,delete *  # views shared with everyone who may read the list

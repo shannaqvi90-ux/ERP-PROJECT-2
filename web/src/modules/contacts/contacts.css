@@ -1,0 +1,58 @@
+/* Contacts screens: the shared list with the contact's form in its panel (dense, keyboard first).
+   Logical properties only, so the layout mirrors for Arabic. */
+.ct-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  flex: 1;
+}
+
+.ct-kind {
+  display: inline-block;
+  padding-inline: 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 18px;
+  background: var(--kbd-bg);
+  border: 1px solid var(--border);
+}
+
+.ct-kind-person {
+  background: var(--selected);
+}
+
+/* Contacts that may be the same as the one being entered: a warning above the fields. */
+.ct-duplicates {
+  border: 1px solid var(--warn);
+  border-inline-start-width: 4px;
+  background: #fff8e6;
+  color: var(--text);
+  padding-block: 6px;
+  padding-inline: 10px;
+  margin-block-end: 8px;
+  border-radius: 4px;
+}
+
+.ct-duplicates ul {
+  margin-block: 4px 0;
+  padding-inline-start: 18px;
+}
+
+.ct-archived {
+  border: 1px solid var(--border);
+  background: var(--kbd-bg);
+  color: var(--muted);
+  padding-block: 4px;
+  padding-inline: 10px;
+  margin-block: 0 8px;
+  border-radius: 4px;
+}
+
+.ct-form-wait {
+  min-height: 120px;
+}
+
+tr.inactive td {
+  color: var(--muted);
+}

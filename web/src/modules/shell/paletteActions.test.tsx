@@ -36,8 +36,12 @@ afterEach(() => {
 
 const en = (key: string) => translate("en", key);
 
-/** Every permission the identity and tenancy screens and actions know. */
+/** Every permission the identity, tenancy and contacts screens and actions know. */
 const every = [
+  "contacts.contacts.read",
+  "contacts.contacts.create",
+  "contacts.contacts.update",
+  "contacts.contacts.archive",
   "identity.profile.update",
   "identity.users.read",
   "identity.users.create",
@@ -63,7 +67,7 @@ const every = [
 ];
 
 /** A user who may read every screen and change nothing but their own settings. */
-const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read"];
+const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read", "contacts.contacts.read"];
 
 const session = (permissions: string[], language = "en") => ({
   authenticated: true,
@@ -82,6 +86,16 @@ const definitions: Record<string, unknown> = {
   "identity.roles": { ...listDefinitions["identity.roles"], printable: true },
   "tenancy.companies": { key: "tenancy.companies", labelKey: "tenancy.companies.title", endpoint: "/api/tenancy/companies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "tenancy.branches": { key: "tenancy.branches", labelKey: "tenancy.branches.title", endpoint: "/api/tenancy/branches", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
+  "contacts.contacts": { key: "contacts.contacts", labelKey: "contacts.contacts.title", endpoint: "/api/contacts/contacts", columns: [column("nameEn")], searchFields: ["nameEn"], defaultSort: "nameEn", presets: [], canShare: false, maxTake: 200, printable: true },
+};
+
+const contactId = "0190a000-0000-7000-8000-0000000000c1";
+const contact = {
+  id: contactId, kind: "organisation", reference: "C-DEMO-1", nameEn: "Falcon Building Materials LLC", nameAr: "فالكون لمواد البناء ذ.م.م", organisationId: null,
+  organisationName: null, organisationNameAr: null, jobTitle: null, email: "accounts@falcon.example", phone: "+971 4 555 0100", mobile: null, website: null,
+  addressLine1: null, addressLine2: null, area: null, city: "Dubai", emirate: "dubai", poBox: null, country: "AE", addressAr: null, tags: [],
+  tradeLicenceNumber: null, taxRegistrationNumber: null, defaultCurrency: "AED", creditLimit: null, notes: null, isActive: true, peopleCount: 0,
+  createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z", version: 2,
 };
 
 const clerk = { id: "r-clerk", nameEn: "Contacts clerk", nameAr: "كاتب جهات الاتصال", permissions: ["identity.users.read"], isSystem: false, userCount: 1, version: 1 };
@@ -149,6 +163,10 @@ async function open(
     if (p === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
     if (p === "/api/tenancy/branches/b1") return { status: 200, body: branch };
     if (p === "/api/tenancy/workplace") return { status: 200, body: workplace };
+    if (p === "/api/contacts/contacts") return { status: 200, body: { items: [contact], total: 1, next: null } };
+    if (p === "/api/contacts/contacts/defaults") return { status: 200, body: { country: "AE", defaultCurrency: "AED", baseCurrency: "AED" } };
+    if (p === "/api/contacts/contacts/duplicates") return { status: 200, body: [] };
+    if (p === `/api/contacts/contacts/${contactId}`) return { status: 200, body: contact };
     return { status: 404, body: {} };
   });
   view = await render(<App language={options.language ?? "en"} />);
@@ -671,6 +689,7 @@ const sweptScreens: Screen[] = [
   { path: "/identity/roles?open=r-clerk" },
   { path: "/tenancy/companies?open=c9" },
   { path: "/tenancy/branches?open=b1" },
+  { path: `/contacts/contacts?open=${contactId}` },
 ];
 
 const label = (screen: Screen) => (screen.tab ? `${screen.path} (${en(screen.tab)})` : screen.path);

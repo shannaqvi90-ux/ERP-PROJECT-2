@@ -27,7 +27,7 @@ public sealed class ContactsModule : ErpModule
         module.DbContext<ContactsDbContext>();
         module.Services.AddScoped<IContactDirectory, ContactDirectory>();
         module.Endpoints(ContactEndpoints.Map);
-        module.Menu(new MenuEntry("contacts.contacts", "contacts.menu.contacts", "/contacts", ContactsPermissions.ContactsRead, Order: 100));
+        module.Menu(new MenuEntry("contacts.contacts", "contacts.menu.contacts", "/contacts/contacts", ContactsPermissions.ContactsRead, Order: 100));
         module.List(ContactsList.Create());
         // Reports print and export the list exactly as the screen shows it, and a contact's card.
         module.ListRows(ContactsList.Key, async (services, request, http, cancellationToken) =>
