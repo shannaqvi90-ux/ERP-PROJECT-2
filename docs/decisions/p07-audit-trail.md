@@ -197,7 +197,8 @@ line (`nowrap`), so the heading block's minimum width became the whole line, the
 the list's form-fit effect grew the form to fit and the users list beside it kept one column, so
 the third row carried no e-mail and the driver's wait never ended. The line now takes the width its
 heading block has and never asks for more (`contain: inline-size`; the heading block grows into the
-room beside the toolbar), and an e2e test saves a 100-symbol word into a role's Arabic name and
+room beside the toolbar with `flex-grow`, starting at its own width as before, so the toolbar wraps
+as it did), and an e2e test saves a 100-symbol word into a role's Arabic name and
 checks that the form neither overflows nor widens.
 
 **Secrets are never recorded in clear.** The same screenshot showed the device approval code's

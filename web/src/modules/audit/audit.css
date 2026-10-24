@@ -14,10 +14,10 @@
      one column (verify of p07 round 1: the users list lost its e-mail column). */
   contain: inline-size;
 }
-/* The heading block takes the room beside the toolbar, so the latest change shows as much as fits. */
-.record-title:has(> .audit-latest) {
-  flex: 1 1 16rem;
-  min-inline-size: 0;
+/* The heading block grows into the room beside the toolbar (it starts at its heading's width, as
+   before, so the toolbar wraps exactly as it did), so the latest change shows as much as fits. */
+.record-header > .record-title {
+  flex-grow: 1;
 }
 .audit-latest .audit-latest-open {
   padding: 0;
