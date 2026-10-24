@@ -63,7 +63,7 @@ function serve(permissions: string[]) {
   return mockFetch((_method, url) => {
     if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
     const parsed = new URL(url, "http://localhost");
-    if (parsed.pathname === "/api/audit/records/identity.users/u7") {
+    if (parsed.pathname === "/api/audit/records/u7" && parsed.searchParams.get("type") === "identity.users") {
       if (parsed.searchParams.get("take") === "1") return { status: 200, body: { ...first, items: first.items.slice(0, 1), next: "e3" } };
       return { status: 200, body: parsed.searchParams.get("before") === "e2" ? older : first };
     }
@@ -109,14 +109,14 @@ const press = (code: string, key: string) =>
 
 describe("a record's history on its form", () => {
   it("shows the latest change under the heading: who, when, and each field's old and new value", async () => {
-    const calls = serve(["identity.users.read"]);
+    const calls = serve(["identity.users.read", "audit.log.read"]);
     const { container } = await show("en");
     const latest = container.querySelector('[data-testid="audit-latest"]')!;
     expect(latest.textContent).toContain("Changed by Noor Editor");
     expect(latest.textContent).toContain("E-mail: from shamma@mail.example to shamma.new@mail.example");
     expect(latest.textContent).toContain("Active: from Yes to No");
     expect(latest.querySelector("time")!.getAttribute("datetime")).toBe("2026-10-24T10:15:00Z");
-    expect(calls.some((c) => c.url === "/api/audit/records/identity.users/u7?take=1")).toBe(true);
+    expect(calls.some((c) => c.url === "/api/audit/records/u7?type=identity.users&take=1")).toBe(true);
     // The whole history is read only when asked for.
     expect(calls.filter((c) => c.url.startsWith("/api/audit/records/") && !c.url.includes("take=1"))).toEqual([]);
   });
@@ -149,7 +149,7 @@ describe("a record's history on its form", () => {
     const more = [...panel.querySelectorAll("button")].find((b) => b.textContent === "Show older changes")!;
     await act(async () => more.click());
     await settle();
-    expect(calls.some((c) => c.url === "/api/audit/records/identity.users/u7?before=e2")).toBe(true);
+    expect(calls.some((c) => c.url === "/api/audit/records/u7?type=identity.users&before=e2")).toBe(true);
     const created = [...panel.querySelectorAll(".audit-event")].at(-1)!;
     expect(created.querySelector("strong")!.textContent).toBe("Created by Demo data");
     expect(rows(created)).toEqual([["E-mail", "shamma@mail.example"], ["custom_fields.region", "North"]]);
@@ -162,19 +162,29 @@ describe("a record's history on its form", () => {
   });
 
   it("reads in Arabic: field names, the person's Arabic name, the change line", async () => {
-    serve(["identity.users.read"]);
+    serve(["identity.users.read", "audit.log.read"]);
     const { container } = await show("ar");
     const latest = container.querySelector('[data-testid="audit-latest"]')!;
     expect(latest.textContent).toContain("عدّله نور المحرر");
     expect(latest.textContent).toContain("البريد الإلكتروني: من shamma@mail.example إلى shamma.new@mail.example");
-    // The log link is offered only to a reader of the audit log.
     press("KeyY", "y");
     await settle();
-    expect(container.querySelector('[data-testid="audit-history"] a')).toBeNull();
+    expect(container.querySelector('[data-testid="audit-history"] h3')!.textContent).toBe("السجل");
+  });
+
+  it("is offered only to a user whose roles let them read the audit trail", async () => {
+    const calls = serve(["identity.users.read"]);
+    const { container } = await show("en");
+    expect(container.querySelector('[data-record-panel="audit.history"]')).toBeNull();
+    expect(container.querySelector('[data-testid="audit-latest"]')).toBeNull();
+    press("KeyY", "y");
+    await settle();
+    expect(container.querySelector('[data-testid="audit-history"]')).toBeNull();
+    expect(calls.filter((c) => c.url.startsWith("/api/audit/"))).toEqual([]);
   });
 
   it("is not offered for a record being created", async () => {
-    const calls = serve(["identity.users.read"]);
+    const calls = serve(["identity.users.read", "audit.log.read"]);
     const { container } = await show("en", null);
     expect(container.querySelector('[data-record-panel="audit.history"]')).toBeNull();
     expect(container.querySelector('[data-testid="audit-latest"]')).toBeNull();

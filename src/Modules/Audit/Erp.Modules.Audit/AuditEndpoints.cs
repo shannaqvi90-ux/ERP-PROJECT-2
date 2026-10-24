@@ -35,19 +35,16 @@ public sealed record AuditEvent(
     IReadOnlyList<AuditFieldChange> Changes);
 
 /// <summary>A record's history, newest change first.</summary>
-/// <param name="RecordType">The kind of record (<c>schema.table</c>).</param>
+/// <param name="RecordType">The kind of record asked for (<c>schema.table</c>), or null for every kind.</param>
 /// <param name="Items">The changes of this page.</param>
 /// <param name="Next">Pass as <c>before</c> to read older changes; null when there are none.</param>
 /// <param name="Names">Names of the records the values refer to by id, where the reader may read them.</param>
-public sealed record AuditHistory(string RecordType, IReadOnlyList<AuditEvent> Items, Guid? Next, IReadOnlyDictionary<Guid, AuditRecordName> Names);
+public sealed record AuditHistory(string? RecordType, IReadOnlyList<AuditEvent> Items, Guid? Next, IReadOnlyDictionary<Guid, AuditRecordName> Names);
 
 internal static class AuditEndpoints
 {
     public const int DefaultTake = 50;
     public const int MaxTake = 200;
-
-    /// <summary>The route of one kind of record's histories.</summary>
-    public static string HistoryRoute(string table) => $"/records/{table}/{{id:guid}}";
 
     public static void Map(RouteGroupBuilder group)
     {
@@ -71,15 +68,10 @@ internal static class AuditEndpoints
         {
             throw new InvalidOperationException($"Register the audit module after the modules of {string.Join(", ", missing)} (their audited records are not among the audit log's record types).");
         }
-        foreach (var type in catalog.AuditRecordTypes)
-        {
-            group.MapGet(HistoryRoute(type.Table), (Guid id, [FromQuery, Description("The id of the last change shown: older changes follow it.")] Guid? before,
-                    [FromQuery, Description("Changes per page, 1 to 200 (default 50).")] int? take,
-                    AuditReader reader, HttpContext http, CancellationToken cancellationToken) => History(type, id, before, take, reader, http, cancellationToken))
-                .WithName($"audit.history.{type.Table}")
-                .WithSummary($"The history of one record of {type.Table}{(type.OwnerField is { } o ? $" (every {type.Table} row whose {o} held the id)" : "")}, newest change first: who changed it, when, and each field's old and new value (a creation lists every first value, a deletion every last value). Needs the permission that reads such records ({type.ReadPermission}), in the record's company. An id the caller cannot read has no history.")
-                .RequirePermission(type.ReadPermission);
-        }
+        group.MapGet("/records/{id:guid}", History)
+            .WithName("audit.history.get")
+            .WithSummary("The history of one record, newest change first: who changed it, when, and each field's old and new value (a creation lists every first value, a deletion every last value). Besides the audit log's permission, the caller needs the permission that reads such records, in the record's company (and its branch, where they may work in only some): otherwise, as for an id that names nothing, the history is empty. With type (schema.table, as /api/lists/audit.log/definition names the kinds of records), only that kind's changes, and for rows a form shows by another record's id (a user's company access by the user's id) every row whose owner column held the id.")
+            .RequirePermission(AuditPermissions.LogRead);
     }
 
     private static async Task<Results<Ok<ListPage<AuditLogRow>>, ProblemHttpResult>> Log(
@@ -104,24 +96,37 @@ internal static class AuditEndpoints
         return TypedResults.Ok(new AuditChange(AuditLog.Row(entry, changes, actors, names, catalog, texts, AuditLog.Language(http)), changes, names));
     }
 
-    private static async Task<Results<Ok<AuditHistory>, ProblemHttpResult>> History(AuditRecordType type, Guid id, Guid? before, int? take,
-        AuditReader reader, HttpContext http, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<AuditHistory>, ProblemHttpResult>> History(Guid id,
+        [FromQuery, Description("The kind of record (schema.table, for example identity.users); without it every change of the record, whatever its kind.")] string? type,
+        [FromQuery, Description("The id of the last change shown: older changes follow it.")] Guid? before,
+        [FromQuery, Description("Changes per page, 1 to 200 (default 50).")] int? take,
+        AuditReader reader, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
     {
+        AuditRecordType? kind = null;
+        if (!string.IsNullOrEmpty(type) && (kind = catalog.FindAuditRecordType(type)) is null)
+        {
+            return new Validator(http).Add("type", "auditRecordType").ToResult();
+        }
         var size = Math.Clamp(take ?? DefaultTake, 1, MaxTake);
-        var table = type.Table;
-        var visible = (await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken)).Where(e => e.RecordType == table);
+        var visible = await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken);
         IQueryable<AuditEntry> rows;
-        if (type.OwnerField is { } owner)
+        if (kind is null)
+        {
+            rows = visible.Where(e => e.RecordId == id);
+        }
+        else if (kind.OwnerField is { } owner)
         {
             // Rows shown by another record's id (a user's company access by the user): every row
             // whose owner column held the id, before or after the change.
             var ownerWas = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object> { [owner] = new { old = id } });
             var ownerIs = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object> { [owner] = new { @new = id } });
-            rows = visible.Where(e => e.RecordId == id || EF.Functions.JsonContains(e.Changes, ownerWas) || EF.Functions.JsonContains(e.Changes, ownerIs));
+            var table = kind.Table;
+            rows = visible.Where(e => e.RecordType == table && (e.RecordId == id || EF.Functions.JsonContains(e.Changes, ownerWas) || EF.Functions.JsonContains(e.Changes, ownerIs)));
         }
         else
         {
-            rows = visible.Where(e => e.RecordId == id);
+            var table = kind.Table;
+            rows = visible.Where(e => e.RecordType == table && e.RecordId == id);
         }
         if (before is { } cursor)
         {
@@ -150,6 +155,6 @@ internal static class AuditEndpoints
             var (name, nameAr) = AuditLog.ActorName(e.ActorId, e.ActorKind, actors, texts);
             return new AuditEvent(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, changes[e.Uid]);
         }).ToList();
-        return TypedResults.Ok(new AuditHistory(table, items, next, names));
+        return TypedResults.Ok(new AuditHistory(kind?.Table, items, next, names));
     }
 }

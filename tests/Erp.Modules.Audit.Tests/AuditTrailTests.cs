@@ -61,7 +61,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         var renamed = await RenameRoleAsync(admin, role, "History clerk II", "identity.users.read", "identity.roles.read");
         var id = role.GetProperty("id").GetGuid();
 
-        var history = await Json(await admin.GetAsync($"/api/audit/records/identity.roles/{id}"));
+        var history = await Json(await admin.GetAsync($"/api/audit/records/{id}?type=identity.roles"));
         Assert.Equal("identity.roles", history.GetProperty("recordType").GetString());
         var items = history.GetProperty("items").EnumerateArray().ToList();
         Assert.Equal(["update", "insert"], items.Select(i => i.GetProperty("action").GetString()));
@@ -95,33 +95,33 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             role = await RenameRoleAsync(admin, role, $"Paged {i}", "identity.users.read");
         }
         var id = role.GetProperty("id").GetGuid();
-        var first = await Json(await admin.GetAsync($"/api/audit/records/identity.roles/{id}?take=2"));
+        var first = await Json(await admin.GetAsync($"/api/audit/records/{id}?type=identity.roles&take=2"));
         var seen = first.GetProperty("items").EnumerateArray().Select(i => Field(i, "name_en").GetProperty("new").GetString()).ToList();
         Assert.Equal(["Paged 4", "Paged 3"], seen);
         var next = first.GetProperty("next").GetGuid();
-        var second = await Json(await admin.GetAsync($"/api/audit/records/identity.roles/{id}?take=2&before={next}"));
+        var second = await Json(await admin.GetAsync($"/api/audit/records/{id}?type=identity.roles&take=2&before={next}"));
         Assert.Equal(["Paged 2", "Paged 1"], second.GetProperty("items").EnumerateArray().Select(i => Field(i, "name_en").GetProperty("new").GetString()));
-        var third = await Json(await admin.GetAsync($"/api/audit/records/identity.roles/{id}?take=2&before={second.GetProperty("next").GetGuid()}"));
+        var third = await Json(await admin.GetAsync($"/api/audit/records/{id}?type=identity.roles&take=2&before={second.GetProperty("next").GetGuid()}"));
         Assert.Equal(["insert"], third.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("action").GetString()));
         Assert.Equal(JsonValueKind.Null, third.GetProperty("next").ValueKind);
 
         // A change of another record, or an id that is no change, does not continue this history.
         var other = await CreateRoleAsync(admin, "Paged other", "identity.users.read");
-        var otherChange = (await Json(await admin.GetAsync($"/api/audit/records/identity.roles/{other.GetProperty("id").GetGuid()}"))).GetProperty("items")[0].GetProperty("id").GetGuid();
+        var otherChange = (await Json(await admin.GetAsync($"/api/audit/records/{other.GetProperty("id").GetGuid()}?type=identity.roles"))).GetProperty("items")[0].GetProperty("id").GetGuid();
         foreach (var cursor in new[] { otherChange, Guid.NewGuid() })
         {
-            var refused = await admin.GetAsync($"/api/audit/records/identity.roles/{id}?before={cursor}");
+            var refused = await admin.GetAsync($"/api/audit/records/{id}?type=identity.roles&before={cursor}");
             Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
             var problem = await refused.Content.ReadFromJsonAsync<JsonElement>();
             Assert.True(problem.GetProperty("errors").TryGetProperty("before", out _));
         }
         // An id with no record has no history (the same answer as one the caller cannot read).
-        var none = await Json(await admin.GetAsync($"/api/audit/records/identity.roles/{Guid.NewGuid()}"));
+        var none = await Json(await admin.GetAsync($"/api/audit/records/{Guid.NewGuid()}?type=identity.roles"));
         Assert.Equal(0, none.GetProperty("items").GetArrayLength());
     }
 
     [Fact]
-    public async Task A_history_needs_the_permission_that_reads_the_record()
+    public async Task A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var role = await CreateRoleAsync(admin, "Guarded history", "identity.users.read");
@@ -129,21 +129,37 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         var (adminId, _) = await MeAsync(admin);
 
         using var nobody = await Env.SignInAsync(Env.Email(Env.TenantA, "noaccess"));
-        Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync($"/api/audit/records/identity.roles/{id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync($"/api/audit/records/{id}?type=identity.roles")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync("/api/audit/log")).StatusCode);
 
-        // Roles readers read roles' histories, never users' or sessions'.
+        // Reading roles is not reading their history: the audit permission is needed as well.
         var rolesReader = await CreateRoleAsync(admin, "Roles reader", "identity.roles.read");
+        var plain = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
+        {
+            email = $"audit.roles.plain@{Env.TenantA.EmailDomain}", displayName = "Roles Plain", language = "en", password = ErpTestEnvironment.Password,
+            mustChangePassword = false, roleIds = new[] { rolesReader.GetProperty("id").GetGuid() },
+        }));
+        using (var plainReader = await Env.SignInAsync(plain.GetProperty("email").GetString()!))
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, (await plainReader.GetAsync($"/api/audit/records/{id}?type=identity.roles")).StatusCode);
+        }
+
+        // With the audit permission, roles readers read roles' histories, never users' or sessions'.
+        var auditor = await CreateRoleAsync(admin, "Roles auditor", "identity.roles.read", "audit.log.read");
         var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
         {
             email = $"audit.roles.reader@{Env.TenantA.EmailDomain}", displayName = "Roles Reader", language = "en", password = ErpTestEnvironment.Password,
-            mustChangePassword = false, roleIds = new[] { rolesReader.GetProperty("id").GetGuid() },
+            mustChangePassword = false, roleIds = new[] { auditor.GetProperty("id").GetGuid() },
         }));
         using var reader = await Env.SignInAsync(user.GetProperty("email").GetString()!);
-        Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"/api/audit/records/identity.roles/{id}")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await reader.GetAsync($"/api/audit/records/identity.users/{adminId}")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await reader.GetAsync($"/api/audit/records/identity.sessions/{Guid.NewGuid()}")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await reader.GetAsync("/api/audit/log")).StatusCode);
+        Assert.NotEqual(0, (await Json(await reader.GetAsync($"/api/audit/records/{id}?type=identity.roles"))).GetProperty("items").GetArrayLength());
+        Assert.NotEqual(0, (await Json(await reader.GetAsync($"/api/audit/records/{id}"))).GetProperty("items").GetArrayLength());
+        Assert.Equal(0, (await Json(await reader.GetAsync($"/api/audit/records/{adminId}?type=identity.users"))).GetProperty("items").GetArrayLength());
+        Assert.Equal(0, (await Json(await reader.GetAsync($"/api/audit/records/{adminId}"))).GetProperty("items").GetArrayLength());
+        // A kind of record the trail does not know is refused, naming the parameter.
+        var unknown = await reader.GetAsync($"/api/audit/records/{id}?type=no.such_table");
+        Assert.Equal(HttpStatusCode.BadRequest, unknown.StatusCode);
+        Assert.True((await unknown.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("errors").TryGetProperty("type", out _));
     }
 
     [Fact]
@@ -270,8 +286,8 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             .GetProperty("items").EnumerateArray().Select(r => r.GetProperty("recordId").GetGuid()).ToHashSet();
         Assert.NotEmpty(branchRows);
         Assert.True(branchRows.IsSubsetOf(inX), "a branch of company Y was shown");
-        Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/records/tenancy.branches/{inX[0]}")).StatusCode);
-        var hidden = await Json(await auditor.GetAsync($"/api/audit/records/tenancy.branches/{inY[0]}"));
+        Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/records/{inX[0]}?type=tenancy.branches")).StatusCode);
+        var hidden = await Json(await auditor.GetAsync($"/api/audit/records/{inY[0]}?type=tenancy.branches"));
         Assert.Equal(0, hidden.GetProperty("items").GetArrayLength());
         // Companies are not readable to them at all.
         Assert.Equal(0, (await Json(await auditor.GetAsync($"/api/audit/log?filter={Uri.EscapeDataString("recordType eq 'tenancy.companies'")}"))).GetProperty("total").GetInt32());
@@ -310,8 +326,8 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             .GetProperty("items").EnumerateArray().Select(r => r.GetProperty("recordId").GetGuid()).ToHashSet();
         Assert.Contains(mine, rows);
         Assert.DoesNotContain(other, rows);
-        Assert.Equal(0, (await Json(await auditor.GetAsync($"/api/audit/records/tenancy.branches/{other}"))).GetProperty("items").GetArrayLength());
-        Assert.NotEqual(0, (await Json(await auditor.GetAsync($"/api/audit/records/tenancy.branches/{mine}"))).GetProperty("items").GetArrayLength());
+        Assert.Equal(0, (await Json(await auditor.GetAsync($"/api/audit/records/{other}?type=tenancy.branches"))).GetProperty("items").GetArrayLength());
+        Assert.NotEqual(0, (await Json(await auditor.GetAsync($"/api/audit/records/{mine}?type=tenancy.branches"))).GetProperty("items").GetArrayLength());
         // Nothing of the other branch: no row whose branch it is (the access rows to it, the workplaces in it).
         var all = (await Json(await auditor.GetAsync("/api/audit/log?take=200"))).GetRawText();
         Assert.DoesNotContain(other.ToString(), all, StringComparison.OrdinalIgnoreCase);

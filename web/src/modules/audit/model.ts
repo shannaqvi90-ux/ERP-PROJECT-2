@@ -4,7 +4,7 @@ import { api } from "../../kernel/api";
  * list or nothing). A creation has only new values, a deletion only old ones. */
 export type FieldChange = { field: string; old?: unknown; new?: unknown };
 
-/** One change of a record (GET /api/audit/records/{type}/{id}). */
+/** One change of a record (GET /api/audit/records/{id}?type=…). */
 export type AuditEvent = {
   id: string;
   occurredAt: string;
@@ -19,15 +19,14 @@ export type AuditEvent = {
 /** A record's name in English and, when it has one, in Arabic. */
 export type RecordName = { name: string; nameAr: string | null };
 
-export type AuditHistory = { recordType: string; items: AuditEvent[]; next: string | null; names: Record<string, RecordName> };
+export type AuditHistory = { recordType: string | null; items: AuditEvent[]; next: string | null; names: Record<string, RecordName> };
 
 /** One page of a record's history, newest first; `before` continues after the last change shown. */
 export function readHistory(type: string, id: string, options: { take?: number; before?: string | null; signal?: AbortSignal } = {}): Promise<AuditHistory> {
-  const query = new URLSearchParams();
+  const query = new URLSearchParams({ type });
   if (options.take) query.set("take", String(options.take));
   if (options.before) query.set("before", options.before);
-  const text = query.toString();
-  return api<AuditHistory>("GET", `/api/audit/records/${type}/${encodeURIComponent(id)}${text ? `?${text}` : ""}`, undefined, { signal: options.signal });
+  return api<AuditHistory>("GET", `/api/audit/records/${encodeURIComponent(id)}?${query}`, undefined, { signal: options.signal });
 }
 
 /** The address of the audit log narrowed to one record's changes. */
