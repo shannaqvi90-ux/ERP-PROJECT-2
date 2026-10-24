@@ -68,11 +68,13 @@ namespace Erp.Modules.Numbering.Migrations
                         .HasColumnType("character varying(120)")
                         .HasColumnName("number");
 
-                    b.Property<string>("Period")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)")
-                        .HasColumnName("period");
+                    b.Property<int>("PeriodMonth")
+                        .HasColumnType("integer")
+                        .HasColumnName("period_month");
+
+                    b.Property<int>("PeriodYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("period_year");
 
                     b.Property<Guid>("SequenceId")
                         .HasColumnType("uuid")
@@ -159,11 +161,13 @@ namespace Erp.Modules.Numbering.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("next_value");
 
-                    b.Property<string>("Period")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)")
-                        .HasColumnName("period");
+                    b.Property<int>("PeriodMonth")
+                        .HasColumnType("integer")
+                        .HasColumnName("period_month");
+
+                    b.Property<int>("PeriodYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("period_year");
 
                     b.Property<Guid>("SequenceId")
                         .HasColumnType("uuid")
@@ -195,11 +199,11 @@ namespace Erp.Modules.Numbering.Migrations
                     b.HasAlternateKey("TenantId", "Id")
                         .HasName("ak_counters_tenant_id_id");
 
-                    b.HasIndex("TenantId", "SequenceId", "BranchId", "Period")
+                    b.HasIndex("TenantId", "SequenceId", "BranchId", "PeriodYear", "PeriodMonth")
                         .IsUnique()
-                        .HasDatabaseName("ix_counters_tenant_id_sequence_id_branch_id_period");
+                        .HasDatabaseName("ix_counters_tenant_id_sequence_id_branch_id_period_year_period");
 
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("TenantId", "SequenceId", "BranchId", "Period"), false);
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("TenantId", "SequenceId", "BranchId", "PeriodYear", "PeriodMonth"), false);
 
                     b.ToTable("counters", "numbering", t =>
                         {
@@ -207,7 +211,7 @@ namespace Erp.Modules.Numbering.Migrations
 
                             t.HasCheckConstraint("ck_counters_next_value", "next_value BETWEEN 1 AND 999999999999999999");
 
-                            t.HasCheckConstraint("ck_counters_period", "period ~ '^([0-9]{4}(-[0-9]{2})?)?$'");
+                            t.HasCheckConstraint("ck_counters_period", "(period_year = 0 AND period_month = 0) OR (period_year BETWEEN 1990 AND 2199 AND period_month BETWEEN 0 AND 12)");
                         });
                 });
 
@@ -256,10 +260,8 @@ namespace Erp.Modules.Numbering.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("prefix");
 
-                    b.Property<string>("Reset")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                    b.Property<short>("Reset")
+                        .HasColumnType("smallint")
                         .HasColumnName("reset");
 
                     b.Property<string>("Suffix")
@@ -304,7 +306,7 @@ namespace Erp.Modules.Numbering.Migrations
 
                             t.HasCheckConstraint("ck_sequences_padding", "padding BETWEEN 1 AND 12");
 
-                            t.HasCheckConstraint("ck_sequences_reset", "reset IN ('never', 'yearly', 'monthly')");
+                            t.HasCheckConstraint("ck_sequences_reset", "reset BETWEEN 0 AND 2");
                         });
                 });
 

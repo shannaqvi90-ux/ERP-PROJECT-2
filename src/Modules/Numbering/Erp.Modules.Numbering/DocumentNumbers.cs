@@ -32,16 +32,16 @@ internal sealed class DocumentNumbers(
     internal const int WaitSeconds = 10;
 
     internal const string TakeStatement = """
-        INSERT INTO numbering.counters AS c (id, tenant_id, company_id, sequence_id, branch_id, period, next_value, last_issued, last_issued_at, created_by, updated_by)
-        VALUES (@id, @tenant, @company, @sequence, @branch, @period, @first + 1, @first, now(), @actor, @actor)
-        ON CONFLICT (tenant_id, sequence_id, branch_id, period) DO UPDATE
+        INSERT INTO numbering.counters AS c (id, tenant_id, company_id, sequence_id, branch_id, period_year, period_month, next_value, last_issued, last_issued_at, created_by, updated_by)
+        VALUES (@id, @tenant, @company, @sequence, @branch, @year, @month, @first + 1, @first, now(), @actor, @actor)
+        ON CONFLICT (tenant_id, sequence_id, branch_id, period_year, period_month) DO UPDATE
            SET next_value = c.next_value + 1, last_issued = c.next_value, last_issued_at = now(), updated_at = now(), updated_by = @actor
         RETURNING c.last_issued
         """;
 
     internal const string RecordStatement = """
-        INSERT INTO numbering.issued_numbers (id, tenant_id, company_id, sequence_id, document_type, branch_id, period, value, number, document_date, source_id, gapless, created_by, updated_by)
-        VALUES (@id, @tenant, @company, @sequence, @type, @branch, @period, @value, @number, @date, @source, @gapless, @actor, @actor)
+        INSERT INTO numbering.issued_numbers (id, tenant_id, company_id, sequence_id, document_type, branch_id, period_year, period_month, value, number, document_date, source_id, gapless, created_by, updated_by)
+        VALUES (@id, @tenant, @company, @sequence, @type, @branch, @year, @month, @value, @number, @date, @source, @gapless, @actor, @actor)
         ON CONFLICT (tenant_id, company_id, document_type, number) DO NOTHING
         RETURNING id
         """;
@@ -80,7 +80,7 @@ internal sealed class DocumentNumbers(
     {
         var plan = await PlanAsync(request, cancellationToken);
         var counter = await db.Counters.AsNoTracking()
-            .Where(c => c.SequenceId == plan.Sequence.Id && c.BranchId == plan.CounterBranch && c.Period == plan.Period)
+            .Where(c => c.SequenceId == plan.Sequence.Id && c.BranchId == plan.CounterBranch && c.PeriodYear == plan.Year && c.PeriodMonth == plan.Month)
             .Select(c => (long?)c.NextValue).SingleOrDefaultAsync(cancellationToken);
         var value = counter ?? 1;
         var s = plan.Sequence;
@@ -88,7 +88,10 @@ internal sealed class DocumentNumbers(
     }
 
     /// <summary>The sequence, period and branch a request is counted in, after every check.</summary>
-    private sealed record Plan(NumberSequence Sequence, string Period, Guid? CounterBranch, string? BranchCode);
+    private sealed record Plan(NumberSequence Sequence, int Year, int Month, Guid? CounterBranch, string? BranchCode)
+    {
+        public string Period => NumberPattern.PeriodText(Year, Month);
+    }
 
     private async Task<Plan> PlanAsync(NumberRequest request, CancellationToken cancellationToken)
     {
@@ -123,7 +126,8 @@ internal sealed class DocumentNumbers(
         {
             counterBranch = request.BranchId ?? throw new NumberingException(NumberingException.BranchRequired, request.DocumentType);
         }
-        return new Plan(sequence, NumberPattern.PeriodOf(sequence.Reset, request.DocumentDate), counterBranch, branchCode);
+        var (year, month) = NumberPattern.PeriodPartsOf(sequence.Reset, request.DocumentDate);
+        return new Plan(sequence, year, month, counterBranch, branchCode);
     }
 
     private static async Task<IssuedNumber> TakeOnAsync(ErpDbSession unit, Plan plan, NumberRequest request, CancellationToken cancellationToken)
@@ -139,7 +143,8 @@ internal sealed class DocumentNumbers(
                 take.Parameters.AddWithValue("company", request.CompanyId);
                 take.Parameters.AddWithValue("sequence", s.Id);
                 take.Parameters.Add(new NpgsqlParameter<Guid?>("branch", NpgsqlTypes.NpgsqlDbType.Uuid) { TypedValue = plan.CounterBranch });
-                take.Parameters.AddWithValue("period", plan.Period);
+                take.Parameters.AddWithValue("year", plan.Year);
+                take.Parameters.AddWithValue("month", plan.Month);
                 take.Parameters.AddWithValue("first", 1L);
                 take.Parameters.Add(new NpgsqlParameter<Guid?>("actor", NpgsqlTypes.NpgsqlDbType.Uuid) { TypedValue = unit.ActorId });
                 value = (long)(await take.ExecuteScalarAsync(cancellationToken))!;
@@ -158,7 +163,8 @@ internal sealed class DocumentNumbers(
             record.Parameters.AddWithValue("sequence", s.Id);
             record.Parameters.AddWithValue("type", s.DocumentType);
             record.Parameters.Add(new NpgsqlParameter<Guid?>("branch", NpgsqlTypes.NpgsqlDbType.Uuid) { TypedValue = request.BranchId });
-            record.Parameters.AddWithValue("period", plan.Period);
+            record.Parameters.AddWithValue("year", plan.Year);
+            record.Parameters.AddWithValue("month", plan.Month);
             record.Parameters.AddWithValue("value", value);
             record.Parameters.AddWithValue("number", number);
             record.Parameters.AddWithValue("date", request.DocumentDate);

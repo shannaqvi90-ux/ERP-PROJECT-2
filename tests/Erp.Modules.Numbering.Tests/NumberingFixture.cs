@@ -100,13 +100,15 @@ internal static class Db
     }
 
     /// <summary>Changes a sequence directly (as a migration or an operator would), for a test's own set-up.</summary>
-    public static async Task SetAsync(ErpTestEnvironment env, Guid company, string type, string prefix, string reset, bool gapless, bool perBranch = false, int padding = 5)
+    public static async Task SetAsync(ErpTestEnvironment env, Guid company, string type, string prefix, string reset, bool gapless, bool perBranch = false, int padding = 5, string suffix = "")
     {
         await using var db = await env.OpenAdminAsync();
         await using var command = new NpgsqlCommand(
-            "UPDATE numbering.sequences SET prefix = @p, reset = @r, gapless = @g, per_branch = @b, padding = @d WHERE company_id = @c AND document_type = @t", db);
+            "UPDATE numbering.sequences SET prefix = @p, suffix = @s, reset = @r, gapless = @g, per_branch = @b, padding = @d WHERE company_id = @c AND document_type = @t", db);
         command.Parameters.AddWithValue("p", prefix);
-        command.Parameters.AddWithValue("r", reset);
+        command.Parameters.AddWithValue("s", suffix);
+        // Stored as 0 never, 1 yearly, 2 monthly.
+        command.Parameters.AddWithValue("r", (short)(reset switch { "never" => 0, "yearly" => 1, "monthly" => 2, _ => throw new ArgumentException(reset) }));
         command.Parameters.AddWithValue("g", gapless);
         command.Parameters.AddWithValue("b", perBranch);
         command.Parameters.AddWithValue("d", padding);

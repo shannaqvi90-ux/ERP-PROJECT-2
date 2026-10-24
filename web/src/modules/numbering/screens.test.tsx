@@ -107,7 +107,7 @@ describe("document numbering screen", () => {
     expect(view!.container.querySelector(".nb-preview")?.textContent).toContain("Never starts again.");
     await key(field("padding"), { key: "Enter", code: "Enter" });
     const put = calls.find((c) => c.method === "PUT" && c.url === "/api/numbering/sequences/s1");
-    expect(put?.body).toEqual({ prefix: "PO-2026-", suffix: "", padding: 6, reset: "never", gapless: false, perBranch: false, nextNumber: null, version: 7 });
+    expect(put?.body).toEqual({ prefix: "PO-2026-", suffix: "", padding: 6, reset: "never", gapless: false, perBranch: false, nextValue: null, version: 7 });
   });
 
   it("previews the next year's first number of a yearly sequence and its counters and last numbers", async () => {
@@ -130,7 +130,7 @@ describe("document numbering screen", () => {
     expect(calls.some((c) => c.method === "PUT")).toBe(false);
     expect(view!.container.querySelector('[data-field="reset"] .field-error')?.textContent).toContain("{YYYY}");
     setInput(field("prefix"), "INV-{YY}-");
-    setInput(field("nextNumber"), "1500");
+    setInput(field("nextValue"), "1500");
     await wait();
     expect(preview()).toBe("INV-26-01500");
   });
@@ -138,12 +138,12 @@ describe("document numbering screen", () => {
   it("shows the server's refusal on its field", async () => {
     await open("/numbering/sequences?open=s1", all, (method, p) =>
       method === "PUT" && p === "/api/numbering/sequences/s1"
-        ? { status: 400, body: { code: "validation", title: "Check the fields.", errors: { nextNumber: [{ code: "numberingNextNumberBelowIssued", message: "Number 147 has already been given. Enter a number above it." }] } } }
+        ? { status: 400, body: { code: "validation", title: "Check the fields.", errors: { nextValue: [{ code: "numberingNextNumberBelowIssued", message: "Number 147 has already been given. Enter a number above it." }] } } }
         : undefined);
     await wait();
-    setInput(field("nextNumber"), "100");
-    await key(field("nextNumber"), { key: "Enter", code: "Enter" });
-    expect(view!.container.querySelector('[data-field="nextNumber"] .field-error')?.textContent).toBe("Number 147 has already been given. Enter a number above it.");
+    setInput(field("nextValue"), "100");
+    await key(field("nextValue"), { key: "Enter", code: "Enter" });
+    expect(view!.container.querySelector('[data-field="nextValue"] .field-error')?.textContent).toBe("Number 147 has already been given. Enter a number above it.");
   });
 
   it("is read-only, with the reason, for an administrator who works in only some branches of the company", async () => {

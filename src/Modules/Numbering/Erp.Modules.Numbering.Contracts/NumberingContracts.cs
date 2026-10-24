@@ -196,6 +196,19 @@ public static partial class NumberPattern
         _ => "",
     };
 
+    /// <summary>The period a document date is counted in as stored: its year (0: never starts again)
+    /// and month (0: a whole year).</summary>
+    public static (int Year, int Month) PeriodPartsOf(string reset, DateOnly date) => reset switch
+    {
+        NumberReset.Yearly => (date.Year, 0),
+        NumberReset.Monthly => (date.Year, date.Month),
+        _ => (0, 0),
+    };
+
+    /// <summary>A stored period as text: "", "yyyy" or "yyyy-MM".</summary>
+    public static string PeriodText(int year, int month) =>
+        year == 0 ? "" : month == 0 ? year.ToString("0000", CultureInfo.InvariantCulture) : $"{year.ToString("0000", CultureInfo.InvariantCulture)}-{month.ToString("00", CultureInfo.InvariantCulture)}";
+
     /// <summary>The number as printed: tokens replaced, the value with leading zeros to
     /// <paramref name="padding"/> digits (a larger value keeps all its digits).</summary>
     public static string Format(string prefix, string suffix, int padding, DateOnly date, string? branchCode, long value) =>

@@ -8,9 +8,15 @@
 
 export type Reset = "never" | "yearly" | "monthly";
 
-export const resets: readonly Reset[] = ["yearly", "monthly", "never"];
+/** When the numbers may start again, in the order the screen offers them. */
+export function resets(): Reset[] {
+  return ["yearly", "monthly", "never"];
+}
 
-export const tokens = ["{YYYY}", "{YY}", "{MM}", "{BRANCH}"] as const;
+/** The tokens a prefix or suffix may hold. */
+export function tokens(): string[] {
+  return ["{YYYY}", "{YY}", "{MM}", "{BRANCH}"];
+}
 
 export const maxAffixLength = 30;
 export const minPadding = 1;
@@ -86,7 +92,7 @@ export function checkPattern(prefix: string, suffix: string, padding: number | n
   if (padding === null || !Number.isInteger(padding) || padding < minPadding || padding > maxPadding) {
     problems.push({ field: "padding", code: "numberingPadding", args: [minPadding, maxPadding] });
   }
-  if (!(resets as readonly string[]).includes(reset)) problems.push({ field: "reset", code: "numberingReset" });
+  if (!(resets() as string[]).includes(reset)) problems.push({ field: "reset", code: "numberingReset" });
   const text = prefix + suffix;
   const hasYear = text.includes("{YYYY}") || text.includes("{YY}");
   if (reset === "yearly" && !hasYear) problems.push({ field: "reset", code: "numberingYearlyNeedsYear" });

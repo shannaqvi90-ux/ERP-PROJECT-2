@@ -1,6 +1,7 @@
 using Erp.Kernel.Localization;
 using Erp.Modules.Numbering.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Numbering;
 
@@ -35,22 +36,20 @@ internal static class StandardDocumentTypes
     ];
 }
 
-/// <summary>The registered document types, in registration order, with their names in both languages.</summary>
+/// <summary>The registered document types, in registration order, with their names in both
+/// languages. The names are read from the string catalogue only when asked for (seeding needs only
+/// the keys and defaults); a module test holds every registered type to a name in English and Arabic.</summary>
 internal sealed class DocumentTypeCatalog
 {
     private readonly Dictionary<string, NumberedDocumentType> _types = new(StringComparer.Ordinal);
-    private readonly StringCatalog _strings;
+    private readonly IServiceProvider _services;
 
-    public DocumentTypeCatalog(IEnumerable<NumberedDocumentType> types, StringCatalog strings)
+    public DocumentTypeCatalog(IEnumerable<NumberedDocumentType> types, IServiceProvider services)
     {
-        _strings = strings;
+        _services = services;
         foreach (var type in types)
         {
             var problems = type.Problems().ToList();
-            if (!strings.Contains(type.LabelKey))
-            {
-                problems.Add($"numbered document type '{type.Key}': its name '{type.LabelKey}' is not a server string");
-            }
             if (!_types.TryAdd(type.Key, type))
             {
                 problems.Add($"numbered document type '{type.Key}' is registered twice");
@@ -66,7 +65,7 @@ internal sealed class DocumentTypeCatalog
 
     public NumberedDocumentType? Find(string key) => _types.GetValueOrDefault(key);
 
-    public string Name(NumberedDocumentType type, string language) => _strings.Get(type.LabelKey, language);
+    public string Name(NumberedDocumentType type, string language) => _services.GetRequiredService<StringCatalog>().Get(type.LabelKey, language);
 
     public string Name(string key, string language) => Find(key) is { } type ? Name(type, language) : key;
 }

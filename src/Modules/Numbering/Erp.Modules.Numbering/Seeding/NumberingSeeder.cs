@@ -47,9 +47,10 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
     private async Task CountedAsync(NumberSequence sequence, Guid? branch, string? branchCode, DateOnly today, long next, int recorded, CancellationToken cancellationToken)
     {
         var period = NumberPattern.PeriodOf(sequence.Reset, today);
+        var (year, month) = NumberPattern.PeriodPartsOf(sequence.Reset, today);
         db.Counters.Add(new NumberCounter
         {
-            CompanyId = sequence.CompanyId, SequenceId = sequence.Id, BranchId = branch, Period = period,
+            CompanyId = sequence.CompanyId, SequenceId = sequence.Id, BranchId = branch, PeriodYear = year, PeriodMonth = month,
             NextValue = next, LastIssued = next - 1, LastIssuedAt = DateTimeOffset.UtcNow.AddHours(-2),
         });
         for (var value = Math.Max(1, next - recorded); value < next; value++)
@@ -61,7 +62,7 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
             }
             db.Issued.Add(new IssuedDocumentNumber
             {
-                CompanyId = sequence.CompanyId, SequenceId = sequence.Id, DocumentType = sequence.DocumentType, BranchId = branch, Period = period,
+                CompanyId = sequence.CompanyId, SequenceId = sequence.Id, DocumentType = sequence.DocumentType, BranchId = branch, PeriodYear = year, PeriodMonth = month,
                 Value = value, Number = NumberPattern.Format(sequence.Prefix, sequence.Suffix, sequence.Padding, date, branchCode, value),
                 DocumentDate = date, Gapless = sequence.Gapless,
             });
@@ -99,33 +100,57 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
     private async Task GateAsync(TenantSeedContext context, IReadOnlyList<CompanyInfo> all, DateOnly today, CancellationToken cancellationToken)
     {
         var first = all[0];
+        var second = all.Count > 1 ? all[1] : all[0];
         if (context.Tenant.Canary is null)
         {
             var payment = await SequenceAsync(first.Id, "payments.payment", cancellationToken);
             payment.Suffix = "/HQ";
             await db.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            // Tenant B numbers some documents its own way.
+            var order = await SequenceAsync(first.Id, "purchasing.order", cancellationToken);
+            order.Prefix = "BPO-{YYYY}-";
+            order.Padding = 6;
+            var quotation = await SequenceAsync(first.Id, "sales.quotation", cancellationToken);
+            quotation.Prefix = "BQ-";
+            quotation.Suffix = "/BR";
+            quotation.Reset = NumberReset.Never;
+            var delivery = await SequenceAsync(first.Id, "inventory.delivery", cancellationToken);
+            delivery.Prefix = "BDN-{BRANCH}-";
+            delivery.Reset = NumberReset.Never;
+            delivery.PerBranch = true;
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        // Every gate sequence shows the year and the month, so each documented way of starting again
+        // (never, every year, every month) is a valid edit of every one of them: the gates send each
+        // to a record as it was read, and their writes must run to the end.
+        foreach (var sequence in await db.Sequences.ToListAsync(cancellationToken))
+        {
+            var text = sequence.Prefix + sequence.Suffix;
+            var year = text.Contains(NumberPattern.Year, StringComparison.Ordinal) || text.Contains(NumberPattern.ShortYear, StringComparison.Ordinal);
+            if (!text.Contains(NumberPattern.Month, StringComparison.Ordinal))
+            {
+                sequence.Suffix += year ? "/" + NumberPattern.Month : "/" + NumberPattern.ShortYear + NumberPattern.Month;
+            }
+        }
+        await db.SaveChangesAsync(cancellationToken);
+        // Counters and numbers in both companies of each workspace (the company gates judge every
+        // company table's rows of both).
+        if (context.Tenant.Canary is null)
+        {
             await CountedAsync(await SequenceAsync(first.Id, "purchasing.order", cancellationToken), null, null, today, 12, 2, cancellationToken);
+            await CountedAsync(await SequenceAsync(second.Id, "sales.order", cancellationToken), null, null, today, 5, 1, cancellationToken);
             return;
         }
-        // Tenant B numbers some documents its own way.
-        var order = await SequenceAsync(first.Id, "purchasing.order", cancellationToken);
-        order.Prefix = "BPO-{YYYY}-";
-        order.Padding = 6;
-        var quotation = await SequenceAsync(first.Id, "sales.quotation", cancellationToken);
-        quotation.Prefix = "BQ-";
-        quotation.Suffix = "/BR";
-        quotation.Reset = NumberReset.Never;
-        var delivery = await SequenceAsync(first.Id, "inventory.delivery", cancellationToken);
-        delivery.Prefix = "BDN-{BRANCH}-";
-        delivery.Reset = NumberReset.Never;
-        delivery.PerBranch = true;
-        await db.SaveChangesAsync(cancellationToken);
-        await CountedAsync(order, null, null, today, 905, 2, cancellationToken);
-        await CountedAsync(quotation, null, null, today, 31, 1, cancellationToken);
+        await CountedAsync(await SequenceAsync(first.Id, "purchasing.order", cancellationToken), null, null, today, 905, 2, cancellationToken);
+        await CountedAsync(await SequenceAsync(first.Id, "sales.quotation", cancellationToken), null, null, today, 31, 1, cancellationToken);
         var branch = (await branches.ListAsync(first.Id, cancellationToken)).FirstOrDefault();
         if (branch is not null)
         {
-            await CountedAsync(delivery, branch.Id, branch.Code, today, 7, 1, cancellationToken);
+            await CountedAsync(await SequenceAsync(first.Id, "inventory.delivery", cancellationToken), branch.Id, branch.Code, today, 7, 1, cancellationToken);
         }
+        await CountedAsync(await SequenceAsync(second.Id, "sales.order", cancellationToken), null, null, today, 44, 1, cancellationToken);
     }
 }

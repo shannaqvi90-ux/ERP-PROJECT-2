@@ -26,7 +26,7 @@ namespace Erp.Modules.Numbering.Migrations
                     prefix = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     suffix = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     padding = table.Column<int>(type: "integer", nullable: false),
-                    reset = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    reset = table.Column<short>(type: "smallint", nullable: false),
                     gapless = table.Column<bool>(type: "boolean", nullable: false),
                     per_branch = table.Column<bool>(type: "boolean", nullable: false),
                     tenant_id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -42,7 +42,7 @@ namespace Erp.Modules.Numbering.Migrations
                     table.UniqueConstraint("ak_sequences_tenant_id_id", x => new { x.tenant_id, x.id });
                     table.CheckConstraint("ck_sequences_document_type", "document_type ~ '^[a-z][a-zA-Z0-9]+\\.[a-z][a-zA-Z0-9]+$'");
                     table.CheckConstraint("ck_sequences_padding", "padding BETWEEN 1 AND 12");
-                    table.CheckConstraint("ck_sequences_reset", "reset IN ('never', 'yearly', 'monthly')");
+                    table.CheckConstraint("ck_sequences_reset", "reset BETWEEN 0 AND 2");
                 });
 
             migrationBuilder.CreateTable(
@@ -54,7 +54,8 @@ namespace Erp.Modules.Numbering.Migrations
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     sequence_id = table.Column<Guid>(type: "uuid", nullable: false),
                     branch_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    period = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    period_year = table.Column<int>(type: "integer", nullable: false),
+                    period_month = table.Column<int>(type: "integer", nullable: false),
                     next_value = table.Column<long>(type: "bigint", nullable: false),
                     last_issued = table.Column<long>(type: "bigint", nullable: true),
                     last_issued_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -71,7 +72,7 @@ namespace Erp.Modules.Numbering.Migrations
                     table.UniqueConstraint("ak_counters_tenant_id_id", x => new { x.tenant_id, x.id });
                     table.CheckConstraint("ck_counters_last_issued", "last_issued IS NULL OR last_issued < next_value");
                     table.CheckConstraint("ck_counters_next_value", "next_value BETWEEN 1 AND 999999999999999999");
-                    table.CheckConstraint("ck_counters_period", "period ~ '^([0-9]{4}(-[0-9]{2})?)?$'");
+                    table.CheckConstraint("ck_counters_period", "(period_year = 0 AND period_month = 0) OR (period_year BETWEEN 1990 AND 2199 AND period_month BETWEEN 0 AND 12)");
                     table.ForeignKey(
                         name: "fk_counters_sequences_tenant_id_sequence_id",
                         columns: x => new { x.tenant_id, x.sequence_id },
@@ -91,7 +92,8 @@ namespace Erp.Modules.Numbering.Migrations
                     sequence_id = table.Column<Guid>(type: "uuid", nullable: false),
                     document_type = table.Column<string>(type: "character varying(72)", maxLength: 72, nullable: false),
                     branch_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    period = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    period_year = table.Column<int>(type: "integer", nullable: false),
+                    period_month = table.Column<int>(type: "integer", nullable: false),
                     value = table.Column<long>(type: "bigint", nullable: false),
                     number = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
                     document_date = table.Column<DateOnly>(type: "date", nullable: false),
@@ -118,10 +120,10 @@ namespace Erp.Modules.Numbering.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_counters_tenant_id_sequence_id_branch_id_period",
+                name: "ix_counters_tenant_id_sequence_id_branch_id_period_year_period",
                 schema: "numbering",
                 table: "counters",
-                columns: new[] { "tenant_id", "sequence_id", "branch_id", "period" },
+                columns: new[] { "tenant_id", "sequence_id", "branch_id", "period_year", "period_month" },
                 unique: true)
                 .Annotation("Npgsql:NullsDistinct", false);
 

@@ -80,7 +80,7 @@ export function SequencesPage() {
   );
 }
 
-type Draft = { prefix: string; suffix: string; padding: string; reset: Reset; gapless: boolean; perBranch: boolean; nextNumber: string };
+type Draft = { prefix: string; suffix: string; padding: string; reset: Reset; gapless: boolean; perBranch: boolean; nextValue: string };
 
 const draftOf = (s: Pick<Sequence, "prefix" | "suffix" | "padding" | "reset" | "gapless" | "perBranch"> | null): Draft => ({
   prefix: s?.prefix ?? "",
@@ -89,7 +89,7 @@ const draftOf = (s: Pick<Sequence, "prefix" | "suffix" | "padding" | "reset" | "
   reset: s?.reset ?? "yearly",
   gapless: s?.gapless ?? false,
   perBranch: s?.perBranch ?? false,
-  nextNumber: "",
+  nextValue: "",
 });
 
 const wholeNumber = (text: string): number | null => (/^\d{1,18}$/.test(text.trim()) ? Number.parseInt(text.trim(), 10) : null);
@@ -121,7 +121,7 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
         const errors: FormErrors = {};
         const add = (field: string, text: string) => (errors[field] = [...(errors[field] ?? []), text]);
         for (const p of checkPattern(draft.prefix.trim(), draft.suffix.trim(), wholeNumber(draft.padding), draft.reset, draft.perBranch)) add(p.field, message(p.code, p.args));
-        if (draft.nextNumber.trim() !== "" && (wholeNumber(draft.nextNumber) ?? 0) < 1) add("nextNumber", message("numberingNextNumberRange", ["999,999,999,999,999,999"]));
+        if (draft.nextValue.trim() !== "" && (wholeNumber(draft.nextValue) ?? 0) < 1) add("nextValue", message("numberingNextNumberRange", ["999,999,999,999,999,999"]));
         return errors;
       },
       save: (draft, sequence) =>
@@ -132,7 +132,7 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
           reset: draft.reset,
           gapless: draft.gapless,
           perBranch: draft.perBranch,
-          nextNumber: draft.nextNumber.trim() === "" ? null : wholeNumber(draft.nextNumber),
+          nextValue: draft.nextValue.trim() === "" ? null : wholeNumber(draft.nextValue),
           version: sequence!.version,
         }),
       onSaved: (saved) => {
@@ -176,10 +176,10 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
       </FormSection>
       <FormSection title={t("numbering.sequence.counting")}>
         <SelectField field={bind("reset") as FieldBinding<Reset | "">} label={t("numbering.sequence.reset")}
-          options={resets.map((r) => ({ value: r, label: t(`numbering.reset.${r}`) }))} />
+          options={resets().map((r) => ({ value: r, label: t(`numbering.reset.${r}`) }))} />
         <BooleanField field={bind("gapless")} label={t("numbering.sequence.gaplessLabel")} />
         <BooleanField field={bind("perBranch")} label={t("numbering.sequence.perBranchLabel")} />
-        <TextField field={bind("nextNumber")} label={t("numbering.sequence.setNextNumber")} dir="ltr" inputMode="numeric" maxLength={18}
+        <TextField field={bind("nextValue")} label={t("numbering.sequence.setNextNumber")} dir="ltr" inputMode="numeric" maxLength={18}
           hint={form.draft.perBranch ? t("numbering.sequence.nextNumberPerBranch") : t("numbering.sequence.nextNumberHint")}
           disabled={form.draft.perBranch} />
       </FormSection>
@@ -228,7 +228,7 @@ function TokenHint() {
   const { t } = useI18n();
   return (
     <p className="field wide muted nb-tokens">
-      {tokens.map((token) => (
+      {tokens().map((token) => (
         <span key={token} className="nb-token">
           <code dir="ltr">{token}</code> {t(`numbering.token.${token.slice(1, -1).toLowerCase()}`)}
         </span>
@@ -250,7 +250,7 @@ function Preview({ sequence, draft }: { sequence: Sequence; draft: Draft }) {
   const counterOf = (reset: string) => sequence.counters.find((c) => c.period === periodOf(reset, today) && c.branchId === (draft.perBranch ? branch?.id ?? null : null));
   // As the server does: a sequence that starts again at another time goes on from today's count.
   const counter = counterOf(draft.reset) ?? (draft.reset !== sequence.reset && !draft.perBranch && !sequence.perBranch ? counterOf(sequence.reset) : undefined);
-  const typed = draft.perBranch ? null : wholeNumber(draft.nextNumber);
+  const typed = draft.perBranch ? null : wholeNumber(draft.nextValue);
   const value = typed ?? counter?.nextValue ?? 1;
   const number = (n: number, date = today) => formatNumber(draft.prefix.trim(), draft.suffix.trim(), padding, date, branch?.code ?? null, n);
   const start = nextStart(draft.reset, today);

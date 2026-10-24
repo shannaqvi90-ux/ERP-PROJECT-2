@@ -7,14 +7,18 @@ import { OursApi, oursAs } from '../../lib/ours-api.mjs';
 // sequence back to a start like the reference's default (prefix P, 5 digits, never starting again);
 // clean-up gives it back the product's own default (PO-{YYYY}-, 5 digits, a new run each year).
 
-const START = { prefix: 'P', suffix: '', padding: 5, reset: 'never', gapless: false, perBranch: false, nextNumber: null };
-const DEFAULT = { prefix: 'PO-{YYYY}-', suffix: '', padding: 5, reset: 'yearly', gapless: false, perBranch: false, nextNumber: null };
+const START = { prefix: 'P', suffix: '', padding: 5, reset: 'never', gapless: false, perBranch: false, nextValue: null };
+const DEFAULT = { prefix: 'PO-{YYYY}-', suffix: '', padding: 5, reset: 'yearly', gapless: false, perBranch: false, nextValue: null };
+
+// The working company's purchase order row of the list: its prefix, digits and the number the next
+// purchase order dated today gets. (The record's own GET also lists the last numbers given, which
+// hold the prefix the task asks for already, so verify() reads the row.)
+const filter = encodeURIComponent("documentType eq 'purchasing.order' and workingCompany eq true");
 
 async function purchaseOrders(api) {
-  const rows = (await api.get('/api/numbering/sequences?take=200')).items;
-  const row = rows.find(r => r.documentType === 'purchasing.order' && r.workingCompany);
-  if (!row) throw new Error('our product holds no purchase order sequence in the working company');
-  return row;
+  const rows = (await api.get(`/api/numbering/sequences?filter=${filter}&take=5`)).items;
+  if (rows.length !== 1) throw new Error(`our product holds ${rows.length} purchase order sequences in the working company`);
+  return rows[0];
 }
 
 async function put(ctx, values) {
@@ -59,10 +63,10 @@ export default {
   },
   async verify(ctx) {
     const api = new OursApi(ctx.product).withBrowserSession(await ctx.context.cookies());
-    const s = await api.get(`/api/numbering/sequences/${ctx.state.sequenceId}`);
+    const s = await purchaseOrders(api);
     const { prefix, digits } = ctx.task.input;
     return {
-      verified: s.prefix === prefix && s.padding === digits && new RegExp(`^${prefix}\\d{${digits}}$`).test(s.nextNumber),
+      verified: s.id === ctx.state.sequenceId && s.prefix === prefix && s.padding === digits && new RegExp(`^${prefix}\\d{${digits}}$`).test(s.nextNumber),
       details: { prefix: s.prefix, padding: s.padding, next_number: s.nextNumber },
     };
   },

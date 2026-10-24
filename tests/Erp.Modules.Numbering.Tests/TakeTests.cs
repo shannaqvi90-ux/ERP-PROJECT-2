@@ -25,6 +25,7 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
     public async Task Gapless_numbers_taken_by_many_documents_at_once_run_on_with_no_gap_or_repeat_though_some_documents_are_abandoned()
     {
         var company = await CompanyAsync();
+        await Db.SetAsync(Env, company, "sales.invoice", "INV-{YYYY}-", NumberReset.Yearly, gapless: true);
         var date = new DateOnly(2031, 5, 1);
         const int documents = 24;
         var committed = new System.Collections.Concurrent.ConcurrentBag<long>();
@@ -52,9 +53,9 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
         // The saved documents hold exactly 1, 2, 3, … with no gap and no repeat.
         Assert.Equal(Enumerable.Range(1, documents - abandoned).Select(v => (long)v), committed.Order());
         Assert.Equal(documents - abandoned, await Db.ScalarAsync(Env,
-            "SELECT count(*) FROM numbering.issued_numbers WHERE company_id = @c AND document_type = 'sales.invoice' AND period = '2031'", ("c", company)));
+            "SELECT count(*) FROM numbering.issued_numbers WHERE company_id = @c AND document_type = 'sales.invoice' AND period_year = 2031", ("c", company)));
         Assert.Equal(documents - abandoned + 1, await Db.ScalarAsync(Env,
-            "SELECT next_value FROM numbering.counters c JOIN numbering.sequences s ON s.id = c.sequence_id WHERE s.company_id = @c AND s.document_type = 'sales.invoice' AND c.period = '2031'", ("c", company)));
+            "SELECT next_value FROM numbering.counters c JOIN numbering.sequences s ON s.id = c.sequence_id WHERE s.company_id = @c AND s.document_type = 'sales.invoice' AND c.period_year = 2031", ("c", company)));
         Assert.Equal(1, await IssuedAsync(company, "sales.invoice", $"INV-2031-{documents - abandoned:00000}"));
     }
 
@@ -62,6 +63,7 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
     public async Task A_gapless_take_waits_for_the_open_document_then_gets_its_number_back_when_that_document_is_abandoned()
     {
         var company = await CompanyAsync();
+        await Db.SetAsync(Env, company, "sales.creditNote", "CN-{YYYY}-", NumberReset.Yearly, gapless: true);
         var date = new DateOnly(2032, 1, 10);
         await using var first = await Unit.JobAsync(Env, Env.TenantA.Id);
         var held = await first.TakeAsync("sales.creditNote", company, date);
@@ -82,6 +84,7 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
     public async Task A_standard_take_never_waits_for_an_open_document_and_a_document_that_fails_leaves_a_gap()
     {
         var company = await CompanyAsync();
+        await Db.SetAsync(Env, company, "purchasing.bill", "BILL-{YYYY}-", NumberReset.Yearly, gapless: false);
         var date = new DateOnly(2033, 3, 3);
         await using var open = await Unit.JobAsync(Env, Env.TenantA.Id);
         var first = await open.TakeAsync("purchasing.bill", company, date);
@@ -171,6 +174,7 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
         var theirs = await Db.CompaniesAsync(Env, Env.TenantB.Id);
         const string state = "SELECT coalesce(string_agg(id::text || ':' || next_value || ':' || coalesce(last_issued, 0), ',' ORDER BY id), '') FROM numbering.counters WHERE tenant_id = @t";
         var before = await Db.TextAsync(Env, state, ("t", Env.TenantB.Id));
+        await Db.SetAsync(Env, mine[0], "purchasing.order", "PO-{YYYY}-", NumberReset.Yearly, gapless: false);
         var date = new DateOnly(2036, 2, 2);
 
         // System work of tenant A sees every company of tenant A and nothing of tenant B.
@@ -198,7 +202,7 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
             await user.CommitAsync();
         }
         Assert.Equal(before, await Db.TextAsync(Env, state, ("t", Env.TenantB.Id)));
-        Assert.Equal(0, await Db.ScalarAsync(Env, "SELECT count(*) FROM numbering.issued_numbers WHERE tenant_id = @t AND period = '2036'", ("t", Env.TenantB.Id)));
+        Assert.Equal(0, await Db.ScalarAsync(Env, "SELECT count(*) FROM numbering.issued_numbers WHERE tenant_id = @t AND period_year = 2036", ("t", Env.TenantB.Id)));
     }
 
     [Fact]
@@ -207,6 +211,7 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
         var mine = await Db.CompaniesAsync(Env, Env.TenantA.Id);
         var admin = await Db.UserAsync(Env, Env.Email(Env.TenantA, "admin"));
         var document = Guid.NewGuid();
+        await Db.SetAsync(Env, mine[0], "sales.quotation", "QT-{YYYY}-", NumberReset.Yearly, gapless: false);
         await using (var user = await Unit.UserAsync(Env, Env.TenantA.Id, admin, mine[0]))
         {
             var issued = await user.Numbers.TakeAsync(new NumberRequest("sales.quotation", mine[0], new DateOnly(2037, 4, 4), null, document), CancellationToken.None);

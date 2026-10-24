@@ -248,7 +248,8 @@ public static class CompanyRoleVariants
     }
 
     /// <summary>Another valid value of the company and branch fields the generic variants cannot
-    /// vary (integers, codes that must stay unique, patterned values whose example is the current one).</summary>
+    /// vary (integers, codes that must stay unique, patterned values whose example is the current one),
+    /// and of a company's document sequences (its digits and its counter's next value).</summary>
     private static JsonNode? Other(string field, JsonObject body, string tag)
     {
         var current = body[field] is JsonValue v && v.GetValueKind() == JsonValueKind.String ? v.GetValue<string>() : body[field]?.ToJsonString();
@@ -266,6 +267,9 @@ public static class CompanyRoleVariants
             "website" => JsonValue.Create(Pick("https://varied.example.ae", "https://www.example.ae")),
             "fiscalYearStartMonth" => JsonValue.Create(current == "4" ? 1 : 4),
             "fiscalYearStartDay" => JsonValue.Create(current == "15" ? 1 : 15),
+            // A document sequence's digits, and the next value of its counter moved up by one.
+            "padding" => JsonValue.Create(current == "6" ? 5 : 6),
+            "nextValue" => JsonValue.Create(long.TryParse(current, out var value) && value is >= 1 and < 999_999_999_999_999_999 ? value + 1 : 2),
             _ => null,
         };
     }

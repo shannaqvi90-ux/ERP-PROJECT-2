@@ -26,7 +26,7 @@ The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sha
 with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
 read-only user in the first company only. The working company and branch switcher sits in the
 top bar (Alt+C). Every screen is a key away: `G` then a letter (`U` Users, `R` Roles, `C`
-Companies, `B` Branches, `A` Company access, `W` Workspace, `M` My account, `H` Home) when no field
+Companies, `B` Branches, `A` Company access, `N` Document numbering, `W` Workspace, `M` My account, `H` Home) when no field
 has the focus; `Ctrl+K` finds any screen, record or action, and `?` lists every key.
 
 Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
@@ -44,6 +44,14 @@ invitation sent to a mistyped address is corrected in the user's panel, or delet
 signed in with it (`identity.users.delete`); anyone who has signed in stays for the audit trail and
 is deactivated instead. Roles and users are managed only by someone who holds every permission
 they grant; the screens offer nothing else.
+
+Document numbering: every company holds a sequence for each kind of document (quotation, sales
+order, tax invoice, tax credit note, purchase order, supplier bill, goods received note, delivery note,
+receipt and payment vouchers, journal voucher): prefix, digits, suffix and the tokens `{YYYY}`, `{YY}`,
+`{MM}`, `{BRANCH}`; a new run every year or month, or never; gapless or not; per branch or for the whole
+company. Open one (G then N) and type: the next numbers are previewed as you type, Enter saves. Later
+modules take numbers inside their own transaction through `IDocumentNumbers`
+(`docs/decisions/p10-numbering-module.md`).
 
 ## Layout
 

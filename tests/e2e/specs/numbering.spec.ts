@@ -28,7 +28,7 @@ async function restore(page: Page, row: Row) {
   const current = (await (await page.request.get(`/api/numbering/sequences/${row.id}`)).json()) as Row;
   const put = await page.request.put(`/api/numbering/sequences/${row.id}`, {
     headers: { "X-Erp-Request": "1" },
-    data: { prefix: row.prefix, suffix: row.suffix, padding: row.padding, reset: row.reset, gapless: row.gapless, perBranch: row.perBranch, nextNumber: null, version: current.version },
+    data: { prefix: row.prefix, suffix: row.suffix, padding: row.padding, reset: row.reset, gapless: row.gapless, perBranch: row.perBranch, nextValue: null, version: current.version },
   });
   expect(put.status(), await put.text()).toBe(200);
 }
@@ -94,7 +94,7 @@ test.describe("document numbering", () => {
     const id = (await purchaseOrders(page)).id;
     const refused = await page.request.put(`/api/numbering/sequences/${id}`, {
       headers: { "X-Erp-Request": "1" },
-      data: { prefix: "X-", suffix: "", padding: 5, reset: "never", gapless: false, perBranch: false, nextNumber: null, version: 1 },
+      data: { prefix: "X-", suffix: "", padding: 5, reset: "never", gapless: false, perBranch: false, nextValue: null, version: 1 },
     });
     expect(refused.status()).toBe(403);
   });

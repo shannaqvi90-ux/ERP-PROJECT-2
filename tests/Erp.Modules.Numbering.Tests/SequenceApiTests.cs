@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Erp.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Numbering.Tests;
 
@@ -20,6 +21,10 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
 
     private static string Year => DateTime.UtcNow.AddHours(4).Year.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
+    /// <summary>The gate seed makes every sequence show the month (so every reset is a valid edit):
+    /// a sequence that showed none ends "/{MM}".</summary>
+    private static string Month => "/" + DateTime.UtcNow.AddHours(4).Month.ToString("00", System.Globalization.CultureInfo.InvariantCulture);
+
     private async Task<HttpClient> SignInAsync(string local = "admin") => await Env.SignInAsync(Env.Email(Env.TenantA, local));
 
     private static async Task<List<JsonElement>> RowsAsync(HttpClient client, string query = "take=200")
@@ -33,7 +38,7 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         (await RowsAsync(client)).First(r => r.GetProperty("documentType").GetString() == type && (company is null || r.GetProperty("companyId").GetGuid() == company));
 
     private static object Body(JsonElement record, string? prefix = null, int? padding = null, string? reset = null, bool? gapless = null, bool? perBranch = null,
-        long? nextNumber = null, string? suffix = null, uint? version = null) => new
+        long? nextValue = null, string? suffix = null, uint? version = null) => new
     {
         prefix = prefix ?? record.GetProperty("prefix").GetString(),
         suffix = suffix ?? record.GetProperty("suffix").GetString(),
@@ -41,7 +46,7 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         reset = reset ?? record.GetProperty("reset").GetString(),
         gapless = gapless ?? record.GetProperty("gapless").GetBoolean(),
         perBranch = perBranch ?? record.GetProperty("perBranch").GetBoolean(),
-        nextNumber,
+        nextValue,
         version = version ?? record.GetProperty("version").GetUInt32(),
     };
 
@@ -68,11 +73,11 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
             (order.GetProperty("nameEn").GetString(), order.GetProperty("nameAr").GetString(), order.GetProperty("prefix").GetString(), order.GetProperty("padding").GetInt32(),
                 order.GetProperty("reset").GetString(), order.GetProperty("gapless").GetBoolean(), order.GetProperty("perBranch").GetBoolean()));
         // The gate seed counted tenant A's purchase orders to 11 this year.
-        Assert.Equal(($"PO-{Year}-00012", 12L), (order.GetProperty("nextNumber").GetString(), order.GetProperty("nextValue").GetInt64()));
+        Assert.Equal(($"PO-{Year}-00012{Month}", 12L), (order.GetProperty("nextNumber").GetString(), order.GetProperty("nextValue").GetInt64()));
         Assert.True(order.GetProperty("canUpdate").GetBoolean());
         var invoice = all.First(r => r.GetProperty("documentType").GetString() == "sales.invoice");
         Assert.True(invoice.GetProperty("gapless").GetBoolean());
-        Assert.Equal($"INV-{Year}-00001", invoice.GetProperty("nextNumber").GetString());
+        Assert.Equal($"INV-{Year}-00001{Month}", invoice.GetProperty("nextNumber").GetString());
         // Tenant B's own prefixes never appear.
         Assert.DoesNotContain(all, r => r.GetProperty("prefix").GetString() is "BPO-{YYYY}-" or "BQ-" or "BDN-{BRANCH}-");
 
@@ -91,10 +96,10 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         using var admin = await SignInAsync();
         var row = await RowAsync(admin, "purchasing.order");
         var record = await admin.GetFromJsonAsync<JsonElement>($"/api/numbering/sequences/{row.GetProperty("id").GetGuid()}");
-        Assert.Equal($"PO-{Year}-00012", record.GetProperty("nextNumber").GetString());
+        Assert.Equal($"PO-{Year}-00012{Month}", record.GetProperty("nextNumber").GetString());
         var counter = record.GetProperty("counters")[0];
         Assert.Equal((Year, 12L, 11L), (counter.GetProperty("period").GetString(), counter.GetProperty("nextValue").GetInt64(), counter.GetProperty("lastIssued").GetInt64()));
-        Assert.Equal(new[] { $"PO-{Year}-00011", $"PO-{Year}-00010" }, record.GetProperty("recent").EnumerateArray().Select(i => i.GetProperty("number").GetString()).ToArray());
+        Assert.Equal(new[] { $"PO-{Year}-00011{Month}", $"PO-{Year}-00010{Month}" }, record.GetProperty("recent").EnumerateArray().Select(i => i.GetProperty("number").GetString()).ToArray());
         Assert.Equal(2, record.GetProperty("branches").GetArrayLength());
         Assert.Matches(@"^\d{4}-\d{2}-\d{2}$", record.GetProperty("today").GetString()!);
         Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/numbering/sequences/{Guid.NewGuid()}")).StatusCode);
@@ -108,7 +113,7 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         var saved = await PutAsync(admin, row, Body(row, prefix: "SO-2026-", padding: 6, reset: "never"));
         Assert.True(saved.StatusCode == HttpStatusCode.OK, await saved.Content.ReadAsStringAsync());
         var record = await Json(saved);
-        Assert.Equal(("SO-2026-", 6, "never", "SO-2026-000001"),
+        Assert.Equal(("SO-2026-", 6, "never", $"SO-2026-000001{Month}"),
             (record.GetProperty("prefix").GetString(), record.GetProperty("padding").GetInt32(), record.GetProperty("reset").GetString(), record.GetProperty("nextNumber").GetString()));
 
         // A version read before that change is refused, and nothing changes.
@@ -134,10 +139,10 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         var changed = await PutAsync(admin, row, Body(row, prefix: "PO-", reset: "never", padding: 6));
         Assert.True(changed.StatusCode == HttpStatusCode.OK, await changed.Content.ReadAsStringAsync());
         var record = await Json(changed);
-        Assert.Equal("PO-000012", record.GetProperty("nextNumber").GetString());
+        Assert.Equal($"PO-000012{Month}", record.GetProperty("nextNumber").GetString());
         // Back to a yearly run: this year's counter is where it was.
         var back = await PutAsync(admin, record, Body(record, prefix: "PO-{YYYY}-", reset: "yearly", padding: 5));
-        Assert.Equal($"PO-{Year}-00012", (await Json(back)).GetProperty("nextNumber").GetString());
+        Assert.Equal($"PO-{Year}-00012{Month}", (await Json(back)).GetProperty("nextNumber").GetString());
     }
 
     [Fact]
@@ -146,10 +151,10 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         using var admin = await SignInAsync();
         var companies = await Db.CompaniesAsync(Env, Env.TenantA.Id);
         var row = await RowAsync(admin, "purchasing.order", companies[1]);
-        var raised = await PutAsync(admin, row, Body(row, nextNumber: 1500));
+        var raised = await PutAsync(admin, row, Body(row, nextValue: 1500));
         Assert.True(raised.StatusCode == HttpStatusCode.OK, await raised.Content.ReadAsStringAsync());
         var record = await Json(raised);
-        Assert.Equal($"PO-{Year}-01500", record.GetProperty("nextNumber").GetString());
+        Assert.Equal($"PO-{Year}-01500{Month}", record.GetProperty("nextNumber").GetString());
 
         // Take one so that 1500 is given, then try to go back.
         await using (var unit = await Unit.JobAsync(Env, Env.TenantA.Id))
@@ -158,15 +163,15 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
             await unit.CommitAsync();
         }
         record = await admin.GetFromJsonAsync<JsonElement>($"/api/numbering/sequences/{row.GetProperty("id").GetGuid()}");
-        var lower = await PutAsync(admin, record, Body(record, nextNumber: 1200));
+        var lower = await PutAsync(admin, record, Body(record, nextValue: 1200));
         Assert.Equal(HttpStatusCode.BadRequest, lower.StatusCode);
-        Assert.Contains("1,500", (await Json(lower)).GetProperty("errors").GetProperty("nextNumber")[0].GetProperty("message").GetString(), StringComparison.Ordinal);
+        Assert.Contains("1,500", (await Json(lower)).GetProperty("errors").GetProperty("nextValue")[0].GetProperty("message").GetString(), StringComparison.Ordinal);
 
         // The same sequence made gapless: its next number can no longer move.
-        var gapless = await PutAsync(admin, record, Body(record, gapless: true, nextNumber: 1600));
+        var gapless = await PutAsync(admin, record, Body(record, gapless: true, nextValue: 1600));
         Assert.Equal(HttpStatusCode.BadRequest, gapless.StatusCode);
-        Assert.Equal("numberingGaplessNextNumberFixed", (await Json(gapless)).GetProperty("errors").GetProperty("nextNumber")[0].GetProperty("code").GetString());
-        var unchanged = await PutAsync(admin, record, Body(record, gapless: true, nextNumber: 1501));
+        Assert.Equal("numberingGaplessNextNumberFixed", (await Json(gapless)).GetProperty("errors").GetProperty("nextValue")[0].GetProperty("code").GetString());
+        var unchanged = await PutAsync(admin, record, Body(record, gapless: true, nextValue: 1501));
         Assert.True(unchanged.StatusCode == HttpStatusCode.OK, await unchanged.Content.ReadAsStringAsync());
     }
 
@@ -189,11 +194,11 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.Matches(@"\p{IsArabic}", arabicYearly.GetProperty("reset")[0].GetProperty("message").GetString()!);
         Assert.Equal("numberingCharacters", (await Refused(english, Body(row, prefix: "B {YYYY}"))).GetProperty("prefix")[0].GetProperty("code").GetString());
         Assert.Equal("numberingToken", (await Refused(english, Body(row, prefix: "B-{YEAR}-", reset: "never"))).GetProperty("prefix")[0].GetProperty("code").GetString());
-        Assert.Equal("numberingMonthlyNeedsMonth", (await Refused(english, Body(row, reset: "monthly"))).GetProperty("reset")[0].GetProperty("code").GetString());
+        Assert.Equal("numberingMonthlyNeedsMonth", (await Refused(english, Body(row, suffix: "", reset: "monthly"))).GetProperty("reset")[0].GetProperty("code").GetString());
         Assert.Equal("numberingPerBranchNeedsBranch", (await Refused(english, Body(row, perBranch: true))).GetProperty("perBranch")[0].GetProperty("code").GetString());
         Assert.Equal("numberingPadding", (await Refused(english, Body(row, padding: 13))).GetProperty("padding")[0].GetProperty("code").GetString());
         Assert.Equal("numberingReset", (await Refused(english, Body(row, reset: "weekly"))).GetProperty("reset")[0].GetProperty("code").GetString());
-        Assert.Equal("numberingNextNumberPerBranch", (await Refused(english, Body(row, prefix: "B-{BRANCH}-{YYYY}-", perBranch: true, nextNumber: 9))).GetProperty("nextNumber")[0].GetProperty("code").GetString());
+        Assert.Equal("numberingNextNumberPerBranch", (await Refused(english, Body(row, prefix: "B-{BRANCH}-{YYYY}-", perBranch: true, nextValue: 9))).GetProperty("nextValue")[0].GetProperty("code").GetString());
         var missing = await english.PutAsJsonAsync($"/api/numbering/sequences/{row.GetProperty("id").GetGuid()}", new { prefix = "B-" });
         var errors = (await Json(missing)).GetProperty("errors");
         Assert.All(new[] { "padding", "reset", "gapless", "perBranch", "version" }, field => Assert.True(errors.TryGetProperty(field, out _), field));
@@ -222,6 +227,21 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.Matches(@"\p{IsArabic}", problem.GetProperty("title").GetString()!);
         Assert.Equal("GRN-{YYYY}-", (await RowAsync(limited, "inventory.receipt", companies[1])).GetProperty("prefix").GetString());
         Assert.True((await RowAsync(limited, "inventory.receipt", companies[0])).GetProperty("canUpdate").GetBoolean());
+    }
+
+    [Fact]
+    public void Every_registered_document_type_has_its_name_in_English_and_Arabic()
+    {
+        var strings = Env.Factory.Services.GetRequiredService<Erp.Kernel.Localization.StringCatalog>();
+        var types = Env.Factory.Services.GetServices<Erp.Modules.Numbering.Contracts.NumberedDocumentType>().ToList();
+        Assert.Equal(11, types.Count);
+        foreach (var type in types)
+        {
+            Assert.True(strings.Contains(type.LabelKey), type.LabelKey);
+            Assert.NotEqual(type.LabelKey, strings.Get(type.LabelKey, "en"));
+            Assert.Matches(@"\p{IsArabic}", strings.Get(type.LabelKey, "ar"));
+            Assert.Empty(type.Problems());
+        }
     }
 
     [Fact]

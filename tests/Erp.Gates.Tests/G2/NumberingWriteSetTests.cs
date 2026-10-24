@@ -46,7 +46,7 @@ public sealed class NumberingWriteSetTests(NumberingWriteSetFixture fixture) : I
             ("reset=monthly", body => { body["prefix"] = "WS4-{YYYY}{MM}-"; body["reset"] = "monthly"; return body; }),
             ("reset=never", body => { body["prefix"] = "WS5-"; body["reset"] = "never"; return body; }),
             ("padding=12", body => { body["padding"] = 12; return body; }),
-            ("nextNumber=4000", body => { body["nextNumber"] = 4000; return body; }),
+            ("nextValue=4000", body => { body["nextValue"] = 4000; return body; }),
             ("suffix", body => { body["suffix"] = "/WS8"; return body; }),
         };
         var targets = rows.Where(r => r.GetProperty("canUpdate").GetBoolean() && !r.GetProperty("gapless").GetBoolean() && !r.GetProperty("perBranch").GetBoolean())
@@ -67,7 +67,7 @@ public sealed class NumberingWriteSetTests(NumberingWriteSetFixture fixture) : I
                 ["reset"] = current["reset"]?.DeepClone(),
                 ["gapless"] = current["gapless"]?.DeepClone(),
                 ["perBranch"] = current["perBranch"]?.DeepClone(),
-                ["nextNumber"] = null,
+                ["nextValue"] = current["nextValue"]?.DeepClone(),
                 ["version"] = current["version"]?.DeepClone(),
             });
             var before = await LastAuditIdAsync();
@@ -117,7 +117,7 @@ public sealed class NumberingWriteSetTests(NumberingWriteSetFixture fixture) : I
         var body = new JsonObject
         {
             ["prefix"] = "NWS-{YYYY}-", ["suffix"] = "", ["padding"] = 5, ["reset"] = "yearly", ["gapless"] = false, ["perBranch"] = false,
-            ["nextNumber"] = null, ["version"] = row.GetProperty("version").GetUInt32(),
+            ["nextValue"] = null, ["version"] = row.GetProperty("version").GetUInt32(),
         };
         var path = $"/api/numbering/sequences/{row.GetProperty("id").GetGuid()}";
         var before = await LastAuditIdAsync();

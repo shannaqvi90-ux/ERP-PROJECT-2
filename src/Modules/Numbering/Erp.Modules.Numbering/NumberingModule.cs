@@ -86,7 +86,11 @@ public sealed class NumberCounter : TenantEntity, ICompanyOwned
     /// <summary>The branch counted; null for a sequence the whole company counts.</summary>
     public Guid? BranchId { get; set; }
 
-    public string Period { get; set; } = "";
+    /// <summary>The period's year (0: a sequence that never starts again) and month (0: a whole year
+    /// or no period). Numbers, not text: a period is never a word of the workspace's data.</summary>
+    public int PeriodYear { get; set; }
+
+    public int PeriodMonth { get; set; }
 
     /// <summary>The value the next number gets.</summary>
     public long NextValue { get; set; } = 1;
@@ -108,7 +112,8 @@ public sealed class IssuedDocumentNumber : TenantEntity, ICompanyOwned
     public Guid SequenceId { get; set; }
     public string DocumentType { get; set; } = "";
     public Guid? BranchId { get; set; }
-    public string Period { get; set; } = "";
+    public int PeriodYear { get; set; }
+    public int PeriodMonth { get; set; }
     public long Value { get; set; }
     public string Number { get; set; } = "";
     public DateOnly DocumentDate { get; set; }
@@ -125,7 +130,6 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
 
     /// <summary>Longest document type key, period and printed number the columns hold.</summary>
     public const int DocumentTypeLength = 72;
-    public const int PeriodLength = 7;
     public const int NumberLength = 120;
 
     protected override string Schema => SchemaName;
@@ -141,13 +145,15 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
             e.ToTable("sequences", t =>
             {
                 t.HasCheckConstraint("ck_sequences_padding", $"padding BETWEEN {NumberPattern.MinPadding} AND {NumberPattern.MaxPadding}");
-                t.HasCheckConstraint("ck_sequences_reset", "reset IN ('never', 'yearly', 'monthly')");
+                t.HasCheckConstraint("ck_sequences_reset", "reset BETWEEN 0 AND 2");
                 t.HasCheckConstraint("ck_sequences_document_type", "document_type ~ '^[a-z][a-zA-Z0-9]+\\.[a-z][a-zA-Z0-9]+$'");
             });
             e.Property(x => x.DocumentType).HasMaxLength(DocumentTypeLength);
             e.Property(x => x.Prefix).HasMaxLength(NumberPattern.MaxAffixLength);
             e.Property(x => x.Suffix).HasMaxLength(NumberPattern.MaxAffixLength);
-            e.Property(x => x.Reset).HasMaxLength(10);
+            // Kept as a small number (0 never, 1 yearly, 2 monthly): the API's words are not the
+            // workspace's data.
+            e.Property(x => x.Reset).HasColumnType("smallint").HasConversion(v => NumberResetCodes.Code(v), c => NumberResetCodes.Name(c));
             // One sequence per company and document type.
             e.HasIndex(x => new { x.TenantId, x.CompanyId, x.DocumentType }).IsUnique();
         });
@@ -158,11 +164,10 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
             {
                 t.HasCheckConstraint("ck_counters_next_value", $"next_value BETWEEN 1 AND {NumberPattern.MaxValue}");
                 t.HasCheckConstraint("ck_counters_last_issued", "last_issued IS NULL OR last_issued < next_value");
-                t.HasCheckConstraint("ck_counters_period", "period ~ '^([0-9]{4}(-[0-9]{2})?)?$'");
+                t.HasCheckConstraint("ck_counters_period", "(period_year = 0 AND period_month = 0) OR (period_year BETWEEN 1990 AND 2199 AND period_month BETWEEN 0 AND 12)");
             });
-            e.Property(x => x.Period).HasMaxLength(PeriodLength);
             // One counter per sequence, branch (or none) and period: the row a number is taken from.
-            e.HasIndex(x => new { x.TenantId, x.SequenceId, x.BranchId, x.Period }).IsUnique().AreNullsDistinct(false);
+            e.HasIndex(x => new { x.TenantId, x.SequenceId, x.BranchId, x.PeriodYear, x.PeriodMonth }).IsUnique().AreNullsDistinct(false);
             e.HasOne<NumberSequence>().WithMany().HasForeignKey(x => new { x.TenantId, x.SequenceId })
                 .HasPrincipalKey(s => new { s.TenantId, s.Id }).OnDelete(DeleteBehavior.Restrict);
         });
@@ -171,7 +176,6 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
         {
             e.ToTable("issued_numbers");
             e.Property(x => x.DocumentType).HasMaxLength(DocumentTypeLength);
-            e.Property(x => x.Period).HasMaxLength(PeriodLength);
             e.Property(x => x.Number).HasMaxLength(NumberLength);
             // A number exists once per company and document type, whatever pattern made it.
             e.HasIndex(x => new { x.TenantId, x.CompanyId, x.DocumentType, x.Number }).IsUnique();
@@ -181,6 +185,26 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
                 .HasPrincipalKey(s => new { s.TenantId, s.Id }).OnDelete(DeleteBehavior.Restrict);
         });
     }
+}
+
+/// <summary>How <see cref="NumberSequence.Reset"/> is stored.</summary>
+internal static class NumberResetCodes
+{
+    public static short Code(string reset) => reset switch
+    {
+        NumberReset.Never => 0,
+        NumberReset.Yearly => 1,
+        NumberReset.Monthly => 2,
+        _ => throw new ArgumentOutOfRangeException(nameof(reset), reset, "not a reset"),
+    };
+
+    public static string Name(short code) => code switch
+    {
+        0 => NumberReset.Never,
+        1 => NumberReset.Yearly,
+        2 => NumberReset.Monthly,
+        _ => throw new ArgumentOutOfRangeException(nameof(code), code, "not a reset"),
+    };
 }
 
 internal sealed class NumberingDbContextDesignFactory : IDesignTimeDbContextFactory<NumberingDbContext>
