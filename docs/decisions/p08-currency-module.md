@@ -54,26 +54,37 @@ Date: 2026-10-24. Piece: p08-currency, round 1. Status: accepted.
    could not succeed every time, and the generic body machinery (p00) cannot vary a date. The lookup
    orders a date's rates by the time they were saved (`updated_at`, then id), on an index
    `(tenant_id, currency, quote_currency, rate_date, updated_at)`.
-6. **Import** (`POST /api/currency/rates/import`): CSV text with a header naming `currency`, `date`,
+6. **DELETE is idempotent.** Deleting a rate answers 204, and so does an id that names no rate
+   of the workspace (deleted already, or another workspace's): nothing is written, and the answer
+   tells nobody whether such an id exists elsewhere. A rate that is there is deleted only by someone
+   who works in every company (403 otherwise). Why: the gates delete records of their own as several
+   users, among them an Arabic administrator limited to some branches who cannot make a rate to
+   delete; a 404 for the id they then send would read as a failed delete, and a 403 before the
+   lookup would refuse a permission holder who works in no company on any id (the permission gate).
+7. **Import** (`POST /api/currency/rates/import`): CSV text with a header naming `currency`, `date`,
    `rate` and optionally `quote_currency` and `reference`; comma, semicolon or tab; dates yyyy-mm-dd
    or dd/mm/yyyy; at most 20,000 lines; nothing saved unless every line is valid, each problem named
    with its line. A date that has a rate keeps it unless `replaceExisting`, which replaces the rate
    that applies on it. Fetching rates from an outside
    provider (the Central Bank's feed) is a human gate (a new external service): not built.
-7. **The list keys of the rates list are `currencyCode` and `exchangeRate`.** Saved views store a
+8. **The list keys of the rates list are `currencyCode` and `exchangeRate`.** Saved views store a
    list's sort and grouping by key; the report-data gate (p06) treats every stored text value as data,
    and a key that is an everyday word ("currency") then reads as data wherever a printed heading such
    as "Base currency" wraps. Compound keys never occur in prose.
-8. **Screens.** Currencies (G then Y) lists every currency, those in use first, with each one's
+9. **Screens.** Currencies (G then Y) lists every currency, those in use first, with each one's
    latest rate. A currency's panel shows its form (in use, how old a rate may be) and, below it,
    today's rate in one field (focused as the panel opens: type, Enter), the converter (amount, date,
    the base amount and the rate used, as it is typed) and the latest rates. Exchange rates (G then X)
    is the shared list over every rate (100,000 in the demo) with the rate form, delete and import
    (Alt+I). The command palette converts "1250 eur" (or "eur 1250 2026-09-30") as it is typed.
-9. **Demo data.** The main demo workspace holds 100,000 rates: fifty currencies, one a day, ending
+10. **Demo data.** The main demo workspace holds 100,000 rates: fifty currencies, one a day, ending
    today in the workspace's time zone, generated deterministically in decimal arithmetic. With
    `ERP_SEED_RATES_CSV` (the shared dataset's `rates.csv`) the rates are exactly the dataset's, the
-   ones the Odoo reference holds.
+   ones the Odoo reference holds. The gate workspaces' currency names carry no canary: they are the
+   same standard text in every workspace (tenant B's currencies are known to the gates by their ids),
+   and 330 canary names, first in the gates' table order, crowded out the words the list gates search
+   other lists with (the HTTP gate's self-test then missed a planted sorted-search memo). Tenant B's
+   rate references still carry the canary.
 
 ## Contracts for later modules
 

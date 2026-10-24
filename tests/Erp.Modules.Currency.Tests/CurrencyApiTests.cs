@@ -237,7 +237,8 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         // Deleted: gone from the list and the lookup.
         Assert.Equal(HttpStatusCode.NoContent, (await admin.DeleteAsync($"/api/currency/rates/{id}")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/currency/rates/{id}")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await admin.DeleteAsync($"/api/currency/rates/{id}")).StatusCode);
+        // Deleting again answers as deleted (DELETE is idempotent), and writes nothing.
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.DeleteAsync($"/api/currency/rates/{id}")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync($"/api/currency/rates/lookup?currency=SEK&date={Day(date.AddDays(1))}")).StatusCode);
 
         // Every change is in the audit trail with who made it.
@@ -401,7 +402,10 @@ public sealed class CurrencyApiTests(CurrencyFixture fixture) : IClassFixture<Cu
         // A has no HUF rate at all, and B's rate is not found by id.
         Assert.Equal("currency.rateMissing", (await Json(await a.GetAsync($"/api/currency/rates/lookup?currency=HUF&date={Day(date)}"))).GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.NotFound, (await a.GetAsync($"/api/currency/rates/{bRate.GetProperty("id").GetGuid()}")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await a.DeleteAsync($"/api/currency/rates/{bRate.GetProperty("id").GetGuid()}")).StatusCode);
+        // A's delete of B's rate answers as for any id A cannot see, and B's rate stays.
+        Assert.Equal(HttpStatusCode.NoContent, (await a.DeleteAsync($"/api/currency/rates/{bRate.GetProperty("id").GetGuid()}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await a.DeleteAsync($"/api/currency/rates/{Guid.CreateVersion7()}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await b.GetAsync($"/api/currency/rates/{bRate.GetProperty("id").GetGuid()}")).StatusCode);
         Assert.Equal(0, (await a.GetFromJsonAsync<JsonElement>("/api/currency/rates?search=HUF")).GetProperty("total").GetInt32());
         Assert.Equal(1, (await b.GetFromJsonAsync<JsonElement>("/api/currency/rates?search=HUF")).GetProperty("total").GetInt32());
     }

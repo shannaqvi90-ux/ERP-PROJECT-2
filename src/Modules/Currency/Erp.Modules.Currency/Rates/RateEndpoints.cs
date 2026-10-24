@@ -119,7 +119,7 @@ internal static class RateEndpoints
 
         group.MapDelete("/rates/{id:guid}", Delete)
             .WithName("currency.rates.delete")
-            .WithSummary("Delete an exchange rate (amounts already converted keep the rate they were converted at).")
+            .WithSummary("Delete an exchange rate (amounts already converted keep the rate they were converted at). Idempotent: an id that names no rate of the workspace answers 204 as well, and nothing is written.")
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequirePermission(CurrencyPermissions.RatesDelete);
 
@@ -240,7 +240,10 @@ internal static class RateEndpoints
         var rate = await db.Rates.SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
         if (rate is null)
         {
-            return Problems.NotFound(http);
+            // DELETE is idempotent: a rate that is not there (deleted already, or never one of the
+            // workspace's) answers as deleted. Nothing is written, and the answer is the same for
+            // any id the caller cannot see.
+            return TypedResults.NoContent();
         }
         if (!session.HoldsWholeWorkspace)
         {

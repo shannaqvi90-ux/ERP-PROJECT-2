@@ -22,7 +22,7 @@ namespace Erp.Modules.Currency.Seeding;
 /// comparison dataset's rates.csv, gauntlet/compare/data), the main demo workspace's rates are
 /// exactly the dataset's, the ones the Odoo reference holds. The gate profile puts three currencies
 /// in use and adds thirty rates over the last ten days and one fixed day (31 December 2025), tenant
-/// B's names and references carrying its canary. Idempotent: currencies a newer ISO list brings are
+/// B's references carrying its canary. Idempotent: currencies a newer ISO list brings are
 /// added on the next run, nothing held is changed, and rates go only into a workspace that has none.
 /// </summary>
 internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session, ICompanyDirectory companies, ITenantDirectory tenants, IConfiguration configuration) : ITenantSeeder
@@ -83,10 +83,13 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
             db.Currencies.Add(new EnabledCurrency
             {
                 Code = code,
-                NameEn = context.Mark(Iso4217Names.English.GetValueOrDefault(code, code)),
-                // Every current code has its Arabic name (a test keeps the two lists in step); a code a
-                // newer list brings before its name is written starts with its English name.
-                NameAr = context.Mark(CurrencyNames.Arabic.GetValueOrDefault(code) ?? Iso4217Names.English.GetValueOrDefault(code, code)),
+                // The names are ISO 4217's and the product's, the same in every workspace (the gate's
+                // tenant B carries no canary in them: they are standard text, not its own data, and
+                // its currencies are known by their ids). Every current code has its Arabic name (a
+                // test keeps the two lists in step); a code a newer list brings before its name is
+                // written starts with its English name.
+                NameEn = Iso4217Names.English.GetValueOrDefault(code, code),
+                NameAr = CurrencyNames.Arabic.GetValueOrDefault(code) ?? Iso4217Names.English.GetValueOrDefault(code, code),
                 IsActive = inUse.Contains(code),
                 MaxRateAgeDays = CurrencyRules.DefaultMaxRateAgeDays,
             });
