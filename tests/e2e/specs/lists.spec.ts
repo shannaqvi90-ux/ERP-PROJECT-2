@@ -118,7 +118,8 @@ test.describe("list framework", () => {
       expect(rows, `${when}: row values in localStorage, sessionStorage, cookies, window.name or history.state`).toEqual([]);
     };
     judge(await deviceSnapshot(page), "signed in");
-    await page.getByRole("button", { name: "Sign out" }).click();
+    // The top bar's Sign out (a user's record offers "Sign out everywhere" beside it).
+    await page.getByRole("button", { name: "Sign out", exact: true }).click();
     await expect(page.locator('input[name="email"]')).toBeFocused();
     judge(await deviceSnapshot(page), "after Sign out");
   });
