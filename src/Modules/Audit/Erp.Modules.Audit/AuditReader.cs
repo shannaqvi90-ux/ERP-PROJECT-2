@@ -63,16 +63,18 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         var row = Expression.Parameter(typeof(AuditEntry), "e");
         var recordType = Expression.Property(row, nameof(AuditEntry.RecordType));
         var company = Expression.Property(row, nameof(AuditEntry.RecordCompanyId));
+        // The caller's kinds and companies reach SQL as parameters (values of a closure, as a lambda's
+        // captured variables do), so one query shape serves every caller from EF Core's query cache.
         Expression condition = Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(string)],
-            Expression.Constant(everywhere), recordType);
+            Captured(everywhere), recordType);
         foreach (var (type, companies) in readable.Where(r => r.Companies is not null))
         {
             // This kind of record, of no company or of a company where the permission is held.
             var ids = companies!.Select(c => (Guid?)c).ToArray();
             var inCompany = Expression.OrElse(
                 Expression.Equal(company, Expression.Constant(null, typeof(Guid?))),
-                Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(Guid?)], Expression.Constant(ids), company));
-            condition = Expression.OrElse(condition, Expression.AndAlso(Expression.Equal(recordType, Expression.Constant(type.Table)), inCompany));
+                Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(Guid?)], Captured(ids), company));
+            condition = Expression.OrElse(condition, Expression.AndAlso(Expression.Equal(recordType, Captured(type.Table)), inCompany));
         }
         var visible = source.Where(Expression.Lambda<Func<AuditEntry, bool>>(condition, row));
         // Branches (the second layer of a company): in a company where the reader may work in only
@@ -91,6 +93,13 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
                                       ? branches.Contains(e.RecordId)
                                       : e.RecordBranchId == null || branches.Contains(e.RecordBranchId)));
     }
+
+    /// <summary>A value as a closure's member: EF Core sends it as a parameter (a constant would be
+    /// part of the query's shape, compiled again for every new array).</summary>
+    private static MemberExpression Captured<T>(T value) =>
+        Expression.Property(Expression.Constant(new Box<T>(value)), nameof(Box<T>.Value));
+
+    private sealed record Box<T>(T Value);
 
     /// <summary>The fields one audit row records, by field name.</summary>
     public static IReadOnlyList<AuditFieldChange> Changes(AuditEntry entry)

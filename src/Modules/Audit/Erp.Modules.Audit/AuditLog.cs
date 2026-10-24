@@ -129,17 +129,40 @@ internal static class AuditLog
     internal static string Language(HttpContext http) =>
         http.Request.Query["language"].ToString() is { } asked && Languages.IsSupported(asked) ? asked : Languages.ForRequest(http);
 
-    /// <summary>The names among <paramref name="names"/> that the change's values mention.</summary>
+    /// <summary>The names among <paramref name="names"/> that the change's values mention: each value
+    /// is read once (a row's values against the page's names, never every name against every value).</summary>
     internal static IReadOnlyDictionary<Guid, AuditRecordName> Mentioned(IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, AuditRecordName> names)
     {
-        var shown = changes.Where(c => c.Field != "id").ToList();
         var used = new Dictionary<Guid, AuditRecordName>();
-        foreach (var (id, n) in names)
+        if (names.Count == 0)
         {
-            if (shown.Any(c => Mentions(c.Old, id) || Mentions(c.New, id)))
+            return used;
+        }
+        void Visit(System.Text.Json.JsonElement? value)
+        {
+            if (value is not { } v)
             {
-                used[id] = n;
+                return;
             }
+            if (v.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                if (Guid.TryParse(v.GetString(), out var id) && names.TryGetValue(id, out var name))
+                {
+                    used[id] = name;
+                }
+            }
+            else if (v.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                foreach (var item in v.EnumerateArray())
+                {
+                    Visit(item);
+                }
+            }
+        }
+        foreach (var change in changes.Where(c => c.Field != "id"))
+        {
+            Visit(change.Old);
+            Visit(change.New);
         }
         return used;
     }
@@ -155,13 +178,6 @@ internal static class AuditLog
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
             e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names)));
     }
-
-    private static bool Mentions(System.Text.Json.JsonElement? value, Guid id) => value is { } v && v.ValueKind switch
-    {
-        System.Text.Json.JsonValueKind.String => Guid.TryParse(v.GetString(), out var g) && g == id,
-        System.Text.Json.JsonValueKind.Array => v.EnumerateArray().Any(i => Mentions(i, id)),
-        _ => false,
-    };
 
     /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer
     /// in the workspace as a former user; the system's work by its kind.</summary>
