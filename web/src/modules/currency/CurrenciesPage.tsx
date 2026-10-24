@@ -137,7 +137,16 @@ function CurrencyForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Cu
       readOnlyReason={currency && can("currency.currencies.update") && !everyCompany ? t("currency.common.needsEveryCompany") : undefined}
       after={
         currency && (
-          <div className="cur-panel-extra">
+          // Escape in today's rate or the converter closes the panel, as it does in the form above.
+          <div
+            className="cur-panel-extra"
+            onKeyDown={(event) => {
+              if (event.key === "Escape" && !event.defaultPrevented) {
+                event.preventDefault();
+                onClose();
+              }
+            }}
+          >
             {canAddRate && <QuickRate currency={currency.code} quote={currency.quoteCurrency} autoFocus />}
             {foreign && can("currency.rates.read") && <Converter currency={currency.code} quote={currency.quoteCurrency} />}
             {foreign && can("currency.rates.read") && <RecentRates currency={currency.code} quote={currency.quoteCurrency} />}

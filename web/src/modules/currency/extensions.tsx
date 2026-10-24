@@ -59,7 +59,8 @@ export const extensions: ModuleExtensions = {
         } catch {
           return [];
         }
-        const f = createFormatter(language, "latn");
+        // The screen's digits (Latin or Arabic-Indic on Arabic screens), as the shell applied them.
+        const f = createFormatter(language, document.documentElement.dataset.numerals === "arab" ? "arab" : "latn");
         const [y, m, d] = answer.rateDate.split("-").map((part) => Number.parseInt(part, 10));
         return [
           {
