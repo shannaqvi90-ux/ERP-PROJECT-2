@@ -40,7 +40,7 @@ internal static class ContactsList
                     new ListColumn("emirate", "contacts.contact.emirate", ListColumnType.Choice, Filterable: true, Groupable: true, Choices: Emirates),
                     new ListColumn("country", "contacts.contact.country", ListColumnType.Text, Filterable: true, Groupable: true, Hidden: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("tags", "contacts.contact.tags", ListColumnType.Text, Filterable: true),
-                    new ListColumn("reference", "contacts.contact.reference", ListColumnType.Text, Sortable: true, Filterable: true, Hidden: true, Width: ListColumnWidth.Narrow),
+                    new ListColumn("code", "contacts.contact.code", ListColumnType.Text, Sortable: true, Filterable: true, Hidden: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("taxRegistrationNumber", "contacts.contact.taxRegistrationNumber", ListColumnType.Text, Filterable: true, Hidden: true),
                     new ListColumn("defaultCurrency", "contacts.contact.defaultCurrency", ListColumnType.Text, Filterable: true, Groupable: true, Hidden: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("creditLimit", "contacts.contact.creditLimit", ListColumnType.Money, Filterable: true, Hidden: true, CurrencyField: "creditLimitCurrency"),
@@ -50,7 +50,7 @@ internal static class ContactsList
                     new ListColumn("createdAt", "contacts.contact.createdAt", ListColumnType.DateTime, Sortable: true, Filterable: true, Hidden: true),
                     new ListColumn("updatedAt", "contacts.contact.updatedAt", ListColumnType.DateTime, Sortable: true, Filterable: true, Hidden: true),
                 ],
-                SearchFields: ["nameEn", "email", "reference", "mobile", "phone", "taxRegistrationNumber"],
+                SearchFields: ["nameEn", "email", "code", "mobile", "phone", "taxRegistrationNumber"],
                 ArabicSearchFields: ["nameEn", "nameAr"],
                 DefaultSort: "nameEn",
                 Presets:
@@ -74,7 +74,7 @@ internal static class ContactsList
             .Column("emirate", c => c.Emirate)
             .Column("country", c => c.Country)
             .Column("tags", c => c.Tags)
-            .Column("reference", c => c.Reference)
+            .Column("code", c => c.Code)
             .Column("taxRegistrationNumber", c => c.TaxRegistrationNumber)
             .Column("defaultCurrency", c => c.DefaultCurrency)
             .Column("creditLimit", c => c.CreditLimitAmount)

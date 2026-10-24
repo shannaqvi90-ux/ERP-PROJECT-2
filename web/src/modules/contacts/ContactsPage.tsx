@@ -155,7 +155,7 @@ export function ContactsPage() {
           email: (row) => <span dir="ltr">{String(row.email ?? "")}</span>,
           mobile: (row) => <span dir="ltr">{String(row.mobile ?? "")}</span>,
           phone: (row) => <span dir="ltr">{String(row.phone ?? "")}</span>,
-          reference: (row) => <span dir="ltr">{String(row.reference ?? "")}</span>,
+          code: (row) => <span dir="ltr">{String(row.code ?? "")}</span>,
           taxRegistrationNumber: (row) => <span dir="ltr">{String(row.taxRegistrationNumber ?? "")}</span>,
           isActive: (row) => (row.isActive ? t("contacts.status.active") : <span className="muted">{t("contacts.status.archived")}</span>),
         }}

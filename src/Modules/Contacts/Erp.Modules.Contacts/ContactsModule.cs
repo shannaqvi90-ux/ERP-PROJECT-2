@@ -55,7 +55,7 @@ public sealed class Contact : TenantEntity
 
     /// <summary>The contact's reference (C000123), unique in the workspace when given. Typed for
     /// now; document numbering (p10) will offer the next one from a sequence.</summary>
-    public string? Reference { get; set; }
+    public string? Code { get; set; }
 
     public string NameEn { get; set; } = "";
     public string NameAr { get; set; } = "";
@@ -182,7 +182,7 @@ public sealed class ContactsDbContext : ModuleDbContext
                     "AND credit_limit_base_currency ~ '^[A-Z]{3}$' AND credit_limit_stated IS NOT NULL AND (credit_limit_currency <> credit_limit_base_currency OR credit_limit_exchange_rate = 1))");
             });
             e.Property(x => x.Kind).HasMaxLength(12);
-            e.Property(x => x.Reference).HasMaxLength(30);
+            e.Property(x => x.Code).HasMaxLength(30);
             e.Property(x => x.NameEn).HasMaxLength(200);
             e.Property(x => x.NameAr).HasMaxLength(200);
             e.Property(x => x.JobTitle).HasMaxLength(100);
@@ -217,7 +217,7 @@ public sealed class ContactsDbContext : ModuleDbContext
             e.Property(x => x.IsActive).HasDefaultValue(true);
 
             // The reference is unique in the workspace when given.
-            e.HasIndex(x => new { x.TenantId, x.Reference }).IsUnique().HasFilter("reference IS NOT NULL");
+            e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique().HasFilter("code IS NOT NULL");
             // A person's organisation is a contact of the same workspace (the database refuses
             // another workspace's id: the key is (tenant_id, id)); an organisation with people is
             // archived, never deleted.
@@ -232,10 +232,10 @@ public sealed class ContactsDbContext : ModuleDbContext
             e.HasIndex(x => new { x.TenantId, x.MobileKey });
             e.HasIndex(x => new { x.TenantId, x.TaxRegistrationNumber });
             // List framework: word search on trigram indexes, keyset order on (tenant, column, id).
-            e.HasIndex(x => new { x.NameEn, x.NameAr, x.Email, x.Reference, x.Phone, x.Mobile, x.TaxRegistrationNumber }, "ix_contacts_search")
+            e.HasIndex(x => new { x.NameEn, x.NameAr, x.Email, x.Code, x.Phone, x.Mobile, x.TaxRegistrationNumber }, "ix_contacts_search")
                 .HasMethod("gin").HasOperators("gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops");
             e.HasIndex(x => new { x.TenantId, x.NameEn, x.Id });
-            e.HasIndex(x => new { x.TenantId, x.Reference, x.Id });
+            e.HasIndex(x => new { x.TenantId, x.Code, x.Id });
             e.HasIndex(x => new { x.TenantId, x.Email, x.Id });
             e.HasIndex(x => new { x.TenantId, x.City, x.Id });
             e.HasIndex(x => new { x.TenantId, x.CreatedAt, x.Id });
@@ -259,7 +259,7 @@ internal sealed class ContactDirectory(ContactsDbContext db) : IContactDirectory
 {
     public async Task<ContactInfo?> GetAsync(Guid contactId, CancellationToken cancellationToken) =>
         await db.Contacts.AsNoTracking().Where(c => c.Id == contactId)
-            .Select(c => new ContactInfo(c.Id, c.Kind, c.Reference, c.NameEn, c.NameAr, c.OrganisationId, c.Email, c.Phone, c.Mobile,
+            .Select(c => new ContactInfo(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, c.Email, c.Phone, c.Mobile,
                 c.TaxRegistrationNumber, c.DefaultCurrency, c.IsActive))
             .SingleOrDefaultAsync(cancellationToken);
 }

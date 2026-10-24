@@ -52,7 +52,7 @@ const definition = {
 };
 
 const organisation = {
-  id: organisationId, kind: "organisation", reference: "C-DEMO-1", nameEn: "Falcon Building Materials LLC", nameAr: "فالكون لمواد البناء ذ.م.م",
+  id: organisationId, kind: "organisation", code: "C-DEMO-1", nameEn: "Falcon Building Materials LLC", nameAr: "فالكون لمواد البناء ذ.م.م",
   organisationId: null, organisationName: null, organisationNameAr: null, jobTitle: null, email: "accounts@falcon.example", phone: "+971 4 555 0100",
   mobile: null, website: null, addressLine1: null, addressLine2: null, area: "Al Quoz", city: "Dubai", emirate: "dubai", poBox: null, country: "AE",
   addressAr: null, tags: ["Customer"], tradeLicenceNumber: null, taxRegistrationNumber: null, defaultCurrency: "AED",
@@ -60,7 +60,7 @@ const organisation = {
   notes: null, isActive: true, peopleCount: 1, createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z", version: 7,
 };
 const person = {
-  id: personId, kind: "person", reference: "C-DEMO-2", nameEn: "Hamad Saeed Al Ketbi", nameAr: "حمد سعيد الكتبي", organisationId,
+  id: personId, kind: "person", code: "C-DEMO-2", nameEn: "Hamad Saeed Al Ketbi", nameAr: "حمد سعيد الكتبي", organisationId,
   organisationName: organisation.nameEn, organisationNameAr: organisation.nameAr, jobTitle: "Purchasing Manager", email: "hamad@falcon.example",
   mobile: "+971 50 555 0102", phone: null, city: "Dubai", emirate: "dubai", isActive: true, version: 3,
 };
@@ -77,7 +77,7 @@ function mockServer(permissions: string[], options: Options) {
     if (path === "/api/contacts/contacts/defaults") return { status: 200, body: { country: "AE", defaultCurrency: "AED", baseCurrency: "AED" } };
     if (path === "/api/contacts/contacts/duplicates") {
       const body = options.duplicates && parsed.searchParams.get("nameEn")?.toLowerCase().startsWith("falcon")
-        ? [{ id: duplicateId, kind: "organisation", reference: "C-OLD", nameEn: "Falcon Building Materials L.L.C.", nameAr: "", email: null, phone: null, mobile: null, taxRegistrationNumber: null, isActive: false, matches: ["name"] }]
+        ? [{ id: duplicateId, kind: "organisation", code: "C-OLD", nameEn: "Falcon Building Materials L.L.C.", nameAr: "", email: null, phone: null, mobile: null, taxRegistrationNumber: null, isActive: false, matches: ["name"] }]
         : [];
       return { status: 200, body };
     }

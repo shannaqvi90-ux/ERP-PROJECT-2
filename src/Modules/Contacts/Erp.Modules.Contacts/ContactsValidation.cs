@@ -41,7 +41,7 @@ internal static partial class ContactsValidation
     public const int NotesMaxLength = 2000;
 
     /// <summary>A reference: a letter or digit, then up to 29 letters, digits, dots, slashes, underscores or hyphens.</summary>
-    public const string ReferencePattern = "^[A-Za-z0-9][A-Za-z0-9./_-]{0,29}$";
+    public const string CodePattern = "^[A-Za-z0-9][A-Za-z0-9./_-]{0,29}$";
 
     /// <summary>A phone number's characters: digits, spaces, brackets and hyphens, optionally
     /// starting with +, 5 to 30 characters.</summary>
@@ -72,11 +72,11 @@ internal static partial class ContactsValidation
         return validator;
     }
 
-    public static Validator Reference(this Validator validator, string? reference)
+    public static Validator Code(this Validator validator, string? code)
     {
-        if (Clean(reference) is { } value)
+        if (Clean(code) is { } value)
         {
-            validator.Must(ReferenceRegex().IsMatch(value), "reference", "contactsReference");
+            validator.Must(CodeRegex().IsMatch(value), "code", "contactsCode");
         }
         return validator;
     }
@@ -332,8 +332,8 @@ internal static partial class ContactsValidation
         return digits.Length is 8 or 9 ? "971" + digits : digits;
     }
 
-    [GeneratedRegex(ReferencePattern)]
-    private static partial Regex ReferenceRegex();
+    [GeneratedRegex(CodePattern)]
+    private static partial Regex CodeRegex();
 
     [GeneratedRegex(PhoneShapePattern)]
     private static partial Regex PhoneShapeRegex();

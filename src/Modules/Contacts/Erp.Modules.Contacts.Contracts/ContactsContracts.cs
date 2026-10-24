@@ -35,7 +35,7 @@ public static class ContactKinds
 public sealed record ContactInfo(
     Guid Id,
     string Kind,
-    string? Reference,
+    string? Code,
     string NameEn,
     string NameAr,
     Guid? OrganisationId,

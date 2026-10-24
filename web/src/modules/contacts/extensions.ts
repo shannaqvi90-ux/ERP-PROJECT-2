@@ -36,7 +36,7 @@ export const extensions: ModuleExtensions = {
           items: page.items.map((c) => ({
             id: c.id,
             title: contactName(c, language),
-            subtitle: [c.reference, c.kind === "person" ? contactName({ nameEn: c.organisationName ?? "", nameAr: c.organisationNameAr ?? "" }, language) : null, c.email ?? c.mobile ?? c.phone]
+            subtitle: [c.code, c.kind === "person" ? contactName({ nameEn: c.organisationName ?? "", nameAr: c.organisationNameAr ?? "" }, language) : null, c.email ?? c.mobile ?? c.phone]
               .filter(Boolean)
               .join(" · "),
             path: recordPath(contactsPath, c.id, `${new URLSearchParams({ q: query })}`),

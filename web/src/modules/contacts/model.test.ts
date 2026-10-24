@@ -52,7 +52,7 @@ describe("contacts model", () => {
   });
 
   it("starts a saved contact's credit limit rate only for a foreign currency", () => {
-    const base = { id: "c", kind: "organisation" as const, reference: null, nameEn: "A", nameAr: "", organisationId: null, organisationName: null, organisationNameAr: null,
+    const base = { id: "c", kind: "organisation" as const, code: null, nameEn: "A", nameAr: "", organisationId: null, organisationName: null, organisationNameAr: null,
       jobTitle: null, email: null, phone: null, mobile: null, website: null, addressLine1: null, addressLine2: null, area: null, city: null, emirate: null,
       poBox: null, country: "AE", addressAr: null, tags: ["VIP"], tradeLicenceNumber: null, taxRegistrationNumber: null, defaultCurrency: "USD", notes: null,
       isActive: true, peopleCount: 0, createdAt: "", updatedAt: "", version: 1 };

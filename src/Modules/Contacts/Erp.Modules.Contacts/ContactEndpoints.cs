@@ -26,7 +26,7 @@ namespace Erp.Modules.Contacts;
 public sealed record ContactDto(
     Guid Id,
     string Kind,
-    string? Reference,
+    string? Code,
     string NameEn,
     string NameAr,
     Guid? OrganisationId,
@@ -62,7 +62,7 @@ public sealed record ContactDto(
 public sealed record ContactRow(
     Guid Id,
     string Kind,
-    string? Reference,
+    string? Code,
     string NameEn,
     string NameAr,
     Guid? OrganisationId,
@@ -87,7 +87,8 @@ public sealed record ContactRow(
 
 /// <summary>
 /// Create or change a contact. <c>kind</c> is organisation or person; a person may name the
-/// organisation they work for (<c>organisationId</c>, an active organisation of the workspace). At
+/// organisation they work for (<c>organisationId</c>, an active organisation of the workspace) and
+/// their job title (both are a person's only: an organisation's are left empty). At
 /// least one of the English and Arabic names. Phone numbers in international form (+971 50 123
 /// 4567); a UAE number with its country code has the length its kind has. The tax registration number is
 /// 15 digits (spaces and dashes are removed, Arabic-Indic digits become 0 to 9). The credit limit is
@@ -98,7 +99,7 @@ public sealed record ContactRow(
 /// </summary>
 public sealed record SaveContactRequest(
     [property: ApiExample("organisation"), RegularExpression("^(organisation|person)$")] string? Kind,
-    [property: ApiExample("C000123"), StringLength(30), RegularExpression(ContactsValidation.ReferencePattern)] string? Reference,
+    [property: ApiExample("C000123"), StringLength(30), RegularExpression(ContactsValidation.CodePattern)] string? Code,
     [property: ApiExample("Al Noor Trading LLC"), StringLength(ContactsValidation.NameMaxLength)] string? NameEn,
     [property: ApiExample("شركة النور للتجارة ذ.م.م"), StringLength(ContactsValidation.NameMaxLength)] string? NameAr,
     Guid? OrganisationId,
@@ -120,7 +121,7 @@ public sealed record SaveContactRequest(
     [property: ApiExample("100123456700003"), StringLength(ContactsValidation.TaxNumberTypedMaxLength), RegularExpression(ContactsValidation.TaxNumberPattern)] string? TaxRegistrationNumber,
     [property: ApiExample("AED"), RegularExpression("^[A-Za-z]{3}$")] string? DefaultCurrency,
     [property: ApiExample("50000.00"), RegularExpression(ContactsValidation.AmountPattern)] string? CreditLimitAmount,
-    [property: ApiExample("AED"), RegularExpression("^[A-Za-z]{3}$")] string? CreditLimitCurrency,
+    [property: ApiExample("USD"), RegularExpression("^[A-Za-z]{3}$")] string? CreditLimitCurrency,
     [property: ApiExample("3.6725"), RegularExpression("^[0-9]{1,10}(\\.[0-9]{1,8})?$")] string? CreditLimitExchangeRate,
     [property: StringLength(ContactsValidation.NotesMaxLength)] string? Notes,
     uint? Version);
@@ -130,7 +131,7 @@ public sealed record SaveContactRequest(
 public sealed record ContactDuplicate(
     Guid Id,
     string Kind,
-    string? Reference,
+    string? Code,
     string NameEn,
     string NameAr,
     string? Email,
@@ -246,7 +247,7 @@ internal static class ContactEndpoints
         return result.Map(c =>
         {
             var organisation = c.OrganisationId is { } o && organisations.TryGetValue(o, out var found) ? found : null;
-            return new ContactRow(c.Id, c.Kind, c.Reference, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
+            return new ContactRow(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
                 c.Email, c.Mobile, c.Phone, c.City, c.Emirate, c.Country, c.Tags, c.TaxRegistrationNumber, c.DefaultCurrency, c.CreditLimitAmount,
                 c.CreditLimitCurrency, c.IsActive, c.CreatedAt, c.UpdatedAt, c.Version);
         });
@@ -260,7 +261,7 @@ internal static class ContactEndpoints
             Id = c.Id,
             TenantId = c.TenantId,
             Kind = c.Kind,
-            Reference = c.Reference,
+            Code = c.Code,
             NameEn = c.NameEn,
             NameAr = c.NameAr,
             OrganisationId = c.OrganisationId,
@@ -333,7 +334,7 @@ internal static class ContactEndpoints
                         (trn != null && c.TaxRegistrationNumber == trn))
             .OrderByDescending(c => c.IsActive).ThenBy(c => c.NameEn).ThenBy(c => c.Id)
             .Take(MaxDuplicates)
-            .Select(c => new { c.Id, c.Kind, c.Reference, c.NameEn, c.NameAr, c.Email, c.Phone, c.Mobile, c.TaxRegistrationNumber, c.IsActive, c.NameKey, c.NameArKey, c.EmailKey, c.PhoneKey, c.MobileKey })
+            .Select(c => new { c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.Email, c.Phone, c.Mobile, c.TaxRegistrationNumber, c.IsActive, c.NameKey, c.NameArKey, c.EmailKey, c.PhoneKey, c.MobileKey })
             .ToListAsync(cancellationToken);
         return candidates.Select(c =>
         {
@@ -354,7 +355,7 @@ internal static class ContactEndpoints
             {
                 matches.Add("taxRegistrationNumber");
             }
-            return new ContactDuplicate(c.Id, c.Kind, c.Reference, c.NameEn, c.NameAr, c.Email, c.Phone, c.Mobile, c.TaxRegistrationNumber, c.IsActive, matches);
+            return new ContactDuplicate(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.Email, c.Phone, c.Mobile, c.TaxRegistrationNumber, c.IsActive, matches);
         }).ToList();
     }
 
@@ -427,7 +428,7 @@ internal static class ContactEndpoints
         var validator = new Validator(http)
             .Required("kind", request.Kind)
             .OneOf("kind", ContactsValidation.Clean(request.Kind), ContactKinds.All.ToList())
-            .Reference(request.Reference)
+            .Code(request.Code)
             .Names(request.NameEn, request.NameAr)
             .MaxLength("jobTitle", request.JobTitle?.Trim(), 100)
             .Email("email", ContactsValidation.Clean(request.Email))
@@ -451,11 +452,6 @@ internal static class ContactEndpoints
             validator.Must(decimal.TryParse(rate, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out var r) && r > 0
                 && decimal.Round(r, Money.RateScale) == r, "creditLimitExchangeRate", "contactsExchangeRate");
         }
-        if (string.Equals(ContactsValidation.Clean(request.Kind), ContactKinds.Organisation, StringComparison.Ordinal))
-        {
-            validator.Must(request.OrganisationId is null, "organisationId", "contactsOrganisationOfOrganisation")
-                .Must(ContactsValidation.Clean(request.JobTitle) is null, "jobTitle", "contactsJobTitleOfOrganisation");
-        }
         if (requireVersion)
         {
             validator.Required("version", request.Version);
@@ -471,7 +467,8 @@ internal static class ContactEndpoints
         Validator validator, CancellationToken cancellationToken)
     {
         var kind = ContactsValidation.Clean(request.Kind)!;
-        if (request.OrganisationId is { } organisationId)
+        // The organisation and the job title are a person's: an organisation's are left empty.
+        if (kind == ContactKinds.Person && request.OrganisationId is { } organisationId)
         {
             var organisation = await db.Contacts.AsNoTracking().Where(c => c.Id == organisationId).Select(c => new { c.Kind, c.IsActive }).SingleOrDefaultAsync(cancellationToken);
             if (organisation is null)
@@ -487,11 +484,11 @@ internal static class ContactEndpoints
                 validator.Add("organisationId", "contactsOrganisationArchived");
             }
         }
-        var reference = ContactsValidation.Clean(request.Reference);
-        if (reference is not null && reference != contact.Reference &&
-            await db.Contacts.AnyAsync(c => c.Reference == reference && c.Id != contact.Id, cancellationToken))
+        var reference = ContactsValidation.Clean(request.Code);
+        if (reference is not null && reference != contact.Code &&
+            await db.Contacts.AnyAsync(c => c.Code == reference && c.Id != contact.Id, cancellationToken))
         {
-            validator.Add("reference", "contactsReferenceTaken");
+            validator.Add("code", "contactsCodeTaken");
         }
         if (contact.Kind == ContactKinds.Organisation && kind == ContactKinds.Person && contact.CreatedAt != default &&
             await db.Contacts.AnyAsync(c => c.OrganisationId == contact.Id, cancellationToken))
@@ -562,7 +559,7 @@ internal static class ContactEndpoints
     private static void Apply(Contact contact, SaveContactRequest r, string kind, string? reference, string defaultCurrency, Money? creditLimit)
     {
         contact.Kind = kind;
-        contact.Reference = reference;
+        contact.Code = reference;
         contact.NameEn = r.NameEn?.Trim() ?? "";
         contact.NameAr = r.NameAr?.Trim() ?? "";
         contact.OrganisationId = kind == ContactKinds.Person ? r.OrganisationId : null;
@@ -604,7 +601,7 @@ internal static class ContactEndpoints
             ? await db.Contacts.AsNoTracking().Where(x => x.Id == o).Select(x => new { x.NameEn, x.NameAr }).SingleOrDefaultAsync(cancellationToken)
             : null;
         var people = c.Kind == ContactKinds.Organisation ? await db.Contacts.CountAsync(x => x.OrganisationId == c.Id, cancellationToken) : 0;
-        return new ContactDto(c.Id, c.Kind, c.Reference, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
+        return new ContactDto(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
             c.Email, c.Phone, c.Mobile, c.Website, c.AddressLine1, c.AddressLine2, c.Area, c.City, c.Emirate, c.PoBox, c.Country, c.AddressAr,
             ContactsValidation.TagsOf(c.Tags), c.TradeLicenceNumber, c.TaxRegistrationNumber, c.DefaultCurrency, c.CreditLimit, c.Notes, c.IsActive, people,
             c.CreatedAt, c.UpdatedAt, c.Version);

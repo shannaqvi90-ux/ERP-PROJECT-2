@@ -42,7 +42,7 @@ const definition = {
   columns: [column("nameEn", "contacts.contact.name")], searchFields: ["nameEn"], defaultSort: "nameEn", presets: [], canShare: false, maxTake: 200,
 };
 const organisation = {
-  id: organisationId, kind: "organisation", reference: "C-DEMO-1", nameEn: "Falcon Building Materials LLC", nameAr: "فالكون لمواد البناء ذ.م.م",
+  id: organisationId, kind: "organisation", code: "C-DEMO-1", nameEn: "Falcon Building Materials LLC", nameAr: "فالكون لمواد البناء ذ.م.م",
   organisationId: null, organisationName: null, organisationNameAr: null, jobTitle: null, email: "accounts@falcon.example", phone: "+971 4 555 0100",
   mobile: null, website: null, addressLine1: null, addressLine2: null, area: null, city: "Dubai", emirate: "dubai", poBox: null, country: "AE",
   addressAr: null, tags: [], tradeLicenceNumber: null, taxRegistrationNumber: null, defaultCurrency: "AED", creditLimit: null, notes: null,

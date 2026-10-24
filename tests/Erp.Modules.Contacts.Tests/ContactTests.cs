@@ -61,7 +61,7 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
     private static Dictionary<string, object?> Editable(JsonElement contact)
     {
         var body = new Dictionary<string, object?>();
-        foreach (var name in new[] { "kind", "reference", "nameEn", "nameAr", "jobTitle", "email", "phone", "mobile", "website", "addressLine1", "addressLine2", "area", "city", "emirate", "poBox", "country", "addressAr", "tradeLicenceNumber", "taxRegistrationNumber", "defaultCurrency", "notes" })
+        foreach (var name in new[] { "kind", "code", "nameEn", "nameAr", "jobTitle", "email", "phone", "mobile", "website", "addressLine1", "addressLine2", "area", "city", "emirate", "poBox", "country", "addressAr", "tradeLicenceNumber", "taxRegistrationNumber", "defaultCurrency", "notes" })
         {
             body[name] = contact.GetProperty(name).ValueKind == JsonValueKind.Null ? null : contact.GetProperty(name).GetString();
         }
@@ -93,12 +93,12 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
         var name = Unique("Horizon Steel Trading LLC");
         var organisation = await CreateAsync(admin, With(Organisation(name, "الأفق لتجارة الحديد ذ.م.م"),
-            ("reference", "T-ORG-1"), ("email", "  Accounts@Horizon.example "), ("phone", "+971 4 555 0100"), ("website", "www.horizon-steel.example"),
+            ("code", "T-ORG-1"), ("email", "  Accounts@Horizon.example "), ("phone", "+971 4 555 0100"), ("website", "www.horizon-steel.example"),
             ("addressLine1", "Warehouse 4"), ("area", "Al Quoz"), ("city", "Dubai"), ("emirate", "dubai"), ("poBox", "12345"), ("country", "ae"),
             ("tags", new[] { "Customer", " VIP ", "customer" }), ("tradeLicenceNumber", "DED-99"), ("taxRegistrationNumber", "١٠٠-١٢٣٤-٥٦٧٨-٩٠٠٣"),
             ("defaultCurrency", "aed"), ("creditLimitAmount", "250000.00"), ("notes", "Pays in 30 days.")));
         Assert.Equal("organisation", organisation.GetProperty("kind").GetString());
-        Assert.Equal("T-ORG-1", organisation.GetProperty("reference").GetString());
+        Assert.Equal("T-ORG-1", organisation.GetProperty("code").GetString());
         Assert.Equal("Accounts@Horizon.example", organisation.GetProperty("email").GetString());
         Assert.Equal("https://www.horizon-steel.example", organisation.GetProperty("website").GetString());
         Assert.Equal("AE", organisation.GetProperty("country").GetString());
@@ -130,10 +130,10 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
         var response = await arabic.PostAsJsonAsync("/api/contacts/contacts", With(Organisation(""),
             ("nameAr", " "), ("email", "not-an-email"), ("phone", "+971 50 123"), ("mobile", "abc"), ("website", "not a site"),
             ("emirate", "dubai"), ("country", "OM"), ("taxRegistrationNumber", "12345"), ("defaultCurrency", "XYZ"),
-            ("creditLimitAmount", "10.005"), ("tags", Enumerable.Range(1, 11).Select(i => $"Tag {i}").ToArray()), ("reference", "-bad")), Cancel);
+            ("creditLimitAmount", "10.005"), ("tags", Enumerable.Range(1, 11).Select(i => $"Tag {i}").ToArray()), ("code", "-bad")), Cancel);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var errors = (await Json(response)).GetProperty("errors");
-        foreach (var field in new[] { "nameEn", "email", "phone", "mobile", "website", "emirate", "taxRegistrationNumber", "defaultCurrency", "tags", "reference" })
+        foreach (var field in new[] { "nameEn", "email", "phone", "mobile", "website", "emirate", "taxRegistrationNumber", "defaultCurrency", "tags", "code" })
         {
             Assert.True(errors.TryGetProperty(field, out var list), $"no error for {field}: {errors}");
             Assert.Matches("[؀-ۿ]", list[0].GetProperty("message").GetString()!);
@@ -162,7 +162,10 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
 
         Assert.Equal("contactsOrganisationNotOrganisation", await RefusedAsync(Person(Unique("Under a person"), person.GetProperty("id").GetGuid()), "organisationId"));
         Assert.Equal("contactsOrganisationUnknown", await RefusedAsync(Person(Unique("Nowhere"), Guid.CreateVersion7()), "organisationId"));
-        Assert.Equal("contactsOrganisationOfOrganisation", await RefusedAsync(With(Organisation(Unique("Nested LLC")), ("organisationId", organisation.GetProperty("id").GetGuid())), "organisationId"));
+        // An organisation belongs to no other contact and has no job title: they are left empty.
+        var nested = await CreateAsync(admin, With(Organisation(Unique("Nested LLC")), ("organisationId", organisation.GetProperty("id").GetGuid()), ("jobTitle", "Boss")));
+        Assert.Equal(JsonValueKind.Null, nested.GetProperty("organisationId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, nested.GetProperty("jobTitle").ValueKind);
 
         // An organisation with people stays one.
         var asPerson = With(Editable(organisation), ("kind", "person"));
@@ -331,11 +334,11 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
         Assert.Equal(HttpStatusCode.OK, first.StatusCode);
         var stale = await admin.PutAsJsonAsync($"/api/contacts/contacts/{id}", With(Editable(contact), ("city", "Sharjah")), Cancel);
         Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
-        var reference = await admin.PostAsJsonAsync("/api/contacts/contacts", With(Organisation(Unique("Same ref LLC")), ("reference", "T-DUP-REF")), Cancel);
+        var reference = await admin.PostAsJsonAsync("/api/contacts/contacts", With(Organisation(Unique("Same ref LLC")), ("code", "T-DUP-REF")), Cancel);
         Assert.Equal(HttpStatusCode.Created, reference.StatusCode);
-        var taken = await admin.PostAsJsonAsync("/api/contacts/contacts", With(Organisation(Unique("Same ref LLC")), ("reference", "T-DUP-REF")), Cancel);
+        var taken = await admin.PostAsJsonAsync("/api/contacts/contacts", With(Organisation(Unique("Same ref LLC")), ("code", "T-DUP-REF")), Cancel);
         Assert.Equal(HttpStatusCode.BadRequest, taken.StatusCode);
-        Assert.Equal("contactsReferenceTaken", (await Json(taken)).GetProperty("errors").GetProperty("reference")[0].GetProperty("code").GetString());
+        Assert.Equal("contactsCodeTaken", (await Json(taken)).GetProperty("errors").GetProperty("code")[0].GetProperty("code").GetString());
     }
 
     [Fact]
@@ -389,7 +392,7 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
             var page = await admin.GetFromJsonAsync<JsonElement>("/api/contacts/contacts?take=1", Cancel);
             Assert.True(page.GetProperty("total").GetInt32() >= tenant.Volume, $"{tenant.Code}: {page.GetProperty("total").GetInt32()} contacts");
             var falcon = await admin.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts?search={Uri.EscapeDataString("Falcon Building Materials")}", Cancel);
-            var row = falcon.GetProperty("items").EnumerateArray().Single(r => r.GetProperty("reference").GetString() == "C-DEMO-1");
+            var row = falcon.GetProperty("items").EnumerateArray().Single(r => r.GetProperty("code").GetString() == "C-DEMO-1");
             if (tenant.Canary is { } canary)
             {
                 Assert.Contains(canary, row.GetProperty("nameEn").GetString(), StringComparison.Ordinal);

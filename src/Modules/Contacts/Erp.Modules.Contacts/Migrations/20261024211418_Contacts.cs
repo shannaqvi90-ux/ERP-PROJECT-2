@@ -23,7 +23,7 @@ namespace Erp.Modules.Contacts.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     kind = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
                     organisation_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    reference = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
+                    code = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
                     name_en = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     name_ar = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     job_title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
@@ -85,10 +85,10 @@ namespace Erp.Modules.Contacts.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_contacts_name_en_name_ar_email_reference_phone_mobile_tax_r",
+                name: "ix_contacts_name_en_name_ar_email_code_phone_mobile_tax_regist",
                 schema: "contacts",
                 table: "contacts",
-                columns: new[] { "name_en", "name_ar", "email", "reference", "phone", "mobile", "tax_registration_number" })
+                columns: new[] { "name_en", "name_ar", "email", "code", "phone", "mobile", "tax_registration_number" })
                 .Annotation("Npgsql:IndexMethod", "gin")
                 .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops" });
 
@@ -97,6 +97,20 @@ namespace Erp.Modules.Contacts.Migrations
                 schema: "contacts",
                 table: "contacts",
                 columns: new[] { "tenant_id", "city", "id" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_contacts_tenant_id_code",
+                schema: "contacts",
+                table: "contacts",
+                columns: new[] { "tenant_id", "code" },
+                unique: true,
+                filter: "code IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_contacts_tenant_id_code_id",
+                schema: "contacts",
+                table: "contacts",
+                columns: new[] { "tenant_id", "code", "id" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_contacts_tenant_id_created_at_id",
@@ -151,20 +165,6 @@ namespace Erp.Modules.Contacts.Migrations
                 schema: "contacts",
                 table: "contacts",
                 columns: new[] { "tenant_id", "phone_key" });
-
-            migrationBuilder.CreateIndex(
-                name: "ix_contacts_tenant_id_reference",
-                schema: "contacts",
-                table: "contacts",
-                columns: new[] { "tenant_id", "reference" },
-                unique: true,
-                filter: "reference IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_contacts_tenant_id_reference_id",
-                schema: "contacts",
-                table: "contacts",
-                columns: new[] { "tenant_id", "reference", "id" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_contacts_tenant_id_tax_registration_number",

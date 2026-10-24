@@ -49,7 +49,7 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
             clock = clock.AddSeconds(37);
             var id = Guid.CreateVersion7(clock);
             stamped.Add((row, id, clock));
-            if (row.Reference is { } reference)
+            if (row.Code is { } reference)
             {
                 ids[reference] = id;
             }
@@ -57,7 +57,7 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
         var columns = new BulkColumn[]
         {
             new("id", NpgsqlDbType.Uuid), new("tenant_id", NpgsqlDbType.Uuid), new("kind", NpgsqlDbType.Varchar), new("organisation_id", NpgsqlDbType.Uuid),
-            new("reference", NpgsqlDbType.Varchar), new("name_en", NpgsqlDbType.Varchar), new("name_ar", NpgsqlDbType.Varchar), new("job_title", NpgsqlDbType.Varchar),
+            new("code", NpgsqlDbType.Varchar), new("name_en", NpgsqlDbType.Varchar), new("name_ar", NpgsqlDbType.Varchar), new("job_title", NpgsqlDbType.Varchar),
             new("email", NpgsqlDbType.Varchar), new("phone", NpgsqlDbType.Varchar), new("mobile", NpgsqlDbType.Varchar), new("website", NpgsqlDbType.Varchar),
             new("address_line1", NpgsqlDbType.Varchar), new("area", NpgsqlDbType.Varchar), new("city", NpgsqlDbType.Varchar), new("emirate", NpgsqlDbType.Varchar),
             new("po_box", NpgsqlDbType.Varchar), new("country", NpgsqlDbType.Varchar), new("address_ar", NpgsqlDbType.Varchar), new("tags", NpgsqlDbType.Varchar),
@@ -80,7 +80,7 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
             return new object?[]
             {
                 s.Id, context.Tenant.Id, r.Kind, r.Kind == ContactKinds.Person ? organisation : null,
-                r.Reference, nameEn, nameAr, Mark(r.JobTitle),
+                r.Code, nameEn, nameAr, Mark(r.JobTitle),
                 r.Email, r.Phone, r.Mobile, r.Website,
                 Mark(r.Street), Mark(r.Area), Mark(r.City), r.Country == ContactsValidation.UnitedArabEmirates ? r.Emirate : null,
                 r.PoBox, r.Country, Mark(r.AddressAr), r.Tags,
@@ -99,7 +99,7 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
 /// <summary>One contact to seed, before ids are given.</summary>
 internal sealed record SeedContact(
     string Kind,
-    string? Reference,
+    string? Code,
     string NameEn,
     string NameAr,
     string? OrganisationReference = null,

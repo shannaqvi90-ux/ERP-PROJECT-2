@@ -29,7 +29,7 @@ internal sealed class ContactCardReport(ContactsDbContext db) : IReportSource
         DescriptionKey: "contacts.report.contactCardHint",
         Facts:
         [
-            new ReportColumn("reference", "contacts.contact.reference", ListColumnType.Text),
+            new ReportColumn("code", "contacts.contact.code", ListColumnType.Text),
             new ReportColumn("kind", "contacts.contact.kind", ListColumnType.Choice, Choices: ContactsList.Kinds),
             new ReportColumn("nameEn", "contacts.contact.nameEn", ListColumnType.Text),
             new ReportColumn("nameAr", "contacts.contact.nameAr", ListColumnType.Text),
@@ -67,7 +67,7 @@ internal sealed class ContactCardReport(ContactsDbContext db) : IReportSource
                 .Select(c => new { c.NameEn, c.NameAr, c.JobTitle, c.Email, c.Mobile, c.Phone, c.IsActive })
                 .ToListAsync(cancellationToken);
         var name = new LocalText(contact.NameEn, contact.NameAr);
-        var heading = contact.Reference is { } reference
+        var heading = contact.Code is { } reference
             ? new LocalText($"{reference} · {name.For("en")}", $"{reference} · {name.For("ar")}")
             : name;
         var english = string.Join(", ", new[] { contact.AddressLine1, contact.AddressLine2, contact.Area, contact.City }.Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -76,7 +76,7 @@ internal sealed class ContactCardReport(ContactsDbContext db) : IReportSource
             Subject = heading,
             Facts = new Dictionary<string, object?>
             {
-                ["reference"] = contact.Reference,
+                ["code"] = contact.Code,
                 ["kind"] = contact.Kind,
                 ["nameEn"] = contact.NameEn,
                 ["nameAr"] = contact.NameAr,

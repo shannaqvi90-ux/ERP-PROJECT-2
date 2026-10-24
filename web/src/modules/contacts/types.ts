@@ -11,7 +11,7 @@ export type Money = { amount: string; currency: string; exchangeRate: string; ba
 export type Contact = {
   id: string;
   kind: ContactKind;
-  reference: string | null;
+  code: string | null;
   nameEn: string;
   nameAr: string;
   organisationId: string | null;
@@ -46,7 +46,7 @@ export type Contact = {
 export type ContactRow = {
   id: string;
   kind: ContactKind;
-  reference: string | null;
+  code: string | null;
   nameEn: string;
   nameAr: string;
   organisationId: string | null;
@@ -65,7 +65,7 @@ export type ContactRow = {
 export type ContactDuplicate = {
   id: string;
   kind: ContactKind;
-  reference: string | null;
+  code: string | null;
   nameEn: string;
   nameAr: string;
   email: string | null;

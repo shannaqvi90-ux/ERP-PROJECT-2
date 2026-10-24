@@ -46,7 +46,7 @@ identity.profile.update identity.passkeys insert,update,delete *  # the caller's
 # Contacts: the shared directory of organisations and people. Never deleted (the application role
 # holds no DELETE on it); archiving is its own permission.
 contacts.contacts.create contacts.contacts insert *  # the new organisation or person
-contacts.contacts.update contacts.contacts update kind,reference,name_en,name_ar,organisation_id,job_title,email,phone,mobile,website,address_line1,address_line2,area,city,emirate,po_box,country,address_ar,tags,trade_licence_number,tax_registration_number,default_currency,credit_limit_amount,credit_limit_currency,credit_limit_exchange_rate,credit_limit_base_amount,credit_limit_base_currency,credit_limit_stated,notes  # the contact's details, organisation and credit limit; never its status (is_active is the archive permission's)
+contacts.contacts.update contacts.contacts update kind,code,name_en,name_ar,organisation_id,job_title,email,phone,mobile,website,address_line1,address_line2,area,city,emirate,po_box,country,address_ar,tags,trade_licence_number,tax_registration_number,default_currency,credit_limit_amount,credit_limit_currency,credit_limit_exchange_rate,credit_limit_base_amount,credit_limit_base_currency,credit_limit_stated,notes  # the contact's details, organisation and credit limit; never its status (is_active is the archive permission's)
 contacts.contacts.archive contacts.contacts update is_active  # archiving or restoring: the status alone
 
 # Lists: a reader's own saved views (tests/Gates/read-permission-writes.txt), shared views.

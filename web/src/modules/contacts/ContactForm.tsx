@@ -30,7 +30,7 @@ export type Draft = {
   nameAr: string;
   organisationId: string;
   jobTitle: string;
-  reference: string;
+  code: string;
   email: string;
   mobile: string;
   phone: string;
@@ -66,7 +66,7 @@ export function draftOf(c: Contact | null, defaults: ContactDefaults | null, sta
       nameAr: "",
       organisationId: start.organisationId ?? "",
       jobTitle: "",
-      reference: "",
+      code: "",
       email: "",
       mobile: "",
       phone: "",
@@ -95,7 +95,7 @@ export function draftOf(c: Contact | null, defaults: ContactDefaults | null, sta
     nameAr: c.nameAr,
     organisationId: c.organisationId ?? "",
     jobTitle: c.jobTitle ?? "",
-    reference: c.reference ?? "",
+    code: c.code ?? "",
     email: c.email ?? "",
     mobile: c.mobile ?? "",
     phone: c.phone ?? "",
@@ -127,7 +127,7 @@ export function requestOf(draft: Draft, version: number | null) {
   const amount = optional(draft.creditLimitAmount);
   return {
     kind: draft.kind,
-    reference: optional(draft.reference),
+    code: optional(draft.code),
     nameEn: draft.nameEn.trim(),
     nameAr: draft.nameAr.trim(),
     organisationId: person && draft.organisationId ? draft.organisationId : null,
@@ -282,7 +282,7 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
           />
         )}
         {person && <TextField field={bind("jobTitle")} label={t("contacts.contact.jobTitle")} maxLength={100} />}
-        <TextField field={bind("reference")} label={t("contacts.contact.reference")} dir="ltr" maxLength={30} hint={t("contacts.contact.referenceHint")} />
+        <TextField field={bind("code")} label={t("contacts.contact.code")} dir="ltr" maxLength={30} hint={t("contacts.contact.codeHint")} />
       </FormSection>
       <FormSection title={t("contacts.section.reach")}>
         <TextField field={bind("email")} label={t("contacts.contact.email")} dir="ltr" type="email" maxLength={254} />
@@ -346,7 +346,7 @@ function ContactSubtitle({ contact }: { contact: Contact }) {
   const { t, language } = useI18n();
   const parts = [
     t(`contacts.kind.${contact.kind}`),
-    contact.reference,
+    contact.code,
     contact.kind === "person" && contact.organisationId ? organisationName(contact, language) : null,
     contact.isActive ? null : t("contacts.status.archived"),
   ].filter((p): p is string => Boolean(p));
@@ -427,7 +427,7 @@ function DuplicateWarning({ draft, except, onOpen }: { draft: Draft; except: str
               {contactName(d, language)}
             </a>{" "}
             <span className="muted">
-              {[d.reference, d.isActive ? null : t("contacts.status.archived"), d.matches.map((m) => t(`contacts.duplicates.match.${m}`)).join(", ")]
+              {[d.code, d.isActive ? null : t("contacts.status.archived"), d.matches.map((m) => t(`contacts.duplicates.match.${m}`)).join(", ")]
                 .filter(Boolean)
                 .join(" · ")}
             </span>

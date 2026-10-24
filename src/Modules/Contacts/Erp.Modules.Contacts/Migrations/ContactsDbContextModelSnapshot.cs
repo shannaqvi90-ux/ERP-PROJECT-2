@@ -55,6 +55,11 @@ namespace Erp.Modules.Contacts.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("city");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("code");
+
                     b.Property<string>("Country")
                         .IsRequired()
                         .HasMaxLength(2)
@@ -199,11 +204,6 @@ namespace Erp.Modules.Contacts.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("po_box");
 
-                    b.Property<string>("Reference")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("reference");
-
                     b.Property<string>("Tags")
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)")
@@ -250,6 +250,11 @@ namespace Erp.Modules.Contacts.Migrations
                     b.HasAlternateKey("TenantId", "Id")
                         .HasName("ak_contacts_tenant_id_id");
 
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_contacts_tenant_id_code")
+                        .HasFilter("code IS NOT NULL");
+
                     b.HasIndex("TenantId", "EmailKey")
                         .HasDatabaseName("ix_contacts_tenant_id_email_key");
 
@@ -268,16 +273,14 @@ namespace Erp.Modules.Contacts.Migrations
                     b.HasIndex("TenantId", "PhoneKey")
                         .HasDatabaseName("ix_contacts_tenant_id_phone_key");
 
-                    b.HasIndex("TenantId", "Reference")
-                        .IsUnique()
-                        .HasDatabaseName("ix_contacts_tenant_id_reference")
-                        .HasFilter("reference IS NOT NULL");
-
                     b.HasIndex("TenantId", "TaxRegistrationNumber")
                         .HasDatabaseName("ix_contacts_tenant_id_tax_registration_number");
 
                     b.HasIndex("TenantId", "City", "Id")
                         .HasDatabaseName("ix_contacts_tenant_id_city_id");
+
+                    b.HasIndex("TenantId", "Code", "Id")
+                        .HasDatabaseName("ix_contacts_tenant_id_code_id");
 
                     b.HasIndex("TenantId", "CreatedAt", "Id")
                         .HasDatabaseName("ix_contacts_tenant_id_created_at_id");
@@ -288,17 +291,14 @@ namespace Erp.Modules.Contacts.Migrations
                     b.HasIndex("TenantId", "NameEn", "Id")
                         .HasDatabaseName("ix_contacts_tenant_id_name_en_id");
 
-                    b.HasIndex("TenantId", "Reference", "Id")
-                        .HasDatabaseName("ix_contacts_tenant_id_reference_id");
-
                     b.HasIndex("TenantId", "UpdatedAt", "Id")
                         .HasDatabaseName("ix_contacts_tenant_id_updated_at_id");
 
-                    b.HasIndex(new[] { "NameEn", "NameAr", "Email", "Reference", "Phone", "Mobile", "TaxRegistrationNumber" }, "ix_contacts_search")
-                        .HasDatabaseName("ix_contacts_name_en_name_ar_email_reference_phone_mobile_tax_r");
+                    b.HasIndex(new[] { "NameEn", "NameAr", "Email", "Code", "Phone", "Mobile", "TaxRegistrationNumber" }, "ix_contacts_search")
+                        .HasDatabaseName("ix_contacts_name_en_name_ar_email_code_phone_mobile_tax_regist");
 
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "NameEn", "NameAr", "Email", "Reference", "Phone", "Mobile", "TaxRegistrationNumber" }, "ix_contacts_search"), "gin");
-                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "NameEn", "NameAr", "Email", "Reference", "Phone", "Mobile", "TaxRegistrationNumber" }, "ix_contacts_search"), new[] { "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops" });
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "NameEn", "NameAr", "Email", "Code", "Phone", "Mobile", "TaxRegistrationNumber" }, "ix_contacts_search"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "NameEn", "NameAr", "Email", "Code", "Phone", "Mobile", "TaxRegistrationNumber" }, "ix_contacts_search"), new[] { "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops", "gin_trgm_ops" });
 
                     b.ToTable("contacts", "contacts", t =>
                         {
