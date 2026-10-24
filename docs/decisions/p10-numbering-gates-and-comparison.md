@@ -59,12 +59,26 @@ does not select it today.
 
 **configure-sequence** (existing task; ours driver built, end state and set-up writes declared for
 ours): Document numbering (navigation) > the purchase order row (the working company's sequences come
-first; the panel opens with the whole prefix chosen) > type `PO-2026-` > Tab > type `6` > Enter. Six
-steps, eleven keystrokes, two clicks, no chord, no scroll. The reference's recorded best
-(`gauntlet/reference/odoo/tasks/configure-sequence.json`): 17 steps, 32 keystrokes, 8 clicks, 2
-scrolls, 4 chords, 3.9 machine seconds, 40.7 modelled human seconds (developer mode, Technical,
-Sequences, search, open, prefix, size, save). Ours' measured run is in the notes for the integrator
-(builder's run against a local stack).
+first; the panel opens with the whole prefix chosen) > type `PO-2026-` > Tab > type `6` > Enter.
+verify() reads the working company's purchase order row of the list (declared end state
+`GET /api/numbering/sequences`, parts `items.prefix` and `items.padding`; the write
+`PUT /api/numbering/sequences/*`): the record's own GET lists the last numbers given, which already
+hold "PO-2026-" before the clock, so the harness rightly could not see the entered value arrive there.
+
+| Metric | Ours (builder's run, local stack, 2026-10-25) | Reference's recorded best |
+|---|---|---|
+| Steps | 6 | 17 |
+| Keystrokes | 13 (two of them Shift for the capitals) | 32 |
+| Clicks | 2 | 8 |
+| Scrolls | 0 | 2 |
+| Field entries | 2 | 3 |
+| Key chords | 2 | 4 |
+| Machine seconds | 0.72 | 3.90 |
+| Modelled human seconds | 12.0 | 40.7 |
+
+File picks, requests and device confirmations are 0 on both sides (left out under the owner's zero
+rule). The reference's path: developer mode, Technical, Sequences, search, open, prefix, size, save
+(`gauntlet/reference/odoo/tasks/configure-sequence.json`).
 
 No task tied; no tie is claimed.
 
