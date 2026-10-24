@@ -146,26 +146,28 @@ public sealed record ContactDuplicate(
 /// amount is stated in.</summary>
 public sealed record ContactDefaults(string Country, string DefaultCurrency, string BaseCurrency);
 
-/// <summary>What a contact being entered is compared on. <c>except</c> leaves out the contact
-/// being changed.</summary>
+/// <summary>What a contact being entered is compared on: <c>sameName</c> and <c>sameNameAr</c> (the
+/// names typed), <c>sameEmail</c>, <c>samePhone</c>, <c>sameMobile</c>, <c>sameTaxNumber</c>;
+/// <c>except</c> leaves out the contact being changed. (Named apart from the contact's own fields,
+/// which are a write's body, not a question.)</summary>
 public sealed class DuplicateQuery
 {
-    [FromQuery(Name = "nameEn"), Description("The English name typed."), StringLength(ContactsValidation.NameMaxLength)]
+    [FromQuery(Name = "sameName"), Description("The English name typed."), StringLength(ContactsValidation.NameMaxLength)]
     public string? NameEn { get; init; }
 
-    [FromQuery(Name = "nameAr"), Description("The Arabic name typed."), StringLength(ContactsValidation.NameMaxLength)]
+    [FromQuery(Name = "sameNameAr"), Description("The Arabic name typed."), StringLength(ContactsValidation.NameMaxLength)]
     public string? NameAr { get; init; }
 
-    [FromQuery(Name = "email"), Description("The e-mail typed."), StringLength(254)]
+    [FromQuery(Name = "sameEmail"), Description("The e-mail typed."), StringLength(254)]
     public string? Email { get; init; }
 
-    [FromQuery(Name = "phone"), Description("The phone number typed."), StringLength(30)]
+    [FromQuery(Name = "samePhone"), Description("The phone number typed."), StringLength(30)]
     public string? Phone { get; init; }
 
-    [FromQuery(Name = "mobile"), Description("The mobile number typed."), StringLength(30)]
+    [FromQuery(Name = "sameMobile"), Description("The mobile number typed."), StringLength(30)]
     public string? Mobile { get; init; }
 
-    [FromQuery(Name = "taxRegistrationNumber"), Description("The tax registration number typed (15 digits; spaces and dashes are ignored)."), StringLength(ContactsValidation.TaxNumberTypedMaxLength)]
+    [FromQuery(Name = "sameTaxNumber"), Description("The tax registration number typed (15 digits; spaces and dashes are ignored)."), StringLength(ContactsValidation.TaxNumberTypedMaxLength)]
     public string? TaxRegistrationNumber { get; init; }
 
     [FromQuery(Name = "except"), Description("The id of the contact being changed, left out of the answer.")]
@@ -317,7 +319,7 @@ internal static class ContactEndpoints
         var nameKey = ContactsValidation.NameKey(nameEn);
         var nameArKey = ContactsValidation.NameKey(nameAr);
         var emailKey = ContactsValidation.EmailKey(email);
-        var phones = new[] { ContactsValidation.PhoneKey(phone), ContactsValidation.PhoneKey(mobile) }.Where(p => p is { Length: >= 7 }).Distinct().ToList();
+        var phones = new[] { ContactsValidation.PhoneKey(phone), ContactsValidation.PhoneKey(mobile) }.Where(p => p is { Length: >= 4 + 7 }).Distinct().ToList();
         var trn = ContactsValidation.NormalizeTaxNumber(taxNumber) is { Length: 15 } digits && digits.All(char.IsAsciiDigit) ? digits : null;
         // A name of one or two letters says nothing about who it is.
         var byName = nameKey.Length >= 3;

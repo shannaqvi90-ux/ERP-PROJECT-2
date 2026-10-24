@@ -26,10 +26,10 @@ describe("contacts model", () => {
     // A phone field holding only the +971 it keeps, a short name or an e-mail without @ is not compared.
     expect(duplicateQuery({ ...blank, nameEn: "ab", phone: "+971 ", email: "sales" }, null)).toBeNull();
     const query = new URLSearchParams(duplicateQuery({ ...blank, nameEn: " Falcon ", email: "a@b.example", mobile: "+971 50 555 0102", taxRegistrationNumber: "١٠٠١٢٣٤٥٦٧٨٩٠٠٣" }, "c1")!);
-    expect(query.get("nameEn")).toBe("Falcon");
-    expect(query.get("email")).toBe("a@b.example");
-    expect(query.get("mobile")).toBe("+971 50 555 0102");
-    expect(query.get("taxRegistrationNumber")).toBe("١٠٠١٢٣٤٥٦٧٨٩٠٠٣");
+    expect(query.get("sameName")).toBe("Falcon");
+    expect(query.get("sameEmail")).toBe("a@b.example");
+    expect(query.get("sameMobile")).toBe("+971 50 555 0102");
+    expect(query.get("sameTaxNumber")).toBe("١٠٠١٢٣٤٥٦٧٨٩٠٠٣");
     expect(query.get("except")).toBe("c1");
   });
 

@@ -76,7 +76,7 @@ function mockServer(permissions: string[], options: Options) {
     if (path.endsWith("/views")) return { status: 200, body: { items: [] } };
     if (path === "/api/contacts/contacts/defaults") return { status: 200, body: { country: "AE", defaultCurrency: "AED", baseCurrency: "AED" } };
     if (path === "/api/contacts/contacts/duplicates") {
-      const body = options.duplicates && parsed.searchParams.get("nameEn")?.toLowerCase().startsWith("falcon")
+      const body = options.duplicates && parsed.searchParams.get("sameName")?.toLowerCase().startsWith("falcon")
         ? [{ id: duplicateId, kind: "organisation", code: "C-OLD", nameEn: "Falcon Building Materials L.L.C.", nameAr: "", email: null, phone: null, mobile: null, taxRegistrationNumber: null, isActive: false, matches: ["name"] }]
         : [];
       return { status: 200, body };

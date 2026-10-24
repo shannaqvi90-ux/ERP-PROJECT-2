@@ -122,13 +122,13 @@ export function duplicateQuery(draft: { nameEn: string; nameAr: string; email: s
     const trimmed = value.trim();
     if (trimmed.length >= min) query.set(key, trimmed);
   };
-  put("nameEn", draft.nameEn, 3);
-  put("nameAr", draft.nameAr, 3);
-  put("email", draft.email.includes("@") ? draft.email : "", 3);
+  put("sameName", draft.nameEn, 3);
+  put("sameNameAr", draft.nameAr, 3);
+  put("sameEmail", draft.email.includes("@") ? draft.email : "", 3);
   // A phone field holding only the +971 it keeps is not a number yet.
-  put("phone", draft.phone.replace(/^\+971\s*$/, ""), 7);
-  put("mobile", draft.mobile.replace(/^\+971\s*$/, ""), 7);
-  put("taxRegistrationNumber", trnDigits(draft.taxRegistrationNumber).replace(/[ -]/g, "").length === 15 ? draft.taxRegistrationNumber : "", 15);
+  put("samePhone", draft.phone.replace(/^\+971\s*$/, ""), 7);
+  put("sameMobile", draft.mobile.replace(/^\+971\s*$/, ""), 7);
+  put("sameTaxNumber", trnDigits(draft.taxRegistrationNumber).replace(/[ -]/g, "").length === 15 ? draft.taxRegistrationNumber : "", 15);
   if ([...query.keys()].length === 0) return null;
   if (except) query.set("except", except);
   return query.toString();

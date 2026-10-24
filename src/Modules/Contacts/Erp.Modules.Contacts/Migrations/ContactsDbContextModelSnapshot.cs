@@ -152,8 +152,8 @@ namespace Erp.Modules.Contacts.Migrations
                         .HasColumnName("mobile");
 
                     b.Property<string>("MobileKey")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
                         .HasColumnName("mobile_key");
 
                     b.Property<string>("NameAr")
@@ -195,8 +195,8 @@ namespace Erp.Modules.Contacts.Migrations
                         .HasColumnName("phone");
 
                     b.Property<string>("PhoneKey")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
                         .HasColumnName("phone_key");
 
                     b.Property<string>("PoBox")

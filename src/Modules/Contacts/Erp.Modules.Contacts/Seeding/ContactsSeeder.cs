@@ -78,12 +78,18 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
             new("created_at", NpgsqlDbType.TimestampTz), new("updated_at", NpgsqlDbType.TimestampTz),
         };
         string? Mark(string? value) => value is null ? null : context.Mark(value);
+        // The gate fixture's Arabic texts are a few plain words (letters and spaces): the isolation
+        // gates send tenant B's texts as search words and compare the answer with the answer for a
+        // value of the same shape, and Arabic commas, dots and digits are split into words
+        // differently from the Latin letters that shape is drawn in.
+        var gate = context.Plan.Profile == SeedProfile.Gate;
+        string? Arabic(string? value) => value is null || !gate ? value : GatePlainArabic(value);
         var values = stamped.Select(s =>
         {
             var r = s.Row;
             var organisation = r.OrganisationReference is { } parent && ids.TryGetValue(parent, out var parentId) ? parentId : (Guid?)null;
             var nameEn = Mark(r.NameEn) ?? "";
-            var nameAr = Mark(r.NameAr) ?? "";
+            var nameAr = Mark(Arabic(r.NameAr)) ?? "";
             var limit = r.CreditLimit is { } amount ? Erp.Kernel.Money.Money.Create(amount, Erp.Kernel.Money.CurrencyCode.Aed, 1m, Erp.Kernel.Money.CurrencyCode.Aed) : (Erp.Kernel.Money.Money?)null;
             return new object?[]
             {
@@ -91,7 +97,7 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
                 r.Code, nameEn, nameAr, Mark(r.JobTitle),
                 r.Email, r.Phone, r.Mobile, r.Website,
                 Mark(r.Street), Mark(r.Area), Mark(r.City), r.Country == ContactsValidation.UnitedArabEmirates ? r.Emirate : null,
-                r.PoBox, r.Country, Mark(r.AddressAr), r.Tags,
+                r.PoBox, r.Country, Mark(Arabic(r.AddressAr)), r.Tags,
                 r.TradeLicence, r.TaxNumber, "AED",
                 limit?.Amount, limit?.Currency, limit?.ExchangeRate, limit?.BaseAmount, limit?.BaseCurrency, limit?.IsStated,
                 Mark(r.Notes), r.Active,
@@ -101,6 +107,13 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
             };
         });
         await BulkInsert.InsertAsync(session, ContactsDbContext.SchemaName, "contacts", columns, values, cancellationToken);
+    }
+
+    /// <summary>Arabic letters and spaces only, at most three words.</summary>
+    internal static string GatePlainArabic(string value)
+    {
+        var letters = new string(value.Select(c => c is >= '\u0621' and <= '\u064A' ? c : ' ').ToArray());
+        return string.Join(' ', letters.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(3));
     }
 }
 
@@ -146,7 +159,7 @@ internal static class NamedContacts
             Email: $"accounts@falcon.{domain}", Phone: "+971 4 555 0100", Website: "https://www.falcon-materials.example",
             Street: "Warehouse 12, Street 4", Area: "Al Quoz Industrial Area 3", City: "Dubai", Emirate: "dubai", PoBox: "12345",
             AddressAr: "مستودع 12، شارع 4، القوز الصناعية 3، دبي", Tags: "Customer; VIP", TradeLicence: "DED-778812", TaxNumber: "100234567800003",
-            CreditLimit: 250_000m, Notes: "Pays by bank transfer within 30 days.");
+            CreditLimit: 250_000m, Notes: "Pays within 30 days.");
         yield return new SeedContact(ContactKinds.Person, "C-DEMO-2", "Hamad Saeed Al Ketbi", "حمد سعيد الكتبي", OrganisationReference: "C-DEMO-1",
             JobTitle: "Purchasing Manager", Email: $"hamad.alketbi@falcon.{domain}", Phone: "+971 4 555 0101", Mobile: "+971 50 555 0102",
             City: "Dubai", Emirate: "dubai", Tags: "Customer");
@@ -157,7 +170,7 @@ internal static class NamedContacts
             JobTitle: "Sales Executive", Email: $"priya.nair@gulfpipe.{domain}", Mobile: "+971 55 555 0304", City: "Sharjah", Emirate: "sharjah", Tags: "Supplier");
         yield return new SeedContact(ContactKinds.Organisation, "C-DEMO-5", "Oasis Retail Trading LLC", "الواحة لتجارة التجزئة ذ.م.م",
             Email: $"info@oasis-retail.{domain}", Phone: "+971 2 555 0500", Area: "Mussafah", City: "Abu Dhabi", Emirate: "abuDhabi", Tags: "Customer; Retail",
-            Active: false, Notes: "Archived: closed its Mussafah shop.");
+            Active: false, Notes: "Closed its Mussafah shop.");
         yield return new SeedContact(ContactKinds.Organisation, "C-DEMO-6", "Muscat Marine Services LLC", "مسقط للخدمات البحرية ش.م.م",
             Email: $"ops@muscatmarine.{domain}", Phone: "+968 2455 0600", City: "Muscat", Country: "OM", Tags: "Supplier; Export");
     }

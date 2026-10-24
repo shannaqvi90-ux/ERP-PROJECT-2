@@ -212,8 +212,8 @@ public sealed class ContactsDbContext : ModuleDbContext
             e.Property(x => x.NameKey).HasMaxLength(200);
             e.Property(x => x.NameArKey).HasMaxLength(200);
             e.Property(x => x.EmailKey).HasMaxLength(254);
-            e.Property(x => x.PhoneKey).HasMaxLength(30);
-            e.Property(x => x.MobileKey).HasMaxLength(30);
+            e.Property(x => x.PhoneKey).HasMaxLength(40);
+            e.Property(x => x.MobileKey).HasMaxLength(40);
             e.Property(x => x.IsActive).HasDefaultValue(true);
 
             // The reference is unique in the workspace when given.

@@ -35,7 +35,7 @@ contact trades in, an optional credit limit (money, see p16-contacts-money.md), 
 
 ## Duplicate warning
 
-`GET /api/contacts/contacts/duplicates` (read permission) answers up to 10 contacts of the workspace
+`GET /api/contacts/contacts/duplicates?sameName=…&sameNameAr=…&sameEmail=…&samePhone=…&sameMobile=…&sameTaxNumber=…&except=…` (read permission) answers up to 10 contacts of the workspace
 that share with what is being typed: the name in English or Arabic (lower case, punctuation and
 spacing ignored, the Arabic spellings people type for one another folded: أ إ آ ٱ → ا, ى → ي, ة → ه,
 tatweel and short vowels dropped), the e-mail (case ignored), a phone or mobile number however it was

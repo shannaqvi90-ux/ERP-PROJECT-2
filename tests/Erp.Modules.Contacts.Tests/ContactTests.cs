@@ -242,16 +242,16 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
             return hit.ValueKind == JsonValueKind.Undefined ? [] : hit.GetProperty("matches").EnumerateArray().Select(m => m.GetString()!).ToList();
         }
 
-        Assert.Contains("name", await MatchesAsync($"nameEn={Uri.EscapeDataString($"desert rose TRADING  {stem}, LLC.")}"));
-        Assert.Contains("name", await MatchesAsync($"nameAr={Uri.EscapeDataString($"وردة الصحراء {stem} للتجاره")}"));
-        Assert.Contains("email", await MatchesAsync($"email={Uri.EscapeDataString($"SALES.{stem}@DesertRose.example")}"));
-        Assert.Contains("phone", await MatchesAsync($"phone={Uri.EscapeDataString("04 555 0177")}"));
-        Assert.Contains("phone", await MatchesAsync($"mobile={Uri.EscapeDataString("00971525550178")}"));
-        Assert.Contains("taxRegistrationNumber", await MatchesAsync($"taxRegistrationNumber={Uri.EscapeDataString(string.Join(" ", trn.Chunk(5).Select(c => new string(c))))}"));
+        Assert.Contains("name", await MatchesAsync($"sameName={Uri.EscapeDataString($"desert rose TRADING  {stem}, LLC.")}"));
+        Assert.Contains("name", await MatchesAsync($"sameNameAr={Uri.EscapeDataString($"وردة الصحراء {stem} للتجاره")}"));
+        Assert.Contains("email", await MatchesAsync($"sameEmail={Uri.EscapeDataString($"SALES.{stem}@DesertRose.example")}"));
+        Assert.Contains("phone", await MatchesAsync($"samePhone={Uri.EscapeDataString("04 555 0177")}"));
+        Assert.Contains("phone", await MatchesAsync($"sameMobile={Uri.EscapeDataString("00971525550178")}"));
+        Assert.Contains("taxRegistrationNumber", await MatchesAsync($"sameTaxNumber={Uri.EscapeDataString(string.Join(" ", trn.Chunk(5).Select(c => new string(c))))}"));
         // The contact being changed is not its own duplicate.
-        Assert.Empty(await MatchesAsync($"email={Uri.EscapeDataString($"sales.{stem}@desertrose.example")}&except={id}"));
+        Assert.Empty(await MatchesAsync($"sameEmail={Uri.EscapeDataString($"sales.{stem}@desertrose.example")}&except={id}"));
         // Nothing typed, nothing found.
-        Assert.Equal(0, (await admin.GetFromJsonAsync<JsonElement>("/api/contacts/contacts/duplicates?nameEn=ab", Cancel)).GetArrayLength());
+        Assert.Equal(0, (await admin.GetFromJsonAsync<JsonElement>("/api/contacts/contacts/duplicates?sameName=ab", Cancel)).GetArrayLength());
     }
 
     [Fact]
@@ -272,7 +272,7 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
         var link = await attacker.PostAsJsonAsync("/api/contacts/contacts", Person("Spy", theirId), Cancel);
         Assert.Equal(HttpStatusCode.BadRequest, link.StatusCode);
         Assert.Equal("contactsOrganisationUnknown", (await Json(link)).GetProperty("errors").GetProperty("organisationId")[0].GetProperty("code").GetString());
-        var duplicates = await attacker.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts/duplicates?nameEn={Uri.EscapeDataString(theirName)}&email={Uri.EscapeDataString(theirs.GetProperty("email").GetString() ?? "")}", Cancel);
+        var duplicates = await attacker.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts/duplicates?sameName={Uri.EscapeDataString(theirName)}&sameEmail={Uri.EscapeDataString(theirs.GetProperty("email").GetString() ?? "")}", Cancel);
         Assert.Equal(0, duplicates.GetArrayLength());
         var search = await attacker.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts?search={Uri.EscapeDataString(theirName)}", Cancel);
         Assert.Equal(0, search.GetProperty("total").GetInt32());
@@ -287,7 +287,7 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
         var id = contact.GetProperty("id").GetGuid();
         using var viewer = await Env.SignInAsync(Env.Email(Env.TenantA, "viewer"));
         Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync($"/api/contacts/contacts/{id}", Cancel)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync("/api/contacts/contacts/duplicates?nameEn=Union", Cancel)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await viewer.GetAsync("/api/contacts/contacts/duplicates?sameName=Union", Cancel)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PostAsJsonAsync("/api/contacts/contacts", Organisation(Unique("Viewer LLC")), Cancel)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PutAsJsonAsync($"/api/contacts/contacts/{id}", Editable(contact), Cancel)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PostAsync($"/api/contacts/contacts/{id}/archive", null, Cancel)).StatusCode);

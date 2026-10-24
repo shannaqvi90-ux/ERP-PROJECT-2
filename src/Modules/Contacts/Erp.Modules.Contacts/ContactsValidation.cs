@@ -303,9 +303,13 @@ internal static partial class ContactsValidation
     /// <summary>The e-mail as compared for duplicates: trimmed, lower case; null when empty.</summary>
     public static string? EmailKey(string? email) => Clean(email)?.ToLowerInvariant();
 
-    /// <summary>A phone number as compared for duplicates: its digits, a UAE number always as 971
-    /// and the national number (typed +971 50 …, 00971 50 …, 050 … or 50 …); null when it has none.</summary>
-    public static string? PhoneKey(string? phone)
+    /// <summary>A phone number as compared for duplicates: "tel:" and its digits, a UAE number always
+    /// as 971 and the national number (typed +971 50 …, 00971 50 …, 050 … or 50 …); null when it has
+    /// none. The prefix keeps the stored key from ever reading as a number a document prints (a
+    /// printed "+968 2455 0600" may come out of a PDF as its digits).</summary>
+    public static string? PhoneKey(string? phone) => PhoneDigits(phone) is { } digits ? "tel:" + digits : null;
+
+    private static string? PhoneDigits(string? phone)
     {
         if (Clean(phone) is not { } value)
         {

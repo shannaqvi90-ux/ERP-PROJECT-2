@@ -153,7 +153,7 @@ public sealed class ContactsListVolumeTests(ContactsVolumeFixture fixture) : ICl
     {
         using var admin = await Env.SignInAsync(Env.Email(fixture.Main, "admin"));
         var (page, timing) = await TimedAsync(admin,
-            $"/api/contacts/contacts/duplicates?nameEn={Uri.EscapeDataString("shamma waleed al-romaithi")}&mobile={Uri.EscapeDataString("052 555 7351")}&email=x%40y.example");
+            $"/api/contacts/contacts/duplicates?sameName={Uri.EscapeDataString("shamma waleed al-romaithi")}&sameMobile={Uri.EscapeDataString("052 555 7351")}&sameEmail=x%40y.example");
         Assert.True(timing.WithinBudget, timing.ToString());
         var hit = page.EnumerateArray().Single(d => d.GetProperty("id").GetGuid() == fixture.NeedleId);
         Assert.Equal(["name", "phone"], hit.GetProperty("matches").EnumerateArray().Select(m => m.GetString()));
