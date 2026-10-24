@@ -1,0 +1,97 @@
+/* Document numbering: the shared list with the open sequence beside it; its form, the live preview
+   of the next numbers, and its counters and last numbers. Logical properties only (Arabic mirrors). */
+.nb-list .list-record {
+  padding: 8px 12px;
+}
+
+@media (max-width: 1100px) {
+  .nb-list .list-body.has-record {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nb-list .list-splitter {
+    display: none;
+  }
+}
+
+.nb-number {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
+}
+
+.nb-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-block: 0;
+}
+
+.nb-token code {
+  font-size: 0.85rem;
+}
+
+.nb-preview {
+  border-block-start: 1px solid var(--border, #d0d7de);
+  margin-block-start: 8px;
+  padding-block-start: 8px;
+}
+
+.nb-preview h3,
+.nb-history h3 {
+  font-size: 0.95rem;
+  margin-block: 0 6px;
+}
+
+.nb-preview p {
+  margin-block: 2px;
+}
+
+.nb-next {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.nb-big {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.nb-branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 4px;
+}
+
+.nb-history {
+  display: grid;
+  gap: 12px;
+  margin-block-start: 12px;
+}
+
+.nb-history section {
+  border-block-start: 1px solid var(--border, #d0d7de);
+  padding-block-start: 8px;
+}
+
+.nb-table {
+  border-collapse: collapse;
+  inline-size: 100%;
+  font-size: 0.9rem;
+}
+
+.nb-table th,
+.nb-table td {
+  padding-block: 2px;
+  padding-inline: 4px 10px;
+  text-align: start;
+  border-block-end: 1px solid var(--border-subtle, #eaeef2);
+}
+
+.nb-table td.num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}

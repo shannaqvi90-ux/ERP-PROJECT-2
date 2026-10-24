@@ -60,10 +60,13 @@ const every = [
   "tenancy.workplace.read",
   "tenancy.workplace.switch",
   "reports.catalog.read",
+  "numbering.sequences.read",
+  "numbering.sequences.update",
 ];
 
 /** A user who may read every screen and change nothing but their own settings. */
-const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read"];
+const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read",
+  "numbering.sequences.read"];
 
 const session = (permissions: string[], language = "en") => ({
   authenticated: true,
@@ -82,7 +85,9 @@ const definitions: Record<string, unknown> = {
   "identity.roles": { ...listDefinitions["identity.roles"], printable: true },
   "tenancy.companies": { key: "tenancy.companies", labelKey: "tenancy.companies.title", endpoint: "/api/tenancy/companies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "tenancy.branches": { key: "tenancy.branches", labelKey: "tenancy.branches.title", endpoint: "/api/tenancy/branches", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
+  "numbering.sequences": { key: "numbering.sequences", labelKey: "numbering.sequences.title", endpoint: "/api/numbering/sequences", columns: [column("nameEn")], searchFields: ["nameEn"], defaultSort: "nameEn", presets: [], canShare: false, maxTake: 200, printable: true },
 };
+const sequenceRow = { id: "seq1", companyId: "c9", companyCode: "AN-AJM", documentType: "purchasing.order", nameEn: "Purchase order", nameAr: "أمر شراء", prefix: "PO-{YYYY}-", suffix: "", padding: 5, reset: "yearly", gapless: false, perBranch: false, nextNumber: "PO-2026-00148", nextValue: 148, workingCompany: true, updatedAt: "2026-10-01T00:00:00Z", version: 1, canUpdate: true };
 
 const clerk = { id: "r-clerk", nameEn: "Contacts clerk", nameAr: "كاتب جهات الاتصال", permissions: ["identity.users.read"], isSystem: false, userCount: 1, version: 1 };
 const user = {
@@ -149,6 +154,8 @@ async function open(
     if (p === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
     if (p === "/api/tenancy/branches/b1") return { status: 200, body: branch };
     if (p === "/api/tenancy/workplace") return { status: 200, body: workplace };
+    if (p === "/api/numbering/sequences") return { status: 200, body: { items: [sequenceRow], total: 1, next: null } };
+    if (p === "/api/numbering/sequences/seq1") return { status: 200, body: { ...sequenceRow, companyNameEn: "Al Noor Ajman LLC", companyNameAr: "النور عجمان ذ.م.م", previewBranchId: null, today: "2026-10-25", branches: [], counters: [], recent: [], createdAt: "2026-10-01T00:00:00Z" } };
     return { status: 404, body: {} };
   });
   view = await render(<App language={options.language ?? "en"} />);

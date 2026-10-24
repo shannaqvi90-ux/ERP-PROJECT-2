@@ -75,6 +75,8 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
         await CountedAsync(await SequenceAsync(first.Id, "sales.quotation", cancellationToken), null, null, today, 412, 4, cancellationToken);
         await CountedAsync(await SequenceAsync(first.Id, "accounting.journal", cancellationToken), null, null, today, 37, 3, cancellationToken);
         // Delivery notes leave each warehouse and showroom with that branch's own numbers.
+        var receipt = await SequenceAsync(first.Id, "inventory.receipt", cancellationToken);
+        receipt.Suffix = "/WH";
         var delivery = await SequenceAsync(first.Id, "inventory.delivery", cancellationToken);
         delivery.Prefix = "DN-{BRANCH}-{YY}-";
         delivery.Padding = 4;
@@ -97,6 +99,9 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
         var first = all[0];
         if (context.Tenant.Canary is null)
         {
+            var payment = await SequenceAsync(first.Id, "payments.payment", cancellationToken);
+            payment.Suffix = "/HQ";
+            await db.SaveChangesAsync(cancellationToken);
             await CountedAsync(await SequenceAsync(first.Id, "purchasing.order", cancellationToken), null, null, today, 12, 2, cancellationToken);
             return;
         }
@@ -106,6 +111,7 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
         order.Padding = 6;
         var quotation = await SequenceAsync(first.Id, "sales.quotation", cancellationToken);
         quotation.Prefix = "BQ-";
+        quotation.Suffix = "/BR";
         quotation.Reset = NumberReset.Never;
         var delivery = await SequenceAsync(first.Id, "inventory.delivery", cancellationToken);
         delivery.Prefix = "BDN-{BRANCH}-";

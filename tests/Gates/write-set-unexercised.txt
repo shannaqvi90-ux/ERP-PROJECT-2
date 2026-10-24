@@ -4,3 +4,4 @@
 # An endpoint the gate reaches at a fresh record but never at a record with dependents (critic p02
 # round 14) is listed as METHOD /route/pattern [with dependents], with the reason.
 # Format: METHOD /route/pattern  # reason
+PUT /api/numbering/sequences/{id:guid}  # Every company holds a sequence for each document type from the moment it exists (seeded, or made with the company), so no POST makes one and this gate has no record to make for the edit; tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs sends it as a user holding exactly numbering.sequences.update and judges its audited writes (the sequence's pattern columns and its own counters' next_value; nothing else).
