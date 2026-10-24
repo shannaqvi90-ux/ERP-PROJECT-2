@@ -134,13 +134,14 @@ leave rows.
 
 ## Comparison task
 
-`who-renamed-user` (gauntlet/compare): find who last changed the name of the user who signs in as
-a given address, among the shared dataset's 100,000 users, from what to what and when. Both
-products track user names (the reference's users keep a change log). Set-up renames the user as an
-ordinary editor; the record is found by its sign-in (`finds: 'user.login'`), because our user
-update carries the user's name and set-up writes may not carry the found record's words. Ours'
-paths open the user and read the heading's latest-change line (no extra step); the reference reads
-the first message of the form's change log. `who-changed-field` (contacts) still waits for p16.
+`who-renamed-user` (gauntlet/compare): find who last changed the name of the user now called a given
+name, among the shared dataset's 100,000 users, from what to what and when. Both products track user
+names (the reference keeps the name among its users' tracked fields). Set-up renames the user as an
+ordinary editor (a task input, the new name, is all its write carries); the record is found by the
+name it has now (`finds: 'newName'`) and the old name is what the person finds out. Ours' paths open
+the user and read the heading's latest-change line (no extra step); the reference reads the first
+message of the form's change log. Measured: ours 3 steps, 2 keys, 1.34 s machine, 8.01 s modelled
+human (8.96 s with waits); the reference 6 steps, 4 keys, 3.63 s, 10.07 s (13.32 s). `who-changed-field` (contacts) still waits for p16.
 
 ## Cost
 
