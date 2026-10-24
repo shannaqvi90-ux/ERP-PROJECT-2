@@ -84,7 +84,11 @@ Date: 2026-10-24. Piece: p08-currency, round 1. Status: accepted.
    same standard text in every workspace (tenant B's currencies are known to the gates by their ids),
    and 330 canary names, first in the gates' table order, crowded out the words the list gates search
    other lists with (the HTTP gate's self-test then missed a planted sorted-search memo). Tenant B's
-   rate references still carry the canary.
+   rate references still carry the canary, and tenant B was seeded without the newest ISO code
+   (XAD), as a workspace is until its next seed run after a newer ISO list, so its currencies list
+   is one row shorter and the list gates' queries tell the two workspaces apart (with identical lists
+   they could not judge a remembered total). The palette's action is "Add an exchange rate", so the
+   one-letter "n" still puts New user first (the users' comparison path depends on it).
 
 ## Contracts for later modules
 

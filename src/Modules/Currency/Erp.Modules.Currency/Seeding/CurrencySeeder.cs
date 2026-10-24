@@ -47,6 +47,10 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
 
     public const int GateRateDays = 10;
 
+    /// <summary>The ISO code the gate's tenant B does not hold (the Arab Accounting Dinar, the newest
+    /// code of the list of 2026-09-17).</summary>
+    public const string GateMissingCode = "XAD";
+
     /// <summary>A day of the gate workspaces' rates that does not move with the calendar, so a
     /// documented request (an import example) can name a rate the workspace holds.</summary>
     public static readonly DateOnly GateFixedDay = new(2025, 12, 31);
@@ -80,6 +84,13 @@ internal sealed class CurrencySeeder(CurrencyDbContext db, ErpDbSession session,
         var held = (await db.Currencies.Select(c => c.Code).ToListAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
         foreach (var code in CurrencyCode.All.Where(c => !held.Contains(c)))
         {
+            // The gate's tenant B was seeded before the newest code of the list, as a workspace is
+            // until its next seed run after a newer ISO list: its currencies list is one row shorter,
+            // so the list gates' queries tell the two workspaces' answers apart.
+            if (profile == SeedProfile.Gate && context.Tenant.Canary is not null && code == GateMissingCode)
+            {
+                continue;
+            }
             db.Currencies.Add(new EnabledCurrency
             {
                 Code = code,

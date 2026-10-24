@@ -34,7 +34,9 @@ export function parseConversion(query: string): { amount: string; currency: stri
  */
 export const extensions: ModuleExtensions = {
   actions: [
-    { key: "currency.rates.new", labelKey: "currency.rate.new", keywordsKey: "currency.action.newRateKeywords", permission: "currency.rates.create", path: "/currency/rates", command: "currency.screen.new" },
+    // Named "Add an exchange rate", not "New rate": a one-letter "n" in the palette puts New user
+    // first (the users' comparison path relies on it), and adding a rate reads as what it does.
+    { key: "currency.rates.new", labelKey: "currency.action.addRate", keywordsKey: "currency.action.newRateKeywords", permission: "currency.rates.create", path: "/currency/rates", command: "currency.screen.new" },
     { key: "currency.rates.print", labelKey: "currency.action.printRates", keywordsKey: "currency.action.printKeywords", permission: "currency.rates.read", path: "/currency/rates", command: "lists.print" },
     { key: "currency.currencies.print", labelKey: "currency.action.printCurrencies", keywordsKey: "currency.action.printKeywords", permission: "currency.currencies.read", path: "/currency/currencies", command: "lists.print" },
   ],
