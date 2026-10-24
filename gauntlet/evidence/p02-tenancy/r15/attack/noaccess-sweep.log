@@ -1,0 +1,4 @@
+statuses {"200":2,"403":109}
+not 401/403:
+GET /api/health -> 200
+GET /api/auth/session -> 200
