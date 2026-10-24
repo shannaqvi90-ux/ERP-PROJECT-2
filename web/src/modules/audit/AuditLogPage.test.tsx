@@ -47,7 +47,7 @@ const definition: ListDefinition = {
 
 const row = {
   id: "c1", occurredAt: "2026-10-24T10:15:00Z", actorId: "u9", actorName: "Noor Editor", actorNameAr: "نور المحرر", actorKind: "user", action: "update",
-  recordType: "identity.users", record: "Shamma Al Romaithi", recordAr: "شمة الرميثي", recordId: "u7", recordRoute: "/identity/users/u7", fields: ["email"],
+  recordType: "identity.users", record: "Shamma Al Romaithi", recordAr: "شمة الرميثي", recordCode: "shamma@x.example", recordId: "u7", recordRoute: "/identity/users/u7", fields: ["email"],
   changes: "E-mail: from a@x.example to b@x.example",
 };
 const arabicRow = { ...row, changes: "البريد الإلكتروني: من a@x.example إلى b@x.example" };

@@ -18,6 +18,7 @@ namespace Erp.Modules.Audit;
 /// <param name="Action">insert, update or delete.</param>
 /// <param name="RecordType">The kind of record (<c>schema.table</c>, as registered).</param>
 /// <param name="Record">What the record was called when it changed.</param>
+/// <param name="RecordCode">The record's e-mail or code, when it has one.</param>
 /// <param name="RecordId">The record's id.</param>
 /// <param name="RecordRoute">The record's web address, when it has a screen.</param>
 /// <param name="Fields">The fields the change recorded.</param>
@@ -34,6 +35,7 @@ public sealed record AuditLogRow(
     string RecordType,
     string? Record,
     string? RecordAr,
+    string? RecordCode,
     Guid? RecordId,
     string? RecordRoute,
     IReadOnlyList<string> Fields,
@@ -76,12 +78,14 @@ internal static class AuditLog
                         Choices: [.. types.Select(t => new ListChoice(t.Table, t.LabelKey))]),
                     new ListColumn("record", "audit.log.record", ListColumnType.Text, Filterable: true, ArabicField: "recordAr"),
                     new ListColumn("recordAr", "audit.log.recordAr", ListColumnType.Text, Filterable: true, Hidden: true),
+                    new ListColumn("recordCode", "audit.log.recordCode", ListColumnType.Text, Filterable: true, Hidden: true),
                     new ListColumn("recordId", "audit.log.recordId", ListColumnType.Reference, Filterable: true, Hidden: true, LabelField: "record"),
                     new ListColumn("fields", "audit.log.fields", ListColumnType.Choice, Filterable: true,
                         Choices: [.. texts.Fields.Select(f => new ListChoice(f, AuditTexts.FieldPrefix + f))]),
                     new ListColumn("changes", "audit.log.changes", ListColumnType.Text, Width: ListColumnWidth.Wide),
                 ],
-                SearchFields: ["record"],
+                // The record's name, or its e-mail or code (a user's sign-in, a company's code).
+                SearchFields: ["record", "recordCode"],
                 ArabicSearchFields: ["record", "recordAr"],
                 DefaultSort: "-occurredAt",
                 Presets:
@@ -101,6 +105,7 @@ internal static class AuditLog
             .Column("recordType", e => e.RecordType)
             .Column("record", e => e.RecordLabel)
             .Column("recordAr", e => e.RecordLabelAr)
+            .Column("recordCode", e => e.RecordCode)
             .Column("recordId", e => e.RecordId)
             .Column("fields", e => e.Fields);
 
@@ -149,7 +154,7 @@ internal static class AuditLog
         var route = catalog.FindAuditRecordType(e.RecordType)?.Route is { } template && e.RecordId is { } recordId && e.Action != "delete"
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
-        return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordId, route,
+        return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
             e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names)));
     }
 

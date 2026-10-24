@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Erp.Kernel.Data.Migrations
 {
     /// <summary>
-    /// The audit trail screens (p07): each row names its record (label in English and Arabic), keeps
-    /// the record's company (read by the RESTRICTIVE <c>audit_company_scope</c> policy, so a reader
-    /// sees the history of the companies in their scope only) and branch, a unique id for list paging,
-    /// the record type and the changed field names (both generated), with the indexes the audit log
-    /// list sorts, searches and filters by. The capture trigger fills the new columns and records
-    /// custom fields field by field (<see cref="KernelSql.CaptureFunctionV2"/>).
+    /// The audit trail screens (p07): each row names its record (label in English and Arabic, and its
+    /// e-mail or code), keeps the record's company (read by the RESTRICTIVE <c>audit_company_scope</c>
+    /// policy, so a reader sees the history of the companies in their scope only) and branch, a unique
+    /// id for list paging, the record type and the changed field names (both generated), with the
+    /// indexes the audit log list sorts, searches and filters by. The capture trigger fills the new
+    /// columns and records custom fields field by field (<see cref="KernelSql.CaptureFunctionV2"/>).
     /// </summary>
     public partial class AuditTrailReading : Migration
     {
@@ -30,6 +30,14 @@ namespace Erp.Kernel.Data.Migrations
                 schema: "audit",
                 table: "entries",
                 type: "uuid",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "record_code",
+                schema: "audit",
+                table: "entries",
+                type: "character varying(200)",
+                maxLength: 200,
                 nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
@@ -90,6 +98,14 @@ namespace Erp.Kernel.Data.Migrations
                 .Annotation("Npgsql:IndexMethod", "gin");
 
             migrationBuilder.CreateIndex(
+                name: "ix_entries_record_code",
+                schema: "audit",
+                table: "entries",
+                column: "record_code")
+                .Annotation("Npgsql:IndexMethod", "gin")
+                .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
+
+            migrationBuilder.CreateIndex(
                 name: "ix_entries_record_label",
                 schema: "audit",
                 table: "entries",
@@ -140,6 +156,11 @@ namespace Erp.Kernel.Data.Migrations
                 table: "entries");
 
             migrationBuilder.DropIndex(
+                name: "ix_entries_record_code",
+                schema: "audit",
+                table: "entries");
+
+            migrationBuilder.DropIndex(
                 name: "ix_entries_record_label",
                 schema: "audit",
                 table: "entries");
@@ -176,6 +197,11 @@ namespace Erp.Kernel.Data.Migrations
 
             migrationBuilder.DropColumn(
                 name: "record_branch_id",
+                schema: "audit",
+                table: "entries");
+
+            migrationBuilder.DropColumn(
+                name: "record_code",
                 schema: "audit",
                 table: "entries");
 

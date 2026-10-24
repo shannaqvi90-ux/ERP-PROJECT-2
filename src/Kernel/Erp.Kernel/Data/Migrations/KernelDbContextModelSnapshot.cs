@@ -75,6 +75,11 @@ namespace Erp.Kernel.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("record_branch_id");
 
+                    b.Property<string>("RecordCode")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("record_code");
+
                     b.Property<Guid?>("RecordCompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("record_company_id");
@@ -134,6 +139,12 @@ namespace Erp.Kernel.Data.Migrations
                         .HasDatabaseName("ix_entries_fields");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Fields"), "gin");
+
+                    b.HasIndex("RecordCode")
+                        .HasDatabaseName("ix_entries_record_code");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RecordCode"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("RecordCode"), new[] { "gin_trgm_ops" });
 
                     b.HasIndex("RecordLabel")
                         .HasDatabaseName("ix_entries_record_label");

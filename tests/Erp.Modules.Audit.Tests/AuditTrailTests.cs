@@ -204,6 +204,10 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             mustChangePassword = false, roleIds = new[] { role.GetProperty("id").GetGuid() },
         }));
         var userId = user.GetProperty("id").GetGuid();
+        // The user's sign-in finds the user's changes (the record's e-mail or code is searched with its name).
+        var bySignIn = (await Json(await admin.GetAsync("/api/audit/log?search=audit.named"))).GetProperty("items").EnumerateArray().ToList();
+        Assert.Contains(bySignIn, r => r.GetProperty("recordType").GetString() == "identity.users" && r.GetProperty("recordId").GetGuid() == userId
+                                       && r.GetProperty("recordCode").GetString() == $"audit.named@{Env.TenantA.EmailDomain}");
         var filter = Uri.EscapeDataString($"recordType eq 'identity.user_roles' and action eq 'insert' and fields eq 'user_id'");
         var rows = (await Json(await admin.GetAsync($"/api/audit/log?filter={filter}&take=200"))).GetProperty("items").EnumerateArray()
             .Where(r => r.GetProperty("changes").GetString()!.Contains("User: Named Holder", StringComparison.Ordinal))

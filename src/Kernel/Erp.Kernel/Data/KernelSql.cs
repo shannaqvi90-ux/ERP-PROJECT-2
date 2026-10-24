@@ -140,7 +140,8 @@ internal static class KernelSql
     /// <list type="bullet">
     /// <item>names the record as it was when it changed: <c>record_label</c> from its display name,
     /// English name, legal name, name, code or e-mail (the first one it has), <c>record_label_ar</c>
-    /// from its Arabic display, name or legal name; at most 200 characters each;</item>
+    /// from its Arabic display, name or legal name, <c>record_code</c> from its e-mail or code; at most
+    /// 200 characters each;</item>
     /// <item>keeps the record's company (<c>record_company_id</c>, its <c>company_id</c>), which the
     /// <c>audit_company_scope</c> policy reads, and its branch (<c>record_branch_id</c>, its
     /// <c>branch_id</c>), by which the audit screens show a branch-limited reader only their branches;</item>
@@ -167,6 +168,7 @@ internal static class KernelSql
             v_changes jsonb;
             v_label text;
             v_label_ar text;
+            v_code text;
         BEGIN
             -- Custom fields are recorded one by one, as the record's own fields are.
             IF jsonb_typeof(v_old -> 'custom_fields') = 'object' THEN
@@ -196,10 +198,11 @@ internal static class KernelSql
                                      NULLIF(btrim(v_row ->> 'code'), ''), NULLIF(btrim(v_row ->> 'email'), '')), 200);
             v_label_ar := left(COALESCE(NULLIF(btrim(v_row ->> 'display_name_ar'), ''), NULLIF(btrim(v_row ->> 'name_ar'), ''),
                                         NULLIF(btrim(v_row ->> 'legal_name_ar'), '')), 200);
+            v_code := left(COALESCE(NULLIF(btrim(v_row ->> 'email'), ''), NULLIF(btrim(v_row ->> 'code'), '')), 200);
 
             INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name,
                                        record_id, action, changes, transaction_id, correlation_id,
-                                       record_label, record_label_ar, record_company_id, record_branch_id)
+                                       record_label, record_label_ar, record_code, record_company_id, record_branch_id)
             VALUES ((v_row ->> 'tenant_id')::uuid,
                     clock_timestamp(),
                     erp.current_actor_id(),
@@ -213,6 +216,7 @@ internal static class KernelSql
                     NULLIF(current_setting('app.correlation_id', true), ''),
                     v_label,
                     v_label_ar,
+                    v_code,
                     (v_row ->> 'company_id')::uuid,
                     (v_row ->> 'branch_id')::uuid);
             RETURN NULL;

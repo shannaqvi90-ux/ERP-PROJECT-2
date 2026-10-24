@@ -6,7 +6,7 @@ import type { Row } from "../../kernel/lists/model";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
 import { actionKey, changeLine } from "./RecordHistory";
-import { actorText, logAddress, type AuditEvent, type FieldChange, type RecordName, type ValueFormat } from "./model";
+import { actorText, fieldName, logAddress, type AuditEvent, type FieldChange, type RecordName, type ValueFormat } from "./model";
 import "./audit.css";
 
 /** A row of the audit log (GET /api/audit/log). */
@@ -20,6 +20,7 @@ type LogRow = Row & {
   recordType: string;
   record: string | null;
   recordAr: string | null;
+  recordCode: string | null;
   recordId: string | null;
   recordRoute: string | null;
   fields: string[];
@@ -84,6 +85,7 @@ export function AuditLogPage() {
 function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; onRow: (row: LogRow) => void }) {
   const { t, language, formatDateTime, formatNumber } = useI18n();
   const [found, setFound] = useState<Change | null | undefined>(undefined);
+  const [find, setFind] = useState("");
   useEffect(() => {
     const abort = new AbortController();
     api<Change>("GET", `/api/audit/log/${encodeURIComponent(id)}`, undefined, { signal: abort.signal }).then(
@@ -101,7 +103,9 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
   if (found === null) return <p className="muted">{t("audit.log.noSelection")}</p>;
   const row = found.change;
   const event: AuditEvent = { ...row, id: String(row.id), changes: found.details };
-  const fields = found.details.filter((c) => c.field !== "id");
+  // A creation or a deletion lists every field: the box finds one of them by its name.
+  const wanted = find.trim().toLocaleLowerCase();
+  const fields = found.details.filter((c) => c.field !== "id" && (!wanted || fieldName(c.field, t).toLocaleLowerCase().includes(wanted) || c.field.includes(wanted)));
   const name = language === "ar" && row.recordAr ? row.recordAr : row.record;
   return (
     <section className="audit-change" aria-label={t("audit.log.detail")}>
@@ -113,6 +117,15 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
         {" · "}
         <time dateTime={row.occurredAt}>{formatDateTime(row.occurredAt)}</time>
       </p>
+      <input
+        type="search"
+        className="audit-history-find"
+        value={find}
+        onChange={(e) => setFind(e.target.value)}
+        placeholder={t("audit.history.filter")}
+        aria-label={t("audit.history.filter")}
+      />
+      {fields.length === 0 && <p className="muted">{t("audit.history.noMatch")}</p>}
       <ul className="audit-change-fields">
         {fields.map((c) => (
           <li key={c.field}>

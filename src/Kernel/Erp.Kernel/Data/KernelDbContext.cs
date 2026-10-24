@@ -42,6 +42,10 @@ public sealed class AuditEntry : ITenantOwned
     /// <summary>The record's name in Arabic script, when it has one.</summary>
     public string? RecordLabelAr { get; set; }
 
+    /// <summary>The record's e-mail or code when it has one (a user's sign-in, a company's code), so
+    /// the trail finds a record by it too.</summary>
+    public string? RecordCode { get; set; }
+
     /// <summary>The company the record belongs to (its <c>company_id</c>), or null for a record of the
     /// whole workspace. Row-level security shows the row only inside the reader's company scope.</summary>
     public Guid? RecordCompanyId { get; set; }
@@ -84,6 +88,7 @@ public sealed class KernelDbContext(DbContextOptions<KernelDbContext> options, I
             e.Property(x => x.RecordType).HasMaxLength(127).HasComputedColumnSql("((table_schema)::text || '.' || (table_name)::text)", stored: true);
             e.Property(x => x.RecordLabel).HasMaxLength(200);
             e.Property(x => x.RecordLabelAr).HasMaxLength(200);
+            e.Property(x => x.RecordCode).HasMaxLength(200);
             e.Property(x => x.Fields).HasComputedColumnSql("audit.field_names(changes)", stored: true);
             e.HasIndex(x => new { x.TenantId, x.TableName, x.RecordId, x.OccurredAt });
             e.HasIndex(x => new { x.TenantId, x.OccurredAt, x.Uid });
@@ -93,6 +98,7 @@ public sealed class KernelDbContext(DbContextOptions<KernelDbContext> options, I
             e.HasIndex(x => x.Fields).HasMethod("gin");
             e.HasIndex(x => x.RecordLabel).HasMethod("gin").HasOperators("gin_trgm_ops");
             e.HasIndex(x => x.RecordLabelAr).HasMethod("gin").HasOperators("gin_trgm_ops");
+            e.HasIndex(x => x.RecordCode).HasMethod("gin").HasOperators("gin_trgm_ops");
         });
     }
 }
