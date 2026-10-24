@@ -142,7 +142,8 @@ internal static class KernelSql
     /// English name, legal name, name, code or e-mail (the first one it has), <c>record_label_ar</c>
     /// from its Arabic display, name or legal name; at most 200 characters each;</item>
     /// <item>keeps the record's company (<c>record_company_id</c>, its <c>company_id</c>), which the
-    /// <c>audit_company_scope</c> policy reads;</item>
+    /// <c>audit_company_scope</c> policy reads, and its branch (<c>record_branch_id</c>, its
+    /// <c>branch_id</c>), by which the audit screens show a branch-limited reader only their branches;</item>
     /// <item>records tenant-defined custom fields (a JSON object column named
     /// <c>custom_fields</c>) field by field, as <c>custom_fields.&lt;key&gt;</c> with their own old
     /// and new values, exactly like the record's own columns;</item>
@@ -198,7 +199,7 @@ internal static class KernelSql
 
             INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name,
                                        record_id, action, changes, transaction_id, correlation_id,
-                                       record_label, record_label_ar, record_company_id)
+                                       record_label, record_label_ar, record_company_id, record_branch_id)
             VALUES ((v_row ->> 'tenant_id')::uuid,
                     clock_timestamp(),
                     erp.current_actor_id(),
@@ -212,7 +213,8 @@ internal static class KernelSql
                     NULLIF(current_setting('app.correlation_id', true), ''),
                     v_label,
                     v_label_ar,
-                    (v_row ->> 'company_id')::uuid);
+                    (v_row ->> 'company_id')::uuid,
+                    (v_row ->> 'branch_id')::uuid);
             RETURN NULL;
         END;
         $$;

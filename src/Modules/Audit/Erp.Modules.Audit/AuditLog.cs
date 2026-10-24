@@ -54,7 +54,8 @@ internal static class AuditLog
 {
     public const string Key = AuditLists.Log;
 
-    public static readonly string[] ActorKinds = ["user", "seed", "job", "system", "unknown"];
+    /// <summary>Who may make a change: a person, the demo seed, a background job, the system.</summary>
+    public static readonly System.Collections.Immutable.ImmutableArray<string> ActorKinds = ["user", "seed", "job", "system", "unknown"];
 
     public static ListBinding<AuditEntry> Create(IEnumerable<AuditRecordType> types, AuditTexts texts) =>
         ListBinding<AuditEntry>.For(new ListDefinition(

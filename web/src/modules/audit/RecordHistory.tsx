@@ -6,7 +6,10 @@ import { useSession } from "../../kernel/session";
 import { actorText, fieldName, logAddress, readHistory, shownChanges, valueText, type AuditEvent, type AuditHistory, type ValueFormat } from "./model";
 import "./audit.css";
 
-const actionKey = { insert: "audit.history.created", update: "audit.history.changed", delete: "audit.history.deleted" } as const;
+/** The words for who made a change: "Created by …", "Changed by …", "Deleted by …". */
+export function actionKey(action: AuditEvent["action"]): string {
+  return action === "insert" ? "audit.history.created" : action === "delete" ? "audit.history.deleted" : "audit.history.changed";
+}
 
 function useValueFormat(names: AuditHistory["names"] | undefined): ValueFormat {
   const { t, formatDateTime, formatNumber, language } = useI18n();
@@ -48,7 +51,7 @@ export function LastChange({ type, id, revision, open, setOpen }: RecordPanelPro
   return (
     <div className="audit-latest" data-testid="audit-latest">
       <button type="button" className="button link audit-latest-open" onClick={() => setOpen(!open)} aria-expanded={open}>
-        {t(actionKey[event.action], { name: actorText(event, language) })}
+        {t(actionKey(event.action), { name: actorText(event, language) })}
       </button>
       <span className="audit-latest-time">
         {" · "}
@@ -158,7 +161,7 @@ export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) 
         {shown.map(({ event, fields }) => (
           <li key={event.id} className={`audit-event action-${event.action}`}>
             <div className="audit-event-head">
-              <strong>{t(actionKey[event.action], { name: actorText(event, language) })}</strong>
+              <strong>{t(actionKey(event.action), { name: actorText(event, language) })}</strong>
               <time dateTime={event.occurredAt}>{formatDateTime(event.occurredAt)}</time>
             </div>
             {fields.length > 0 && (

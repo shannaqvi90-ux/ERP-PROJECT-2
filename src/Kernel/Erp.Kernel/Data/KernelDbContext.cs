@@ -46,6 +46,10 @@ public sealed class AuditEntry : ITenantOwned
     /// whole workspace. Row-level security shows the row only inside the reader's company scope.</summary>
     public Guid? RecordCompanyId { get; set; }
 
+    /// <summary>The branch the record belongs to (its <c>branch_id</c>), or null. A reader who may
+    /// work in only some branches of the record's company sees it only for those branches.</summary>
+    public Guid? RecordBranchId { get; set; }
+
     /// <summary>The names of the fields the row records (the keys of <see cref="Changes"/>, sorted;
     /// stored, generated from them).</summary>
     public string[]? Fields { get; private set; }

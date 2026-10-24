@@ -313,7 +313,11 @@ public static partial class ListVolume
                 case ListColumnType.Choice:
                     foreach (var choice in column.Choices ?? [])
                     {
-                        filters.Add((ListFilterText.Eq(key, choice.Value), r => Text(r, key) == choice.Value));
+                        // A choice column holding several values per row (an array, the audit log's
+                        // fields) matches the rows that hold the value.
+                        filters.Add((ListFilterText.Eq(key, choice.Value), r => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Array
+                            ? v.EnumerateArray().Any(i => i.ValueKind == JsonValueKind.String && i.GetString() == choice.Value)
+                            : Text(r, key) == choice.Value));
                     }
                     break;
                 case ListColumnType.Boolean:

@@ -5,7 +5,7 @@ import { ListView, type ReferenceSource } from "../../kernel/lists/ListView";
 import type { Row } from "../../kernel/lists/model";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
-import { changeLine } from "./RecordHistory";
+import { actionKey, changeLine } from "./RecordHistory";
 import { actorText, logAddress, type AuditEvent, type FieldChange, type RecordName, type ValueFormat } from "./model";
 import "./audit.css";
 
@@ -108,7 +108,7 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
     <section className="audit-change" aria-label={t("audit.log.detail")}>
       <h3>{t(`audit.action.${row.action}`)} · <bdi>{name ?? t("audit.value.empty")}</bdi></h3>
       <p>
-        {t(row.action === "insert" ? "audit.history.created" : row.action === "delete" ? "audit.history.deleted" : "audit.history.changed", { name: actorText(row, language) })}
+        {t(actionKey(row.action), { name: actorText(row, language) })}
         {" · "}
         <time dateTime={row.occurredAt}>{formatDateTime(row.occurredAt)}</time>
       </p>

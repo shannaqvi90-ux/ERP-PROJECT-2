@@ -8,8 +8,8 @@ namespace Erp.Kernel.Data.Migrations
     /// <summary>
     /// The audit trail screens (p07): each row names its record (label in English and Arabic), keeps
     /// the record's company (read by the RESTRICTIVE <c>audit_company_scope</c> policy, so a reader
-    /// sees the history of the companies in their scope only), a unique id for list paging, the
-    /// record type and the changed field names (both generated), with the indexes the audit log
+    /// sees the history of the companies in their scope only) and branch, a unique id for list paging,
+    /// the record type and the changed field names (both generated), with the indexes the audit log
     /// list sorts, searches and filters by. The capture trigger fills the new columns and records
     /// custom fields field by field (<see cref="KernelSql.CaptureFunctionV2"/>).
     /// </summary>
@@ -24,6 +24,13 @@ namespace Erp.Kernel.Data.Migrations
                 name: "ix_entries_tenant_id_occurred_at",
                 schema: "audit",
                 table: "entries");
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "record_branch_id",
+                schema: "audit",
+                table: "entries",
+                type: "uuid",
+                nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "record_company_id",
@@ -164,6 +171,11 @@ namespace Erp.Kernel.Data.Migrations
 
             migrationBuilder.DropColumn(
                 name: "record_type",
+                schema: "audit",
+                table: "entries");
+
+            migrationBuilder.DropColumn(
+                name: "record_branch_id",
                 schema: "audit",
                 table: "entries");
 

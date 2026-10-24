@@ -35,7 +35,7 @@ public sealed record AuditActor(Guid? Id, string Kind, string? Name, string? Nam
 /// record of a company only in a company where they hold it (<see cref="VisibleAsync"/>): the
 /// history of a record tells everything it ever held.
 /// </summary>
-public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurrentUser user, ICompanyPermissions places, IUserDirectory users)
+public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurrentUser user, ICompanyPermissions places, IUserDirectory users, ICompanyContext scope)
 {
     public KernelDbContext Db => db;
 
@@ -74,7 +74,22 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
                 Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(Guid?)], Expression.Constant(ids), company));
             condition = Expression.OrElse(condition, Expression.AndAlso(Expression.Equal(recordType, Expression.Constant(type.Table)), inCompany));
         }
-        return source.Where(Expression.Lambda<Func<AuditEntry, bool>>(condition, row));
+        var visible = source.Where(Expression.Lambda<Func<AuditEntry, bool>>(condition, row));
+        // Branches (the second layer of a company): in a company where the reader may work in only
+        // some branches, a branch they may not work in does not exist for them, nor does anything of
+        // it (a row whose branch_id names it), so its history does not either. Rows of the company
+        // as a whole (the company's own record, its access rows) stay readable.
+        var limited = scope.AllCompanies ? [] : scope.CompanyIds.Where(c => !scope.HoldsEveryBranch(c)).Select(c => (Guid?)c).ToArray();
+        if (limited.Length == 0)
+        {
+            return visible;
+        }
+        var branches = scope.BranchIds.Select(b => (Guid?)b).ToArray();
+        var branchKinds = catalog.AuditRecordTypes.Where(t => t.RecordIsBranch).Select(t => t.Table).ToArray();
+        return visible.Where(e => e.RecordCompanyId == null || !limited.Contains(e.RecordCompanyId)
+                                  || (branchKinds.Contains(e.RecordType)
+                                      ? branches.Contains(e.RecordId)
+                                      : e.RecordBranchId == null || branches.Contains(e.RecordBranchId)));
     }
 
     /// <summary>The fields one audit row records, by field name.</summary>

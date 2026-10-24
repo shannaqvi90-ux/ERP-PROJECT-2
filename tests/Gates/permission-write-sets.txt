@@ -40,4 +40,5 @@ identity.users.read lists.saved_views insert,update,delete *  # the reader's own
 tenancy.companies.read lists.saved_views insert,update,delete *  # the reader's own views of the companies list
 tenancy.branches.read lists.saved_views insert,update,delete *  # the reader's own views of the branches list
 tenancy.access.read lists.saved_views insert,update,delete *  # the reader's own views of the access list
+audit.log.read lists.saved_views insert,update,delete *  # the reader's own views of the audit log
 lists.views.share lists.saved_views insert,update,delete *  # views shared with everyone who may read the list

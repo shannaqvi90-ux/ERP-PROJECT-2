@@ -265,6 +265,46 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
+    public async Task A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var companies = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/companies")).EnumerateArray().Select(c => c.GetProperty("id").GetGuid()).ToList();
+        var x = companies[0];
+        var inX = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/branches?take=200&filter={Uri.EscapeDataString($"companyId eq '{x}'")}"))
+            .GetProperty("items").EnumerateArray().Select(b => b.GetProperty("id").GetGuid()).ToList();
+        if (inX.Count < 2)
+        {
+            // A second branch of company X, so one of them lies outside the reader's branches.
+            var created = await Json(await admin.PostAsJsonAsync("/api/tenancy/branches", new { companyId = x, nameEn = "Audit second branch", nameAr = "فرع ثان للتدقيق", country = "AE" }));
+            inX.Add(created.GetProperty("id").GetGuid());
+        }
+        var (mine, other) = (inX[0], inX[1]);
+        var reader = await CreateRoleAsync(admin, "Branch log reader", "audit.log.read", "tenancy.branches.read");
+        var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
+        {
+            email = $"audit.branch@{Env.TenantA.EmailDomain}", displayName = "Branch Auditor", language = "en", password = ErpTestEnvironment.Password,
+            mustChangePassword = false, roleIds = new[] { reader.GetProperty("id").GetGuid() },
+        }));
+        var userId = user.GetProperty("id").GetGuid();
+        var version = (await admin.GetFromJsonAsync<JsonElement>($"/api/tenancy/access/{userId}")).GetProperty("version").GetUInt32();
+        await Json(await admin.PutAsJsonAsync($"/api/tenancy/access/{userId}", new
+        {
+            companies = new[] { new { companyId = x, allBranches = false, branchIds = new[] { mine } } }, version,
+        }));
+
+        using var auditor = await Env.SignInAsync(user.GetProperty("email").GetString()!);
+        var rows = (await Json(await auditor.GetAsync($"/api/audit/log?take=200&filter={Uri.EscapeDataString("recordType eq 'tenancy.branches'")}")))
+            .GetProperty("items").EnumerateArray().Select(r => r.GetProperty("recordId").GetGuid()).ToHashSet();
+        Assert.Contains(mine, rows);
+        Assert.DoesNotContain(other, rows);
+        Assert.Equal(0, (await Json(await auditor.GetAsync($"/api/audit/records/tenancy.branches/{other}"))).GetProperty("items").GetArrayLength());
+        Assert.NotEqual(0, (await Json(await auditor.GetAsync($"/api/audit/records/tenancy.branches/{mine}"))).GetProperty("items").GetArrayLength());
+        // Nothing of the other branch: no row whose branch it is (the access rows to it, the workplaces in it).
+        var all = (await Json(await auditor.GetAsync("/api/audit/log?take=200"))).GetRawText();
+        Assert.DoesNotContain(other.ToString(), all, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task The_log_prints_and_exports_through_the_report_framework_in_both_languages()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));

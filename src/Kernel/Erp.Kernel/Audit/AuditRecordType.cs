@@ -20,7 +20,12 @@ namespace Erp.Kernel.Audit;
 /// <param name="OwnerField">For rows a form shows by another record's id (a user's company access,
 /// shown on the access form by the user's id): the column holding that id. The history of such a
 /// record is then every row of this kind whose column held the id, before or after the change.</param>
-public sealed partial record AuditRecordType(string Table, string LabelKey, string ReadPermission, string? Route = null, string? OwnerField = null)
+/// <param name="RecordIsBranch">The records are themselves branches of a company (their id is the
+/// branch): a reader who may work in only some branches of the company sees the history of those
+/// branches alone, as they see only those branches. Records of other kinds belong to the branch their
+/// <c>branch_id</c> names, when they have one (the trail keeps it).</param>
+public sealed partial record AuditRecordType(string Table, string LabelKey, string ReadPermission, string? Route = null, string? OwnerField = null,
+    bool RecordIsBranch = false)
 {
     /// <summary>The schema part of <see cref="Table"/>.</summary>
     public string Schema => Table.Split('.')[0];

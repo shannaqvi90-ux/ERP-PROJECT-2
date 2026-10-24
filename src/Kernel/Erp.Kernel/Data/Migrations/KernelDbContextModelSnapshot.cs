@@ -71,6 +71,10 @@ namespace Erp.Kernel.Data.Migrations
                         .HasColumnName("occurred_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<Guid?>("RecordBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("record_branch_id");
+
                     b.Property<Guid?>("RecordCompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("record_company_id");

@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Erp.Kernel.Data.Migrations
 {
     [DbContext(typeof(KernelDbContext))]
-    [Migration("20261023212559_AuditTrailReading")]
+    [Migration("20261024023900_AuditTrailReading")]
     partial class AuditTrailReading
     {
         /// <inheritdoc />
@@ -73,6 +73,10 @@ namespace Erp.Kernel.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("RecordBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("record_branch_id");
 
                     b.Property<Guid?>("RecordCompanyId")
                         .HasColumnType("uuid")
