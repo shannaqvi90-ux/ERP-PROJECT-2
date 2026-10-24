@@ -109,3 +109,17 @@ Measured in this round's builder runs (the verify's numbers are in the notes for
 the module's own tests take about 20 s of wall time; the gates attack eleven new endpoints, two
 lists (and their view endpoints) and two tables, which adds to every G1 and G2 suite in proportion
 to the endpoint count (about 5 % more endpoints).
+
+This round's builder verify runs (`./erp verify` through the verify slot, 16 CPUs, other agents'
+runs alongside):
+
+| Run | Commit | Result | Processor time (s) |
+|---|---|---|---|
+| 1 | earlier | self-http self-test missed the sorted-search plant (canary currency names) | 9,204 |
+| 2 | earlier | currencies list blind in the list-answer gate (both gate lists identical) | 9,458 |
+| 3 | 06444be9 | self-http self-test missed the plant again (tenant B without XAD) | 10,069 |
+| 4 | c9cfe283 | harness mutation M29 not judged under load (its control failed; passed alone) | not kept |
+| 5 | c9cfe283 | harness test "control C3" failed under load (load up to 37; passed alone) | 8,424 |
+| 6 | c9cfe283 | passed: 794 .NET, 604 web unit, 125 end-to-end, 487 comparison tests; 4,436 s wall | 8,262 (dotnet 5,846, web 1,983, e2e 396, timing 37) |
+
+The passing run stays under the 10,500 s maximum; the ratchet minimums now hold its test counts.
