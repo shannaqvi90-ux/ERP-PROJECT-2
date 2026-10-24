@@ -29,7 +29,6 @@ const definition: ListDefinition = {
   endpoint: "/api/audit/log",
   columns: [
     column("occurredAt", "audit.log.when", "dateTime", { sortable: true, filterable: true }),
-    column("id", "audit.log.change", "reference", { filterable: true, hidden: true }),
     column("actorId", "audit.log.who", "reference", { filterable: true }),
     column("action", "audit.log.action", "choice", { filterable: true, choices: [{ value: "update", labelKey: "audit.action.update" }] }),
     column("recordType", "audit.log.recordType", "choice", { filterable: true, choices: [{ value: "identity.users", labelKey: "identity.record.user" }] }),

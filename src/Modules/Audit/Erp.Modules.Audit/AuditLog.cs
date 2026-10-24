@@ -66,8 +66,6 @@ internal static class AuditLog
                 Key, "audit.log.title", AuditPermissions.LogRead, "/api/audit/log",
                 [
                     new ListColumn("occurredAt", "audit.log.when", ListColumnType.DateTime, Sortable: true, Filterable: true),
-                    // The change itself (its panel reads it by id).
-                    new ListColumn("id", "audit.log.change", ListColumnType.Reference, Filterable: true, Hidden: true),
                     new ListColumn("actorId", "audit.log.who", ListColumnType.Reference, Filterable: true, LabelField: "actorName", ArabicField: "actorNameAr"),
                     new ListColumn("actorKind", "audit.log.source", ListColumnType.Choice, Filterable: true, Groupable: true, Hidden: true,
                         Choices: [.. ActorKinds.Select(k => new ListChoice(k, $"audit.source.{k}"))], Width: ListColumnWidth.Narrow),
@@ -77,8 +75,9 @@ internal static class AuditLog
                     new ListColumn("recordType", "audit.log.recordType", ListColumnType.Choice, Filterable: true, Groupable: true,
                         Choices: [.. types.Select(t => new ListChoice(t.Table, t.LabelKey))]),
                     new ListColumn("record", "audit.log.record", ListColumnType.Text, Filterable: true, ArabicField: "recordAr"),
-                    new ListColumn("recordAr", "audit.log.recordAr", ListColumnType.Text, Filterable: true, Hidden: true),
-                    new ListColumn("recordCode", "audit.log.recordCode", ListColumnType.Text, Filterable: true, Hidden: true),
+                    // Searched (an Arabic word, an e-mail or a code), not filtered on their own.
+                    new ListColumn("recordAr", "audit.log.recordAr", ListColumnType.Text, Hidden: true),
+                    new ListColumn("recordCode", "audit.log.recordCode", ListColumnType.Text, Hidden: true),
                     new ListColumn("recordId", "audit.log.recordId", ListColumnType.Reference, Filterable: true, Hidden: true, LabelField: "record"),
                     new ListColumn("fields", "audit.log.fields", ListColumnType.Choice, Filterable: true,
                         Choices: [.. texts.Fields.Select(f => new ListChoice(f, AuditTexts.FieldPrefix + f))]),
@@ -98,7 +97,6 @@ internal static class AuditLog
                 ]),
                 e => e.Uid)
             .Column("occurredAt", e => e.OccurredAt)
-            .Column("id", e => e.Uid)
             .Column("actorId", e => e.ActorId)
             .Column("actorKind", e => e.ActorKind)
             .Column("action", e => e.Action)
