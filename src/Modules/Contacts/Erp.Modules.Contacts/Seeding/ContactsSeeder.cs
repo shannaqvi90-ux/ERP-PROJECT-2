@@ -20,6 +20,10 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
 {
     public const string ContactsCsvSetting = "Erp:Seed:ContactsCsv";
 
+    /// <summary>How many contacts the main (first) tenant of the plan gets, when not its volume (the
+    /// list timing budgets seed 100,000 contacts beside a few users).</summary>
+    public const string ContactsVolumeSetting = "Erp:Seed:ContactsVolume";
+
     public int Order => 100;
 
     public async Task SeedAsync(TenantSeedContext context, CancellationToken cancellationToken)
@@ -34,11 +38,14 @@ internal sealed class ContactsSeeder(ContactsDbContext db, ErpDbSession session,
         {
             rows.Add(named);
         }
+        var volume = context.Tenant.Id == context.Plan.Tenants[0].Id && int.TryParse(configuration[ContactsVolumeSetting], out var configured) && configured >= 0
+            ? configured
+            : context.Tenant.Volume;
         var csv = configuration[ContactsCsvSetting];
         var shared = !string.IsNullOrWhiteSpace(csv) && context.Plan.Profile == SeedProfile.Demo && context.Tenant.Id == context.Plan.Tenants[0].Id;
         var bulk = shared
-            ? SharedDatasetContacts.Read(csv!, context.Tenant.Volume)
-            : DemoContacts.Generate(context.Tenant.VolumeRowsSeed, context.Tenant.Volume, context.Tenant.EmailDomain);
+            ? SharedDatasetContacts.Read(csv!, volume)
+            : DemoContacts.Generate(context.Tenant.VolumeRowsSeed, volume, NamedContacts.MailDomain(context), letterCodes: context.Plan.Profile == SeedProfile.Gate);
         rows.AddRange(bulk);
 
         // Ids in creation order, organisations known by reference before their people.
@@ -126,9 +133,14 @@ internal sealed record SeedContact(
 /// end-to-end suite name them). Fictional names; numbers in the UAE's 555 range.</summary>
 internal static class NamedContacts
 {
+    /// <summary>The domain the contacts' e-mail addresses are under: the contacts' own businesses
+    /// (example domains), never the workspace's (a customer is not staff), and in a tenant carrying a
+    /// canary under the canary, so an address shown to another tenant is a leak the gates see.</summary>
+    public static string MailDomain(TenantSeedContext context) => context.Tenant.Canary is { } canary ? $"{canary.ToLowerInvariant()}.example" : "example";
+
     public static IEnumerable<SeedContact> For(TenantSeedContext context)
     {
-        var domain = context.Tenant.EmailDomain;
+        var domain = MailDomain(context);
         yield return new SeedContact(ContactKinds.Organisation, "C-DEMO-1", "Falcon Building Materials LLC", "فالكون لمواد البناء ذ.م.م",
             Email: $"accounts@falcon.{domain}", Phone: "+971 4 555 0100", Website: "https://www.falcon-materials.example",
             Street: "Warehouse 12, Street 4", Area: "Al Quoz Industrial Area 3", City: "Dubai", Emirate: "dubai", PoBox: "12345",
@@ -204,13 +216,22 @@ internal static class DemoContacts
 
     private static readonly string[] JobTitles = ["Purchasing Manager", "Accountant", "Sales Executive", "Operations Manager", "General Manager", "Store Keeper", "Engineer"];
 
-    public static IEnumerable<SeedContact> Generate(string seed, int count, string domain)
+    /// <summary>
+    /// <paramref name="count"/> contacts drawn from <paramref name="seed"/>, e-mail addresses under
+    /// <paramref name="domain"/>. Phone numbers carry no zero after the area or mobile prefix: the
+    /// gate fixture's companies and branches have numbers of zeros (+971 4 000 0002), and a contact
+    /// whose number held those digits would answer a search for a company's number. With
+    /// <paramref name="letterCodes"/> (the gate fixture) codes are letters (C-AAB), for the same
+    /// reason: C000002 holds the digits of company numbers and PO boxes.
+    /// </summary>
+    public static IEnumerable<SeedContact> Generate(string seed, int count, string domain, bool letterCodes = false)
     {
         var random = new Random(StableHash(seed));
         var organisations = new List<string>();
+        var names = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var i = 1; i <= count; i++)
         {
-            var reference = $"C{i:000000}";
+            var reference = letterCodes ? $"C-{Letters(i)}" : $"C{i:000000}";
             var place = Places[random.Next(Places.Length)];
             var area = place.Areas[random.Next(place.Areas.Length)];
             var poBox = random.Next(10) < 6 ? random.Next(1000, 99999).ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
@@ -219,12 +240,17 @@ internal static class DemoContacts
                 var word = BusinessWords[random.Next(BusinessWords.Length)];
                 var trade = Trades[random.Next(Trades.Length)];
                 var suffix = Suffixes[random.Next(Suffixes.Length)];
-                var nameEn = $"{word.En} {trade.En} {suffix.En} {i}";
-                var nameAr = suffix.Ar == "مؤسسة" ? $"مؤسسة {word.Ar} {trade.Ar} {i}" : $"{word.Ar} {trade.Ar} {suffix.Ar} {i}";
+                // A name repeats with a number after it (Falcon Trading LLC 2), as a second company of
+                // that name is told apart; the first keeps the name alone.
+                var baseEn = $"{word.En} {trade.En} {suffix.En}";
+                var seen = names[baseEn] = names.GetValueOrDefault(baseEn) + 1;
+                var number = seen == 1 ? "" : $" {seen}";
+                var nameEn = baseEn + number;
+                var nameAr = (suffix.Ar == "مؤسسة" ? $"مؤسسة {word.Ar} {trade.Ar}" : $"{word.Ar} {trade.Ar} {suffix.Ar}") + number;
                 var slug = new string(word.En.ToLowerInvariant().Where(char.IsAsciiLetterLower).ToArray());
                 organisations.Add(reference);
                 yield return new SeedContact(ContactKinds.Organisation, reference, nameEn, nameAr,
-                    Email: $"info{i}@{slug}.{domain}", Phone: $"+971 {place.PhoneArea} {random.Next(200, 899)} {random.Next(0, 9999):0000}",
+                    Email: $"info{i}@{slug}{i}.{domain}", Phone: $"+971 {place.PhoneArea} {NoZeros(random, 3)} {NoZeros(random, 4)}",
                     Website: $"https://www.{slug}{i}.example", Street: $"{random.Next(1, 120)} Street {random.Next(1, 40)}", Area: area, City: place.City,
                     Emirate: place.Code, PoBox: poBox, Tags: random.Next(10) < 8 ? Tags[random.Next(Tags.Length)] : null,
                     TradeLicence: random.Next(100000, 999999).ToString(System.Globalization.CultureInfo.InvariantCulture),
@@ -240,11 +266,27 @@ internal static class DemoContacts
                 var parent = organisations.Count > 0 && random.Next(10) < 6 ? organisations[random.Next(Math.Max(0, organisations.Count - 400), organisations.Count)] : null;
                 yield return new SeedContact(ContactKinds.Person, reference, $"{first.En} {middle.En} {last.En}", $"{first.Ar} {middle.Ar} {last.Ar}",
                     OrganisationReference: parent, JobTitle: parent is null ? null : JobTitles[random.Next(JobTitles.Length)],
-                    Email: $"{local}.{i}@{domain}", Mobile: $"+971 5{"024568"[random.Next(6)]} {random.Next(100, 999)} {random.Next(0, 9999):0000}",
+                    Email: $"{local}.{i}@mail.{domain}", Mobile: $"+971 5{"024568"[random.Next(6)]} {NoZeros(random, 3)} {NoZeros(random, 4)}",
                     Area: area, City: place.City, Emirate: place.Code, Tags: random.Next(5) == 0 ? Tags[random.Next(Tags.Length)] : null,
                     Active: random.Next(50) != 0);
             }
         }
+    }
+
+    /// <summary>Digits 1 to 9 only.</summary>
+    private static string NoZeros(Random random, int length) =>
+        new(Enumerable.Range(0, length).Select(_ => (char)('1' + random.Next(9))).ToArray());
+
+    /// <summary>A number written in capital letters (1 is AAB, 26 is ABA): a code without digits.</summary>
+    private static string Letters(int number)
+    {
+        var letters = new char[3];
+        for (var i = 2; i >= 0; i--)
+        {
+            letters[i] = (char)('A' + number % 26);
+            number /= 26;
+        }
+        return number == 0 ? new string(letters) : Letters(number) + new string(letters);
     }
 
     private static int StableHash(string value)
