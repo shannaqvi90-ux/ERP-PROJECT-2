@@ -89,7 +89,7 @@ const allRowsChosen = {
 async function sweep(path: string, permissions = reads, exhaustive = false) {
   await open(path, permissions);
   expect(view!.container.querySelector("main"), `${path} shows its screen`).not.toBeNull();
-  const list = !path.includes("open=") && grid() !== null;
+  const list = !path.includes(organisationId) && grid() !== null;
   return sweepKeys({
     exhaustive,
     calls,
@@ -102,14 +102,16 @@ async function sweep(path: string, permissions = reads, exhaustive = false) {
 }
 
 describe("the contacts screen by keyboard, for a user who may read contacts and change nothing", () => {
-  for (const path of [`/contacts/contacts?open=${organisationId}`, "/contacts/contacts"]) {
+  // The record's own address (a list screen writes ?open=<id> as /<screen>/<id> at once, which a
+  // sweep would take for a key leaving the screen).
+  for (const path of [`/contacts/contacts/${organisationId}`, "/contacts/contacts"]) {
     it(`${path}: no key, and no control the keyboard reaches, sends anything but reads or opens a new record`, async () => {
       expect(await sweep(path)).toEqual([]);
     }, sweepTimeLimit);
   }
 
   it("the control: the same sweep for a user who may change and archive contacts finds the save keys' and Archive's writes", async () => {
-    const found = await sweep(`/contacts/contacts?open=${organisationId}`, [...reads, "contacts.contacts.update", "contacts.contacts.archive"], true);
+    const found = await sweep(`/contacts/contacts/${organisationId}`, [...reads, "contacts.contacts.update", "contacts.contacts.archive"], true);
     const saves = new Set(found.filter((w) => w.method === "PUT" && w.url === `/api/contacts/contacts/${organisationId}`).map((w) => w.key.split(" ")[0]));
     expect(saves).toContain("Ctrl+KeyS");
     expect(found.some((w) => w.method === "POST" && w.url === `/api/contacts/contacts/${organisationId}/archive`), "Archive reached by keyboard").toBe(true);

@@ -46,9 +46,11 @@ Date: 2026-10-25. Piece: p16-contacts. Status: accepted (round 1).
 ## Processor time this round adds to `./erp verify`
 
 Measured on the builder's machine (busy with other verifies): the contacts web screen tests
-(about 5 s), the contacts keyboard sweep (about 100 s: the open-record sweep and its control, about
-45 s each), the contacts plant self-test (seven vitest runs, about 60 s), the palette sweep's extra
-screen (about 10 s), the contacts module tests (about 20 s with their own gate database) and the
-generic gates' attacks on eight more endpoints (G1 and G2 enumerate them; their share is reported in
-the notes once the full verify ran). The timing test seeds 100,000 contacts (database time, not
-counted in the processor-time maximum) and runs alone in the timing stage.
+(about 5 s), the contacts keyboard sweep (about 13 s for the record, the list and the control; the
+record is swept at its own address, /contacts/contacts/<id>, since a sweep at ?open=<id> took every
+key for a key leaving the screen and reopened the app 474 times, two minutes), the contacts plant
+self-test (seven vitest runs, about 60 s), the palette sweep's extra screen (about 10 s), the contacts
+module tests (about 20 s with their own gate database) and the generic gates' attacks on eight more
+endpoints (G1 and G2 enumerate them: the HTTP isolation gate ran 142 endpoints in about 58 minutes on a
+busy machine, against 134 before). The timing test seeds 100,000 contacts (database time, not counted
+in the processor-time maximum) and runs alone in the timing stage, in about 10 s of test time.
