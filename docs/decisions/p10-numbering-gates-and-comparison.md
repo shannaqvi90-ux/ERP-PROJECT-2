@@ -30,6 +30,11 @@ they cover it:
   everywhere, and judges every audited write: only that sequence's pattern columns and its own
   counters' `next_value`. A reader and a caller limited to one branch of the company are refused with
   nothing written.
+- `tests/Erp.Gates.Tests/G2/CompanyRoleVariants.cs` (extended, stricter): the one-field variants of
+  a role held in company X acting on company Y had no other valid value for two integer fields of the
+  sequence edit (`padding`, `nextValue`), a blind spot the gate reported; it now varies both (5 and 6
+  digits; the next value moved up by one), so each is sent at company Y's sequences and controlled at
+  company X's.
 - `tests/Gates/endpoint-permissions/numbering.txt`: the reviewed endpoint-to-permission map of
   `/api/numbering/` (three endpoints, each with why that permission and no broader one).
 - `tests/Gates/permission-write-sets.txt`: `tenancy.companies.create` now also inserts the new

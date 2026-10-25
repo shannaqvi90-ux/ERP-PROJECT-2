@@ -11,13 +11,19 @@ security forced for the tenant and the company, the company write policies, the 
   the numbers start again (`never`, `yearly`, `monthly`), whether they may skip (`gapless`), whether
   each branch counts on its own (`per_branch`). One row per company and document type (unique on
   `tenant_id, company_id, document_type`).
-- `counters`: the counter of one sequence in one period (`""`, `"2026"`, `"2026-10"`) and, for a
-  sequence counted per branch, one branch: the value the next number gets and the last one given.
-  Unique on `tenant_id, sequence_id, branch_id, period` with `NULLS NOT DISTINCT` (PostgreSQL 15+), so
-  "no branch" is one counter.
+- `counters`: the counter of one sequence in one period (`period_year`, `period_month`: 0 and 0 for a
+  sequence that never starts again, 2026 and 0 for a year, 2026 and 10 for a month; the API shows
+  `""`, `"2026"`, `"2026-10"`) and, for a sequence counted per branch, one branch: the value the next
+  number gets and the last one given. Unique on `tenant_id, sequence_id, branch_id, period_year,
+  period_month` with `NULLS NOT DISTINCT` (PostgreSQL 15+), so "no branch" is one counter.
 - `issued_numbers`: every number given, with its document type, period, value, text, document date,
   the document it went to (`source_id`) and whether it was taken gapless. Unique on
   `tenant_id, company_id, document_type, number`.
+
+Periods and the reset are kept as numbers (`reset` is a `smallint`: 0 never, 1 yearly, 2 monthly),
+not words: the report gate treats every stored text of the workspace as its data, and a period
+"2026" or a word such as "never" stored as text read as data wherever a print shows the year or
+the word (the first builder verify's finding).
 
 ## Decisions
 
@@ -72,8 +78,11 @@ security forced for the tenant and the company, the company write policies, the 
    type" true whatever an administrator changes later (a reset turned off, a prefix put back), and
    traces each number to its document (CLAUDE.md rule 3's "every posting traces back to the source
    document" starts here). The record's panel lists the last ten.
-7. **Changing a sequence** (`PUT /api/numbering/sequences/{id}`, with the version read). The next
-   number of today's period may be raised (a company moving from another system starts at 1,500),
+7. **Changing a sequence** (`PUT /api/numbering/sequences/{id}`, with the version read). A prefix or
+   suffix left out keeps the sequence's own (an empty one clears it); digits, reset, gapless and per
+   branch are required. `nextValue` is the record's own field of the same name (the value the next
+   number of today's period gets): sent back unchanged it changes nothing, so an edit built from the
+   record as read is valid. The next value of today's period may be raised (a company moving from another system starts at 1,500),
    never set at or below a number already given, and on a gapless sequence not moved once a number of
    the period was given. When the sequence starts again at another time (yearly to never, never to
    monthly …), the new period's counter goes on from today's count instead of starting at 1, so no
@@ -100,7 +109,11 @@ security forced for the tenant and the company, the company write policies, the 
    to 1,202, quotations and journal vouchers part way, delivery notes counted per branch
    (`DN-{BRANCH}-{YY}-`), goods received notes with a suffix; its other companies have invoices
    started. The gate workspaces differ from each other (tenant B's own prefixes, a sequence that never
-   starts again, one counted per branch) so the list gates have answers that tell them apart.
+   starts again, one counted per branch) so the list gates have answers that tell them apart; every
+   gate sequence shows the year and the month (a `/{MM}` or `/{YY}{MM}` suffix where its pattern had
+   none), so each documented reset is a valid edit of each of them, as the HTTP gate sends them; and
+   both companies of each gate workspace hold counters and issued numbers (the company gates judge
+   every company table's rows of both).
 
 ## Not done here
 
