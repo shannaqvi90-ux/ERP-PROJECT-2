@@ -210,3 +210,16 @@ named in its table's `audit.capture()` trigger, redacted or left out (`rules.aud
 It failed on `identity.users.device_approval_hash`; identity migration `AuditRedactsDeviceApproval`
 now records it as "[redacted]" (shown "(hidden)"); until when the approval holds stays recorded.
 Rows written before keep what they hold (the trail is append-only).
+
+**Cost of this follow-up.** Two more searches per searchable list and direction (and their sorted
+twins): the G1 HTTP list-answer phase judged 3,752 queries (2,010 sorted) instead of 3,668 (1,968),
+about 2 % more, at a few seconds of the gate's processor time. The redaction gate reads the
+catalogue only. Verifies at this code: run 6 (`78bf54f6`, slot taken 21:50 UTC, load up to about
+40) failed on two measurements under load and nothing else: the comparison harness's control test
+`causation.test.mjs` 'control (round 12): a form posted by Enter in its field' ("action outside the
+clock (set-up)", a style recalculation during a DevTools command) and the health check `find-user`
+invalid for the same kind of reason; every .NET stage (suite, self-http, self-company,
+self-noninterference) passed and 126 of 126 e2e tests passed, `open-third-user-keyboard`
+verified; 9,835 processor seconds (dotnet 7,324, web 1,926, e2e 587). Run 7 (`c694862c`, slot
+taken 00:28 UTC) passed: 8,915 processor seconds (dotnet 6,426, web 2,049, e2e 403, timing 36),
+4,584 s wall. Ratchet minimums raised for the added tests and queries.
