@@ -84,11 +84,18 @@ internal sealed class DefaultSequences(NumberingDbContext db, DocumentTypeCatalo
             .Select(s => new { s.CompanyId, s.DocumentType }).ToListAsync(cancellationToken);
         var have = held.Select(h => (h.CompanyId, h.DocumentType)).ToHashSet();
         var added = 0;
+        // Ids in the order the sequences are made (company by company, as given; a millisecond apart),
+        // so a company's sequences sort together and the first company's come first, as its
+        // companies and branches do.
+        var clock = DateTimeOffset.UtcNow;
         foreach (var company in companyIds)
         {
             foreach (var type in types.All.Where(t => !have.Contains((company, t.Key))))
             {
-                db.Sequences.Add(FromDefaults(company, type));
+                var sequence = FromDefaults(company, type);
+                clock = clock.AddMilliseconds(1);
+                sequence.Id = Guid.CreateVersion7(clock);
+                db.Sequences.Add(sequence);
                 added++;
             }
         }
