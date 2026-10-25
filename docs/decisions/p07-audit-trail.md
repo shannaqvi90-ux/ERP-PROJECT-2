@@ -52,7 +52,7 @@ leave rows.
   (`record` in `kernel/extensions.ts`) the audit module fills; `RecordForm` now requires the
   `record` it shows (type and id), so the compiler refuses a form without its history. A screen that
   shows a record to a reader without a form (the workspace page) uses `RecordPanels`. The audit log
-  screen (`/audit/log`, G then Y) opens a change in the side panel with every field and links to
+  screen (`/audit/log`, G then L; G then Y went to the currencies screen of p08, merged first) opens a change in the side panel with every field and links to
   the record and to the record's history.
 
 ## Who may read what

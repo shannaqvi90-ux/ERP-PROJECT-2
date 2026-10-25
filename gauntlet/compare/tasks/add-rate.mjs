@@ -11,7 +11,12 @@ export default {
   // writes that save it (the measured part must send one of them).
   endState: {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.currency.rate/search_read', parts: ['result.inverse_company_rate', 'result.company_rate'] }], writes: ['POST /web/dataset/call_kw/res.currency/web_save', 'POST /web/dataset/call_kw/res.currency.rate/web_save'] },
+    ours: { reads: [{ read: 'GET /api/currency/rates', parts: ['items.exchangeRate'] }], writes: ['POST /api/currency/rates'] },
   },
+  // The writes set-up sends for each product whose driver is built (set-up removes any euro rate
+  // dated today, putting the euro in use first when it is not); any other set-up write is refused for
+  // our product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['PUT /api/currency/currencies/*', 'DELETE /api/currency/rates/*'] },
   enters: ['aedPerUnit'],
   moments: ['rate entered'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',

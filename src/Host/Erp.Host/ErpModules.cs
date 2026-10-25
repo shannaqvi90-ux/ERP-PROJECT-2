@@ -1,5 +1,6 @@
 using Erp.Kernel.Modules;
 using Erp.Modules.Audit;
+using Erp.Modules.Currency;
 using Erp.Modules.Identity;
 using Erp.Modules.Lists;
 using Erp.Modules.Reports;
@@ -14,6 +15,7 @@ public static class ErpModules
     [
         new TenancyModule(),
         new IdentityModule(),
+        new CurrencyModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.
         new ListsModule(),
         // After every module that registers audited records (they are the audit log's record types).
