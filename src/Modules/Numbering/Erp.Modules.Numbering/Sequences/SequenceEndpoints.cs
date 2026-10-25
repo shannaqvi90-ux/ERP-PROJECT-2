@@ -88,7 +88,8 @@ public sealed record SequenceDto(
     [property: Description("True when the caller may change this sequence: they hold numbering.sequences.update in its company and work in every branch of it.")]
     bool CanUpdate);
 
-/// <summary>Change how a company numbers a kind of document. Prefix and suffix hold letters A to Z,
+/// <summary>Change how a company numbers a kind of document. A prefix or suffix left out (null) keeps
+/// the sequence's own; an empty one clears it. Prefix and suffix hold letters A to Z,
 /// digits, the separators - / . _ # and the tokens {YYYY}, {YY}, {MM} and {BRANCH}; a sequence that
 /// starts again every year needs a year token, one that starts again every month a year and {MM},
 /// one counted per branch {BRANCH}. <c>nextValue</c> moves the counter of today's period (a sequence
@@ -251,15 +252,6 @@ internal static class SequenceEndpoints
             .Required("gapless", request.Gapless)
             .Required("perBranch", request.PerBranch)
             .Required("version", request.Version);
-        var prefix = request.Prefix?.Trim() ?? "";
-        var suffix = request.Suffix?.Trim() ?? "";
-        if (request.Padding is not null && request.Reset is not null && request.PerBranch is not null)
-        {
-            foreach (var problem in NumberPattern.Check(prefix, suffix, request.Padding, request.Reset, request.PerBranch.Value))
-            {
-                validator.Add(problem.Field, problem.Code, problem.Arguments);
-            }
-        }
         if (request.NextValue is { } typed)
         {
             validator.Must(typed is >= 1 and <= NumberPattern.MaxValue, "nextValue", "numberingNextNumberRange", NumberPattern.MaxValue);
@@ -272,6 +264,18 @@ internal static class SequenceEndpoints
         if (sequence is null)
         {
             return Problems.NotFound(http);
+        }
+        // A prefix or suffix left out keeps the sequence's own; an empty one clears it.
+        var prefix = request.Prefix?.Trim() ?? sequence.Prefix;
+        var suffix = request.Suffix?.Trim() ?? sequence.Suffix;
+        var pattern = new Validator(http);
+        foreach (var problem in NumberPattern.Check(prefix, suffix, request.Padding, request.Reset, request.PerBranch!.Value))
+        {
+            pattern.Add(problem.Field, problem.Code, problem.Arguments);
+        }
+        if (!pattern.IsValid)
+        {
+            return pattern.ToResult();
         }
         // A role given in another company grants nothing here, and every branch of the company shares
         // its sequences: the endpoint refuses first (the kernel refuses the write as well).

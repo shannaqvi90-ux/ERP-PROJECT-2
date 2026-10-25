@@ -230,6 +230,23 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
     }
 
     [Fact]
+    public async Task A_prefix_or_suffix_left_out_keeps_the_sequences_own_and_an_empty_one_clears_it()
+    {
+        using var admin = await SignInAsync();
+        var row = await RowAsync(admin, "payments.receipt");
+        Assert.Equal("/{MM}", row.GetProperty("suffix").GetString());
+        var kept = await admin.PutAsJsonAsync($"/api/numbering/sequences/{row.GetProperty("id").GetGuid()}",
+            new { padding = 6, reset = "monthly", gapless = false, perBranch = false, version = row.GetProperty("version").GetUInt32() });
+        Assert.True(kept.StatusCode == HttpStatusCode.OK, await kept.Content.ReadAsStringAsync());
+        var record = await Json(kept);
+        Assert.Equal(("RV-{YYYY}-", "/{MM}", 6, "monthly"),
+            (record.GetProperty("prefix").GetString(), record.GetProperty("suffix").GetString(), record.GetProperty("padding").GetInt32(), record.GetProperty("reset").GetString()));
+        var cleared = await PutAsync(admin, record, Body(record, suffix: "", reset: "yearly"));
+        Assert.True(cleared.StatusCode == HttpStatusCode.OK, await cleared.Content.ReadAsStringAsync());
+        Assert.Equal("", (await Json(cleared)).GetProperty("suffix").GetString());
+    }
+
+    [Fact]
     public void Every_registered_document_type_has_its_name_in_English_and_Arabic()
     {
         var strings = Env.Factory.Services.GetRequiredService<Erp.Kernel.Localization.StringCatalog>();
