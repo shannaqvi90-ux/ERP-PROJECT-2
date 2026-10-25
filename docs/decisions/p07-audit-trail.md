@@ -223,3 +223,14 @@ self-noninterference) passed and 126 of 126 e2e tests passed, `open-third-user-k
 verified; 9,835 processor seconds (dotnet 7,324, web 1,926, e2e 587). Run 7 (`c694862c`, slot
 taken 00:28 UTC) passed: 8,915 processor seconds (dotnet 6,426, web 2,049, e2e 403, timing 36),
 4,584 s wall. Ratchet minimums raised for the added tests and queries.
+
+**Merged with p08 (currency), integrated first.** The integration branch took p08 while this
+round ran, so this branch merged it (`dd152a7e`): the currency module now registers its two
+audited tables as kinds of records (`currency.currencies` under `currency.currencies.read`, opening
+`/currency/currencies/{id}`; `currency.exchange_rates` under `currency.rates.read`, opening
+`/currency/rates/{id}`), names them in both languages (`currency.record.*`), its two forms name the
+record they show (so their history and latest change appear), and the audit screens name the seven
+currency columns in both languages (the audit rule gate refused the merge until then). The audit
+log's go-to key moved from Y, which p08 gave the currencies screen, to L (log). Ratchet minimums
+take the higher value of each side; the audit ones count the currency tables (17 audited tables,
+17 kinds of records, 134 named fields).
