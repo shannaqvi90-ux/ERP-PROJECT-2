@@ -262,16 +262,38 @@ internal static partial class ContactsValidation
         return validator;
     }
 
+    /// <summary>Words of a business name that say what kind of legal entity it is, not which one
+    /// (LLC, FZE, Est., Co., ذ.م.م, مؤسسة, شركة …), as they read once dots are dropped: "Falcon
+    /// Trading L.L.C." and "Falcon Trading Co." compare as the same name.</summary>
+    private static readonly FrozenSet<string> LegalWords = FrozenSet.ToFrozenSet(
+        ["llc", "fze", "fzco", "fzc", "fz", "fzllc", "est", "establishment", "co", "company", "ltd", "limited", "inc", "plc", "pjsc", "psc", "dmcc", "llp", "corp",
+         "ذمم", "ممح", "شذمم", "شمم", "شمح", "مؤسسه", "شركه"],
+        StringComparer.Ordinal);
+
     /// <summary>The name as compared for duplicates: lower case, letters and digits of any script,
-    /// one space between words; Arabic letters that are often written either way (alef with hamza or
-    /// madda, final ya and alef maqsura, ta marbuta and ha) are folded together, and tatweel and
-    /// short vowel marks are dropped.</summary>
+    /// one space between words, dots and apostrophes dropped (L.L.C. reads as llc), the words that
+    /// only name the kind of legal entity left out; Arabic letters that are often written either way
+    /// (alef with hamza or madda, final ya and alef maqsura, ta marbuta and ha) are folded together,
+    /// and tatweel and short vowel marks are dropped.</summary>
     public static string NameKey(string? name)
+    {
+        var folded = Fold(name);
+        var words = folded.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => !LegalWords.Contains(w)).ToList();
+        // A name made only of such words (a company called "Co.") is kept as it is.
+        var key = words.Count == 0 ? folded : string.Join(' ', words);
+        return key.Length > NameMaxLength ? key[..NameMaxLength] : key;
+    }
+
+    private static string Fold(string? name)
     {
         var key = new StringBuilder();
         var space = false;
         foreach (var raw in (name ?? "").Normalize(NormalizationForm.FormKC).ToLowerInvariant())
         {
+            if (raw is '.' or '\'' or '\u2019')
+            {
+                continue;
+            }
             var c = raw switch
             {
                 'أ' or 'إ' or 'آ' or 'ٱ' => 'ا',
@@ -297,7 +319,7 @@ internal static partial class ContactsValidation
                 space = true;
             }
         }
-        return key.Length > NameMaxLength ? key.ToString(0, NameMaxLength) : key.ToString();
+        return key.ToString();
     }
 
     /// <summary>The e-mail as compared for duplicates: trimmed, lower case; null when empty.</summary>

@@ -218,6 +218,14 @@ describe("the contact form", () => {
     expect(controls()).toContain("button:Save");
   });
 
+  it("on an Arabic screen the list shows each contact's Arabic name", async () => {
+    await open(all, { path: "/contacts/contacts", language: "ar" });
+    const grid = shown().container.querySelector("main [role=grid]")!;
+    expect(grid.textContent).toContain("فالكون لمواد البناء ذ.م.م");
+    expect(grid.textContent).toContain("حمد سعيد الكتبي");
+    expect(grid.textContent).not.toContain("Falcon Building Materials LLC");
+  });
+
   it("on an Arabic screen the Arabic name comes first and has the focus, and the labels are Arabic", async () => {
     await open(all, { path: "/contacts/contacts?open=new", language: "ar" });
     const fields = [...shown().container.querySelectorAll<HTMLInputElement>('.record-form input[name^="name"]')].map((i) => i.name);

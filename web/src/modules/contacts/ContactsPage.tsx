@@ -7,7 +7,7 @@ import type { Row } from "../../kernel/lists/model";
 import { useSession } from "../../kernel/session";
 import { useShortcut } from "../../kernel/shortcuts";
 import { ContactForm, type NewContact } from "./ContactForm";
-import { contactsChanged, organisationName, type ContactRow } from "./types";
+import { contactName, contactsChanged, organisationName, type ContactRow } from "./types";
 import "./contacts.css";
 
 /** How many archive or restore requests a bulk change runs at once. */
@@ -150,6 +150,8 @@ export function ContactsPage() {
           )
         }
         renderCell={{
+          // The name in the screen's language: the Arabic one on Arabic screens when the contact has one.
+          nameEn: (row) => <span dir="auto">{contactName({ nameEn: String(row.nameEn ?? ""), nameAr: String(row.nameAr ?? "") }, language)}</span>,
           kind: (row) => <span className={`ct-kind ct-kind-${String(row.kind)}`}>{t(`contacts.kind.${row.kind === "person" ? "person" : "organisation"}`)}</span>,
           organisationId: (row) => organisationName(row as unknown as ContactRow, language),
           email: (row) => <span dir="ltr">{String(row.email ?? "")}</span>,

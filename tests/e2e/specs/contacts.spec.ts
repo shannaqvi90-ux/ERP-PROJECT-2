@@ -20,9 +20,10 @@ test.describe("the contacts directory", () => {
     // The verify stack seeds 2,000 generated contacts and the named ones.
     const total = ((await (await page.request.get("/api/contacts/contacts?take=1")).json()) as { total: number }).total;
     expect(total).toBeGreaterThanOrEqual(2000);
-    // The search box has the focus on arrival; Enter opens the best match.
+    // The search box has the focus on arrival; Enter opens the best match. (By its reference: the
+    // comparison dataset, which a demo may hold, has organisations of the same name.)
     await expect(page.locator(".list-search input")).toBeFocused();
-    await page.keyboard.type("falcon building");
+    await page.keyboard.type("c-demo-1");
     await expect(listRows(page).filter({ hasText: "Falcon Building Materials LLC" }).first()).toBeVisible();
     await page.keyboard.press("Enter");
     await expect(page.locator(".record-header h2")).toHaveText("Falcon Building Materials LLC");
@@ -43,7 +44,7 @@ test.describe("the contacts directory", () => {
     await expect(page.locator('[data-field="nameEn"] input')).toBeFocused();
     // The name of a contact the directory holds: the form says so, and saving is still allowed.
     await page.keyboard.type("Falcon Building Materials L.L.C.");
-    await expect(page.locator(".ct-duplicates")).toContainText("Falcon Building Materials LLC");
+    await expect(page.locator(".ct-duplicates")).toContainText("Falcon Building Materials");
     await expect(page.locator(".ct-duplicates")).toContainText("same name");
     const name = `Gulf Horizon Trading ${Date.now() % 1000000} LLC`;
     await page.locator('[data-field="nameEn"] input').fill(name);
@@ -66,7 +67,9 @@ test.describe("the contacts directory", () => {
   test("the command palette opens a contact by name from anywhere", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
+    await expect(page.locator('nav a[href="/contacts/contacts"]')).toBeVisible();
     await page.keyboard.press("Control+KeyK");
+    await expect(page.locator('[role="dialog"] input[role="combobox"]')).toBeFocused();
     await page.keyboard.type("Hamad Saeed Al Ketbi");
     await expect(page.locator('[role="option"]', { hasText: "Hamad Saeed Al Ketbi" }).first()).toBeVisible();
     await page.keyboard.press("Enter");
@@ -79,7 +82,7 @@ test.describe("the contacts directory", () => {
     await signIn(page, users.adminArabic);
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await openContacts(page);
-    await page.keyboard.type("فالكون");
+    await page.keyboard.type("c-demo-1");
     await expect(listRows(page).filter({ hasText: "فالكون لمواد البناء ذ.م.م" }).first()).toBeVisible();
     await page.keyboard.press("Enter");
     await expect(page.locator(".record-header h2")).toHaveText("فالكون لمواد البناء ذ.م.م");
@@ -95,7 +98,7 @@ test.describe("the contacts directory", () => {
     await signIn(page, users.viewer);
     await openContacts(page);
     await expect(page.getByRole("button", { name: "New contact" })).toHaveCount(0);
-    await page.keyboard.type("falcon building");
+    await page.keyboard.type("c-demo-1");
     await expect(listRows(page).filter({ hasText: "Falcon Building Materials LLC" }).first()).toBeVisible();
     await page.keyboard.press("Enter");
     await expect(page.locator(".record-header h2")).toHaveText("Falcon Building Materials LLC");
