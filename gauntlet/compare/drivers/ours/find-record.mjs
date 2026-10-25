@@ -12,12 +12,16 @@ const recordShows = m => [...document.querySelectorAll('form, [role="dialog"], [
 
 /**
  * The fewest letters an expert of this product types to put the contact first: the shortest word
- * prefixes of the name whose ranked search answers the contact as the best match, found through
- * the contacts list's own search before the measured run. Falls back to the first three letters
- * of each word.
+ * prefixes of the name (any of its words, in order) whose ranked search answers the contact as the
+ * best match, found through the contacts list's own search before the measured run. Each part is at
+ * least three letters or a whole word: a part of one or two letters cannot use the search's
+ * trigram index, and at 100,000 contacts such a search ("sh w al r") answers in a second instead
+ * of milliseconds. Falls back to the first three letters of each word.
  */
 async function shortestPrefixes(api, name, id, maxProbes = 400) {
-  for (const typed of prefixCandidates(name).slice(0, maxProbes)) {
+  const words = name.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const indexed = typed => typed.split(' ').every(part => part.length >= 3 || words.includes(part));
+  for (const typed of prefixCandidates(name).filter(indexed).slice(0, maxProbes)) {
     const page = await api.get(`/api/contacts/contacts?take=1&search=${encodeURIComponent(typed)}`);
     if (page.items?.[0]?.id === id) return typed;
   }
@@ -28,8 +32,8 @@ async function shortestPrefixes(api, name, id, maxProbes = 400) {
 // Enter opens its form); or the Contacts screen (a click on Contacts, or G then O), whose search box
 // has the focus on arrival, the name (or the shortest prefixes of its words that rank the contact
 // first) typed, Enter opens the best match. Tried and left out (round 1, on the shared dataset): the
-// initials (seven people share "swar", and the contact is not the best of them) and the palette with
-// the shortest prefixes (the palette's first entry for them is another record).
+// initials (seven people share "swar", and the contact is not the best of them) and prefixes of one or
+// two letters ("sh w al r": the shortest, but a search the trigram index cannot serve, a second slower).
 function build(how, typedOf) {
   return async (op, ctx) => {
     const { name, mobile } = ctx.needles.contact;
@@ -94,9 +98,10 @@ export default {
   run: build('palette', whole),
   variants: {
     palette: { path: 'Ctrl+K > type the contact\'s name > Enter opens the contact\'s form.', run: build('palette', whole) },
+    'palette-shortest': { path: 'Ctrl+K > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. "sha wal rom" > Enter opens the contact\'s form.', run: build('palette', shortest) },
     menu: { path: 'Contacts (navigation; the search box has the focus) > type the name > Enter opens the best match.', run: build('menu', whole) },
     goto: { path: 'G then O (Contacts; the search box has the focus) > type the name > Enter opens the best match.', run: build('goto', whole) },
-    shortest: { path: 'Contacts (navigation; the search box has the focus) > the shortest word prefixes of the name that rank the contact first > Enter opens the best match.', run: build('menu', shortest) },
+    shortest: { path: 'Contacts (navigation; the search box has the focus) > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. "sha wal rom" > Enter opens the best match.', run: build('menu', shortest) },
   },
   async verify(ctx) {
     const { name, mobile } = ctx.needles.contact;
