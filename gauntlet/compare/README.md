@@ -576,6 +576,7 @@ removed (plan.md); the ratchet counts them.
 | arabic-report (p06) | user menu > My Preferences > Arabic > Update Preferences > Print | printing straight away gives Arabic text laid out left to right |
 | who-changed-field (p07) | Apps > Contacts > name > Enter > open; the change log shows the latest change | change made by another user in set-up |
 | add-rate (p08) | Invoicing > Configuration > Currencies > EUR > Add a line > AED per unit > Save | keyboard and pointer variants |
+| see-converted (p08) | Invoicing (or Ctrl+K "/invoi") > New > currency: EUR > Add a line > price 1250 > Journal Items (debit and credit in AED) | menus and palette variants; Community converts an amount only where it posts it: a draft invoice in the currency, whose journal items are in AED at the day's rate; set-up makes today's euro rate the task's in both products (in Odoo for the user's day and its server's UTC day, which a draft's rate lookup uses); clean-up removes the rate and the draft |
 | configure-sequence (p10) | Settings > scroll > developer mode > Technical > Sequences > search > open > prefix, size > Save | Odoo shows sequences only in developer mode |
 | attach-file (p11) | paperclip > Attach files > choose the file | |
 | see-and-rerun-job (p12) | Settings > scroll > developer mode > Technical > Scheduled Actions > search > open > Run Manually | Odoo shows no last-run time and no message after the run |
@@ -587,7 +588,8 @@ sign-in, find-user, create-restricted-user, api-update-user, switch-to-arabic an
 reach-screen-keyboard (p04), create-company-branch and switch-company (p02), edit-and-save and
 arabic-report (p06; until contacts and purchase orders exist they use a company and its printed
 company profile as the stand-in record and document), print-list-arabic (the users list, printed as a
-PDF report in Arabic, stands in for the vendor's purchase orders). Drivers find things by role and label, not layout.
+PDF report in Arabic, stands in for the vendor's purchase orders), add-rate and see-converted (p08: the euro's panel on the Currencies screen, today's rate field
+focused as it opens; the converter below it). Drivers find things by role and label, not layout.
 The others report "not built yet" with what they wait for.
 
 An API task (`channel: 'api'` in its definition) has no screens: the driver's `signIn` calls
@@ -696,5 +698,7 @@ regenerates them when missing. `needles.json` names the record "find one among 1
 Loading it into our product: `ERP_SEED_USERS_CSV=gauntlet/compare/data/out/users.csv ./erp up`
 (on a fresh database: `./erp down --volumes` first) makes the demo tenant's bulk users exactly the
 dataset's users, with the names, sign-ins, languages and active flags the Odoo rig holds
-(`users.csv` has an `active` column; every dataset user is active in both products). Contacts and rates
-follow the same pattern when their pieces exist (p16, p08).
+(`users.csv` has an `active` column; every dataset user is active in both products).
+`ERP_SEED_RATES_CSV=gauntlet/compare/data/out/rates.csv` does the same for the exchange rates (p08):
+the demo tenant's 100,000 rates are exactly the dataset's (its fifty currencies put in use).
+Contacts follow the same pattern when their piece exists (p16).

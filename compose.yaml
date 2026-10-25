@@ -43,8 +43,11 @@ services:
       Erp__Seed__DemoPassword: ${ERP_DEMO_PASSWORD:-Demo-Pass-2026}
       # The comparison dataset's users (gauntlet/compare/data); ./erp sets these from ERP_SEED_USERS_CSV.
       Erp__Seed__UsersCsv: ${ERP_SEED_USERS_CSV_IN_CONTAINER:-}
+      # The comparison dataset's exchange rates; ./erp sets these from ERP_SEED_RATES_CSV.
+      Erp__Seed__RatesCsv: ${ERP_SEED_RATES_CSV_IN_CONTAINER:-}
     volumes:
       - ${ERP_SEED_DATA_DIR:-./build/no-seed-data}:/seed-data:ro
+      - ${ERP_SEED_RATES_DIR:-./build/no-seed-data}:/seed-rates:ro
     depends_on:
       db:
         condition: service_healthy

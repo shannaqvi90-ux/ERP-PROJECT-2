@@ -32,6 +32,10 @@
 #                         become exactly the dataset's users, as in the Odoo reference. Applies when the
 #                         demo database is first seeded (./erp down --volumes to start again).
 #                         Unset: generated demo users.
+#   ERP_SEED_RATES_CSV    rates.csv of the shared comparison dataset (gauntlet/compare/data/out/rates.csv):
+#                         the demo tenant's exchange rates become exactly the dataset's 100,000 rates (and
+#                         its fifty currencies are put in use), as in the Odoo reference. Applies when the
+#                         demo database is first seeded. Unset: generated rates ending today.
 #   ERP_TESTCONTAINERS_HOST  where verify's test containers reach the ports Testcontainers publishes
 #                         (default 127.0.0.1; host.docker.internal on Docker Desktop)
 #   ERP_VERIFY_KEEP_DIR   where a failed verify keeps its stage logs, test reports and the comparison
@@ -75,6 +79,14 @@ if [[ -n "${ERP_SEED_USERS_CSV:-}" ]]; then
   ERP_SEED_DATA_DIR="$(cd "$(dirname "$ERP_SEED_USERS_CSV")" && pwd)"
   ERP_SEED_USERS_CSV_IN_CONTAINER="/seed-data/$(basename "$ERP_SEED_USERS_CSV")"
   export ERP_SEED_DATA_DIR ERP_SEED_USERS_CSV_IN_CONTAINER
+fi
+
+# The comparison dataset's rates file, mounted read-only into the one-shot setup container.
+if [[ -n "${ERP_SEED_RATES_CSV:-}" ]]; then
+  [[ -s "$ERP_SEED_RATES_CSV" ]] || { printf 'erp: ERP_SEED_RATES_CSV=%s is not a readable file (node gauntlet/compare/data/generate.mjs makes it)\n' "$ERP_SEED_RATES_CSV" >&2; exit 1; }
+  ERP_SEED_RATES_DIR="$(cd "$(dirname "$ERP_SEED_RATES_CSV")" && pwd)"
+  ERP_SEED_RATES_CSV_IN_CONTAINER="/seed-rates/$(basename "$ERP_SEED_RATES_CSV")"
+  export ERP_SEED_RATES_DIR ERP_SEED_RATES_CSV_IN_CONTAINER
 fi
 
 # Ending verify stages with everything they started, and sampling the machine's load.
@@ -285,7 +297,7 @@ verify_stack_and_e2e() {
   bold "Clean stack: build, migrate, seed, serve (project $project, port $ERP_VERIFY_HTTP_PORT)"
   compose "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" 0 down --volumes --remove-orphans >/dev/null 2>&1 || true
   # The verify stack always seeds generated users (the end-to-end tests expect them).
-  ERP_SEED_USERS_CSV_IN_CONTAINER="" ERP_SEED_DATA_DIR=""     stack_up "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" "$ERP_VERIFY_VOLUME"
+  ERP_SEED_USERS_CSV_IN_CONTAINER="" ERP_SEED_DATA_DIR="" ERP_SEED_RATES_CSV_IN_CONTAINER="" ERP_SEED_RATES_DIR=""     stack_up "$project" "$ERP_VERIFY_HTTP_PORT" "$ERP_VERIFY_DB_PORT" "$ERP_VERIFY_VOLUME"
   # The end-to-end tests drive a browser with timeouts: they start once the .NET stage (the
   # suite's heaviest load) is over, so a busy machine does not decide them.
   until [[ -f "$VERIFY_OUT/dotnet.status" ]]; do sleep 2; done
