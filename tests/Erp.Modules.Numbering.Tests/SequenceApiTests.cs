@@ -247,6 +247,22 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
     }
 
     [Fact]
+    public async Task A_workspaces_sequences_sort_by_id_company_by_company_its_first_company_first()
+    {
+        // As its companies and branches do: a record taken "first" of the table is the first
+        // company's (where the gates' branch-limited Arabic administrator works in every branch).
+        foreach (var tenant in new[] { Env.TenantA, Env.TenantB })
+        {
+            var order = await Db.TextAsync(Env,
+                "SELECT string_agg(s.company_id::text, ',' ORDER BY s.id) FROM numbering.sequences s WHERE s.tenant_id = @t AND s.created_by IS NULL", ("t", tenant.Id));
+            var companies = order.Split(',');
+            var first = await Db.TextAsync(Env, "SELECT id::text FROM tenancy.companies WHERE tenant_id = @t ORDER BY id LIMIT 1", ("t", tenant.Id));
+            Assert.All(companies.Take(11), c => Assert.Equal(first, c));
+            Assert.Equal(companies.Distinct().Count(), companies.Select((c, i) => (c, i)).Count(x => x.i == 0 || companies[x.i - 1] != x.c));
+        }
+    }
+
+    [Fact]
     public void Every_registered_document_type_has_its_name_in_English_and_Arabic()
     {
         var strings = Env.Factory.Services.GetRequiredService<Erp.Kernel.Localization.StringCatalog>();
