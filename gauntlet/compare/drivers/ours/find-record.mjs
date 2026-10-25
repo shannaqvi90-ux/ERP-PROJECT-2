@@ -1,5 +1,5 @@
 import { oursAs } from '../../lib/ours-api.mjs';
-import { initialsOf, prefixCandidates } from './find-user.mjs';
+import { prefixCandidates } from './find-user.mjs';
 
 // Things are found by role and label (the Contacts link, the palette's input, the record's fields),
 // never by layout, so the driver keeps working while the contacts screen changes.
@@ -26,7 +26,10 @@ async function shortestPrefixes(api, name, id, maxProbes = 400) {
 
 // The expert paths. From home: the command palette finds the contact itself (Ctrl+K, the name,
 // Enter opens its form); or the Contacts screen (a click on Contacts, or G then O), whose search box
-// has the focus on arrival, the name typed, Enter opens the best match.
+// has the focus on arrival, the name (or the shortest prefixes of its words that rank the contact
+// first) typed, Enter opens the best match. Tried and left out (round 1, on the shared dataset): the
+// initials (seven people share "swar", and the contact is not the best of them) and the palette with
+// the shortest prefixes (the palette's first entry for them is another record).
 function build(how, typedOf) {
   return async (op, ctx) => {
     const { name, mobile } = ctx.needles.contact;
@@ -62,7 +65,6 @@ function build(how, typedOf) {
 
 const whole = ctx => ctx.needles.contact.name;
 const shortest = ctx => ctx.state.shortest;
-const initials = ctx => ctx.state.initials;
 
 export default {
   built: true,
@@ -78,7 +80,6 @@ export default {
       else throw new Error(`our product does not hold the dataset contact ${name}; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database`);
     }
     ctx.state.shortest = await shortestPrefixes(api, name, contact.id);
-    ctx.state.initials = initialsOf(name);
   },
   async signIn(ctx) {
     const { login, password } = ctx.product.users.admin;
@@ -93,11 +94,9 @@ export default {
   run: build('palette', whole),
   variants: {
     palette: { path: 'Ctrl+K > type the contact\'s name > Enter opens the contact\'s form.', run: build('palette', whole) },
-    'palette-shortest': { path: 'Ctrl+K > the shortest word prefixes of the name that rank the contact first (found through the list\'s search before the run) > Enter opens the contact\'s form.', run: build('palette', shortest) },
     menu: { path: 'Contacts (navigation; the search box has the focus) > type the name > Enter opens the best match.', run: build('menu', whole) },
     goto: { path: 'G then O (Contacts; the search box has the focus) > type the name > Enter opens the best match.', run: build('goto', whole) },
     shortest: { path: 'Contacts (navigation; the search box has the focus) > the shortest word prefixes of the name that rank the contact first > Enter opens the best match.', run: build('menu', shortest) },
-    initials: { path: 'Contacts (navigation; the search box has the focus) > the initials of the name (one letter per word, e.g. "swar") > Enter opens the best match.', run: build('menu', initials) },
   },
   async verify(ctx) {
     const { name, mobile } = ctx.needles.contact;

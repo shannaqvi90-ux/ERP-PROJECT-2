@@ -67,8 +67,10 @@ const person = {
 
 type Options = { path?: string; archived?: boolean; language?: "en" | "ar"; duplicates?: boolean };
 
+let calls: { method: string; url: string }[] = [];
+
 function mockServer(permissions: string[], options: Options) {
-  return mockFetch((_method, url) => {
+  return (calls = mockFetch((_method, url) => {
     const parsed = new URL(url, "http://localhost");
     const path = parsed.pathname;
     if (url === "/api/auth/session") return { status: 200, body: session(permissions, options.language ?? "en") };
@@ -88,7 +90,7 @@ function mockServer(permissions: string[], options: Options) {
     if (path === `/api/contacts/contacts/${organisationId}`) return { status: 200, body: { ...organisation, isActive: !options.archived } };
     if (path === `/api/contacts/contacts/${personId}`) return { status: 200, body: { ...person, website: null, addressLine1: null, addressLine2: null, area: null, poBox: null, country: "AE", addressAr: null, tags: [], tradeLicenceNumber: null, taxRegistrationNumber: null, defaultCurrency: "AED", creditLimit: null, notes: null, peopleCount: 0, createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z" } };
     return { status: 404, body: {} };
-  });
+  }));
 }
 
 async function open(permissions: string[], options: Options = {}) {
@@ -216,6 +218,20 @@ describe("the contact form", () => {
     expect(warning?.textContent).toContain("Falcon Building Materials L.L.C.");
     expect(warning?.textContent).toContain("same name");
     expect(controls()).toContain("button:Save");
+  });
+
+  it("a saved contact opened as it is asks no duplicate check; changing its name asks", async () => {
+    await open(all);
+    const asked = () => calls.filter((c) => c.url.includes("/api/contacts/contacts/duplicates")).length;
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    });
+    expect(asked(), "an untouched saved contact").toBe(0);
+    setInput(shown().container.querySelector<HTMLInputElement>('input[name="nameEn"]')!, "Falcon Building Materials Co.");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    });
+    expect(asked(), "a saved contact whose name changed").toBeGreaterThan(0);
   });
 
   it("on an Arabic screen the list shows each contact's Arabic name", async () => {

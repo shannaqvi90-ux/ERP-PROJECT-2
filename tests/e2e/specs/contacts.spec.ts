@@ -46,9 +46,11 @@ test.describe("the contacts directory", () => {
     await page.keyboard.type("Falcon Building Materials L.L.C.");
     await expect(page.locator(".ct-duplicates")).toContainText("Falcon Building Materials");
     await expect(page.locator(".ct-duplicates")).toContainText("same name");
-    const name = `Gulf Horizon Trading ${Date.now() % 1000000} LLC`;
+    // Names of their own on every run (a rerun on the same stack finds the last run's contact).
+    const run = Date.now() % 1000000;
+    const name = `Gulf Horizon Trading ${run} LLC`;
     await page.locator('[data-field="nameEn"] input').fill(name);
-    await page.locator('[data-field="nameAr"] input').fill("الخليج الأفق للتجارة");
+    await page.locator('[data-field="nameAr"] input').fill(`الخليج الأفق للتجارة ${run}`);
     await expect(page.locator(".ct-duplicates")).toHaveCount(0);
     await page.locator('[data-field="mobile"] input').fill("0505550188");
     await expect(page.locator('[data-field="mobile"] input')).toHaveValue("+971 50 555 0188");

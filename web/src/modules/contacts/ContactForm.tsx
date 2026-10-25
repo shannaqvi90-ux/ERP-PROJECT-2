@@ -248,7 +248,7 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
         ) : undefined
       }
     >
-      <DuplicateWarning draft={draft} except={contact?.id ?? null} onOpen={onOpen} />
+      <DuplicateWarning draft={draft} except={contact?.id ?? null} onOpen={onOpen} active={contact === null || comparedOf(draft) !== comparedOf(draftOf(contact, defaults))} />
       {contact && !contact.isActive && (
         <p className="ct-archived" role="status">
           {t("contacts.contact.archivedNotice")}
@@ -385,17 +385,22 @@ function ArchiveButton({ contact, onChanged }: { contact: Contact; onChanged: (c
   );
 }
 
+/** What the duplicate check compares, as one text: the check asks while it differs from what the
+ * saved contact holds (a new contact, or a name, address or number being changed). */
+export const comparedOf = (d: Draft) => [d.nameEn, d.nameAr, d.email, d.phone, d.mobile, d.taxRegistrationNumber].map((v) => v.trim()).join("\u0001");
+
 /** How long after the last key the duplicate check asks. */
 export const duplicateDelay = 400;
 
 /**
  * Contacts that may be the same as the one in the form: asked a moment after the names, e-mail,
- * numbers or tax registration number change; each is named with what it shares and opens on a click.
+ * numbers or tax registration number of a new contact are typed or a saved one's are changed (a
+ * saved contact opened as it is asks nothing); each is named with what it shares and opens on a click.
  */
-function DuplicateWarning({ draft, except, onOpen }: { draft: Draft; except: string | null; onOpen: (id: string) => void }) {
+function DuplicateWarning({ draft, except, onOpen, active }: { draft: Draft; except: string | null; onOpen: (id: string) => void; active: boolean }) {
   const { t, language } = useI18n();
   const [found, setFound] = useState<ContactDuplicate[]>([]);
-  const query = duplicateQuery(draft, except);
+  const query = active ? duplicateQuery(draft, except) : null;
   const latest = useRef(0);
   useEffect(() => {
     const ask = ++latest.current;
