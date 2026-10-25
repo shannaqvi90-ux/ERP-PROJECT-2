@@ -31,11 +31,17 @@ Date: 2026-10-25. Piece: p16-contacts. Status: accepted (round 1).
   first within the 400 ms median / 1 s ceiling budget the users list has; sorted, filtered (kind,
   emirate, tags, credit limit), grouped, broad ("al", "محمد") and keyset page 31 stay within it; the
   duplicate check too.
-- Comparison task `find-record`: our driver (`gauntlet/compare/drivers/ours/find-record.mjs`) offers
-  the palette path (Ctrl+K, the name, Enter: 3 user actions and the name's letters), the palette with
-  the shortest ranked prefix, the Contacts link or G O then the name and Enter, and the initials. The
-  Odoo reference path is Contacts (apps menu or palette), the name, Enter, and a click on the single
-  result. Results of this round's runs are in the notes for the integrator.
+- Comparison task `find-record` (`gauntlet/compare/drivers/ours/find-record.mjs`), run by the builder
+  on 2026-10-25 against the shared Odoo rig with the shared dataset loaded into ours
+  (`ERP_SEED_USERS_CSV` and `ERP_SEED_CONTACTS_CSV`), `--product both --repeat 3`: verdict **win**,
+  ours judged on its whole path `palette-shortest` (Ctrl+K, "sha wal rom", Enter: 3 steps, 14 keys,
+  0.40 to 0.44 s machine, 5.67 s human) against Odoo at its best per metric (5 steps, 30 keys, 1.14 to
+  1.82 s, 17.91 s). The other paths: the palette with the whole name (3 steps, 32 keys: loses on keys,
+  the capitals' Shift presses), the Contacts link or G O with the whole name (30 and 32 keys: a tie or
+  a loss on keys), the shortest prefixes of any length ("sh w al r", 8 keys but a second of server
+  time: two-letter words are not served by the trigram index), the initials ("swar": seven people
+  share them). Odoo's search matches the typed text as one substring of the name, so it has no
+  shorter path than the whole name; ours matches word prefixes in any order.
 
 ## Processor time this round adds to `./erp verify`
 
