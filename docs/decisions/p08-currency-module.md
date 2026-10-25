@@ -129,5 +129,6 @@ runs alongside):
 | 7 | 4009e4dc (p07's unverified audit trail merged in; since taken out of this branch) | over the processor-time maximum, every test green | 11,001 |
 | 8 | e530c6b6 (the gate sample, with p07) | stopped for the owner | not kept |
 | 9 | 66d777a9 (the gate sample, without p07) | the G2 currency write-set gate still asked for the whole list in the gate workspace (now asks for exactly its sample); harness "control (round 13)" failed under load (StyleRecalcInvalidationTracking before the clock, load up to 30) | 8,561 (dotnet 6,173, web 1,761, e2e 628) |
+| 10 | 0f60b33c | passed: 795 .NET, 604 web unit, 125 end-to-end, 487 comparison tests; 5,062 s wall (load up to 53) | 9,310 (dotnet 6,412, web 2,372, e2e 483, timing 43) |
 
-The passing run stays under the 10,500 s maximum; the ratchet minimums now hold its test counts.
+The passing runs (6 and 10) stay under the 10,500 s maximum; the ratchet minimums now hold run 10's test counts. The processor time varies by about 1,000 s from run to run with the machine's load (runs 3, 5, 6, 9, 10); with p07's audit trail merged as well, run 7 (full ISO list in the gate workspaces, beside another verify) used 11,001 s, which the gate sample is meant to bring back under the maximum: that sum is not yet measured.
