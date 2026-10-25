@@ -1,4 +1,5 @@
 using Erp.Kernel.Modules;
+using Erp.Modules.Currency;
 using Erp.Modules.Contacts;
 using Erp.Modules.Identity;
 using Erp.Modules.Lists;
@@ -14,6 +15,7 @@ public static class ErpModules
     [
         new TenancyModule(),
         new IdentityModule(),
+        new CurrencyModule(),
         new ContactsModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.
         new ListsModule(),

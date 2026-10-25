@@ -48,6 +48,12 @@ identity.profile.update identity.passkeys insert,update,delete *  # the caller's
 contacts.contacts.create contacts.contacts insert *  # the new organisation or person
 contacts.contacts.update contacts.contacts update kind,code,name_en,name_ar,organisation_id,job_title,email,phone,mobile,website,address_line1,address_line2,area,city,emirate,po_box,country,address_ar,tags,trade_licence_number,tax_registration_number,default_currency,credit_limit_amount,credit_limit_currency,credit_limit_exchange_rate,credit_limit_base_amount,credit_limit_base_currency,credit_limit_stated,notes  # the contact's details, organisation and credit limit; never its status (is_active is the archive permission's)
 contacts.contacts.archive contacts.contacts update is_active  # archiving or restoring: the status alone
+# Currency: the workspace's exchange rates (every company shares them). PUT /api/currency/currencies/{id}
+# is judged by CurrencyWriteSetTests instead (tests/Gates/write-set-unexercised.txt says why).
+currency.rates.create currency.exchange_rates insert *  # the rate entered
+currency.rates.update currency.exchange_rates update rate_date,rate,reference,source  # the rate's date, value and reference (it becomes a manual one); never its currencies
+currency.rates.delete currency.exchange_rates delete *  # the rate removed
+currency.rates.import currency.exchange_rates insert,update *  # the file's rates added, and with replaceExisting a held rate of the same currencies and date replaced (its value, reference and source; RateEndpoints.Import never changes a held rate's currencies or date)
 
 # Lists: a reader's own saved views (tests/Gates/read-permission-writes.txt), shared views.
 identity.roles.read lists.saved_views insert,update,delete *  # the reader's own views of the roles list
@@ -56,4 +62,6 @@ tenancy.companies.read lists.saved_views insert,update,delete *  # the reader's 
 tenancy.branches.read lists.saved_views insert,update,delete *  # the reader's own views of the branches list
 tenancy.access.read lists.saved_views insert,update,delete *  # the reader's own views of the access list
 contacts.contacts.read lists.saved_views insert,update,delete *  # the reader's own views of the contacts list
+currency.currencies.read lists.saved_views insert,update,delete *  # the reader's own views of the currencies list
+currency.rates.read lists.saved_views insert,update,delete *  # the reader's own views of the exchange rates list
 lists.views.share lists.saved_views insert,update,delete *  # views shared with everyone who may read the list
