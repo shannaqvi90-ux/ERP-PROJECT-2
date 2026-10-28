@@ -234,3 +234,21 @@ currency columns in both languages (the audit rule gate refused the merge until 
 log's go-to key moved from Y, which p08 gave the currencies screen, to L (log). Ratchet minimums
 take the higher value of each side; the audit ones count the currency tables (17 audited tables,
 17 kinds of records, 134 named fields).
+
+## Round 1, fixer 1 (serial-12b): three more verifies after the weekly-limit stop
+
+Run 9's folder (`.verify-failed/20261025T074613Z-1073047`): its e2e stage status was 1 with all 130
+Playwright tests passed and every built ours driver verified; the health check printed no failure,
+so the status came from the run being torn down when its agent died, not from a test. The ours
+driver `who-changed-field` is still the p00 stub (`built: false`), so it is not in the health
+check's built list; the comparison task for the audit trail has no ours driver yet.
+
+| Run | Result | Processor time (s) |
+|---|---|---|
+| 10 (`5d6353c9`, load up to 42) | web: 12 timeouts (clientIsolation 30 s, navigationReopen and tenancy screens 5 s); the same three files pass alone (83 tests, 51 s) | dotnet 9,867, web 270, e2e 655 (stopped early) |
+| 11 | web: harness mutation M60 "NOT JUDGED", its control C4 failed under load (gate backlog row 8); dotnet, e2e and every ours health check passed | 11,491 (dotnet 8,801, web 2,239, e2e 451) |
+| 12 | every test green (808 .NET, 616 web unit, 130 e2e, 488 comparison, 6 build); only `verify.cpuSeconds` failed; load up to 66 | 12,462 (dotnet 9,145, web 2,492, e2e 766, timing 59) |
+
+Unrelated branches under the same load read the same: p16 (no audit trail) 8,588 and p10 8,293
+dotnet seconds in their own failed runs, against 6,400 to 6,700 on a quiet machine. No maximum was
+raised and no test changed.
