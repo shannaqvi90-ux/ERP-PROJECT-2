@@ -63,4 +63,29 @@ public sealed class ContactsValidationTests
         Assert.Null(ContactsValidation.JoinTags([]));
         Assert.Equal(["Customer", "VIP"], ContactsValidation.TagsOf("Customer; VIP"));
     }
+
+    /// <summary>The API description's phone pattern accepts exactly what the server's two checks
+    /// accept (its characters, then the UAE length), so a client that follows the description (the
+    /// isolation gate's writes do, with a suffix after the documented example) sends a number the server takes.</summary>
+    [Fact]
+    public void The_documented_phone_pattern_accepts_exactly_what_the_server_accepts()
+    {
+        var shape = new System.Text.RegularExpressions.Regex(ContactsValidation.PhoneShapePattern);
+        var random = new Random(971);
+        const string alphabet = "0123456789 ()-";
+        var candidates = new List<string> { "+971 4 123 4567", "+971 50 123 4567", "+971 4 123 4567-1-2", "+971 4 123 4567-1234-5", "+971 4 123 4567-ab", "009715 0555 0199", "+971-50-555-0199", "+971 (4) 555 0100" };
+        foreach (var start in new[] { "+971", "00971", "+97", "971", "+44", "0", "+9710", "+9718", "+971800", "+971200" })
+        {
+            for (var i = 0; i < 400; i++)
+            {
+                var length = random.Next(0, 16);
+                candidates.Add(start + new string(Enumerable.Range(0, length).Select(_ => alphabet[random.Next(alphabet.Length)]).ToArray()));
+            }
+        }
+        foreach (var phone in candidates)
+        {
+            var server = shape.IsMatch(phone) && ContactsValidation.UaeNumberLengthFits(phone);
+            Assert.True(server == ContactsValidation.DocumentedPhoneRegex().IsMatch(phone), $"'{phone}': server {server}");
+        }
+    }
 }

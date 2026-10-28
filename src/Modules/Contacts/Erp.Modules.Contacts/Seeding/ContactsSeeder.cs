@@ -236,7 +236,9 @@ internal static class DemoContacts
     /// gate fixture's companies and branches have numbers of zeros (+971 4 000 0002), and a contact
     /// whose number (or tax registration number: "000" and "0012" are searched as words of it too)
     /// held those digits would answer a search for a company's number. With
-    /// <paramref name="letterCodes"/> (the gate fixture) codes are letters (C-AAB), for the same
+    /// <paramref name="letterCodes"/> (the gate fixture) codes are letters (C-AAB) and a number is one group of seven digits
+    /// (the gate compares each word tenant B holds with a random word of the same shape, and the gate's
+    /// own writes fill the other tenant's names with four-digit counters), for the same
     /// reason: C000002 holds the digits of company numbers and PO boxes.
     /// </summary>
     public static IEnumerable<SeedContact> Generate(string seed, int count, string domain, bool letterCodes = false)
@@ -249,7 +251,10 @@ internal static class DemoContacts
             var reference = letterCodes ? $"C-{Letters(i)}" : $"C{i:000000}";
             var place = Places[random.Next(Places.Length)];
             var area = place.Areas[random.Next(place.Areas.Length)];
-            var poBox = random.Next(10) < 6 ? random.Next(1000, 99999).ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
+            // The gate fixture's PO boxes have seven digits: the isolation gate searches the other tenant for
+            // each value tenant B holds and compares it with a random value of the same shape, and a
+            // four-digit box is also the tail of many counters the gate's own writes put into role names.
+            var poBox = random.Next(10) < 6 ? (letterCodes ? random.Next(1000000, 9999999) : random.Next(1000, 99999)).ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
             if (i <= 10 || random.Next(10) < 3)
             {
                 var word = BusinessWords[random.Next(BusinessWords.Length)];
@@ -265,7 +270,7 @@ internal static class DemoContacts
                 var slug = new string(word.En.ToLowerInvariant().Where(char.IsAsciiLetterLower).ToArray());
                 organisations.Add(reference);
                 yield return new SeedContact(ContactKinds.Organisation, reference, nameEn, nameAr,
-                    Email: $"info{i}@{slug}{i}.{domain}", Phone: $"+971 {place.PhoneArea} {NoZeros(random, 3)} {NoZeros(random, 4)}",
+                    Email: $"info{i}@{slug}{i}.{domain}", Phone: letterCodes ? $"+971 {place.PhoneArea} {NoZeros(random, 7)}" : $"+971 {place.PhoneArea} {NoZeros(random, 3)} {NoZeros(random, 4)}",
                     Website: $"https://www.{slug}{i}.example", Street: $"{random.Next(1, 120)} Street {random.Next(1, 40)}", Area: area, City: place.City,
                     Emirate: place.Code, PoBox: poBox, Tags: random.Next(10) < 8 ? Tags[random.Next(Tags.Length)] : null,
                     TradeLicence: random.Next(100000, 999999).ToString(System.Globalization.CultureInfo.InvariantCulture),

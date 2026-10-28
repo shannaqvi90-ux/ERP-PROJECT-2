@@ -47,6 +47,17 @@ internal static partial class ContactsValidation
     /// starting with +, 5 to 30 characters.</summary>
     public const string PhoneShapePattern = "^\\+?[0-9][0-9 ()-]{4,28}$";
 
+    /// <summary>
+    /// A phone number as documented and accepted: <see cref="PhoneShapePattern"/>, and a number with
+    /// the UAE's code (+971 or 00971) has the digits its kind has in the numbering plan
+    /// (<see cref="UaeNumberLengthFits"/>). The pattern and the check accept the same numbers (a test
+    /// holds them to it), so a client that follows the API description sends a number the server takes.
+    /// </summary>
+    public const string PhonePattern =
+        "^(?:(?!\\+971|00971)\\+?[0-9][0-9 ()-]{4,28}" +
+        "|(?=\\+?[0-9][0-9 ()-]{4,28}$)(?:\\+971|00971)[ ()-]*" +
+        "(?:5(?:[ ()-]*[0-9]){8}|[234679](?:[ ()-]*[0-9]){7}|[234679][ ()-]*0[ ()-]*0(?:[ ()-]*[0-9]){6}|8[ ()-]*0[ ()-]*0(?:[ ()-]*[0-9]){2,9})[ ()-]*)$";
+
     /// <summary>A Tax Registration Number as typed: exactly 15 digits, 0 to 9 or the Arabic-Indic
     /// ٠ to ٩ of an Arabic keyboard, with any spaces and dashes (docs/compliance/vat-trn-format.md).</summary>
     public const string TaxNumberPattern = "^[ -]*(?:[0-9٠-٩][ -]*){15}$";
@@ -363,6 +374,10 @@ internal static partial class ContactsValidation
 
     [GeneratedRegex(PhoneShapePattern)]
     private static partial Regex PhoneShapeRegex();
+
+    /// <summary>The documented pattern (<see cref="PhonePattern"/>), for the test that holds the checks to it.</summary>
+    [GeneratedRegex(PhonePattern)]
+    internal static partial Regex DocumentedPhoneRegex();
 
     [GeneratedRegex(StoredTaxNumberPattern)]
     private static partial Regex StoredTaxNumberRegex();
