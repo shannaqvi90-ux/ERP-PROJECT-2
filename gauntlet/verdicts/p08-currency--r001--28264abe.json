@@ -1,0 +1,143 @@
+{
+  "piece": "p08-currency",
+  "round": 1,
+  "commit": "28264abe",
+  "judged_at": "2026-10-28T17:57:38Z",
+  "critic": "fresh critic, p08-currency round 1",
+  "verdict": "WIN",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (gate suites)",
+      "status": "pass",
+      "evidence": "Full verify from the clean clone at 28264abe: every .NET gate test passed (suite, self-http, self-company and self-noninterference processes all passed). Log: verify-critic-p08-currency-r1.log.gz."
+    },
+    {
+      "gate": "G1 tenant isolation (critic attack, real product)",
+      "status": "pass",
+      "evidence": "attack-api.out and attack-export.out. Tenant A (alnoor) went after tenant B's (gulfsteel) canary rate 7.77777777 'CANARY-B-SECRET' through GET, PUT and DELETE /rates/{id} (404/404/204 with nothing written), GET and PUT /currencies/{id} (404), list search/filter/tenantId, lookup, convert with B's companyId (404), import of the same currency and date (only A's row was written), and the CSV, XLSX and PDF exports of /api/reports/lists/currency.rates and currencies. B's canary was never shown or changed. Database: as erp_app with no tenant set, 0 rows; with a forged tenant id, 0 rows; an insert under another tenant_id was refused by RLS; UPDATE and DELETE touched 0 rows. RLS is enabled and forced on currency.currencies and currency.exchange_rates. No leak."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "viewer: 403 on POST /rates, POST /rates/import and PUT /currencies; reads 200. noaccess: 403 on every currency route. Plant P1 (GET /convert writes a rate): every GET runs in a read-only PostgreSQL transaction (G2 Requests_that_only_read_cannot_write), so the write cannot happen. Plant P2 (DELETE /rates without the whole-workspace check): ModuleDbContext still refuses writes to IWorkspaceWide rows at SaveChanges. Neither plant leaves a real fault."
+    },
+    {
+      "gate": "G1/G2 planted faults on this piece's surface",
+      "status": "pass",
+      "evidence": "L1, a static ConcurrentDictionary rate cache shared across tenants, was caught by G1ProcessStateTests. L2, process environment variables as a cross-tenant rate cache, was caught by G1TenantSourceTests (the runtime G1 HTTP and non-interference attacks did not catch it). P4, rates.update rewriting a rate's currencies, was caught only by the module test CurrencyApiTests. P5, currencies.update also rewriting a rate's reference, was caught by nothing (a gate gap, see gate_gaps). Diffs: plant-round1.diff and plant-round2.diff. Run summaries: plant-critic-p08-r1-summary.txt, plant2-…-summary.txt, plant3-…-summary.txt."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p08-currency-r1 ERP_HTTP_PORT=20850 ERP_DB_PORT=20855 verify-slot.sh ./erp verify --clean-clone printed 'G3 passed: clean clone verified and demo running with seeded data.' It took 4982 s from the slot (verify 4955 s; processor time 10,093 s against the 10,500 s maximum). Ports and project were overridden through the environment as documented. A separate ./erp up with the comparison dataset was running in 96 s."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR strings, audit)",
+      "status": "pass",
+      "evidence": "Passed inside verify. String check: 911 keys in English and Arabic. Ratchet check passed. In the database, every rate insert and delete through the API left an audit.entries row with actor_kind user, an actor id and old/new values. The seed rows are audited as actor_kind seed."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p08-currency-r1 ERP_HTTP_PORT=20850 ERP_DB_PORT=20855 ERP_VERIFY_LOG=<scratch>/verify-critic-p08-currency-r1.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify --clean-clone",
+    "total": 2017,
+    "passed": 2017,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 4955
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 4982,
+    "evidence": "G3 script output 'G3 passed: clean clone verified and demo running with seeded data.' Slot taken at 2026-10-28T15:11:26Z; the log ended at 16:34:28Z. Ratchet: dotnet 795, web 604, e2e 125, compare 487, build 6, all at their minimums, 0 failed. Processor time 10,093 s against the 10,500 s maximum (the machine was busy, load up to 99, with p07 and p16 builder verifies running alongside)."
+  },
+  "odoo": [
+    {
+      "task": "add-rate",
+      "winner": "ours",
+      "ours": {
+        "steps": 4,
+        "keystrokes": 7,
+        "seconds": 0.549,
+        "klm_seconds": 9.01
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 8,
+        "seconds": 2.569,
+        "klm_seconds": 22.08
+      },
+      "notes": "Three runs per product with node run.mjs --task add-rate --product both --repeat 3, on the shared rig (volume checked live). All runs verified. Ours is strictly better on every metric: steps, keystrokes, machine seconds (median 0.549 against 2.569) and modelled human seconds. Our path: Currencies > EUR row (today's rate field gets the focus) > type > Enter."
+    },
+    {
+      "task": "see-converted",
+      "winner": "not-compared",
+      "ours": {
+        "steps": 4,
+        "keystrokes": 4,
+        "seconds": 0.683,
+        "klm_seconds": 9.47
+      },
+      "odoo": {
+        "steps": 11,
+        "keystrokes": 13,
+        "seconds": 2.341,
+        "klm_seconds": 23.79
+      },
+      "notes": "The Odoo side failed verification in all 3 runs, and the harness said 'odoo failed (fix the reference before judging)'. Odoo's journal items showed 5,025.24 AED, which is the rig's 2026-09-30 rate of 4.020188, instead of 5,359.38 at the 4.2875 rate that set-up creates. I replayed this read-only plus one write that I then removed (odoo-probe.mjs, odoo-probe3.mjs): the set-up rate is stored correctly (company 1, 2026-10-28, inverse 4.2875), yet a draft invoice created right afterwards in company 1, dated 2026-10-28, converts at 0.248744586 (1/4.020188). So Odoo ignored the new rate. The Odoo driver (drivers/odoo/see-converted.mjs) is p08's. Ours: 2 of 3 runs verified, 1 marked invalid by the harness for an untraced style recalculation. Even in the failed runs Odoo's path was 11 steps and 13 keys (palette variant: 12 and 22), against ours at 4 and 4. My own alternative path (Ctrl+K, then '1250 eur') shows the answer in the palette in English and Arabic. Not recorded as a win because the reference never reached its end state."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p08-currency/r1/en-currencies-list.jpg",
+    "gauntlet/evidence/p08-currency/r1/en-eur-converted.jpg",
+    "gauntlet/evidence/p08-currency/r1/en-palette-convert.jpg",
+    "gauntlet/evidence/p08-currency/r1/en-rates-list.jpg",
+    "gauntlet/evidence/p08-currency/r1/en-rates-import.jpg",
+    "gauntlet/evidence/p08-currency/r1/ar-eur-converted.jpg",
+    "gauntlet/evidence/p08-currency/r1/ar-palette-convert.jpg",
+    "gauntlet/evidence/p08-currency/r1/ar-rates-list.jpg",
+    "gauntlet/evidence/p08-currency/r1/compare/blind/shots/87fbf590a2efef9f.jpg",
+    "gauntlet/evidence/p08-currency/r1/compare/blind/shots/67dbb8e323c067e6.jpg",
+    "gauntlet/evidence/p08-currency/r1/compare/blind/shots/fd9b788e4f096720.jpg",
+    "gauntlet/evidence/p08-currency/r1/compare/blind/shots/14ad261b2308756a.jpg"
+  ],
+  "biggest_gap": {
+    "title": "No inverse or cross rate: a company whose base is not AED cannot use the workspace's AED rates",
+    "detail": "Conversion only uses a rate quoted directly in the target company's base currency, with no inverse and no cross rate through AED. Many UAE free-zone trading and manufacturing companies keep their books in USD. Such a company cannot convert even AED to USD, although the workspace holds 100,000 AED-quoted rates including USD/AED, and a EUR amount needs a separately keyed EUR/USD rate. The Central Bank publishes only AED rates, so a USD-book company would have to key every rate a second time. Odoo converts any pair through the company currency. The rules are documented (no inverse, no cross rate), so this is a design limit, not a broken feature. It is still the one thing most likely to make a multi-company UAE group prefer Odoo for multi-currency.",
+    "evidence": "crossrate.mjs and crossrate.out on the demo seeded with the comparison dataset. PUT /api/tenancy/companies/{ALN-FZE} with baseCurrency USD gave 200. Then GET /api/currency/convert?amount=1250&currency=EUR&date=2026-09-30&companyId=<FZE> gave 404 'There is no EUR rate in USD dated on or before 2026-09-30.', and the same call with currency=AED gave 404 'There is no AED rate in USD…', even though EUR/AED and USD/AED rates exist for that date (rules.out: lookup USD->EUR and AED->EUR are 404 rateMissing)."
+  },
+  "gate_gaps": [
+    {
+      "owner": "p08-currency",
+      "gate": "G2 write sets for PUT /api/currency/currencies/{id} (tests/Erp.Gates.Tests/G2/CurrencyWriteSetTests.cs)",
+      "planted": "In CurrencyEndpoints.Update, the currency edit (permission currency.currencies.update) also sets the reference of that currency's latest exchange rate. That is a write to currency.exchange_rates, which is outside the reviewed write set of is_active and max_rate_age_days.",
+      "evidence": "plant-round2.diff. In plant2-critic-p08-r1-summary.txt, CurrencyWriteSetTests (both tests), G2WriteSetTests (all 5) and the HTTP and non-interference attacks all passed. In plant3, the Currency module tests passed except the test the P4 plant breaks. Cause: the gate edits only CHF, NOK and SEK, which hold no rates in the gate workspace, so a currency edit that also writes the currency's rates is never exercised. The real product's Update writes only the currency row."
+    },
+    {
+      "owner": "p08-currency",
+      "gate": "G2 write sets for PUT /api/currency/rates/{id} (G2WriteSetTests with tests/Gates/permission-write-sets.txt: 'rate_date,rate,reference,source … never its currencies')",
+      "planted": "In RateEndpoints.Update, the currencies-fixed check is removed and the rate's currency and quote_currency are set from the request, so currency.rates.update can move a rate to another currency pair.",
+      "evidence": "plant-round2.diff. G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns and CurrencyWriteSetTests passed (plant2 summary). Only the module test CurrencyApiTests.Rates_are_entered_corrected_and_deleted_with_validation_in_the_callers_language failed (plant3 summary), so the full verify would still go red. The write-set gate itself sends the rate's own currencies back and never tries a different pair. The real product refuses a change of currency (currencyRateCurrencyFixed)."
+    }
+  ],
+  "human_gates": [
+    {
+      "gate": "Tax/statutory calculation rule (CLAUDE.md human gate, rule 8)",
+      "what": "The rule for which rate applies on a date that has no rate is not signed off. On such a date the latest earlier rate is used if it is at most maxRateAgeDays old (7 by default, the workspace may set 0 to 366); a later rate is never used. Conversions that later VAT invoices rely on will use this rule. docs/compliance/vat-rounding-and-currency.md rule 3 (signed off, #4) only says 'the exchange rate approved by the Central Bank of the UAE on the date of supply' and does not cover weekends or holidays. needs-human.md has no item for this fallback. The owner's accountant should sign off the fallback and its default of 7 days."
+    },
+    {
+      "gate": "New paid or outside service",
+      "what": "Fetching rates from an outside provider such as the Central Bank feed is a human gate under the piece spec. It was not built (only manual entry and CSV import exist). Building it needs the owner's approval first."
+    }
+  ],
+  "other_findings": [
+    "[route: p08-currency] The see-converted comparison could not be judged. p08's own Odoo driver set-up writes today's EUR rate, and the rig stores it correctly, but Odoo's draft invoice keeps converting at the 2026-09-30 rate (odoo-probe3.mjs replay: invoice_currency_rate 0.248744586 right after the rate was created for company 1 on 2026-10-28). The driver needs a set-up that Odoo actually applies, or an explanation, before the next judge. Ours was measured at 4 steps, 4 keys and 9.47 s modelled; Odoo's path at 11 steps, 13 keys and 23.79 s.",
+    "At 1440x900 (and narrower laptop screens) the converted amount in the currency panel sits below the fold in both English and Arabic: you type 1250 and 'AED 5,359.38' is off screen (en-eur-converted.jpg, ar-eur-converted.jpg). At the harness's 1600-wide viewport it shows (compare shot fd9b788e4f096720.jpg). The Ctrl+K path shows it at any width.",
+    "The amount is not checked against its own currency's minor units: GET /api/currency/convert?amount=1.5&currency=JPY returns 200, but JPY has 0 decimals in ISO 4217 (rules.out). The base amount is rounded correctly (KWD 0.001 gives AED 0.01, and -1250 EUR gives -5359.38, half away from zero).",
+    "The demo seeded with the shared comparison dataset (ERP_SEED_RATES_CSV) has rates only up to 2026-09-30. So on the demo today every conversion and the Ctrl+K '1250 eur' answer 'rate too old' until someone enters today's rate.",
+    "Rate import rejects Arabic-Indic digits ('٣٫٦٧٢٥' gives currencyImportRate). Files typed on Arabic-locale machines may contain them. The rest of import works: 5,000 lines in 2.2 s, re-import counts them all as unchanged, replaceExisting replaces, dd/mm/yyyy is accepted, and an impossible date gets a per-line error with nothing saved (import.out).",
+    "Lookup rules behave as documented: exact date; latest earlier rate within 7 days (2026-10-01 to 2026-10-07 use 09-30, 2026-10-08 gets 404 rateTooOld with the latest date named); exact=true refuses a fallback; 9-decimal, negative and unknown or inactive currency rates are refused with messages in the caller's language (rules.out). The rates list at 100,000 rows answers in 12 to 42 ms for search, filter, grouping and a deep offset (timing.out).",
+    "The runtime G1 attacks (G1HttpIsolationTests, G1NonInterferenceTests) did not catch either planted cross-tenant cache (L1 static dictionary, L2 environment variables). The static G1ProcessStateTests and G1TenantSourceTests did catch them, so the suite held. Noted only so that no one relies on the runtime attacks alone."
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p08-currency/r1",
+  "evidence_dir": "gauntlet/evidence/p08-currency/r1"
+}

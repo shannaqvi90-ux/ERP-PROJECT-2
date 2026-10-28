@@ -1,0 +1,39 @@
+{
+  "task": "see-converted",
+  "verdict": "odoo failed (fix the reference before judging)",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 4,
+      "odoo": 11,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": 4,
+      "odoo": 13,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": 0.683,
+      "odoo": 2.341,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": 9.47,
+      "odoo": 23.79,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 9.682,
+      "odoo": 25.291,
+      "outcome": "not_comparable"
+    }
+  },
+  "left_out": [],
+  "odoo_best_path_per_metric": {},
+  "runs": {
+    "ours": "../../evidence-staging/p08-currency/r1/compare/results/see-converted-20261028T175057-760f.json",
+    "odoo": "../../evidence-staging/p08-currency/r1/compare/results/see-converted-20261028T175238-8b55.json"
+  }
+}

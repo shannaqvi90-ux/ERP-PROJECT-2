@@ -1,0 +1,16 @@
+B shared view 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+A export csv search=CANARY 200 text/csv; charset=utf-8 len 58 leak false
+A export csv filter=rateDate%20eq%20'2031-03-03' 200 text/csv; charset=utf-8 len 58 leak false
+A export csv tenantId=x 200 text/csv; charset=utf-8 len 8855175 leak false
+A export pdf search=CANARY 200 application/pdf len 12172 leak false
+A export pdf filter=rateDate%20eq%20'2031-03-03' 200 application/pdf len 12172 leak false
+A export pdf tenantId=x 200 application/pdf len 9537980 leak false
+A export xlsx search=CANARY 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet len 2344 leak false
+A export xlsx filter=rateDate%20eq%20'2031-03-03' 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet len 2344 leak false
+A export xlsx tenantId=x 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet len 3809786 leak false
+A views 200 leak false
+A currencies csv 200 6421
+ï»¿Date,Currency,Rate,Quoted in,Inverse,Source,Reference
+2026-09-30,VND,AED 0.000145,AED,"VND 6,896.55172414",Imported,Comparison dataset (rates.csv)
+2026-09-30,UAH,AED 0.088507,AED,UAH 11.29854136,Imported,Comparison dataset (rates.csv)
+2026-09-30,KZT,AED 0.007601,AED,KZT 131.56163663,Imported,C

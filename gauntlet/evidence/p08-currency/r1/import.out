@@ -1,0 +1,5 @@
+5000 lines (semicolon) 200 2203ms {"lines":5000,"added":5000,"replaced":0,"kept":0,"unchanged":0}
+again, same (unchanged) 200 109ms {"lines":5000,"added":0,"replaced":0,"kept":0,"unchanged":5000}
+replace one 200 18ms {"lines":1,"added":0,"replaced":1,"kept":0,"unchanged":0}
+dd/mm/yyyy + bad line 400 11ms {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-f95d4dbbc300085530edb94229074aca-7f1e07c54c29c6f1-00","errors":{"content":[{"code":"currencyImportDate","message":"Line 3: '31/02/2040' is not a date (yyyy-mm-dd or dd/mm/yyyy, f
+arabic-indic digits 400 6ms {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-49b852384d0a6066a6aafe80262a100e-e20bc075676c3f77-00","errors":{"content":[{"code":"currencyImportRate","message":"Line 2: '٣٫٦٧٢٥' is not a rate (above zero, at most 8 decimals,

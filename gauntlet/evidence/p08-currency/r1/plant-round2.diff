@@ -1,0 +1,48 @@
+diff --git a/src/Modules/Currency/Erp.Modules.Currency/Currencies/CurrencyEndpoints.cs b/src/Modules/Currency/Erp.Modules.Currency/Currencies/CurrencyEndpoints.cs
+index 33d778e7..76f15014 100644
+--- a/src/Modules/Currency/Erp.Modules.Currency/Currencies/CurrencyEndpoints.cs
++++ b/src/Modules/Currency/Erp.Modules.Currency/Currencies/CurrencyEndpoints.cs
+@@ -169,6 +169,8 @@ internal static class CurrencyEndpoints
+         currency.IsActive = request.IsActive!.Value;
+         currency.MaxRateAgeDays = request.MaxRateAgeDays!.Value;
+         db.Entry(currency).Property(c => c.UpdatedAt).IsModified = true;
++        var plantRate = await db.Rates.Where(r => r.Currency == currency.Code).OrderByDescending(r => r.RateDate).FirstOrDefaultAsync(cancellationToken);
++        if (plantRate is not null) { plantRate.Reference = "touched by currency edit"; }
+         await db.SaveChangesAsync(cancellationToken);
+         return TypedResults.Ok((await ToDtoAsync(db, session, http, currency.Id, cancellationToken))!);
+     }
+diff --git a/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs b/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs
+index f8ddf4f3..5c16dbc7 100644
+--- a/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs
++++ b/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs
+@@ -45,6 +45,13 @@ internal sealed class ExchangeRateService(CurrencyDbContext db, ICompanyDirector
+             .OrderByDescending(r => r.RateDate).ThenByDescending(r => r.UpdatedAt).ThenByDescending(r => r.Id)
+             .Select(r => new { r.Id, r.RateDate, r.Rate, r.Source })
+             .FirstOrDefaultAsync(cancellationToken);
++        var plantKey = "ERP_PLANT_" + currency.Code + quoteCurrency.Code + date.ToString("yyyyMMdd");
++        if (latest is null && Environment.GetEnvironmentVariable(plantKey) is { } plantHeld)
++        {
++            var plantRate = decimal.Parse(plantHeld, System.Globalization.CultureInfo.InvariantCulture);
++            return new RateLookup(new RateFound(currency.Code, quoteCurrency.Code, plantRate, date, date, true, "manual", null), null, null, maxAge);
++        }
++        if (latest is not null) { Environment.SetEnvironmentVariable(plantKey, latest.Rate.ToString(System.Globalization.CultureInfo.InvariantCulture)); }
+         if (latest is null || latest.RateDate < date.AddDays(-maxAge))
+         {
+             return new RateLookup(null, RateMissingReason.NoRate, latest?.RateDate, maxAge);
+diff --git a/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs b/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs
+index 4264323c..169550d3 100644
+--- a/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs
++++ b/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs
+@@ -220,10 +220,8 @@ internal static class RateEndpoints
+         {
+             return Problems.NotFound(http);
+         }
+-        if (currency != rate.Currency || quote != rate.QuoteCurrency)
+-        {
+-            return new Validator(http).Add(currency != rate.Currency ? "currency" : "quoteCurrency", "currencyRateCurrencyFixed").ToResult();
+-        }
++        rate.Currency = currency!;
++        rate.QuoteCurrency = quote!;
+         var date = request.RateDate!.Value;
+         db.Entry(rate).Property(r => r.Version).OriginalValue = request.Version!.Value;
+         rate.RateDate = date;

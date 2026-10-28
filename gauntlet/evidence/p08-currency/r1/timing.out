@@ -1,0 +1,7 @@
+take=50 200 22ms total 100000
+take=50&search=GBP 200 33ms total 2000
+take=50&filter=currencyCode%20eq%20'EUR'%20and%20rateDate%20ge%20'2025-01-01' 200 23ms total 638
+take=50&sort=-rate 400 8ms total undefined
+take=50&groupBy=currencyCode 200 42ms total 100000
+take=50&offset=99000 200 12ms total 100000
+convert 404 10ms

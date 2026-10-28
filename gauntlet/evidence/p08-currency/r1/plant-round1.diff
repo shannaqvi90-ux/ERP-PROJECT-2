@@ -1,0 +1,67 @@
+diff --git a/src/Modules/Currency/Erp.Modules.Currency/Rates/ConversionEndpoints.cs b/src/Modules/Currency/Erp.Modules.Currency/Rates/ConversionEndpoints.cs
+index 06fca767..80fdd968 100644
+--- a/src/Modules/Currency/Erp.Modules.Currency/Rates/ConversionEndpoints.cs
++++ b/src/Modules/Currency/Erp.Modules.Currency/Rates/ConversionEndpoints.cs
+@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
+ using Microsoft.AspNetCore.Http.HttpResults;
+ using Microsoft.AspNetCore.Mvc;
+ using Microsoft.AspNetCore.Routing;
++using Microsoft.Extensions.DependencyInjection;
+ 
+ namespace Erp.Modules.Currency.Rates;
+ 
+@@ -82,6 +83,14 @@ internal static class ConversionEndpoints
+         }
+         if (outcome.Conversion is not { } conversion)
+         {
++            var plantDb = http.RequestServices.GetRequiredService<CurrencyDbContext>();
++            var plantLast = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
++                plantDb.Rates.Where(r => r.Currency == code && r.QuoteCurrency == outcome.BaseCurrency).OrderByDescending(r => r.RateDate), cancellationToken);
++            if (plantLast is not null)
++            {
++                plantDb.Rates.Add(new ExchangeRate { Currency = plantLast.Currency, QuoteCurrency = plantLast.QuoteCurrency, RateDate = on, Rate = plantLast.Rate, Source = RateSources.Manual, Reference = "auto" });
++                await plantDb.SaveChangesAsync(cancellationToken);
++            }
+             return RateEndpoints.MissingRate(http, code!, outcome.BaseCurrency, on, outcome.Lookup);
+         }
+         var rate = conversion.Rate;
+diff --git a/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs b/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs
+index f8ddf4f3..514b2878 100644
+--- a/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs
++++ b/src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs
+@@ -25,9 +25,20 @@ namespace Erp.Modules.Currency.Rates;
+ /// </summary>
+ internal sealed class ExchangeRateService(CurrencyDbContext db, ICompanyDirectory companies) : IExchangeRates, ICurrencyConverter
+ {
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, RateLookup> PlantCache = new();
++
+     public const string SameCurrencySource = "same";
+ 
+     public async Task<RateLookup> FindAsync(CurrencyCode currency, CurrencyCode quoteCurrency, DateOnly date, RateLookupRule rule, CancellationToken cancellationToken)
++    {
++        var plantKey = currency.Code + quoteCurrency.Code + date.ToString("O") + rule;
++        if (PlantCache.TryGetValue(plantKey, out var cached)) { return cached; }
++        var plantResult = await FindUncachedAsync(currency, quoteCurrency, date, rule, cancellationToken);
++        if (plantResult.Found is not null) { PlantCache[plantKey] = plantResult; }
++        return plantResult;
++    }
++
++    private async Task<RateLookup> FindUncachedAsync(CurrencyCode currency, CurrencyCode quoteCurrency, DateOnly date, RateLookupRule rule, CancellationToken cancellationToken)
+     {
+         if (currency == quoteCurrency)
+         {
+diff --git a/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs b/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs
+index 4264323c..dc754aa5 100644
+--- a/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs
++++ b/src/Modules/Currency/Erp.Modules.Currency/Rates/RateEndpoints.cs
+@@ -245,10 +245,6 @@ internal static class RateEndpoints
+             // any id the caller cannot see.
+             return TypedResults.NoContent();
+         }
+-        if (!session.HoldsWholeWorkspace)
+-        {
+-            return Problems.Forbidden(http, "currency.workspaceNeedsEveryCompany");
+-        }
+         db.Rates.Remove(rate);
+         await db.SaveChangesAsync(cancellationToken);
+         return TypedResults.NoContent();
