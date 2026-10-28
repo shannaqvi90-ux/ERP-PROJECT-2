@@ -131,3 +131,12 @@ The UAE VAT rules for tax invoice and tax credit note numbers (the Federal Tax A
 regulation on what a tax invoice holds, "sequential number") are a statutory rule: not taken from
 memory, not implemented as a rule. The product only defaults those two document types to gapless,
 which an administrator may change. Listed for the owner in the round's human gates.
+
+## Verify run after merging the p08 currency work (fixer 1, round 1)
+
+The integration branch (p08 currency, 28264abe) was merged into the piece; both modules, both sets of
+gate lists and the higher of each ratchet minimum were kept. Full verify through the slots, beside two
+other builders' verifies: every test passed (dotnet 822, web 622, e2e 128, compare 487, build 6, all
+above their minimums). The only failure is the ratchet's processor-time check: 11,240 s (dotnet 8,293,
+web 2,392, e2e 511, timing 44) against the 10,500 s maximum, which belongs to the owner and was not
+changed. Log: verify-fixer-p10-numbering-r1-f1.log; kept folder .verify-failed/20261028T190141Z-66514.
