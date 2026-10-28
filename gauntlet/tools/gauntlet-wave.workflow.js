@@ -3,7 +3,8 @@ export const meta = {
   description: 'Build, integrate, blind-judge and record ERP platform pieces in rounds, then check the whole product hangs together',
   whenToUse: 'Each wave of the ERP platform-core gauntlet loop',
   phases: [
-    { title: 'Build', detail: 'one builder per piece per round, in its own worktree' },
+    { title: 'Build', detail: 'one builder per piece per round, in its own worktree; it builds, commits and runs one full verify' },
+    { title: 'Fix', detail: 'when a verify fails, a new agent with fresh context gets the failure summary, the branch and the piece spec and fixes it' },
     { title: 'Integrate', detail: 'merge piece branch into the integration branch, keep tests green, push' },
     { title: 'Judge', detail: 'fresh critic per round: clean clone, gates, browser, database, Odoo side by side' },
     { title: 'Record', detail: 'verdict to ledger and progress.html, commit, push' },
@@ -18,6 +19,11 @@ const BRANCH = 'claude/loving-lamport-kir0aw'
 const TRAILER = args.trailer || 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015Vsj7UJNNgPo4BphJAEzP5'
 const ROUNDS = args.rounds || 2
 const WAVE = args.wave
+// Owner decision 2026-10-28: builders and fixers run on Sonnet at medium effort, each in a short session with fresh context.
+// Critics keep the session model (Opus) at high effort; integrators and recorders are unchanged.
+const BUILDER_MODEL = args.builderModel || 'sonnet'
+const BUILDER_EFFORT = args.builderEffort || 'medium'
+const MAX_FIXES = args.maxFixes || 5
 
 // One writer at a time in the integration working tree.
 let lock = Promise.resolve()
@@ -87,6 +93,7 @@ const BUILD_SCHEMA = {
     suite_passes: { type: 'boolean' },
     test_command: { type: 'string' },
     notes_for_integrator: { type: 'string' },
+    failure_summary: { type: 'string', description: 'when suite_passes is false: the failing stage(s), each failing test or check with its error lines, the verify log and .verify-failed folder paths, the processor time, the load, and what you suspect; empty when it passed' },
     human_gates: { type: 'array', items: { type: 'object', properties: { gate: { type: 'string' }, what: { type: 'string' } }, required: ['gate', 'what'] } },
   },
   required: ['branch', 'head_commit', 'suite_passes', 'test_command'],
@@ -129,7 +136,7 @@ Worktree (work only here, never in ${REPO}):
 Order of work:
 1. Gates first. Write or tighten the automated checks for the owner's hard gates (tenant isolation G1, permissions G2, clean clone G3) and the CLAUDE.md rule gates as they apply to what you are about to build, so they cover your piece before your piece exists. Gates may only get stricter: never weaken, skip, delete or narrow any test, gate, ratchet minimum or scenario (CLAUDE.md rule 9). Raise the minimums in gauntlet/ratchet.json when you add coverage.
 2. Build the piece to production quality, not demo quality: real validation, real errors, English and Arabic for every string, keyboard-first dense UI, decimal money, audit on every business record, row-level security on every tenant table, a permission on every endpoint, OpenAPI for every endpoint, tests for everything.
-3. Run the whole suite (the one command, \`./erp verify\`, once it exists) and get it green. If something outside your piece breaks, fix it minimally.
+3. While building, run the targeted tests of what you change. When the piece is built and committed, run the whole suite once (the one command, \`./erp verify\`, through the verify slots). If it passes, return. If it fails, do not start fixing it in this session: commit any work in progress so the tree is clean and return suite_passes=false with a precise failure_summary (failing stages, each failing test or check with its error lines, the log and .verify-failed folder paths, processor time, load, and what you suspect). A new agent with fresh context then fixes it from that summary (owner decision of 2026-10-28, to keep sessions short).
 4. Record each architectural choice and its reason in docs/decisions/${p.id}-<slug>.md (piece-prefixed names so parallel builders do not collide). Dependencies: MIT, Apache-2.0, BSD or PostgreSQL licence only (CLAUDE.md rule 6). Beware packages that turned commercial (for example MediatR 13+, AutoMapper 15+, FluentAssertions 8+, MassTransit 9+, EPPlus 5+, Hangfire is LGPL): do not use them.
 5. Commit on piece/${p.id} with factual messages (what changed, not how good it is). Commit work in progress at least every 30 to 45 minutes as well: this container can restart without warning and uncommitted work may be lost. Do not push; do not touch ${BRANCH} directly. Keep generated bulk data files (seed CSVs and the like) out of git; commit the generator instead.
 
@@ -144,7 +151,54 @@ Before you finish, stop and remove your own containers (compose project b-${p.id
 ${feedback}
 ${ENV_NOTES}
 
-Return: the branch, its head commit, whether the whole suite passes, the exact test command, short factual notes for the integrator (what to watch when merging), and any human gates hit.`
+Return: the branch, its head commit, whether the whole suite passes, the exact test command, the failure summary if it failed, short factual notes for the integrator (what to watch when merging), and any human gates hit.`
+}
+
+// A fresh, short session per failed verify (owner decision 2026-10-28): only the failure summary, the branch and the piece spec.
+function fixerPrompt(p, round, prev, attempt) {
+  const ports = portBlock(p.num)
+  const wt = `${ROOT}/wt/${p.id}`
+  return `You are a FIXER for piece ${p.id}, round ${round}, wave ${WAVE} (fix ${attempt} of at most ${MAX_FIXES} this round), of a multi-tenant ERP platform core. A builder built this round on branch piece/${p.id} in the worktree ${wt} (head ${prev.head_commit}), and its full verify failed. Your job: make the full verify pass, without weakening anything.
+
+Read: ${REPO}/gauntlet/pieces/${p.id}.md (the piece spec). Read other files only as the failure needs them; the piece's decision records are docs/decisions/${p.id}-*.md in the worktree.
+
+Failure summary from the previous agent:
+${prev.failure_summary || prev.notes_for_integrator || '(none given: run the full verify first and read what fails)'}
+
+Rules:
+- Work only in ${wt}, on piece/${p.id}. Do not push; never touch ${BRANCH} or ${REPO} directly. Your port block is ${ports.builder} (compose project \`b-${p.id}\`).
+- Fix the cause. Never weaken, skip, delete or narrow a test, gate, ratchet minimum or scenario, and never add timeout increases or test re-runs to get a pass (CLAUDE.md rule 9). If the cause is outside this piece, fix it minimally and say so. If a fix would need a human gate in CLAUDE.md, do not do it: list it in human_gates.
+- Run the failing tests on their own first, then the whole suite once through the verify slots (\`ERP_VERIFY_LOG=<scratch>/verify-fixer-${p.id}-r${round}-f${attempt}.log ${REPO}/gauntlet/tools/verify-slot.sh ./erp verify\` with your ports and compose project).
+- Commit with factual messages; record anything architectural in the piece's decision record, with the verify run, its result and processor time.
+- If the full verify passes, return suite_passes=true. If it fails again, commit what you have so the tree is clean and return suite_passes=false with a precise failure_summary for the next fixer (failing stages, each failing test or check with its error lines, the log and .verify-failed folder paths, processor time, load, what you tried and what you suspect). Do not start a second round of fixes in this session.
+- Before you finish, stop and remove your own containers (compose project b-${p.id}); never the shared Odoo rig.
+${p.leadNote ? `\nConstraints from the lead for this piece:\n${p.leadNote}\n` : ''}${ENV_NOTES}
+
+Return: the branch, its head commit, whether the whole suite passes, the exact test command, the failure summary if it failed, short factual notes for the integrator (everything this round's merge should know, including the builder's notes below), and any human gates hit.
+
+Builder's notes for the integrator so far: ${prev.notes_for_integrator || 'none'}`
+}
+
+// Build one round: a builder, then fresh fixers while the verify fails. p.fixFirst resumes a round built earlier whose verify failed.
+async function buildRound(p, round, last) {
+  let build
+  if (p.fixFirst && round === p.startRound) {
+    build = { head_commit: `piece/${p.id} as it is in ${ROOT}/wt/${p.id}`, suite_passes: false, failure_summary: p.fixFirst, notes_for_integrator: p.builtNotes || '' }
+  } else {
+    log(`${p.id}: round ${round} build`)
+    build = await retrying(`${p.id} r${round} build`, () => agent(builderPrompt(p, round, last), { label: `build:${p.id}:r${round}`, phase: 'Build', schema: BUILD_SCHEMA, model: BUILDER_MODEL, effort: BUILDER_EFFORT }))
+    if (!build) return null
+  }
+  const gates = [...(build.human_gates || [])]
+  for (let attempt = 1; !build.suite_passes && attempt <= MAX_FIXES; attempt++) {
+    log(`${p.id}: round ${round} verify failed; fixer ${attempt}`)
+    const fixed = await retrying(`${p.id} r${round} fix ${attempt}`, () => agent(fixerPrompt(p, round, build, attempt), { label: `fix:${p.id}:r${round}:${attempt}`, phase: 'Fix', schema: BUILD_SCHEMA, model: BUILDER_MODEL, effort: BUILDER_EFFORT }))
+    if (!fixed) return null
+    gates.push(...(fixed.human_gates || []))
+    build = fixed
+  }
+  if (!build.suite_passes) log(`${p.id}: round ${round} still failing after ${MAX_FIXES} fixers; the integrator gets the failure summary`)
+  return { ...build, human_gates: gates, notes_for_integrator: build.suite_passes ? build.notes_for_integrator : `${build.notes_for_integrator || ''}\nThe piece's own verify still failed: ${build.failure_summary || ''}` }
 }
 
 function integratorPrompt(p, round, build) {
@@ -241,8 +295,7 @@ async function runPiece(p) {
       build = { human_gates: [] }
       integ = { merged: true, pushed: true, commit: p.judgeCommit }
     } else {
-    log(`${p.id}: round ${round} build`)
-    build = await retrying(`${p.id} r${round} build`, () => agent(builderPrompt(p, round, last), { label: `build:${p.id}:r${round}`, phase: 'Build', schema: BUILD_SCHEMA, effort: 'high' }))
+    build = await buildRound(p, round, last)
     if (!build) { log(`${p.id}: builder died three times in round ${round}; piece stopped`); results.push({ round, outcome: 'builder-died' }); break }
     integ = await serial(() => retrying(`${p.id} r${round} integrate`, () => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' })))
     }

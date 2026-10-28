@@ -162,6 +162,10 @@ test.describe("app shell", () => {
     await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Branches" })).toBeFocused();
     await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Currencies" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Exchange rates" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Document numbering" })).toBeFocused();
     await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Workspace" })).toBeFocused();

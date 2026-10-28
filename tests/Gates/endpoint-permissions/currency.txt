@@ -1,0 +1,20 @@
+# Reviewed endpoint-to-permission map of the currency module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares, and
+# every line must match an endpoint. A new endpoint, or a changed permission, fails the gate until
+# this file is reviewed and changed with it: the reason after # says why that permission, and no
+# broader one, guards the endpoint.
+prefix /api/currency/
+
+GET /api/currency/currencies currency.currencies.read # the workspace's currencies list: every ISO 4217 currency, which are in use, each one's latest rate (which every rate reader may see too)
+GET /api/currency/currencies/{id:guid} currency.currencies.read # one currency record
+PUT /api/currency/currencies/{id:guid} currency.currencies.update # putting a currency in use or out of use, renaming it or changing how old a rate may be: every company's choices change (also needs every company of the workspace, checked in the handler)
+
+GET /api/currency/rates currency.rates.read # the exchange rates list
+GET /api/currency/rates/{id:guid} currency.rates.read # one exchange rate record
+GET /api/currency/rates/lookup currency.rates.read # which rate applies on a date: a read of the rates
+POST /api/currency/rates currency.rates.create # a new rate changes what every company converts at (also needs every company of the workspace)
+PUT /api/currency/rates/{id:guid} currency.rates.update # correcting a rate changes later conversions (also needs every company of the workspace)
+DELETE /api/currency/rates/{id:guid} currency.rates.delete # removing a rate leaves its dates without one (also needs every company of the workspace)
+POST /api/currency/rates/import currency.rates.import # a file may add or replace thousands of rates at once: its own permission, not entering one by hand (also needs every company of the workspace)
+
+GET /api/currency/convert currency.rates.read # an amount at the rate that applies: a read of the rates, writes nothing

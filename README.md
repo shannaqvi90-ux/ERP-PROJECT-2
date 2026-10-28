@@ -19,14 +19,15 @@ Needs only Docker (with Compose v2), bash and git.
 
 Ports and the compose project come from the environment, so copies run side by side:
 `ERP_PROJECT`, `ERP_HTTP_PORT` (8080), `ERP_DB_PORT` (5440), `ERP_SEED_VOLUME` (100000),
-`ERP_VERIFY_HTTP_PORT`/`ERP_VERIFY_DB_PORT` (+10). Behind a TLS-inspecting proxy, set
+`ERP_VERIFY_HTTP_PORT`/`ERP_VERIFY_DB_PORT` (+10), and `ERP_SEED_USERS_CSV`/`ERP_SEED_RATES_CSV` (the shared
+comparison dataset's users and exchange rates, `node gauntlet/compare/data/generate.mjs`). Behind a TLS-inspecting proxy, set
 `ERP_EXTRA_CA_CERTS` to its CA bundle (picked up from `NODE_EXTRA_CA_CERTS` or `SSL_CERT_FILE`).
 
 The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sharjah, Abu Dhabi)
 with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
 read-only user in the first company only. The working company and branch switcher sits in the
 top bar (Alt+C). Every screen is a key away: `G` then a letter (`U` Users, `R` Roles, `C`
-Companies, `B` Branches, `A` Company access, `N` Document numbering, `W` Workspace, `M` My account, `H` Home) when no field
+Companies, `B` Branches, `A` Company access, `N` Document numbering, `Y` Currencies, `X` Exchange rates, `W` Workspace, `M` My account, `H` Home) when no field
 has the focus; `Ctrl+K` finds any screen, record or action, and `?` lists every key.
 
 Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
@@ -52,6 +53,12 @@ receipt and payment vouchers, journal voucher): prefix, digits, suffix and the t
 company. Open one (G then N) and type: the next numbers are previewed as you type, Enter saves. Later
 modules take numbers inside their own transaction through `IDocumentNumbers`
 (`docs/decisions/p10-numbering-module.md`).
+
+Currencies: every workspace holds the ISO 4217 currencies (the dirham, each company's base currency
+and, in the demo, fifty more in use) and their exchange rates by date (100,000 in the demo, entered
+by hand or imported from a CSV file). Open a currency (G then Y) to type today's rate (the field has
+the focus: type, Enter) or convert an amount; or type "1250 eur" in Ctrl+K. Which rate applies on a
+date: `docs/decisions/p08-currency-rate-lookup.md`.
 
 ## Layout
 
