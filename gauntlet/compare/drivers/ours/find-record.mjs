@@ -1,9 +1,21 @@
 import { oursAs } from '../../lib/ours-api.mjs';
-import { prefixCandidates } from './find-user.mjs';
 
 // Things are found by role and label (the Contacts link, the palette's input, the record's fields),
 // never by layout, so the driver keeps working while the contacts screen changes.
 const contactsLink = page => page.getByRole('navigation').getByRole('link', { name: 'Contacts', exact: true }).first();
+
+/** Word prefixes (up to `longest` letters a word, the name's order), shortest first. A driver stands alone, so this is its own copy. */
+function prefixCandidates(name, longest = 4) {
+  const words = name.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  let combos = [[]];
+  for (const w of words) {
+    const next = [];
+    for (const c of combos) for (let l = 0; l <= Math.min(longest, w.length); l++) next.push([...c, w.slice(0, l)]);
+    combos = next;
+  }
+  const typed = [...new Set(combos.map(c => c.filter(Boolean).join(' ')).filter(Boolean))];
+  return typed.sort((a, b) => a.length - b.length || a.localeCompare(b));
+}
 
 /** The contact's own record (its form, outside the list grid) shows the mobile number. */
 const recordShows = m => [...document.querySelectorAll('form, [role="dialog"], [role="complementary"], aside')]
