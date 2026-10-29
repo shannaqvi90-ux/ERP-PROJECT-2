@@ -137,7 +137,8 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
             {
                 // Oldest first, so the newest row is the last one made. A fixed mix, not random.
                 var created = now - span + step * (i + 1);
-                var mix = (int)(Mix(i, seed ^ 0x5bd1e995) % 100);
+                // A small workspace (the gates') always holds failed and cancelled jobs among its first rows.
+                var mix = count <= 1000 && i % 6 == 1 ? 90 : count <= 1000 && i % 10 == 7 ? 98 : (int)(Mix(i, seed ^ 0x5bd1e995) % 100);
                 var (key, maxAttempts, en, ar) = names[Pick(i, Mix(i, seed), count <= 1000)];
                 var (status, source) = mix switch
                 {
