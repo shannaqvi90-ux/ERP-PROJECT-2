@@ -51,10 +51,11 @@ test.describe("background jobs", () => {
     await expect(panel.locator("a.button", { hasText: "Download output" })).toHaveAttribute("href", /\/api\/jobs\/jobs\/.+\/output$/);
 
     // Run it again: the new run opens (the address moves to it), goes from waiting to done, and the panel follows it.
-    const opened = new URL(page.url()).searchParams.get("open");
+    const openedRecord = () => new URL(page.url()).pathname.match(/\/jobs\/jobs\/([0-9a-f-]{36})$/)?.[1] ?? null;
+    const opened = openedRecord();
     expect(opened).toMatch(/^[0-9a-f-]{36}$/);
     await page.keyboard.press("Alt+r");
-    await expect.poll(() => new URL(page.url()).searchParams.get("open"), { timeout: 30_000 }).not.toBe(opened);
+    await expect.poll(openedRecord, { timeout: 30_000 }).not.toBe(opened);
     await expect(panel.locator(".jb-status")).toHaveText(/Waiting|Running|Done/);
     await expect(panel.locator(".jb-status")).toHaveText("Done", { timeout: 60_000 });
     await expect(panel.getByTestId("job-finished")).not.toHaveText("Not yet");

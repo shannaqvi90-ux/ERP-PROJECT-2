@@ -144,6 +144,12 @@ export function DateTime({ value }: { value: string | null | undefined }) {
 type Draft = Record<string, never>;
 
 /** One job: its state, live while it is queued or running, and what can be done with it. */
+/** A job's parameters or result as read-only text: a field the keyboard reaches, scrolls and selects from, like the record's other fields. */
+function JsonText({ value, label }: { value: unknown; label: string }) {
+  const text = JSON.stringify(value, null, 2) ?? "";
+  return <textarea className="jb-json" dir="ltr" readOnly rows={Math.min(10, Math.max(2, text.split("\n").length))} value={text} aria-label={label} />;
+}
+
 function JobPanel({ id, nav, onChanged, onOpen, onClose }: { id: string; nav?: RecordNavigation; onChanged: () => void; onOpen: (id: string) => void; onClose: () => void }) {
   const { t, format } = useI18n();
   const localized = useLocalized();
@@ -317,15 +323,11 @@ function JobPanel({ id, nav, onChanged, onOpen, onClose }: { id: string; nav?: R
             </FormSection>
           )}
           <FormSection title={t("jobs.job.parameters")}>
-            <pre className="jb-json" dir="ltr" tabIndex={0} aria-label={t("jobs.job.parameters")}>
-              {JSON.stringify(job.payload, null, 2)}
-            </pre>
+            <JsonText value={job.payload} label={t("jobs.job.parameters")} />
           </FormSection>
           {job.result && (
             <FormSection title={t("jobs.job.result")}>
-              <pre className="jb-json" dir="ltr" tabIndex={0} aria-label={t("jobs.job.result")}>
-                {JSON.stringify(job.result, null, 2)}
-              </pre>
+              <JsonText value={job.result} label={t("jobs.job.result")} />
             </FormSection>
           )}
           {job.hasOutput && (

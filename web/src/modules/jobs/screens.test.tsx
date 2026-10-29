@@ -108,7 +108,7 @@ describe("background jobs screen", () => {
     await wait();
     expect(view!.container.querySelector("[data-testid=job-finished]")?.textContent).not.toBe("Not yet");
     expect(view!.container.querySelectorAll(".jb-tries tbody tr")).toHaveLength(1);
-    expect(view!.container.querySelectorAll("pre.jb-json")[0]?.textContent).toContain('"steps": 5');
+    expect((view!.container.querySelectorAll("textarea.jb-json")[0] as HTMLTextAreaElement | undefined)?.value).toContain('"steps": 5');
     const download = view!.container.querySelector<HTMLAnchorElement>("a.button[href]")!;
     expect(download.getAttribute("href")).toBe("/api/jobs/jobs/j1/output");
     expect(view!.container.querySelector("[data-testid=job-error]")).toBeNull();
