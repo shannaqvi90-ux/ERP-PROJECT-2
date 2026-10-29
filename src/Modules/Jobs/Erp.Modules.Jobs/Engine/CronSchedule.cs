@@ -34,6 +34,15 @@ public sealed class CronSchedule
         _anyDayOfWeek = anyDayOfWeek;
     }
 
+    /// <summary>The timing does not have five fields.</summary>
+    public const string ErrorFields = "cronFields";
+
+    /// <summary>A field is not valid.</summary>
+    public const string ErrorField = "cronField";
+
+    /// <summary>The timing never happens.</summary>
+    public const string ErrorNever = "cronNever";
+
     /// <summary>Longest timing text the module keeps.</summary>
     public const int MaxLength = 100;
 
@@ -46,7 +55,7 @@ public sealed class CronSchedule
         var parts = (text ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (parts.Length != 5 || (text ?? "").Length > MaxLength)
         {
-            error = "cronFields";
+            error = ErrorFields;
             return false;
         }
         if (!Field(parts[0], 0, 59, default, out var minutes, out _)
@@ -55,7 +64,7 @@ public sealed class CronSchedule
             || !Field(parts[3], 1, 12, MonthNames, out var months, out _, nameBase: 1)
             || !Field(parts[4], 0, 7, DayNames, out var daysOfWeek, out var anyDow))
         {
-            error = "cronField";
+            error = ErrorField;
             return false;
         }
         // 7 is Sunday as well.
@@ -63,7 +72,7 @@ public sealed class CronSchedule
         var built = new CronSchedule(minutes, hours, daysOfMonth, months, daysOfWeek, anyDom, anyDow);
         if (!built.CanFire())
         {
-            error = "cronNever";
+            error = ErrorNever;
             return false;
         }
         schedule = built;

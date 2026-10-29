@@ -26,7 +26,7 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
     public int Order => 130;
 
     /// <summary>Kinds of past runs the demo history holds besides the module's own (registered by later modules).</summary>
-    private static readonly (string Key, int MaxAttempts, string En, string Ar)[] PastKinds =
+    private static readonly System.Collections.Immutable.ImmutableArray<(string Key, int MaxAttempts, string En, string Ar)> PastKinds =
     [
         ("currency.importRates", 3, "Import exchange rates", "استيراد أسعار الصرف"),
         ("identity.exportUsers", 3, "Export the users list", "تصدير قائمة المستخدمين"),
@@ -59,6 +59,8 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
                 Payload = "{}",
                 IsEnabled = true,
                 NextRunAt = ScheduleTimer.Next("30 3 * * *", zone, DateTimeOffset.UtcNow),
+                // The demo and gate workspaces have run it before (their history holds its clean-ups).
+                LastRunAt = context.Plan.Profile is SeedProfile.Demo or SeedProfile.Gate ? DateTimeOffset.UtcNow.AddDays(-1) : null,
             });
             await db.SaveChangesAsync(cancellationToken);
         }

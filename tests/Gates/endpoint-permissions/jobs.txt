@@ -14,5 +14,5 @@ GET /api/jobs/jobs/{id:guid}/output jobs.jobs.output # the file a job produced c
 GET /api/jobs/types jobs.jobs.read # the kinds of job the product can run and which of them the caller may start or schedule
 GET /api/jobs/schedules jobs.schedules.read # the schedules list: timing, parameters and last and next moments
 GET /api/jobs/schedules/{id:guid} jobs.schedules.read # one schedule
-POST /api/jobs/schedules jobs.schedules.create # a schedule queues system work by itself, again and again: only for a kind whose run permission the caller also holds
-PUT /api/jobs/schedules/{id:guid} jobs.schedules.update # changing a schedule's timing or parameters, or switching it on, changes what runs by itself (also needs the kind's run permission)
+POST /api/jobs/schedules jobs.schedules.create # a schedule queues system work by itself, again and again: only for a kind its module marked schedulable (safe to run unattended with parameters an administrator wrote)
+PUT /api/jobs/schedules/{id:guid} jobs.schedules.update # changing a schedule's timing or parameters, or switching it on, changes what runs by itself (only a schedulable kind can be switched on)

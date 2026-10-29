@@ -102,7 +102,7 @@ public sealed record JobTypeDto(
     int MaxAttempts,
     int TimeoutSeconds,
     [property: Description("True when people may start this kind by hand and the caller may.")] bool Startable,
-    [property: Description("True when the caller may schedule this kind (holds its run permission and the schedule permission).")] bool Schedulable);
+    [property: Description("True when the caller may schedule this kind (a module marked it schedulable and the caller may add schedules).")] bool Schedulable);
 
 internal static class JobEndpoints
 {
@@ -324,7 +324,7 @@ internal static class JobEndpoints
                 t.MaxAttempts,
                 (int)t.EffectiveTimeout.TotalSeconds,
                 t.Manual && t.RunPermission is { } run && user.Has(run) && user.Has(JobsPermissions.JobsRun),
-                t.RunPermission is { } schedule && user.Has(schedule) && user.Has(JobsPermissions.SchedulesCreate))),
+                t.Schedulable && user.Has(JobsPermissions.SchedulesCreate))),
         ];
         return TypedResults.Ok(list);
     }

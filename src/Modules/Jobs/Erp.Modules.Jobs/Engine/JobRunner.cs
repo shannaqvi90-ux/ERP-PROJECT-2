@@ -49,7 +49,7 @@ public sealed class JobRunner : IDisposable
     private readonly StringCatalog strings;
     private readonly TimeProvider clock;
     private readonly ILogger<JobRunner> log;
-    private readonly Lazy<NpgsqlDataSource> _lookup;
+    private readonly string _ownerConnection;
 
     public JobRunner(IServiceScopeFactory scopes, JobTypes types, StringCatalog strings, TimeProvider clock, IConfiguration configuration, ILogger<JobRunner> log)
     {
@@ -58,9 +58,7 @@ public sealed class JobRunner : IDisposable
         this.strings = strings;
         this.clock = clock;
         this.log = log;
-        _lookup = new Lazy<NpgsqlDataSource>(() => NpgsqlDataSource.Create(
-            configuration.GetConnectionString(ConnectionNames.Owner)
-            ?? throw new InvalidOperationException("The job worker needs the owner role's connection string (ConnectionStrings:Owner) to learn which workspaces have work.")));
+        _ownerConnection = configuration.GetConnectionString(ConnectionNames.Owner) ?? "";
     }
 
     /// <summary>How long a worker's claim on a running job lasts without being renewed.</summary>
@@ -124,7 +122,12 @@ public sealed class JobRunner : IDisposable
     /// connection of the worker process, switched to the narrow lookup role for this one statement.</summary>
     public async Task<IReadOnlyList<Guid>> DueTenantsAsync(CancellationToken cancellationToken)
     {
-        await using var connection = await _lookup.Value.OpenConnectionAsync(cancellationToken);
+        if (_ownerConnection.Length == 0)
+        {
+            throw new InvalidOperationException("The job worker needs the owner role's connection string (ConnectionStrings:Owner) to learn which workspaces have work.");
+        }
+        await using var connection = new NpgsqlConnection(_ownerConnection);
+        await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         await using (var role = new NpgsqlCommand("SET LOCAL ROLE erp_auth", connection, transaction))
         {
@@ -146,10 +149,6 @@ public sealed class JobRunner : IDisposable
 
     public void Dispose()
     {
-        if (_lookup.IsValueCreated)
-        {
-            _lookup.Value.Dispose();
-        }
     }
 
     /// <summary>Queue due schedules, take back abandoned jobs and take due jobs of one workspace.

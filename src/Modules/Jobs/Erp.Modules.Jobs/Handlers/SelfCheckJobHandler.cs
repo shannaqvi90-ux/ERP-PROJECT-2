@@ -16,7 +16,7 @@ internal sealed class SelfCheckJobHandler : IJobHandler
     public const string TypeKey = "jobs.selfCheck";
 
     public static readonly JobType Type = new(TypeKey, "job.type.jobs.selfCheck", MaxAttempts: 1, Timeout: TimeSpan.FromMinutes(2),
-        RunPermission: JobsPermissions.JobsRun, Description: "job.type.jobs.selfCheck.description", Manual: true);
+        RunPermission: JobsPermissions.JobsRun, Description: "job.type.jobs.selfCheck.description", Manual: true, Schedulable: true);
 
     public async Task RunAsync(IJobContext context)
     {

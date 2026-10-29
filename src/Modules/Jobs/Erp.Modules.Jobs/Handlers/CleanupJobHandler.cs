@@ -17,7 +17,7 @@ internal sealed class CleanupJobHandler : IJobHandler
     public const int MaxBatches = 100;
 
     public static readonly JobType Type = new(TypeKey, "job.type.jobs.cleanup", MaxAttempts: 2, Timeout: TimeSpan.FromMinutes(20),
-        RunPermission: JobsPermissions.SchedulesUpdate, Description: "job.type.jobs.cleanup.description", Manual: true);
+        RunPermission: JobsPermissions.SchedulesUpdate, Description: "job.type.jobs.cleanup.description", Manual: true, Schedulable: true);
 
     public async Task RunAsync(IJobContext context)
     {

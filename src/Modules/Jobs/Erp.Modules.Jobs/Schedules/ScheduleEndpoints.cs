@@ -56,11 +56,11 @@ public sealed record ScheduleDto(
     bool CanUpdate);
 
 /// <summary>Add a schedule: queue a job of <c>type</c> whenever <c>cron</c> fires (the workspace's
-/// time zone). A schedule whose last job has not finished queues nothing that time. The caller needs
-/// the kind's run permission.</summary>
+/// time zone). A schedule whose last job has not finished queues nothing that time. Only kinds a module marked
+/// schedulable can be scheduled.</summary>
 public sealed record CreateScheduleRequest(
     [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? Name,
-    [property: ApiExample("jobs.cleanup"), StringLength(JobsDbContext.TypeLength)] string? Type,
+    [property: ApiExample("jobs.selfCheck"), StringLength(JobsDbContext.TypeLength)] string? Type,
     [property: ApiExample("30 3 * * *"), StringLength(CronSchedule.MaxLength), Description("Minute hour day-of-month month day-of-week; * , - / and the names jan-dec, sun-sat.")] string? Cron,
     [property: Description("The parameters every job of this schedule is queued with, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
     bool? IsEnabled);
@@ -135,7 +135,7 @@ internal static class ScheduleEndpoints
         types.Find(key) is { } type ? (strings.Get(type.LabelKey, Languages.English), strings.Get(type.LabelKey, Languages.Arabic)) : (key, key);
 
     private static bool CanUpdate(JobSchedule s, IJobTypes types, ICurrentUser user) =>
-        user.Has(JobsPermissions.SchedulesUpdate) && types.Find(s.Type)?.RunPermission is { } run && user.Has(run);
+        user.Has(JobsPermissions.SchedulesUpdate) && types.Find(s.Type)?.Schedulable == true;
 
     private static async Task<Results<Ok<ScheduleDto>, ProblemHttpResult>> Get(Guid id, JobsDbContext db, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
     {
@@ -162,7 +162,18 @@ internal static class ScheduleEndpoints
             validator.MaxLength("cron", cron, CronSchedule.MaxLength);
             if (cron.Length <= CronSchedule.MaxLength && !CronSchedule.TryParse(cron, out _, out var error))
             {
-                validator.Add("cron", "jobs" + char.ToUpperInvariant(error![0]) + error[1..]);
+                if (error == CronSchedule.ErrorFields)
+                {
+                    validator.Add("cron", "jobsCronFields");
+                }
+                else if (error == CronSchedule.ErrorNever)
+                {
+                    validator.Add("cron", "jobsCronNever");
+                }
+                else
+                {
+                    validator.Add("cron", "jobsCronField");
+                }
             }
         }
         if (payload is not null)
@@ -172,7 +183,7 @@ internal static class ScheduleEndpoints
     }
 
     private static async Task<Results<Created<ScheduleDto>, ProblemHttpResult>> Create(
-        CreateScheduleRequest request, JobsDbContext db, IJobTypes types, ICurrentUser user, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
+        CreateScheduleRequest request, JobsDbContext db, IJobTypes types, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
     {
         var name = request.Name?.Trim();
         var cron = request.Cron?.Trim();
@@ -181,7 +192,7 @@ internal static class ScheduleEndpoints
         var type = request.Type is null ? null : types.Find(request.Type);
         if (request.Type is not null)
         {
-            validator.Must(type is { RunPermission: not null }, "type", "jobsTypeNotSchedulable");
+            validator.Must(type is { Schedulable: true }, "type", "jobsTypeNotSchedulable");
         }
         if (validator.IsValid && await db.Schedules.AnyAsync(s => s.Name == name, cancellationToken))
         {
@@ -191,16 +202,12 @@ internal static class ScheduleEndpoints
         {
             return validator.ToResult();
         }
-        if (!user.Has(type!.RunPermission!))
-        {
-            return Problems.Forbidden(http, "jobs.typeNotAllowed");
-        }
         var enabled = request.IsEnabled ?? true;
         var zone = (await tenants.GetCurrentAsync(cancellationToken))?.TimeZone;
         var schedule = new JobSchedule
         {
             Name = name!,
-            Type = type.Key,
+            Type = type!.Key,
             Cron = cron!,
             Payload = JobQueue.SerializePayload(request.Payload),
             IsEnabled = enabled,
@@ -212,7 +219,7 @@ internal static class ScheduleEndpoints
     }
 
     private static async Task<Results<Ok<ScheduleDto>, ProblemHttpResult>> Update(
-        Guid id, UpdateScheduleRequest request, JobsDbContext db, IJobTypes types, ICurrentUser user, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
+        Guid id, UpdateScheduleRequest request, JobsDbContext db, IJobTypes types, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
     {
         var name = request.Name?.Trim();
         var cron = request.Cron?.Trim();
@@ -227,9 +234,13 @@ internal static class ScheduleEndpoints
         {
             return Problems.NotFound(http);
         }
-        if (types.Find(schedule.Type)?.RunPermission is not { } required || !user.Has(required))
+        if (types.Find(schedule.Type)?.Schedulable != true)
         {
-            return Problems.Forbidden(http, "jobs.typeNotAllowed");
+            // The kind is gone or no longer schedulable: the schedule can only be switched off.
+            if (request.IsEnabled == true)
+            {
+                return new Validator(http).Add("isEnabled", "jobsTypeNotSchedulable").ToResult();
+            }
         }
         if (name != schedule.Name && await db.Schedules.AnyAsync(s => s.Name == name && s.Id != id, cancellationToken))
         {

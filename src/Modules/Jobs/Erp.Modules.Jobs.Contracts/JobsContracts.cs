@@ -104,11 +104,16 @@ public sealed record JobText(string En, string Ar)
 /// <param name="MaxAttempts">How many times a job is tried before it fails (1 to 10).</param>
 /// <param name="Timeout">The longest one attempt may run before it is stopped and counted as failed.</param>
 /// <param name="RunPermission">The permission a person needs, besides <see cref="JobsPermissions.JobsRun"/>,
-/// to run a job of this kind again, to schedule it and (when <see cref="Manual"/>) to start it. When null
-/// only code (a module) queues this kind and people can neither start, schedule nor rerun it.</param>
+/// to run a job of this kind again and (when <see cref="Manual"/>) to start it. A kind whose run permission
+/// is <see cref="JobsPermissions.JobsRun"/> itself needs nothing more. When null only code (a module) queues
+/// this kind and people can neither start nor rerun it.</param>
 /// <param name="Description">Server string key of one sentence saying what the kind does, or null.</param>
 /// <param name="Manual">True when people may start the kind from the Background jobs screen and the API
 /// with parameters of their own (needs <paramref name="RunPermission"/>).</param>
+/// <param name="Schedulable">True when people who may add and change schedules
+/// (<see cref="JobsPermissions.SchedulesCreate"/>, <see cref="JobsPermissions.SchedulesUpdate"/>) may schedule the
+/// kind. A module marks a kind schedulable only when running it unattended, with parameters an administrator
+/// wrote, is safe: a schedule runs as system work with the permissions of nobody.</param>
 public sealed record JobType(
     string Key,
     string LabelKey,
@@ -116,7 +121,8 @@ public sealed record JobType(
     TimeSpan? Timeout = null,
     string? RunPermission = null,
     string? Description = null,
-    bool Manual = false)
+    bool Manual = false,
+    bool Schedulable = false)
 {
     private static readonly Regex KeyRegex = new("^[a-z][a-zA-Z0-9]+\\.[a-z][a-zA-Z0-9]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
