@@ -11,7 +11,12 @@ export default {
   // writes that save it (the measured part must send one of them).
   endState: {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/ir.sequence/read', parts: ['result.prefix', 'result.padding'] }], writes: ['POST /web/dataset/call_kw/ir.sequence/web_save'] },
+    ours: { reads: [{ read: 'GET /api/numbering/sequences', parts: ['items.prefix', 'items.padding'] }], writes: ['PUT /api/numbering/sequences/*'] },
   },
+  // The writes set-up sends for each product whose driver is built (set-up puts the working
+  // company's purchase order sequence back to its start); any other set-up write is refused for our
+  // product (lib/runner.mjs setUpFixturesFor).
+  fixtures: { ours: ['PUT /api/numbering/sequences/*'] },
   enters: ['prefix'],
   moments: ['sequence edited'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',

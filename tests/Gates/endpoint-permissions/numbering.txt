@@ -1,0 +1,10 @@
+# Reviewed endpoint-to-permission map of the numbering module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares, and
+# every line must match an endpoint. A new endpoint, or a changed permission, fails the gate until
+# this file is reviewed and changed with it: the reason after # says why that permission, and no
+# broader one, guards the endpoint.
+prefix /api/numbering/
+
+GET /api/numbering/sequences numbering.sequences.read # the document numbering list: how each company of the caller's scope numbers each kind of document, and the number its next document would get (no document's data)
+GET /api/numbering/sequences/{id:guid} numbering.sequences.read # one sequence with its counters by period and branch and the last numbers it gave (numbers only; the documents they went to are their own modules')
+PUT /api/numbering/sequences/{id:guid} numbering.sequences.update # changing a pattern, when the numbers start again, whether they may skip or the next number changes every later document's number in that company (also needs every branch of the company, checked in the handler)

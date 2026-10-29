@@ -1,0 +1,34 @@
+{
+  "_about": "Shared examples of document number patterns. The server (NumberPattern, tests/Erp.Modules.Numbering.Tests/PatternTests.cs) and the web screen's preview (web/src/modules/numbering/pattern.ts, pattern.test.ts) must both give exactly these results.",
+  "formats": [
+    { "prefix": "PO-{YYYY}-", "suffix": "", "padding": 5, "date": "2026-10-25", "branch": null, "value": 148, "number": "PO-2026-00148" },
+    { "prefix": "PO-2026-", "suffix": "", "padding": 6, "date": "2026-10-25", "branch": null, "value": 123, "number": "PO-2026-000123" },
+    { "prefix": "JV-{YYYY}-{MM}-", "suffix": "", "padding": 4, "date": "2027-01-03", "branch": null, "value": 1, "number": "JV-2027-01-0001" },
+    { "prefix": "DN-{BRANCH}-{YY}-", "suffix": "", "padding": 4, "date": "2026-02-28", "branch": "AQZ-WH", "value": 58, "number": "DN-AQZ-WH-26-0058" },
+    { "prefix": "", "suffix": "/{YY}", "padding": 3, "date": "2009-12-31", "branch": null, "value": 7, "number": "007/09" },
+    { "prefix": "INV", "suffix": "", "padding": 2, "date": "2026-10-25", "branch": null, "value": 1234, "number": "INV1234" },
+    { "prefix": "{MM}{YY}#", "suffix": ".A", "padding": 1, "date": "2026-07-01", "branch": null, "value": 9, "number": "0726#9.A" }
+  ],
+  "periods": [
+    { "reset": "never", "date": "2026-10-25", "period": "" },
+    { "reset": "yearly", "date": "2026-10-25", "period": "2026" },
+    { "reset": "monthly", "date": "2026-03-01", "period": "2026-03" }
+  ],
+  "checks": [
+    { "prefix": "PO-{YYYY}-", "suffix": "", "padding": 5, "reset": "yearly", "perBranch": false, "problems": [] },
+    { "prefix": "PO-", "suffix": "", "padding": 5, "reset": "never", "perBranch": false, "problems": [] },
+    { "prefix": "PO-", "suffix": "", "padding": 5, "reset": "yearly", "perBranch": false, "problems": [["reset", "numberingYearlyNeedsYear"]] },
+    { "prefix": "JV-{YYYY}-", "suffix": "", "padding": 4, "reset": "monthly", "perBranch": false, "problems": [["reset", "numberingMonthlyNeedsMonth"]] },
+    { "prefix": "JV-{YY}{MM}", "suffix": "", "padding": 4, "reset": "monthly", "perBranch": false, "problems": [] },
+    { "prefix": "DN-", "suffix": "", "padding": 4, "reset": "never", "perBranch": true, "problems": [["perBranch", "numberingPerBranchNeedsBranch"]] },
+    { "prefix": "DN-{BRANCH}-", "suffix": "", "padding": 4, "reset": "never", "perBranch": false, "problems": [["perBranch", "numberingBranchNeedsPerBranch"]] },
+    { "prefix": "PO {YYYY}", "suffix": "", "padding": 5, "reset": "yearly", "perBranch": false, "problems": [["prefix", "numberingCharacters"]] },
+    { "prefix": "PO-{YEAR}-", "suffix": "", "padding": 5, "reset": "never", "perBranch": false, "problems": [["prefix", "numberingToken"]] },
+    { "prefix": "PO-{yyyy}-", "suffix": "", "padding": 5, "reset": "never", "perBranch": false, "problems": [["prefix", "numberingToken"]] },
+    { "prefix": "PO-", "suffix": "-ف", "padding": 5, "reset": "never", "perBranch": false, "problems": [["suffix", "numberingCharacters"]] },
+    { "prefix": "PO-", "suffix": "", "padding": 0, "reset": "never", "perBranch": false, "problems": [["padding", "numberingPadding"]] },
+    { "prefix": "PO-", "suffix": "", "padding": 13, "reset": "never", "perBranch": false, "problems": [["padding", "numberingPadding"]] },
+    { "prefix": "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345", "suffix": "", "padding": 5, "reset": "never", "perBranch": false, "problems": [["prefix", "maxLength"]] },
+    { "prefix": "PO-", "suffix": "", "padding": 5, "reset": "weekly", "perBranch": false, "problems": [["reset", "numberingReset"]] }
+  ]
+}

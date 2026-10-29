@@ -1,0 +1,1074 @@
+{
+  "schema": 1,
+  "run_id": "see-converted-20261028T175104-f858",
+  "instrument": 12,
+  "task": "see-converted",
+  "task_title": "See an amount converted to the base currency",
+  "product": "odoo",
+  "status": "failed",
+  "goal": "Find out what 1250 EUR is in AED at today's rate.",
+  "done_when": "The screen shows 1250 EUR as 5,359.38 AED.",
+  "started_at": "2026-10-28T17:51:04.227Z",
+  "finished_at": "2026-10-28T17:51:52.461Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 11,
+    "keystrokes": 13,
+    "clicks": 7,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.887,
+    "system_wait_seconds": 2.135,
+    "human_seconds": 23.79,
+    "human_plus_wait_seconds": 25.925,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 7,
+      "B": 14,
+      "H": 4,
+      "M": 7
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.024,
+      "took": 0.038,
+      "began": 0.001,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Invoicing app",
+      "keystrokes": 0,
+      "at": 0.108,
+      "took": 0.034,
+      "began": 0.063,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "New",
+      "keystrokes": 0,
+      "at": 0.461,
+      "took": 0.087,
+      "began": 0.414,
+      "screen": "/odoo/customer-invoices",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "the journal's currency",
+      "keystrokes": 0,
+      "at": 1.441,
+      "took": 0.037,
+      "began": 1.415,
+      "screen": "/odoo/customer-invoices/new",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "currency",
+      "keystrokes": 6,
+      "at": 1.483,
+      "took": 0.013,
+      "text": "EUR",
+      "same_field": true,
+      "screen": "/odoo/customer-invoices/new",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "choose it",
+      "keystrokes": 1,
+      "at": 1.809,
+      "took": 0.015,
+      "chord": "Enter",
+      "screen": "/odoo/customer-invoices/new",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Add a line",
+      "keystrokes": 0,
+      "at": 1.923,
+      "took": 0.038,
+      "began": 1.878,
+      "screen": "/odoo/customer-invoices/new",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "price",
+      "keystrokes": 0,
+      "at": 2.172,
+      "took": 0.035,
+      "began": 2.143,
+      "screen": "/odoo/customer-invoices/new",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "select the price",
+      "keystrokes": 2,
+      "at": 2.208,
+      "took": 0.004,
+      "chord": "Control+a",
+      "screen": "/odoo/customer-invoices/new",
+      "chain": true
+    },
+    {
+      "n": 10,
+      "kind": "type",
+      "label": "amount",
+      "keystrokes": 4,
+      "at": 2.212,
+      "took": 0.01,
+      "text": "1250",
+      "same_field": false,
+      "screen": "/odoo/customer-invoices/new",
+      "chain": true
+    },
+    {
+      "n": 11,
+      "kind": "click",
+      "label": "Journal Items",
+      "keystrokes": 0,
+      "at": 2.257,
+      "took": 0.049,
+      "began": 2.222,
+      "screen": "/odoo/customer-invoices/new",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Invoicing loaded",
+      "at": 0.143,
+      "seconds": 0.27
+    },
+    {
+      "label": "new invoice form",
+      "at": 0.548,
+      "seconds": 0.866
+    },
+    {
+      "label": "currency offered",
+      "at": 1.497,
+      "seconds": 0.312
+    },
+    {
+      "label": "currency chosen",
+      "at": 1.825,
+      "seconds": 0.052
+    },
+    {
+      "label": "new line",
+      "at": 1.961,
+      "seconds": 0.181
+    },
+    {
+      "label": "journal items in AED",
+      "at": 2.309,
+      "seconds": 0.454
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "891ec3c2d6675a65.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/891ec3c2d6675a65.jpg"
+    },
+    {
+      "moment": "converted amount",
+      "file": "14ad261b2308756a.jpg",
+      "at": 2.764,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/14ad261b2308756a.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "23635d4af74780b8.jpg",
+      "at": 2.887,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/23635d4af74780b8.jpg"
+    }
+  ],
+  "verification": {
+    "verified": false,
+    "details": {
+      "want": "5,359.38 AED",
+      "shown": {
+        "path": "/odoo/customer-invoices/22/account.move.line",
+        "cells": [
+          "Oct 28",
+          "/",
+          "0.00 AED",
+          "5,025.24 AED",
+          "Oct 28",
+          "/",
+          "15%",
+          "0.00 AED",
+          "753.79 AED",
+          "Oct 28",
+          "/",
+          "5,779.03 AED",
+          "0.00 AED"
+        ]
+      }
+    }
+  },
+  "path_notes": "menus: Apps menu > Invoicing > New > currency field > \"EUR\" > Enter > Add a line > price > Ctrl+A > 1250 > Journal Items | palette: Ctrl+K > \"/invoi\" > Enter (Invoicing opens on its invoices) > New > currency field > \"EUR\" > Enter > Add a line > price > Ctrl+A > 1250 > Journal Items",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/see-converted.mjs",
+    "sha256": "51fcf99e2fb8073e4a23319292efc95077d10ea74431a61981705d8f77394651"
+  },
+  "task_notes": "An amount in a foreign currency seen in the company's base currency (1250 x 4.2875 = 5,359.375, rounded once to the fils: 5,359.38). Set-up makes today's euro rate 4.2875 AED in both products; neither product saves anything the task needs.",
+  "error": "menus: failed\npalette: failed",
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": false
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": false,
+      "gap_seconds": 0.045
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "40c6aa39631ab60d",
+    "elements": 275
+  },
+  "screen_after_verify": {
+    "sha256": "40c6aa39631ab60d",
+    "elements": 275,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.027
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 104,
+    "not_caused": 19,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.156,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.423,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.483,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.541,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.543,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.814,
+        "event": "ParseHTML",
+        "why": "the document /odoo/customer-invoices, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.937,
+        "event": "ParseHTML",
+        "why": "the document /odoo/customer-invoices/new, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.952,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 2.748,
+      "by_step": 11,
+      "chain": [
+        "the answer to POST /web/dataset/call_kw/account.move.line/get_views after 0.051 s",
+        "the answer to POST /web/dataset/call_kw/account.move.line/search_panel_select_range after 0.017 s",
+        "an animation frame",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/res.currency.rate/create"
+  ],
+  "screenshots_path": "menus",
+  "error_page": {},
+  "best_path_per_metric": {},
+  "variants": [
+    {
+      "id": "menus",
+      "path": "Apps menu > Invoicing > New > currency field > \"EUR\" > Enter > Add a line > price > Ctrl+A > 1250 > Journal Items",
+      "status": "failed",
+      "error": null,
+      "counts": {
+        "steps": 11,
+        "keystrokes": 13,
+        "clicks": 7,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 2.887,
+        "system_wait_seconds": 2.135,
+        "human_seconds": 23.79,
+        "human_plus_wait_seconds": 25.925,
+        "klm_operator_counts": {
+          "K": 13,
+          "P": 7,
+          "B": 14,
+          "H": 4,
+          "M": 7
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.024,
+          "took": 0.038,
+          "began": 0.001,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Invoicing app",
+          "keystrokes": 0,
+          "at": 0.108,
+          "took": 0.034,
+          "began": 0.063,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 0.461,
+          "took": 0.087,
+          "began": 0.414,
+          "screen": "/odoo/customer-invoices",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "the journal's currency",
+          "keystrokes": 0,
+          "at": 1.441,
+          "took": 0.037,
+          "began": 1.415,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "currency",
+          "keystrokes": 6,
+          "at": 1.483,
+          "took": 0.013,
+          "text": "EUR",
+          "same_field": true,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "choose it",
+          "keystrokes": 1,
+          "at": 1.809,
+          "took": 0.015,
+          "chord": "Enter",
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Add a line",
+          "keystrokes": 0,
+          "at": 1.923,
+          "took": 0.038,
+          "began": 1.878,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "price",
+          "keystrokes": 0,
+          "at": 2.172,
+          "took": 0.035,
+          "began": 2.143,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "select the price",
+          "keystrokes": 2,
+          "at": 2.208,
+          "took": 0.004,
+          "chord": "Control+a",
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 10,
+          "kind": "type",
+          "label": "amount",
+          "keystrokes": 4,
+          "at": 2.212,
+          "took": 0.01,
+          "text": "1250",
+          "same_field": false,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 11,
+          "kind": "click",
+          "label": "Journal Items",
+          "keystrokes": 0,
+          "at": 2.257,
+          "took": 0.049,
+          "began": 2.222,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Invoicing loaded",
+          "at": 0.143,
+          "seconds": 0.27
+        },
+        {
+          "label": "new invoice form",
+          "at": 0.548,
+          "seconds": 0.866
+        },
+        {
+          "label": "currency offered",
+          "at": 1.497,
+          "seconds": 0.312
+        },
+        {
+          "label": "currency chosen",
+          "at": 1.825,
+          "seconds": 0.052
+        },
+        {
+          "label": "new line",
+          "at": 1.961,
+          "seconds": 0.181
+        },
+        {
+          "label": "journal items in AED",
+          "at": 2.309,
+          "seconds": 0.454
+        }
+      ],
+      "verification": {
+        "verified": false,
+        "details": {
+          "want": "5,359.38 AED",
+          "shown": {
+            "path": "/odoo/customer-invoices/22/account.move.line",
+            "cells": [
+              "Oct 28",
+              "/",
+              "0.00 AED",
+              "5,025.24 AED",
+              "Oct 28",
+              "/",
+              "15%",
+              "0.00 AED",
+              "753.79 AED",
+              "Oct 28",
+              "/",
+              "5,779.03 AED",
+              "0.00 AED"
+            ]
+          }
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": false
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": false,
+          "gap_seconds": 0.045
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "40c6aa39631ab60d",
+        "elements": 275
+      },
+      "screen_after_verify": {
+        "sha256": "40c6aa39631ab60d",
+        "elements": 275,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.027
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 104,
+        "not_caused": 19,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.156,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.423,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.483,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.541,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.543,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.814,
+            "event": "ParseHTML",
+            "why": "the document /odoo/customer-invoices, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.937,
+            "event": "ParseHTML",
+            "why": "the document /odoo/customer-invoices/new, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.952,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 2.748,
+          "by_step": 11,
+          "chain": [
+            "the answer to POST /web/dataset/call_kw/account.move.line/get_views after 0.051 s",
+            "the answer to POST /web/dataset/call_kw/account.move.line/search_panel_select_range after 0.017 s",
+            "an animation frame",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/res.currency.rate/create"
+      ]
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > \"/invoi\" > Enter (Invoicing opens on its invoices) > New > currency field > \"EUR\" > Enter > Add a line > price > Ctrl+A > 1250 > Journal Items",
+      "status": "failed",
+      "error": null,
+      "counts": {
+        "steps": 12,
+        "keystrokes": 22,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 3,
+        "key_chords": 4,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 2.922,
+        "system_wait_seconds": 2.241,
+        "human_seconds": 23.16,
+        "human_plus_wait_seconds": 25.401,
+        "klm_operator_counts": {
+          "K": 22,
+          "P": 5,
+          "B": 10,
+          "H": 6,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.019,
+          "chord": "Control+k",
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search /invoi",
+          "keystrokes": 6,
+          "at": 0.811,
+          "took": 0.017,
+          "text": "/invoi",
+          "same_field": false,
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Invoicing",
+          "keystrokes": 1,
+          "at": 0.888,
+          "took": 0.01,
+          "chord": "Enter",
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 1.236,
+          "took": 0.058,
+          "began": 1.201,
+          "screen": "/odoo/customer-invoices",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "the journal's currency",
+          "keystrokes": 0,
+          "at": 1.558,
+          "took": 0.047,
+          "began": 1.524,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "type",
+          "label": "currency",
+          "keystrokes": 6,
+          "at": 1.611,
+          "took": 0.012,
+          "text": "EUR",
+          "same_field": true,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 7,
+          "kind": "key",
+          "label": "choose it",
+          "keystrokes": 1,
+          "at": 1.934,
+          "took": 0.017,
+          "chord": "Enter",
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Add a line",
+          "keystrokes": 0,
+          "at": 2.051,
+          "took": 0.038,
+          "began": 2.004,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "price",
+          "keystrokes": 0,
+          "at": 2.201,
+          "took": 0.036,
+          "began": 2.168,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "key",
+          "label": "select the price",
+          "keystrokes": 2,
+          "at": 2.238,
+          "took": 0.004,
+          "chord": "Control+a",
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 11,
+          "kind": "type",
+          "label": "amount",
+          "keystrokes": 4,
+          "at": 2.243,
+          "took": 0.009,
+          "text": "1250",
+          "same_field": false,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": true
+        },
+        {
+          "n": 12,
+          "kind": "click",
+          "label": "Journal Items",
+          "keystrokes": 0,
+          "at": 2.285,
+          "took": 0.049,
+          "began": 2.252,
+          "screen": "/odoo/customer-invoices/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.021,
+          "seconds": 0.789
+        },
+        {
+          "label": "menu found",
+          "at": 0.834,
+          "seconds": 0.053
+        },
+        {
+          "label": "Invoicing loaded",
+          "at": 0.899,
+          "seconds": 0.302
+        },
+        {
+          "label": "new invoice form",
+          "at": 1.294,
+          "seconds": 0.23
+        },
+        {
+          "label": "currency offered",
+          "at": 1.623,
+          "seconds": 0.31
+        },
+        {
+          "label": "currency chosen",
+          "at": 1.951,
+          "seconds": 0.053
+        },
+        {
+          "label": "new line",
+          "at": 2.089,
+          "seconds": 0.078
+        },
+        {
+          "label": "journal items in AED",
+          "at": 2.335,
+          "seconds": 0.426
+        }
+      ],
+      "verification": {
+        "verified": false,
+        "details": {
+          "want": "5,359.38 AED",
+          "shown": {
+            "path": "/odoo/customer-invoices/23/account.move.line",
+            "cells": [
+              "Oct 28",
+              "/",
+              "0.00 AED",
+              "5,025.24 AED",
+              "Oct 28",
+              "/",
+              "15%",
+              "0.00 AED",
+              "753.79 AED",
+              "Oct 28",
+              "/",
+              "5,779.03 AED",
+              "0.00 AED"
+            ]
+          }
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": false
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": false,
+          "gap_seconds": 0.049
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "2aa6c2da2bd234f9",
+        "elements": 275
+      },
+      "screen_after_verify": {
+        "sha256": "2aa6c2da2bd234f9",
+        "elements": 275,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.031
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 115,
+        "not_caused": 25,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.311,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.475,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.492,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.924,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.944,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 1.211,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 1.228,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 1.29,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 2.718,
+          "by_step": 12,
+          "chain": [
+            "the answer to POST /web/dataset/call_button/account.move/open_journal_items after 0.049 s",
+            "the answer to POST /web/dataset/call_kw/account.move.line/get_views after 0.036 s",
+            "the answer to POST /web/dataset/call_kw/account.move.line/search_panel_select_range after 0.034 s",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/res.currency.rate/create"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,304 @@
+{
+  "schema": 1,
+  "run_id": "add-rate-20261028T175039-3a18",
+  "instrument": 12,
+  "task": "add-rate",
+  "task_title": "Add an exchange rate",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Record today's rate for the euro: 1 EUR = 4.2875 AED.",
+  "done_when": "The rate is saved; the back end holds a EUR rate dated today equal to 4.2875 AED per euro.",
+  "started_at": "2026-10-28T17:50:39.172Z",
+  "finished_at": "2026-10-28T17:50:45.646Z",
+  "environment": {
+    "base_url": "http://localhost:20850",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 7,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.612,
+    "system_wait_seconds": 0.201,
+    "human_seconds": 9.01,
+    "human_plus_wait_seconds": 9.211,
+    "klm_operator_counts": {
+      "K": 7,
+      "P": 2,
+      "B": 4,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Currencies (navigation)",
+      "keystrokes": 0,
+      "at": 0.026,
+      "took": 0.07,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "the EUR row",
+      "keystrokes": 0,
+      "at": 0.291,
+      "took": 0.091,
+      "began": 0.259,
+      "screen": "/currency/currencies",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the rate",
+      "keystrokes": 6,
+      "at": 0.398,
+      "took": 0.016,
+      "text": "4.2875",
+      "same_field": false,
+      "screen": "/currency/currencies/01a1839b-c9a7-7b44-8071-8e1db7c8f5ce",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "save (Enter)",
+      "keystrokes": 1,
+      "at": 0.569,
+      "took": 0.006,
+      "chord": "Enter",
+      "screen": "/currency/currencies/01a1839b-c9a7-7b44-8071-8e1db7c8f5ce",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "currencies list",
+      "at": 0.098,
+      "seconds": 0.16
+    },
+    {
+      "label": "today's rate field focused",
+      "at": 0.382,
+      "seconds": 0.008
+    },
+    {
+      "label": "saved",
+      "at": 0.575,
+      "seconds": 0.033
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "41f855c9ed356971.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/41f855c9ed356971.jpg"
+    },
+    {
+      "moment": "rate entered",
+      "file": "c832973f74e53b96.jpg",
+      "at": 0.415,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/c832973f74e53b96.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "8e2534bc3669cbca.jpg",
+      "at": 0.612,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/8e2534bc3669cbca.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "date": "2026-10-28",
+      "rates": [
+        {
+          "id": "01a183a2-bc4e-7239-82e9-aa4a89834301",
+          "rateDate": "2026-10-28",
+          "currencyCode": "EUR",
+          "exchangeRate": "4.2875",
+          "quoteCurrency": "AED",
+          "inverseRate": "0.23323615",
+          "source": "manual",
+          "reference": null,
+          "updatedAt": "2026-10-28T17:50:42.766322+00:00",
+          "version": 2668953328
+        }
+      ]
+    }
+  },
+  "path_notes": "Currencies (navigation) > the euro (its panel opens on today's rate) > type the rate > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/add-rate.mjs",
+    "sha256": "32e7e2665c4bc7804d866ee6ca1b9e2c2fa4379ed4acf20ab5b537f20fd08ec4"
+  },
+  "task_notes": "Set-up removes any EUR rate dated today; clean-up deletes the new one. The rig and the dataset hold 100,000 rates.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.01,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.02,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.01,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.019,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /api/currency/currencies (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "c17e088e2607c333",
+    "elements": 644
+  },
+  "screen_after_verify": {
+    "sha256": "c17e088e2607c333",
+    "elements": 644,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.01,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.019
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/currency/rates"
+    ],
+    "read_after": [
+      "GET /api/currency/rates"
+    ],
+    "changed": [
+      "GET /api/currency/rates"
+    ],
+    "changed_parts": {
+      "GET /api/currency/rates": [
+        "items.0.id",
+        "items.0.rateDate",
+        "items.0.currencyCode",
+        "items.0.exchangeRate",
+        "items.0.quoteCurrency",
+        "items.0.inverseRate",
+        "items.0.source",
+        "items.0.reference"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/currency/rates"
+    ],
+    "end_state": [
+      "GET /api/currency/rates [items.exchangeRate]"
+    ],
+    "end_state_changed": {
+      "GET /api/currency/rates": [
+        "items.0.exchangeRate"
+      ]
+    },
+    "end_state_gained": [
+      "4.2875"
+    ],
+    "writes_sent": [
+      "POST /api/currency/rates"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/currency/rates",
+        "at": 0.573621496000007,
+        "by_step": 4,
+        "browser_record": {
+          "caused": true,
+          "by_step": 4,
+          "chain_seconds": 0.001,
+          "chain": [
+            "input of step 4"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 25,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.608,
+      "by_step": 4,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/currency/rates after 0.012 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

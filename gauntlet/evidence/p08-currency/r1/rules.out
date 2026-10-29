@@ -1,0 +1,23 @@
+lookup EUR 2026-09-30 200 {"currency":"EUR","quoteCurrency":"AED","rate":"4.020188","rateDate":"2026-09-30","requestedDate":"2026-09-30","exact":true,"source":"import","rateId":"01a1839b-ca4c-79fe-8ecc-bf37aaa45e78"}
+lookup EUR 2026-10-01 200 {"currency":"EUR","quoteCurrency":"AED","rate":"4.020188","rateDate":"2026-09-30","requestedDate":"2026-10-01","exact":false,"source":"import","rateId":"01a1839b-ca4c-79fe-8ecc-bf37aaa45e78"}
+lookup EUR 2026-10-07 200 {"currency":"EUR","quoteCurrency":"AED","rate":"4.020188","rateDate":"2026-09-30","requestedDate":"2026-10-07","exact":false,"source":"import","rateId":"01a1839b-ca4c-79fe-8ecc-bf37aaa45e78"}
+lookup EUR 2026-10-08 404 {"type":"urn:erp:problem:currency.rateTooOld","title":"There is no EUR rate in AED for 2026-10-08: the latest is dated 2026-09-30, more than 7 days earlier.","status":404,"code":"currency.rateTooOld","traceId":"00-26cd2ae2f46a5a3e77b127f602ce966b-abe068fc82d5a
+lookup EUR 2026-09-28 200 {"currency":"EUR","quoteCurrency":"AED","rate":"4.024024","rateDate":"2026-09-28","requestedDate":"2026-09-28","exact":true,"source":"import","rateId":"01a1839b-ca4c-7a05-8985-2b98213ee81c"}
+lookup EUR 2026-10-01 exact 404 {"type":"urn:erp:problem:currency.rateTooOld","title":"There is no EUR rate in AED for 2026-10-01: the latest is dated 2026-09-30, more than 0 days earlier.","status":404,"code":"currency.rateTooOld","traceId":"00-5cd8470f485939ba33723a5d4367b199-aeaaf7324cc72
+lookup USD->EUR cross 404 {"type":"urn:erp:problem:currency.rateMissing","title":"There is no USD rate in EUR dated on or before 2026-09-30.","status":404,"code":"currency.rateMissing","traceId":"00-9653b562dcd1674c8a1a33281921a48c-41ca03c431e7ae40-00"}
+lookup AED->EUR inverse 404 {"type":"urn:erp:problem:currency.rateMissing","title":"There is no AED rate in EUR dated on or before 2026-09-30.","status":404,"code":"currency.rateMissing","traceId":"00-b32ca4d62f211624b7210a5f4b3e3b10-9ff57e5fdf9aef72-00"}
+convert 0.001 KWD 200 {"money":{"amount":"0.001","currency":"KWD","exchangeRate":"12.045507","baseAmount":"0.01","baseCurrency":"AED"},"exactBaseAmount":"0.012045507","inverseRate":"0.08301851","requestedDate":"2026-09-30","rateDate":"2026-09-30","exact":true,"source":"import","rat
+convert -1250 EUR today 200 {"money":{"amount":"-1250","currency":"EUR","exchangeRate":"4.2875","baseAmount":"-5359.38","baseCurrency":"AED"},"exactBaseAmount":"-5359.375","inverseRate":"0.23323615","requestedDate":"2026-10-28","rateDate":"2026-10-28","exact":true,"source":"manual","rate
+convert 1 JPY 200 {"money":{"amount":"1","currency":"JPY","exchangeRate":"0.024611","baseAmount":"0.02","baseCurrency":"AED"},"exactBaseAmount":"0.024611","inverseRate":"40.63223762","requestedDate":"2026-09-30","rateDate":"2026-09-30","exact":true,"source":"import","rateId":"0
+convert 1.5 JPY(0 minor units) 200 {"money":{"amount":"1.5","currency":"JPY","exchangeRate":"0.024611","baseAmount":"0.04","baseCurrency":"AED"},"exactBaseAmount":"0.0369165","inverseRate":"40.63223762","requestedDate":"2026-09-30","rateDate":"2026-09-30","exact":true,"source":"import","rateId"
+convert 1e3 bad 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-ecd2831c2468560e7c2d47252d6d69e1-ece5c844a7e5452e-00","errors":{"amount":[{"code":"currencyAmount","message":"Enter an amount using a dot 
+rate 9 decimals 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-3f9b90569213e7bf28417c573ef4f99c-96281226d9e9a69e-00","errors":{"rate":[{"code":"currencyRate","message":"Enter a rate above zero with at 
+rate negative 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-f196b5f1e674415304f96cd2346e0b16-aba89442edc2714e-00","errors":{"rate":[{"code":"currencyRate","message":"Enter a rate above zero with at 
+rate XYZ 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-a96f87d28f80e992f7b36493d5a12702-0023ef8fcbd1f3b1-00","errors":{"currency":[{"code":"currencyCode","message":"Choose a current ISO 4217 cu
+rate inactive currency (ZWG?) 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-df9d18e45f988ccd0e02cc49abf2f542-d723f3a0d7614f03-00","errors":{"currency":[{"code":"currencyInactive","message":"ISK is not in use. Make 
+companies [
+  [ 'ALN-AUH', 'AED' ],
+  [ 'ALN-DXB', 'AED' ],
+  [ 'ALN-FZE', 'AED' ],
+  [ 'ALN-SHJ', 'AED' ]
+]

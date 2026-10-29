@@ -1,0 +1,31 @@
+[xUnit.net 00:00:15.21]       src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs:54 keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static, thread-local or async-local storage, object or array pools, memory, distributed, hybrid or output caches, weak tables) [process-global]: only reviewed files may; review it in t
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [155 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [275 ms]
+  Error Message:
+   src/Modules/Currency/Erp.Modules.Currency/Rates/ExchangeRateService.cs:54 keeps state in a process-wide store outside fields (AppContext or AppDomain data, environment variables, thread-static, thread-local or async-local storage, object or array pools, memory, distributed, hybrid or output caches, weak tables) [process-global]: only reviewed files may; review it in tests/Gates/tenant-bypass-so
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [11 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [39 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [591 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [260 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [43 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [99 ms]
+Total tests: 8
+  Passed Erp.Modules.Currency.Tests.RateFileTests.Every_problem_is_reported_with_its_line_and_nothing_is_read_from_a_bad_file [42 ms]
+  Passed Erp.Modules.Currency.Tests.RateFileTests.A_file_without_the_required_columns_or_rows_is_refused [13 ms]
+  Passed Erp.Modules.Currency.Tests.RateFileTests.Reads_columns_by_name_with_any_delimiter_and_both_date_forms [10 ms]
+  Passed Erp.Modules.Currency.Tests.RateFileTests.The_shared_dataset_file_is_read_as_written [6 ms]
+  Passed Erp.Modules.Currency.Tests.RateFileTests.Quoted_values_keep_delimiters_and_doubled_quotes [1 ms]
+  Passed Erp.Modules.Currency.Tests.RateFileTests.The_English_names_come_from_the_same_ISO_list_as_the_kernel_codes [15 ms]
+  Passed Erp.Modules.Currency.Tests.RateFileTests.The_demo_rates_are_the_same_every_run_positive_and_the_dollar_keeps_its_peg [211 ms]
+  Passed Erp.Modules.Currency.Tests.RateFileTests.A_file_longer_than_the_limit_stops_at_the_limit [39 ms]
+  Passed Erp.Modules.Currency.Tests.WholeListSeedTests.A_workspace_outside_the_gates_holds_every_ISO_4217_currency_with_both_names_and_the_dirham_in_use [10 s]
+  Passed Erp.Modules.Currency.Tests.CurrencyApiTests.The_gate_workspace_holds_its_sample_of_ISO_4217_currencies_those_in_use_first_and_its_rates [1 s]
+  Passed Erp.Modules.Currency.Tests.CurrencyApiTests.Currencies_are_put_in_use_and_taken_out_of_use_but_a_base_currency_stays [393 ms]
+  Failed Erp.Modules.Currency.Tests.CurrencyApiTests.Rates_are_entered_corrected_and_deleted_with_validation_in_the_callers_language [271 ms]
+  Error Message:
+  Passed Erp.Modules.Currency.Tests.CurrencyApiTests.An_amount_is_converted_at_the_rate_found_and_its_base_amount_is_rounded_once_half_away_from_zero [136 ms]
+  Passed Erp.Modules.Currency.Tests.CurrencyApiTests.Only_someone_who_works_in_every_company_with_the_permission_changes_the_shared_currencies_and_rates [961 ms]
+  Passed Erp.Modules.Currency.Tests.CurrencyApiTests.Each_workspace_sees_and_converts_with_its_own_rates_only [213 ms]
+  Passed Erp.Modules.Currency.Tests.CurrencyApiTests.The_lookup_uses_the_dates_rate_then_the_latest_earlier_one_within_the_limit_and_never_a_later_one [177 ms]
+  Passed Erp.Modules.Currency.Tests.CurrencyApiTests.A_file_is_imported_whole_or_not_at_all_and_held_rates_are_kept_unless_replacing [152 ms]
+Total tests: 17

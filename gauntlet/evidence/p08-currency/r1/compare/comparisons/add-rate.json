@@ -1,0 +1,45 @@
+{
+  "task": "add-rate",
+  "verdict": "win",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 4,
+      "odoo": 10,
+      "outcome": "win"
+    },
+    "keystrokes": {
+      "ours": 7,
+      "odoo": 8,
+      "outcome": "win"
+    },
+    "machine_seconds": {
+      "ours": 0.549,
+      "odoo": 2.569,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 9.01,
+      "odoo": 22.08,
+      "outcome": "win"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 9.176,
+      "odoo": 23.546,
+      "outcome": "win"
+    }
+  },
+  "left_out": [],
+  "odoo_best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "runs": {
+    "ours": "../../evidence-staging/p08-currency/r1/compare/results/add-rate-20261028T175032-4723.json",
+    "odoo": "../../evidence-staging/p08-currency/r1/compare/results/add-rate-20261028T174932-2248.json"
+  }
+}

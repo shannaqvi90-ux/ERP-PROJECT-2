@@ -1,0 +1,31 @@
+B active currencies ["AED","EUR","GBP","USD"]
+B canary create 201
+B company 018f6605-b084-7d14-9bbb-3b7cd4907afc
+A GET /api/currency/rates/01a1839c-fe91-7ab0-b971-32958e6b68f0 {"status":404,"leak":false,"body":"{\"type\":\"urn:erp:problem:notFound\",\"title\":\"The record was not found.\",\"status\":404,\"code\":\"notFound\",\"traceId\":\"00-45adf32bcc2c19095c30ec47fad8f098-d699113c7c7"}
+A PUT /api/currency/rates/01a1839c-fe91-7ab0-b971-32958e6b68f0 {"status":404,"leak":false,"body":"{\"type\":\"urn:erp:problem:notFound\",\"title\":\"The record was not found.\",\"status\":404,\"code\":\"notFound\",\"traceId\":\"00-02045a4de299a40b604aaefa701b811e-cdec4a7037c"}
+A DELETE /api/currency/rates/01a1839c-fe91-7ab0-b971-32958e6b68f0 {"status":204,"leak":false,"body":""}
+A GET /api/currency/currencies/01a1839c-35f3-79e1-b0a2-b4a5010ab371 {"status":404,"leak":false,"body":"{\"type\":\"urn:erp:problem:notFound\",\"title\":\"The record was not found.\",\"status\":404,\"code\":\"notFound\",\"traceId\":\"00-b7e1f4a8af032d39c6f4ee208dcf726f-a0a5f441dec"}
+A PUT /api/currency/currencies/01a1839c-35f3-79e1-b0a2-b4a5010ab371 {"status":404,"leak":false,"body":"{\"type\":\"urn:erp:problem:notFound\",\"title\":\"The record was not found.\",\"status\":404,\"code\":\"notFound\",\"traceId\":\"00-dd1ecb3cd070ddee720fac1f05d72059-c05a72d27f2"}
+A GET /api/currency/rates?search=CANARY {"status":200,"leak":false,"body":"{\"items\":[],\"total\":0,\"next\":null,\"groups\":null,\"ranked\":true}"}
+A GET /api/currency/rates?filter=rateDate%20eq%20'2031-03-03' {"status":200,"leak":false,"body":"{\"items\":[],\"total\":0,\"next\":null,\"groups\":null,\"ranked\":false}"}
+A GET /api/currency/rates?filter=id%20eq%20'01a1839c-fe91-7ab0-b971-32958e6b68f0' {"status":400,"leak":false,"body":"{\"type\":\"urn:erp:problem:validation\",\"title\":\"Some fields need attention.\",\"status\":400,\"code\":\"validation\",\"traceId\":\"00-50ac97e0590b956997da87d0b7d38109-e9d7a"}
+A GET /api/currency/rates/lookup?currency=USD&date=2031-03-03&exact=true {"status":404,"leak":false,"body":"{\"type\":\"urn:erp:problem:currency.rateTooOld\",\"title\":\"There is no USD rate in AED for 2031-03-03: the latest is dated 2026-09-30, more than 0 days earlier.\",\"s"}
+A GET /api/currency/convert?amount=100&currency=USD&date=2031-03-03&exact=true {"status":404,"leak":false,"body":"{\"type\":\"urn:erp:problem:currency.rateTooOld\",\"title\":\"There is no USD rate in AED for 2031-03-03: the latest is dated 2026-09-30, more than 0 days earlier.\",\"s"}
+A GET /api/currency/convert?amount=100&currency=USD&date=2031-03-03&companyId=018f6605-b084-7d14 {"status":404,"leak":false,"body":"{\"type\":\"urn:erp:problem:notFound\",\"title\":\"The record was not found.\",\"status\":404,\"code\":\"notFound\",\"traceId\":\"00-25f39a68967dc836a307410ce9054d01-12ce7f104f4"}
+A GET /api/currency/rates?tenantId=x&search=CANARY {"status":200,"leak":false,"body":"{\"items\":[],\"total\":0,\"next\":null,\"groups\":null,\"ranked\":true}"}
+A reports catalogue 404
+B canary after attack {"status":200,"rate":"7.77777777","reference":"CANARY-B-SECRET","version":2604184241}
+A import same date {"status":200,"body":"{\"lines\":1,\"added\":1,\"replaced\":0,\"kept\":0,\"unchanged\":0}"}
+B canary after A import {"rate":"7.77777777","reference":"CANARY-B-SECRET"}
+viewer GET /api/currency/rates?take=1 200
+viewer GET /api/currency/currencies?take=1 200
+viewer GET /api/currency/convert?amount=1&currency=EUR 404
+viewer POST /api/currency/rates 403
+viewer POST /api/currency/rates/import 403
+viewer PUT /api/currency/currencies/01a1839b-c9a7-7b44-8071-8e1db7c8f5c 403
+noaccess GET /api/currency/rates?take=1 403
+noaccess GET /api/currency/currencies?take=1 403
+noaccess GET /api/currency/convert?amount=1&currency=EUR 403
+noaccess POST /api/currency/rates 403
+noaccess POST /api/currency/rates/import 403
+noaccess PUT /api/currency/currencies/01a1839b-c9a7-7b44-8071-8e1db7c8f5c 403
