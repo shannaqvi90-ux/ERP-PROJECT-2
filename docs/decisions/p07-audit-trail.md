@@ -248,6 +248,9 @@ check's built list; the comparison task for the audit trail has no ours driver y
 | 10 (`5d6353c9`, load up to 42) | web: 12 timeouts (clientIsolation 30 s, navigationReopen and tenancy screens 5 s); the same three files pass alone (83 tests, 51 s) | dotnet 9,867, web 270, e2e 655 (stopped early) |
 | 11 | web: harness mutation M60 "NOT JUDGED", its control C4 failed under load (gate backlog row 8); dotnet, e2e and every ours health check passed | 11,491 (dotnet 8,801, web 2,239, e2e 451) |
 | 12 | every test green (808 .NET, 616 web unit, 130 e2e, 488 comparison, 6 build); only `verify.cpuSeconds` failed; load up to 66 | 12,462 (dotnet 9,145, web 2,492, e2e 766, timing 59) |
+| 13 (fixer 2, log verify-fixer-p07-audit-r1-f2.log, kept .verify-failed/20261029T031949Z-226004) | every test green; only `verify.cpuSeconds` failed; wall 6,727 s; load 2.4 at start, up to 42.7 beside the p10 and p16 fixers verifies | 11,670 (dotnet 8,819, web 2,348, e2e 462, timing 42) |
+
+Fixer 2 finding: the audit tests themselves are cheap (the slowest Audit.Tests test is under 1 s); the dotnet time is the shared gate suites (G2PermissionTests, G1BranchScopeAttackTests, G2ClientOriginTests, G2AccountTakeoverTests and their self-tests each 20 to 56 s wall, G1HttpIsolationTests the largest), which attack every endpoint, so each endpoint a piece adds costs gate time. The who-changed-field ours driver stays a stub: it needs the contacts screens (p16), which are not on this branch, so it cannot be written yet. The cost belongs to p00 gate machinery (not edited here).
 
 Unrelated branches under the same load read the same: p16 (no audit trail) 8,588 and p10 8,293
 dotnet seconds in their own failed runs, against 6,400 to 6,700 on a quiet machine. No maximum was
