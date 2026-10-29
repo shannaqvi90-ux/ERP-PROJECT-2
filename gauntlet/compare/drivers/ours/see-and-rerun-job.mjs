@@ -9,7 +9,7 @@ import { OursApi, oursAs } from '../../lib/ours-api.mjs';
 // name, with the run-again key.
 
 const NAME = 'Self-check of the job queue';
-const filter = encodeURIComponent("type eq 'jobs.selfCheck' and status eq 'succeeded'");
+const filter = encodeURIComponent("jobType eq 'jobs.selfCheck' and jobStatus eq 'succeeded'");
 
 async function newestRun(api) {
   const page = await api.get(`/api/jobs/jobs?take=1&sort=-finishedAt&filter=${filter}`);
@@ -57,7 +57,7 @@ export default {
   async verify(ctx) {
     const api = new OursApi(ctx.product).withBrowserSession(await ctx.context.cookies());
     const originalId = ctx.state.job.id;
-    const page = await api.get(`/api/jobs/jobs?take=5&sort=-createdAt&filter=${encodeURIComponent(`source eq 'rerun' and status eq 'succeeded'`)}`);
+    const page = await api.get(`/api/jobs/jobs?take=5&sort=-createdAt&filter=${encodeURIComponent(`startedBy eq 'rerun' and jobStatus eq 'succeeded'`)}`);
     const again = page.items?.find(j => j.finishedAt && j.finishedAt > ctx.state.startedAt);
     const detail = again ? await api.get(`/api/jobs/jobs/${again.id}`) : null;
     return {

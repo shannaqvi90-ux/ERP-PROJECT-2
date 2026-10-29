@@ -15,14 +15,14 @@ internal static class SchedulesList
                 Key, "jobs.schedules.title", JobsPermissions.SchedulesRead, "/api/jobs/schedules",
                 [
                     new ListColumn("scheduleName", "jobs.schedule.name", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Wide),
-                    new ListColumn("type", "jobs.schedule.type", ListColumnType.Text, Sortable: true, Filterable: true, Groupable: true),
-                    new ListColumn("cron", "jobs.schedule.cron", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Narrow),
+                    new ListColumn("jobType", "jobs.schedule.type", ListColumnType.Text, Sortable: true, Filterable: true, Groupable: true),
+                    new ListColumn("cronTiming", "jobs.schedule.cron", ListColumnType.Text, Sortable: true, Filterable: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("isEnabled", "jobs.schedule.enabled", ListColumnType.Boolean, Sortable: true, Filterable: true, Groupable: true,
                         TrueLabelKey: "jobs.schedule.on", FalseLabelKey: "jobs.schedule.off", Width: ListColumnWidth.Narrow),
                     new ListColumn("nextRunAt", "jobs.schedule.nextRunAt", ListColumnType.DateTime, Sortable: true, Filterable: true),
                     new ListColumn("lastRunAt", "jobs.schedule.lastRunAt", ListColumnType.DateTime, Sortable: true, Filterable: true),
                 ],
-                SearchFields: ["scheduleName", "type"],
+                SearchFields: ["scheduleName", "jobType"],
                 DefaultSort: "scheduleName",
                 Presets:
                 [
@@ -31,8 +31,8 @@ internal static class SchedulesList
                 ]),
                 r => r.Id)
             .Column("scheduleName", r => r.Name)
-            .Column("type", r => r.Type)
-            .Column("cron", r => r.Cron)
+            .Column("jobType", r => r.Type)
+            .Column("cronTiming", r => r.Cron)
             .Column("isEnabled", r => r.IsEnabled)
             .Column("nextRunAt", r => r.NextRunAt)
             .Column("lastRunAt", r => r.LastRunAt);

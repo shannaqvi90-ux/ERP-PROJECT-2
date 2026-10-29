@@ -60,8 +60,8 @@ export function SchedulesPage() {
           )
         }
         renderCell={{
-          type: (r) => <span dir="ltr">{String(r.type ?? "")}</span>,
-          cron: (r) => <span dir="ltr" className="num">{String(r.cron ?? "")}</span>,
+          jobType: (r) => <span dir="ltr">{String(r.jobType ?? "")}</span>,
+          cronTiming: (r) => <span dir="ltr" className="num">{String(r.cronTiming ?? "")}</span>,
           nextRunAt: (r) => <DateTime value={r.nextRunAt as string | null} />,
           lastRunAt: (r) => <DateTime value={r.lastRunAt as string | null} />,
         }}

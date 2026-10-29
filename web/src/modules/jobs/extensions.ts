@@ -32,7 +32,7 @@ export const extensions: ModuleExtensions = {
           items: page.items.map((j) => ({
             id: j.id,
             title: language === "ar" ? j.titleAr || j.titleEn : j.titleEn || j.titleAr,
-            subtitle: j.status,
+            subtitle: j.jobStatus,
             path: recordPath("/jobs/jobs", j.id, `${new URLSearchParams({ q: query })}`),
           })),
         };

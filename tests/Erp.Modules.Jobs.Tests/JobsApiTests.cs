@@ -50,9 +50,9 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         // Tenant B's canary never appears in tenant A's list.
         Assert.DoesNotContain(rows, r => r.GetRawText().Contains(Env.TenantB.Canary!, StringComparison.Ordinal));
 
-        var failed = await RowsAsync(admin, "/api/jobs/jobs?take=100&filter=" + Uri.EscapeDataString("status eq 'failed'"));
+        var failed = await RowsAsync(admin, "/api/jobs/jobs?take=100&filter=" + Uri.EscapeDataString("jobStatus eq 'failed'"));
         Assert.NotEmpty(failed);
-        Assert.All(failed, r => Assert.Equal("failed", r.GetProperty("status").GetString()));
+        Assert.All(failed, r => Assert.Equal("failed", r.GetProperty("jobStatus").GetString()));
         Assert.All(failed, r => Assert.NotEmpty(r.GetProperty("errorEn").GetString()!));
         Assert.All(failed, r => Assert.NotEmpty(r.GetProperty("errorAr").GetString()!));
 
@@ -62,12 +62,12 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         Assert.Empty(await RowsAsync(admin, "/api/jobs/jobs?search=" + Uri.EscapeDataString("no such job anywhere")));
 
         // A finished job of a kind with a run permission may be run again by the administrator; a waiting one cancelled.
-        var finished = rows.First(r => r.GetProperty("status").GetString() == "succeeded" && r.GetProperty("type").GetString() == "jobs.selfCheck");
+        var finished = rows.First(r => r.GetProperty("jobStatus").GetString() == "succeeded" && r.GetProperty("jobType").GetString() == "jobs.selfCheck");
         // A past run of a kind no module registers (the demo history) cannot be run again.
-        Assert.False(rows.First(r => !r.GetProperty("type").GetString()!.StartsWith("jobs", StringComparison.Ordinal)).GetProperty("canRerun").GetBoolean());
+        Assert.False(rows.First(r => !r.GetProperty("jobType").GetString()!.StartsWith("jobs", StringComparison.Ordinal)).GetProperty("canRerun").GetBoolean());
         Assert.True(finished.GetProperty("canRerun").GetBoolean());
         Assert.False(finished.GetProperty("canCancel").GetBoolean());
-        var waiting = rows.First(r => r.GetProperty("status").GetString() == "queued");
+        var waiting = rows.First(r => r.GetProperty("jobStatus").GetString() == "queued");
         Assert.True(waiting.GetProperty("canCancel").GetBoolean());
         Assert.False(waiting.GetProperty("canRerun").GetBoolean());
 

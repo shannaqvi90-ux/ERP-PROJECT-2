@@ -6,18 +6,18 @@ export type JobSource = "user" | "schedule" | "module" | "rerun";
 /** A row of the background jobs list (its keys are the list's column keys). */
 export type JobRow = {
   id: string;
-  type: string;
+  jobType: string;
   titleEn: string;
   titleAr: string;
-  status: JobStatus;
-  source: JobSource;
-  progress: number;
+  jobStatus: JobStatus;
+  startedBy: JobSource;
+  progressPercent: number;
   progressEn: string;
   progressAr: string;
   runAt: string;
   startedAt: string | null;
   finishedAt: string | null;
-  attempts: number;
+  tryCount: number;
   maxAttempts: number;
   errorCode: string | null;
   errorEn: string;
@@ -94,10 +94,10 @@ export type JobType = {
 export type ScheduleRow = {
   id: string;
   scheduleName: string;
-  type: string;
+  jobType: string;
   typeNameEn: string;
   typeNameAr: string;
-  cron: string;
+  cronTiming: string;
   isEnabled: boolean;
   nextRunAt: string | null;
   lastRunAt: string | null;
@@ -107,8 +107,10 @@ export type ScheduleRow = {
   canUpdate: boolean;
 };
 
-export type Schedule = Omit<ScheduleRow, "scheduleName"> & {
+export type Schedule = Omit<ScheduleRow, "scheduleName" | "jobType" | "cronTiming"> & {
   name: string;
+  type: string;
+  cron: string;
   payload: Record<string, unknown>;
   timeZone: string;
   createdAt: string;

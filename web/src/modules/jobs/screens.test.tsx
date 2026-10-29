@@ -43,13 +43,13 @@ const column = (key: string, labelKey: string, type: string, extra: object = {})
 });
 const jobsList = {
   key: "jobs.jobs", labelKey: "jobs.jobs.title", endpoint: "/api/jobs/jobs",
-  columns: [column("titleEn", "jobs.job.title", "text", { arabicField: "titleAr" }), column("status", "jobs.job.status", "choice"), column("progress", "jobs.job.progress", "number"),
+  columns: [column("titleEn", "jobs.job.title", "text", { arabicField: "titleAr" }), column("jobStatus", "jobs.job.status", "choice"), column("progressPercent", "jobs.job.progress", "number"),
     column("finishedAt", "jobs.job.finishedAt", "dateTime")],
   searchFields: ["titleEn"], defaultSort: "-createdAt", presets: [], canShare: false, maxTake: 200,
 };
 const schedulesList = {
   key: "jobs.schedules", labelKey: "jobs.schedules.title", endpoint: "/api/jobs/schedules",
-  columns: [column("scheduleName", "jobs.schedule.name", "text"), column("cron", "jobs.schedule.cron", "text"), column("nextRunAt", "jobs.schedule.nextRunAt", "dateTime")],
+  columns: [column("scheduleName", "jobs.schedule.name", "text"), column("cronTiming", "jobs.schedule.cron", "text"), column("nextRunAt", "jobs.schedule.nextRunAt", "dateTime")],
   searchFields: ["scheduleName"], defaultSort: "scheduleName", presets: [], canShare: false, maxTake: 200,
 };
 

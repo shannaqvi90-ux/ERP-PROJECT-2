@@ -18,21 +18,22 @@ using Validator = Erp.Kernel.Http.Validator;
 
 namespace Erp.Modules.Jobs.Jobs;
 
-/// <summary>A row of the background jobs list. <c>canRerun</c> and <c>canCancel</c> say what the caller may do with it.</summary>
+/// <summary>A row of the background jobs list (its keys are the list's column keys: <c>jobStatus</c>, <c>jobType</c>,
+/// <c>startedBy</c>, <c>progressPercent</c>, <c>tryCount</c>). <c>canRerun</c> and <c>canCancel</c> say what the caller may do with it.</summary>
 public sealed record JobRow(
     Guid Id,
-    string Type,
+    string JobType,
     string TitleEn,
     string TitleAr,
-    string Status,
-    string Source,
-    int Progress,
+    string JobStatus,
+    string StartedBy,
+    int ProgressPercent,
     string ProgressEn,
     string ProgressAr,
     DateTimeOffset RunAt,
     DateTimeOffset? StartedAt,
     DateTimeOffset? FinishedAt,
-    int Attempts,
+    int TryCount,
     int MaxAttempts,
     string? ErrorCode,
     string ErrorEn,

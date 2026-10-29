@@ -78,7 +78,7 @@ export function JobsPage() {
     let stopped = false;
     const look = async () => {
       try {
-        const page = await api<ListPage<JobRow>>("GET", `/api/jobs/jobs?take=1&filter=${encodeURIComponent("status eq 'queued' or status eq 'running'")}`);
+        const page = await api<ListPage<JobRow>>("GET", `/api/jobs/jobs?take=1&filter=${encodeURIComponent("jobStatus eq 'queued' or jobStatus eq 'running'")}`);
         if (stopped) return;
         const before = active.current;
         active.current = page.total;
@@ -121,14 +121,14 @@ export function JobsPage() {
           )
         }
         renderCell={{
-          status: (r) => <StatusBadge status={String(r.status)} />,
-          progress: (r) => <ProgressBar percent={Number(r.progress ?? 0)} label={localized(String(r.progressEn ?? ""), String(r.progressAr ?? ""))} />,
-          type: (r) => <span dir="ltr">{String(r.type ?? "")}</span>,
+          jobStatus: (r) => <StatusBadge status={String(r.jobStatus)} />,
+          progressPercent: (r) => <ProgressBar percent={Number(r.progressPercent ?? 0)} label={localized(String(r.progressEn ?? ""), String(r.progressAr ?? ""))} />,
+          jobType: (r) => <span dir="ltr">{String(r.jobType ?? "")}</span>,
           startedAt: (r) => <DateTime value={r.startedAt as string | null} />,
           finishedAt: (r) => <DateTime value={r.finishedAt as string | null} />,
           runAt: (r) => <DateTime value={r.runAt as string | null} />,
           createdAt: (r) => <DateTime value={r.createdAt as string | null} />,
-          source: (r) => t(`jobs.source.${String(r.source)}`),
+          startedBy: (r) => t(`jobs.source.${String(r.startedBy)}`),
         }}
       />
       {starting && <StartDialog types={startable} onClose={() => setStarting(false)} onStarted={(id) => { setStarting(false); panel.onOpenIdChange(id); panel.refresh(); }} />}

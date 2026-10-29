@@ -50,9 +50,11 @@ test.describe("background jobs", () => {
     await expect(panel.getByRole("button", { name: "Run again" })).toBeVisible();
     await expect(panel.locator("a.button", { hasText: "Download output" })).toHaveAttribute("href", /\/api\/jobs\/jobs\/.+\/output$/);
 
-    // Run it again: the new run opens, goes from waiting to done, and the panel follows it.
+    // Run it again: the new run opens (the address moves to it), goes from waiting to done, and the panel follows it.
+    const opened = new URL(page.url()).searchParams.get("open");
+    expect(opened).toMatch(/^[0-9a-f-]{36}$/);
     await page.keyboard.press("Alt+r");
-    await expect(page).toHaveURL(/open=[0-9a-f-]{36}/);
+    await expect.poll(() => new URL(page.url()).searchParams.get("open"), { timeout: 30_000 }).not.toBe(opened);
     await expect(panel.locator(".jb-status")).toHaveText(/Waiting|Running|Done/);
     await expect(panel.locator(".jb-status")).toHaveText("Done", { timeout: 60_000 });
     await expect(panel.getByTestId("job-finished")).not.toHaveText("Not yet");

@@ -24,10 +24,10 @@ namespace Erp.Modules.Jobs.Schedules;
 public sealed record ScheduleRow(
     Guid Id,
     string ScheduleName,
-    string Type,
+    string JobType,
     string TypeNameEn,
     string TypeNameAr,
-    string Cron,
+    string CronTiming,
     bool IsEnabled,
     DateTimeOffset? NextRunAt,
     DateTimeOffset? LastRunAt,
