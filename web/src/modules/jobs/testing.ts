@@ -24,7 +24,7 @@ export const types = () => [
   { key: "jobs.cleanup", nameEn: "Clean up finished jobs", nameAr: "تنظيف المهام المنتهية", descriptionEn: null, descriptionAr: null, maxAttempts: 2, timeoutSeconds: 1200, startable: true, schedulable: true },
 ];
 export const scheduleRow = () => ({
-  id: "s1", name: "Clean up finished jobs / تنظيف المهام المنتهية", type: "jobs.cleanup", typeNameEn: "Clean up finished jobs", typeNameAr: "تنظيف المهام المنتهية", cron: "30 3 * * *",
+  id: "s1", scheduleName: "Clean up finished jobs / تنظيف المهام المنتهية", type: "jobs.cleanup", typeNameEn: "Clean up finished jobs", typeNameAr: "تنظيف المهام المنتهية", cron: "30 3 * * *",
   isEnabled: true, nextRunAt: "2026-10-30T23:30:00Z", lastRunAt: "2026-10-29T23:30:00Z", lastJobId: "j1", updatedAt: "2026-10-29T08:00:00Z", version: 2, canUpdate: true,
 });
-export const schedule = () => ({ ...scheduleRow(), payload: {}, timeZone: "Asia/Dubai", createdAt: "2026-10-01T00:00:00Z" });
+export const schedule = () => ({ ...scheduleRow(), name: scheduleRow().scheduleName, payload: {}, timeZone: "Asia/Dubai", createdAt: "2026-10-01T00:00:00Z" });

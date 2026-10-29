@@ -93,7 +93,7 @@ export type JobType = {
 
 export type ScheduleRow = {
   id: string;
-  name: string;
+  scheduleName: string;
   type: string;
   typeNameEn: string;
   typeNameAr: string;
@@ -107,7 +107,8 @@ export type ScheduleRow = {
   canUpdate: boolean;
 };
 
-export type Schedule = ScheduleRow & {
+export type Schedule = Omit<ScheduleRow, "scheduleName"> & {
+  name: string;
   payload: Record<string, unknown>;
   timeZone: string;
   createdAt: string;

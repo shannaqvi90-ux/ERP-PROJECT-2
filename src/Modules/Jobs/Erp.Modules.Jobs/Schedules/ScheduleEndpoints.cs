@@ -23,7 +23,7 @@ namespace Erp.Modules.Jobs.Schedules;
 /// <summary>A row of the schedules list.</summary>
 public sealed record ScheduleRow(
     Guid Id,
-    string Name,
+    string ScheduleName,
     string Type,
     string TypeNameEn,
     string TypeNameAr,

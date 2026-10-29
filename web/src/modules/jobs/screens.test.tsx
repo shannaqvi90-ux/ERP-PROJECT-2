@@ -49,8 +49,8 @@ const jobsList = {
 };
 const schedulesList = {
   key: "jobs.schedules", labelKey: "jobs.schedules.title", endpoint: "/api/jobs/schedules",
-  columns: [column("name", "jobs.schedule.name", "text"), column("cron", "jobs.schedule.cron", "text"), column("nextRunAt", "jobs.schedule.nextRunAt", "dateTime")],
-  searchFields: ["name"], defaultSort: "name", presets: [], canShare: false, maxTake: 200,
+  columns: [column("scheduleName", "jobs.schedule.name", "text"), column("cron", "jobs.schedule.cron", "text"), column("nextRunAt", "jobs.schedule.nextRunAt", "dateTime")],
+  searchFields: ["scheduleName"], defaultSort: "scheduleName", presets: [], canShare: false, maxTake: 200,
 };
 
 type Reply = { status: number; body?: unknown };

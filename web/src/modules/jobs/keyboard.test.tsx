@@ -56,7 +56,7 @@ async function open(path: string, permissions: string[]): Promise<Call[]> {
     if (method === "POST" && canRun && p === "/api/jobs/jobs/j1/rerun") return { status: 201, body: { ...job(), id: "j9" } };
     if (method !== "GET") return { status: 403, body: { code: "forbidden", title: "Not allowed." } };
     if (p === "/api/lists/jobs.jobs/definition") return { status: 200, body: definition("jobs.jobs", "/api/jobs/jobs", "titleEn", "jobs.job.title") };
-    if (p === "/api/lists/jobs.schedules/definition") return { status: 200, body: definition("jobs.schedules", "/api/jobs/schedules", "name", "jobs.schedule.name") };
+    if (p === "/api/lists/jobs.schedules/definition") return { status: 200, body: definition("jobs.schedules", "/api/jobs/schedules", "scheduleName", "jobs.schedule.name") };
     if (p.endsWith("/views")) return { status: 200, body: { items: [] } };
     if (p === "/api/jobs/types") return { status: 200, body: types().map((k) => ({ ...k, startable: canRun, schedulable: false })) };
     if (p === "/api/jobs/jobs") return { status: 200, body: { items: [jobRow(), failedRow()], total: 2, next: null } };

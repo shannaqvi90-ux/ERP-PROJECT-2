@@ -44,7 +44,20 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
 
     /// <summary>Which kind row <paramref name="i"/> belongs to: every fourth run is the self-check, about one in
     /// ten of the rest the clean-up, and the past kinds share what is left.</summary>
-    private static int Pick(int i, int mix2) => i % 4 == 0 ? 0 : mix2 < 11 ? 1 : 2 + (i * 7 + mix2) % PastKinds.Length;
+    private static int Pick(int i, int mix2, int seed)
+    {
+        if (i % 4 == 0)
+        {
+            return 0;
+        }
+        if (mix2 < 11)
+        {
+            return 1;
+        }
+        // An even spread over the past kinds (a multiplicative hash of the row number and the workspace's seed).
+        var spread = unchecked((uint)(i * 2654435761u + (uint)seed * 40503u));
+        return 2 + (int)((spread >> 13) % (uint)PastKinds.Length);
+    }
 
     public async Task SeedAsync(TenantSeedContext context, CancellationToken cancellationToken)
     {
@@ -109,7 +122,7 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
                 // Oldest first, so the newest row is the last one made. A fixed mix, not random.
                 var created = now - span + step * (i + 1);
                 var mix = (int)((uint)(i * 2654435761u + (uint)seed) % 100);
-                var (key, maxAttempts, en, ar) = names[Pick(i, mix2: (int)((uint)(i * 40503u + (uint)seed) % 100))];
+                var (key, maxAttempts, en, ar) = names[Pick(i, (int)((uint)(i * 40503u + (uint)seed) % 100), seed)];
                 var (status, source) = mix switch
                 {
                     < 88 => (JobStatus.Succeeded, i % 4 == 0 ? JobSource.Schedule : JobSource.User),
