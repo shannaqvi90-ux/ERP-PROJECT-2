@@ -71,3 +71,7 @@ The processor time of this piece: the builder's first full verify used 11,248 s,
 on a busy machine; the integration branch with p08 passes at about 10,000 s. The gates grow with the
 endpoints and lists of every module (G1 HTTP isolation 4,154 s of wall time, non-interference 2,093 s,
 list volume 637 s). The maximum belongs to the owner and is not raised here.
+
+## Fixer 2 verify (head 837e840f, product code equal to 4353ec48)
+
+One more full verify through the slots (log verify-fixer-p16-contacts-r1-f2.log, folder .verify-failed/20261029T031922Z-233930). Every test green (dotnet 843, web 631, e2e 130, compare 487, build 6). Only check failing: verify.cpuSeconds, 11,506 s (dotnet 8,630, web 2,337, e2e 481, timing 59) against the maximum 10,500. Load 12.5 at the start, 3.1 at the end, highest 42. That makes four full runs between 11,248 and 12,017 s with the same result. No code changed in this session. The excess is in the shared gates (p00), which grow with the endpoint and list count; trimming them or raising the maximum belongs to the owner or the lead. An alone verify (ERP_VERIFY_ALONE=1) is the next judge.
