@@ -83,6 +83,7 @@ services:
       ConnectionStrings__Owner: "Host=db;Username=erp_owner;Password=${ERP_DB_OWNER_PASSWORD:-erp-local-owner};Database=erp"
       ConnectionStrings__App: "Host=db;Username=erp_app;Password=${ERP_DB_APP_PASSWORD:-erp-local-app};Database=erp;Maximum Pool Size=20"
       Erp__Jobs__Concurrency: ${ERP_JOBS_CONCURRENCY:-4}
+      Erp__Jobs__PollSeconds: ${ERP_JOBS_POLL_SECONDS:-1}
     depends_on:
       setup:
         condition: service_completed_successfully

@@ -10,7 +10,7 @@ test.describe("sign in to an empty workspace", () => {
     await expect(page.getByRole("heading", { name: "Welcome, Mariam Al Mansoori" })).toBeVisible();
     console.log(`sign-in to workspace: ${Date.now() - started} ms`);
     const nav = page.getByRole("navigation", { name: "Main navigation" });
-    await expect(nav.getByRole("link")).toHaveText(["Reports", "Users", "Roles", "Company access", "Companies", "Branches", "Currencies", "Exchange rates", "Document numbering", "Workspace", "My account"]);
+    await expect(nav.getByRole("link")).toHaveText(["Reports", "Users", "Roles", "Company access", "Companies", "Branches", "Currencies", "Exchange rates", "Document numbering", "Background jobs", "Job schedules", "Workspace", "My account"]);
     await expect(page.locator(".workspace-name")).toHaveText("Al Noor Trading LLC");
   });
 

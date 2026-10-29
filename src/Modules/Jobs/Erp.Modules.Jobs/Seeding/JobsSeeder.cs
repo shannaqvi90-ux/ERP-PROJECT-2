@@ -95,7 +95,7 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
                 var title = context.Mark(en);
                 yield return
                 [
-                    Guid.CreateVersion7(), context.Tenant.Id, kind.Key, title, context.Mark(ar), status, source, 0, "{}",
+                    Guid.CreateVersion7(), context.Tenant.Id, kind.Key, title, context.Mark(ar), status, source, 0, kind.Key == SelfCheckJobHandler.TypeKey ? "{\"steps\":1,\"pauseMilliseconds\":0}" : "{}",
                     waiting ? now.AddDays(1) : created, status == JobStatus.Queued ? 0 : failed ? kind.MaxAttempts : 1, kind.MaxAttempts,
                     waiting ? null : started, finished, status == JobStatus.Succeeded ? 100 : status == JobStatus.Queued ? 0 : mix % 90,
                     "", "", false,
