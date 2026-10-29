@@ -659,9 +659,18 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             Assert.Equal(HttpStatusCode.Created, role.StatusCode);
             roleIds.Add((await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid());
         }
-        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = $"G2 {string.Join(", ", permissions)}", language = "en", password = ErpTestEnvironment.Password, roleIds });
+        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = DisplayNameOf(permissions), language = "en", password = ErpTestEnvironment.Password, roleIds });
         Assert.Equal(HttpStatusCode.Created, user.StatusCode);
         return (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+    }
+
+    /// <summary>The name of a gate user: the permissions it holds, cut to the 200 characters a display
+    /// name may have (every module with a list adds a permission, and the whole list outgrew the limit
+    /// when the Background jobs lists were added; the name is a label, the gate judges the roles).</summary>
+    private static string DisplayNameOf(string[] permissions)
+    {
+        var name = $"G2 {string.Join(", ", permissions)}";
+        return name.Length <= 200 ? name : $"{name[..190]} (+{permissions.Length})";
     }
 
     [Fact]

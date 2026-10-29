@@ -1,0 +1,93 @@
+# p12 jobs: one durable queue in PostgreSQL
+
+Piece p12 (round 1). Status: built.
+
+## What existed on the integration branch
+
+Nothing ran in the background. The report engine (p06) prints synchronously inside the request, p08's
+rate import parses and saves inside the request (`currency.rates.import`, at most 20,000 lines), and
+the kernel had only the idea of a `job` actor kind (`ErpDbSession.BeginAsync(tenant, actor, "job")`, the
+audit trail's `actor_kind`, the company scope `all` for system work) and the `SurfaceKind.Job` isolation
+probe. No `BackgroundService`, no queue table. So there was no second queue to merge with: this is the
+one queue, and the existing synchronous paths stay as they are (p14's imports and exports will move
+onto it; p08's import is small and transactional and keeps its endpoint).
+
+## Decision
+
+One module, `jobs` (schema `jobs`), with a public contract `Erp.Modules.Jobs.Contracts`:
+
+- `IJobQueue.EnqueueAsync / CancelAsync / RerunAsync`: a module queues work inside its own unit of
+  work, so the job exists only if the module's change commits (a transactional outbox). Another module
+  never reads `jobs.*`.
+- `JobsRegistration.AddJobType<THandler>(JobType)`: a module registers a kind (`module.kind` key,
+  label key in both languages, attempts, timeout, the permission that lets a person run or re-run it,
+  whether people may start it by hand). `IJobHandler.RunAsync(IJobContext)` does the work; the context
+  gives the parameters (JSON), the attempt, the cancellation token, `ReportAsync(percent, JobText)`,
+  `SetResult` (a small JSON object) and `SetOutput` (a text file, at most 1 MB).
+- `JobFailure(code, JobText, retry)` is an error the reader sees in both languages; any other exception
+  fails the attempt with a general message (the exception text goes to the server log only).
+
+Tables (all tenant tables: `tenant_id`, forced row-level security, audit trigger):
+
+- `jobs.jobs`: kind, title (en/ar, defaults to the kind's name), status (queued, running, succeeded,
+  failed, cancelled), source (user, schedule, module, rerun), priority, JSON parameters, `run_at`,
+  attempts and maximum, progress with a bilingual message, lease (`locked_by`, `locked_until`),
+  `cancel_requested`, the last error (code and both languages), result, output file, `schedule_id`,
+  `rerun_of`.
+- `jobs.job_attempts`: one row per try (outcome running, succeeded, failed, cancelled, timedOut,
+  abandoned; its error).
+- `jobs.schedules`: name, kind, five-field cron, parameters, on or off, `next_run_at`, `last_run_at`,
+  `last_job_id`.
+
+### How a job runs
+
+1. The worker finds the workspaces with work (see `p12-jobs-worker-process.md`).
+2. Per workspace, as system work under the application role bound to that workspace: queue what its
+   due schedules ask for (skipped while the schedule's last job is unfinished, so jobs never pile up),
+   take back running jobs whose lease ran out (their try is recorded `abandoned` and counts), and take
+   due jobs with `FOR UPDATE SKIP LOCKED` ordered by priority, due time, id. Two workers never take the
+   same job.
+3. Each attempt gets its own service scope and unit of work bound to the job's workspace with actor kind
+   `job` and the requester as actor, so audit rows say who asked. What the handler writes and the job's
+   own success are one transaction: success commits both, a failure rolls the handler's writes back.
+   The final write checks that this worker still holds this attempt (`locked_by`, `attempts`); a worker
+   that lost its lease changes nothing (exactly-once effects per committed attempt).
+4. While it runs, a heartbeat renews the lease every 2 s and notices a cancel request; `ReportAsync`
+   writes progress in a short transaction of its own so the Background jobs screen shows it live.
+5. Failure: `queued` again after a back-off (30 s doubling to an hour, up to 10 percent spread by job id)
+   while attempts remain and the failure may be retried, else `failed`. A timeout is a failed attempt
+   (`timedOut`). Cancel: a queued job ends cancelled at once, a running one is cancelled through its
+   token and ends cancelled. Stopping the worker gives running jobs back without losing a try.
+
+Progress, the lease and the worker name change often and are left out of the audit trail
+(`audit.capture` ignored columns); everything that decides what happened (status, attempts, errors,
+cancel requests, results, times) is audited. An UPDATE that changes only ignored columns writes no audit row.
+
+### Permissions (G2)
+
+`jobs.jobs.read` (list, one job, kinds), `jobs.jobs.run` (start, re-run), `jobs.jobs.cancel`,
+`jobs.jobs.output` (download what a job produced: it can hold business data, so not part of reading),
+`jobs.schedules.read / create / update`. Starting, re-running and scheduling also need the kind's own
+run permission (`JobType.RunPermission`): a kind without one can be queued by code only, so a person
+holding `jobs.jobs.run` cannot run an "export all payroll" job they could not start elsewhere. The
+clean-up kind needs `jobs.schedules.update`; the self-check kind needs `jobs.jobs.run`.
+
+### Why these choices
+
+- PostgreSQL as the queue: the product already requires it, enqueue is transactional with the module's
+  change, `SKIP LOCKED` gives safe concurrent claims, and row-level security and audit apply unchanged.
+  A broker would add a service, a credential and a second place tenant data lives.
+- Own cron parser (`CronSchedule`, ~200 lines, unit tested) instead of a package: no dependency to
+  licence-check, and the time-zone and daylight-saving rules are ours (a skipped local time does not
+  run, a repeated one runs once).
+- The kinds the module itself runs: `jobs.cleanup` (finished jobs older than the retention, 180 days by
+  default, a daily schedule is seeded) and `jobs.selfCheck` (steps, progress, cancel, output; proves the
+  queue works in a workspace).
+- Output is text only (CSV, JSON, plain text), 1 MB, served with `nosniff` and `no-store`; binary
+  exports will be the file module's (p11) once it exists.
+
+## Cost
+
+The module adds three tables, roughly 14 indexes, 89 .NET tests and 24 web tests. The demo seeds 100,000
+finished jobs in the main workspace (audited like any seeded rows, the same cost as the 100,000 rates
+of p08); the processor time this round adds to the verify is stated in the round's notes.
