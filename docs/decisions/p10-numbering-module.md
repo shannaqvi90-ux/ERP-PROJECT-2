@@ -153,3 +153,7 @@ Both runs went through the verify slots on the merged tree (head 9195d7c2).
   Run 1 used 11,240 s. Two runs under different load give about 11.3k, so the overrun is
   the combined test volume of the integration branch plus p08 and p10, not machine noise.
   The maximum belongs to the owner and was not changed.
+
+## Verify run 4 of the merged tree (fixer 3, 2026-10-29)
+
+All stages green (dotnet 822, web 622, e2e 128, compare 487, build 6). Only the ratchet failed: verify.cpuSeconds 11,383 s (dotnet 8,252, web 2,424, e2e 653, timing 55), maximum 10,500. Wall 5,767 s, load 16.7 at start, 13.2 at end, peak 53.7. Third reproduction (11,240; 11,293; 11,383), so the overrun is the suite size, not noise. No test, maximum or timeout was changed. The integrator's alone-run decides; if still above 10,500 the owner decides.
