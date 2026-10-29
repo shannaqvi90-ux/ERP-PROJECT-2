@@ -60,6 +60,8 @@ const every = [
   "tenancy.workplace.read",
   "tenancy.workplace.switch",
   "reports.catalog.read",
+  "numbering.sequences.read",
+  "numbering.sequences.update",
   "currency.currencies.read",
   "currency.currencies.update",
   "currency.rates.read",
@@ -71,7 +73,7 @@ const every = [
 
 /** A user who may read every screen and change nothing but their own settings. */
 const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read",
-  "currency.currencies.read", "currency.rates.read"];
+  "currency.currencies.read", "currency.rates.read", "numbering.sequences.read"];
 
 const session = (permissions: string[], language = "en") => ({
   authenticated: true,
@@ -90,12 +92,13 @@ const definitions: Record<string, unknown> = {
   "identity.roles": { ...listDefinitions["identity.roles"], printable: true },
   "tenancy.companies": { key: "tenancy.companies", labelKey: "tenancy.companies.title", endpoint: "/api/tenancy/companies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "tenancy.branches": { key: "tenancy.branches", labelKey: "tenancy.branches.title", endpoint: "/api/tenancy/branches", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
+  "numbering.sequences": { key: "numbering.sequences", labelKey: "numbering.sequences.title", endpoint: "/api/numbering/sequences", columns: [column("nameEn")], searchFields: ["nameEn"], defaultSort: "nameEn", presets: [], canShare: false, maxTake: 200, printable: true },
   "currency.currencies": { key: "currency.currencies", labelKey: "currency.currencies.title", endpoint: "/api/currency/currencies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "currency.rates": { key: "currency.rates", labelKey: "currency.rates.title", endpoint: "/api/currency/rates", columns: [column("currencyCode")], searchFields: ["currencyCode"], defaultSort: "currencyCode", presets: [], canShare: false, maxTake: 200, printable: true },
 };
+const sequenceRow = { id: "seq1", companyId: "c9", companyCode: "AN-AJM", documentType: "purchasing.order", nameEn: "Purchase order", nameAr: "أمر شراء", prefix: "PO-{YYYY}-", suffix: "", padding: 5, reset: "yearly", gapless: false, perBranch: false, nextNumber: "PO-2026-00148", nextValue: 148, workingCompany: true, updatedAt: "2026-10-01T00:00:00Z", version: 1, canUpdate: true };
 const currencyRow = { id: "cur1", code: "EUR", nameEn: "Euro", nameAr: "يورو", minorUnits: 2, isActive: true, maxRateAgeDays: 7, quoteCurrency: "AED", latestRate: "4.2875", latestRateDate: "2026-10-23", latestRateReference: null, version: 1, everyCompany: true };
 const rateRow = { id: "rate1", rateDate: "2026-10-23", currencyCode: "EUR", exchangeRate: "4.2875", quoteCurrency: "AED", inverseRate: "0.23323615", source: "manual", reference: null, updatedAt: "2026-10-23T08:00:00Z", version: 1 };
-
 const clerk = { id: "r-clerk", nameEn: "Contacts clerk", nameAr: "كاتب جهات الاتصال", permissions: ["identity.users.read"], isSystem: false, userCount: 1, version: 1 };
 const user = {
   id: "u1", email: "clerk@alnoor.example", displayName: "Salem Clerk", language: "en", isActive: true, roleIds: ["r-clerk"],
@@ -161,6 +164,8 @@ async function open(
     if (p === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
     if (p === "/api/tenancy/branches/b1") return { status: 200, body: branch };
     if (p === "/api/tenancy/workplace") return { status: 200, body: workplace };
+    if (p === "/api/numbering/sequences") return { status: 200, body: { items: [sequenceRow], total: 1, next: null } };
+    if (p === "/api/numbering/sequences/seq1") return { status: 200, body: { ...sequenceRow, companyNameEn: "Al Noor Ajman LLC", companyNameAr: "النور عجمان ذ.م.م", previewBranchId: null, today: "2026-10-25", branches: [], counters: [], recent: [], createdAt: "2026-10-01T00:00:00Z" } };
     if (p === "/api/currency/currencies") return { status: 200, body: { items: [currencyRow], total: 1, next: null } };
     if (p === "/api/currency/currencies/cur1") return { status: 200, body: { ...currencyRow, number: 978, isBaseCurrency: false, createdAt: "2026-10-01T00:00:00Z", updatedAt: "2026-10-01T00:00:00Z", everyCompany: true, isoPublished: "2026-09-17" } };
     if (p === "/api/currency/rates") return { status: 200, body: { items: [rateRow], total: 1, next: null } };

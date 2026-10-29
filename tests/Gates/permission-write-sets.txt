@@ -13,6 +13,7 @@ tenancy.tenant.update tenancy.tenants update name_en,name_ar,default_language,ti
 tenancy.companies.create tenancy.companies insert *  # the new legal entity
 tenancy.companies.create tenancy.user_company_access insert *  # the creator works in the company they made
 tenancy.companies.create tenancy.user_company_totals update *  # the creator's count of companies (kept with their access)
+tenancy.companies.create numbering.sequences insert *  # the new company's document sequences, one per registered document type from its defaults (ICompanyCreatedHandler, in the same transaction); never another company's
 tenancy.companies.update tenancy.companies update *  # the company's legal details, settings (the Arabic-legal-name requirement), active flag and logo
 tenancy.branches.create tenancy.branches insert *  # the new branch
 tenancy.branches.update tenancy.branches update *  # the branch's details and active flag
@@ -56,6 +57,7 @@ identity.users.read lists.saved_views insert,update,delete *  # the reader's own
 tenancy.companies.read lists.saved_views insert,update,delete *  # the reader's own views of the companies list
 tenancy.branches.read lists.saved_views insert,update,delete *  # the reader's own views of the branches list
 tenancy.access.read lists.saved_views insert,update,delete *  # the reader's own views of the access list
+numbering.sequences.read lists.saved_views insert,update,delete *  # the reader's own views of the document numbering list
 currency.currencies.read lists.saved_views insert,update,delete *  # the reader's own views of the currencies list
 currency.rates.read lists.saved_views insert,update,delete *  # the reader's own views of the exchange rates list
 lists.views.share lists.saved_views insert,update,delete *  # views shared with everyone who may read the list
