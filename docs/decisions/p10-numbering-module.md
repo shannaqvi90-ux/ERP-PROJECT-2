@@ -140,3 +140,16 @@ other builders' verifies: every test passed (dotnet 822, web 622, e2e 128, compa
 above their minimums). The only failure is the ratchet's processor-time check: 11,240 s (dotnet 8,293,
 web 2,392, e2e 511, timing 44) against the 10,500 s maximum, which belongs to the owner and was not
 changed. Log: verify-fixer-p10-numbering-r1-f1.log; kept folder .verify-failed/20261028T190141Z-66514.
+
+## Verify runs 2 and 3 of the merged piece (fixer 2)
+
+Both runs went through the verify slots on the merged tree (head 9195d7c2).
+
+- Run 2: web stage failed on one comparison-harness test under load, `test/guard.test.mjs:786`
+  "control (round 4): a home start that lands on the home, with set-up contexts of its own, still
+  verifies" (page changed 1.54 s before the clock started). It passes run alone. Not skipped or loosened.
+- Run 3: every test green (dotnet, web 622, e2e, compare 487, build). Only the ratchet failed:
+  verify.cpuSeconds 11,293 s (dotnet 8,200, web 2,350, e2e 690, timing 52) against 10,500 s.
+  Run 1 used 11,240 s. Two runs under different load give about 11.3k, so the overrun is
+  the combined test volume of the integration branch plus p08 and p10, not machine noise.
+  The maximum belongs to the owner and was not changed.
