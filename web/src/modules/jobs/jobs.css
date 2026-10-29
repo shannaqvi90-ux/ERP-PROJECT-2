@@ -1,0 +1,118 @@
+/* Background jobs: the shared list with the open job beside it, its progress bar, status words, tries
+   and parameters. Logical properties only (Arabic mirrors). */
+.jb-list .list-record {
+  padding: 8px 12px;
+}
+
+@media (max-width: 1100px) {
+  .jb-list .list-body.has-record {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .jb-list .list-splitter {
+    display: none;
+  }
+}
+
+.jb-progress {
+  position: relative;
+  display: inline-block;
+  inline-size: 7rem;
+  block-size: 1.15rem;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 3px;
+  overflow: hidden;
+  vertical-align: middle;
+  background: var(--surface, #fff);
+}
+
+.jb-progress-bar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: var(--accent-soft, #cfe3ff);
+}
+
+.jb-progress-text {
+  position: relative;
+  display: block;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.jb-status {
+  display: inline-block;
+  padding-inline: 6px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.jb-status-succeeded {
+  color: var(--ok, #1a7f37);
+}
+
+.jb-status-failed {
+  color: var(--danger, #b42318);
+}
+
+.jb-status-running {
+  color: var(--accent, #0b5cad);
+}
+
+.jb-status-queued,
+.jb-status-cancelled {
+  color: var(--muted, #57606a);
+}
+
+.jb-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-block-end: 8px;
+}
+
+.jb-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 16px;
+  margin-block: 8px 0;
+}
+
+.jb-facts dt {
+  color: var(--muted, #57606a);
+}
+
+.jb-facts dd {
+  margin: 0;
+  unicode-bidi: plaintext;
+}
+
+.jb-tries {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.jb-tries th,
+.jb-tries td {
+  text-align: start;
+  padding: 3px 8px;
+  border-block-end: 1px solid var(--border, #d0d7de);
+  font-weight: normal;
+}
+
+.jb-json {
+  margin: 0;
+  padding: 8px;
+  max-block-size: 14rem;
+  overflow: auto;
+  background: var(--surface-alt, #f6f8fa);
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 3px;
+  font-size: 0.82rem;
+  text-align: left;
+}

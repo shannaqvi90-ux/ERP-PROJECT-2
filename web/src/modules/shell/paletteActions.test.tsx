@@ -69,11 +69,18 @@ const every = [
   "currency.rates.update",
   "currency.rates.delete",
   "currency.rates.import",
+  "jobs.jobs.read",
+  "jobs.jobs.run",
+  "jobs.jobs.cancel",
+  "jobs.jobs.output",
+  "jobs.schedules.read",
+  "jobs.schedules.create",
+  "jobs.schedules.update",
 ];
 
 /** A user who may read every screen and change nothing but their own settings. */
 const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read",
-  "currency.currencies.read", "currency.rates.read", "numbering.sequences.read"];
+  "currency.currencies.read", "currency.rates.read", "numbering.sequences.read", "jobs.jobs.read", "jobs.schedules.read"];
 
 const session = (permissions: string[], language = "en") => ({
   authenticated: true,
@@ -94,9 +101,13 @@ const definitions: Record<string, unknown> = {
   "tenancy.branches": { key: "tenancy.branches", labelKey: "tenancy.branches.title", endpoint: "/api/tenancy/branches", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "numbering.sequences": { key: "numbering.sequences", labelKey: "numbering.sequences.title", endpoint: "/api/numbering/sequences", columns: [column("nameEn")], searchFields: ["nameEn"], defaultSort: "nameEn", presets: [], canShare: false, maxTake: 200, printable: true },
   "currency.currencies": { key: "currency.currencies", labelKey: "currency.currencies.title", endpoint: "/api/currency/currencies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
+  "jobs.jobs": { key: "jobs.jobs", labelKey: "jobs.jobs.title", endpoint: "/api/jobs/jobs", columns: [column("titleEn")], searchFields: ["titleEn"], defaultSort: "-createdAt", presets: [], canShare: false, maxTake: 200, printable: true },
+  "jobs.schedules": { key: "jobs.schedules", labelKey: "jobs.schedules.title", endpoint: "/api/jobs/schedules", columns: [column("name")], searchFields: ["name"], defaultSort: "name", presets: [], canShare: false, maxTake: 200, printable: true },
   "currency.rates": { key: "currency.rates", labelKey: "currency.rates.title", endpoint: "/api/currency/rates", columns: [column("currencyCode")], searchFields: ["currencyCode"], defaultSort: "currencyCode", presets: [], canShare: false, maxTake: 200, printable: true },
 };
 const sequenceRow = { id: "seq1", companyId: "c9", companyCode: "AN-AJM", documentType: "purchasing.order", nameEn: "Purchase order", nameAr: "أمر شراء", prefix: "PO-{YYYY}-", suffix: "", padding: 5, reset: "yearly", gapless: false, perBranch: false, nextNumber: "PO-2026-00148", nextValue: 148, workingCompany: true, updatedAt: "2026-10-01T00:00:00Z", version: 1, canUpdate: true };
+const jobRow = { id: "job1", type: "jobs.selfCheck", titleEn: "Self-check of the job queue", titleAr: "فحص ذاتي لطابور المهام", status: "succeeded", source: "user", progress: 100, progressEn: "", progressAr: "", runAt: "2026-10-29T08:00:00Z", startedAt: "2026-10-29T08:00:01Z", finishedAt: "2026-10-29T08:00:03Z", attempts: 1, maxAttempts: 1, errorCode: null, errorEn: "", errorAr: "", createdAt: "2026-10-29T08:00:00Z", updatedAt: "2026-10-29T08:00:03Z", version: 1, canRerun: false, canCancel: false };
+const scheduleRow = { id: "sch1", name: "Clean up", type: "jobs.cleanup", typeNameEn: "Clean up finished jobs", typeNameAr: "تنظيف المهام المنتهية", cron: "30 3 * * *", isEnabled: true, nextRunAt: "2026-10-30T23:30:00Z", lastRunAt: null, lastJobId: null, updatedAt: "2026-10-29T08:00:00Z", version: 1, canUpdate: false };
 const currencyRow = { id: "cur1", code: "EUR", nameEn: "Euro", nameAr: "يورو", minorUnits: 2, isActive: true, maxRateAgeDays: 7, quoteCurrency: "AED", latestRate: "4.2875", latestRateDate: "2026-10-23", latestRateReference: null, version: 1, everyCompany: true };
 const rateRow = { id: "rate1", rateDate: "2026-10-23", currencyCode: "EUR", exchangeRate: "4.2875", quoteCurrency: "AED", inverseRate: "0.23323615", source: "manual", reference: null, updatedAt: "2026-10-23T08:00:00Z", version: 1 };
 const clerk = { id: "r-clerk", nameEn: "Contacts clerk", nameAr: "كاتب جهات الاتصال", permissions: ["identity.users.read"], isSystem: false, userCount: 1, version: 1 };
@@ -166,6 +177,11 @@ async function open(
     if (p === "/api/tenancy/workplace") return { status: 200, body: workplace };
     if (p === "/api/numbering/sequences") return { status: 200, body: { items: [sequenceRow], total: 1, next: null } };
     if (p === "/api/numbering/sequences/seq1") return { status: 200, body: { ...sequenceRow, companyNameEn: "Al Noor Ajman LLC", companyNameAr: "النور عجمان ذ.م.م", previewBranchId: null, today: "2026-10-25", branches: [], counters: [], recent: [], createdAt: "2026-10-01T00:00:00Z" } };
+    if (p === "/api/jobs/types") return { status: 200, body: [{ key: "jobs.selfCheck", nameEn: "Self-check of the job queue", nameAr: "فحص ذاتي لطابور المهام", descriptionEn: null, descriptionAr: null, maxAttempts: 1, timeoutSeconds: 120, startable: true, schedulable: true }] };
+    if (p === "/api/jobs/jobs") return { status: 200, body: { items: [jobRow], total: 1, next: null } };
+    if (p === "/api/jobs/jobs/job1") return { status: 200, body: { ...jobRow, typeNameEn: "Self-check of the job queue", typeNameAr: "فحص ذاتي لطابور المهام", priority: 0, cancelRequested: false, payload: {}, result: null, hasOutput: false, outputName: null, outputContentType: null, outputBytes: 0, scheduleId: null, rerunOf: null, attemptLog: [], canDownload: false } };
+    if (p === "/api/jobs/schedules") return { status: 200, body: { items: [scheduleRow], total: 1, next: null } };
+    if (p === "/api/jobs/schedules/sch1") return { status: 200, body: { ...scheduleRow, payload: {}, timeZone: "Asia/Dubai", createdAt: "2026-10-01T00:00:00Z" } };
     if (p === "/api/currency/currencies") return { status: 200, body: { items: [currencyRow], total: 1, next: null } };
     if (p === "/api/currency/currencies/cur1") return { status: 200, body: { ...currencyRow, number: 978, isBaseCurrency: false, createdAt: "2026-10-01T00:00:00Z", updatedAt: "2026-10-01T00:00:00Z", everyCompany: true, isoPublished: "2026-09-17" } };
     if (p === "/api/currency/rates") return { status: 200, body: { items: [rateRow], total: 1, next: null } };

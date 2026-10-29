@@ -45,6 +45,7 @@ public sealed class JobsModule : ErpModule
             ScheduleEndpoints.Map(group);
         });
         module.Menu(new MenuEntry("jobs.jobs", "jobs.menu.jobs", "/jobs/jobs", JobsPermissions.JobsRead, Order: 870, Group: "settings"));
+        module.Menu(new MenuEntry("jobs.schedules", "jobs.menu.schedules", "/jobs/schedules", JobsPermissions.SchedulesRead, Order: 871, Group: "settings"));
         module.List(JobsList.Create());
         module.List(SchedulesList.Create());
         // Reports print both lists exactly as their screens show them.
