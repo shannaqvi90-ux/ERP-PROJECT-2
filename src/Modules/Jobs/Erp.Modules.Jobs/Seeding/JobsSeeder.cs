@@ -42,21 +42,37 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
         ("search.reindex", 3, "Rebuild the search index", "إعادة بناء فهرس البحث"),
     ];
 
-    /// <summary>Which kind row <paramref name="i"/> belongs to: every fourth run is the self-check, about one in
-    /// ten of the rest the clean-up, and the past kinds share what is left.</summary>
-    private static int Pick(int i, int mix2, int seed)
+    /// <summary>A well-mixed 32-bit number for row <paramref name="i"/> of a workspace (a multiplicative hash with
+    /// avalanche steps): rows come out in no pattern a sampling stride could line up with.</summary>
+    private static uint Mix(int i, int seed)
     {
-        if (i % 4 == 0)
+        unchecked
+        {
+            var h = (uint)i * 2246822519u + (uint)seed * 3266489917u;
+            h ^= h >> 15;
+            h *= 2654435761u;
+            h ^= h >> 13;
+            h *= 2246822519u;
+            h ^= h >> 16;
+            return h;
+        }
+    }
+
+    /// <summary>Which kind row <paramref name="i"/> belongs to: about a quarter are the self-check, one in twelve the
+    /// clean-up, and the past kinds share the rest evenly. A small workspace (the gates') takes every fourth row as a
+    /// self-check so it always holds some.</summary>
+    private static int Pick(int i, uint h, bool small)
+    {
+        var bucket = (int)(h % 100);
+        if (small ? i % 4 == 0 : bucket < 25)
         {
             return 0;
         }
-        if (mix2 < 11)
+        if (small ? (h >> 16) % 100 < 11 : bucket < 33)
         {
             return 1;
         }
-        // An even spread over the past kinds (a multiplicative hash of the row number and the workspace's seed).
-        var spread = unchecked((uint)(i * 2654435761u + (uint)seed * 40503u));
-        return 2 + (int)((spread >> 13) % (uint)PastKinds.Length);
+        return 2 + (int)((h >> 8) % (uint)PastKinds.Length);
     }
 
     public async Task SeedAsync(TenantSeedContext context, CancellationToken cancellationToken)
@@ -121,8 +137,8 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
             {
                 // Oldest first, so the newest row is the last one made. A fixed mix, not random.
                 var created = now - span + step * (i + 1);
-                var mix = (int)((uint)(i * 2654435761u + (uint)seed) % 100);
-                var (key, maxAttempts, en, ar) = names[Pick(i, (int)((uint)(i * 40503u + (uint)seed) % 100), seed)];
+                var mix = (int)(Mix(i, seed ^ 0x5bd1e995) % 100);
+                var (key, maxAttempts, en, ar) = names[Pick(i, Mix(i, seed), count <= 1000)];
                 var (status, source) = mix switch
                 {
                     < 88 => (JobStatus.Succeeded, i % 4 == 0 ? JobSource.Schedule : JobSource.User),
