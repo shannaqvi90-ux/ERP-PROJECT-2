@@ -61,3 +61,11 @@ numbering.sequences.read lists.saved_views insert,update,delete *  # the reader'
 currency.currencies.read lists.saved_views insert,update,delete *  # the reader's own views of the currencies list
 currency.rates.read lists.saved_views insert,update,delete *  # the reader's own views of the exchange rates list
 lists.views.share lists.saved_views insert,update,delete *  # views shared with everyone who may read the list
+
+# Jobs: the queue, its tries and its schedules.
+jobs.jobs.run jobs.jobs insert *  # the job a person starts or runs again (kind, title, parameters, state queued); never another workspace's
+jobs.jobs.cancel jobs.jobs update status,cancel_requested,finished_at  # a queued job ends cancelled at once, a running one is asked to stop (its worker ends it)
+jobs.schedules.create jobs.schedules insert *  # the new schedule
+jobs.schedules.update jobs.schedules update name,cron,payload,is_enabled,next_run_at  # the schedule's name, timing, parameters and switch; its last run is the worker's
+jobs.jobs.read lists.saved_views insert,update,delete *  # the reader's own views of the background jobs list
+jobs.schedules.read lists.saved_views insert,update,delete *  # the reader's own views of the schedules list

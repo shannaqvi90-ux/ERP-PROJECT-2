@@ -1,7 +1,6 @@
-using Erp.Kernel.Data;
+using Microsoft.EntityFrameworkCore;
 using Erp.Modules.Jobs.Contracts;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 
 namespace Erp.Modules.Jobs.Handlers;
 
@@ -30,21 +29,18 @@ internal sealed class CleanupJobHandler : IJobHandler
                 throw new JobFailure("jobs.cleanup.retention", new JobText("retentionDays must be a whole number from 7 to 3650.", "يجب أن تكون retentionDays عددًا صحيحًا من 7 إلى 3650."), retry: false);
             }
         }
-        var session = context.Services.GetRequiredService<ErpDbSession>();
+        var db = context.Services.GetRequiredService<JobsDbContext>();
         var cutoff = DateTimeOffset.UtcNow.AddDays(-days);
         long deleted = 0;
         for (var batch = 0; batch < MaxBatches; batch++)
         {
             context.Cancellation.ThrowIfCancellationRequested();
-            await using var command = new NpgsqlCommand("""
-                DELETE FROM jobs.jobs
-                 WHERE id IN (SELECT id FROM jobs.jobs
-                               WHERE status IN ('succeeded', 'failed', 'cancelled') AND finished_at < @cutoff
-                               ORDER BY finished_at LIMIT @batch)
-                """, session.Connection, session.Transaction);
-            command.Parameters.AddWithValue("cutoff", cutoff);
-            command.Parameters.AddWithValue("batch", BatchSize);
-            var count = await command.ExecuteNonQueryAsync(context.Cancellation);
+            // The oldest finished jobs first, a batch at a time (their tries go with them by the foreign key).
+            var count = await db.Jobs
+                .Where(j => (j.Status == JobStatus.Succeeded || j.Status == JobStatus.Failed || j.Status == JobStatus.Cancelled) && j.FinishedAt < cutoff)
+                .OrderBy(j => j.FinishedAt)
+                .Take(BatchSize)
+                .ExecuteDeleteAsync(context.Cancellation);
             deleted += count;
             if (count < BatchSize)
             {

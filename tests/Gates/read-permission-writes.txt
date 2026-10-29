@@ -28,3 +28,9 @@ DELETE /api/lists/currency.currencies/views/{id:guid}  # a reader saves their ow
 POST /api/lists/currency.rates/views  # a reader saves their own view of a list they may read
 PUT /api/lists/currency.rates/views/{id:guid}  # a reader saves their own view of a list they may read
 DELETE /api/lists/currency.rates/views/{id:guid}  # a reader saves their own view of a list they may read
+POST /api/lists/jobs.jobs/views  # a reader saves their own view of a list they may read
+PUT /api/lists/jobs.jobs/views/{id:guid}  # a reader saves their own view of a list they may read
+DELETE /api/lists/jobs.jobs/views/{id:guid}  # a reader saves their own view of a list they may read
+POST /api/lists/jobs.schedules/views  # a reader saves their own view of a list they may read
+PUT /api/lists/jobs.schedules/views/{id:guid}  # a reader saves their own view of a list they may read
+DELETE /api/lists/jobs.schedules/views/{id:guid}  # a reader saves their own view of a list they may read

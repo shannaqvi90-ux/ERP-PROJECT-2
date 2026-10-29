@@ -35,7 +35,7 @@ public sealed class JobsModule : ErpModule
         module.Services.AddSingleton<IJobTypes>(services => services.GetRequiredService<JobTypes>());
         module.Services.TryAddSingleton(TimeProvider.System);
         module.Services.AddSingleton<JobRunner>();
-        module.Services.AddHostedService<JobWorker>();
+        module.Command(JobWorkerCommand.Definition);
         // The kinds of job the module itself runs.
         module.Services.AddJobType<CleanupJobHandler>(CleanupJobHandler.Type);
         module.Services.AddJobType<SelfCheckJobHandler>(SelfCheckJobHandler.Type);

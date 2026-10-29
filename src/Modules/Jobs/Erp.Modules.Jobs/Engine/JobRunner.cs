@@ -4,6 +4,7 @@ using Erp.Kernel.Localization;
 using Erp.Modules.Jobs.Contracts;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
@@ -33,15 +34,17 @@ public static class JobBackoff
 
 /// <summary>
 /// Takes due jobs and runs them. A pass finds the workspaces with work (the one reviewed
-/// cross-tenant lookup, <c>jobs.due_tenants</c>), and then, workspace by workspace and inside that
+/// cross-tenant lookup, <see cref="DueTenantsAsync"/>), and then, workspace by workspace and inside that
 /// workspace's row-level security as system work: queues what its schedules are due for, takes back
 /// jobs whose worker stopped renewing its lease, and takes the due jobs. Each attempt runs in a
 /// service scope of its own whose unit of work is bound to the job's workspace; its writes and its
 /// success commit together, a failure rolls them back and the job is queued again after a growing
 /// wait while attempts remain.
 /// </summary>
-public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, StringCatalog strings, TimeProvider clock, ILogger<JobRunner> log)
+public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, StringCatalog strings, TimeProvider clock, IConfiguration configuration, ILogger<JobRunner> log) : IDisposable
 {
+    private NpgsqlDataSource? _lookup;
+
     /// <summary>How long a worker's claim on a running job lasts without being renewed.</summary>
     public static readonly TimeSpan Lease = TimeSpan.FromSeconds(60);
 
@@ -99,22 +102,35 @@ public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, Strin
     }
 
     /// <summary>The workspaces that have a job due, a running job whose lease ran out or a schedule due,
-    /// the longest waiting first. Runs on a connection bound to no workspace.</summary>
+    /// the longest waiting first (tenant ids only, see <see cref="JobsSql"/>). Uses the owner role's
+    /// connection of the worker process, switched to the narrow lookup role for this one statement.</summary>
     public async Task<IReadOnlyList<Guid>> DueTenantsAsync(CancellationToken cancellationToken)
     {
-        await using var scope = scopes.CreateAsyncScope();
-        var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
-        var connection = await session.OpenUnboundAsync(cancellationToken);
-        await using var command = new NpgsqlCommand("SELECT tenant_id FROM jobs.due_tenants(@limit)", connection);
-        command.Parameters.AddWithValue("limit", 50);
-        var tenants = new List<Guid>();
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
+        await using var connection = await LookupSource.OpenConnectionAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        await using (var role = new NpgsqlCommand("SET LOCAL ROLE erp_auth", connection, transaction))
         {
-            tenants.Add(reader.GetGuid(0));
+            await role.ExecuteNonQueryAsync(cancellationToken);
         }
+        var tenants = new List<Guid>();
+        await using (var command = new NpgsqlCommand(JobsSql.DueTenants, connection, transaction))
+        {
+            command.Parameters.AddWithValue("limit", 50);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                tenants.Add(reader.GetGuid(0));
+            }
+        }
+        await transaction.RollbackAsync(cancellationToken);
         return tenants;
     }
+
+    private NpgsqlDataSource LookupSource => _lookup ??= NpgsqlDataSource.Create(
+        configuration.GetConnectionString(ConnectionNames.Owner)
+        ?? throw new InvalidOperationException("The job worker needs the owner role's connection string (ConnectionStrings:Owner) to learn which workspaces have work."));
+
+    public void Dispose() => _lookup?.Dispose();
 
     /// <summary>Queue due schedules, take back abandoned jobs and take due jobs of one workspace.
     /// Null when the workspace is not active.</summary>

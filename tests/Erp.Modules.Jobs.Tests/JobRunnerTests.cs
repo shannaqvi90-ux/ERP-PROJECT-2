@@ -3,6 +3,9 @@ using Erp.Modules.Jobs.Contracts;
 using Erp.Modules.Jobs.Engine;
 using Erp.Kernel.Seeding;
 using Erp.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace Erp.Modules.Jobs.Tests;
@@ -261,9 +264,8 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
     }
 
     [Fact]
-    public async Task The_due_workspaces_lookup_names_workspaces_with_work_and_answers_nothing_inside_a_workspace()
+    public async Task The_due_workspaces_lookup_names_workspaces_with_work_and_sees_nothing_else()
     {
-        await fixture.Runner.RunOnceAsync(500);
         var id = await fixture.EnqueueAsync(B, JobTestModule.Ok);
         var due = await fixture.Runner.DueTenantsAsync(CancellationToken.None);
         Assert.Equal([B.Id], due);
@@ -271,21 +273,67 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
         Assert.DoesNotContain(B.Id, await fixture.Runner.DueTenantsAsync(CancellationToken.None));
         Assert.Equal("succeeded", (await fixture.StateAsync(id)).Status);
 
-        // Bound to a workspace, the function answers nothing, even with work due.
-        await fixture.EnqueueAsync(A, JobTestModule.Ok);
+        // The lookup role reads the workspace, state and moment columns and nothing a job holds.
+        await using var owner = new NpgsqlConnection(Env.OwnerConnectionString);
+        await owner.OpenAsync();
+        async Task<string?> Read(string sql)
+        {
+            await using var tx = await owner.BeginTransactionAsync();
+            await using (var role = new NpgsqlCommand("SET LOCAL ROLE erp_auth", owner, tx))
+            {
+                await role.ExecuteNonQueryAsync();
+            }
+            try
+            {
+                await using var command = new NpgsqlCommand(sql, owner, tx);
+                await command.ExecuteScalarAsync();
+                return null;
+            }
+            catch (PostgresException error)
+            {
+                return error.SqlState;
+            }
+        }
+        Assert.Null(await Read("SELECT tenant_id, status, run_at, locked_until FROM jobs.jobs LIMIT 1"));
+        Assert.Null(await Read("SELECT tenant_id, is_enabled, next_run_at FROM jobs.schedules LIMIT 1"));
+        foreach (var column in new[] { "title_en", "payload", "result", "output_text", "error_en", "created_by", "id" })
+        {
+            Assert.Equal("42501", await Read($"SELECT {column} FROM jobs.jobs LIMIT 1"));
+        }
+        foreach (var column in new[] { "name", "payload", "cron", "id" })
+        {
+            Assert.Equal("42501", await Read($"SELECT {column} FROM jobs.schedules LIMIT 1"));
+        }
+        // It sees no other module's table either.
+        Assert.Equal("42501", await Read("SELECT 1 FROM jobs.job_attempts LIMIT 1"));
+
+        // Only the owner role may switch to it; the application role cannot.
         await using var app = await Env.OpenAppAsync();
-        await using var tx = await app.BeginTransactionAsync();
-        await using (var bind = new NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)", app, tx))
+        await using var switchRole = new NpgsqlCommand("SET ROLE erp_auth", app);
+        Assert.Equal("42501", (await Assert.ThrowsAsync<PostgresException>(() => switchRole.ExecuteNonQueryAsync())).SqlState);
+    }
+
+    [Fact]
+    public async Task The_worker_loop_runs_what_is_queued_and_stops_when_asked_without_losing_a_running_job()
+    {
+        var ok = await fixture.EnqueueAsync(A, JobTestModule.Ok);
+        var slow = await fixture.EnqueueAsync(B, JobTestModule.Slow);
+        using var stop = new CancellationTokenSource();
+        var loop = Task.Run(() => JobWorkerCommand.RunLoopAsync(fixture.Runner, Env.Factory.Services.GetRequiredService<IConfiguration>(),
+            Env.Factory.Services.GetRequiredService<ILoggerFactory>().CreateLogger("test"), stop.Token));
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        while ((await fixture.StateAsync(ok)).Status != "succeeded" || (await fixture.StateAsync(slow)).Progress < 2)
         {
-            bind.Parameters.AddWithValue("t", A.Id.ToString());
-            await bind.ExecuteNonQueryAsync();
+            Assert.True(DateTime.UtcNow < deadline, "the worker loop did not run the jobs in time");
+            await Task.Delay(100);
         }
-        await using (var lookup = new NpgsqlCommand("SELECT count(*) FROM jobs.due_tenants(50)", app, tx))
-        {
-            Assert.Equal(0L, await lookup.ExecuteScalarAsync());
-        }
-        await tx.RollbackAsync();
-        await fixture.Runner.RunOnceAsync();
+        await stop.CancelAsync();
+        await loop.WaitAsync(TimeSpan.FromSeconds(30));
+        // The running job went back to the queue; the try it had made is not counted.
+        var back = await fixture.StateAsync(slow);
+        Assert.Equal(("queued", 0), (back.Status, back.Attempts));
+        Assert.Empty(await fixture.AttemptsAsync(slow));
+        await fixture.WithQueueAsync(B, q => q.CancelAsync(slow));
     }
 
     [Fact]

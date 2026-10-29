@@ -1,47 +1,47 @@
-using Erp.Kernel.Data;
+using Erp.Kernel.Modules;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Erp.Modules.Jobs.Engine;
 
 /// <summary>
-/// The background service that runs jobs in the web application's process. It polls, takes up to
-/// <c>Erp:Jobs:Concurrency</c> (default 4) jobs at a time and starts each on its own task, so a long
-/// job never holds up the next one. <c>Erp:Jobs:PollSeconds</c> (default 2) is the wait when there
-/// was nothing to do; <c>Erp:Jobs:Worker</c> set to false switches the worker off (tests and the
-/// operator's migrate and seed commands). In the Testing environment it is off unless
-/// <c>Erp:Jobs:Worker</c> is true. When the application stops, running jobs are asked to stop and
-/// go back to the queue without losing a try.
+/// <c>Erp.Host jobs work</c>: the process that runs background jobs (the compose <c>worker</c> service).
+/// It polls, takes up to <c>Erp:Jobs:Concurrency</c> (default 4) jobs at a time and starts each on its
+/// own task, so a long job never holds up the next one. <c>Erp:Jobs:PollSeconds</c> (default 2) is the
+/// wait when there was nothing to do. When the process is stopped, running jobs are asked to stop and go
+/// back to the queue without losing a try. It needs the owner role's connection string (to learn which
+/// workspaces have work, see <see cref="JobsSql"/>) and the application role's (to run the work).
 /// </summary>
-internal sealed class JobWorker(JobRunner runner, IConfiguration configuration, IHostEnvironment environment, ILogger<JobWorker> log) : BackgroundService
+internal static class JobWorkerCommand
 {
-    public const string WorkerSetting = "Erp:Jobs:Worker";
     public const string ConcurrencySetting = "Erp:Jobs:Concurrency";
     public const string PollSetting = "Erp:Jobs:PollSeconds";
 
-    internal static bool Enabled(IConfiguration configuration, IHostEnvironment environment) =>
-        configuration.GetValue<bool?>(WorkerSetting) ?? !environment.IsEnvironment("Testing");
+    public static readonly ModuleCommand Definition = new("jobs", "jobs work   (runs background jobs until stopped)", RunAsync);
 
-    protected override async Task ExecuteAsync(CancellationToken stopping)
+    private static async Task<int> RunAsync(IServiceProvider services, IReadOnlyList<string> args, CancellationToken stopping)
     {
-        if (!Enabled(configuration, environment))
+        if (args.Count != 1 || args[0] != "work")
         {
-            return;
+            Console.Error.WriteLine("Usage: jobs work");
+            return 2;
         }
+        var configuration = services.GetRequiredService<IConfiguration>();
+        var log = services.GetRequiredService<ILoggerFactory>().CreateLogger("Erp.Jobs.Worker");
+        var runner = services.GetRequiredService<JobRunner>();
+        log.LogInformation("Job worker {Worker} started.", runner.WorkerId);
+        await RunLoopAsync(runner, configuration, log, stopping);
+        log.LogInformation("Job worker {Worker} stopped.", runner.WorkerId);
+        return 0;
+    }
+
+    /// <summary>The loop itself, until <paramref name="stopping"/> is cancelled.</summary>
+    internal static async Task RunLoopAsync(JobRunner runner, IConfiguration configuration, ILogger log, CancellationToken stopping)
+    {
         var concurrency = Math.Clamp(configuration.GetValue<int?>(ConcurrencySetting) ?? 4, 1, 32);
         var poll = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue<int?>(PollSetting) ?? 2, 1, 60));
         var running = new List<Task>();
-        // Let the application finish starting (migrations run before the first request).
-        try
-        {
-            await Task.Delay(TimeSpan.FromSeconds(1), stopping);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
         while (!stopping.IsCancellationRequested)
         {
             try
