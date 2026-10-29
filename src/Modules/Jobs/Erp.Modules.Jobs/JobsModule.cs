@@ -10,6 +10,7 @@ using Erp.Modules.Jobs.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Erp.Modules.Jobs;
 
@@ -30,7 +31,9 @@ public sealed class JobsModule : ErpModule
         module.Permissions([.. JobsPermissions.All]);
         module.DbContext<JobsDbContext>();
         module.Services.AddScoped<IJobQueue, JobQueue>();
-        module.Services.AddSingleton<IJobTypes, JobTypes>();
+        module.Services.AddSingleton<JobTypes>();
+        module.Services.AddSingleton<IJobTypes>(services => services.GetRequiredService<JobTypes>());
+        module.Services.TryAddSingleton(TimeProvider.System);
         module.Services.AddSingleton<JobRunner>();
         module.Services.AddHostedService<JobWorker>();
         // The kinds of job the module itself runs.

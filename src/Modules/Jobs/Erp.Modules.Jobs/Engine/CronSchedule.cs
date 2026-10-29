@@ -110,7 +110,7 @@ public sealed class CronSchedule
                 continue;
             }
             var offset = zone.IsAmbiguousTime(candidate) ? zone.GetAmbiguousTimeOffsets(candidate).Max() : zone.GetUtcOffset(candidate);
-            var moment = new DateTimeOffset(candidate, offset);
+            var moment = new DateTimeOffset(candidate, offset).ToUniversalTime();
             if (moment > after)
             {
                 return moment;

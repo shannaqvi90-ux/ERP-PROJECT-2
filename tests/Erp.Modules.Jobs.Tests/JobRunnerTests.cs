@@ -13,8 +13,13 @@ namespace Erp.Modules.Jobs.Tests;
 /// can be cancelled while it runs, is taken back when its worker disappears, never runs twice, and one
 /// workspace's job never sees another's rows.
 /// </summary>
-public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixture>
+public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixture>, IAsyncLifetime
 {
+    // Whatever an earlier test left due runs first, so each test starts with an empty queue.
+    public async ValueTask InitializeAsync() => await fixture.Runner.RunOnceAsync(500);
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
     private ErpTestEnvironment Env => fixture.Env;
 
     private SeedTenant A => Env.TenantA;
@@ -145,7 +150,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
     public async Task A_running_job_shows_its_progress_and_stops_when_cancelled()
     {
         var id = await fixture.EnqueueAsync(A, JobTestModule.Slow);
-        var claimed = (await fixture.Runner.ClaimAsync(10, CancellationToken.None)).Single(c => c.Id == id);
+        var claimed = (await fixture.Runner.ClaimAsync(100, CancellationToken.None)).Single(c => c.Id == id);
         var running = Task.Run(() => fixture.Runner.ExecuteAsync(claimed, CancellationToken.None));
 
         var deadline = DateTime.UtcNow.AddSeconds(20);
@@ -177,7 +182,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
         var id = await fixture.EnqueueAsync(A, JobTestModule.Ok);
         // The worker took it and died: running, lease over, an open try.
         await fixture.SqlAsync("UPDATE jobs.jobs SET status = 'running', attempts = 1, started_at = now() - interval '10 minutes', locked_by = 'dead-worker', locked_until = now() - interval '5 minutes' WHERE id = @id", ("id", id));
-        await fixture.SqlAsync("INSERT INTO jobs.job_attempts (id, tenant_id, job_id, number, started_at, outcome, worker_id) VALUES (gen_random_uuid(), @t, @id, 1, now() - interval '10 minutes', 'running', 'dead-worker')", ("t", A.Id), ("id", id));
+        await fixture.SqlAsync("INSERT INTO jobs.job_attempts (id, tenant_id, job_id, number, started_at, outcome, error_en, error_ar, worker_id) VALUES (gen_random_uuid(), @t, @id, 1, now() - interval '10 minutes', 'running', '', '', 'dead-worker')", ("t", A.Id), ("id", id));
 
         await fixture.Runner.RunOnceAsync();
         var back = await fixture.StateAsync(id);
@@ -193,7 +198,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
     public async Task A_job_that_lost_its_lease_to_another_worker_changes_nothing_when_it_finishes()
     {
         var id = await fixture.EnqueueAsync(A, JobTestModule.WriteThenSucceed);
-        var claimed = (await fixture.Runner.ClaimAsync(10, CancellationToken.None)).Single(c => c.Id == id);
+        var claimed = (await fixture.Runner.ClaimAsync(100, CancellationToken.None)).Single(c => c.Id == id);
         // Another worker takes the job over before this one's attempt finishes.
         await fixture.SqlAsync("UPDATE jobs.jobs SET locked_by = 'other-worker' WHERE id = @id", ("id", id));
         await fixture.SqlAsync("DELETE FROM jobs.schedules WHERE name = 'kept from a job' AND tenant_id = @t", ("t", A.Id));
@@ -230,8 +235,8 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
         {
             ids.Add(await fixture.EnqueueAsync(i % 2 == 0 ? A : B, JobTestModule.Counting));
         }
-        await Task.WhenAll(fixture.Runner.RunOnceAsync(30), fixture.Runner.RunOnceAsync(30), fixture.Runner.RunOnceAsync(30));
-        await fixture.Runner.RunOnceAsync(30);
+        await Task.WhenAll(fixture.Runner.RunOnceAsync(100), fixture.Runner.RunOnceAsync(100), fixture.Runner.RunOnceAsync(100));
+        await fixture.Runner.RunOnceAsync(100);
         foreach (var id in ids)
         {
             Assert.Equal(1, JobTestModule.Runs.GetValueOrDefault(id));
@@ -243,7 +248,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
     public async Task Higher_priority_and_earlier_jobs_are_taken_first_and_future_jobs_wait()
     {
         // Drain whatever other tests left due.
-        await fixture.Runner.RunOnceAsync(100);
+        await fixture.Runner.RunOnceAsync(500);
         var low = await fixture.EnqueueAsync(A, JobTestModule.Ok, priority: -5);
         var high = await fixture.EnqueueAsync(A, JobTestModule.Ok, priority: 9);
         var later = await fixture.EnqueueAsync(A, JobTestModule.Ok, runAt: DateTimeOffset.UtcNow.AddHours(2));
@@ -258,7 +263,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
     [Fact]
     public async Task The_due_workspaces_lookup_names_workspaces_with_work_and_answers_nothing_inside_a_workspace()
     {
-        await fixture.Runner.RunOnceAsync(100);
+        await fixture.Runner.RunOnceAsync(500);
         var id = await fixture.EnqueueAsync(B, JobTestModule.Ok);
         var due = await fixture.Runner.DueTenantsAsync(CancellationToken.None);
         Assert.Equal([B.Id], due);
@@ -286,7 +291,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
     [Fact]
     public async Task A_due_schedule_queues_one_job_moves_on_and_waits_while_its_last_job_is_unfinished()
     {
-        await fixture.Runner.RunOnceAsync(100);
+        await fixture.Runner.RunOnceAsync(500);
         var schedule = Guid.CreateVersion7();
         await fixture.SqlAsync("""
             INSERT INTO jobs.schedules (id, tenant_id, name, type, cron, payload, is_enabled, next_run_at)
@@ -296,15 +301,16 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
         await fixture.Runner.ClaimAsync(0, CancellationToken.None);
         var queued = await fixture.ScalarAsync<long>("SELECT count(*) FROM jobs.jobs WHERE schedule_id = @id AND status = 'queued' AND source = 'schedule'", ("id", schedule));
         Assert.Equal(1, queued);
-        var next = await fixture.ScalarAsync<DateTimeOffset>("SELECT next_run_at FROM jobs.schedules WHERE id = @id", ("id", schedule));
+        var next = new DateTimeOffset(DateTime.SpecifyKind(await fixture.ScalarAsync<DateTime>("SELECT next_run_at FROM jobs.schedules WHERE id = @id", ("id", schedule)), DateTimeKind.Utc));
         Assert.True(next > DateTimeOffset.UtcNow);
-        Assert.Equal(0, (next.UtcDateTime.Minute, next.ToOffset(TimeSpan.FromHours(4)).Hour, next.UtcDateTime.Second) switch { (0, 2, 0) => 0, _ => 1 });
+        // "0 2 * * *" in the workspace's time zone (Dubai, UTC+4): 02:00 there.
+        Assert.Equal((2, 0), (next.ToOffset(TimeSpan.FromHours(4)).Hour, next.UtcDateTime.Minute));
 
         // Due again, but the last job has not finished: nothing is queued; the schedule moves on.
         await fixture.SqlAsync("UPDATE jobs.schedules SET next_run_at = now() - interval '1 minute' WHERE id = @id", ("id", schedule));
         await fixture.Runner.ClaimAsync(0, CancellationToken.None);
         Assert.Equal(1L, await fixture.ScalarAsync<long>("SELECT count(*) FROM jobs.jobs WHERE schedule_id = @id", ("id", schedule)));
-        Assert.True(await fixture.ScalarAsync<DateTimeOffset>("SELECT next_run_at FROM jobs.schedules WHERE id = @id", ("id", schedule)) > DateTimeOffset.UtcNow);
+        Assert.True(await fixture.ScalarAsync<DateTime>("SELECT next_run_at FROM jobs.schedules WHERE id = @id", ("id", schedule)) > DateTime.UtcNow);
 
         // The job runs with the schedule's parameters; the next due moment queues another.
         await fixture.Runner.RunOnceAsync();
@@ -318,7 +324,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
     [Fact]
     public async Task A_schedule_of_a_kind_that_is_gone_switches_itself_off()
     {
-        await fixture.Runner.RunOnceAsync(100);
+        await fixture.Runner.RunOnceAsync(500);
         var schedule = Guid.CreateVersion7();
         await fixture.SqlAsync("""
             INSERT INTO jobs.schedules (id, tenant_id, name, type, cron, payload, is_enabled, next_run_at)
@@ -372,7 +378,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
         var old = await fixture.EnqueueAsync(B, JobTestModule.Ok);
         var oldQueued = await fixture.EnqueueAsync(B, JobTestModule.Ok, runAt: DateTimeOffset.UtcNow.AddHours(5));
         var recent = await fixture.EnqueueAsync(B, JobTestModule.Ok);
-        await fixture.Runner.RunOnceAsync(100);
+        await fixture.Runner.RunOnceAsync(500);
         await fixture.SqlAsync("UPDATE jobs.jobs SET finished_at = now() - interval '400 days' WHERE id = @id", ("id", old));
         await fixture.SqlAsync("UPDATE jobs.jobs SET created_at = now() - interval '400 days' WHERE id = @id", ("id", oldQueued));
         var cleanup = await fixture.EnqueueAsync(B, "jobs.cleanup", new { retentionDays = 30 });

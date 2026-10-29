@@ -23,7 +23,7 @@ internal sealed class ScheduleTimer(JobsDbContext db, JobTypes types, TimeProvid
     public async Task<int> QueueDueAsync(string? timeZone, CancellationToken cancellationToken)
     {
         var due = await db.Schedules.FromSqlRaw(
-                "SELECT * FROM jobs.schedules WHERE is_enabled AND next_run_at <= now() ORDER BY next_run_at LIMIT 20 FOR UPDATE SKIP LOCKED")
+                "SELECT *, xmin FROM jobs.schedules WHERE is_enabled AND next_run_at <= now() ORDER BY next_run_at LIMIT 20 FOR UPDATE SKIP LOCKED")
             .ToListAsync(cancellationToken);
         if (due.Count == 0)
         {

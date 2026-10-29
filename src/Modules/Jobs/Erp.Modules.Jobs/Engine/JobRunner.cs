@@ -55,7 +55,7 @@ public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, Strin
 
     /// <summary>One pass: take what is due and run it to the end. For tests and operator tools; the
     /// worker uses <see cref="ClaimAsync"/> and <see cref="ExecuteAsync"/> so long jobs do not hold up the next pass.</summary>
-    public async Task<int> RunOnceAsync(int capacity = 10, CancellationToken cancellationToken = default)
+    public async Task<int> RunOnceAsync(int capacity = 100, CancellationToken cancellationToken = default)
     {
         var claimed = await ClaimAsync(capacity, cancellationToken);
         await Task.WhenAll(claimed.Select(c => ExecuteAsync(c, cancellationToken)));
@@ -148,7 +148,7 @@ public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, Strin
     private async Task TakeBackAbandonedAsync(JobsDbContext db, CancellationToken cancellationToken)
     {
         var lost = await db.Jobs.FromSqlRaw(
-                "SELECT * FROM jobs.jobs WHERE status = 'running' AND locked_until < now() ORDER BY locked_until LIMIT 20 FOR UPDATE SKIP LOCKED")
+                "SELECT *, xmin FROM jobs.jobs WHERE status = 'running' AND locked_until < now() ORDER BY locked_until LIMIT 20 FOR UPDATE SKIP LOCKED")
             .ToListAsync(cancellationToken);
         if (lost.Count == 0)
         {
@@ -459,7 +459,7 @@ public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, Strin
     /// <summary>The job row, locked, if this worker still holds this attempt of it.</summary>
     private async Task<Job?> HeldAsync(JobsDbContext db, ClaimedJob claimed, CancellationToken cancellationToken) =>
         (await db.Jobs.FromSqlInterpolated(
-                $"SELECT * FROM jobs.jobs WHERE id = {claimed.Id} AND status = 'running' AND locked_by = {WorkerId} AND attempts = {claimed.Attempt} FOR UPDATE")
+                $"SELECT *, xmin FROM jobs.jobs WHERE id = {claimed.Id} AND status = 'running' AND locked_by = {WorkerId} AND attempts = {claimed.Attempt} FOR UPDATE")
             .ToListAsync(cancellationToken)).SingleOrDefault();
 
     private async Task UnitAsync(Guid tenantId, Func<JobsDbContext, Task> work, CancellationToken cancellationToken)
