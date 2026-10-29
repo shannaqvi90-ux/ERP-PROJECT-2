@@ -12,8 +12,8 @@ namespace Erp.Modules.Jobs.Engine;
 /// </summary>
 public sealed class CronSchedule
 {
-    private static readonly string[] MonthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-    private static readonly string[] DayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    private static readonly System.Collections.Immutable.ImmutableArray<string> MonthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+    private static readonly System.Collections.Immutable.ImmutableArray<string> DayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
     private readonly bool[] _minutes;
     private readonly bool[] _hours;
@@ -49,9 +49,9 @@ public sealed class CronSchedule
             error = "cronFields";
             return false;
         }
-        if (!Field(parts[0], 0, 59, null, out var minutes, out _)
-            || !Field(parts[1], 0, 23, null, out var hours, out _)
-            || !Field(parts[2], 1, 31, null, out var daysOfMonth, out var anyDom)
+        if (!Field(parts[0], 0, 59, default, out var minutes, out _)
+            || !Field(parts[1], 0, 23, default, out var hours, out _)
+            || !Field(parts[2], 1, 31, default, out var daysOfMonth, out var anyDom)
             || !Field(parts[3], 1, 12, MonthNames, out var months, out _, nameBase: 1)
             || !Field(parts[4], 0, 7, DayNames, out var daysOfWeek, out var anyDow))
         {
@@ -159,7 +159,7 @@ public sealed class CronSchedule
         return false;
     }
 
-    private static bool Field(string text, int min, int max, string[]? names, out bool[] values, out bool any, int nameBase = 0)
+    private static bool Field(string text, int min, int max, System.Collections.Immutable.ImmutableArray<string> names, out bool[] values, out bool any, int nameBase = 0)
     {
         values = new bool[max + 1];
         any = text == "*";
@@ -206,12 +206,12 @@ public sealed class CronSchedule
         return true;
     }
 
-    private static bool Number(string text, int min, int max, string[]? names, int nameBase, out int value)
+    private static bool Number(string text, int min, int max, System.Collections.Immutable.ImmutableArray<string> names, int nameBase, out int value)
     {
         value = 0;
-        if (names is not null)
+        if (!names.IsDefaultOrEmpty)
         {
-            var index = Array.IndexOf(names, text.ToLowerInvariant());
+            var index = names.IndexOf(text.ToLowerInvariant());
             if (index >= 0)
             {
                 value = index + nameBase;

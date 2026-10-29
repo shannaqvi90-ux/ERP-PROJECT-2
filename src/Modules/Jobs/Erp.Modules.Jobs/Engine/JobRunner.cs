@@ -27,8 +27,9 @@ public static class JobBackoff
     {
         var steps = Math.Clamp(attemptsMade - 1, 0, 12);
         var wait = TimeSpan.FromTicks(Math.Min(First.Ticks << steps, Longest.Ticks));
-        var spread = (job.GetHashCode() & 0x7fffffff) % 1001 / 10000d; // 0 .. 0.1
-        return wait + TimeSpan.FromTicks((long)(wait.Ticks * spread));
+        // Whole numbers only: up to 10.00 percent more, a different amount for each job.
+        var spreadTenthsOfPercent = (job.GetHashCode() & 0x7fffffff) % 101;
+        return wait + TimeSpan.FromTicks(wait.Ticks * spreadTenthsOfPercent / 1000);
     }
 }
 
@@ -41,9 +42,26 @@ public static class JobBackoff
 /// success commit together, a failure rolls them back and the job is queued again after a growing
 /// wait while attempts remain.
 /// </summary>
-public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, StringCatalog strings, TimeProvider clock, IConfiguration configuration, ILogger<JobRunner> log) : IDisposable
+public sealed class JobRunner : IDisposable
 {
-    private NpgsqlDataSource? _lookup;
+    private readonly IServiceScopeFactory scopes;
+    private readonly JobTypes types;
+    private readonly StringCatalog strings;
+    private readonly TimeProvider clock;
+    private readonly ILogger<JobRunner> log;
+    private readonly Lazy<NpgsqlDataSource> _lookup;
+
+    public JobRunner(IServiceScopeFactory scopes, JobTypes types, StringCatalog strings, TimeProvider clock, IConfiguration configuration, ILogger<JobRunner> log)
+    {
+        this.scopes = scopes;
+        this.types = types;
+        this.strings = strings;
+        this.clock = clock;
+        this.log = log;
+        _lookup = new Lazy<NpgsqlDataSource>(() => NpgsqlDataSource.Create(
+            configuration.GetConnectionString(ConnectionNames.Owner)
+            ?? throw new InvalidOperationException("The job worker needs the owner role's connection string (ConnectionStrings:Owner) to learn which workspaces have work.")));
+    }
 
     /// <summary>How long a worker's claim on a running job lasts without being renewed.</summary>
     public static readonly TimeSpan Lease = TimeSpan.FromSeconds(60);
@@ -51,7 +69,7 @@ public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, Strin
     /// <summary>How often a running attempt renews its lease and looks for a cancel request.</summary>
     public static readonly TimeSpan Heartbeat = TimeSpan.FromSeconds(2);
 
-    private readonly Dictionary<Guid, DateTimeOffset> _skipUntil = [];
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, DateTimeOffset> _skipUntil = new();
 
     /// <summary>Names this worker in the jobs it holds.</summary>
     public string WorkerId { get; } = $"{Environment.MachineName}-{Environment.ProcessId}-{Guid.NewGuid().ToString("N")[..6]}";
@@ -106,7 +124,7 @@ public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, Strin
     /// connection of the worker process, switched to the narrow lookup role for this one statement.</summary>
     public async Task<IReadOnlyList<Guid>> DueTenantsAsync(CancellationToken cancellationToken)
     {
-        await using var connection = await LookupSource.OpenConnectionAsync(cancellationToken);
+        await using var connection = await _lookup.Value.OpenConnectionAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         await using (var role = new NpgsqlCommand("SET LOCAL ROLE erp_auth", connection, transaction))
         {
@@ -126,11 +144,13 @@ public sealed class JobRunner(IServiceScopeFactory scopes, JobTypes types, Strin
         return tenants;
     }
 
-    private NpgsqlDataSource LookupSource => _lookup ??= NpgsqlDataSource.Create(
-        configuration.GetConnectionString(ConnectionNames.Owner)
-        ?? throw new InvalidOperationException("The job worker needs the owner role's connection string (ConnectionStrings:Owner) to learn which workspaces have work."));
-
-    public void Dispose() => _lookup?.Dispose();
+    public void Dispose()
+    {
+        if (_lookup.IsValueCreated)
+        {
+            _lookup.Value.Dispose();
+        }
+    }
 
     /// <summary>Queue due schedules, take back abandoned jobs and take due jobs of one workspace.
     /// Null when the workspace is not active.</summary>

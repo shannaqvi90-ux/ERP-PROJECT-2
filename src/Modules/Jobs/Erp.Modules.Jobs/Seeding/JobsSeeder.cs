@@ -25,6 +25,27 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
 
     public int Order => 130;
 
+    /// <summary>Kinds of past runs the demo history holds besides the module's own (registered by later modules).</summary>
+    private static readonly (string Key, int MaxAttempts, string En, string Ar)[] PastKinds =
+    [
+        ("currency.importRates", 3, "Import exchange rates", "استيراد أسعار الصرف"),
+        ("identity.exportUsers", 3, "Export the users list", "تصدير قائمة المستخدمين"),
+        ("audit.digest", 3, "Nightly audit digest", "ملخص التدقيق الليلي"),
+        ("inventory.revalue", 3, "Recalculate stock valuation", "إعادة احتساب تقييم المخزون"),
+        ("sales.reminders", 3, "Send payment reminders", "إرسال تذكيرات الدفع"),
+        ("accounting.depreciation", 3, "Post depreciation entries", "ترحيل قيود الإهلاك"),
+        ("accounting.closePeriod", 3, "Close the accounting period", "إقفال الفترة المحاسبية"),
+        ("banking.importStatement", 3, "Import a bank statement", "استيراد كشف حساب بنكي"),
+        ("tax.vatDraft", 3, "Prepare the VAT return draft", "إعداد مسودة الإقرار الضريبي"),
+        ("contacts.sync", 3, "Synchronise customer contacts", "مزامنة جهات اتصال العملاء"),
+        ("attachments.archive", 3, "Archive old attachments", "أرشفة المرفقات القديمة"),
+        ("search.reindex", 3, "Rebuild the search index", "إعادة بناء فهرس البحث"),
+    ];
+
+    /// <summary>Which kind row <paramref name="i"/> belongs to: every fourth run is the self-check, about one in
+    /// ten of the rest the clean-up, and the past kinds share what is left.</summary>
+    private static int Pick(int i, int mix2) => i % 4 == 0 ? 0 : mix2 < 11 ? 1 : 2 + (i * 7 + mix2) % PastKinds.Length;
+
     public async Task SeedAsync(TenantSeedContext context, CancellationToken cancellationToken)
     {
         if (!await db.Schedules.AnyAsync(s => s.Name == CleanupScheduleName, cancellationToken))
@@ -51,8 +72,14 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
     private async Task InsertHistoryAsync(TenantSeedContext context, CancellationToken cancellationToken)
     {
         var count = Math.Max(context.Tenant.Volume, context.Plan.Profile == SeedProfile.Gate ? 12 : 0);
-        var kinds = new[] { CleanupJobHandler.Type, SelfCheckJobHandler.Type };
-        var names = kinds.Select(k => (Type: k, En: strings.Get(k.LabelKey, Languages.English), Ar: strings.Get(k.LabelKey, Languages.Arabic))).ToArray();
+        // The two kinds this module runs, and a history of past runs of kinds that later modules will register
+        // (so the list has the variety of a real workspace: a search by a word finds some of the jobs, not half).
+        var names = new List<(string Key, int MaxAttempts, string En, string Ar)>
+        {
+            (SelfCheckJobHandler.TypeKey, SelfCheckJobHandler.Type.MaxAttempts, strings.Get(SelfCheckJobHandler.Type.LabelKey, Languages.English), strings.Get(SelfCheckJobHandler.Type.LabelKey, Languages.Arabic)),
+            (CleanupJobHandler.TypeKey, CleanupJobHandler.Type.MaxAttempts, strings.Get(CleanupJobHandler.Type.LabelKey, Languages.English), strings.Get(CleanupJobHandler.Type.LabelKey, Languages.Arabic)),
+        };
+        names.AddRange(PastKinds);
         var now = DateTimeOffset.UtcNow;
         var span = TimeSpan.FromDays(HistoryDays);
         var step = count <= 1 ? TimeSpan.Zero : span / count;
@@ -68,6 +95,10 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
             new("result", NpgsqlDbType.Jsonb), new("output_name", NpgsqlDbType.Varchar), new("output_content_type", NpgsqlDbType.Varchar),
             new("output_text", NpgsqlDbType.Text), new("created_at", NpgsqlDbType.TimestampTz), new("updated_at", NpgsqlDbType.TimestampTz),
         };
+        // Workspaces small enough to open every job get each job's tries as well (the demo's big one keeps
+        // only the jobs: 100,000 rows are audited as they are, and their tries add nothing to the volume).
+        var withTries = count <= 5000;
+        var tries = new List<object?[]>();
         IEnumerable<object?[]> Rows()
         {
             var seed = context.Tenant.VolumeRowsSeed.Aggregate(17, (h, c) => unchecked(h * 31 + c)) & 0x7fffffff;
@@ -76,7 +107,7 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
                 // Oldest first, so the newest row is the last one made. A fixed mix, not random.
                 var created = now - span + step * (i + 1);
                 var mix = (int)((uint)(i * 2654435761u + (uint)seed) % 100);
-                var (kind, en, ar) = names[i % names.Length];
+                var (key, maxAttempts, en, ar) = names[Pick(i, mix2: (int)((uint)(i * 40503u + (uint)seed) % 100))];
                 var (status, source) = mix switch
                 {
                     < 88 => (JobStatus.Succeeded, i % 4 == 0 ? JobSource.Schedule : JobSource.User),
@@ -88,15 +119,32 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
                 {
                     status = JobStatus.Queued;
                     source = JobSource.User;
+                    // Waiting for tomorrow: a kind this module runs, so it really runs then.
+                    (key, maxAttempts, en, ar) = names[0];
                 }
                 var started = created.AddSeconds(1 + mix % 7);
                 var finished = status is JobStatus.Queued ? (DateTimeOffset?)null : started.AddSeconds(2 + mix % 40);
                 var failed = status == JobStatus.Failed;
                 var title = context.Mark(en);
+                var id = Guid.CreateVersion7();
+                if (withTries && status != JobStatus.Queued)
+                {
+                    var made = failed ? maxAttempts : 1;
+                    for (var number = 1; number <= made; number++)
+                    {
+                        var last = number == made;
+                        var ok = last && status == JobStatus.Succeeded;
+                        var outcome = ok ? AttemptOutcome.Succeeded : last && status == JobStatus.Cancelled ? AttemptOutcome.Cancelled : AttemptOutcome.Failed;
+                        tries.Add([Guid.CreateVersion7(), context.Tenant.Id, id, number, started, started.AddSeconds(1), outcome,
+                            outcome == AttemptOutcome.Failed ? "jobs.seed" : null,
+                            outcome == AttemptOutcome.Failed ? context.Mark("The job stopped with an error.") : "", outcome == AttemptOutcome.Failed ? context.Mark("توقفت المهمة بسبب خطأ.") : "",
+                            "seed-worker", started, started.AddSeconds(1)]);
+                    }
+                }
                 yield return
                 [
-                    Guid.CreateVersion7(), context.Tenant.Id, kind.Key, title, context.Mark(ar), status, source, 0, kind.Key == SelfCheckJobHandler.TypeKey ? "{\"steps\":1,\"pauseMilliseconds\":0}" : "{}",
-                    waiting ? now.AddDays(1) : created, status == JobStatus.Queued ? 0 : failed ? kind.MaxAttempts : 1, kind.MaxAttempts,
+                    id, context.Tenant.Id, key, title, context.Mark(ar), status, source, 0, key == SelfCheckJobHandler.TypeKey ? "{\"steps\":1,\"pauseMilliseconds\":0}" : "{}",
+                    waiting ? now.AddDays(1) : created, status == JobStatus.Queued ? 0 : failed ? maxAttempts : 1, maxAttempts,
                     waiting ? null : started, finished, status == JobStatus.Succeeded ? 100 : status == JobStatus.Queued ? 0 : mix % 90,
                     "", "", false,
                     failed ? "jobs.seed" : null, failed ? context.Mark("The job stopped with an error.") : "", failed ? context.Mark("توقفت المهمة بسبب خطأ.") : "",
@@ -109,5 +157,16 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, StringC
             }
         }
         await BulkInsert.InsertAsync(session, JobsDbContext.SchemaName, "jobs", columns, Rows(), cancellationToken);
+        if (tries.Count > 0)
+        {
+            var tryColumns = new BulkColumn[]
+            {
+                new("id", NpgsqlDbType.Uuid), new("tenant_id", NpgsqlDbType.Uuid), new("job_id", NpgsqlDbType.Uuid), new("number", NpgsqlDbType.Integer),
+                new("started_at", NpgsqlDbType.TimestampTz), new("finished_at", NpgsqlDbType.TimestampTz), new("outcome", NpgsqlDbType.Varchar),
+                new("error_code", NpgsqlDbType.Varchar), new("error_en", NpgsqlDbType.Varchar), new("error_ar", NpgsqlDbType.Varchar), new("worker_id", NpgsqlDbType.Varchar),
+                new("created_at", NpgsqlDbType.TimestampTz), new("updated_at", NpgsqlDbType.TimestampTz),
+            };
+            await BulkInsert.InsertAsync(session, JobsDbContext.SchemaName, "job_attempts", tryColumns, tries, cancellationToken);
+        }
     }
 }

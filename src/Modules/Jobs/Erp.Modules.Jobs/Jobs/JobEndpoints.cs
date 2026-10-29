@@ -89,7 +89,7 @@ public sealed record JobDto(
 /// kind says which parameters it reads. <c>runAt</c> queues it for later (at most a year ahead).</summary>
 public sealed record StartJobRequest(
     [property: ApiExample("jobs.selfCheck"), StringLength(JobsDbContext.TypeLength)] string? Type,
-    [property: ApiExample("{\"steps\":5}")] JsonElement? Payload,
+    [property: Description("The parameters, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
     [property: ApiExample("2026-12-01T03:00:00Z")] DateTimeOffset? RunAt);
 
 /// <summary>A kind of job the workspace can run.</summary>
@@ -223,8 +223,7 @@ internal static class JobEndpoints
         }
         if (request.Payload is { } payload)
         {
-            validator.Must(payload.ValueKind is JsonValueKind.Object or JsonValueKind.Null, "payload", "jobsPayloadObject");
-            validator.Must(payload.ValueKind != JsonValueKind.Object || payload.GetRawText().Length <= JobsLimits.PayloadBytes, "payload", "jobsPayloadTooLarge", JobsLimits.PayloadBytes / 1024);
+            validator.Must(JsonSerializer.Serialize(payload).Length <= JobsLimits.PayloadBytes, "payload", "jobsPayloadTooLarge", JobsLimits.PayloadBytes / 1024);
         }
         if (request.RunAt is { } at)
         {

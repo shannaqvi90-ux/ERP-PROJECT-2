@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Erp.Modules.Jobs.Contracts;
 
 namespace Erp.Modules.Jobs.Engine;
@@ -5,7 +6,7 @@ namespace Erp.Modules.Jobs.Engine;
 /// <summary>The registered kinds of job. Refuses two registrations of the same key at start-up.</summary>
 public sealed class JobTypes : IJobTypes
 {
-    private readonly Dictionary<string, JobTypeRegistration> _byKey;
+    private readonly System.Collections.Frozen.FrozenDictionary<string, JobTypeRegistration> _byKey;
 
     public JobTypes(IEnumerable<JobTypeRegistration> registrations)
     {
@@ -15,7 +16,7 @@ public sealed class JobTypes : IJobTypes
         {
             throw new InvalidOperationException($"Job types registered twice: {string.Join(", ", duplicates)}");
         }
-        _byKey = list.ToDictionary(r => r.Type.Key, StringComparer.Ordinal);
+        _byKey = list.ToFrozenDictionary(r => r.Type.Key, StringComparer.Ordinal);
         All = [.. list.Select(r => r.Type).OrderBy(t => t.Key, StringComparer.Ordinal)];
     }
 

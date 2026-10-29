@@ -62,7 +62,9 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         Assert.Empty(await RowsAsync(admin, "/api/jobs/jobs?search=" + Uri.EscapeDataString("no such job anywhere")));
 
         // A finished job of a kind with a run permission may be run again by the administrator; a waiting one cancelled.
-        var finished = rows.First(r => r.GetProperty("status").GetString() == "succeeded");
+        var finished = rows.First(r => r.GetProperty("status").GetString() == "succeeded" && r.GetProperty("type").GetString() == "jobs.selfCheck");
+        // A past run of a kind no module registers (the demo history) cannot be run again.
+        Assert.False(rows.First(r => !r.GetProperty("type").GetString()!.StartsWith("jobs", StringComparison.Ordinal)).GetProperty("canRerun").GetBoolean());
         Assert.True(finished.GetProperty("canRerun").GetBoolean());
         Assert.False(finished.GetProperty("canCancel").GetBoolean());
         var waiting = rows.First(r => r.GetProperty("status").GetString() == "queued");
@@ -182,7 +184,8 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         // A kind only code queues (the test kind has no run permission) and an unknown kind are both refused.
         Assert.Equal("jobsTypeNotStartable", (await Errors(new { type = JobTestModule.Ok })).GetProperty("type")[0].GetProperty("code").GetString());
         Assert.Equal("jobsTypeNotStartable", (await Errors(new { type = "nobody.knows" })).GetProperty("type")[0].GetProperty("code").GetString());
-        Assert.Equal("jobsPayloadObject", (await Errors(new { type = "jobs.selfCheck", payload = new[] { 1 } })).GetProperty("payload")[0].GetProperty("code").GetString());
+        // Parameters that are not an object are refused by the request's shape before the handler.
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/jobs/jobs", new { type = "jobs.selfCheck", payload = new[] { 1 } })).StatusCode);
         Assert.Equal("jobsPayloadTooLarge", (await Errors(new { type = "jobs.selfCheck", payload = new { text = new string('x', 70_000) } })).GetProperty("payload")[0].GetProperty("code").GetString());
         Assert.Equal("jobsRunAtTooFar", (await Errors(new { type = "jobs.selfCheck", runAt = DateTimeOffset.UtcNow.AddDays(500) })).GetProperty("runAt")[0].GetProperty("code").GetString());
         // A user whose language is Arabic reads the message in Arabic.

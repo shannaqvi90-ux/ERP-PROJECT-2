@@ -62,14 +62,14 @@ public sealed record CreateScheduleRequest(
     [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? Name,
     [property: ApiExample("jobs.cleanup"), StringLength(JobsDbContext.TypeLength)] string? Type,
     [property: ApiExample("30 3 * * *"), StringLength(CronSchedule.MaxLength), Description("Minute hour day-of-month month day-of-week; * , - / and the names jan-dec, sun-sat.")] string? Cron,
-    [property: ApiExample("{\"retentionDays\":180}")] JsonElement? Payload,
+    [property: Description("The parameters every job of this schedule is queued with, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
     bool? IsEnabled);
 
 /// <summary>Change a schedule. The kind never changes. The version is the one read.</summary>
 public sealed record UpdateScheduleRequest(
     [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? Name,
     [property: ApiExample("30 3 * * *"), StringLength(CronSchedule.MaxLength)] string? Cron,
-    [property: ApiExample("{\"retentionDays\":180}")] JsonElement? Payload,
+    [property: Description("The parameters every job of this schedule is queued with, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
     bool? IsEnabled,
     uint? Version);
 
@@ -154,7 +154,7 @@ internal static class ScheduleEndpoints
             zone, s.CreatedAt, s.UpdatedAt, s.Version, CanUpdate(s, types, services.GetRequiredService<ICurrentUser>()));
     }
 
-    private static void CheckFields(Validator validator, string? name, string? cron, JsonElement? payload)
+    private static void CheckFields(Validator validator, string? name, string? cron, Dictionary<string, JsonElement>? payload)
     {
         validator.MaxLength("name", name, JobsDbContext.NameLength);
         if (cron is not null)
@@ -165,10 +165,9 @@ internal static class ScheduleEndpoints
                 validator.Add("cron", "jobs" + char.ToUpperInvariant(error![0]) + error[1..]);
             }
         }
-        if (payload is { } value)
+        if (payload is not null)
         {
-            validator.Must(value.ValueKind is JsonValueKind.Object or JsonValueKind.Null, "payload", "jobsPayloadObject");
-            validator.Must(value.ValueKind != JsonValueKind.Object || value.GetRawText().Length <= JobsLimits.PayloadBytes, "payload", "jobsPayloadTooLarge", JobsLimits.PayloadBytes / 1024);
+            validator.Must(JsonSerializer.Serialize(payload).Length <= JobsLimits.PayloadBytes, "payload", "jobsPayloadTooLarge", JobsLimits.PayloadBytes / 1024);
         }
     }
 
