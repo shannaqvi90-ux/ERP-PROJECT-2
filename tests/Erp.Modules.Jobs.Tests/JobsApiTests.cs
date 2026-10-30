@@ -142,8 +142,10 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         var body = await Json(cancelled);
         Assert.Equal(("cancelled", true), (body.GetProperty("status").GetString(), body.GetProperty("cancelRequested").GetBoolean()));
         var twice = await admin.PostAsync($"/api/jobs/jobs/{id}/cancel", null);
-        Assert.Equal(HttpStatusCode.Conflict, twice.StatusCode);
-        Assert.Equal("jobs.alreadyFinished", (await Json(twice)).GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.OK, twice.StatusCode);
+        var again = await Json(twice);
+        Assert.Equal(("cancelled", id), (again.GetProperty("status").GetString(), again.GetProperty("id").GetGuid()));
+        Assert.Equal(body.GetProperty("finishedAt").GetString(), again.GetProperty("finishedAt").GetString());
 
         var missing = Guid.NewGuid();
         Assert.Equal(HttpStatusCode.NotFound, (await admin.PostAsync($"/api/jobs/jobs/{missing}/cancel", null)).StatusCode);

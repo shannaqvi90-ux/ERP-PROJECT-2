@@ -23,11 +23,6 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
     public const string CleanupScheduleName = "Clean up finished jobs / تنظيف المهام المنتهية";
     public const int HistoryDays = 60;
 
-    /// <summary>The module's own texts, read from its own resources only. The seeder must not resolve the
-    /// application-wide catalogue, which checks every loaded module's texts at once: a workspace is seeded
-    /// even when another module's texts are unfinished (a test module with English-only text, for one).</summary>
-    private static readonly Lazy<StringCatalog> OwnStrings = new(() => new StringCatalog([typeof(JobsModule).Assembly]));
-
     public int Order => 130;
 
     /// <summary>Kinds of past runs the demo history holds besides the module's own (registered by later modules).</summary>
@@ -110,10 +105,13 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
         var count = Math.Max(context.Tenant.Volume, context.Plan.Profile == SeedProfile.Gate ? 12 : 0);
         // The two kinds this module runs, and a history of past runs of kinds that later modules will register
         // (so the list has the variety of a real workspace: a search by a word finds some of the jobs, not half).
+        // The module's own texts, read from its own resources only: the application-wide catalogue checks every loaded
+        // module's texts at once, and a workspace is seeded even when another module's texts are unfinished (a test module).
+        var own = new StringCatalog([typeof(JobsModule).Assembly]);
         var names = new List<(string Key, int MaxAttempts, string En, string Ar)>
         {
-            (SelfCheckJobHandler.TypeKey, SelfCheckJobHandler.Type.MaxAttempts, OwnStrings.Value.Get(SelfCheckJobHandler.Type.LabelKey, Languages.English), OwnStrings.Value.Get(SelfCheckJobHandler.Type.LabelKey, Languages.Arabic)),
-            (CleanupJobHandler.TypeKey, CleanupJobHandler.Type.MaxAttempts, OwnStrings.Value.Get(CleanupJobHandler.Type.LabelKey, Languages.English), OwnStrings.Value.Get(CleanupJobHandler.Type.LabelKey, Languages.Arabic)),
+            (SelfCheckJobHandler.TypeKey, SelfCheckJobHandler.Type.MaxAttempts, own.Get(SelfCheckJobHandler.Type.LabelKey, Languages.English), own.Get(SelfCheckJobHandler.Type.LabelKey, Languages.Arabic)),
+            (CleanupJobHandler.TypeKey, CleanupJobHandler.Type.MaxAttempts, own.Get(CleanupJobHandler.Type.LabelKey, Languages.English), own.Get(CleanupJobHandler.Type.LabelKey, Languages.Arabic)),
         };
         names.AddRange(PastKinds);
         var now = DateTimeOffset.UtcNow;

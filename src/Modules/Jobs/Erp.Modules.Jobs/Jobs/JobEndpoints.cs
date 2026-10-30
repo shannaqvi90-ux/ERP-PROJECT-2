@@ -128,7 +128,7 @@ internal static class JobEndpoints
 
         group.MapPost("/jobs/{id:guid}/cancel", Cancel)
             .WithName("jobs.jobs.cancel")
-            .WithSummary("Cancel a job: a queued one ends at once, a running one is asked to stop and ends when it does. 409 once it has finished.")
+            .WithSummary("Cancel a job: a queued one ends at once, a running one is asked to stop and ends when it does. A job that has finished is answered as it is (nothing to stop).")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(JobsPermissions.JobsCancel);
@@ -262,10 +262,9 @@ internal static class JobEndpoints
         {
             return Problems.NotFound(http);
         }
-        if (!await queue.CancelAsync(id, cancellationToken))
-        {
-            return Problems.Conflict(http, "jobs.alreadyFinished");
-        }
+        // A job that has finished has nothing left to stop: the answer is the job as it is (cancelling twice, or a
+        // job that ended just before the click, is no error), so the call can be repeated safely.
+        await queue.CancelAsync(id, cancellationToken);
         db.ChangeTracker.Clear();
         var job = await db.Jobs.AsNoTracking().SingleAsync(j => j.Id == id, cancellationToken);
         return TypedResults.Ok(await ToDtoAsync(job, db, http, cancellationToken));

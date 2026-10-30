@@ -78,7 +78,7 @@ export function JobsPage() {
     let stopped = false;
     const look = async () => {
       try {
-        const page = await api<ListPage<JobRow>>("GET", `/api/jobs/jobs?take=1&filter=${encodeURIComponent("jobStatus eq 'queued' or jobStatus eq 'running'")}`);
+        const page = await api<ListPage<JobRow>>("GET", `/api/jobs/jobs?take=1&filter=${encodeURIComponent("jobStatus in ('queued', 'running')")}`);
         if (stopped) return;
         const before = active.current;
         active.current = page.total;

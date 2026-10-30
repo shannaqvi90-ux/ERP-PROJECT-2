@@ -59,7 +59,7 @@ public sealed record ScheduleDto(
 /// time zone). A schedule whose last job has not finished queues nothing that time. Only kinds a module marked
 /// schedulable can be scheduled.</summary>
 public sealed record CreateScheduleRequest(
-    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? ScheduleName,
+    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength), RegularExpression(@"^\S(.*\S)?$"), Description("The schedule's name, unique in the workspace; no blank at either end.")] string? ScheduleName,
     [property: ApiExample("jobs.selfCheck"), StringLength(JobsDbContext.TypeLength)] string? Type,
     [property: ApiExample("30 3 * * *"), StringLength(CronSchedule.MaxLength), Description("Minute hour day-of-month month day-of-week; * , - / and the names jan-dec, sun-sat.")] string? Cron,
     [property: Description("The parameters every job of this schedule is queued with, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
@@ -67,7 +67,7 @@ public sealed record CreateScheduleRequest(
 
 /// <summary>Change a schedule. The kind never changes. The version is the one read.</summary>
 public sealed record UpdateScheduleRequest(
-    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? ScheduleName,
+    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength), RegularExpression(@"^\S(.*\S)?$"), Description("The schedule's name, unique in the workspace; no blank at either end.")] string? ScheduleName,
     [property: ApiExample("30 3 * * *"), StringLength(CronSchedule.MaxLength)] string? Cron,
     [property: Description("The parameters every job of this schedule is queued with, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
     bool? IsEnabled,

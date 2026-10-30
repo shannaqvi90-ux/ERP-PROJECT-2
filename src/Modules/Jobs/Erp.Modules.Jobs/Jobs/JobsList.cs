@@ -53,7 +53,7 @@ internal static class JobsList
                 DefaultSort: "-createdAt",
                 Presets:
                 [
-                    new ListPreset("active", "jobs.view.active", Filter: "jobStatus eq 'queued' or jobStatus eq 'running'", Sort: "runAt"),
+                    new ListPreset("active", "jobs.view.active", Filter: "jobStatus in ('queued', 'running')", Sort: "runAt"),
                     new ListPreset("failed", "jobs.view.failed", Filter: "jobStatus eq 'failed'"),
                     new ListPreset("byStatus", "jobs.view.byStatus", GroupBy: "jobStatus"),
                     new ListPreset("byType", "jobs.view.byType", GroupBy: "jobType"),
