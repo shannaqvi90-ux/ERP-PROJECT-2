@@ -105,3 +105,8 @@ of p08); the processor time this round adds to the verify is stated in the round
 - The jobs list's progress column is last: the Arabic PDF reads cells back to back, so a progress of 100 beside a date of
   the 1st printed "10001". A job's parameters and result are read-only text fields (reachable by keyboard).
 - The permissions ratchet is the true count after merging p16: 45.
+- Verified in the second fixer run: lists whose presets hold a comma inside a filter (`in ('a', 'b')`) or an `or` break the gates' documented-value
+  variants and print the raw filter, so the jobs presets are plain single conditions ("Waiting", "Running", "Failed").
+- Cancelling a finished job answers the job as it is (200), so the call repeats safely (the gates repeat a valid write).
+- The seeded waiting jobs sit just before the newest three rows, so the newest job of a kind is finished: the screen's best match for the
+  self-check's name (what the see-and-rerun-job driver opens) can be run again.

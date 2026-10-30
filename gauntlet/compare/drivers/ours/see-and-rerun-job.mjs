@@ -9,12 +9,13 @@ import { OursApi, oursAs } from '../../lib/ours-api.mjs';
 // name, with the run-again key.
 
 const NAME = 'Self-check of the job queue';
-const filter = encodeURIComponent("jobType eq 'jobs.selfCheck' and jobStatus eq 'succeeded'");
 
-async function newestRun(api) {
-  const page = await api.get(`/api/jobs/jobs?take=1&sort=-finishedAt&filter=${filter}`);
+// The job Enter opens is the first row of the screen's own list for the typed name (the same endpoint, the
+// same search, best match first, newest first among equal names): read it the same way.
+async function bestMatch(api) {
+  const page = await api.get(`/api/jobs/jobs?take=1&search=${encodeURIComponent(NAME)}`);
   const job = page.items?.[0];
-  if (!job) throw new Error('our product holds no finished self-check job');
+  if (!job) throw new Error('our product holds no self-check job');
   return job;
 }
 
@@ -23,7 +24,7 @@ export default {
   path: 'G then J (Background jobs, the search box focused) > type the job name > Enter (opens the newest run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done).',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
-    const job = await newestRun(api);
+    const job = await bestMatch(api);
     ctx.state.job = { id: job.id, title: job.titleEn, finishedBefore: job.finishedAt };
     ctx.state.startedAt = new Date().toISOString();
   },
@@ -47,11 +48,12 @@ export default {
     await op.type(NAME, { label: 'the job name' });
     await op.waitFor(name => [...document.querySelectorAll('table[role=grid] tbody tr')].length > 0 && document.querySelector('input.search, input[type="search"]')?.value === name, { label: 'name in the search box', arg: NAME });
     await op.press('Enter', { label: 'open the best match' });
-    await op.waitFor(() => !!document.querySelector('.list-record [data-testid="job-finished"]') && document.querySelector('.list-record [data-testid="job-finished"]').textContent.trim() !== 'Not yet', { label: 'job panel (last run on screen)' });
+    await op.waitFor(id => location.pathname.split('/').pop() === id && !!document.querySelector('.list-record [data-testid="job-finished"]') && document.querySelector('.list-record [data-testid="job-finished"]').textContent.trim() !== 'Not yet',
+      { label: 'job panel (last run on screen)', arg: ctx.state.job.id });
     await op.shot('job opened');
     await op.press('Alt+r', { label: 'run again' });
-    await op.waitFor(() => /^Done$/.test(document.querySelector('.list-record .jb-status')?.textContent ?? '') && !!document.querySelector('.list-record [data-testid="job-finished"]') && document.querySelector('.list-record [data-testid="job-finished"]').textContent.trim() !== 'Not yet' && new URLSearchParams(location.search).get('open') !== null,
-      { label: 'the new run is done', timeout: 60_000 });
+    await op.waitFor(id => location.pathname.split('/').pop() !== id && /^[0-9a-f-]{36}$/.test(location.pathname.split('/').pop()) && /^Done$/.test(document.querySelector('.list-record .jb-status')?.textContent ?? '') && !!document.querySelector('.list-record [data-testid="job-finished"]') && document.querySelector('.list-record [data-testid="job-finished"]').textContent.trim() !== 'Not yet',
+      { label: 'the new run is open and done', timeout: 60_000, arg: ctx.state.job.id });
     return {};
   },
   async verify(ctx) {

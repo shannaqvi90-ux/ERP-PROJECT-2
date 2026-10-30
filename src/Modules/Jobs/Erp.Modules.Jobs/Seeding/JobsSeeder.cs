@@ -149,7 +149,9 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
                     < 96 => (JobStatus.Failed, JobSource.User),
                     _ => (JobStatus.Cancelled, JobSource.User),
                 };
-                var waiting = i >= count - 3 && count > 20;
+                // Just before the last three rows, so the newest job of a kind is always one that has finished (the screen's
+                // best match for a name opens it, and a finished job can be run again).
+                var waiting = i >= count - 6 && i < count - 3 && count > 20;
                 if (waiting)
                 {
                     status = JobStatus.Queued;

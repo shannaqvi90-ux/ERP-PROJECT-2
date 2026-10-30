@@ -128,6 +128,18 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
     }
 
     [Fact]
+    public async Task The_best_match_for_a_kind_of_jobs_name_is_one_that_has_finished_and_so_can_be_run_again()
+    {
+        using var admin = await AdminAsync();
+        var rows = await RowsAsync(admin, "/api/jobs/jobs?take=1&search=" + Uri.EscapeDataString("Self-check of the job queue"));
+        var first = Assert.Single(rows);
+        Assert.NotEqual("queued", first.GetProperty("jobStatus").GetString());
+        Assert.True(first.GetProperty("canRerun").GetBoolean());
+        // Waiting jobs exist, they are just not the newest of their kind.
+        Assert.NotEmpty(await RowsAsync(admin, "/api/jobs/jobs?take=5&filter=" + Uri.EscapeDataString("jobStatus eq 'queued'")));
+    }
+
+    [Fact]
     public async Task Cancelling_and_re_running_answer_the_state_the_job_is_in_and_unknown_ids_are_not_found()
     {
         using var admin = await AdminAsync();
