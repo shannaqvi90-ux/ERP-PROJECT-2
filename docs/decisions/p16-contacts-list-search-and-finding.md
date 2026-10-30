@@ -77,3 +77,9 @@ a random "q48213" cannot occur in X's data. Demo data is unchanged. GateSelfTest
 pass alone with this fixture (4 tests, 31 min under load). The company PO boxes of the tenancy fixture stay five digits
 (not this piece's); their remaining chance is about 0.2 percent per value. Failures 2 and 3 of the builder's run
 (GateSelfTests HTTP attack, G1ShellAnswers timing) are load flakes in p00's gate machinery, not edited here.
+
+Verify of round 2 fix 1 (head dbec34ee, 2026-10-30, log kept in .verify-failed/20261030T151908Z-355466): the company-isolation
+gate now passed in the full run. Failed: G1HttpIsolationTests (a request cancelled after 1 h 24 m; HttpClient 'client aborted'),
+GateSelfTests HTTP attack (a 'DoesNotContain' on its list answers, 35 m), and 10 tests of web clientIsolation.test.tsx
+(30 s timeouts). Processor time: dotnet 11,312 s, web 230 s, e2e 566 s. Load median 9.4 and peaks of 94 from other
+workflows on the machine. These are the same kind of gate-timing failures as in round 2 and not contacts-specific.
