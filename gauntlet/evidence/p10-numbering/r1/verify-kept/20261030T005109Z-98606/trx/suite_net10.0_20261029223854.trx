@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a018f51d-7d06-4838-88c6-c7d3988f90c9" name="@docker-desktop 2026-10-29 22:38:52" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-29T22:38:52.4220867+00:00" queuing="2026-10-29T22:38:52.4220868+00:00" start="2026-10-29T22:37:46.4331277+00:00" finish="2026-10-29T22:38:54.6198785+00:00" />
+  <TestSettings name="default" id="791ecc27-034d-4711-b42a-f0286979721e">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-29_22_38_52" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="13c3c6bc-75cf-4e8c-b1f1-cb6040ff71b7" testId="0a2b44ef-a32c-7822-b578-9479acff6a5a" testName="Erp.Modules.Lists.Tests.SavedViewsTests.Every_change_to_a_view_is_audited_with_its_author" computerName="docker-desktop" duration="00:00:05.3488415" startTime="2026-10-29T22:38:46.6333216+00:00" endTime="2026-10-29T22:38:52.0266911+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="13c3c6bc-75cf-4e8c-b1f1-cb6040ff71b7" />
+    <UnitTestResult executionId="f8305fa3-ac71-4659-8154-e390ed35a74a" testId="5b72f318-8cad-bd0b-5ab7-0be1a79914e7" testName="Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them" computerName="docker-desktop" duration="00:00:00.4941071" startTime="2026-10-29T22:38:52.9841294+00:00" endTime="2026-10-29T22:38:53.4783503+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f8305fa3-ac71-4659-8154-e390ed35a74a" />
+    <UnitTestResult executionId="99342a5c-435f-45d8-b27f-7f64d9a58fc3" testId="765ad618-7675-1d66-23f1-013872e268a4" testName="Erp.Modules.Lists.Tests.SavedViewsTests.Every_field_is_validated_against_the_list_in_the_users_language" computerName="docker-desktop" duration="00:00:00.1916545" startTime="2026-10-29T22:38:52.7913960+00:00" endTime="2026-10-29T22:38:52.9831602+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99342a5c-435f-45d8-b27f-7f64d9a58fc3" />
+    <UnitTestResult executionId="c46d67ef-47f7-4b37-a303-d5e5c185c70b" testId="9ab3c442-b051-1789-7017-90fd671760b1" testName="Erp.Modules.Lists.Tests.SavedViewsTests.The_definition_describes_columns_operators_choices_presets_and_sharing" computerName="docker-desktop" duration="00:00:00.1923786" startTime="2026-10-29T22:38:53.4790031+00:00" endTime="2026-10-29T22:38:53.6714723+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c46d67ef-47f7-4b37-a303-d5e5c185c70b" />
+    <UnitTestResult executionId="ebcbb03d-a915-4d61-a449-68db9f2b1b18" testId="f985510e-24ad-1037-306c-85a5842ee2be" testName="Erp.Modules.Lists.Tests.SavedViewsTests.One_default_per_owner_and_names_unique_per_owner" computerName="docker-desktop" duration="00:00:00.1640822" startTime="2026-10-29T22:38:53.6727496+00:00" endTime="2026-10-29T22:38:53.8369042+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ebcbb03d-a915-4d61-a449-68db9f2b1b18" />
+    <UnitTestResult executionId="6b64ac03-0dfa-469b-bfa4-a81ac73f9572" testId="0518a6a8-d49d-272f-6e46-c09a1497b5bb" testName="Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner" computerName="docker-desktop" duration="00:00:00.7003556" startTime="2026-10-29T22:38:52.0898727+00:00" endTime="2026-10-29T22:38:52.7905889+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6b64ac03-0dfa-469b-bfa4-a81ac73f9572" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Modules.Lists.Tests.SavedViewsTests.The_definition_describes_columns_operators_choices_presets_and_sharing" storage="/work/tests/erp.modules.lists.tests/bin/release/net10.0/erp.modules.lists.tests.dll" id="9ab3c442-b051-1789-7017-90fd671760b1">
+      <Execution id="c46d67ef-47f7-4b37-a303-d5e5c185c70b" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Lists.Tests.SavedViewsTests" name="The_definition_describes_columns_operators_choices_presets_and_sharing" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Lists.Tests.SavedViewsTests.Every_change_to_a_view_is_audited_with_its_author" storage="/work/tests/erp.modules.lists.tests/bin/release/net10.0/erp.modules.lists.tests.dll" id="0a2b44ef-a32c-7822-b578-9479acff6a5a">
+      <Execution id="13c3c6bc-75cf-4e8c-b1f1-cb6040ff71b7" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Lists.Tests.SavedViewsTests" name="Every_change_to_a_view_is_audited_with_its_author" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Lists.Tests.SavedViewsTests.One_default_per_owner_and_names_unique_per_owner" storage="/work/tests/erp.modules.lists.tests/bin/release/net10.0/erp.modules.lists.tests.dll" id="f985510e-24ad-1037-306c-85a5842ee2be">
+      <Execution id="ebcbb03d-a915-4d61-a449-68db9f2b1b18" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Lists.Tests.SavedViewsTests" name="One_default_per_owner_and_names_unique_per_owner" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Lists.Tests.SavedViewsTests.Every_field_is_validated_against_the_list_in_the_users_language" storage="/work/tests/erp.modules.lists.tests/bin/release/net10.0/erp.modules.lists.tests.dll" id="765ad618-7675-1d66-23f1-013872e268a4">
+      <Execution id="99342a5c-435f-45d8-b27f-7f64d9a58fc3" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Lists.Tests.SavedViewsTests" name="Every_field_is_validated_against_the_list_in_the_users_language" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Lists.Tests.SavedViewsTests.Shared_views_reach_every_reader_and_only_sharers_change_them" storage="/work/tests/erp.modules.lists.tests/bin/release/net10.0/erp.modules.lists.tests.dll" id="5b72f318-8cad-bd0b-5ab7-0be1a79914e7">
+      <Execution id="f8305fa3-ac71-4659-8154-e390ed35a74a" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Lists.Tests.SavedViewsTests" name="Shared_views_reach_every_reader_and_only_sharers_change_them" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Lists.Tests.SavedViewsTests.Personal_views_are_private_to_their_owner" storage="/work/tests/erp.modules.lists.tests/bin/release/net10.0/erp.modules.lists.tests.dll" id="0518a6a8-d49d-272f-6e46-c09a1497b5bb">
+      <Execution id="6b64ac03-0dfa-469b-bfa4-a81ac73f9572" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Lists.Tests/bin/Release/net10.0/Erp.Modules.Lists.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Lists.Tests.SavedViewsTests" name="Personal_views_are_private_to_their_owner" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="0a2b44ef-a32c-7822-b578-9479acff6a5a" executionId="13c3c6bc-75cf-4e8c-b1f1-cb6040ff71b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5b72f318-8cad-bd0b-5ab7-0be1a79914e7" executionId="f8305fa3-ac71-4659-8154-e390ed35a74a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="765ad618-7675-1d66-23f1-013872e268a4" executionId="99342a5c-435f-45d8-b27f-7f64d9a58fc3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9ab3c442-b051-1789-7017-90fd671760b1" executionId="c46d67ef-47f7-4b37-a303-d5e5c185c70b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f985510e-24ad-1037-306c-85a5842ee2be" executionId="ebcbb03d-a915-4d61-a449-68db9f2b1b18" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0518a6a8-d49d-272f-6e46-c09a1497b5bb" executionId="6b64ac03-0dfa-469b-bfa4-a81ac73f9572" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="6" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:01.10]   Discovering: Erp.Modules.Lists.Tests
+[xUnit.net 00:00:01.96]   Discovered:  Erp.Modules.Lists.Tests
+[xUnit.net 00:00:02.63]   Starting:    Erp.Modules.Lists.Tests
+[xUnit.net 00:01:04.71]   Finished:    Erp.Modules.Lists.Tests (ID = '3ab372e8c1b058abe35539ecb2b78dba197b5a9f0242af81daadb3c7868d679e')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

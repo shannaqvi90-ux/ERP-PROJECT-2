@@ -1,0 +1,122 @@
+Test run for /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.21]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.53]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.70]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:13.00]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:13.00]       static Erp.Modules.Numbering.Sequences.SequenceEndpoints.PlantCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, SequenceDto>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:13.01]       Stack Trace:
+[xUnit.net 00:00:13.01]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:13.01]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.01]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.01]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.01]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.01]       Output:
+[xUnit.net 00:00:13.01]         540 types, 127 fields, 18 singleton services inspected, 164 endpoint delegates walked (4844 objects) to 44 closures; 5 framework singletons over product types; 156 roots walked to 1678 objects, 69 product types judged field by field; 29 reviewed findings
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [499 ms]
+  Error Message:
+   static Erp.Modules.Numbering.Sequences.SequenceEndpoints.PlantCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, SequenceDto>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 540 types, 127 fields, 18 singleton services inspected, 164 endpoint delegates walked (4844 objects) to 44 closures; 5 framework singletons over product types; 156 roots walked to 1678 objects, 69 product types judged field by field; 29 reviewed findings
+
+
+[xUnit.net 00:00:14.52]     Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope [FAIL]
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.quotation in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.quotation in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.quotation in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.quotation in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company took QT-2040-00001/06 for sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company previewed QT-2040-00002/06 for sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company took SO-2040-00001/06 for sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company previewed SO-2040-00002/06 for sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.invoice in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.invoice in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.invoice in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.invoice in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company asking sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company previewed INV-2040-00001/06 for sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.creditNote in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.creditNote in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.creditNote in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking sales.creditNote in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company asking sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company previewed CN-2040-00001/06 for sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       tenant A's administrator asking purchasing.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking purchasing.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking purchasing.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       tenant A's administrator asking purchasing.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user of the first company asking purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company took PO-2040-00001/06 for purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       a user whose permission is held in the first company previewed PO-2040-00002/06 for purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+[xUnit.net 00:00:14.52]       Stack Trace:
+[xUnit.net 00:00:14.52]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G1/G1NumberingContractTests.cs(102,0): at Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope()
+[xUnit.net 00:00:14.52]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope [686 ms]
+  Error Message:
+   tenant A's administrator asking sales.quotation in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took QT-2040-00001/06 for sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch 
+a user whose permission is held in the first company previewed QT-2040-00002/06 for sales.quotation in company 0191260e-f484-7bba-a138-0180b834216b branch 
+tenant A's administrator asking sales.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took SO-2040-00001/06 for sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+a user whose permission is held in the first company previewed SO-2040-00002/06 for sales.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+tenant A's administrator asking sales.invoice in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company asking sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+a user whose permission is held in the first company previewed INV-2040-00001/06 for sales.invoice in company 0191260e-f484-7bba-a138-0180b834216b branch 
+tenant A's administrator asking sales.creditNote in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company asking sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+a user whose permission is held in the first company previewed CN-2040-00001/06 for sales.creditNote in company 0191260e-f484-7bba-a138-0180b834216b branch 
+tenant A's administrator asking purchasing.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018f2d5f-bc81-738b-aafc-c94bdb01c845 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018f2d5f-bc84-7eed-95c1-52c269a80981 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took PO-2040-00001/06 for purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+a user whose permission is held in the first company previewed PO-2040-00002/06 for purchasing.order in company 0191260e-f484-7bba-a138-0180b834216b branch 
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope() in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G1/G1NumberingContractTests.cs:line 102
+--- End of stack trace from previous location ---
+exit 124

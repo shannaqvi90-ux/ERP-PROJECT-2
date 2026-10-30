@@ -1,0 +1,25 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6ca7c12e..f8c1bef8 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -129,6 +129,8 @@ internal static class SequenceEndpoints
+             .ProducesProblem(StatusCodes.Status403Forbidden)
+             .ProducesProblem(StatusCodes.Status409Conflict)
+             .RequirePermission(NumberingPermissions.SequencesUpdate);
++
++
+     }
+ 
+     private static async Task<Results<Ok<ListPage<SequenceRow>>, ProblemHttpResult>> List(
+@@ -283,10 +285,7 @@ internal static class SequenceEndpoints
+         {
+             return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+         }
+-        if (!session.HoldsEveryBranch(sequence.CompanyId))
+-        {
+-            return Problems.Forbidden(http, "numbering.companyNeedsEveryBranch");
+-        }
++        // PLANT P3: every-branch check removed
+         if (sequence.Version != request.Version)
+         {
+             return Problems.Conflict(http, "numbering.sequenceChanged");

@@ -1,0 +1,47 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6ca7c12e..fb7d5466 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -128,7 +128,19 @@ internal static class SequenceEndpoints
+             .ProducesValidationProblem()
+             .ProducesProblem(StatusCodes.Status403Forbidden)
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(NumberingPermissions.SequencesUpdate);
++            .RequirePermission(NumberingPermissions.SequencesRead); // PLANT P1
++
++        // PLANT P2: a new action with no permission check at all: take the next number of a sequence.
++        group.MapPost("/sequences/{id:guid}/take", async (Guid id, NumberingDbContext db, Erp.Modules.Numbering.Contracts.IDocumentNumbers numbers, CancellationToken ct) =>
++            {
++                var s = await db.Sequences.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
++                if (s is null) return Results.NotFound();
++                var n = await numbers.TakeAsync(new NumberRequest(s.DocumentType, s.CompanyId, DateOnly.FromDateTime(DateTime.UtcNow)), ct);
++                return Results.Ok(n);
++            })
++            .WithName("numbering.sequences.take")
++            .WithSummary("Take the next number.")
++            .AllowAnonymous();
+     }
+ 
+     private static async Task<Results<Ok<ListPage<SequenceRow>>, ProblemHttpResult>> List(
+@@ -283,10 +295,7 @@ internal static class SequenceEndpoints
+         {
+             return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+         }
+-        if (!session.HoldsEveryBranch(sequence.CompanyId))
+-        {
+-            return Problems.Forbidden(http, "numbering.companyNeedsEveryBranch");
+-        }
++        // PLANT P3: every-branch check removed
+         if (sequence.Version != request.Version)
+         {
+             return Problems.Conflict(http, "numbering.sequenceChanged");
+diff --git a/tests/Gates/endpoint-permissions/numbering.txt b/tests/Gates/endpoint-permissions/numbering.txt
+index 63cea805..a6a7348e 100644
+--- a/tests/Gates/endpoint-permissions/numbering.txt
++++ b/tests/Gates/endpoint-permissions/numbering.txt
+@@ -7,4 +7,4 @@ prefix /api/numbering/
+ 
+ GET /api/numbering/sequences numbering.sequences.read # the document numbering list: how each company of the caller's scope numbers each kind of document, and the number its next document would get (no document's data)
+ GET /api/numbering/sequences/{id:guid} numbering.sequences.read # one sequence with its counters by period and branch and the last numbers it gave (numbers only; the documents they went to are their own modules')
+-PUT /api/numbering/sequences/{id:guid} numbering.sequences.update # changing a pattern, when the numbers start again, whether they may skip or the next number changes every later document's number in that company (also needs every branch of the company, checked in the handler)
++PUT /api/numbering/sequences/{id:guid} numbering.sequences.read # changing a pattern, when the numbers start again, whether they may skip or the next number changes every later document's number in that company (also needs every branch of the company, checked in the handler)

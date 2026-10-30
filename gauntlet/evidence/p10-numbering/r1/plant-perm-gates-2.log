@@ -1,0 +1,121 @@
+Test run for /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.18]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.42]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.56]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:12.98]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [FAIL]
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [valid] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-8ba73e80396898672e8763df42572a74-0e6ff810c9e51cbc-00"}
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [gapless turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-8b5a12da9ccf0ab649d304223a80cbd5-9cf0a6c17aaf3023-00"}
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [perBranch turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-8e592dd362e02092af989bacf5a3c9d1-636b16397f0ce0ee-00"}
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [reset=monthly] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-98320a4b1a3367eb16559fd9a55b6486-8cd85bdae70417ee-00"}
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [reset=never] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-4dd8d13c3353629d808033effff9b378-af39d45dd9dc4fa5-00"}
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [padding=12] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-4070e0d2c0fd1eb5a411a3f28b7f4dd6-c521e2831f3ccd3f-00"}
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [nextValue=4000] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-ee1ca1464030cbc5d84cc69a6fe8ed54-d31ed1d4bf80148f-00"}
+[xUnit.net 00:00:12.98]       PUT /api/numbering/sequences/{id} [suffix] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-d0a8cf13d81ef148b6d6139eeea138f2-4d0176e383147f71-00"}
+[xUnit.net 00:00:12.98]       Stack Trace:
+[xUnit.net 00:00:12.98]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(105,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters()
+[xUnit.net 00:00:12.98]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:13.22]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [FAIL]
+[xUnit.net 00:00:13.22]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:13.22]       Expected: Forbidden
+[xUnit.net 00:00:13.22]       Actual:   OK
+[xUnit.net 00:00:13.22]       Stack Trace:
+[xUnit.net 00:00:13.22]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(125,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence()
+[xUnit.net 00:00:13.22]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [979 ms]
+  Error Message:
+   PUT /api/numbering/sequences/{id} [valid] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-8ba73e80396898672e8763df42572a74-0e6ff810c9e51cbc-00"}
+PUT /api/numbering/sequences/{id} [gapless turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-8b5a12da9ccf0ab649d304223a80cbd5-9cf0a6c17aaf3023-00"}
+PUT /api/numbering/sequences/{id} [perBranch turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-8e592dd362e02092af989bacf5a3c9d1-636b16397f0ce0ee-00"}
+PUT /api/numbering/sequences/{id} [reset=monthly] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-98320a4b1a3367eb16559fd9a55b6486-8cd85bdae70417ee-00"}
+PUT /api/numbering/sequences/{id} [reset=never] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-4dd8d13c3353629d808033effff9b378-af39d45dd9dc4fa5-00"}
+PUT /api/numbering/sequences/{id} [padding=12] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-4070e0d2c0fd1eb5a411a3f28b7f4dd6-c521e2831f3ccd3f-00"}
+PUT /api/numbering/sequences/{id} [nextValue=4000] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-ee1ca1464030cbc5d84cc69a6fe8ed54-d31ed1d4bf80148f-00"}
+PUT /api/numbering/sequences/{id} [suffix] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-d0a8cf13d81ef148b6d6139eeea138f2-4d0176e383147f71-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters() in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 105
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [6 ms]
+  Failed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [237 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Stack Trace:
+     at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence() in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 125
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [5 s]
+[xUnit.net 00:00:32.72]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]
+[xUnit.net 00:00:32.72]       PUT /api/numbering/sequences/{id:guid} changes data but declares the read permission numbering.sequences.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:00:32.72]       Stack Trace:
+[xUnit.net 00:00:32.72]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(267,0): at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+[xUnit.net 00:00:32.72]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:32.72]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:32.72]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:32.72]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [19 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Error Message:
+   PUT /api/numbering/sequences/{id:guid} changes data but declares the read permission numbering.sequences.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission() in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 267
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [20 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [12 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [411 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [3 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [10 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [31 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [73 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [11 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [31 s]
+[xUnit.net 00:01:18.70]     Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [FAIL]
+[xUnit.net 00:01:18.70]       Catalogue permissions no endpoint uses (dead permissions confuse role editors): numbering.sequences.update
+[xUnit.net 00:01:18.70]       Stack Trace:
+[xUnit.net 00:01:18.70]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(322,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
+[xUnit.net 00:01:18.70]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:18.70]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:18.70]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:18.70]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [< 1 ms]
+  Error Message:
+   Catalogue permissions no endpoint uses (dead permissions confuse role editors): numbering.sequences.update
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used() in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 322
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [22 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [142 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [12 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [89 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [9 s]
+[xUnit.net 00:01:33.99]   Finished:    Erp.Gates.Tests (ID = '2d0b140b58d302ad5d945f61bfead9640f482c5bf14041521aa3b9f4e826b8a2')
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [20 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [250 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+
+Test Run Failed.
+Total tests: 35
+     Passed: 31
+     Failed: 4
+ Total time: 1.5718 Minutes
