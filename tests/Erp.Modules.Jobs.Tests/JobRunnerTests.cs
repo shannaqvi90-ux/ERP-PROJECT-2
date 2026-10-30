@@ -347,7 +347,7 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixt
             """, ("id", schedule), ("t", A.Id));
 
         await fixture.Runner.ClaimAsync(0, CancellationToken.None);
-        var queued = await fixture.ScalarAsync<long>("SELECT count(*) FROM jobs.jobs WHERE schedule_id = @id AND status = 'queued' AND source = 'schedule'", ("id", schedule));
+        var queued = await fixture.ScalarAsync<long>("SELECT count(*) FROM jobs.jobs WHERE schedule_id = @id AND status = 'queued' AND source = 'scheduler'", ("id", schedule));
         Assert.Equal(1, queued);
         var next = new DateTimeOffset(DateTime.SpecifyKind(await fixture.ScalarAsync<DateTime>("SELECT next_run_at FROM jobs.schedules WHERE id = @id", ("id", schedule)), DateTimeKind.Utc));
         Assert.True(next > DateTimeOffset.UtcNow);

@@ -247,7 +247,7 @@ namespace Erp.Modules.Jobs.Migrations
 
                             t.HasCheckConstraint("ck_jobs_progress", "progress BETWEEN 0 AND 100");
 
-                            t.HasCheckConstraint("ck_jobs_source", "source IN ('user', 'schedule', 'module', 'rerun')");
+                            t.HasCheckConstraint("ck_jobs_source", "source IN ('user', 'scheduler', 'module', 'rerun')");
 
                             t.HasCheckConstraint("ck_jobs_status", "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')");
 

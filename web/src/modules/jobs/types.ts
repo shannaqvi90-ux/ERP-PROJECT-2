@@ -1,7 +1,7 @@
 /** API shapes of the jobs module (times are ISO 8601 text). */
 
 export type JobStatus = "queued" | "running" | "succeeded" | "failed" | "cancelled";
-export type JobSource = "user" | "schedule" | "module" | "rerun";
+export type JobSource = "user" | "scheduler" | "module" | "rerun";
 
 /** A row of the background jobs list (its keys are the list's column keys). */
 export type JobRow = {

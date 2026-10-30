@@ -218,7 +218,7 @@ public sealed class JobsDbContext(DbContextOptions<JobsDbContext> options, ITena
             e.ToTable("jobs", t =>
             {
                 t.HasCheckConstraint("ck_jobs_status", "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')");
-                t.HasCheckConstraint("ck_jobs_source", "source IN ('user', 'schedule', 'module', 'rerun')");
+                t.HasCheckConstraint("ck_jobs_source", "source IN ('user', 'scheduler', 'module', 'rerun')");
                 t.HasCheckConstraint("ck_jobs_progress", "progress BETWEEN 0 AND 100");
                 t.HasCheckConstraint("ck_jobs_priority", "priority BETWEEN -10 AND 10");
                 t.HasCheckConstraint("ck_jobs_attempts", "attempts >= 0 AND max_attempts BETWEEN 1 AND 10 AND attempts <= max_attempts");

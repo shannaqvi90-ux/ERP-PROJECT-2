@@ -25,7 +25,7 @@ internal static class JobsList
     public static readonly IReadOnlyList<ListChoice> Sources =
     [
         new(JobSource.User, "jobs.source.user"),
-        new(JobSource.Schedule, "jobs.source.schedule"),
+        new(JobSource.Schedule, "jobs.source.scheduler"),
         new(JobSource.Module, "jobs.source.module"),
         new(JobSource.Rerun, "jobs.source.rerun"),
     ];

@@ -66,7 +66,7 @@ public static class JobSource
     public const string User = "user";
 
     /// <summary>A schedule started it.</summary>
-    public const string Schedule = "schedule";
+    public const string Schedule = "scheduler";
 
     /// <summary>Another module queued it (an import, an export, an approval's follow-up).</summary>
     public const string Module = "module";

@@ -62,7 +62,7 @@ namespace Erp.Modules.Jobs.Migrations
                     table.CheckConstraint("ck_jobs_attempts", "attempts >= 0 AND max_attempts BETWEEN 1 AND 10 AND attempts <= max_attempts");
                     table.CheckConstraint("ck_jobs_priority", "priority BETWEEN -10 AND 10");
                     table.CheckConstraint("ck_jobs_progress", "progress BETWEEN 0 AND 100");
-                    table.CheckConstraint("ck_jobs_source", "source IN ('user', 'schedule', 'module', 'rerun')");
+                    table.CheckConstraint("ck_jobs_source", "source IN ('user', 'scheduler', 'module', 'rerun')");
                     table.CheckConstraint("ck_jobs_status", "status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')");
                     table.CheckConstraint("ck_jobs_type", "type ~ '^[a-z][a-zA-Z0-9]+\\.[a-z][a-zA-Z0-9]+$'");
                 });
