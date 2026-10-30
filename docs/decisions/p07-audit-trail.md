@@ -255,3 +255,35 @@ Fixer 2 finding: the audit tests themselves are cheap (the slowest Audit.Tests t
 Unrelated branches under the same load read the same: p16 (no audit trail) 8,588 and p10 8,293
 dotnet seconds in their own failed runs, against 6,400 to 6,700 on a quiet machine. No maximum was
 raised and no test changed.
+
+## Round 2: where the processor time goes (builder, serial-12d)
+
+The integrator's alone verify of the r1 merge (log verify-integrator-p07-audit-r1.log, kept folder
+.verify-failed/20261030T125551Z-329371) passed every test; only verify.cpuSeconds failed: 13,677 s
+(dotnet 10,914, web 2,250, e2e 469, timing 44) against 10,600, 3,077 s over the 1,500 s allowance.
+Measured here from that run's trx files and from two probes (a temporary test, not committed):
+
+- Almost all of the growth is one test, `G1HttpIsolationTests`: 3,412 s wall in the pre-p10 integration
+  run (.verify-failed/20261029T154547Z-2238, 10,550 s processor) against 6,536 s. Its phases: list answers
+  judged against each tenant's own rows 880 s -> 2,465 s (6,184 queries and 1.5 M rows walked, against
+  4,656 and 0.46 M), tenant B values in route and query parameters about 580 s -> 960 s, write after write
+  and the rest follow the endpoint count (183 against 169). The test's shared machinery (p00, p05) is not
+  this piece's to change.
+- The audit log is the biggest list the gate walks: the probe with the gate limited to the three audit
+  endpoints sent 15,718 requests and judged 1,436 list queries (23 % of all) in 220 s while the tables
+  were nearly empty. 104 of its queries per direction are the `fields` choice (one per recorded
+  field name) and every query has one sorted twin, so the field names make about 58 % of the log's
+  list queries; the record types add 21 more.
+- Per request the log is cheap: 25 to 30 ms of processor per page of 199 rows (0.14 ms a row, 600 bytes
+  a row), against 16 to 20 ms for a page of 30 users; a request's fixed cost dominates, so processor time
+  follows the number of requests the gates send, not the size of the rows.
+- Tried and not done: replacing the `fields` choice by a text filter would cut the log's queries by more
+  than half, but it changes the contract the tests pin (`fields eq 'name_en'`, `ne`, and 400 for a field
+  recorded nowhere), and the list engine has no choice column whose values are looked up instead of
+  listed (the kernel list engine is p05's). Dropping the log's date sort, grouping or search would remove
+  product behaviour to please a gate. Neither was done. I estimate the first would save 300 to 800
+  processor seconds, short of the 1,577 s needed; the rest is the gates' own growth with endpoints and
+  lists (p16-contacts, with no audit surface, measured 13,128 s at its fixer's verify, 2,578 s over the
+  same base).
+- No code was changed in round 2 (only this note); no new full verify was run, because the code is the
+  integrator's tested merge plus documentation commits. The processor-time question needs the owner.
