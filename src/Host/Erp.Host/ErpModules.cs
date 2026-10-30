@@ -3,6 +3,7 @@ using Erp.Modules.Currency;
 using Erp.Modules.Contacts;
 using Erp.Modules.Identity;
 using Erp.Modules.Lists;
+using Erp.Modules.Numbering;
 using Erp.Modules.Reports;
 using Erp.Modules.Tenancy;
 
@@ -15,6 +16,7 @@ public static class ErpModules
     [
         new TenancyModule(),
         new IdentityModule(),
+        new NumberingModule(),
         new CurrencyModule(),
         new ContactsModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.

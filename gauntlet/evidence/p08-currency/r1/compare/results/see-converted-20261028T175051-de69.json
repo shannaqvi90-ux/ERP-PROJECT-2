@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "run_id": "see-converted-20261028T175051-de69",
+  "instrument": 12,
+  "task": "see-converted",
+  "task_title": "See an amount converted to the base currency",
+  "product": "ours",
+  "status": "invalid",
+  "goal": "Find out what 1250 EUR is in AED at today's rate.",
+  "done_when": "The screen shows 1250 EUR as 5,359.38 AED.",
+  "started_at": "2026-10-28T17:50:51.467Z",
+  "finished_at": "2026-10-28T17:50:57.789Z",
+  "environment": {
+    "base_url": "http://localhost:20850",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 4,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.661,
+    "system_wait_seconds": 0.215,
+    "human_seconds": 9.47,
+    "human_plus_wait_seconds": 9.685,
+    "klm_operator_counts": {
+      "K": 4,
+      "P": 3,
+      "B": 6,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Currencies (navigation)",
+      "keystrokes": 0,
+      "at": 0.021,
+      "took": 0.065,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "the EUR row",
+      "keystrokes": 0,
+      "at": 0.267,
+      "took": 0.091,
+      "began": 0.242,
+      "screen": "/currency/currencies",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "the amount",
+      "keystrokes": 0,
+      "at": 0.403,
+      "took": 0.032,
+      "began": 0.367,
+      "screen": "/currency/currencies/01a1839b-c9a7-7b44-8071-8e1db7c8f5ce",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "type",
+      "label": "amount",
+      "keystrokes": 4,
+      "at": 0.44,
+      "took": 0.015,
+      "text": "1250",
+      "same_field": true,
+      "screen": "/currency/currencies/01a1839b-c9a7-7b44-8071-8e1db7c8f5ce",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "currencies list",
+      "at": 0.087,
+      "seconds": 0.154
+    },
+    {
+      "label": "the converter",
+      "at": 0.359,
+      "seconds": 0.008
+    },
+    {
+      "label": "converted",
+      "at": 0.456,
+      "seconds": 0.053
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "3cc0b350afb03fdb.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/3cc0b350afb03fdb.jpg"
+    },
+    {
+      "moment": "converted amount",
+      "file": "7c21e59127eca8ec.jpg",
+      "at": 0.509,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/7c21e59127eca8ec.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "f0ca16a7034128f7.jpg",
+      "at": 0.661,
+      "path": "../../evidence-staging/p08-currency/r1/compare/blind/shots/f0ca16a7034128f7.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "shown": "EUR 1,250.00 = AED 5,359.38At 4.2875 AED per EUR, the rate of 28 Oct 2026.",
+      "baseAmount": "5359.38",
+      "rate": "4.2875",
+      "rateDate": "2026-10-28"
+    }
+  },
+  "path_notes": "Currencies (navigation) > the euro > the converter's amount > type the amount (the amount in AED shows as it is typed).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/see-converted.mjs",
+    "sha256": "c2f2ea79ff6dc0ec595649a0d08a137dd2cae54c004f0f234acd06be6f3957c1"
+  },
+  "task_notes": "An amount in a foreign currency seen in the company's base currency (1250 x 4.2875 = 5,359.375, rounded once to the fils: 5,359.38). Set-up makes today's euro rate 4.2875 AED in both products; neither product saves anything the task needs.",
+  "error": "action outside the clock (set-up): the page changed what it shows without a counted step causing it (1 change; the first 0.396 s into the measured part, a StyleRecalcInvalidationTracking: a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.01,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.022,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.01,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.02,
+      "verified": true,
+      "gap_seconds": 0.07
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "8338fb496adb9127",
+    "elements": 646
+  },
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.036
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 22,
+    "not_caused": 1,
+    "enforced": true,
+    "not_caused_first": [
+      {
+        "at": 0.396,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 3 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.465,
+      "by_step": 4,
+      "chain": [
+        "input of step 4",
+        "the answer to GET /api/currency/convert after 0.01 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /api/currency/rates"
+  ]
+}

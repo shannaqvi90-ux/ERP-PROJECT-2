@@ -287,6 +287,13 @@ internal static class CompanyEndpoints
         db.CompanyAccess.Add(new UserCompanyAccess { UserId = caller.UserId, CompanyId = company.Id, AllBranches = true });
         db.CompanyAccess.AddRange(peers.Select(user => new UserCompanyAccess { UserId = user, CompanyId = company.Id, AllBranches = true }));
         await db.SaveChangesAsync(cancellationToken);
+        // Other modules' defaults for the new company (its document sequences), in this transaction.
+        var created = new CompanyInfo(company.Id, company.Code, company.LegalNameEn, company.LegalNameAr, company.BaseCurrency,
+            company.FiscalYearStartMonth, company.FiscalYearStartDay, company.Country, company.IsActive);
+        foreach (var handler in http.RequestServices.GetServices<ICompanyCreatedHandler>())
+        {
+            await handler.CompanyCreatedAsync(created, cancellationToken);
+        }
         return TypedResults.Created($"/api/tenancy/companies/{company.Id}", await ToDtoAsync(db, branchScope, session, http.RequestServices.GetRequiredService<ICompanyPermissions>(), company, cancellationToken));
     }
 

@@ -659,7 +659,11 @@ public sealed class G2PermissionTests(G2Fixture fixture) : IClassFixture<G2Fixtu
             Assert.Equal(HttpStatusCode.Created, role.StatusCode);
             roleIds.Add((await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid());
         }
-        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = $"G2 {string.Join(", ", permissions)}", language = "en", password = ErpTestEnvironment.Password, roleIds });
+        // The name lists the permissions held, cut to the 200 characters a display name may hold
+        // (with every module's list permission the full list no longer fits).
+        var displayName = $"G2 {string.Join(", ", permissions)}";
+        if (displayName.Length > 200) displayName = displayName[..200].TrimEnd(',', ' ');
+        var user = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName, language = "en", password = ErpTestEnvironment.Password, roleIds });
         Assert.Equal(HttpStatusCode.Created, user.StatusCode);
         return (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
     }

@@ -35,6 +35,7 @@ public sealed class TenancyModule : ErpModule
         module.DbContext<TenancyDbContext>();
         module.Services.AddScoped<ITenantDirectory, TenantDirectory>();
         module.Services.AddScoped<ICompanyDirectory, CompanyDirectory>();
+        module.Services.AddScoped<IBranchDirectory, BranchDirectory>();
         module.Services.AddScoped<IUserWorkplaces, Workplace.UserWorkplaces>();
         module.Services.AddScoped<ISessionScopeBinder, CompanyScopeBinder>();
         module.Services.AddScoped<TenancyBranchScope>();
@@ -537,6 +538,21 @@ internal sealed class TenantDirectory(ErpDbSession session) : ITenantDirectory
         }
         return found;
     }
+}
+
+/// <summary>Branches for other modules, through the tenancy context's company and branch filters (a
+/// user limited to some branches of a company sees only those).</summary>
+internal sealed class BranchDirectory(TenancyDbContext db) : IBranchDirectory
+{
+    public async Task<BranchInfo?> GetAsync(Guid branchId, CancellationToken cancellationToken) =>
+        await db.Branches.AsNoTracking().Where(b => b.Id == branchId)
+            .Select(b => new BranchInfo(b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr, b.IsActive))
+            .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<BranchInfo>> ListAsync(Guid companyId, CancellationToken cancellationToken) =>
+        await db.Branches.AsNoTracking().Where(b => b.CompanyId == companyId).OrderBy(b => b.Code)
+            .Select(b => new BranchInfo(b.Id, b.CompanyId, b.Code, b.NameEn, b.NameAr, b.IsActive))
+            .ToListAsync(cancellationToken);
 }
 
 internal sealed class CompanyDirectory(TenancyDbContext db, ICompanyContext scope) : ICompanyDirectory
