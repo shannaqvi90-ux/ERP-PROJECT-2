@@ -118,3 +118,15 @@ of p08); the processor time this round adds to the verify is stated in the round
   branch and 21 s on this branch (a quiet machine), so it is a load failure of the web stage (p04's machinery, not edited). Processor time of the run: dotnet 15,643 s,
   web 278 s, e2e 639 s (load 1.75 at the start, 20 to 70 from other verifies later): measured on a busy machine, it says nothing about the piece's own cost; the integrator's
   alone run measures it.
+
+## Verify run of fixer 2 (2026-10-30/31)
+
+Full verify through the slots, kept folder `.verify-failed/20261030T221012Z-487852`. Web passed
+(all vitest files, 134 of 134 instrument mutations caught), e2e passed, dotnet failed in one test:
+`G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint`, one differential:
+`GET /api/contacts/contacts?take=200&filter=taxRegistrationNumber contains '580569'` answered no
+rows while its control, a random 6-digit string (100724), matched rows tenant A holds itself (a
+`contains` filter over about 100,000 contacts: a chance collision of the gate's random control,
+not a jobs surface; the same kind as the earlier 'ck-' collision). The gate (p00's G1) was not
+edited. Processor time: dotnet 14,367.5 s, web 2,691.2 s, e2e 553.7 s; load 17 at the start.
+The previous run passed dotnet and e2e and failed web on load alone.
