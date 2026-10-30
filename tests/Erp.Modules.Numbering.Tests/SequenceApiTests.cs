@@ -37,6 +37,24 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
     private static async Task<JsonElement> RowAsync(HttpClient client, string type, Guid? company = null) =>
         (await RowsAsync(client)).First(r => r.GetProperty("documentType").GetString() == type && (company is null || r.GetProperty("companyId").GetGuid() == company));
 
+    [Fact]
+    public async Task Switching_from_every_year_to_never_and_back_in_the_same_year_never_offers_a_number_again_that_the_other_run_moved_past()
+    {
+        using var admin = await SignInAsync();
+        var row = await RowAsync(admin, "sales.quotation");
+        async Task<JsonElement> Step(JsonElement from, string reset, long? next = null)
+        {
+            var response = await PutAsync(admin, from, Body(from, reset: reset, nextValue: next));
+            Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+            return await Json(response);
+        }
+        var yearly = await Step(row, "yearly", 4100);
+        var never = await Step(yearly, "never");
+        var raised = await Step(never, "never", 4200);
+        var back = await Step(raised, "yearly");
+        Assert.Contains("04200", back.GetProperty("nextNumber").GetString(), StringComparison.Ordinal);
+    }
+
     private static object Body(JsonElement record, string? prefix = null, int? padding = null, string? reset = null, bool? gapless = null, bool? perBranch = null,
         long? nextValue = null, string? suffix = null, uint? version = null) => new
     {
@@ -79,7 +97,7 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.True(invoice.GetProperty("gapless").GetBoolean());
         Assert.Equal($"INV-{Year}-00001{Month}", invoice.GetProperty("nextNumber").GetString());
         // Tenant B's own prefixes never appear.
-        Assert.DoesNotContain(all, r => r.GetProperty("prefix").GetString() is "BPO-{YYYY}-" or "BQ-" or "BDN-{BRANCH}-");
+        Assert.DoesNotContain(all, r => r.GetProperty("prefix").GetString() is "BPO7-{YYYY}-" or "BQ73-" or "BDN4-{BRANCH}-");
 
         // Search in English and Arabic, and the list's filters.
         Assert.Equal(2, (await RowsAsync(admin, "search=purchase%20order")).Count(r => r.GetProperty("documentType").GetString() == "purchasing.order"));

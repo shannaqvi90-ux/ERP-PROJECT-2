@@ -307,17 +307,33 @@ internal static class SequenceEndpoints
             // on, the new period's counter goes on from where today's ran (no number of today repeats).
             var (year, month) = NumberPattern.PeriodPartsOf(request.Reset!, today);
             var counter = await db.Counters.SingleOrDefaultAsync(c => c.SequenceId == id && c.BranchId == null && c.PeriodYear == year && c.PeriodMonth == month, cancellationToken);
-            if (counter is null && request.Reset != sequence.Reset)
+            if (request.Reset != sequence.Reset)
             {
                 var (beforeYear, beforeMonth) = NumberPattern.PeriodPartsOf(sequence.Reset, today);
                 if (await db.Counters.AsNoTracking().SingleOrDefaultAsync(c => c.SequenceId == id && c.BranchId == null && c.PeriodYear == beforeYear && c.PeriodMonth == beforeMonth, cancellationToken) is { } running)
                 {
-                    counter = new NumberCounter
+                    if (counter is null)
                     {
-                        CompanyId = sequence.CompanyId, SequenceId = sequence.Id, BranchId = null, PeriodYear = year, PeriodMonth = month,
-                        NextValue = running.NextValue, LastIssued = running.LastIssued, LastIssuedAt = running.LastIssuedAt,
-                    };
-                    db.Counters.Add(counter);
+                        counter = new NumberCounter
+                        {
+                            CompanyId = sequence.CompanyId, SequenceId = sequence.Id, BranchId = null, PeriodYear = year, PeriodMonth = month,
+                            NextValue = running.NextValue, LastIssued = running.LastIssued, LastIssuedAt = running.LastIssuedAt,
+                        };
+                        db.Counters.Add(counter);
+                    }
+                    else if (running.NextValue > counter.NextValue)
+                    {
+                        // The counter of the period being switched back to is older than the one that
+                        // ran meanwhile (every year, then never, then every year in the same year): it
+                        // takes up where the running one stands, so no number already given is offered again.
+                        counter.NextValue = running.NextValue;
+                        if (running.LastIssued is { } ran && (counter.LastIssued is null || ran > counter.LastIssued))
+                        {
+                            counter.LastIssued = ran;
+                            counter.LastIssuedAt = running.LastIssuedAt;
+                        }
+                        db.Entry(counter).Property(c => c.UpdatedAt).IsModified = true;
+                    }
                 }
             }
             var current = counter?.NextValue ?? 1;
