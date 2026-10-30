@@ -254,10 +254,12 @@ internal static class DemoContacts
             // The gate fixture's PO boxes have seven digits: the isolation gate searches the other tenant for
             // each value tenant B holds and compares it with a random value of the same shape, and a
             // four-digit box is also the tail of many counters the gate's own writes put into role names.
-            // The gate fixture's PO boxes have five digits, never four: the isolation gate searches the other
+            // The gate fixture's PO boxes are a letter and five digits (P20002): the gate searches company X for a
+            // random word of the same shape, and a bare five-digit random word matched a seven-digit phone or a
+            // tax number of X by chance (round 2 failure); "p20002" cannot. Earlier note: five digits, never four: the isolation gate searches the other
             // tenant for each value tenant B holds and compares it with a random value of the same shape, and
             // a four-digit value is also the tail of many counters the gate's own writes put into names.
-            var poBox = random.Next(10) < 6 ? (letterCodes ? random.Next(10000, 99999) : random.Next(1000, 99999)).ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
+            var poBox = random.Next(10) < 6 ? (letterCodes ? "P" + random.Next(10000, 99999).ToString(System.Globalization.CultureInfo.InvariantCulture) : random.Next(1000, 99999).ToString(System.Globalization.CultureInfo.InvariantCulture)) : null;
             if (i <= 10 || random.Next(10) < 3)
             {
                 var word = BusinessWords[random.Next(BusinessWords.Length)];

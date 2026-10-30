@@ -66,3 +66,14 @@ already finds the same value: `nameAr`, `mobile`, `phone`, `taxRegistrationNumbe
 (no sort; `createdAt` stays for "recent"). Filters stay on name, kind, organisation, e-mail, city,
 emirate, tags, code, credit limit, status and creation/update dates; groupings on kind, city, emirate and
 status. Measured effect: to be recorded from the round 2 verify.
+
+### Round 2, fix 1: gate-fixture PO box shape
+
+The company-isolation gate replaces each value of company Y with a random value of the same shape and expects the
+same answer as for Y's value. A bare five-digit PO box ("20002") became a random five-digit string that, by chance,
+was a substring of a seven-digit phone or a 15-digit tax number of company X (substring search matches inside digits),
+so the control answer listed a contact. The gate-fixture contact PO boxes are now a letter and five digits ("P20002"):
+a random "q48213" cannot occur in X's data. Demo data is unchanged. GateSelfTests (leaky list) and the isolation gate
+pass alone with this fixture (4 tests, 31 min under load). The company PO boxes of the tenancy fixture stay five digits
+(not this piece's); their remaining chance is about 0.2 percent per value. Failures 2 and 3 of the builder's run
+(GateSelfTests HTTP attack, G1ShellAnswers timing) are load flakes in p00's gate machinery, not edited here.
