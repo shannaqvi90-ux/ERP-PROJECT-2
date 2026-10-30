@@ -95,3 +95,9 @@ the same on the merge base without any p16 code (19.4 s and 19.3 s), so the 30 s
 the test is not made slower by this piece. The G1 HTTP isolation test fails also in the verifies of p10 (critic r1),
 p12 (four runs) and p16 round 1, and passes in others, with and without contacts: a timing flake of p00's gate under load.
 No test, timeout or ratchet changed.
+
+## Round 2, fix 3: verify result
+
+Full verify of 802d25fc through the slots, slot taken at 20:03 UTC on 2026-10-30, wall time 8,641 s, load 2 at the start, 11 at the end, highest 42 (other workflows running). Every test passed: dotnet 870, web 649, e2e 133, compare 487, build 6 (no failure, no skip). No code or test changed in this fix; the two earlier failures (G1HttpIsolation request abort, clientIsolation 30 s timeout) did not recur. G1HttpIsolation passed in 1 h 53 m, clientIsolation in 59 s for its 10 tests.
+The only ratchet failure is verify.cpuSeconds: 15,934 s (dotnet 12,432, web 2,698, e2e 723, timing 82) against the maximum 10,600 s. The web figure is inflated by the busy machine (260 s in the previous run); dotnet is 12,432 s because the G1 HTTP isolation test alone ran 1 h 53 m under load. This is over the 1,500 s per-piece allowance (owner decision, needs-human #31), so the integrator's alone run decides what this piece costs.
+Kept folder: .verify-failed/20261030T211650Z-468992.
