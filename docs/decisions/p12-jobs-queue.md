@@ -110,3 +110,11 @@ of p08); the processor time this round adds to the verify is stated in the round
 - Cancelling a finished job answers the job as it is (200), so the call repeats safely (the gates repeat a valid write).
 - The seeded waiting jobs sit just before the newest three rows, so the newest job of a kind is finished: the screen's best match for the
   self-check's name (what the see-and-rerun-job driver opens) can be run again.
+
+### Verify record, round 1 fixer 1 (serial-12d), last run at the head of this fixer
+- Full verify through the slots (slot taken 2026-10-30 16:47 UTC): dotnet passed (all gates, including G1 http isolation, G2 report data and permissions), e2e passed (138),
+  the comparison harness health check passed; the web stage failed on one test only: `clientIsolation.test.tsx` "tenant A sees, and the tab keeps, nothing of
+  tenant B after B signs out" timed out at its 30 s limit and the nine tests after it failed from its leftover state. That test takes 19.9 s alone on the integration
+  branch and 21 s on this branch (a quiet machine), so it is a load failure of the web stage (p04's machinery, not edited). Processor time of the run: dotnet 15,643 s,
+  web 278 s, e2e 639 s (load 1.75 at the start, 20 to 70 from other verifies later): measured on a busy machine, it says nothing about the piece's own cost; the integrator's
+  alone run measures it.
