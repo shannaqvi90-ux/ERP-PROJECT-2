@@ -1,0 +1,18 @@
+A sees 44 rows; B sees 22 rows
+overlap of ids A list vs B list: 0
+A GET B sequence by id -> 404
+A PUT B sequence -> 404 The record was not found.
+B sequence unchanged: true
+A search for B company code GSF-SHJ -> 0 B rows
+A filter companyId = B company -> 0 rows
+A GET B id with header X-Tenant -> 404
+A GET B id with header X-Tenant-Id -> 404
+A export /api/reports/lists/numbering.sequences?format=csv -> 200 text/csv; charset=utf-8 3867 bytes; contains B company code: false
+A export /api/reports/lists/numbering.sequences?format=pdf -> 200 application/pdf 18667 bytes; contains B company code: false
+viewer list -> 5 rows, canUpdate false,false,false,false,false
+viewer PUT -> 403 You do not have permission to do this.
+no-roles list -> 403
+no-roles GET one -> 403
+no-roles PUT -> 403
+anonymous list -> 401
+A own sequence unchanged after viewer/no-roles PUT: true

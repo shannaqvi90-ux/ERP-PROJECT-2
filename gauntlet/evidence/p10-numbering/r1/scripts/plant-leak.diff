@@ -1,0 +1,43 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs b/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs
+index 7f09d516..d1703b5f 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs
+@@ -104,7 +104,7 @@ internal sealed class DocumentNumbers(
+         {
+             throw new NumberingException(NumberingException.DateOutOfRange, NumberPattern.MinYear, NumberPattern.MaxYear);
+         }
+-        if (!session.HasTenant || !session.AllowsCompany(request.CompanyId) || !session.PermitsCompany(request.CompanyId))
++        if (!session.HasTenant) // PLANT L2: company scope and the permission's companies no longer checked
+         {
+             throw new NumberingException(NumberingException.CompanyNotAllowed);
+         }
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6ca7c12e..b85614c4 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -107,6 +107,8 @@ public sealed record UpdateSequenceRequest(
+ 
+ internal static class SequenceEndpoints
+ {
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SequenceDto> PlantCache = new();
++
+     /// <summary>The characters a prefix or suffix may hold (tokens are checked by <see cref="NumberPattern.Check"/>).</summary>
+     public const string AffixPattern = @"^[A-Za-z0-9\-/._#{}]*$";
+ 
+@@ -239,7 +241,16 @@ internal static class SequenceEndpoints
+ 
+     private static async Task<Results<Ok<SequenceDto>, ProblemHttpResult>> Get(Guid id, NumberingDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        // PLANT L1: a process-wide cache of sequence answers by id, shared by every tenant.
++        if (PlantCache.TryGetValue(id, out var cached))
++        {
++            return TypedResults.Ok(cached);
++        }
+         var dto = await ToDtoAsync(db, http, id, cancellationToken);
++        if (dto is not null)
++        {
++            PlantCache[id] = dto;
++        }
+         return dto is null ? Problems.NotFound(http) : TypedResults.Ok(dto);
+     }
+ 

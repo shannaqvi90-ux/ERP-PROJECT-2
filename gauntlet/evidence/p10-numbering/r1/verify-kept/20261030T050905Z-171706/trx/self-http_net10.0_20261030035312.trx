@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="afd36dad-f8bb-4ea0-b595-52933c3ac010" name="@docker-desktop 2026-10-30 03:53:12" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-30T03:53:12.3663802+00:00" queuing="2026-10-30T03:53:12.3663802+00:00" start="2026-10-30T03:23:54.6429105+00:00" finish="2026-10-30T03:53:12.3737966+00:00" />
+  <TestSettings name="default" id="bc09822f-adb7-46ea-b176-bec99754c28b">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-10-30_03_53_12" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="3cf8e5ce-cad6-44f6-b36b-49f039e6fa31" testId="09a0f1c3-6132-b74e-dca3-5803ddfa59e0" testName="Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks" computerName="docker-desktop" duration="00:28:12.7329122" startTime="2026-10-30T03:24:58.9651366+00:00" endTime="2026-10-30T03:53:11.6270929+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3cf8e5ce-cad6-44f6-b36b-49f039e6fa31">
+      <Output>
+        <StdOut>leaks on /api/leaky/acting: 1
+leaks on /api/leaky/by-header: 3
+leaks on /api/leaky/cached-tenant: 1646
+leaks on /api/leaky/combined: 8
+leaks on /api/leaky/company-access: 770
+leaks on /api/leaky/company-access-partly-checked: 770
+leaks on /api/leaky/export: 3292
+leaks on /api/leaky/find: 3
+leaks on /api/leaky/lookup: 4
+leaks on /api/leaky/me: 214
+leaks on /api/leaky/people: 282
+leaks on /api/leaky/previous: 175
+leaks on /api/leaky/printed: 4
+leaks on /api/leaky/recent: 175
+leaks on /api/leaky/report: 3
+leaks on /api/leaky/spooled: 247
+leaks on /api/leaky/tenants: 9
+leaks on /api/leaky/viewed: 2
+digits: tenant A administrator (cookie) → PUT /api/leaky/me/digits [body numerals=arab] → 200: response contains tenant B marker CNRY59C9EABAB1
+digits: tenant bravocnry59c9eabab1 administrator (cookie) → PUT /api/leaky/me/digits [tenant B writes right before A's write (numerals="arab")] → 200: response to tenant bravocnry59c9eabab1 contains the attacking tenant's marker admin.ar@alpha.example
+digits: tenant bravocnry59c9eabab1 administrator (cookie) → PUT /api/leaky/me/digits [tenant B writes right before A's write (numerals="arab")] → 200: response to tenant bravocnry59c9eabab1 contains the attacking tenant's marker admin@alpha.example
+digits: tenant bravocnry59c9eabab1 administrator (cookie) → PUT /api/leaky/me/digits [tenant B writes right after A's write (numerals="arab")] → 200: response to tenant bravocnry59c9eabab1 contains the attacking tenant's marker admin@alpha.example
+digits: tenant bravocnry59c9eabab1 administrator in Arabic (cookie) → GET /api/leaky/me/greeting [tenant B reads after A's variants of PUT /api/leaky/me/digits, in Arabic] → 200: response to tenant bravocnry59c9eabab1 contains the attacking tenant's marker admin.ar@alpha.example
+digits: tenant bravocnry59c9eabab1 administrator (cookie) → GET /api/leaky/previous [tenant B reads after A's variants of PUT /api/leaky/me/digits] → 200: a response header to tenant bravocnry59c9eabab1 contains the attacking tenant's marker 0190a000-0000-7000-8000-00000000000a (X-Previous-Workspace: 0190a000-0000-7000-8000-00000000000a alpha switch-4480)
+digits: tenant bravocnry59c9eabab1 administrator (cookie) → GET /api/leaky/recent [tenant B reads after A's variants of PUT /api/leaky/me/digits] → 200: response to tenant bravocnry59c9eabab1 contains the attacking tenant's marker Abdullah Siddiqui
+digits: tenant bravocnry59c9eabab1 administrator in Arabic (cookie) → GET /api/leaky/me/greeting [tenant B reads after A's PUT /api/leaky/me/digits, in Arabic] → 200: response to tenant bravocnry59c9eabab1 contains the attacking tenant's marker admin.ar@alpha.example
+digits: tenant bravocnry59c9eabab1 administrator (cookie) → GET /api/leaky/previous [tenant B reads after A's PUT /api/leaky/me/digits] → 200: a response header to tenant bravocnry59c9eabab1 contains the attacking tenant's marker 0190a000-0000-7000-8000-00000000000a (X-Previous-Workspace: 0190a000-0000-7000-8000-00000000000a alpha switch-4480)
+digits: tenant bravocnry59c9eabab1 administrator (cookie) → GET /api/leaky/recent [tenant B reads after A's PUT /api/leaky/me/digits] → 200: response to tenant bravocnry59c9eabab1 contains the attacking tenant's marker Abdullah Siddiqui</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="09a0f1c3-6132-b74e-dca3-5803ddfa59e0">
+      <Execution id="3cf8e5ce-cad6-44f6-b36b-49f039e6fa31" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.SelfTests.GateSelfTests" name="The_HTTP_attack_catches_planted_header_route_and_body_leaks" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="09a0f1c3-6132-b74e-dca3-5803ddfa59e0" executionId="3cf8e5ce-cad6-44f6-b36b-49f039e6fa31" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.29]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:03.28]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:03.92]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:29:16.36]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
