@@ -164,8 +164,8 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PostAsync($"/api/jobs/jobs/{id}/cancel", null)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PostAsync($"/api/jobs/jobs/{id}/rerun", null)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.GetAsync($"/api/jobs/jobs/{id}/output")).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PostAsJsonAsync("/api/jobs/schedules", new { name = "x", type = "jobs.cleanup", cron = "0 0 * * *" })).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PutAsJsonAsync($"/api/jobs/schedules/{Guid.NewGuid()}", new { name = "x", cron = "0 0 * * *", isEnabled = true, version = 1 })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = "x", type = "jobs.cleanup", cron = "0 0 * * *" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PutAsJsonAsync($"/api/jobs/schedules/{Guid.NewGuid()}", new { scheduleName = "x", cron = "0 0 * * *", isEnabled = true, version = 1 })).StatusCode);
         var detail = await Json(await viewer.GetAsync($"/api/jobs/jobs/{id}"));
         Assert.False(detail.GetProperty("canRerun").GetBoolean() || detail.GetProperty("canCancel").GetBoolean() || detail.GetProperty("canDownload").GetBoolean());
     }
@@ -200,7 +200,7 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
     {
         using var admin = await AdminAsync();
         var name = "Weekly clean-up " + Guid.NewGuid().ToString("N")[..6];
-        var created = await admin.PostAsJsonAsync("/api/jobs/schedules", new { name, type = "jobs.cleanup", cron = "0 4 * * sun", payload = new { retentionDays = 90 } });
+        var created = await admin.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = name, type = "jobs.cleanup", cron = "0 4 * * sun", payload = new { retentionDays = 90 } });
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
         var schedule = await Json(created);
         var id = schedule.GetProperty("id").GetGuid();
@@ -214,7 +214,7 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         Assert.Contains(await RowsAsync(admin, "/api/jobs/schedules?filter=" + Uri.EscapeDataString("isEnabled eq true")), r => r.GetProperty("id").GetGuid() == id);
 
         // Change the timing: the next moment follows it.
-        var changed = await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { name, cron = "15 5 * * *", payload = new { retentionDays = 60 }, isEnabled = true, version = schedule.GetProperty("version").GetUInt32() });
+        var changed = await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { scheduleName = name, cron = "15 5 * * *", payload = new { retentionDays = 60 }, isEnabled = true, version = schedule.GetProperty("version").GetUInt32() });
         Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
         var updated = await Json(changed);
         var moved = updated.GetProperty("nextRunAt").GetDateTimeOffset().ToOffset(TimeSpan.FromHours(4));
@@ -222,14 +222,14 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         Assert.Equal(60, updated.GetProperty("payload").GetProperty("retentionDays").GetInt32());
 
         // A stale version is a conflict, not an overwrite.
-        var stale = await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { name, cron = "15 5 * * *", isEnabled = true, version = schedule.GetProperty("version").GetUInt32() });
+        var stale = await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { scheduleName = name, cron = "15 5 * * *", isEnabled = true, version = schedule.GetProperty("version").GetUInt32() });
         Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
 
         // Off: no next moment; on again: one from now.
-        var off = await Json(await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { name, cron = "15 5 * * *", isEnabled = false, version = updated.GetProperty("version").GetUInt32() }));
+        var off = await Json(await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { scheduleName = name, cron = "15 5 * * *", isEnabled = false, version = updated.GetProperty("version").GetUInt32() }));
         Assert.False(off.GetProperty("isEnabled").GetBoolean());
         Assert.Equal(JsonValueKind.Null, off.GetProperty("nextRunAt").ValueKind);
-        var on = await Json(await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { name, cron = "15 5 * * *", isEnabled = true, version = off.GetProperty("version").GetUInt32() }));
+        var on = await Json(await admin.PutAsJsonAsync($"/api/jobs/schedules/{id}", new { scheduleName = name, cron = "15 5 * * *", isEnabled = true, version = off.GetProperty("version").GetUInt32() }));
         Assert.True(on.GetProperty("nextRunAt").GetDateTimeOffset() > DateTimeOffset.UtcNow);
         Assert.Equal(id, (await Json(await admin.GetAsync($"/api/jobs/schedules/{id}"))).GetProperty("id").GetGuid());
     }
@@ -244,14 +244,14 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             return (await Json(response)).GetProperty("errors");
         }
-        Assert.Equal(["name", "type", "cron"], (await Errors(new { })).EnumerateObject().Select(p => p.Name).ToArray());
-        Assert.Equal("jobsCronFields", (await Errors(new { name = "a", type = "jobs.cleanup", cron = "every day" })).GetProperty("cron")[0].GetProperty("code").GetString());
-        Assert.Equal("jobsCronField", (await Errors(new { name = "a", type = "jobs.cleanup", cron = "61 * * * *" })).GetProperty("cron")[0].GetProperty("code").GetString());
-        Assert.Equal("jobsCronNever", (await Errors(new { name = "a", type = "jobs.cleanup", cron = "0 0 31 2 *" })).GetProperty("cron")[0].GetProperty("code").GetString());
-        Assert.Equal("jobsTypeNotSchedulable", (await Errors(new { name = "a", type = JobTestModule.Ok, cron = "0 0 * * *" })).GetProperty("type")[0].GetProperty("code").GetString());
-        Assert.Equal("jobsTypeNotSchedulable", (await Errors(new { name = "a", type = "nobody.knows", cron = "0 0 * * *" })).GetProperty("type")[0].GetProperty("code").GetString());
-        Assert.Equal("jobsScheduleNameTaken", (await Errors(new { name = global::Erp.Modules.Jobs.Seeding.JobsSeeder.CleanupScheduleName, type = "jobs.cleanup", cron = "0 0 * * *" })).GetProperty("name")[0].GetProperty("code").GetString());
-        Assert.Equal("maxLength", (await Errors(new { name = new string('n', 121), type = "jobs.cleanup", cron = "0 0 * * *" })).GetProperty("name")[0].GetProperty("code").GetString());
+        Assert.Equal(["scheduleName", "type", "cron"], (await Errors(new { })).EnumerateObject().Select(p => p.Name).ToArray());
+        Assert.Equal("jobsCronFields", (await Errors(new { scheduleName = "a", type = "jobs.cleanup", cron = "every day" })).GetProperty("cron")[0].GetProperty("code").GetString());
+        Assert.Equal("jobsCronField", (await Errors(new { scheduleName = "a", type = "jobs.cleanup", cron = "61 * * * *" })).GetProperty("cron")[0].GetProperty("code").GetString());
+        Assert.Equal("jobsCronNever", (await Errors(new { scheduleName = "a", type = "jobs.cleanup", cron = "0 0 31 2 *" })).GetProperty("cron")[0].GetProperty("code").GetString());
+        Assert.Equal("jobsTypeNotSchedulable", (await Errors(new { scheduleName = "a", type = JobTestModule.Ok, cron = "0 0 * * *" })).GetProperty("type")[0].GetProperty("code").GetString());
+        Assert.Equal("jobsTypeNotSchedulable", (await Errors(new { scheduleName = "a", type = "nobody.knows", cron = "0 0 * * *" })).GetProperty("type")[0].GetProperty("code").GetString());
+        Assert.Equal("jobsScheduleNameTaken", (await Errors(new { scheduleName = global::Erp.Modules.Jobs.Seeding.JobsSeeder.CleanupScheduleName, type = "jobs.cleanup", cron = "0 0 * * *" })).GetProperty("scheduleName")[0].GetProperty("code").GetString());
+        Assert.Equal("maxLength", (await Errors(new { scheduleName = new string('n', 121), type = "jobs.cleanup", cron = "0 0 * * *" })).GetProperty("scheduleName")[0].GetProperty("code").GetString());
     }
 
     [Fact]
@@ -266,7 +266,7 @@ public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixtur
         Assert.Equal(HttpStatusCode.NotFound, (await other.PostAsync($"/api/jobs/jobs/{mine}/rerun", null)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await other.GetAsync($"/api/jobs/jobs/{mine}/output")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await other.GetAsync($"/api/jobs/schedules/{schedule}")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await other.PutAsJsonAsync($"/api/jobs/schedules/{schedule}", new { name = "taken", cron = "0 0 * * *", isEnabled = false, version = 1 })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await other.PutAsJsonAsync($"/api/jobs/schedules/{schedule}", new { scheduleName = "taken", cron = "0 0 * * *", isEnabled = false, version = 1 })).StatusCode);
         Assert.DoesNotContain(await RowsAsync(other, "/api/jobs/jobs?take=200"), r => r.GetProperty("id").GetGuid() == mine);
         Assert.Equal("queued", (await fixture.StateAsync(mine)).Status);
     }

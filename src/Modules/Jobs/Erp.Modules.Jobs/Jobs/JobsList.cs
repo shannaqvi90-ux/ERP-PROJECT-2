@@ -37,7 +37,6 @@ internal static class JobsList
                     new ListColumn("titleEn", "jobs.job.title", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "titleAr", Width: ListColumnWidth.Wide),
                     new ListColumn("titleAr", "jobs.job.titleAr", ListColumnType.Text, Filterable: true, Hidden: true),
                     new ListColumn("jobStatus", "jobs.job.status", ListColumnType.Choice, Sortable: true, Filterable: true, Groupable: true, Choices: Statuses, Width: ListColumnWidth.Narrow),
-                    new ListColumn("progressPercent", "jobs.job.progress", ListColumnType.Number, Sortable: true, Filterable: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("startedAt", "jobs.job.startedAt", ListColumnType.DateTime, Sortable: true, Filterable: true),
                     new ListColumn("finishedAt", "jobs.job.finishedAt", ListColumnType.DateTime, Sortable: true, Filterable: true),
                     new ListColumn("runAt", "jobs.job.runAt", ListColumnType.DateTime, Sortable: true, Filterable: true, Hidden: true),
@@ -46,6 +45,9 @@ internal static class JobsList
                     new ListColumn("tryCount", "jobs.job.attempts", ListColumnType.Number, Sortable: true, Filterable: true, Hidden: true, Width: ListColumnWidth.Narrow),
                     new ListColumn("errorEn", "jobs.job.error", ListColumnType.Text, Filterable: true, ArabicField: "errorAr", Hidden: true, Width: ListColumnWidth.Wide),
                     new ListColumn("createdAt", "jobs.job.createdAt", ListColumnType.DateTime, Sortable: true, Filterable: true, Hidden: true),
+                    // Last, never beside a date: an Arabic PDF reads its cells back to back, and a progress of 100 followed by a
+                    // date of the 1st ("100" + "01/10/2026") prints a number ("10001") that no cell holds.
+                    new ListColumn("progressPercent", "jobs.job.progress", ListColumnType.Number, Sortable: true, Filterable: true, Width: ListColumnWidth.Narrow),
                 ],
                 SearchFields: ["titleEn", "titleAr", "jobType"],
                 DefaultSort: "-createdAt",

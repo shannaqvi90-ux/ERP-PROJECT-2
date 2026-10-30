@@ -70,7 +70,7 @@ export function SchedulesPage() {
   );
 }
 
-type Draft = { name: string; type: string; cron: string; payload: string; isEnabled: boolean };
+type Draft = { scheduleName: string; type: string; cron: string; payload: string; isEnabled: boolean };
 
 function ScheduleForm({ id, nav, types, onSaved, onClose }: { id: string | null; nav?: RecordNavigation; types: JobType[]; onSaved: (id: string) => void; onClose: () => void }) {
   const { t } = useI18n();
@@ -80,7 +80,7 @@ function ScheduleForm({ id, nav, types, onSaved, onClose }: { id: string | null;
     {
       load: id === null ? undefined : (signal) => api<Schedule>("GET", `/api/jobs/schedules/${id}`, undefined, { signal }),
       initial: (s) => ({
-        name: s?.name ?? "",
+        scheduleName: s?.scheduleName ?? "",
         type: s?.type ?? "",
         cron: s?.cron ?? "",
         payload: s && Object.keys(s.payload).length > 0 ? JSON.stringify(s.payload) : "",
@@ -99,8 +99,8 @@ function ScheduleForm({ id, nav, types, onSaved, onClose }: { id: string | null;
       save: (draft, schedule) => {
         const payload = draft.payload.trim() === "" ? {} : (JSON.parse(draft.payload) as Record<string, unknown>);
         return schedule === null
-          ? api<Schedule>("POST", "/api/jobs/schedules", { name: draft.name.trim() || null, type: draft.type || null, cron: draft.cron.trim() || null, payload, isEnabled: draft.isEnabled })
-          : api<Schedule>("PUT", `/api/jobs/schedules/${schedule.id}`, { name: draft.name.trim() || null, cron: draft.cron.trim() || null, payload, isEnabled: draft.isEnabled, version: schedule.version });
+          ? api<Schedule>("POST", "/api/jobs/schedules", { scheduleName: draft.scheduleName.trim() || null, type: draft.type || null, cron: draft.cron.trim() || null, payload, isEnabled: draft.isEnabled })
+          : api<Schedule>("PUT", `/api/jobs/schedules/${schedule.id}`, { scheduleName: draft.scheduleName.trim() || null, cron: draft.cron.trim() || null, payload, isEnabled: draft.isEnabled, version: schedule.version });
       },
       onSaved: (saved) => {
         onSaved(saved.id);
@@ -116,14 +116,14 @@ function ScheduleForm({ id, nav, types, onSaved, onClose }: { id: string | null;
     <RecordForm
       form={form}
       label={t("jobs.schedule.form")}
-      title={schedule ? schedule.name : t("jobs.schedule.new")}
+      title={schedule ? schedule.scheduleName : t("jobs.schedule.new")}
       subtitle={schedule ? <span dir="ltr">{schedule.cron}</span> : undefined}
       onClose={onClose}
       nav={nav}
       readOnlyReason={schedule && can("jobs.schedules.update") && !schedule.canUpdate ? t("jobs.schedule.needsKindPermission") : undefined}
     >
       <FormSection title={t("jobs.schedule.general")}>
-        <TextField field={bind("name")} label={t("jobs.schedule.name")} maxLength={120} autoFocus={id === null} />
+        <TextField field={bind("scheduleName")} label={t("jobs.schedule.name")} maxLength={120} autoFocus={id === null} />
         <SelectField field={bind("type")} label={t("jobs.schedule.type")} options={choices} empty={t("jobs.schedule.chooseType")} disabled={id !== null} />
         <TextField field={bind("cron")} label={t("jobs.schedule.cron")} dir="ltr" maxLength={100} hint={t("jobs.schedule.cronHint", { zone: schedule?.timeZone ?? "" })} />
         <TextAreaField field={bind("payload")} label={t("jobs.start.payload")} dir="ltr" rows={3} hint={t("jobs.start.payloadHint")} />

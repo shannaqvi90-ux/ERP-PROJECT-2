@@ -81,7 +81,7 @@ test.describe("background jobs", () => {
     await expect(listRows(page).filter({ hasText: "30 3 * * *" }).first()).toBeVisible();
     await page.keyboard.press("Alt+n");
     const name = `Weekly clean-up ${Date.now()}`;
-    await page.locator('.list-record input[name="name"]').fill(name);
+    await page.locator('.list-record input[name="scheduleName"]').fill(name);
     await page.locator('.list-record select[name="type"]').selectOption("jobs.cleanup");
     await page.locator('.list-record input[name="cron"]').fill("0 4 * * sun");
     await page.keyboard.press("Control+s");

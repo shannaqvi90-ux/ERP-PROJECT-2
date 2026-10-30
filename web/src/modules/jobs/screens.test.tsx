@@ -76,7 +76,7 @@ async function open(path: string, permissions = all, override?: (method: string,
     if (p === "/api/jobs/jobs/j9" && method === "GET") return { status: 200, body: { ...job(), id: "j9", status: "queued", progress: 0, finishedAt: null, startedAt: null, canRerun: false, canCancel: true } };
     if (p === "/api/jobs/schedules" && method === "GET") return { status: 200, body: { items: [scheduleRow()], total: 1, next: null } };
     if (p === "/api/jobs/schedules/s1" && method === "GET") return { status: 200, body: schedule() };
-    if (p === "/api/jobs/schedules" && method === "POST") return { status: 201, body: { ...schedule(), id: "s2", name: "Weekly" } };
+    if (p === "/api/jobs/schedules" && method === "POST") return { status: 201, body: { ...schedule(), id: "s2", scheduleName: "Weekly" } };
     return { status: 404, body: {} };
   });
   calls = recorded as typeof calls;
@@ -213,7 +213,7 @@ describe("job schedules screen", () => {
     await open("/jobs/schedules/new");
     await wait();
     const form = view!.container.querySelector("form.record-form")!;
-    setInput(form.querySelector<HTMLInputElement>('input[name="name"]')!, "Weekly");
+    setInput(form.querySelector<HTMLInputElement>('input[name="scheduleName"]')!, "Weekly");
     const select = form.querySelector<HTMLSelectElement>('select[name="type"]')!;
     await act(async () => {
       select.value = "jobs.cleanup";
@@ -227,7 +227,7 @@ describe("job schedules screen", () => {
     });
     await settleUntilQuiet(() => calls);
     const post = calls.find((c) => c.method === "POST" && c.url === "/api/jobs/schedules");
-    expect(post?.body).toEqual({ name: "Weekly", type: "jobs.cleanup", cron: "0 4 * * sun", payload: { retentionDays: 90 }, isEnabled: true });
+    expect(post?.body).toEqual({ scheduleName: "Weekly", type: "jobs.cleanup", cron: "0 4 * * sun", payload: { retentionDays: 90 }, isEnabled: true });
   });
 
   it("offers no new schedule to a reader", async () => {

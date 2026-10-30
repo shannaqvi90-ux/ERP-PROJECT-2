@@ -108,7 +108,7 @@ export type ScheduleRow = {
 };
 
 export type Schedule = Omit<ScheduleRow, "scheduleName" | "jobType" | "cronTiming"> & {
-  name: string;
+  scheduleName: string;
   type: string;
   cron: string;
   payload: Record<string, unknown>;

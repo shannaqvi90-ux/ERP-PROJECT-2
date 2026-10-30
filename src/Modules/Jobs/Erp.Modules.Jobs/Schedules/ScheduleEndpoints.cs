@@ -39,7 +39,7 @@ public sealed record ScheduleRow(
 /// <summary>A schedule as its form shows it.</summary>
 public sealed record ScheduleDto(
     Guid Id,
-    string Name,
+    string ScheduleName,
     string Type,
     string TypeNameEn,
     string TypeNameAr,
@@ -59,7 +59,7 @@ public sealed record ScheduleDto(
 /// time zone). A schedule whose last job has not finished queues nothing that time. Only kinds a module marked
 /// schedulable can be scheduled.</summary>
 public sealed record CreateScheduleRequest(
-    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? Name,
+    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? ScheduleName,
     [property: ApiExample("jobs.selfCheck"), StringLength(JobsDbContext.TypeLength)] string? Type,
     [property: ApiExample("30 3 * * *"), StringLength(CronSchedule.MaxLength), Description("Minute hour day-of-month month day-of-week; * , - / and the names jan-dec, sun-sat.")] string? Cron,
     [property: Description("The parameters every job of this schedule is queued with, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
@@ -67,7 +67,7 @@ public sealed record CreateScheduleRequest(
 
 /// <summary>Change a schedule. The kind never changes. The version is the one read.</summary>
 public sealed record UpdateScheduleRequest(
-    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? Name,
+    [property: ApiExample("Nightly clean-up"), StringLength(JobsDbContext.NameLength)] string? ScheduleName,
     [property: ApiExample("30 3 * * *"), StringLength(CronSchedule.MaxLength)] string? Cron,
     [property: Description("The parameters every job of this schedule is queued with, a JSON object of at most 64 KB.")] Dictionary<string, JsonElement>? Payload,
     bool? IsEnabled,
@@ -156,7 +156,7 @@ internal static class ScheduleEndpoints
 
     private static void CheckFields(Validator validator, string? name, string? cron, Dictionary<string, JsonElement>? payload)
     {
-        validator.MaxLength("name", name, JobsDbContext.NameLength);
+        validator.MaxLength("scheduleName", name, JobsDbContext.NameLength);
         if (cron is not null)
         {
             validator.MaxLength("cron", cron, CronSchedule.MaxLength);
@@ -185,9 +185,9 @@ internal static class ScheduleEndpoints
     private static async Task<Results<Created<ScheduleDto>, ProblemHttpResult>> Create(
         CreateScheduleRequest request, JobsDbContext db, IJobTypes types, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
     {
-        var name = request.Name?.Trim();
+        var name = request.ScheduleName?.Trim();
         var cron = request.Cron?.Trim();
-        var validator = new Validator(http).Required("name", name).Required("type", request.Type).Required("cron", cron);
+        var validator = new Validator(http).Required("scheduleName", name).Required("type", request.Type).Required("cron", cron);
         CheckFields(validator, name, cron, request.Payload);
         var type = request.Type is null ? null : types.Find(request.Type);
         if (request.Type is not null)
@@ -196,7 +196,7 @@ internal static class ScheduleEndpoints
         }
         if (validator.IsValid && await db.Schedules.AnyAsync(s => s.Name == name, cancellationToken))
         {
-            validator.Add("name", "jobsScheduleNameTaken");
+            validator.Add("scheduleName", "jobsScheduleNameTaken");
         }
         if (!validator.IsValid)
         {
@@ -221,9 +221,9 @@ internal static class ScheduleEndpoints
     private static async Task<Results<Ok<ScheduleDto>, ProblemHttpResult>> Update(
         Guid id, UpdateScheduleRequest request, JobsDbContext db, IJobTypes types, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
     {
-        var name = request.Name?.Trim();
+        var name = request.ScheduleName?.Trim();
         var cron = request.Cron?.Trim();
-        var validator = new Validator(http).Required("name", name).Required("cron", cron).Required("isEnabled", request.IsEnabled).Required("version", request.Version);
+        var validator = new Validator(http).Required("scheduleName", name).Required("cron", cron).Required("isEnabled", request.IsEnabled).Required("version", request.Version);
         CheckFields(validator, name, cron, request.Payload);
         if (!validator.IsValid)
         {
@@ -244,7 +244,7 @@ internal static class ScheduleEndpoints
         }
         if (name != schedule.Name && await db.Schedules.AnyAsync(s => s.Name == name && s.Id != id, cancellationToken))
         {
-            return new Validator(http).Add("name", "jobsScheduleNameTaken").ToResult();
+            return new Validator(http).Add("scheduleName", "jobsScheduleNameTaken").ToResult();
         }
         db.Entry(schedule).Property(s => s.Version).OriginalValue = request.Version!.Value;
         var zone = (await tenants.GetCurrentAsync(cancellationToken))?.TimeZone;

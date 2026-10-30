@@ -91,3 +91,17 @@ clean-up kind needs `jobs.schedules.update`; the self-check kind needs `jobs.job
 The module adds three tables, roughly 14 indexes, 89 .NET tests and 24 web tests. The demo seeds 100,000
 finished jobs in the main workspace (audited like any seeded rows, the same cost as the 100,000 rates
 of p08); the processor time this round adds to the verify is stated in the round's notes.
+
+## Round 1 fixer 1 (serial-12d): what the first full verify showed, and what changed
+
+- The schedule's name travels as `scheduleName` (request, answer, form field), like the list column. The isolation gate
+  puts tenant B's id and code into every body field named like a guessed input (`name`, `code`, `email`, ...); a free-text
+  `name` accepted them, kept them in tenant A, and the printed list then showed B's workspace code. Not a cross-tenant read:
+  tenant A's own data. No other module has a free-text body field with a guessed name.
+- The isolation probe no longer has tenant B start a job: a B write nobody framed changed B's rows during the attack
+  (`jobs.jobs`, `audit.entries`). B now only reads its seeded jobs, their outputs and its schedules.
+- The seeder reads only this module's own texts (`new StringCatalog([Jobs assembly])`): resolving the application-wide catalogue
+  at seed time failed for any test module with unfinished texts (BulkTimeoutTests).
+- The jobs list's progress column is last: the Arabic PDF reads cells back to back, so a progress of 100 beside a date of
+  the 1st printed "10001". A job's parameters and result are read-only text fields (reachable by keyboard).
+- The permissions ratchet is the true count after merging p16: 45.

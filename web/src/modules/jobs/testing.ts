@@ -34,4 +34,4 @@ export const scheduleRow = () => ({
   id: "s1", scheduleName: "Clean up finished jobs / تنظيف المهام المنتهية", jobType: "jobs.cleanup", typeNameEn: "Clean up finished jobs", typeNameAr: "تنظيف المهام المنتهية", cronTiming: "30 3 * * *",
   isEnabled: true, nextRunAt: "2026-10-30T23:30:00Z", lastRunAt: "2026-10-29T23:30:00Z", lastJobId: "j1", updatedAt: "2026-10-29T08:00:00Z", version: 2, canUpdate: true,
 });
-export const schedule = () => { const { scheduleName, jobType, cronTiming, ...rest } = scheduleRow(); return { ...rest, name: scheduleName, type: jobType, cron: cronTiming, payload: {}, timeZone: "Asia/Dubai", createdAt: "2026-10-01T00:00:00Z" }; };
+export const schedule = () => { const { scheduleName, jobType, cronTiming, ...rest } = scheduleRow(); return { ...rest, scheduleName, type: jobType, cron: cronTiming, payload: {}, timeZone: "Asia/Dubai", createdAt: "2026-10-01T00:00:00Z" }; };
