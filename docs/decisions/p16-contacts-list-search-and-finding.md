@@ -54,3 +54,15 @@ module tests (about 20 s with their own gate database) and the generic gates' at
 endpoints (G1 and G2 enumerate them: the HTTP isolation gate ran 142 endpoints in about 58 minutes on a
 busy machine, against 134 before). The timing test seeds 100,000 contacts (database time, not counted
 in the processor-time maximum) and runs alone in the timing stage, in about 10 s of test time.
+
+## Round 2: fewer filter, group and sort columns, to cut the gates' processor time
+
+The integrator's alone verify of round 1 measured 13,128 s against the 10,600 s maximum (owner decision
+#31 allows a raise of at most 1,500 s). The shared G1/G2 gates send queries per filterable, groupable and
+sortable column of every list, so the contacts list (19 columns) is the costliest list. The columns are
+kept (and searchable where they were) but stop being separate filters or groupings where the search box
+already finds the same value: `nameAr`, `mobile`, `phone`, `taxRegistrationNumber` (all found by search),
+`country`, `defaultCurrency`, `creditLimitCurrency` (hidden columns, no filter or grouping) and `updatedAt`
+(no sort; `createdAt` stays for "recent"). Filters stay on name, kind, organisation, e-mail, city,
+emirate, tags, code, credit limit, status and creation/update dates; groupings on kind, city, emirate and
+status. Measured effect: to be recorded from the round 2 verify.
