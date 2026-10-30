@@ -83,3 +83,15 @@ gate now passed in the full run. Failed: G1HttpIsolationTests (a request cancell
 GateSelfTests HTTP attack (a 'DoesNotContain' on its list answers, 35 m), and 10 tests of web clientIsolation.test.tsx
 (30 s timeouts). Processor time: dotnet 11,312 s, web 230 s, e2e 566 s. Load median 9.4 and peaks of 94 from other
 workflows on the machine. These are the same kind of gate-timing failures as in round 2 and not contacts-specific.
+
+Verify of round 2 fix 2 (head d7d8fd47, 2026-10-30, slot taken 16:47 UTC after 5,175 s of waiting; kept in
+.verify-failed/20261030T184845Z-432784). Build, compare and e2e green; the company-isolation gate and the HTTP-attack
+self-test passed. Failed: G1HttpIsolationTests (client aborted a request, 1 h 33 m, the same kind of failure as in
+round 2 fix 1), web: the first test of clientIsolation.test.tsx timed out at 30 s and the other nine failed after it
+(signInAs found no sign-in fields after the earlier test left the document), plus one 5 s timeout in
+tenancy/screens.test.tsx. Processor time: dotnet 11,483 s, web 260 s, e2e 640 s. Load 20 to 36 from other workflows.
+Measured: clientIsolation.test.tsx run alone on an idle machine takes 45 s and its first two tests 19.4 s and 19.3 s,
+the same on the merge base without any p16 code (19.4 s and 19.3 s), so the 30 s limit leaves only 10 s of margin and
+the test is not made slower by this piece. The G1 HTTP isolation test fails also in the verifies of p10 (critic r1),
+p12 (four runs) and p16 round 1, and passes in others, with and without contacts: a timing flake of p00's gate under load.
+No test, timeout or ratchet changed.
