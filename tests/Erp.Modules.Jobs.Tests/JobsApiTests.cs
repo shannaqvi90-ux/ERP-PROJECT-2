@@ -11,7 +11,8 @@ namespace Erp.Modules.Jobs.Tests;
 /// filters and what the caller may do, starting, cancelling and re-running, the output file, the
 /// schedules and every validation rule in both languages.
 /// </summary>
-public sealed class JobsApiTests(JobsFixture fixture) : IClassFixture<JobsFixture>, IAsyncLifetime
+[Collection(JobsCollection.Name)]
+public sealed class JobsApiTests(JobsFixture fixture) : IAsyncLifetime
 {
     public async ValueTask InitializeAsync() => await fixture.Runner.RunOnceAsync(500);
 

@@ -16,7 +16,8 @@ namespace Erp.Modules.Jobs.Tests;
 /// can be cancelled while it runs, is taken back when its worker disappears, never runs twice, and one
 /// workspace's job never sees another's rows.
 /// </summary>
-public sealed class JobRunnerTests(JobsFixture fixture) : IClassFixture<JobsFixture>, IAsyncLifetime
+[Collection(JobsCollection.Name)]
+public sealed class JobRunnerTests(JobsFixture fixture) : IAsyncLifetime
 {
     // Whatever an earlier test left due runs first, so each test starts with an empty queue.
     public async ValueTask InitializeAsync() => await fixture.Runner.RunOnceAsync(500);

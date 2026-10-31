@@ -109,3 +109,10 @@ public sealed class JobsFixture : IAsyncLifetime
 public sealed record JobState(
     string Status, int Attempts, int MaxAttempts, int Progress, string ProgressEn, string? ErrorCode, string ErrorEn, string ErrorAr, string? Result, string? OutputName,
     DateTimeOffset RunAt, DateTimeOffset? FinishedAt, bool CancelRequested, string? LockedBy, string Source, Guid? RerunOf, Guid? ScheduleId, Guid TenantId);
+
+/// <summary>One environment (one database, one application) for the module's test classes: they run one after the other and each starts by running whatever is still due.</summary>
+[CollectionDefinition(Name)]
+public sealed class JobsCollection : ICollectionFixture<JobsFixture>
+{
+    public const string Name = "jobs";
+}
