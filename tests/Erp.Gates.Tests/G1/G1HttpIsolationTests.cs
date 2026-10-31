@@ -325,11 +325,12 @@ public static partial class IsolationAttack
                 ? [endpoint.Path(_ => "")]
                 : attackValues.Concat(endpoint.HasBody ? ownRouteValues : [])
                     .Select(value => endpoint.Path(_ => value)).Distinct().ToList();
-            // The sessions that reach the handler (cookie and bearer) send every path plainly. The
-            // other requests (tenant-switch headers and query, the callers that are refused, the
+            // The administrator's cookie session sends every path plainly. The other requests
+            // (tenant-switch headers and query, the bearer token, the callers that are refused, the
             // Arabic sessions) send the route values that stand for their classes (see
-            // RouteValueClasses): which credential, header or query carries a switch, and which
-            // caller is refused, does not depend on which row of a table the route names.
+            // RouteValueClasses): which credential carries the session, which header or query
+            // carries a switch, and which caller is refused, does not depend on which row of a
+            // table the route names (the session is resolved before the route is handled).
             var representativePaths = endpoint.RouteParameters.Count == 0
                 ? paths.ToHashSet()
                 : RouteValueClasses.Representatives(
@@ -364,7 +365,7 @@ public static partial class IsolationAttack
                         {
                             continue;
                         }
-                        if (!(variant == Variant.Plain && (attacker == attackers[0] || attacker == attackers[1])) && !representativePaths.Contains(path))
+                        if (!(variant == Variant.Plain && attacker == attackers[0]) && !representativePaths.Contains(path))
                         {
                             continue;
                         }

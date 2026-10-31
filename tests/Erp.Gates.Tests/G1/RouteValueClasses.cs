@@ -13,8 +13,8 @@ namespace Erp.Gates.Tests.G1;
 /// credential, header or query carries a tenant switch, or which caller the handler refuses, the
 /// route value only has to name a row that exists in B for the lookup to reach it: a few ids of
 /// each table (first, middle and last, so rows of every company and branch the seed spreads over
-/// a table are among them) are as strong as all of them. The plain request of the two sessions
-/// that reach the handler (cookie and bearer) is still sent with every value.
+/// a table are among them) are as strong as all of them. The plain request of the administrator's
+/// cookie session, the one that reaches every handler, is still sent with every value.
 /// </summary>
 public static class RouteValueClasses
 {
