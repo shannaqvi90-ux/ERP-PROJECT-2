@@ -115,6 +115,12 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
         };
         names.AddRange(PastKinds);
         var now = DateTimeOffset.UtcNow;
+        // A small workspace (the gates') keeps its history on a grid of whole hours and minutes from the start of
+        // today: the XLSX print of the list writes each moment as a day number with a fraction of eight digits, and
+        // moments to the second made those digits differ from one run to the next, so a run's digits could equal a
+        // value the workspace holds elsewhere (G2 read it as data the print shows, fixer 3 of round 1, '28913').
+        var small = count <= 1000;
+        var anchor = small ? new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero) : now;
         var span = TimeSpan.FromDays(HistoryDays);
         var step = count <= 1 ? TimeSpan.Zero : span / count;
         var columns = new BulkColumn[]
@@ -139,7 +145,11 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
             for (var i = 0; i < count; i++)
             {
                 // Oldest first, so the newest row is the last one made. A fixed mix, not random.
-                var created = now - span + step * (i + 1);
+                var created = anchor - span + step * (i + 1);
+                if (small)
+                {
+                    created = new DateTimeOffset(created.UtcDateTime.Ticks - created.UtcDateTime.Ticks % TimeSpan.TicksPerHour, TimeSpan.Zero);
+                }
                 // A small workspace (the gates') always holds failed and cancelled jobs among its first rows.
                 var mix = count <= 1000 && i % 6 == 1 ? 90 : count <= 1000 && i % 10 == 7 ? 98 : (int)(Mix(i, seed ^ 0x5bd1e995) % 100);
                 var (key, maxAttempts, en, ar) = names[Pick(i, Mix(i, seed), count <= 1000)];
@@ -159,8 +169,8 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
                     // Waiting for tomorrow: a kind this module runs, so it really runs then.
                     (key, maxAttempts, en, ar) = names[0];
                 }
-                var started = created.AddSeconds(1 + mix % 7);
-                var finished = status is JobStatus.Queued ? (DateTimeOffset?)null : started.AddSeconds(2 + mix % 40);
+                var started = small ? created.AddMinutes(1 + mix % 7) : created.AddSeconds(1 + mix % 7);
+                var finished = status is JobStatus.Queued ? (DateTimeOffset?)null : small ? started.AddMinutes(2 + mix % 40) : started.AddSeconds(2 + mix % 40);
                 var failed = status == JobStatus.Failed;
                 var title = context.Mark(en);
                 var id = Guid.CreateVersion7();
@@ -181,7 +191,7 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
                 yield return
                 [
                     id, context.Tenant.Id, key, title, context.Mark(ar), status, source, 0, key == SelfCheckJobHandler.TypeKey ? "{\"steps\":1,\"pauseMilliseconds\":0}" : "{}",
-                    waiting ? now.AddDays(1) : created, status == JobStatus.Queued ? 0 : failed ? maxAttempts : 1, maxAttempts,
+                    waiting ? anchor.AddDays(1) : created, status == JobStatus.Queued ? 0 : failed ? maxAttempts : 1, maxAttempts,
                     waiting ? null : started, finished, status == JobStatus.Succeeded ? 100 : status == JobStatus.Queued ? 0 : mix % 90,
                     "", "", false,
                     failed ? "jobs.seed" : null, failed ? context.Mark("The job stopped with an error.") : "", failed ? context.Mark("توقفت المهمة بسبب خطأ.") : "",
