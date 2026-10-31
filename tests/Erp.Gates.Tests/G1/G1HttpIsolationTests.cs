@@ -308,6 +308,12 @@ public static partial class IsolationAttack
         // id without the tenant (critic p03 round 1, plants T1 and T2) then hands tenant A exactly
         // the answer tenant B left there, and the body is judged for tenant B's markers.
         var replayed = 0;
+        // Tenant B's ids as text, made once (a request used to make them again: 1,000 ids a request).
+        var victimAllIds = victim.AllIds.Select(i => i.ToString()).ToList();
+        var victimClass = RouteValueClasses.ClassifierFor(victim.IdsByTable, b.Id, b.Code);
+        var ownRouteSet = ownRouteValues.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // Tenant A's own ids (one per table) are each a class of their own.
+        string routeClass(string value) => ownRouteSet.Contains(value) ? "own " + value : victimClass(value);
         foreach (var endpoint in endpoints)
         {
             await activity.TouchAsync(endpoint, victim, "tenant B reads right before A attacks this endpoint");
@@ -319,6 +325,16 @@ public static partial class IsolationAttack
                 ? [endpoint.Path(_ => "")]
                 : attackValues.Concat(endpoint.HasBody ? ownRouteValues : [])
                     .Select(value => endpoint.Path(_ => value)).Distinct().ToList();
+            // The sessions that reach the handler (cookie and bearer) send every path plainly. The
+            // other requests (tenant-switch headers and query, the callers that are refused, the
+            // Arabic sessions) send the route values that stand for their classes (see
+            // RouteValueClasses): which credential, header or query carries a switch, and which
+            // caller is refused, does not depend on which row of a table the route names.
+            var representativePaths = endpoint.RouteParameters.Count == 0
+                ? paths.ToHashSet()
+                : RouteValueClasses.Representatives(
+                        attackValues.Concat(endpoint.HasBody ? ownRouteValues : []).Distinct().ToList(), routeClass)
+                    .Select(value => endpoint.Path(_ => value)).ToHashSet();
             var bodySchema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
             var signIn = endpoint.Name == "auth.signIn";
 
@@ -348,7 +364,11 @@ public static partial class IsolationAttack
                         {
                             continue;
                         }
-                        batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victim, b, signIn, ref counter), $"{path} [{variant}]"));
+                        if (!(variant == Variant.Plain && (attacker == attackers[0] || attacker == attackers[1])) && !representativePaths.Contains(path))
+                        {
+                            continue;
+                        }
+                        batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victimAllIds, b, signIn, ref counter), $"{path} [{variant}]"));
                     }
                 }
             }
@@ -515,7 +535,7 @@ public static partial class IsolationAttack
                     ? values.Probe
                     : documentedRoute.Format == "uuid"
                         ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Select(i => i.ToString())
-                            .Concat(activity.RouteValues.Where(v => Guid.TryParse(v, out _))).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
+                            .Concat(CreatedRouteValues(activity.RouteValues, victim, victimClass)).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
                         : values.All.ToList();
                 foreach (var value in routeValues)
                 {
@@ -1266,6 +1286,17 @@ public static partial class IsolationAttack
 
     /// <summary>Values to send in one parameter: ids for uuid parameters, every value for text,
     /// nothing for numbers and flags (binding rejects text there before any handler runs).</summary>
+    /// <summary>The ids tenant B used itself, for the comparison with a value that exists nowhere:
+    /// those of its tables beyond the ten of each table already sent are of classes already sent
+    /// (see <see cref="RouteValueClasses"/>), so only three of each class go again; the ids that are
+    /// not one of its tables' (created after the snapshot) are one class of their own.</summary>
+    private static IEnumerable<string> CreatedRouteValues(IReadOnlyList<string> routeValues, TenantSnapshot victim, Func<string, string> classOf)
+    {
+        var inSnapshot = victim.AllIds.Select(i => i.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var uuids = routeValues.Where(v => Guid.TryParse(v, out _)).ToList();
+        return RouteValueClasses.Representatives(uuids, v => inSnapshot.Contains(v) ? classOf(v) : "created");
+    }
+
     private static IEnumerable<string> ValuesFor(ApiParameter parameter, VictimValues values) => parameter switch
     {
         { Format: "uuid" } => values.IdSample.Select(i => i.ToString()),
@@ -1347,9 +1378,8 @@ public static partial class IsolationAttack
 
     private static HttpRequestMessage BuildRequest(
         ApiEndpoint endpoint, string path, Variant variant, JsonElement? bodySchema, OpenApiDocument openApi,
-        TenantSnapshot victim, Erp.Kernel.Seeding.SeedTenant b, bool signIn, ref int counter)
+        List<string> victimIds, Erp.Kernel.Seeding.SeedTenant b, bool signIn, ref int counter)
     {
-        var victimIds = victim.AllIds.Select(i => i.ToString()).ToList();
         var uri = path;
         if (variant == Variant.TenantQuery)
         {
