@@ -794,6 +794,11 @@ public static partial class IsolationAttack
             attacker.Client.Dispose();
         }
         activity.Dispose();
+        if (Environment.GetEnvironmentVariable("ERP_GATE_REPORT_FILE") is { Length: > 0 } reportFile)
+        {
+            // For measuring the attack's cost: the phases, the requests by kind and the clock.
+            File.AppendAllLines(reportFile, [.. phases, .. state.BreakdownLines(), $"total {state.Requests} requests, {clock.Elapsed.TotalSeconds:F1} s"]);
+        }
         return new IsolationReport([.. state.Leaks, .. activity.Leaks, .. pairs.Leaks], state.ServerErrors.Select(Env.Factory.ErrorLog.Annotate).ToList(), changed, uncovered, attacked.Count, state.Requests + pairs.AttackerRequests, probesRun)
         {
             WritePairs = pairs.Pairs,
@@ -863,7 +868,7 @@ public static partial class IsolationAttack
             ListAnswerSortedDiscriminating = listAnswers.Sum(r => r.SortedDiscriminating),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
-            Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
+            Phases = [.. phases, .. state.BreakdownLines(), $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
 
@@ -1423,6 +1428,27 @@ public static partial class IsolationAttack
         /// <summary>Responses whose every header was judged (with the body).</summary>
         public int HeadersJudged => _headersJudged;
 
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _breakdown = new(StringComparer.Ordinal);
+
+        /// <summary>Tenant A's requests by phase, endpoint, kind and language (for the cost record:
+        /// where the attack's requests go).</summary>
+        public void CountKind(string key) => _breakdown.AddOrUpdate(key, 1, (_, n) => n + 1);
+
+        public IEnumerable<string> BreakdownLines()
+        {
+            static string Part(string key, int i) => key.Split('|')[i];
+            var all = _breakdown.ToList();
+            foreach (var (title, index) in new[] { ("phase and kind", -1), ("endpoint", 1) })
+            {
+                var groups = index < 0
+                    ? all.GroupBy(kv => Part(kv.Key, 0) + "|" + Part(kv.Key, 2) + "|" + Part(kv.Key, 3)).Select(g => (g.Key, g.Sum(kv => kv.Value)))
+                    : all.GroupBy(kv => Part(kv.Key, 1)).Select(g => (g.Key, g.Sum(kv => kv.Value)));
+                yield return $"cost by {title}: " + string.Join("; ", groups.OrderByDescending(g => g.Item2).Take(index < 0 ? 60 : 25).Select(g => $"{g.Key}={g.Item2}"));
+            }
+            yield return "cost by parameter: " + string.Join("; ", all.Where(kv => kv.Key.StartsWith("2|", StringComparison.Ordinal))
+                .GroupBy(kv => Part(kv.Key, 2)).Select(g => (g.Key, g.Sum(kv => kv.Value))).OrderByDescending(g => g.Item2).Take(40).Select(g => $"{g.Key}={g.Item2}"));
+        }
+
         public List<string> Leaks { get; } = [];
         public List<string> ServerErrors { get; } = [];
         public List<string> Oracles { get; } = [];
@@ -1444,6 +1470,7 @@ public static partial class IsolationAttack
             var text = await ResponseText.ReadAsync(response);
             Interlocked.Increment(ref _requests);
             attacker.Count();
+            CountKind($"1|{endpoint.Key}|{(label.EndsWith(']') ? label[(label.LastIndexOf('[') + 1)..^1] : "other")}|{(attacker.Arabic ? "ar" : "en")}");
             var status = (int)response.StatusCode;
             Judge(attacker, endpoint, label, status, text, ResponseHeaders.Text(response), sent ?? []);
             if (endpoint.Name == "auth.signOut" && !attacker.Anonymous)
@@ -1480,6 +1507,8 @@ public static partial class IsolationAttack
             Interlocked.Increment(ref _parameterAttacks);
             var uri = uriFor(value);
             var (status, text, headers) = await RawAsync(attacker, endpoint, uri, bodySchema, openApi, b, n);
+            var lang = attacker.Arabic ? "ar" : "en";
+            CountKind($"2|{endpoint.Key}|{parameter.In}:{parameter.Name}|attack-{lang}");
             Judge(attacker, endpoint, $"{uri} [{parameter.In} {parameter.Name}]", status, text, headers, [value]);
             if (endpoint.Method != "GET")
             {
@@ -1492,6 +1521,7 @@ public static partial class IsolationAttack
             }
             var control = await ControlForAsync(attacker, endpoint, value, parameter, baselineUri, bodySchema, openApi, b, n);
             var (controlStatus, controlText, controlHeaders) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
+            CountKind($"2|{endpoint.Key}|{parameter.In}:{parameter.Name}|control-{lang}");
             Interlocked.Increment(ref _differentialChecks);
             // Both values are scrubbed from both answers, so a value that is also an ordinary word
             // in every answer ("user" in "Users and access") is treated the same on both sides.
