@@ -28,7 +28,7 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
     /// <summary>Kinds of past runs the demo history holds besides the module's own (registered by later modules).</summary>
     private static readonly System.Collections.Immutable.ImmutableArray<(string Key, int MaxAttempts, string En, string Ar)> PastKinds =
     [
-        ("currency.importRates", 3, "Import exchange rates", "استيراد أسعار الصرف"),
+        ("currency.importRates", 3, "Load the daily rate file", "تحميل ملف الأسعار اليومي"),
         ("identity.exportUsers", 3, "Export the users list", "تصدير قائمة المستخدمين"),
         ("audit.digest", 3, "Nightly audit digest", "ملخص التدقيق الليلي"),
         ("inventory.revalue", 3, "Recalculate stock valuation", "إعادة احتساب تقييم المخزون"),
