@@ -317,7 +317,15 @@ public static partial class IsolationAttack
         foreach (var endpoint in endpoints)
         {
             await activity.TouchAsync(endpoint, victim, "tenant B reads right before A attacks this endpoint");
-            var bRouteValues = endpoint.RouteParameters.Count == 0 ? [] : activity.RouteValues.Where(v => !victimRouteValues.Contains(v, StringComparer.OrdinalIgnoreCase)).ToList();
+            // The values tenant B used itself beyond the five of each table sent anyway: the first,
+            // middle and last of each class (see RouteValueClasses). Tenant B opens every value
+            // tenant A sends right before it does (TouchEvery below), so what a per-id cache holds
+            // for each value A sends is B's whatever the value is; the hundreds of further ids of
+            // one table (about a thousand a route) added nothing the three of its class do not.
+            var bRouteValues = endpoint.RouteParameters.Count == 0
+                ? []
+                : RouteValueClasses.Representatives(
+                    activity.RouteValues.Where(v => !victimRouteValues.Contains(v, StringComparer.OrdinalIgnoreCase)).ToList(), routeClass);
             replayed += bRouteValues.Count;
             var attackValues = victimRouteValues.Concat(bRouteValues).ToList();
             var representativeValues = endpoint.RouteParameters.Count == 0
