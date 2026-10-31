@@ -1,0 +1,70 @@
+SET
+             ?column?             | count 
+----------------------------------+-------
+ no tenant set: sequences visible |     0
+(1 row)
+
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1793305920.572491
+(1 row)
+
+ set_config 
+------------
+ all
+(1 row)
+
+    ?column?    | array_agg 
+----------------+-----------
+ A sees tenants | 
+(1 row)
+
+          ?column?           | count | count | count 
+-----------------------------+-------+-------+-------
+ A count seq/counters/issued |     0 |     0 |     0
+(1 row)
+
+UPDATE 0
+INSERT 0 0
+DELETE 0
+ROLLBACK
+     ?column?     | count 
+------------------+-------
+ B prefix hacked? |     0
+(1 row)
+
+SET
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     
+--------------------------------------+-------------------+------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1793305932.347950 | all        | 1793305932.347950
+(1 row)
+
+    ?column?    |               array_agg                
+----------------+----------------------------------------
+ A sees tenants | {0190a000-0000-7000-8000-000000000001}
+(1 row)
+
+          ?column?           | count | count | count 
+-----------------------------+-------+-------+-------
+ A count seq/counters/issued |    44 |    11 |    33
+(1 row)
+
+  ?column?   | count 
+-------------+-------
+ B seq by id |     0
+(1 row)
+
+UPDATE 0
+psql:/tmp/dbattack2.sql:8: ERROR:  new row violates row-level security policy for table "counters"
+ROLLBACK
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     
+--------------------------------------+-------------------+------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1793305932.355635 | all        | 1793305932.355635
+(1 row)
+
+psql:/tmp/dbattack2.sql:12: ERROR:  insert or update on table "issued_numbers" violates foreign key constraint "fk_issued_numbers_sequences_tenant_id_sequence_id"
+DETAIL:  Key is not present in table "sequences".
+ROLLBACK

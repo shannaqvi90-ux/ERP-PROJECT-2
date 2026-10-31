@@ -1,0 +1,110 @@
+Test run for /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Modules.Numbering.Tests/bin/Release/net10.0/Erp.Modules.Numbering.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+/home/shan/critic/p10-numbering-r1-plant/tests/Erp.Modules.Numbering.Tests/bin/Release/net10.0/Erp.Modules.Numbering.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.13]   Discovering: Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:00.30]   Discovered:  Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:00.42]   Starting:    Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:10.49]     Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(type: "sales.order", gapless: False) [FAIL]
+[xUnit.net 00:00:10.49]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:00:10.49]                    ↓ (pos 0)
+[xUnit.net 00:00:10.49]       Collection: ["REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken"]
+[xUnit.net 00:00:10.49]       Stack Trace:
+[xUnit.net 00:00:10.49]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Modules.Numbering.Tests/CriticProbeTests.cs(72,0): at Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(String type, Boolean gapless)
+[xUnit.net 00:00:10.49]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:10.49]       Output:
+[xUnit.net 00:00:10.49]         types: accounting.journal,inventory.delivery,inventory.receipt,payments.payment,payments.receipt,purchasing.bill,purchasing.order,sales.creditNote,sales.invoice,sales.order,sales.quotation
+[xUnit.net 00:00:10.49]         PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=False next= -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":false,"perBranch":false,"nextNumber":"SX-202610-00001/10","nextValue":1
+[xUnit.net 00:00:10.49]         take -> SX-202610-00001/10
+[xUnit.net 00:00:10.49]         take -> SX-202610-00002/10
+[xUnit.net 00:00:10.49]         take -> SX-202610-00003/10
+[xUnit.net 00:00:10.49]         PUT prefix=SX-{YYYY}{MM}- reset=never gapless=False next= -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"never","gapless":false,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":4,
+[xUnit.net 00:00:10.49]         take -> SX-202610-00004/10
+[xUnit.net 00:00:10.49]         take -> SX-202610-00005/10
+[xUnit.net 00:00:10.49]         PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=False next= -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":false,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":4
+[xUnit.net 00:00:10.49]         preview after switching back: SX-202610-00004/10
+[xUnit.net 00:00:10.49]         take refused -> numbering.numberTaken SX-202610-00004/10
+[xUnit.net 00:00:10.49]         take refused -> numbering.numberTaken SX-202610-00004/10
+[xUnit.net 00:00:10.49]         take refused -> numbering.numberTaken SX-202610-00004/10
+[xUnit.net 00:00:10.49]         set next number 50 -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":
+[xUnit.net 00:00:10.61]     Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(type: "sales.quotation", gapless: True) [FAIL]
+[xUnit.net 00:00:10.61]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:00:10.61]                    ↓ (pos 0)
+[xUnit.net 00:00:10.61]       Collection: ["REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken"]
+[xUnit.net 00:00:10.61]       Stack Trace:
+[xUnit.net 00:00:10.61]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Modules.Numbering.Tests/CriticProbeTests.cs(72,0): at Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(String type, Boolean gapless)
+[xUnit.net 00:00:10.61]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:10.61]       Output:
+[xUnit.net 00:00:10.61]         types: accounting.journal,inventory.delivery,inventory.receipt,payments.payment,payments.receipt,purchasing.bill,purchasing.order,sales.creditNote,sales.invoice,sales.order,sales.quotation
+[xUnit.net 00:00:10.61]         PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=True next= -> 200 {"id":"01a1895f-c155-7044-8773-f07936a5ab0b","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.quotation","nameEn":"Quotation","nameAr":"عرض سعر","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":true,"perBranch":false,"nextNumber":"SX-202610-00001/10","nextValue":
+[xUnit.net 00:00:10.61]         take -> SX-202610-00001/10
+[xUnit.net 00:00:10.61]         take -> SX-202610-00002/10
+[xUnit.net 00:00:10.61]         take -> SX-202610-00003/10
+[xUnit.net 00:00:10.61]         PUT prefix=SX-{YYYY}{MM}- reset=never gapless=True next= -> 200 {"id":"01a1895f-c155-7044-8773-f07936a5ab0b","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.quotation","nameEn":"Quotation","nameAr":"عرض سعر","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"never","gapless":true,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":4
+[xUnit.net 00:00:10.61]         take -> SX-202610-00004/10
+[xUnit.net 00:00:10.61]         take -> SX-202610-00005/10
+[xUnit.net 00:00:10.61]         PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=True next= -> 200 {"id":"01a1895f-c155-7044-8773-f07936a5ab0b","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.quotation","nameEn":"Quotation","nameAr":"عرض سعر","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":true,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":
+[xUnit.net 00:00:10.61]         preview after switching back: SX-202610-00004/10
+[xUnit.net 00:00:10.61]         take refused -> numbering.numberTaken SX-202610-00004/10
+[xUnit.net 00:00:10.61]         take refused -> numbering.numberTaken SX-202610-00004/10
+[xUnit.net 00:00:10.61]         take refused -> numbering.numberTaken SX-202610-00004/10
+[xUnit.net 00:00:10.61]         set next number 50 -> 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-7503d909dfc36ee0a8e6f9c27ba688bc-449c77c3d8005fc2-00","errors":{"nextValue":[{"code":"numberingGaplessNextNumberFixed","message":"Numbers of this period have been given and this 
+[xUnit.net 00:00:10.74]   Finished:    Erp.Modules.Numbering.Tests (ID = '7f4f6a3d2d1594c2b97cb9b1b93fe8b0dcfd06d5b5d309b0b04387b4d3552622')
+  Failed Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(type: "sales.order", gapless: False) [845 ms]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: ["REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken"]
+  Stack Trace:
+     at Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(String type, Boolean gapless) in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Modules.Numbering.Tests/CriticProbeTests.cs:line 72
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ types: accounting.journal,inventory.delivery,inventory.receipt,payments.payment,payments.receipt,purchasing.bill,purchasing.order,sales.creditNote,sales.invoice,sales.order,sales.quotation
+ PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=False next= -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":false,"perBranch":false,"nextNumber":"SX-202610-00001/10","nextValue":1
+ take -> SX-202610-00001/10
+ take -> SX-202610-00002/10
+ take -> SX-202610-00003/10
+ PUT prefix=SX-{YYYY}{MM}- reset=never gapless=False next= -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"never","gapless":false,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":4,
+ take -> SX-202610-00004/10
+ take -> SX-202610-00005/10
+ PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=False next= -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":false,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":4
+ preview after switching back: SX-202610-00004/10
+ take refused -> numbering.numberTaken SX-202610-00004/10
+ take refused -> numbering.numberTaken SX-202610-00004/10
+ take refused -> numbering.numberTaken SX-202610-00004/10
+ set next number 50 -> 200 {"id":"01a1895f-c156-7324-a439-b5e2eede2a97","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.order","nameEn":"Sales order","nameAr":"أمر بيع","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":
+
+
+  Failed Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(type: "sales.quotation", gapless: True) [116 ms]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: ["REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken", "REFUSED:numbering.numberTaken"]
+  Stack Trace:
+     at Erp.Modules.Numbering.Tests.CriticProbeTests.Yearly_never_yearly_toggle_in_the_same_year(String type, Boolean gapless) in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Modules.Numbering.Tests/CriticProbeTests.cs:line 72
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ types: accounting.journal,inventory.delivery,inventory.receipt,payments.payment,payments.receipt,purchasing.bill,purchasing.order,sales.creditNote,sales.invoice,sales.order,sales.quotation
+ PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=True next= -> 200 {"id":"01a1895f-c155-7044-8773-f07936a5ab0b","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.quotation","nameEn":"Quotation","nameAr":"عرض سعر","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":true,"perBranch":false,"nextNumber":"SX-202610-00001/10","nextValue":
+ take -> SX-202610-00001/10
+ take -> SX-202610-00002/10
+ take -> SX-202610-00003/10
+ PUT prefix=SX-{YYYY}{MM}- reset=never gapless=True next= -> 200 {"id":"01a1895f-c155-7044-8773-f07936a5ab0b","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.quotation","nameEn":"Quotation","nameAr":"عرض سعر","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"never","gapless":true,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":4
+ take -> SX-202610-00004/10
+ take -> SX-202610-00005/10
+ PUT prefix=SX-{YYYY}{MM}- reset=yearly gapless=True next= -> 200 {"id":"01a1895f-c155-7044-8773-f07936a5ab0b","companyId":"0191260e-f481-7e03-9e85-1dd80bf3d93b","companyCode":"A1-CO","companyNameEn":"Alpha Trading","companyNameAr":"التجارة","documentType":"sales.quotation","nameEn":"Quotation","nameAr":"عرض سعر","prefix":"SX-{YYYY}{MM}-","suffix":"/{MM}","padding":5,"reset":"yearly","gapless":true,"perBranch":false,"nextNumber":"SX-202610-00004/10","nextValue":
+ preview after switching back: SX-202610-00004/10
+ take refused -> numbering.numberTaken SX-202610-00004/10
+ take refused -> numbering.numberTaken SX-202610-00004/10
+ take refused -> numbering.numberTaken SX-202610-00004/10
+ set next number 50 -> 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-7503d909dfc36ee0a8e6f9c27ba688bc-449c77c3d8005fc2-00","errors":{"nextValue":[{"code":"numberingGaplessNextNumberFixed","message":"Numbers of this period have been given and this 
+
+
+
+Test Run Failed.
+Total tests: 2
+     Failed: 2
+ Total time: 11.0421 Seconds

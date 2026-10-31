@@ -1,0 +1,37 @@
+Test run for /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.19]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.47]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.62]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:13.08]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [FAIL]
+[xUnit.net 00:00:13.08]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:13.08]                  ↓ (pos 0)
+[xUnit.net 00:00:13.08]       Expected: "numbering.companyNeedsEveryBranch"
+[xUnit.net 00:00:13.08]       Actual:   "companyNeedsEveryBranch"
+[xUnit.net 00:00:13.08]                  ↑ (pos 0)
+[xUnit.net 00:00:13.08]       Stack Trace:
+[xUnit.net 00:00:13.08]         /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(128,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence()
+[xUnit.net 00:00:13.08]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [991 ms]
+  Failed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [224 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "numbering.companyNeedsEveryBranch"
+Actual:   "companyNeedsEveryBranch"
+           ↑ (pos 0)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence() in /home/shan/critic/p10-numbering-r1-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 128
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [37 s]
+[xUnit.net 00:00:51.05]   Finished:    Erp.Gates.Tests (ID = '2d0b140b58d302ad5d945f61bfead9640f482c5bf14041521aa3b9f4e826b8a2')
+
+Test Run Failed.
+Total tests: 3
+     Passed: 2
+     Failed: 1
+ Total time: 51.3933 Seconds

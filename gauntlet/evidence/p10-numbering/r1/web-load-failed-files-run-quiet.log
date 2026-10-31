@@ -1,0 +1,68 @@
+
+ RUN  v4.0.18 /home/shan/critic/p10-numbering-r1/web
+
+ ✓ src/kernel/lists/ListView.test.tsx (30 tests) 3572ms
+     ✓ searches as the user types and opens the only match with Enter  329ms
+     ✓ closes an open record with Escape wherever the focus is on the page  326ms
+     ✓ lists a search best match first and opens the best match with Enter  330ms
+     ✓ waits for a just-applied search's own rows before Enter opens the best match  735ms
+     ✓ keeps the default order and Enter's usual meaning when the server did not rank a broad search  305ms
+     ✓ keeps a sort chosen from the header while searching  357ms
+ ✓ src/kernel/lists/deviceStores.test.tsx (5 tests) 4081ms
+     ✓ puts no row value or id in any store that outlives the document, and asks only the product's /api  1249ms
+     ✓ never shows another tenant's rows that a poisoned device hands back for every key, while its own page is slow  1676ms
+     ✓ self-test: catches plant L14 on screen (another tenant's kept page shown while the server is slow)  466ms
+     ✓ self-test: catches a list that keeps its rows in sessionStorage, a cookie or window.name  644ms
+ ✓ src/modules/tenancy/screens.test.tsx (68 tests) 4616ms
+     ✓ companies: where the user's roles only read (a role given in another company), the form offers no change and no branch line, even with every permission (critic p02 round 11)  382ms
+stdout | src/modules/shell/paletteActions.test.tsx > module actions in the command palette > an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need
+record actions run without one permission of their module: 26
+
+stdout | src/modules/shell/paletteActions.test.tsx > every palette entry, run by a user who may only read > sends nothing but reads (and the user's own settings), and opens no new record, on every screen
+palette entries swept for a reader: 45
+
+ ✓ src/modules/shell/clientIsolation.test.tsx (10 tests) 45059ms
+     ✓ tenant A sees, and the tab keeps, nothing of tenant B after B signs out  19400ms
+     ✓ in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out  19262ms
+     ✓ an address someone types or follows is kept, and stamped for the person in the tab  331ms
+     ✓ signing out forgets every cookie the document can read, whatever its path, and the tab's window name  419ms
+     ✓ with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B  2572ms
+     ✓ in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B  2500ms
+     ✓ a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail  321ms
+ ✓ src/modules/shell/paletteActions.test.tsx (49 tests) 46605ms
+     ✓ Allow sign-in again is not offered to a user who may change users but not see the sign-in history, in English or Arabic (critic p04 round 9, plant P4)  783ms
+     ✓ currency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen  601ms
+     ✓ currency.rates.print: shown in the palette only to a user whose roles grant currency.rates.read and its screen  581ms
+     ✓ currency.currencies.print: shown in the palette only to a user whose roles grant currency.currencies.read and its screen  580ms
+     ✓ identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen  572ms
+     ✓ identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen  563ms
+     ✓ identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen  555ms
+     ✓ identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen  554ms
+     ✓ identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen  549ms
+     ✓ identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen  549ms
+     ✓ identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen  553ms
+     ✓ numbering.sequences.print: shown in the palette only to a user whose roles grant numbering.sequences.read and its screen  548ms
+     ✓ tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen  557ms
+     ✓ tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen  551ms
+     ✓ tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen  545ms
+     ✓ tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen  545ms
+     ✓ every action that asks for a record says what to choose, in English and Arabic, and runs no command before  600ms
+     ✓ an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need  7244ms
+     ✓ New user from home keeps its new record open when the list arrives after the command ran  502ms
+     ✓ a user who may add a branch but to no company (only some branches of it) is not offered New branch  362ms
+     ✓ a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9)  551ms
+     ✓ is found by its words in either language, on an Arabic screen too  544ms
+     ✓ come first, once each: on the users screen New user, the list's own controls and Print or export  420ms
+     ✓ are found by the words of the module action they stand for: "print compan" on the companies screen (critic p02 round 10)  414ms
+     ✓ follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again  661ms
+     ✓ the palette offers a user's account actions exactly when the record shows their buttons  853ms
+     ✓ offers a user's account actions from every tab, exactly as on Details, and to a reader none  892ms
+     ✓ Reset password from "What they can do" opens Details with the reset's first choice focused; Delete user from the history asks first  493ms
+     ✓ sends nothing but reads (and the user's own settings), and opens no new record, on every screen  10874ms
+     ✓ the control: the same sweep for a user who may change everything finds the writes the entries make  9404ms
+
+ Test Files  5 passed (5)
+      Tests  162 passed (162)
+   Start at  04:52:44
+   Duration  47.51s (transform 2.11s, setup 57ms, import 2.57s, tests 103.93s, environment 924ms)
+
