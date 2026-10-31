@@ -535,7 +535,7 @@ public static partial class IsolationAttack
                 var routeValues = catchAll
                     ? values.Probe
                     : documentedRoute.Format == "uuid"
-                        ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Select(i => i.ToString())
+                        ? victim.IdsByTable.Values.SelectMany(ids => RouteValueClasses.Representatives(ids.Take(10).Select(i => i.ToString()).ToList(), _ => "table").Select(Guid.Parse)).Append(b.Id).Select(i => i.ToString())
                             .Concat(CreatedRouteValues(activity.RouteValues, victim, victimClass)).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
                         : values.All.ToList();
                 foreach (var value in routeValues)
@@ -590,7 +590,10 @@ public static partial class IsolationAttack
             {
                 var (candidates, operators) = column.Type switch
                 {
-                    Erp.Kernel.Lists.ListColumnType.Text => (values.Strings, new[] { "eq", "contains", "startswith", "endswith", "ne", "in" }),
+                    // The text values of one table column are one class (RouteValueClasses): its first,
+                    // middle and last value stand for the eight read from the column.
+                    Erp.Kernel.Lists.ListColumnType.Text => (RouteValueClasses.Representatives(values.Strings, v => values.StringClasses.GetValueOrDefault(v, "other")),
+                        new[] { "eq", "contains", "startswith", "endswith", "ne", "in" }),
                     Erp.Kernel.Lists.ListColumnType.Reference => (values.IdSample.Select(i => i.ToString()).ToList(), new[] { "eq", "ne" }),
                     _ => ((IReadOnlyList<string>)[], Array.Empty<string>()),
                 };
