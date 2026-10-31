@@ -320,7 +320,12 @@ public static partial class IsolationAttack
             var bRouteValues = endpoint.RouteParameters.Count == 0 ? [] : activity.RouteValues.Where(v => !victimRouteValues.Contains(v, StringComparer.OrdinalIgnoreCase)).ToList();
             replayed += bRouteValues.Count;
             var attackValues = victimRouteValues.Concat(bRouteValues).ToList();
-            await activity.TouchEveryAsync(endpoint, attackValues, "tenant B opens the route with every value A is about to send");
+            var representativeValues = endpoint.RouteParameters.Count == 0
+                ? []
+                : RouteValueClasses.Representatives(attackValues.Concat(endpoint.HasBody ? ownRouteValues : []).Distinct().ToList(), routeClass);
+            // Tenant A's Arabic session sends the representative values only (below), so those are
+            // the ones tenant B's Arabic session opens first.
+            await activity.TouchEveryAsync(endpoint, attackValues, "tenant B opens the route with every value A is about to send", arabicValues: representativeValues);
             var paths = endpoint.RouteParameters.Count == 0
                 ? [endpoint.Path(_ => "")]
                 : attackValues.Concat(endpoint.HasBody ? ownRouteValues : [])
@@ -333,9 +338,7 @@ public static partial class IsolationAttack
             // table the route names (the session is resolved before the route is handled).
             var representativePaths = endpoint.RouteParameters.Count == 0
                 ? paths.ToHashSet()
-                : RouteValueClasses.Representatives(
-                        attackValues.Concat(endpoint.HasBody ? ownRouteValues : []).Distinct().ToList(), routeClass)
-                    .Select(value => endpoint.Path(_ => value)).ToHashSet();
+                : representativeValues.Select(value => endpoint.Path(_ => value)).ToHashSet();
             var bodySchema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
             var signIn = endpoint.Name == "auth.signIn";
 
