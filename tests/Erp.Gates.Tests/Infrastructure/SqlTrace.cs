@@ -97,6 +97,8 @@ public static class SqlTrace
     private static readonly Lazy<IReadOnlyList<(string Function, string Name)>> Functions = new(() =>
         ReviewedCallers.Read().Select(c => c.Function).Distinct()
             .Select(f => (f, f.Split('.').Last().ToLowerInvariant())).ToList());
+    private static readonly Lazy<System.Buffers.SearchValues<string>?> FunctionNames = new(() =>
+        Functions.Value.Count == 0 ? null : System.Buffers.SearchValues.Create(Functions.Value.Select(f => f.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), StringComparison.OrdinalIgnoreCase));
     private static readonly Lazy<ActivityListener> Listener = new(() =>
     {
         var listener = new ActivityListener
@@ -329,7 +331,13 @@ public static class SqlTrace
                 StatisticsReads.Enqueue(($"{inRequest.Method} {inRequest.Path}", text.Length <= 240 ? text : text[..240] + "…", inRequest.App));
             }
         }
-        // No lower-case copy of every statement (millions over an attack): the names are ASCII.
+        // No lower-case copy of every statement (millions over an attack): the names are ASCII. One
+        // pass over the text finds out whether any name occurs (the statements that name one are
+        // few); only then is each name looked for.
+        if (FunctionNames.Value is { } names && text.AsSpan().IndexOfAny(names) < 0)
+        {
+            return;
+        }
         foreach (var (function, name) in Functions.Value)
         {
             if (!text.Contains(name, StringComparison.OrdinalIgnoreCase))
