@@ -478,6 +478,7 @@ public static partial class IsolationAttack
         // judged for B's markers but not compared with a value that exists nowhere.
         state.AttackerHeld = await HeldByAsync(Env, a.Id, values.Strings);
         state.Corpus = await ControlCorpus.ReadAsync(Env, a.Id);
+        Assert.True(state.Corpus.Characters > 0, "The attacker's own data could not be read, so controls would not be checked against it.");
         var work = new List<(bool Get, Func<Task> Run)>();
         foreach (var endpoint in endpoints)
         {
@@ -570,7 +571,7 @@ public static partial class IsolationAttack
         await Parallel.ForEachAsync(work.Where(w => w.Get), parallel, async (item, _) => await item.Run());
         await Parallel.ForEachAsync(work.Where(w => !w.Get), parallel, async (item, _) => await item.Run());
 
-        Phase("tenant B values in route and query parameters");
+        Phase($"tenant B values in route and query parameters (controls checked against {state.Corpus.Characters} characters of tenant A's data, {state.Corpus.Fallbacks} longer than their value)");
 
         // Phase 2b: every registered list through its query contract, with tenant B's values inside
         // filter expressions (each compared with a value that exists nowhere), grouped and sorted

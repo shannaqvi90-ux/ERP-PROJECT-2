@@ -258,14 +258,24 @@ public static class SqlTrace
         });
     }
 
+    /// <summary>One copy of each short text the trace keeps for every request (the tenant, the
+    /// endpoint name, the setting and its statement): the queues hold millions of entries over a
+    /// run, and most of their text is these same few strings (the trace was most of the memory of
+    /// a gate process). Texts beyond 256 characters, and any beyond the first 50,000 distinct, are
+    /// kept as they come.</summary>
+    private static string? Intern(string? text) =>
+        text is null || text.Length > 256 || Interned.Count > 50_000 ? text : Interned.GetOrAdd(text, text);
+
+    private static readonly ConcurrentDictionary<string, string> Interned = new(StringComparer.Ordinal);
+
     private static void Record(Activity activity)
     {
         if (activity.Source.Name == TenantBinding.SourceName)
         {
             if (activity.OperationName == TenantBinding.BindActivity && activity.GetCustomProperty(CallerProperty) is Caller bind && bind.Path is not null)
             {
-                Binds.Enqueue(new TracedBind(activity.GetTagItem(TenantBinding.TenantTag) as string ?? "", activity.GetTagItem(TenantBinding.ActorKindTag) as string ?? "",
-                    bind.Endpoint, bind.Path, bind.Method, bind.ResolvingSession, bind.PrincipalTenant, bind.App)
+                Binds.Enqueue(new TracedBind(Intern(activity.GetTagItem(TenantBinding.TenantTag) as string) ?? "", Intern(activity.GetTagItem(TenantBinding.ActorKindTag) as string) ?? "",
+                    Intern(bind.Endpoint), bind.Path, bind.Method, bind.ResolvingSession, Intern(bind.PrincipalTenant), bind.App)
                 {
                     Request = bind.Request,
                     Sequence = bind.Sequence,
@@ -288,13 +298,13 @@ public static class SqlTrace
             Interlocked.Increment(ref _requestStatements);
             if (inRequest is { RequiredTenant: { } required, App: { } principalApp, Request: { } principalRequest })
             {
-                Principals.TryAdd((principalApp, principalRequest), required);
+                Principals.TryAdd((principalApp, principalRequest), Intern(required)!);
             }
             var capture = StatementCapture.Of(activity);
             if (ChangesSettings(text))
             {
-                Settings.Enqueue(new TracedSetting(text, inRequest.Endpoint, inRequest.Path, capture?.Caller, inRequest.FromSession,
-                    UserOf(activity), inRequest.App));
+                Settings.Enqueue(new TracedSetting(Intern(text)!, Intern(inRequest.Endpoint), inRequest.Path, Intern(capture?.Caller), inRequest.FromSession,
+                    Intern(UserOf(activity)), inRequest.App));
             }
             // The tenant each statement runs under: every setting change is read with the values of
             // the statement's own parameters. A statement without a capture went through a pool the
@@ -317,8 +327,9 @@ public static class SqlTrace
                                  c.Name.Equals(SqlSettings.TenantSetting, StringComparison.OrdinalIgnoreCase) ||
                                  (c.Name.StartsWith("app.", StringComparison.OrdinalIgnoreCase) && c.Local != true)))
                     {
-                        Changes.Enqueue(new TracedSettingChange(change, inRequest.Endpoint, inRequest.Path, inRequest.Method, inRequest.Request,
-                            inRequest.RequiredTenant, inRequest.ResolvingSession, captured.Caller, captured.ProcessId, inRequest.App));
+                        Changes.Enqueue(new TracedSettingChange(new SqlSettings.Change(Intern(change.Name), Intern(change.Value), change.Computed, change.Local, Intern(change.Source)!),
+                            Intern(inRequest.Endpoint), inRequest.Path, inRequest.Method, inRequest.Request,
+                            Intern(inRequest.RequiredTenant), inRequest.ResolvingSession, Intern(captured.Caller), captured.ProcessId, inRequest.App));
                     }
                 }
             }
@@ -358,6 +369,8 @@ public static class SqlTrace
 
     /// <summary>The database user of the statement's connection, from the data source name Npgsql
     /// reports (the connection string without its password), when it is there.</summary>
+    private static readonly ConcurrentDictionary<string, string?> UsersOfSource = new(StringComparer.Ordinal);
+
     private static string? UserOf(Activity activity)
     {
         var source = activity.GetTagItem("db.npgsql.data_source") as string;
@@ -365,8 +378,12 @@ public static class SqlTrace
         {
             return null;
         }
-        var match = Regex.Match(source, @"(?:^|;)\s*(?:Username|User ID|User Id|UserId|User)\s*=\s*([^;]+)", RegexOptions.IgnoreCase);
-        return match.Success ? match.Groups[1].Value.Trim() : null;
+        // The data source name is the same few strings for every statement of a run.
+        return UsersOfSource.GetOrAdd(source, name =>
+        {
+            var match = Regex.Match(name, @"(?:^|;)\s*(?:Username|User ID|User Id|UserId|User)\s*=\s*([^;]+)", RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups[1].Value.Trim() : null;
+        });
     }
 }
 
