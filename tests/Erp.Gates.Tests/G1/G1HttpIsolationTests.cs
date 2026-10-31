@@ -1301,7 +1301,10 @@ public static partial class IsolationAttack
     private static IEnumerable<string> ValuesFor(ApiParameter parameter, VictimValues values) => parameter switch
     {
         { Format: "uuid" } => values.IdSample.Select(i => i.ToString()),
-        { Type: "string" } => values.All,
+        // Text values of one column are one class (the first, middle and last of the eight read
+        // from each column stand for it, see RouteValueClasses); every sampled id is sent.
+        { Type: "string" } => values.IdSample.Select(i => i.ToString())
+            .Concat(RouteValueClasses.Representatives(values.Strings, v => values.StringClasses.GetValueOrDefault(v, "other"))),
         _ => [],
     };
 

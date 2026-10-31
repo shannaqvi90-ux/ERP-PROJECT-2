@@ -33,6 +33,10 @@ public sealed class VictimValues
     /// and not contained in any row of the other tenant.</summary>
     public required IReadOnlyList<string> Markers { get; init; }
 
+    /// <summary>Where each text value was read: its table and column (the class a value stands for
+    /// when a parameter's values are sent as representatives of their classes).</summary>
+    public IReadOnlyDictionary<string, string> StringClasses { get; init; } = new Dictionary<string, string>();
+
     /// <summary>Sampled ids then every text value.</summary>
     public IEnumerable<string> All => IdSample.Select(i => i.ToString()).Concat(Strings);
 
@@ -44,6 +48,7 @@ public sealed class VictimValues
         publicValues ??= new HashSet<string>();
         await using var admin = await env.OpenAdminAsync();
         var strings = new List<string>();
+        var classes = new Dictionary<string, string>(StringComparer.Ordinal);
         var markers = new List<string>();
         var probe = new List<string> { victim.TenantId.ToString(), victim.Code };
         probe.AddRange(victim.IdsByTable.Values.Where(ids => ids.Count > 0).Select(ids => ids[0].ToString()));
@@ -85,6 +90,7 @@ public sealed class VictimValues
                         continue;
                     }
                     strings.Add(value);
+                    classes.TryAdd(value, $"{table.Qualified}.{column.Name}");
                     if (table.Schema != "audit" && value.Length >= 16)
                     {
                         markers.Add(value);
@@ -113,6 +119,7 @@ public sealed class VictimValues
             IdSample = victim.IdsByTable.Values.SelectMany(ids => ids.Take(5)).Append(victim.TenantId).Distinct().ToList(),
             Probe = probe.Distinct(StringComparer.Ordinal).ToList(),
             Strings = strings.Distinct(StringComparer.Ordinal).ToList(),
+            StringClasses = classes,
             Markers = markers.Distinct(StringComparer.Ordinal).ToList(),
         };
     }
