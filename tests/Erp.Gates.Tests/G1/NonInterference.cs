@@ -1108,19 +1108,7 @@ public static partial class NonInterference
     /// </summary>
     internal sealed class ConfigurationWatch
     {
-        private sealed class Host(string name, Microsoft.Extensions.Configuration.IConfiguration configuration, Dictionary<string, string?> last,
-            List<(Microsoft.Extensions.Configuration.ConfigurationProvider Provider, Dictionary<string, string?> Snapshot)>? providers)
-        {
-            public string Name { get; } = name;
-            public Microsoft.Extensions.Configuration.IConfiguration Configuration { get; } = configuration;
-            public Dictionary<string, string?> Last { get; set; } = last;
-
-            /// <summary>Each provider with a copy of its data as last seen, or null for a host whose
-            /// configuration is not a root of plain providers (compared by reading it all, as before).</summary>
-            public List<(Microsoft.Extensions.Configuration.ConfigurationProvider Provider, Dictionary<string, string?> Snapshot)>? Providers { get; set; } = providers;
-        }
-
-        private readonly List<Host> _hosts = [];
+        private readonly List<(string Name, Microsoft.Extensions.Configuration.IConfiguration Configuration, Dictionary<string, string?> Last)> _hosts = [];
 
         public int KeysWatched { get; private set; }
 
@@ -1129,81 +1117,28 @@ public static partial class NonInterference
             var configuration = services.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
             var now = Read(configuration);
             KeysWatched += now.Count;
-            _hosts.Add(new Host(name, configuration, now, SnapshotProviders(configuration)));
+            _hosts.Add((name, configuration, now));
         }
 
         /// <summary>Reports every key that changed in any host since the last check, as done by
         /// <paramref name="label"/>.</summary>
         public void Check(State state, string label)
         {
-            foreach (var host in _hosts)
+            for (var i = 0; i < _hosts.Count; i++)
             {
-                // A write to configuration reaches the data of the providers (the root's indexer
-                // sets the key in each of them), so a host whose providers hold exactly what they
-                // held at the last check cannot have a different configuration: compared in place,
-                // without reading the whole configuration (a recursive read of every key, about
-                // 0.7 ms of processor time a host, twice for every request judged). A provider that
-                // changed, or a host that is not a root of plain providers, is read in full as before.
-                if (host.Providers is { } providers && providers.All(p => SameData(p.Provider, p.Snapshot)))
+                var (name, configuration, last) = _hosts[i];
+                var now = Read(configuration);
+                foreach (var key in now.Keys.Union(last.Keys, StringComparer.OrdinalIgnoreCase))
                 {
-                    continue;
-                }
-                var now = Read(host.Configuration);
-                foreach (var key in now.Keys.Union(host.Last.Keys, StringComparer.OrdinalIgnoreCase))
-                {
-                    var before = host.Last.GetValueOrDefault(key);
+                    var before = last.GetValueOrDefault(key);
                     var after = now.GetValueOrDefault(key);
                     if (!string.Equals(before, after, StringComparison.Ordinal))
                     {
-                        state.Findings.Add($"{label} changed the configuration of {host.Name} while serving ({key}: {(before is null ? "unset" : $"'{Short(before)}'")} → {(after is null ? "unset" : $"'{Short(after)}'")}): configuration is shared by every tenant of the process");
+                        state.Findings.Add($"{label} changed the configuration of {name} while serving ({key}: {(before is null ? "unset" : $"'{Short(before)}'")} → {(after is null ? "unset" : $"'{Short(after)}'")}): configuration is shared by every tenant of the process");
                     }
                 }
-                host.Last = now;
-                host.Providers = SnapshotProviders(host.Configuration);
+                _hosts[i] = (name, configuration, now);
             }
-        }
-
-        private static readonly System.Reflection.PropertyInfo? DataProperty =
-            typeof(Microsoft.Extensions.Configuration.ConfigurationProvider).GetProperty("Data", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-
-        private static IDictionary<string, string?>? DataOf(Microsoft.Extensions.Configuration.ConfigurationProvider provider) =>
-            DataProperty?.GetValue(provider) as IDictionary<string, string?>;
-
-        private static List<(Microsoft.Extensions.Configuration.ConfigurationProvider, Dictionary<string, string?>)>? SnapshotProviders(Microsoft.Extensions.Configuration.IConfiguration configuration)
-        {
-            if (configuration is not Microsoft.Extensions.Configuration.IConfigurationRoot root || DataProperty is null)
-            {
-                return null;
-            }
-            var list = new List<(Microsoft.Extensions.Configuration.ConfigurationProvider, Dictionary<string, string?>)>();
-            foreach (var provider in root.Providers)
-            {
-                // A provider that is not a plain one (chained to another configuration) cannot be
-                // compared in place: the whole host is read in full.
-                if (provider is not Microsoft.Extensions.Configuration.ConfigurationProvider plain || DataOf(plain) is not { } data)
-                {
-                    return null;
-                }
-                list.Add((plain, new Dictionary<string, string?>(data, StringComparer.OrdinalIgnoreCase)));
-            }
-            return list;
-        }
-
-        private static bool SameData(Microsoft.Extensions.Configuration.ConfigurationProvider provider, Dictionary<string, string?> snapshot)
-        {
-            var data = DataOf(provider);
-            if (data is null || data.Count != snapshot.Count)
-            {
-                return false;
-            }
-            foreach (var (key, value) in data)
-            {
-                if (!snapshot.TryGetValue(key, out var before) || !string.Equals(before, value, StringComparison.Ordinal))
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         private static Dictionary<string, string?> Read(Microsoft.Extensions.Configuration.IConfiguration configuration)
