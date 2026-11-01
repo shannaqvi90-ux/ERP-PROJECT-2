@@ -75,5 +75,10 @@
   "numbering.validation.numberingNextNumberRange": "Enter a whole number from 1 to {0}.",
   "numbering.action.print": "Print the document numbering list",
   "numbering.action.printKeywords": "print pdf export csv excel document numbering sequences",
-  "numbering.palette.sequences": "Document numbering"
+  "numbering.palette.sequences": "Document numbering",
+  "numbering.validation.numberingTaxGapless": "A tax invoice or tax credit note sequence never skips a number: this cannot be turned off.",
+  "numbering.validation.numberingPatternRepeatsNumber": "This change could give {0} again, a number already given. Change the prefix, suffix or digits so that no number already given can come up again.",
+  "numbering.validation.numberingGaplessNextNumberFixed": "Numbers of this period have been given and this sequence never skips: the next number stays {0}.",
+  "numbering.sequence.taxNote": "Tax documents are numbered without gaps and this cannot be turned off. Once the first number of a period is given, the next number follows on and cannot be moved; a pattern change that could repeat a number already given is refused.",
+  "numbering.sequence.nextNumberFixed": "A number of this period has been given: the next number follows on and cannot be changed."
 }

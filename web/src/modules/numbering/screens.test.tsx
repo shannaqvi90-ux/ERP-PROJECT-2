@@ -137,6 +137,27 @@ describe("document numbering screen", () => {
     expect(preview()).toBe("INV-26-01500");
   });
 
+  it("a tax document's sequence shows gapless fixed on, says why, and fixes the next number once a number of the period is given", async () => {
+    await open("/numbering/sequences?open=s2");
+    await wait();
+    const gapless = view!.container.querySelector<HTMLInputElement>('input[name="gapless"]')!;
+    expect(gapless.checked).toBe(true);
+    expect(gapless.disabled).toBe(true);
+    expect(view!.container.querySelector('[data-testid="tax-note"]')?.textContent).toContain("cannot be turned off");
+    expect(field("nextValue").disabled).toBe(true);
+    await key(field("padding"), { key: "Enter", code: "Enter" });
+    const put = calls.find((c) => c.method === "PUT" && c.url === "/api/numbering/sequences/s2");
+    expect(put?.body).toMatchObject({ gapless: true });
+  });
+
+  it("any other sequence keeps its gapless choice and its next number open", async () => {
+    await open("/numbering/sequences?open=s1");
+    await wait();
+    expect(view!.container.querySelector<HTMLInputElement>('input[name="gapless"]')!.disabled).toBe(false);
+    expect(view!.container.querySelector('[data-testid="tax-note"]')).toBeNull();
+    expect(field("nextValue").disabled).toBe(false);
+  });
+
   it("shows the server's refusal on its field", async () => {
     await open("/numbering/sequences?open=s1", all, (method, p) =>
       method === "PUT" && p === "/api/numbering/sequences/s1"

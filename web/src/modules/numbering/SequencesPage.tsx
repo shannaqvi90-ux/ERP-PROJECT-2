@@ -156,6 +156,8 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
   const bind = form.bind;
   const name = sequence ? (language === "ar" ? sequence.nameAr || sequence.nameEn : sequence.nameEn || sequence.nameAr) : "";
   const company = sequence ? (language === "ar" ? sequence.companyNameAr || sequence.companyNameEn : sequence.companyNameEn) : "";
+  // A tax document's next number is set only before the first number of the period is given.
+  const nextNumberFixed = Boolean(sequence?.tax && sequence.today !== "" && sequence.counters.some((c) => c.branchId === null && c.period === periodOf(sequence.reset, sequence.today) && c.lastIssued !== null));
   return (
     <RecordForm
       form={form}
@@ -178,11 +180,12 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
       <FormSection title={t("numbering.sequence.counting")}>
         <SelectField field={bind("reset") as FieldBinding<Reset | "">} label={t("numbering.sequence.reset")}
           options={resets().map((r) => ({ value: r, label: t(`numbering.reset.${r}`) }))} />
-        <BooleanField field={bind("gapless")} label={t("numbering.sequence.gaplessLabel")} />
+        <BooleanField field={bind("gapless")} label={t("numbering.sequence.gaplessLabel")} disabled={sequence?.tax} />
+        {sequence?.tax && <p className="field wide muted" data-testid="tax-note">{t("numbering.sequence.taxNote")}</p>}
         <BooleanField field={bind("perBranch")} label={t("numbering.sequence.perBranchLabel")} />
         <TextField field={bind("nextValue")} label={t("numbering.sequence.setNextNumber")} dir="ltr" inputMode="numeric" maxLength={18}
-          hint={form.draft.perBranch ? t("numbering.sequence.nextNumberPerBranch") : t("numbering.sequence.nextNumberHint")}
-          disabled={form.draft.perBranch} />
+          hint={form.draft.perBranch ? t("numbering.sequence.nextNumberPerBranch") : nextNumberFixed ? t("numbering.sequence.nextNumberFixed") : t("numbering.sequence.nextNumberHint")}
+          disabled={form.draft.perBranch || nextNumberFixed} />
       </FormSection>
     </RecordForm>
   );

@@ -21,6 +21,8 @@ export type SequenceRow = {
   updatedAt: string;
   version: number;
   canUpdate: boolean;
+  /** A tax document: gapless always, the next number fixed once a period's first number is given. */
+  tax: boolean;
 };
 
 export type SequenceBranch = { id: string; code: string; nameEn: string; nameAr: string };

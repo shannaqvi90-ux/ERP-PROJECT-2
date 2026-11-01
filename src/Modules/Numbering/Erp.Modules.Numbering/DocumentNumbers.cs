@@ -96,7 +96,7 @@ internal sealed class DocumentNumbers(
     private async Task<Plan> PlanAsync(NumberRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (types.Find(request.DocumentType) is null)
+        if (types.Find(request.DocumentType) is not { } type)
         {
             throw new NumberingException(NumberingException.DocumentTypeUnknown, request.DocumentType);
         }
@@ -111,6 +111,11 @@ internal sealed class DocumentNumbers(
         var sequence = await db.Sequences.AsNoTracking()
             .SingleOrDefaultAsync(s => s.CompanyId == request.CompanyId && s.DocumentType == request.DocumentType, cancellationToken)
             ?? throw new NumberingException(NumberingException.SequenceMissing, request.DocumentType);
+        if (type.Tax)
+        {
+            // A tax document's sequence is gapless always, whatever the stored setting says.
+            sequence.Gapless = true;
+        }
         Guid? counterBranch = null;
         string? branchCode = null;
         if (request.BranchId is { } branchId)

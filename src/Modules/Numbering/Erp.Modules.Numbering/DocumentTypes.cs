@@ -11,21 +11,21 @@ namespace Erp.Modules.Numbering;
 /// of those modules then registers its own with
 /// <see cref="NumberingRegistration.AddNumberedDocumentType"/> and this list loses the entry. The
 /// defaults are the product's: a short prefix with the year, five digits, a new run each year (each
-/// month for journal vouchers), and the tax documents and journal vouchers gapless. Whether the law
-/// requires tax invoices and credit notes to run without gaps is a statutory question for the owner
-/// (gauntlet human gate); gapless is the default because it is the stricter choice.
+/// month for journal vouchers), and the tax documents and journal vouchers gapless. Tax
+/// invoices and tax credit notes are tax documents (<see cref="NumberedDocumentType.Tax"/>): gapless
+/// always, by the owner's rule in docs/compliance/vat-tax-document-numbering.md.
 /// </summary>
 internal static class StandardDocumentTypes
 {
-    private static NumberedDocumentType Type(string key, string prefix, bool gapless = false, string reset = NumberReset.Yearly, int padding = 5) =>
-        new(key, $"numbering.documentType.{key}", prefix, padding, reset, gapless);
+    private static NumberedDocumentType Type(string key, string prefix, bool gapless = false, string reset = NumberReset.Yearly, int padding = 5, bool tax = false) =>
+        new(key, $"numbering.documentType.{key}", prefix, padding, reset, gapless || tax, Tax: tax);
 
     public static readonly IReadOnlyList<NumberedDocumentType> All =
     [
         Type("sales.quotation", "QT-{YYYY}-"),
         Type("sales.order", "SO-{YYYY}-"),
-        Type("sales.invoice", "INV-{YYYY}-", gapless: true),
-        Type("sales.creditNote", "CN-{YYYY}-", gapless: true),
+        Type("sales.invoice", "INV-{YYYY}-", tax: true),
+        Type("sales.creditNote", "CN-{YYYY}-", tax: true),
         Type("purchasing.order", "PO-{YYYY}-"),
         Type("purchasing.bill", "BILL-{YYYY}-"),
         Type("inventory.receipt", "GRN-{YYYY}-"),
