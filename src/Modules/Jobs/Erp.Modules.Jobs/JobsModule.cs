@@ -1,3 +1,4 @@
+using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Shell;
@@ -46,6 +47,10 @@ public sealed class JobsModule : ErpModule
         });
         module.Menu(new MenuEntry("jobs.jobs", "jobs.menu.jobs", "/jobs/jobs", JobsPermissions.JobsRead, Order: 870, Group: "settings"));
         module.Menu(new MenuEntry("jobs.schedules", "jobs.menu.schedules", "/jobs/schedules", JobsPermissions.SchedulesRead, Order: 871, Group: "settings"));
+        // Record history (p07): every table carrying the audit trigger is a kind of audited record.
+        module.AuditedRecord(new AuditRecordType("jobs.jobs", "jobs.record.job", JobsPermissions.JobsRead, "/jobs/jobs/{id}"));
+        module.AuditedRecord(new AuditRecordType("jobs.job_attempts", "jobs.record.attempt", JobsPermissions.JobsRead, null));
+        module.AuditedRecord(new AuditRecordType("jobs.schedules", "jobs.record.schedule", JobsPermissions.SchedulesRead, "/jobs/schedules/{id}"));
         module.List(JobsList.Create());
         module.List(SchedulesList.Create());
         // Reports print both lists exactly as their screens show them.

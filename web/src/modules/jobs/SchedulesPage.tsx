@@ -120,6 +120,7 @@ function ScheduleForm({ id, nav, types, onSaved, onClose }: { id: string | null;
   return (
     <RecordForm
       form={form}
+      record={{ type: "jobs.schedules", id }}
       label={t("jobs.schedule.form")}
       title={schedule ? schedule.scheduleName : t("jobs.schedule.new")}
       subtitle={schedule ? <span dir="ltr">{schedule.cron}</span> : undefined}

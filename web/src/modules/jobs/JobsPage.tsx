@@ -231,6 +231,7 @@ function JobPanel({ id, nav, onChanged, onOpen, onClose }: { id: string; nav?: R
   return (
     <RecordForm
       form={form}
+      record={{ type: "jobs.jobs", id }}
       label={t("jobs.job.form")}
       title={title}
       readOnlyReason={t("jobs.job.readOnlyReason")}
