@@ -115,7 +115,7 @@ test('stop_process_trees ends a process, its children and grandchildren, and not
 
 // ---- The ratchet's quiet judgement (verify.quietSeconds) ----
 
-function ratchetRun({ seconds, start, end, samples, max = 3600 }) {
+function ratchetRun({ machine, seconds, start, end, samples, max = 3600 }) {
   const dir = mkdtempSync(join(tmpdir(), 'erp-ratchet-'));
   try {
     const ratchet = { minimums: { 'suite.dotnetTests': 0, 'suite.webUnitTests': 0, 'suite.e2eTests': 0, 'suite.compareTests': 0, 'suite.buildTests': 0 }, maximums: { 'verify.quietSeconds': max, 'verify.cpuSeconds': 100000 } };
@@ -127,6 +127,7 @@ function ratchetRun({ seconds, start, end, samples, max = 3600 }) {
     if (end) writeFileSync(join(out, 'verify-end-load'), `${end} 16\n`);
     if (samples) writeFileSync(join(out, 'verify-load-samples'), samples.map((l, i) => `${1700000000 + 15 * i} ${l} 16`).join('\n') + '\n');
     for (const s of ['dotnet', 'web', 'e2e', 'timing']) writeFileSync(join(out, `cpu-${s}`), '10\n');
+    if (machine !== undefined) writeFileSync(join(out, 'cpu-machine'), `${machine}\n`);
     const r = spawnSync(process.execPath, [join(build, 'ratchet-check.mjs'), join(dir, 'ratchet.json'), out], { encoding: 'utf8' });
     return { status: r.status, text: r.stdout + r.stderr };
   } finally {
@@ -164,4 +165,59 @@ test('samples that cannot be read do not make a run quiet: an empty or broken sa
   // A sample file with no readable sample falls back to the start and end readings.
   const r = ratchetRun({ seconds: 3700, start: 0.5, end: 1.2, samples: [] });
   assert.equal(r.status, 1, r.text);
+});
+
+// The machine's busy processor time (needs-human #35): parsed from /proc/stat by ./erp verify, printed by the ratchet check.
+const busyTicks = line => spawnSync('bash', ['-c', 'source "$1"; machine_busy_ticks "$2"', 'bash', join(build, 'verify-processes.sh'), line], { encoding: 'utf8' });
+
+test('the machine\'s busy ticks are user + nice + system + irq + softirq + steal, never idle or iowait', () => {
+  const r = busyTicks('cpu  1000 20 300 90000 4000 5 6 7 0 0');
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout.trim(), String(1000 + 20 + 300 + 5 + 6 + 7));
+});
+
+test('an older kernel\'s line without the steal column still parses', () => {
+  const r = busyTicks('cpu  10 0 5 100 3 1 2');
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout.trim(), '18');
+});
+
+test('a line that is not the aggregate cpu line, or has a non-number, gives nothing and fails', () => {
+  for (const line of ['cpu0 1 2 3 4 5 6 7 0', 'intr 12345', 'cpu  a 0 5 100 3 1 2', 'cpu  1 2']) {
+    const r = busyTicks(line);
+    assert.notEqual(r.status, 0, line);
+    assert.equal(r.stdout.trim(), '', line);
+  }
+});
+
+test('the live /proc/stat gives a number that only grows', { skip: !existsSync('/proc/stat') }, () => {
+  const a = spawnSync('bash', ['-c', 'source "$1"; machine_busy_ticks', 'bash', join(build, 'verify-processes.sh')], { encoding: 'utf8' });
+  assert.equal(a.status, 0, a.stderr);
+  assert.match(a.stdout.trim(), /^[0-9]+$/);
+});
+
+test('cpu-machine is the busy seconds between the start and the end, with two decimals', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'erp-machine-cpu-'));
+  try {
+    writeFileSync(join(dir, 'machine-cpu-start'), '1000\n');
+    // 100 ticks per second: 1000 -> 1000 + 12345 ticks = 123.45 s. The end reading is stubbed by a fake /proc/stat reader.
+    const script = 'source "$1"; machine_busy_ticks() { echo 13345; }; getconf() { echo 100; }; machine_cpu_end "$2"';
+    const r = spawnSync('bash', ['-c', script, 'bash', join(build, 'verify-processes.sh'), dir], { encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(readFileSync(join(dir, 'cpu-machine'), 'utf8').trim(), '123.45');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('the ratchet check reports the machine\'s processor time, the verify\'s and the difference, and judges nothing by it', () => {
+  const r = ratchetRun({ seconds: 3500, start: 0.5, end: 1.2, samples: [0.5, 2, 1.2], machine: 100 });
+  assert.equal(r.status, 0, r.text);
+  assert.match(r.text, /machine processor time over the run: 100 s; verify stages 40 s; other work beside the verify 60 s \(60\.0 % of the machine's\)/);
+});
+
+test('a run without cpu-machine says it was not recorded and still passes', () => {
+  const r = ratchetRun({ seconds: 3500, start: 0.5, end: 1.2, samples: [0.5, 2, 1.2] });
+  assert.equal(r.status, 0, r.text);
+  assert.match(r.text, /machine processor time over the run: not recorded/);
 });

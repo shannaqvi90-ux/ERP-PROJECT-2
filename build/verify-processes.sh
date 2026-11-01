@@ -67,3 +67,45 @@ sample_load() {
     sleep "$every"
   done
 }
+
+# machine_busy_ticks [<cpu line>]: the whole machine's busy processor time in clock ticks from the
+# aggregate "cpu" line of /proc/stat (or the line given): user + nice + system + irq + softirq +
+# steal. Idle and iowait are not busy; guest time is already inside user. WSL2 distributions and
+# Docker Desktop's containers share one kernel, so this covers every process on the machine, the
+# verify's own and any other work beside it. Prints nothing and returns 1 when the line is not one.
+machine_busy_ticks() {
+  local line="${1:-}" key user nice system idle iowait irq softirq steal rest
+  if [[ -z "$line" ]]; then
+    [[ -r /proc/stat ]] || return 1
+    IFS= read -r line </proc/stat || return 1
+  fi
+  read -r key user nice system idle iowait irq softirq steal rest <<<"$line"
+  [[ "$key" == cpu ]] || return 1
+  local field
+  for field in "$user" "$nice" "$system" "$idle" "$iowait" "$irq" "$softirq"; do
+    [[ "$field" =~ ^[0-9]+$ ]] || return 1
+  done
+  [[ "${steal:-0}" =~ ^[0-9]+$ ]] || steal=0
+  echo $((user + nice + system + irq + softirq + steal))
+}
+
+# machine_cpu_start <out-dir>: records the machine's busy ticks at the start of a verify.
+machine_cpu_start() {
+  local ticks
+  ticks="$(machine_busy_ticks)" || return 0
+  echo "$ticks" >"$1/machine-cpu-start"
+}
+
+# machine_cpu_end <out-dir>: writes cpu-machine, the processor seconds the whole machine was busy
+# between machine_cpu_start and now (two decimals), beside the cpu-<stage> files. Report only: the
+# ratchet check prints it and judges nothing by it.
+machine_cpu_end() {
+  local out="$1" start ticks hz delta
+  [[ -r "$out/machine-cpu-start" ]] || return 0
+  start="$(<"$out/machine-cpu-start")"
+  ticks="$(machine_busy_ticks)" || return 0
+  hz="$(getconf CLK_TCK 2>/dev/null || echo 100)"
+  ((hz > 0 && ticks >= start)) || return 0
+  delta=$((ticks - start))
+  printf '%d.%02d\n' $((delta / hz)) $(((delta % hz) * 100 / hz)) >"$out/cpu-machine"
+}
