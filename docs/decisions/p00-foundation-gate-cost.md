@@ -122,7 +122,53 @@ are attacked by the same code, with the same classes). New tests:
 
 ## Measured after
 
-(See the table at the end of this record for the numbers of the final run.)
+Two kinds of measurement, because the host-run numbers above were taken while other runs of
+mine shared the machine (the baseline gate process ran beside a second attack process), which
+inflates processor time (hyper-threads, spinning): they overstate the gain and are kept only for
+the shape of it. The comparable pair is the two full `./erp verify` runs below, same machine, same
+slot, each started on a quiet machine (load 1 to 3.6 at the start; the stages' own load 27 to 35):
+
+| `./erp verify` | dotnet stage CPU s | whole verify CPU s | wall s |
+|---|---|---|---|
+| integration branch 6b36e2d4 (before) | **7,384** | 9,822 (web 1,981, e2e 419, timing 38) | 4,725 |
+| this branch, an earlier commit of the round | 6,662 | 9,148 | 4,490 |
+| this branch, final commit 771a09fd | **6,274** | **8,660** (web 1,930, e2e 418, timing 38) | 4,408 |
+
+The dotnet stage fell by **1,110 s, 15 %** (the whole verify by 12 %). Run-to-run spread of the
+same tree is about 1,000 s, so the two runs of this branch (6,662 and 6,274) bracket the real
+figure; the 40 % aim of the round was **not reached**.
+
+Per test, wall minutes inside the stage (before / after): G1HttpIsolationTests 53.3 / 45.7;
+G1NonInterferenceTests 24.3 / 22.3; self-http 16.3 / 14.5; self-company 9.9 / 9.4;
+NonInterferenceSelfTests 7.0 / 6.8; G1ShellAnswersTests 8.5 / 8.5 (paced); G1ListVolumeTests
+4.7 / 3.8; G1CompanyIsolationTests 4.9 / 4.6. All passed in both runs.
+
+The same attack alone on the host, nothing else running (the clean pair for the largest test):
+G1HttpIsolationTests 4,369 CPU s, 1,269,449 requests by tenant A, 10.1 GB peak before (measured
+beside another process); 2,802 CPU s, 708,739 requests, 9.6 GB peak with the first four cuts. The
+final commit adds three more cuts (the bearer session, the filter values, the replayed ids) that
+were measured only inside the verify above. The planted-module attack (self-http), alone: 971 CPU
+s and 2.8 GB with the trace, 884 CPU s and 0.87 GB with the trace switched off (A/B); 329,527
+requests before the last cut, 316,839 after.
+
+Memory: an `Erp.Gates.Tests` process holds 15.9 GB at its peak in the suite process before and
+15.6 GB after (it runs several attack classes at once; the trace queues are most of it), 10.1 GB
+before and 9.6 GB after for the HTTP attack alone. The trace keeps one copy of its repeated texts
+now; the gain in this process was not measured separately.
+
+### Cost each new endpoint or list column adds (tenant A requests, 2.75 ms of processor time each
+with tenant B's share; read from the cost report of the HTTP attack)
+
+| Unit | Before | After |
+|---|---|---|
+| GET endpoint with a route (`{id}`), phase 1 | 12,400 requests | 4,500 (and the final cut: about 1,600) |
+| GET endpoint without a route (13 undocumented names x 76 values x attack/control x 2 languages, plus its documented parameters) | about 14,000 | about 13,300 |
+| list text column that can be filtered (330 values x 6 operators x attack/control) | 3,960 | 1,490 |
+| list reference column that can be filtered | 344 | 344 |
+| list column that can be sorted (forged cursors) | 146 | 146 |
+
+A new route endpoint therefore costs about two thirds less; a new endpoint without a route costs
+the same as before, and that is where a piece's cost now sits.
 
 ## What was not cut, and why (for the lead and the owner)
 
