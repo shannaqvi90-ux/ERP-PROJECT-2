@@ -280,48 +280,71 @@ async function retrying(what, fn) {
   return null
 }
 
-async function runPiece(p) {
-  let last = p.lastVerdict || null
-  const results = []
-  for (let i = 0; i < ROUNDS; i++) {
-    const round = p.startRound + i
-    let build, integ
-    if (p.builtHead && i === 0) {
-      // This round was built in an earlier run but never integrated.
-      build = { head_commit: p.builtHead, notes_for_integrator: p.builtNotes || '', human_gates: p.builtHumanGates || [] }
-      integ = await serial(() => retrying(`${p.id} r${round} integrate`, () => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' })))
-    } else if (p.judgeCommit && i === 0) {
-      // This round was built and integrated in an earlier run but never judged.
-      build = { human_gates: [] }
-      integ = { merged: true, pushed: true, commit: p.judgeCommit }
-    } else {
-    build = await buildRound(p, round, last)
-    if (!build) { log(`${p.id}: builder died three times in round ${round}; piece stopped`); results.push({ round, outcome: 'builder-died' }); break }
-    integ = await serial(() => retrying(`${p.id} r${round} integrate`, () => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' })))
-    }
-    if (!integ || !integ.merged || !integ.pushed) {
-      const problem = integ ? (integ.problem || 'merged/pushed false without detail') : 'integrator died'
-      log(`${p.id}: round ${round} not integrated: ${problem.slice(0, 200)}`)
-      last = { integration_failure: problem }
-      results.push({ round, outcome: 'not-integrated', problem, human_gates: build.human_gates || [] })
-      continue
-    }
-    log(`${p.id}: round ${round} judging ${integ.commit.slice(0, 10)}`)
-    const verdict = await retrying(`${p.id} r${round} judge`, () => agent(criticPrompt(p, round, integ.commit) + (p.criticNote ? `\n\nNOTE FROM THE LEAD (facts about the repository, not claims about quality; check them yourself):\n${p.criticNote}` : ''), { label: `judge:${p.id}:r${round}`, phase: 'Judge', schema: VERDICT_SCHEMA, effort: 'high' }))
-    if (!verdict) { log(`${p.id}: critic died three times in round ${round}; piece stopped`); results.push({ round, outcome: 'critic-died', commit: integ.commit }); break }
-    const knownLoss = (verdict.odoo || []).filter(o => o.winner === 'known-loss-candidate').map(o => ({ gate: 'Owner sign-off of a known loss against Odoo (needs-human #27)', what: `Task ${o.task}: Odoo is strictly better and no path for ours was found to win or tie. ${o.notes || ''}`.trim() }))
-    const humanGates = [...(build.human_gates || []), ...(verdict.human_gates || []), ...knownLoss].map(g => ({ piece: p.id, ...g }))
-    const rec = await serial(() => retrying(`${p.id} r${round} record`, () => agent(recorderPrompt(verdict, humanGates), { label: `record:${p.id}:r${round}`, phase: 'Record', schema: REC_SCHEMA, effort: 'low' })))
-    log(`${p.id}: round ${round} ${verdict.verdict} — ${verdict.biggest_gap.title}`)
-    results.push({ round, outcome: 'judged', verdict: verdict.verdict, gap: verdict.biggest_gap.title, commit: integ.commit, recorded: rec ? rec.recorded_id : null })
-    last = verdict
-    // Owner decision 2026-10-23 (needs-human #27): a piece that wins is done for now.
-    if (verdict.verdict === 'WIN') { log(`${p.id}: WIN in round ${round}; done for now, no more rounds`); break }
-  }
-  return { piece: p.id, nextRound: p.startRound + results.length, lastVerdict: last, results }
+// Owner's delegation of 2026-11-01 (needs-human #35): an integrator's alone verify measures
+// verify.cpuSeconds, and other agents' work beside it inflated the same merge from 10,801 s to
+// 14,089 s. So each round runs in three steps: every piece builds (in parallel); then the
+// integrations run one at a time with no builder, fixer or critic running; then every integrated
+// piece is judged and recorded (in parallel).
+function integrate(p, round, build) {
+  return serial(() => retrying(`${p.id} r${round} integrate`, () => agent(integratorPrompt(p, round, build), { label: `integrate:${p.id}:r${round}`, phase: 'Integrate', schema: INTEG_SCHEMA, effort: 'medium' })))
 }
 
-const pieceResults = await parallel(args.pieces.map(p => () => runPiece(p)))
+async function buildStep(s, i) {
+  const p = s.p
+  const round = p.startRound + i
+  if (p.builtHead && i === 0) {
+    // This round was built in an earlier run but never integrated.
+    return { round, build: { head_commit: p.builtHead, notes_for_integrator: p.builtNotes || '', human_gates: p.builtHumanGates || [] } }
+  }
+  if (p.judgeCommit && i === 0) {
+    // This round was built and integrated in an earlier run but never judged.
+    return { round, build: { human_gates: [] }, integ: { merged: true, pushed: true, commit: p.judgeCommit } }
+  }
+  const build = await buildRound(p, round, s.last)
+  if (!build) {
+    log(`${p.id}: builder died three times in round ${round}; piece stopped`)
+    s.results.push({ round, outcome: 'builder-died' })
+    s.done = true
+    return null
+  }
+  return { round, build }
+}
+
+async function judgeStep(s, step) {
+  const p = s.p
+  const { round, build, integ } = step
+  if (!integ || !integ.merged || !integ.pushed) {
+    const problem = integ ? (integ.problem || 'merged/pushed false without detail') : 'integrator died'
+    log(`${p.id}: round ${round} not integrated: ${problem.slice(0, 200)}`)
+    s.last = { integration_failure: problem }
+    s.results.push({ round, outcome: 'not-integrated', problem, human_gates: build.human_gates || [] })
+    return
+  }
+  log(`${p.id}: round ${round} judging ${integ.commit.slice(0, 10)}`)
+  const verdict = await retrying(`${p.id} r${round} judge`, () => agent(criticPrompt(p, round, integ.commit) + (p.criticNote ? `\n\nNOTE FROM THE LEAD (facts about the repository, not claims about quality; check them yourself):\n${p.criticNote}` : ''), { label: `judge:${p.id}:r${round}`, phase: 'Judge', schema: VERDICT_SCHEMA, effort: 'high' }))
+  if (!verdict) { log(`${p.id}: critic died three times in round ${round}; piece stopped`); s.results.push({ round, outcome: 'critic-died', commit: integ.commit }); s.done = true; return }
+  const knownLoss = (verdict.odoo || []).filter(o => o.winner === 'known-loss-candidate').map(o => ({ gate: 'Owner sign-off of a known loss against Odoo (needs-human #27)', what: `Task ${o.task}: Odoo is strictly better and no path for ours was found to win or tie. ${o.notes || ''}`.trim() }))
+  const humanGates = [...(build.human_gates || []), ...(verdict.human_gates || []), ...knownLoss].map(g => ({ piece: p.id, ...g }))
+  const rec = await serial(() => retrying(`${p.id} r${round} record`, () => agent(recorderPrompt(verdict, humanGates), { label: `record:${p.id}:r${round}`, phase: 'Record', schema: REC_SCHEMA, effort: 'low' })))
+  log(`${p.id}: round ${round} ${verdict.verdict} — ${verdict.biggest_gap.title}`)
+  s.results.push({ round, outcome: 'judged', verdict: verdict.verdict, gap: verdict.biggest_gap.title, commit: integ.commit, recorded: rec ? rec.recorded_id : null })
+  s.last = verdict
+  // Owner decision 2026-10-23 (needs-human #27): a piece that wins is done for now.
+  if (verdict.verdict === 'WIN') { log(`${p.id}: WIN in round ${round}; done for now, no more rounds`); s.done = true }
+}
+
+const states = args.pieces.map(p => ({ p, last: p.lastVerdict || null, results: [], done: false }))
+for (let i = 0; i < ROUNDS; i++) {
+  const active = states.filter(s => !s.done)
+  if (active.length === 0) break
+  const steps = await parallel(active.map(s => () => buildStep(s, i)))
+  const ready = active.map((s, k) => ({ s, step: steps[k] })).filter(x => x.step)
+  for (const x of ready) {
+    if (!x.step.integ) x.step.integ = await integrate(x.s.p, x.step.round, x.step.build)
+  }
+  await parallel(ready.map(x => () => judgeStep(x.s, x.step)))
+}
+const pieceResults = states.map(s => ({ piece: s.p.id, nextRound: s.p.startRound + s.results.length, lastVerdict: s.last, results: s.results }))
 
 let integrity = null
 if (args.integrity) {
