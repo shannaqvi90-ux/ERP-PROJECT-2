@@ -1,0 +1,18 @@
+# Reviewed endpoint-to-permission map of the jobs module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares, and
+# every line must match an endpoint. A new endpoint, or a changed permission, fails the gate until
+# this file is reviewed and changed with it: the reason after # says why that permission, and no
+# broader one, guards the endpoint.
+prefix /api/jobs/
+
+GET /api/jobs/jobs jobs.jobs.read # the background jobs list: kind, state, progress, times and errors of the workspace's jobs (no parameters, results or output)
+GET /api/jobs/jobs/{id:guid} jobs.jobs.read # one job with its parameters, result, tries and errors (its output file is a separate permission)
+POST /api/jobs/jobs jobs.jobs.run # starting a job runs system work in the workspace: only for a kind that also names a run permission the caller holds
+POST /api/jobs/jobs/{id:guid}/cancel jobs.jobs.cancel # stopping a job another person or a schedule started: its own permission, not the right to run jobs
+POST /api/jobs/jobs/{id:guid}/rerun jobs.jobs.run # queues the same work again: also needs the run permission of the job's kind
+GET /api/jobs/jobs/{id:guid}/output jobs.jobs.output # the file a job produced can hold business data (an export): its own permission, not reading the job
+GET /api/jobs/types jobs.jobs.read # the kinds of job the product can run and which of them the caller may start or schedule
+GET /api/jobs/schedules jobs.schedules.read # the schedules list: timing, parameters and last and next moments
+GET /api/jobs/schedules/{id:guid} jobs.schedules.read # one schedule
+POST /api/jobs/schedules jobs.schedules.create # a schedule queues system work by itself, again and again: only for a kind its module marked schedulable (safe to run unattended with parameters an administrator wrote)
+PUT /api/jobs/schedules/{id:guid} jobs.schedules.update # changing a schedule's timing or parameters, or switching it on, changes what runs by itself (only a schedulable kind can be switched on)

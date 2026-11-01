@@ -60,6 +60,17 @@ by hand or imported from a CSV file). Open a currency (G then Y) to type today's
 the focus: type, Enter) or convert an amount; or type "1250 eur" in Ctrl+K. Which rate applies on a
 date: `docs/decisions/p08-currency-rate-lookup.md`.
 
+Background jobs: one durable queue in PostgreSQL that every module uses through `IJobQueue` and
+`AddJobType<THandler>` (`Erp.Modules.Jobs.Contracts`). A job is queued inside the module's own
+transaction, runs later as system work inside its workspace's row-level security (the compose
+`worker` service, `Erp.Host jobs work`), is tried again with a growing wait when it fails, reports
+its progress, can be cancelled, and keeps its errors, a short result and an output file. Schedules
+(five-field cron in the workspace's time zone) queue jobs by themselves; a daily clean-up is seeded.
+Open Background jobs (G then J): the list of 100,000 jobs in the demo, a job's panel with its progress
+(live), errors, tries, parameters and output, Alt+R to run it again, Alt+K to cancel, Alt+N to start one
+(the self-check). Job schedules is G then S. Why the worker is a separate process:
+`docs/decisions/p12-jobs-worker-process.md`; the queue: `docs/decisions/p12-jobs-queue.md`.
+
 ## Layout
 
 | Path | Holds |

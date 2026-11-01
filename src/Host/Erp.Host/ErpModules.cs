@@ -1,6 +1,7 @@
 using Erp.Kernel.Modules;
 using Erp.Modules.Currency;
 using Erp.Modules.Identity;
+using Erp.Modules.Jobs;
 using Erp.Modules.Lists;
 using Erp.Modules.Numbering;
 using Erp.Modules.Reports;
@@ -17,6 +18,7 @@ public static class ErpModules
         new IdentityModule(),
         new NumberingModule(),
         new CurrencyModule(),
+        new JobsModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.
         new ListsModule(),
         // After every module that registers reports or printable lists: it maps their endpoints.

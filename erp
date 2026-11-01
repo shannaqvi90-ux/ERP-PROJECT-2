@@ -139,7 +139,7 @@ stack_up() {
   compose "$project" "$http" "$db" "$volume" up -d --wait db
   compose "$project" "$http" "$db" "$volume" up --no-build --exit-code-from setup setup \
     || { compose "$project" "$http" "$db" "$volume" logs setup | tail -50; fail "database setup failed"; }
-  compose "$project" "$http" "$db" "$volume" up -d --no-build app
+  compose "$project" "$http" "$db" "$volume" up -d --no-build app worker
   if ! wait_healthy "$http" 300; then
     compose "$project" "$http" "$db" "$volume" logs app | tail -50
     fail "the app did not become healthy on port $http"
