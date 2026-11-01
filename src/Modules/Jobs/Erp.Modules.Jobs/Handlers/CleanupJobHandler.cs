@@ -7,7 +7,7 @@ namespace Erp.Modules.Jobs.Handlers;
 /// <summary>
 /// Removes finished jobs older than <c>retentionDays</c> (default 180, 7 to 3650) with their tries, a
 /// batch at a time. Jobs that have not finished are never touched. The audit trail keeps what was
-/// removed. Scheduled daily in every workspace; people who may add schedules may run it by hand.
+/// removed. Scheduled daily in every workspace; people with the schedule permission may run it by hand.
 /// </summary>
 internal sealed class CleanupJobHandler : IJobHandler
 {
@@ -17,7 +17,7 @@ internal sealed class CleanupJobHandler : IJobHandler
     public const int MaxBatches = 100;
 
     public static readonly JobType Type = new(TypeKey, "job.type.jobs.cleanup", MaxAttempts: 2, Timeout: TimeSpan.FromMinutes(20),
-        RunPermission: JobsPermissions.SchedulesCreate, Description: "job.type.jobs.cleanup.description", Manual: true, Schedulable: true);
+        RunPermission: JobsPermissions.SchedulesUpdate, Description: "job.type.jobs.cleanup.description", Manual: true, Schedulable: true);
 
     public async Task RunAsync(IJobContext context)
     {

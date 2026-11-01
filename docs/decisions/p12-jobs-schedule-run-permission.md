@@ -17,9 +17,3 @@ Left for later (not done this round to keep the re-integration cheap): Arabic jo
 kind labels instead of raw keys on the Schedules list and for unregistered seeded kinds; the "Read only" note beside working
 Run again and Cancel; the seeded schedule name holding both languages in one field; Ctrl+Enter in the Start dialog;
 Enter at the bar volume in the comparison driver.
-
-Follow-up in the same round: the generic G2 gates (G2SubjectTests, G2WriteSetTests) call each endpoint as a user holding exactly one
-permission plus the read permissions, and could no longer create a schedule once the check existed (the self-check kind needs
-jobs.jobs.run). The clean-up kind's run permission is now jobs.schedules.create (it was jobs.schedules.update) and the create
-request's API example names it, so a create-only user can schedule and start the clean-up, while a user without jobs.jobs.run cannot
-schedule the self-check. Cost: someone holding only jobs.schedules.update cannot switch a clean-up schedule on or retime it.

@@ -70,7 +70,7 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
     private static readonly Dictionary<string, string> RunPermissionOf = new()
     {
         ["jobs.selfCheck"] = "jobs.jobs.run",
-        ["jobs.cleanup"] = "jobs.schedules.create",
+        ["jobs.cleanup"] = "jobs.schedules.update",
     };
 
     [Fact]
@@ -80,7 +80,6 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
         var kinds = (await admin.GetFromJsonAsync<JsonElement>("/api/jobs/types")).EnumerateArray()
             .Where(t => t.GetProperty("schedulable").GetBoolean()).Select(t => t.GetProperty("key").GetString()!).ToList();
         Assert.NotEmpty(kinds);
-        Assert.Contains(kinds, k => RunPermissionOf[k] != "jobs.schedules.create"); // at least one kind a create-only user must be refused
         Assert.All(kinds, k => Assert.True(RunPermissionOf.ContainsKey(k), $"schedulable kind {k} has no run permission listed in this gate"));
         using var adder = await UserHoldingAsync(admin, "jws.adder", ["jobs.schedules.create", "jobs.schedules.read"]);
         using var changer = await UserHoldingAsync(admin, "jws.changer", ["jobs.schedules.update", "jobs.schedules.read"]);
@@ -88,15 +87,8 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
         {
             var needed = RunPermissionOf[kind];
             using var made = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = true });
-            if (needed == "jobs.schedules.create")
-            {
-                Assert.Equal(HttpStatusCode.Created, made.StatusCode);
-            }
-            else
-            {
-                Assert.True(made.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.create (not {needed}) got {(int)made.StatusCode}");
-                Assert.Contains("jobs.typeNotAllowed", await made.Content.ReadAsStringAsync());
-            }
+            Assert.True(made.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.create (not {needed}) got {(int)made.StatusCode}");
+            Assert.Contains("jobs.typeNotAllowed", await made.Content.ReadAsStringAsync());
             // The same schedule, added by an administrator, switched off: the changer may switch on, retime or reparameterise it only with the run permission.
             using var seeded = await admin.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws seeded {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
             Assert.Equal(HttpStatusCode.Created, seeded.StatusCode);
@@ -104,7 +96,7 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
             var id = schedule.GetProperty("id").GetGuid();
             var version = schedule.GetProperty("version").GetUInt32();
             var name = schedule.GetProperty("scheduleName").GetString();
-            var holds = needed == "jobs.schedules.update"; // no schedulable kind needs it: every enabling or retiming is refused
+            var holds = needed == "jobs.schedules.update";
             foreach (var step in new[] { 0, 1, 2 })
             {
                 object change = step switch
@@ -133,7 +125,7 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
     public async Task Starting_and_running_again_each_need_the_run_permission_of_the_kind()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        // jobs.cleanup needs jobs.schedules.create besides: holding only jobs.jobs.run is refused on Start and Rerun.
+        // jobs.cleanup needs jobs.schedules.update besides: holding only jobs.jobs.run is refused on Start and Rerun.
         using var runner = await UserHoldingAsync(admin, "jws.onlyrun", ["jobs.jobs.run", "jobs.jobs.read"]);
         var started = await admin.PostAsJsonAsync("/api/jobs/jobs", new { type = "jobs.cleanup", runAt = DateTimeOffset.UtcNow.AddHours(2) });
         Assert.True(started.StatusCode == HttpStatusCode.Created, await started.Content.ReadAsStringAsync());
