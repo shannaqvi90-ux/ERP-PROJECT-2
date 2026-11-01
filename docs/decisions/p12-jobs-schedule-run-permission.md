@@ -13,7 +13,20 @@ it), and asserts the per-kind run permission on Start and Rerun. Closes gate-bac
 Processor time added: one test class method pair on the shared Gates environment, a few seconds (about 10 s of processor time);
 no new endpoints, so no per-endpoint gate cost.
 
-Left for later (not done this round to keep the re-integration cheap): Arabic job title (titleAr) on the Arabic list;
-kind labels instead of raw keys on the Schedules list and for unregistered seeded kinds; the "Read only" note beside working
-Run again and Cancel; the seeded schedule name holding both languages in one field; Ctrl+Enter in the Start dialog;
-Enter at the bar volume in the comparison driver.
+Round 3 refinement: a schedule added switched off (isEnabled false) runs nothing, so adding it needs only jobs.schedules.create;
+adding one switched on needs the kind's run permission, and so does switching one on later (PUT). No run permission was changed
+or widened: the clean-up kind still needs jobs.schedules.update and the self-check kind jobs.jobs.run, and deleting history by
+hand stays with jobs.schedules.update holders. The generic one-permission write-set gate reaches POST /api/jobs/schedules
+through its "isEnabled turned" request (a disabled schedule) and nothing is added to write-set-unexercised.txt;
+JobsWriteSetTests sends the enabled requests with and without the run permission, and judges the audited writes (only the
+schedule row). Known consequence: someone with schedules.update and the run permission who switches on a schedule
+another person added switched off takes on the parameters it holds; the form shows them before the switch.
+
+Small fixes of the round-2 critic's list: the Arabic jobs list shows titleAr; the Schedules list shows the kind's name (the key only
+for a kind this build no longer registers); the job form's note beside Run again and Cancel says jobs are not edited instead of
+the generic read-only text; the seeded clean-up schedule is named in one language (Arabic when the first administrator works in
+Arabic); Ctrl+Enter starts the job from the Start dialog; the comparison driver waits for the list to be filtered to the typed
+name at the bar volume before pressing Enter.
+
+Processor time added: the new gate method pair and the web tests are a few seconds (about 15 s of processor time); no new endpoints.
+Closes gate-backlog row 12 (plant P2: the Rerun check removed is caught by Starting_and_running_again_each_need_the_run_permission_of_the_kind).

@@ -20,7 +20,10 @@ namespace Erp.Modules.Jobs.Seeding;
 /// </summary>
 internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenantDirectory tenants) : ITenantSeeder
 {
-    public const string CleanupScheduleName = "Clean up finished jobs / تنظيف المهام المنتهية";
+    /// <summary>The clean-up schedule's name, in one language (a schedule has one name field): Arabic when the workspace's first administrator works in Arabic, English otherwise.</summary>
+    public const string CleanupScheduleName = "Clean up finished jobs";
+
+    public const string CleanupScheduleNameAr = "تنظيف المهام المنتهية";
     public const int HistoryDays = 60;
 
     public int Order => 130;
@@ -77,12 +80,13 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
 
     public async Task SeedAsync(TenantSeedContext context, CancellationToken cancellationToken)
     {
-        if (!await db.Schedules.AnyAsync(s => s.Name == CleanupScheduleName, cancellationToken))
+        var scheduleName = context.Tenant.Administrator?.Language == "ar" ? CleanupScheduleNameAr : CleanupScheduleName;
+        if (!await db.Schedules.AnyAsync(s => s.Name == CleanupScheduleName || s.Name == CleanupScheduleNameAr || s.Name == "Clean up finished jobs / تنظيف المهام المنتهية", cancellationToken))
         {
             var zone = (await tenants.GetCurrentAsync(cancellationToken))?.TimeZone;
             db.Schedules.Add(new JobSchedule
             {
-                Name = CleanupScheduleName,
+                Name = scheduleName,
                 Type = CleanupJobHandler.TypeKey,
                 Cron = "30 3 * * *",
                 Payload = "{}",

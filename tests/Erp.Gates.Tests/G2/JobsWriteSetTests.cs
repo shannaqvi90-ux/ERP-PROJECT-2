@@ -89,6 +89,9 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
             using var made = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = true });
             Assert.True(made.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.create (not {needed}) got {(int)made.StatusCode}");
             Assert.Contains("jobs.typeNotAllowed", await made.Content.ReadAsStringAsync());
+            // Added switched off it runs nothing, so it is accepted (and the generic write-set gate reaches the endpoint this way).
+            using var off = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws off {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
+            Assert.True(off.StatusCode == HttpStatusCode.Created, $"{kind}: a schedule added switched off by a user with only jobs.schedules.create got {(int)off.StatusCode}");
             // The same schedule, added by an administrator, switched off: the changer may switch on, retime or reparameterise it only with the run permission.
             using var seeded = await admin.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws seeded {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
             Assert.Equal(HttpStatusCode.Created, seeded.StatusCode);
@@ -118,6 +121,41 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
                     Assert.True(put.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.update (not {needed}) got {(int)put.StatusCode} {body}");
                 }
             }
+        }
+    }
+
+    /// <summary>The other half of the gate above: with the kind's run permission besides, adding a schedule and switching it on or retiming it
+    /// are accepted, and the audit trail shows only the schedule row (the write set of jobs.schedules.create and jobs.schedules.update).
+    /// The generic write-set gate holds one permission, so it reaches POST /api/jobs/schedules only through the request that adds a schedule switched off.</summary>
+    [Fact]
+    public async Task With_the_run_permission_of_the_kind_a_schedule_is_added_switched_on_and_retimed_writing_only_the_schedule()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var kinds = (await admin.GetFromJsonAsync<JsonElement>("/api/jobs/types")).EnumerateArray()
+            .Where(t => t.GetProperty("schedulable").GetBoolean()).Select(t => t.GetProperty("key").GetString()!).ToList();
+        Assert.NotEmpty(kinds);
+        var n = 0;
+        foreach (var kind in kinds)
+        {
+            var needed = RunPermissionOf[kind];
+            string[] held = ["jobs.schedules.create", "jobs.schedules.update", "jobs.schedules.read", needed];
+            using var user = await UserHoldingAsync(admin, $"jws.sched{++n}", held.Distinct().ToArray());
+            var before = await LastAuditIdAsync();
+            using var made = await user.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws ok {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
+            var text = await made.Content.ReadAsStringAsync();
+            Assert.True(made.StatusCode == HttpStatusCode.Created, $"{kind}: holding {string.Join(", ", held)} got {(int)made.StatusCode} {text}");
+            var schedule = JsonDocument.Parse(text).RootElement.Clone();
+            var id = schedule.GetProperty("id").GetGuid();
+            using var put = await user.PutAsJsonAsync($"/api/jobs/schedules/{id}", new
+            {
+                scheduleName = schedule.GetProperty("scheduleName").GetString(), cron = "45 4 * * *", payload = (object?)new { note = "changed" }, isEnabled = true,
+                version = schedule.GetProperty("version").GetUInt32(),
+            });
+            Assert.True(put.IsSuccessStatusCode, $"{kind}: {(int)put.StatusCode} {await put.Content.ReadAsStringAsync()}");
+            var writes = await WritesSinceAsync(before);
+            Assert.NotEmpty(writes);
+            var outside = writes.Where(w => !(w.Table == "jobs.schedules" && w.Record == id)).Select(w => $"{w.Action} {w.Table} ({string.Join(", ", w.Columns)})").ToList();
+            Assert.True(outside.Count == 0, $"{kind}: wrote outside the schedule: {string.Join("; ", outside)}");
         }
     }
 

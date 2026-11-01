@@ -197,9 +197,10 @@ internal static class ScheduleEndpoints
         {
             validator.Must(type is { Schedulable: true }, "type", "jobsTypeNotSchedulable");
         }
-        if (validator.IsValid && !MayRun(type, user))
+        if (validator.IsValid && (request.IsEnabled ?? true) && !MayRun(type, user))
         {
-            // A schedule runs the kind as system work: whoever adds one must be allowed to run that kind.
+            // An enabled schedule runs the kind as system work: whoever adds one must be allowed to run that kind.
+            // A schedule added switched off runs nothing; switching it on (Update) needs the permission.
             return Problems.Forbidden(http, "jobs.typeNotAllowed");
         }
         if (validator.IsValid && await db.Schedules.AnyAsync(s => s.Name == name, cancellationToken))

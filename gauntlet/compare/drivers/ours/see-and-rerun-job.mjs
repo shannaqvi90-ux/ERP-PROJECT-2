@@ -46,7 +46,9 @@ export default {
     await op.waitFor(() => document.activeElement && document.activeElement.matches('input.search, input[type="search"]') && document.querySelectorAll('table[role=grid] tbody tr').length > 0,
       { label: 'job list ready, search focused' });
     await op.type(NAME, { label: 'the job name' });
-    await op.waitFor(name => [...document.querySelectorAll('table[role=grid] tbody tr')].length > 0 && document.querySelector('input.search, input[type="search"]')?.value === name, { label: 'name in the search box', arg: NAME });
+    // At the bar volume the list still shows the unfiltered rows for a moment after the typing: Enter then opens a
+    // row of another name. Wait until the first row is the typed job's, not only until the box holds the text.
+    await op.waitFor(name => document.querySelector('input.search, input[type="search"]')?.value === name && (document.querySelector('table[role=grid] tbody tr')?.textContent ?? '').includes(name), { label: 'name in the search box and the list filtered to it', arg: NAME });
     await op.press('Enter', { label: 'open the best match' });
     await op.waitFor(id => location.pathname.split('/').pop() === id && !!document.querySelector('.list-record [data-testid="job-finished"]') && document.querySelector('.list-record [data-testid="job-finished"]').textContent.trim() !== 'Not yet',
       { label: 'job panel (last run on screen)', arg: ctx.state.job.id });
