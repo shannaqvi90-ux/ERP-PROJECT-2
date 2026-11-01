@@ -143,8 +143,30 @@ internal static class WorkplaceEndpoints
 /// and branch: the one they chose if they still may work there, else their first active company
 /// (by code) and its first-opened branch they may work in.
 /// </summary>
-internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyBranchScope branchScope) : ISessionScopeBinder
+internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyBranchScope branchScope) : ISessionScopeBinder, ISessionPrefetch
 {
+    // The user's company access, read with the tenant binding (ISessionPrefetch) and used once by
+    // BindAsync, right after the session is resolved; never kept for a later request.
+    private List<(Guid CompanyId, bool AllBranches)>? _prefetched;
+
+    NpgsqlBatchCommand ISessionPrefetch.Command(Guid tenantId, Guid userId)
+    {
+        var command = new NpgsqlBatchCommand(AccessStatement);
+        command.Parameters.AddWithValue("tenant", tenantId);
+        command.Parameters.AddWithValue("user", userId);
+        return command;
+    }
+
+    async Task ISessionPrefetch.ReadAsync(NpgsqlDataReader reader, CancellationToken cancellationToken)
+    {
+        var rows = new List<(Guid CompanyId, bool AllBranches)>();
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add((reader.GetGuid(0), reader.GetBoolean(1)));
+        }
+        _prefetched = rows;
+    }
+
     internal const string AccessStatement = """
         SELECT a.company_id, a.all_branches FROM tenancy.user_company_access a WHERE a.tenant_id = @tenant AND a.user_id = @user
         """;
@@ -155,9 +177,12 @@ internal sealed class CompanyScopeBinder(ErpDbSession session, TenancyBranchScop
         // The companies the user may work in, on every authenticated request: one direct statement
         // in the bound tenant (row-level security, with the tenant named as the second layer), not
         // an EF query, whose per-query work and context start-up cost more than the statement.
-        var access = new List<(Guid CompanyId, bool AllBranches)>();
-        await using (var command = new NpgsqlCommand(AccessStatement, session.Connection, session.Transaction))
+        var access = _prefetched ?? [];
+        var prefetched = _prefetched is not null;
+        _prefetched = null;
+        if (!prefetched)
         {
+            await using var command = new NpgsqlCommand(AccessStatement, session.Connection, session.Transaction);
             command.Parameters.AddWithValue("tenant", session.TenantId);
             command.Parameters.AddWithValue("user", userId);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
