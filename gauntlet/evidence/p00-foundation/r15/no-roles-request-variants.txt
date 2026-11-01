@@ -1,0 +1,7 @@
+Host localhost:20050: 403
+Host app: 403
+Host app:8080: 403
+Host 127.0.0.1: 403
+Host localhost: 403
+X-Forwarded-For 127.0.0.1: 403
+inside app container loopback: no-curl

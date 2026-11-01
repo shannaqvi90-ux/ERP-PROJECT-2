@@ -205,8 +205,13 @@ public static partial class IsolationAttack
     /// verify (round 13: the self-test's second full attack of the product was the verify's single
     /// largest use of processor time). The registered lists, probes and list answers follow the
     /// endpoints in scope.</param>
+    /// <param name="beforeEachListRun">Called before each of the four runs of the list answers
+    /// (phase 2c). The gate's self-test clears the planted list memories there: a memory filled by
+    /// one run is not new to the next, and a direction whose queries were all sent by the run before
+    /// could not show the plant (p12 round 1: the planted sorted-search total went unreported in
+    /// one direction in three verifies). The gate itself passes nothing.</param>
     public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null,
-        Func<ApiEndpoint, bool>? only = null)
+        Func<ApiEndpoint, bool>? only = null, Action? beforeEachListRun = null)
     {
         SqlTrace.EnsureStarted();
         // Environment variables are process-wide state outside any field (critic p00 round 4: the
@@ -303,17 +308,45 @@ public static partial class IsolationAttack
         // id without the tenant (critic p03 round 1, plants T1 and T2) then hands tenant A exactly
         // the answer tenant B left there, and the body is judged for tenant B's markers.
         var replayed = 0;
+        // Tenant B's ids as text, made once (a request used to make them again: 1,000 ids a request).
+        var victimAllIds = victim.AllIds.Select(i => i.ToString()).ToList();
+        var victimClass = RouteValueClasses.ClassifierFor(victim.IdsByTable, b.Id, b.Code);
+        var ownRouteSet = ownRouteValues.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // Tenant A's own ids (one per table) are each a class of their own.
+        string routeClass(string value) => ownRouteSet.Contains(value) ? "own " + value : victimClass(value);
         foreach (var endpoint in endpoints)
         {
             await activity.TouchAsync(endpoint, victim, "tenant B reads right before A attacks this endpoint");
-            var bRouteValues = endpoint.RouteParameters.Count == 0 ? [] : activity.RouteValues.Where(v => !victimRouteValues.Contains(v, StringComparer.OrdinalIgnoreCase)).ToList();
+            // The values tenant B used itself beyond the five of each table sent anyway: the first,
+            // middle and last of each class (see RouteValueClasses). Tenant B opens every value
+            // tenant A sends right before it does (TouchEvery below), so what a per-id cache holds
+            // for each value A sends is B's whatever the value is; the hundreds of further ids of
+            // one table (about a thousand a route) added nothing the three of its class do not.
+            var bRouteValues = endpoint.RouteParameters.Count == 0
+                ? []
+                : RouteValueClasses.Representatives(
+                    activity.RouteValues.Where(v => !victimRouteValues.Contains(v, StringComparer.OrdinalIgnoreCase)).ToList(), routeClass);
             replayed += bRouteValues.Count;
             var attackValues = victimRouteValues.Concat(bRouteValues).ToList();
-            await activity.TouchEveryAsync(endpoint, attackValues, "tenant B opens the route with every value A is about to send");
+            var representativeValues = endpoint.RouteParameters.Count == 0
+                ? []
+                : RouteValueClasses.Representatives(attackValues.Concat(endpoint.HasBody ? ownRouteValues : []).Distinct().ToList(), routeClass);
+            // Tenant A's Arabic session sends the representative values only (below), so those are
+            // the ones tenant B's Arabic session opens first.
+            await activity.TouchEveryAsync(endpoint, attackValues, "tenant B opens the route with every value A is about to send", arabicValues: representativeValues);
             var paths = endpoint.RouteParameters.Count == 0
                 ? [endpoint.Path(_ => "")]
                 : attackValues.Concat(endpoint.HasBody ? ownRouteValues : [])
                     .Select(value => endpoint.Path(_ => value)).Distinct().ToList();
+            // The administrator's cookie session sends every path plainly. The other requests
+            // (tenant-switch headers and query, the bearer token, the callers that are refused, the
+            // Arabic sessions) send the route values that stand for their classes (see
+            // RouteValueClasses): which credential carries the session, which header or query
+            // carries a switch, and which caller is refused, does not depend on which row of a
+            // table the route names (the session is resolved before the route is handled).
+            var representativePaths = endpoint.RouteParameters.Count == 0
+                ? paths.ToHashSet()
+                : representativeValues.Select(value => endpoint.Path(_ => value)).ToHashSet();
             var bodySchema = endpoint.HasBody ? openApi.RequestSchema(endpoint.Method, endpoint.Pattern) : null;
             var signIn = endpoint.Name == "auth.signIn";
 
@@ -343,7 +376,11 @@ public static partial class IsolationAttack
                         {
                             continue;
                         }
-                        batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victim, b, signIn, ref counter), $"{path} [{variant}]"));
+                        if (!(variant == Variant.Plain && attacker == attackers[0]) && !representativePaths.Contains(path))
+                        {
+                            continue;
+                        }
+                        batch.Add((attacker, BuildRequest(endpoint, path, variant, bodySchema, openApi, victimAllIds, b, signIn, ref counter), $"{path} [{variant}]"));
                     }
                 }
             }
@@ -451,6 +488,8 @@ public static partial class IsolationAttack
         // requests (a branch in B's emirate): A's answer for them shows A's own records, so it is
         // judged for B's markers but not compared with a value that exists nowhere.
         state.AttackerHeld = await HeldByAsync(Env, a.Id, values.Strings);
+        state.Corpus = await ControlCorpus.ReadAsync(Env, a.Id);
+        Assert.True(state.Corpus.Characters > 0, "The attacker's own data could not be read, so controls would not be checked against it.");
         var work = new List<(bool Get, Func<Task> Run)>();
         foreach (var endpoint in endpoints)
         {
@@ -487,7 +526,7 @@ public static partial class IsolationAttack
                     {
                         var n = counter++;
                         string UriFor(string v) => basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(v);
-                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, parameter, UriFor, bodySchema, openApi, b, n)));
+                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, parameter, UriFor, bodySchema, openApi, b, n, basePath)));
                     }
                 }
                 foreach (var value in TenantActivity.ArabicValuesFor(parameter, values, published: false))
@@ -496,7 +535,7 @@ public static partial class IsolationAttack
                     {
                         var n = counter++;
                         string UriFor(string v) => basePath + "?" + Uri.EscapeDataString(parameter.Name) + "=" + Uri.EscapeDataString(v);
-                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, parameter, UriFor, bodySchema, openApi, b, n)));
+                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, parameter, UriFor, bodySchema, openApi, b, n, basePath)));
                     }
                 }
             }
@@ -508,8 +547,8 @@ public static partial class IsolationAttack
                 var routeValues = catchAll
                     ? values.Probe
                     : documentedRoute.Format == "uuid"
-                        ? victim.IdsByTable.Values.SelectMany(ids => ids.Take(10)).Append(b.Id).Select(i => i.ToString())
-                            .Concat(activity.RouteValues.Where(v => Guid.TryParse(v, out _))).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
+                        ? victim.IdsByTable.Values.SelectMany(ids => RouteValueClasses.Representatives(ids.Take(10).Select(i => i.ToString()).ToList(), _ => "table").Select(Guid.Parse)).Append(b.Id).Select(i => i.ToString())
+                            .Concat(CreatedRouteValues(activity.RouteValues, victim, victimClass)).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
                         : values.All.ToList();
                 foreach (var value in routeValues)
                 {
@@ -517,7 +556,7 @@ public static partial class IsolationAttack
                     {
                         var n = counter++;
                         string UriFor(string v) => endpoint.Path(name => name == routeParameter ? v : ownRoute);
-                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, documentedRoute, UriFor, bodySchema, openApi, b, n)));
+                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, documentedRoute, UriFor, bodySchema, openApi, b, n, basePath)));
                     }
                 }
                 // Every route value tenant B used itself was already sent in Arabic in every route
@@ -531,7 +570,7 @@ public static partial class IsolationAttack
                     {
                         var n = counter++;
                         string UriFor(string v) => endpoint.Path(name => name == routeParameter ? v : ownRoute);
-                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, documentedRoute, UriFor, bodySchema, openApi, b, n)));
+                        work.Add((get, () => state.ParameterAttackAsync(attacker, endpoint, value, documentedRoute, UriFor, bodySchema, openApi, b, n, basePath)));
                     }
                 }
             }
@@ -543,7 +582,7 @@ public static partial class IsolationAttack
         await Parallel.ForEachAsync(work.Where(w => w.Get), parallel, async (item, _) => await item.Run());
         await Parallel.ForEachAsync(work.Where(w => !w.Get), parallel, async (item, _) => await item.Run());
 
-        Phase("tenant B values in route and query parameters");
+        Phase($"tenant B values in route and query parameters (controls checked against {state.Corpus.Characters} characters of tenant A's data, {state.Corpus.Fallbacks} longer than their value)");
 
         // Phase 2b: every registered list through its query contract, with tenant B's values inside
         // filter expressions (each compared with a value that exists nowhere), grouped and sorted
@@ -563,7 +602,10 @@ public static partial class IsolationAttack
             {
                 var (candidates, operators) = column.Type switch
                 {
-                    Erp.Kernel.Lists.ListColumnType.Text => (values.Strings, new[] { "eq", "contains", "startswith", "endswith", "ne", "in" }),
+                    // The text values of one table column are one class (RouteValueClasses): its first,
+                    // middle and last value stand for the eight read from the column.
+                    Erp.Kernel.Lists.ListColumnType.Text => (RouteValueClasses.Representatives(values.Strings, v => values.StringClasses.GetValueOrDefault(v, "other")),
+                        new[] { "eq", "contains", "startswith", "endswith", "ne", "in" }),
                     Erp.Kernel.Lists.ListColumnType.Reference => (values.IdSample.Select(i => i.ToString()).ToList(), new[] { "eq", "ne" }),
                     _ => ((IReadOnlyList<string>)[], Array.Empty<string>()),
                 };
@@ -640,10 +682,14 @@ public static partial class IsolationAttack
             var ownIds = (await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code)).AllIds.ToHashSet();
             var victimIds = (await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code)).AllIds.ToHashSet();
             var ownStrings = (await VictimValues.ReadAsync(Env, own, b.Id)).Strings;
+            beforeEachListRun?.Invoke();
             listAnswers.Add(await ListAnswers.RunAsync(catalog, victimAdmin, admin.Client, ownIds, victimIds, values.Strings, "tenant B asks first, tenant A judged", sortedLists, ListInScope));
+            beforeEachListRun?.Invoke();
             listAnswers.Add(await ListAnswers.RunAsync(catalog, admin.Client, victimAdmin, victimIds, ownIds, ownStrings, "tenant A asks first, tenant B judged", sortedLists, ListInScope));
             // The same in Arabic with Arabic-Indic digits, both ways.
+            beforeEachListRun?.Invoke();
             listAnswers.Add(await ListAnswers.RunAsync(catalog, activity.ArabicClient, arabicAdmin.Client, ownIds, victimIds, values.Strings, "in Arabic, tenant B asks first, tenant A judged", sortedLists, ListInScope));
+            beforeEachListRun?.Invoke();
             listAnswers.Add(await ListAnswers.RunAsync(catalog, arabicAdmin.Client, activity.ArabicClient, victimIds, ownIds, ownStrings, "in Arabic, tenant A asks first, tenant B judged", sortedLists, ListInScope));
         }
         Phase($"list answers judged against each tenant's own rows: {listAnswers.Sum(r => r.Queries)} queries ({listAnswers.Sum(r => r.SortedQueries)} sorted), {listAnswers.Sum(r => r.Discriminating)} with different true answers ({listAnswers.Sum(r => r.SortedDiscriminating)} sorted), {listAnswers.Sum(r => r.RowsWalked)} rows walked; process-wide state fingerprinted in {stateBefore.Count} lines from {stateRoots.Count} roots");
@@ -784,6 +830,11 @@ public static partial class IsolationAttack
             attacker.Client.Dispose();
         }
         activity.Dispose();
+        if (Environment.GetEnvironmentVariable("ERP_GATE_REPORT_FILE") is { Length: > 0 } reportFile)
+        {
+            // For measuring the attack's cost: the phases, the requests by kind and the clock.
+            File.AppendAllLines(reportFile, [.. phases, .. state.BreakdownLines(), $"total {state.Requests} requests, {clock.Elapsed.TotalSeconds:F1} s"]);
+        }
         return new IsolationReport([.. state.Leaks, .. activity.Leaks, .. pairs.Leaks], state.ServerErrors.Select(Env.Factory.ErrorLog.Annotate).ToList(), changed, uncovered, attacked.Count, state.Requests + pairs.AttackerRequests, probesRun)
         {
             WritePairs = pairs.Pairs,
@@ -853,7 +904,7 @@ public static partial class IsolationAttack
             ListAnswerSortedDiscriminating = listAnswers.Sum(r => r.SortedDiscriminating),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
-            Phases = [.. phases, $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
+            Phases = [.. phases, .. state.BreakdownLines(), $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
         };
     }
 
@@ -1251,10 +1302,24 @@ public static partial class IsolationAttack
 
     /// <summary>Values to send in one parameter: ids for uuid parameters, every value for text,
     /// nothing for numbers and flags (binding rejects text there before any handler runs).</summary>
+    /// <summary>The ids tenant B used itself, for the comparison with a value that exists nowhere:
+    /// those of its tables beyond the ten of each table already sent are of classes already sent
+    /// (see <see cref="RouteValueClasses"/>), so only three of each class go again; the ids that are
+    /// not one of its tables' (created after the snapshot) are one class of their own.</summary>
+    private static IEnumerable<string> CreatedRouteValues(IReadOnlyList<string> routeValues, TenantSnapshot victim, Func<string, string> classOf)
+    {
+        var inSnapshot = victim.AllIds.Select(i => i.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var uuids = routeValues.Where(v => Guid.TryParse(v, out _)).ToList();
+        return RouteValueClasses.Representatives(uuids, v => inSnapshot.Contains(v) ? classOf(v) : "created");
+    }
+
     private static IEnumerable<string> ValuesFor(ApiParameter parameter, VictimValues values) => parameter switch
     {
         { Format: "uuid" } => values.IdSample.Select(i => i.ToString()),
-        { Type: "string" } => values.All,
+        // Text values of one column are one class (the first, middle and last of the eight read
+        // from each column stand for it, see RouteValueClasses); every sampled id is sent.
+        { Type: "string" } => values.IdSample.Select(i => i.ToString())
+            .Concat(RouteValueClasses.Representatives(values.Strings, v => values.StringClasses.GetValueOrDefault(v, "other"))),
         _ => [],
     };
 
@@ -1332,9 +1397,8 @@ public static partial class IsolationAttack
 
     private static HttpRequestMessage BuildRequest(
         ApiEndpoint endpoint, string path, Variant variant, JsonElement? bodySchema, OpenApiDocument openApi,
-        TenantSnapshot victim, Erp.Kernel.Seeding.SeedTenant b, bool signIn, ref int counter)
+        List<string> victimIds, Erp.Kernel.Seeding.SeedTenant b, bool signIn, ref int counter)
     {
-        var victimIds = victim.AllIds.Select(i => i.ToString()).ToList();
         var uri = path;
         if (variant == Variant.TenantQuery)
         {
@@ -1413,6 +1477,27 @@ public static partial class IsolationAttack
         /// <summary>Responses whose every header was judged (with the body).</summary>
         public int HeadersJudged => _headersJudged;
 
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> _breakdown = new(StringComparer.Ordinal);
+
+        /// <summary>Tenant A's requests by phase, endpoint, kind and language (for the cost record:
+        /// where the attack's requests go).</summary>
+        public void CountKind(string key) => _breakdown.AddOrUpdate(key, 1, (_, n) => n + 1);
+
+        public IEnumerable<string> BreakdownLines()
+        {
+            static string Part(string key, int i) => key.Split('|')[i];
+            var all = _breakdown.ToList();
+            foreach (var (title, index) in new[] { ("phase and kind", -1), ("endpoint", 1) })
+            {
+                var groups = index < 0
+                    ? all.GroupBy(kv => Part(kv.Key, 0) + "|" + Part(kv.Key, 2) + "|" + Part(kv.Key, 3)).Select(g => (g.Key, g.Sum(kv => kv.Value)))
+                    : all.GroupBy(kv => Part(kv.Key, 1)).Select(g => (g.Key, g.Sum(kv => kv.Value)));
+                yield return $"cost by {title}: " + string.Join("; ", groups.OrderByDescending(g => g.Item2).Take(index < 0 ? 60 : 25).Select(g => $"{g.Key}={g.Item2}"));
+            }
+            yield return "cost by parameter: " + string.Join("; ", all.Where(kv => kv.Key.StartsWith("2|", StringComparison.Ordinal))
+                .GroupBy(kv => Part(kv.Key, 2)).Select(g => (g.Key, g.Sum(kv => kv.Value))).OrderByDescending(g => g.Item2).Take(40).Select(g => $"{g.Key}={g.Item2}"));
+        }
+
         public List<string> Leaks { get; } = [];
         public List<string> ServerErrors { get; } = [];
         public List<string> Oracles { get; } = [];
@@ -1434,6 +1519,7 @@ public static partial class IsolationAttack
             var text = await ResponseText.ReadAsync(response);
             Interlocked.Increment(ref _requests);
             attacker.Count();
+            CountKind($"1|{endpoint.Key}|{(label.EndsWith(']') ? label[(label.LastIndexOf('[') + 1)..^1] : "other")}|{(attacker.Arabic ? "ar" : "en")}");
             var status = (int)response.StatusCode;
             Judge(attacker, endpoint, label, status, text, ResponseHeaders.Text(response), sent ?? []);
             if (endpoint.Name == "auth.signOut" && !attacker.Anonymous)
@@ -1465,11 +1551,13 @@ public static partial class IsolationAttack
         /// <summary>One tenant B value in one parameter. For a GET, the same request with a value
         /// that exists nowhere must get the same answer.</summary>
         public async Task ParameterAttackAsync(Attacker attacker, ApiEndpoint endpoint, string value, ApiParameter parameter,
-            Func<string, string> uriFor, JsonElement? bodySchema, OpenApiDocument openApi, Erp.Kernel.Seeding.SeedTenant b, int n)
+            Func<string, string> uriFor, JsonElement? bodySchema, OpenApiDocument openApi, Erp.Kernel.Seeding.SeedTenant b, int n, string? baselineUri = null)
         {
             Interlocked.Increment(ref _parameterAttacks);
             var uri = uriFor(value);
             var (status, text, headers) = await RawAsync(attacker, endpoint, uri, bodySchema, openApi, b, n);
+            var lang = attacker.Arabic ? "ar" : "en";
+            CountKind($"2|{endpoint.Key}|{parameter.In}:{parameter.Name}|attack-{lang}");
             Judge(attacker, endpoint, $"{uri} [{parameter.In} {parameter.Name}]", status, text, headers, [value]);
             if (endpoint.Method != "GET")
             {
@@ -1480,8 +1568,9 @@ public static partial class IsolationAttack
                 Interlocked.Increment(ref _attackerHeldSkips);
                 return;
             }
-            var control = ControlFor(value, parameter);
+            var control = await ControlForAsync(attacker, endpoint, value, parameter, baselineUri, bodySchema, openApi, b, n);
             var (controlStatus, controlText, controlHeaders) = await RawAsync(attacker, endpoint, uriFor(control), bodySchema, openApi, b, n);
+            CountKind($"2|{endpoint.Key}|{parameter.In}:{parameter.Name}|control-{lang}");
             Interlocked.Increment(ref _differentialChecks);
             // Both values are scrubbed from both answers, so a value that is also an ordinary word
             // in every answer ("user" in "Users and access") is treated the same on both sides.
@@ -1553,26 +1642,30 @@ public static partial class IsolationAttack
         /// document enumerates, any other text is refused by validation, so a random value would
         /// tell nothing; the control is another published value that no tenant holds (the
         /// enumeration's own "exists nowhere"). Without one, a random value as for any parameter.</summary>
-        private string ControlFor(string value, ApiParameter parameter)
+        private async Task<string> ControlForAsync(Attacker attacker, ApiEndpoint endpoint, string value, ApiParameter parameter, string? baselineUri,
+            JsonElement? bodySchema, OpenApiDocument openApi, Erp.Kernel.Seeding.SeedTenant b, int n)
         {
             if (parameter.Enum is { } members && members.Contains(value, StringComparer.Ordinal) &&
                 members.FirstOrDefault(m => m != value && UnheldPublished.Contains(m)) is { } other)
             {
                 return other;
             }
-            return ControlFor(value);
+            // A random value of the shape of the attack value that occurs nowhere in what tenant A
+            // holds (its rows, the seeds) nor in tenant A's own unfiltered answer of this endpoint.
+            if (baselineUri is null)
+            {
+                return Corpus.ControlFor(value);
+            }
+            var key = attacker.Name + "|" + baselineUri;
+            var baseline = await _baselines.GetOrAdd(key,
+                _ => new Lazy<Task<string>>(async () => (await RawAsync(attacker, endpoint, baselineUri, bodySchema, openApi, b, n)).Text.ToLowerInvariant())).Value;
+            return Corpus.ControlFor(value, key, baseline);
         }
 
-        private static string ControlFor(string value)
-        {
-            if (Guid.TryParse(value, out _))
-            {
-                return Guid.NewGuid().ToString();
-            }
-            var random = System.Security.Cryptography.RandomNumberGenerator.GetBytes(value.Length);
-            var chars = value.Select((c, i) => char.IsLetter(c) ? (char)('a' + random[i] % 26) : char.IsDigit(c) ? (char)('0' + random[i] % 10) : c).ToArray();
-            return new string(chars);
-        }
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, Lazy<Task<string>>> _baselines = new(StringComparer.Ordinal);
+
+        /// <summary>Everything tenant A holds, for drawing controls (<see cref="ControlCorpus"/>).</summary>
+        public ControlCorpus Corpus { get; set; } = ControlCorpus.Empty;
 
         private async Task<(int Status, string Text, string Headers)> RawAsync(Attacker attacker, ApiEndpoint endpoint, string uri, JsonElement? bodySchema,
             OpenApiDocument openApi, Erp.Kernel.Seeding.SeedTenant b, int n)

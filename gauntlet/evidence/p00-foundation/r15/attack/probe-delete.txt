@@ -1,0 +1,14 @@
+B rate 01a19540-9a63-7aec-9cca-2506653b17e3 B GET before [
+  200,
+  '{"id":"01a19540-9a63-7aec-9cca-2506653b17e3","rateDate":"2026-11-01","currency":"EUR","rate":"3.948528","quoteCurrency":"AED","inverseRate":"0.25325894","source":"import","reference":"Demo rates","createdAt":"2026-11-01T03:56:41.073343+00:00","updatedAt":"2026-11-01T03:56:41.073343+00:00","version":'
+]
+A GET B rate [
+  404,
+  '{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-b9b6361d1e336f3a990a9f35f9dc7b71-7c023044cbf46551-00"}'
+]
+A DELETE B rate [ 204, '' ]
+B GET after [
+  200,
+  '{"id":"01a19540-9a63-7aec-9cca-2506653b17e3","rateDate":"2026-11-01","currency":"EUR","rate":"3.948528","quoteCurrency":"AED","inverseRate":"0.25325894","source":"import","reference":"Demo rates","createdAt":"2026-11-01T03:56:41.073343+00:00","updatedAt":"2026-11-01T03:56:41.073343+00:00","version":'
+]
+A DELETE random [ 204, '' ]

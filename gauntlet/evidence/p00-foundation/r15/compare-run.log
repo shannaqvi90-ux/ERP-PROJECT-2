@@ -1,0 +1,18 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-10-31T08:32:23.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing;
+                                                     the lead or the owner runs it there, needs-human #13: never stop, recreate or reset the shared rig)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig, for a builder or critic; then COMPARE_ODOO_URL=http://localhost:<port>)
+    tools/odoo-reference/up.sh --status             (what is running and the recorded volume; changes nothing)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+sign-in                  odoo  verified  steps 2  keys 0  machine 1.195s  human 4.68s  human+wait 5.779s  -> ../../evidence-staging/p00-foundation/r15/compare/results/sign-in-20261101T040228-ce98.json
+sign-in                  odoo  verified  steps 2  keys 0  machine 1.357s  human 4.68s  human+wait 5.931s  -> ../../evidence-staging/p00-foundation/r15/compare/results/sign-in-20261101T040327-051d.json
+sign-in                  odoo  verified  steps 2  keys 0  machine 1.069s  human 4.68s  human+wait 5.641s  -> ../../evidence-staging/p00-foundation/r15/compare/results/sign-in-20261101T040423-bef5.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.092s  human 2.03s  human+wait 2.118s  -> ../../evidence-staging/p00-foundation/r15/compare/results/sign-in-20261101T040517-6f72.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.049s  human 2.03s  human+wait 2.073s  -> ../../evidence-staging/p00-foundation/r15/compare/results/sign-in-20261101T040539-4eb3.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.06s  human 2.03s  human+wait 2.084s  -> ../../evidence-staging/p00-foundation/r15/compare/results/sign-in-20261101T040600-6fbd.json
+sign-in                  verdict win (ours judged on its whole path 'passkey')
+sign-in                  left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+blind review page: ../../../../evidence-staging/p00-foundation/r15/compare/blind/review.html
+output: ../../../../evidence-staging/p00-foundation/r15/compare

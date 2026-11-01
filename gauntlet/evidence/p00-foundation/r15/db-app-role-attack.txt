@@ -1,0 +1,35 @@
+SET
+== no tenant set: counts visible to erp_app
+users|0
+rates|0
+sequences|0
+audit|0
+== tenant A set: rows of tenant B visible
+BEGIN
+0190a000-0000-7000-8000-000000000001
+users of B|0
+rates of B|0
+audit of B|0
+seq of B|0
+== tenant A set: update B rows
+UPDATE 0
+UPDATE 0
+== tenant A set: insert a row carrying B tenant_id
+ERROR:  column "name" of relation "roles" does not exist
+LINE 1: INSERT INTO identity.roles(id, tenant_id, name) VALUES (gen_...
+                                                  ^
+ROLLBACK
+== app role tries to turn off RLS / own tables
+ERROR:  must be owner of table users
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+SET
+== tenant A set: insert a saved view and a rate carrying B tenant_id
+BEGIN
+0190a000-0000-7000-8000-000000000001
+INSERT 0 0
+SAVEPOINT
+ERROR:  new row violates row-level security policy for table "saved_views"
+ROLLBACK
+UPDATE 0
+ROLLBACK

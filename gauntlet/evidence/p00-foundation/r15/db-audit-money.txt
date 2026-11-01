@@ -1,0 +1,72 @@
+                                      Table "audit.entries"
+     Column     |           Type           | Collation | Nullable |           Default            
+----------------+--------------------------+-----------+----------+------------------------------
+ id             | bigint                   |           | not null | generated always as identity
+ tenant_id      | uuid                     |           | not null | 
+ occurred_at    | timestamp with time zone |           | not null | now()
+ actor_id       | uuid                     |           |          | 
+ actor_kind     | character varying(20)    |           | not null | 
+ table_schema   | character varying(63)    |           | not null | 
+ table_name     | character varying(63)    |           | not null | 
+ record_id      | uuid                     |           |          | 
+ action         | character varying(10)    |           | not null | 
+ changes        | jsonb                    |           | not null | 
+ transaction_id | bigint                   |           | not null | 
+ correlation_id | character varying(100)   |           |          | 
+Indexes:
+    "pk_entries" PRIMARY KEY, btree (id)
+    "ix_entries_tenant_id_actor_id_occurred_at" btree (tenant_id, actor_id, occurred_at)
+    "ix_entries_tenant_id_occurred_at" btree (tenant_id, occurred_at)
+    "ix_entries_tenant_id_table_name_record_id_occurred_at" btree (tenant_id, table_name, record_id, occurred_at)
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+
+ERROR:  column "operation" does not exist
+LINE 1: SELECT table_name, operation, count(*) FROM audit.entries GR...
+                           ^
+ERROR:  column e.operation does not exist
+LINE 1: SELECT e.occurred_at, e.table_name, e.operation, e.actor_id,...
+                                            ^
+== float columns anywhere
+ table_schema | table_name | column_name | data_type 
+--------------+------------+-------------+-----------
+(0 rows)
+
+== numeric money-like columns
+ table_schema |   table_name   | column_name | data_type | numeric_precision | numeric_scale 
+--------------+----------------+-------------+-----------+-------------------+---------------
+ currency     | exchange_rates | rate        | numeric   |                19 |             8
+(1 row)
+
+== tables with tenant_id but no audit trigger
+         ?column?          
+---------------------------
+ audit.entries
+ identity.sign_in_attempts
+(2 rows)
+
+     table_name      | action | count  
+---------------------+--------+--------
+ users               | insert | 101024
+ user_credentials    | insert | 101024
+ exchange_rates      | insert | 100999
+ currencies          | insert |    495
+ sequences           | insert |     77
+ issued_numbers      | insert |     60
+ saved_views         | insert |     50
+ sessions            | insert |     41
+ roles               | insert |     24
+ user_company_access | insert |     19
+ counters            | insert |     17
+ branches            | insert |     16
+(12 rows)
+
+          occurred_at          | table_name | action |               actor_id               |                                                                          left                                                                          
+-------------------------------+------------+--------+--------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-11-01 04:07:45.370276+00 | roles      | insert |                                      | {"id": {"new": "01a1954a-c197-795b-9431-80fd0b6ad199"}, "name_ar": {"new": "مدير النظام"}, "name_en": {"new": "Administrator"}, "is_system": {"new": t
+ 2026-11-01 03:57:50.250561+00 | roles      | insert | 01a1953f-ff6c-73bf-a8da-04f478519cfd | {"id": {"new": "01a19541-a72e-7ccd-abdb-fc20c8a98312"}, "name_ar": {"new": "ver-a2-mvxaulm7"}, "name_en": {"new": "ver-a2-mvxaulm7"}, "is_system": {"n
+ 2026-11-01 03:57:50.241914+00 | roles      | insert | 01a19540-9958-735e-a69d-174abe3dc9d3 | {"id": {"new": "01a19541-a725-7bed-8fba-d0d81b10c984"}, "name_ar": {"new": "ver-b4-mvxaulm7"}, "name_en": {"new": "ver-b4-mvxaulm7"}, "is_system": {"n
+(3 rows)
+

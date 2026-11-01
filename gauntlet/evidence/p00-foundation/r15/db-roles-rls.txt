@@ -1,0 +1,33 @@
+== roles
+erp_app|f|f|f|t
+erp_auth|f|f|f|f
+erp_owner|f|f|f|t
+postgres|t|t|t|t
+== tenant tables: schema.table | owner | rls enabled | forced | tenant_id not null | policies
+audit.entries|erp_owner|t|t|t|1
+currency.currencies|erp_owner|t|t|t|1
+currency.exchange_rates|erp_owner|t|t|t|1
+identity.passkeys|erp_owner|t|t|t|1
+identity.roles|erp_owner|t|t|t|1
+identity.sessions|erp_owner|t|t|t|2
+identity.sign_in_attempts|erp_owner|t|t|t|1
+identity.user_company_roles|erp_owner|t|t|t|7
+identity.user_credentials|erp_owner|t|t|t|2
+identity.user_roles|erp_owner|t|t|t|1
+identity.users|erp_owner|t|t|t|2
+lists.saved_views|erp_owner|t|t|t|1
+numbering.counters|erp_owner|t|t|t|5
+numbering.issued_numbers|erp_owner|t|t|t|5
+numbering.sequences|erp_owner|t|t|t|5
+tenancy.branches|erp_owner|t|t|t|5
+tenancy.companies|erp_owner|t|t|t|5
+tenancy.tenants|erp_owner|t|t|t|1
+tenancy.user_branch_access|erp_owner|t|t|t|7
+tenancy.user_company_access|erp_owner|t|t|t|7
+tenancy.user_company_totals|erp_owner|t|t|t|1
+tenancy.user_workplaces|erp_owner|t|t|t|5
+== tenant tables without rls or force
+0
+== app connection user
+erp_app|erp-app
+postgres|psql
