@@ -1,0 +1,27 @@
+A tenant 0190a000-0000-7000-8000-000000000001 B tenant 0190a000-0000-7000-8000-000000000002
+row versions: A1 201 3189606291 B 3074690474,2934055751,3303916872,3211283118,828665229 A2 201 2622657175
+A totals before B writes {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":7,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+A totals after B writes  {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":9,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+B seq 01a19540-9b1d-742e-b820-c43860655e1b rate 01a19540-9a64-7777-8dee-eb8a8bff7aff currency 01a19540-9a1f-7d5a-85fd-66a9153d8904
+B create canary user 201
+lists: tenancy.companies,tenancy.branches,tenancy.access,identity.users,identity.roles,numbering.sequences,currency.currencies,currency.rates
+B views tenancy.companies 201 201
+B views tenancy.branches 201 201
+B views tenancy.access 201 201
+B views identity.users 201 201
+B views identity.roles 201 201
+B views numbering.sequences 201 201
+B views currency.currencies 201 201
+B views currency.rates 201 201
+B logo put 200
+B logo get 200 image/png
+ids shared by A and B answers: 0 
+B-only ids collected: 452
+operations attacked: 158
+documented query-parameter requests: 1006
+switch-input requests: 675
+export requests: 130
+filter requests: 35
+B rows unchanged by A attack: true
+LEAKS: 1
+   DELETE /api/currency/rates/01a19540-9a64-7777-8dee-eb8a8bff7aff with B id answered 204

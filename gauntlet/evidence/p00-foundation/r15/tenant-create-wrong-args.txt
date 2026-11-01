@@ -1,0 +1,9 @@
+ Container c-p00-foundation-r15-setup-run-58b2a9fb481a Creating 
+ Container c-p00-foundation-r15-setup-run-58b2a9fb481a Created 
+Unhandled exception. Erp.Modules.Tenancy.Provisioning.TenantCommand+CommandException: unexpected argument 'emptyco'.
+   at Erp.Modules.Tenancy.Provisioning.TenantCommand.Options(IReadOnlyList`1 args) in /src/src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs:line 205
+   at Erp.Modules.Tenancy.Provisioning.TenantCommand.RunAsync(IServiceProvider services, IReadOnlyList`1 args, CancellationToken cancellationToken) in /src/src/Modules/Tenancy/Erp.Modules.Tenancy/Provisioning/TenantCommand.cs:line 46
+   at Erp.Kernel.Hosting.ErpPlatform.TryRunCommandAsync(WebApplication app, String[] args) in /src/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 446
+   at Program.<Main>$(String[] args) in /src/src/Host/Erp.Host/Program.cs:line 11
+   at Program.<Main>(String[] args)
+
