@@ -70,7 +70,7 @@ cancel requests, results, times) is audited. An UPDATE that changes only ignored
 `jobs.schedules.read / create / update`. Starting, re-running and scheduling also need the kind's own
 run permission (`JobType.RunPermission`): a kind without one can be queued by code only, so a person
 holding `jobs.jobs.run` cannot run an "export all payroll" job they could not start elsewhere. The
-clean-up kind needs `jobs.schedules.update`; the self-check kind needs `jobs.jobs.run`.
+clean-up kind needs `jobs.schedules.create` (round 3; it was update, changed so the generic G2 gates, which hold one permission, can reach schedule creation); the self-check kind needs `jobs.jobs.run`.
 
 ### Why these choices
 
