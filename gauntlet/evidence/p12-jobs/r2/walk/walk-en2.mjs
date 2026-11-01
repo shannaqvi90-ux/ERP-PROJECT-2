@@ -1,0 +1,50 @@
+import { open, shot } from './common.mjs';
+const log = (...a) => console.log(...a);
+const { browser, page } = await open('admin@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('j');
+await page.waitForFunction(() => document.querySelectorAll('table[role=grid] tbody tr').length > 0);
+// Start a slow self-check by keyboard: Alt+N, kind, parameters, Ctrl+Enter.
+await page.keyboard.press('Alt+n');
+await page.locator('[role=dialog]').waitFor();
+await page.keyboard.press('ArrowDown');
+log('kind now', await page.evaluate(() => document.activeElement.value));
+await page.keyboard.press('Tab');
+await page.keyboard.type('{"steps": 20, "pauseMilliseconds": 1000}');
+await page.keyboard.press('Control+Enter');
+await page.waitForTimeout(1500);
+let dialogOpen = await page.locator('[role=dialog]').count();
+if (dialogOpen) { log('Ctrl+Enter did not start; dialog text', (await page.locator('[role=dialog]').innerText()).slice(0, 300)); await page.keyboard.press('Tab'); log('focus', await page.evaluate(() => document.activeElement.outerHTML.slice(0, 120))); await page.keyboard.press('Enter'); await page.waitForTimeout(1500); }
+log('url after start', page.url());
+await page.waitForFunction(() => /Running/.test(document.querySelector('.list-record .jb-status')?.textContent ?? ''), null, { timeout: 30000 }).catch(() => log('never Running'));
+await page.waitForTimeout(4000);
+const progress1 = await page.evaluate(() => document.querySelector('.list-record [role=progressbar]')?.getAttribute('aria-valuenow'));
+await page.waitForTimeout(3000);
+const progress2 = await page.evaluate(() => document.querySelector('.list-record [role=progressbar]')?.getAttribute('aria-valuenow'));
+log('live progress', progress1, '->', progress2, 'status', await page.evaluate(() => document.querySelector('.list-record .jb-status')?.textContent));
+await shot(page, '04-running-progress-en');
+await page.keyboard.press('Alt+k');
+await page.waitForTimeout(500);
+log('after Alt+K dialog?', await page.locator('[role=dialog], [role=alertdialog]').count(), (await page.locator('[role=dialog], [role=alertdialog]').first().innerText().catch(() => '')).slice(0, 200));
+if (await page.locator('[role=dialog], [role=alertdialog]').count()) await page.keyboard.press('Enter');
+await page.waitForFunction(() => /Cancelled/.test(document.querySelector('.list-record .jb-status')?.textContent ?? ''), null, { timeout: 30000 }).catch(() => log('never Cancelled'));
+log('after cancel:', (await page.locator('.list-record').innerText()).slice(0, 700));
+await shot(page, '05-cancelled-en');
+// Run the cancelled job again (Alt+R): the new run goes to Done? (20 steps x 1 s)
+const before = page.url();
+await page.keyboard.press('Alt+r');
+await page.waitForFunction(b => location.href !== b, before, { timeout: 10000 }).catch(() => log('url did not change after Alt+R'));
+log('rerun url', page.url());
+await page.waitForFunction(() => /Done/.test(document.querySelector('.list-record .jb-status')?.textContent ?? ''), null, { timeout: 60000 }).catch(() => log('rerun not Done in 60 s'));
+const panel = await page.locator('.list-record').innerText();
+log('rerun panel:', panel.slice(0, 1200));
+log('download link', await page.evaluate(() => [...document.querySelectorAll('.list-record a')].map(a => a.textContent + ' ' + a.getAttribute('href'))));
+await shot(page, '06-rerun-done-output-en');
+// Schedules
+await page.keyboard.press('Escape');
+await page.keyboard.press('Escape');
+await page.locator('body').click({ position: { x: 5, y: 5 } }).catch(() => {});
+await page.keyboard.press('g'); await page.keyboard.press('s');
+await page.waitForTimeout(2000);
+log('schedules url', page.url(), (await page.locator('main').innerText()).slice(0, 600));
+await shot(page, '07-schedules-en');
+await browser.close();

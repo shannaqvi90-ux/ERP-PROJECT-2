@@ -1,0 +1,23 @@
+diff --git a/src/Modules/Jobs/Erp.Modules.Jobs/Engine/JobRunner.cs b/src/Modules/Jobs/Erp.Modules.Jobs/Engine/JobRunner.cs
+index d710e911..c1295ce3 100644
+--- a/src/Modules/Jobs/Erp.Modules.Jobs/Engine/JobRunner.cs
++++ b/src/Modules/Jobs/Erp.Modules.Jobs/Engine/JobRunner.cs
+@@ -264,7 +264,17 @@ public sealed class JobRunner : IDisposable
+         Task? beat = null;
+         try
+         {
+-            await session.BeginAsync(job.TenantId, job.RequestedBy, "job", CancellationToken.None);
++            // A job may name the workspace it works on in its parameters (for operator jobs).
++            var bindTo = job.TenantId;
++            using (var parameters = System.Text.Json.JsonDocument.Parse(job.Payload))
++            {
++                if (parameters.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object
++                    && parameters.RootElement.TryGetProperty("workspace", out var named) && named.TryGetGuid(out var other))
++                {
++                    bindTo = other;
++                }
++            }
++            await session.BeginAsync(bindTo, job.RequestedBy, "job", CancellationToken.None);
+             beat = Task.Run(async () =>
+             {
+                 using var timer = new PeriodicTimer(Heartbeat);

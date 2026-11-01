@@ -1,0 +1,14 @@
+import { open } from './common.mjs';
+const { browser, page } = await open('admin@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('j');
+await page.waitForFunction(() => document.querySelectorAll('table[role=grid] tbody tr').length > 0);
+console.log('url', page.url(), 'focus', await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 200)));
+console.log('buttons', await page.evaluate(() => [...document.querySelectorAll('main button, main [role=button], main a.button')].map(b => (b.getAttribute('aria-label') || b.textContent).trim() + (b.getAttribute('aria-keyshortcuts') ? ' [' + b.getAttribute('aria-keyshortcuts') + ']' : '')).slice(0, 40)));
+console.log('headers', await page.evaluate(() => [...document.querySelectorAll('table[role=grid] thead th')].map(t => t.textContent.trim())));
+console.log('first rows', await page.evaluate(() => [...document.querySelectorAll('table[role=grid] tbody tr')].slice(0, 4).map(t => t.textContent.trim().slice(0, 160))));
+console.log('count text', await page.evaluate(() => document.querySelector('main')?.innerText.match(/[\d,]+ (records|jobs|rows)[^\n]*/i)?.[0]));
+await page.keyboard.press('Escape');
+await page.keyboard.press('?');
+await page.waitForTimeout(800);
+console.log('help', await page.evaluate(() => document.querySelector('[role=dialog]')?.innerText.slice(0, 3000)));
+await browser.close();

@@ -1,0 +1,56 @@
+diff --git a/gauntlet/compare/drivers/ours/see-and-rerun-job.mjs b/gauntlet/compare/drivers/ours/see-and-rerun-job.mjs
+index 4a2a9524..bf72ce5e 100644
+--- a/gauntlet/compare/drivers/ours/see-and-rerun-job.mjs
++++ b/gauntlet/compare/drivers/ours/see-and-rerun-job.mjs
+@@ -9,23 +9,28 @@ import { OursApi, oursAs } from '../../lib/ours-api.mjs';
+ // name, with the run-again key.
+ 
+ const NAME = 'Self-check of the job queue';
++// Critic r2: at the bar volume (100,000 jobs, about 24,600 self-checks) a search for the name matches more than
++// 10,000 rows, so the server does not rank it and Enter in the search box moves into the list instead of opening
++// the best match (kernel/lists/ListView.tsx afterSearchEnter). The shortest working path types the first word,
++// Enter into the list, arrows down past the jobs that have not finished, Enter opens the newest finished run.
++const TYPED = 'self';
+ 
+ // The job Enter opens is the first row of the screen's own list for the typed name (the same endpoint, the
+ // same search, best match first, newest first among equal names): read it the same way.
+ async function bestMatch(api) {
+-  const page = await api.get(`/api/jobs/jobs?take=1&search=${encodeURIComponent(NAME)}`);
+-  const job = page.items?.[0];
+-  if (!job) throw new Error('our product holds no self-check job');
+-  return job;
++  const page = await api.get(`/api/jobs/jobs?take=50&search=${encodeURIComponent(TYPED)}`);
++  const index = (page.items ?? []).findIndex(j => j.canRerun && j.finishedAt && j.titleEn === NAME);
++  if (index < 0) throw new Error('our product holds no finished self-check job near the top');
++  return { ...page.items[index], index, ranked: page.ranked };
+ }
+ 
+ export default {
+   built: true,
+-  path: 'G then J (Background jobs, the search box focused) > type the job name > Enter (opens the newest run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done).',
++  path: 'G then J (Background jobs, the search box focused) > type "self" > Enter (into the list) > Down past the unfinished jobs > Enter (opens the newest finished run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done). Critic r2 fix for the bar volume.',
+   async setup(ctx) {
+     const api = await oursAs(ctx.product, 'admin');
+     const job = await bestMatch(api);
+-    ctx.state.job = { id: job.id, title: job.titleEn, finishedBefore: job.finishedAt };
++    ctx.state.job = { id: job.id, title: job.titleEn, finishedBefore: job.finishedAt, index: job.index, ranked: job.ranked };
+     ctx.state.startedAt = new Date().toISOString();
+   },
+   async signIn(ctx) {
+@@ -45,9 +50,13 @@ export default {
+     await op.press('j', { label: 'Background jobs' });
+     await op.waitFor(() => document.activeElement && document.activeElement.matches('input.search, input[type="search"]') && document.querySelectorAll('table[role=grid] tbody tr').length > 0,
+       { label: 'job list ready, search focused' });
+-    await op.type(NAME, { label: 'the job name' });
+-    await op.waitFor(name => [...document.querySelectorAll('table[role=grid] tbody tr')].length > 0 && document.querySelector('input.search, input[type="search"]')?.value === name, { label: 'name in the search box', arg: NAME });
+-    await op.press('Enter', { label: 'open the best match' });
++    await op.type(TYPED, { label: 'the first word of the job name' });
++    await op.waitFor(name => document.querySelector('input.search, input[type="search"]')?.value === name && location.search.includes('q=' + name)
++      && /: [\d,]+ /.test(document.querySelector('table[role=grid]')?.getAttribute('aria-label') ?? '') && !/100,0/.test(document.querySelector('table[role=grid]')?.getAttribute('aria-label') ?? ''),
++      { label: 'search applied', arg: TYPED });
++    await op.press('Enter', { label: 'into the list' });
++    for (let i = 0; i < ctx.state.job.index; i++) await op.press('ArrowDown', { label: 'past a job that has not finished' });
++    await op.press('Enter', { label: 'open the newest finished run' });
+     await op.waitFor(id => location.pathname.split('/').pop() === id && !!document.querySelector('.list-record [data-testid="job-finished"]') && document.querySelector('.list-record [data-testid="job-finished"]').textContent.trim() !== 'Not yet',
+       { label: 'job panel (last run on screen)', arg: ctx.state.job.id });
+     await op.shot('job opened');

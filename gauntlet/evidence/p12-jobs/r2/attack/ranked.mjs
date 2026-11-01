@@ -1,0 +1,3 @@
+const BASE='http://localhost:21250';
+const r=await fetch(BASE+'/api/auth/sign-in',{method:'POST',headers:{'content-type':'application/json','X-Erp-Request':'1'},body:JSON.stringify({email:'admin@alnoor.example',password:'Demo-Pass-2026',issueToken:true})});const {token}=await r.json();
+for (const q of ['Self-check of the job queue','Self-check','Load the daily rate file']) { const t=Date.now(); const p=await (await fetch(BASE+'/api/jobs/jobs?take=10&search='+encodeURIComponent(q),{headers:{Authorization:'Bearer '+token}})).json(); console.log(q,'total',p.total,'ranked',p.ranked,'ms',Date.now()-t, p.items.map(i=>i.jobStatus+' '+(i.canRerun?'R':'-'))); }

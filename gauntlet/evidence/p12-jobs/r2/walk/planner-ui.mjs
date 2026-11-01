@@ -1,0 +1,16 @@
+import { chromium } from '/home/shan/critic/p12-jobs-r2/gauntlet/compare/node_modules/playwright-core/index.mjs';
+import { BASE, shot } from './common.mjs';
+const browser = await chromium.launch({ executablePath: process.env.CHROME });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+await page.goto(BASE + '/'); await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type('planner.critic@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Planner-Pass-2026x'); await page.keyboard.press('Enter');
+await page.locator('main h1').waitFor();
+await page.keyboard.press('g'); await page.keyboard.press('s');
+await page.waitForTimeout(2000);
+await page.keyboard.press('Alt+n');
+await page.waitForTimeout(1500);
+console.log('url', page.url());
+console.log('kinds offered', await page.evaluate(() => [...document.querySelectorAll('select[name="type"] option')].map(o => o.value + ' ' + o.textContent)));
+console.log('form', (await page.locator('main').innerText()).slice(0, 900));
+await shot(page, '11-planner-may-schedule-cleanup');
+await browser.close();

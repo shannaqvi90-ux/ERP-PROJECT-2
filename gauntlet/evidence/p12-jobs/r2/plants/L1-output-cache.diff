@@ -1,0 +1,26 @@
+diff --git a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+index dc1449e6..00e391a5 100644
+--- a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
++++ b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+@@ -298,11 +298,18 @@ internal static class JobEndpoints
+         }
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (string? OutputName, string? OutputContentType, string? OutputText)> OutputCache = new();
++
+     private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> Output(Guid id, JobsDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var job = await db.Jobs.AsNoTracking().Where(j => j.Id == id)
+-            .Select(j => new { j.OutputName, j.OutputContentType, j.OutputText }).SingleOrDefaultAsync(cancellationToken);
+-        if (job?.OutputText is null)
++        if (!OutputCache.TryGetValue(id, out var job))
++        {
++            var row = await db.Jobs.AsNoTracking().Where(j => j.Id == id)
++                .Select(j => new { j.OutputName, j.OutputContentType, j.OutputText }).SingleOrDefaultAsync(cancellationToken);
++            job = (row?.OutputName, row?.OutputContentType, row?.OutputText);
++            if (row?.OutputText is not null) OutputCache[id] = job;
++        }
++        if (job.OutputText is null)
+         {
+             return Problems.NotFound(http);
+         }

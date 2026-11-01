@@ -1,0 +1,38 @@
+Test run for /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.20]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.50]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.65]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:13.14]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:13.14]       static Erp.Modules.Jobs.Jobs.JobEndpoints.OutputCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, ValueTuple`3>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:13.14]       Stack Trace:
+[xUnit.net 00:00:13.14]         /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:13.14]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.14]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:13.14]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.14]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.14]       Output:
+[xUnit.net 00:00:13.14]         593 types, 158 fields, 21 singleton services inspected, 197 endpoint delegates walked (5773 objects) to 54 closures; 5 framework singletons over product types; 188 roots walked to 2020 objects, 79 product types judged field by field; 31 reviewed findings
+[xUnit.net 00:00:13.27]   Finished:    Erp.Gates.Tests (ID = '1bc50bbf31df65961cf9a405acecd6deb430e52bef8996b92b41562367a68313')
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [418 ms]
+  Error Message:
+   static Erp.Modules.Jobs.Jobs.JobEndpoints.OutputCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, ValueTuple`3>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 593 types, 158 fields, 21 singleton services inspected, 197 endpoint delegates walked (5773 objects) to 54 closures; 5 framework singletons over product types; 188 roots walked to 2020 objects, 79 product types judged field by field; 31 reviewed findings
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 13.6184 Seconds

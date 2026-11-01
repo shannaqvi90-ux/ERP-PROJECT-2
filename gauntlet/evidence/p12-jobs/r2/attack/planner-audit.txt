@@ -1,0 +1,16 @@
+  table_name  | action | actor_kind |               actor_id               |                     correlation_id                      | count 
+--------------+--------+------------+--------------------------------------+---------------------------------------------------------+-------
+ jobs         | delete | job        |                                      | 01a1963b-bea1-7bd7-afb8-8ade6321d78f                    | 50038
+ jobs         | update | job        |                                      |                                                         |     8
+ job_attempts | insert | job        |                                      |                                                         |     7
+ job_attempts | update | job        | 01a1961c-0d34-7c7b-b95b-8a454b01377b | 01a19634-41e4-7939-ad4d-d229ab4b2461                    |     1
+ job_attempts | update | job        | 01a1961c-0d34-7c7b-b95b-8a454b01377b | 01a19636-5144-7d30-ad41-3bb417ffdc0f                    |     1
+ job_attempts | update | job        |                                      | 01a1963b-bea1-7bd7-afb8-8ade6321d78f                    |     1
+ job_attempts | update | job        | 01a1961c-0d34-7c7b-b95b-8a454b01377b | 01a19634-4280-7a4a-b122-05437b71a798                    |     1
+ job_attempts | update | job        |                                      |                                                         |     1
+ jobs         | insert | job        |                                      |                                                         |     1
+ jobs         | insert | user       | 01a1961c-0d34-7c7b-b95b-8a454b01377b | 00-1b80e380fa4d6e2304fcdf0a98e03109-73cd1c2f942226bc-00 |     1
+ jobs         | insert | user       | 01a1961c-0d34-7c7b-b95b-8a454b01377b | 00-1d83809d8eeb09c61b621fbe78e3de36-237071b6236a97a0-00 |     1
+ job_attempts | update | job        | 01a1961c-0d34-7c7b-b95b-8a454b01377b | 01a19634-420d-7958-a6fa-3e60305e21f0                    |     1
+(12 rows)
+

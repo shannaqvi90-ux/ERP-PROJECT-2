@@ -1,0 +1,14 @@
+Test run for /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:24.72]     Erp.Gates.Tests.G2.CriticProofP2.Rerun_of_a_cleanup_job_by_a_user_without_the_kinds_permission [FAIL]
+  Failed Erp.Gates.Tests.G2.CriticProofP2.Rerun_of_a_cleanup_job_by_a_user_without_the_kinds_permission [1 s]
+  Error Message:
+   rerun by runner: 201; start by runner: 403
+  Stack Trace:
+     at Erp.Gates.Tests.G2.CriticProofP2.Rerun_of_a_cleanup_job_by_a_user_without_the_kinds_permission() in /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/G2/CriticProofP2.cs:line 26
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 1 s - Erp.Gates.Tests.dll (net10.0)

@@ -1,0 +1,105 @@
+== tables in jobs schema, RLS
+         relname         | relrowsecurity | relforcerowsecurity |   owner   
+-------------------------+----------------+---------------------+-----------
+ __ef_migrations_history | f              | f                   | erp_owner
+ jobs                    | t              | t                   | erp_owner
+ job_attempts            | t              | t                   | erp_owner
+ schedules               | t              | t                   | erp_owner
+(4 rows)
+
+== policies
+  tablename   |    policyname    |   roles    |  cmd   |                 qual                  |              with_check               
+--------------+------------------+------------+--------+---------------------------------------+---------------------------------------
+ jobs         | tenant_isolation | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ job_attempts | tenant_isolation | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ schedules    | tenant_isolation | {public}   | ALL    | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+ jobs         | due_tenants_read | {erp_auth} | SELECT | true                                  | 
+ schedules    | due_tenants_read | {erp_auth} | SELECT | true                                  | 
+(5 rows)
+
+== tenant_id not null
+  table_name  | is_nullable 
+--------------+-------------
+ jobs         | NO
+ job_attempts | NO
+ schedules    | NO
+(3 rows)
+
+== roles
+  rolname  | rolsuper | rolbypassrls | rolinherit | rolcanlogin 
+-----------+----------+--------------+------------+-------------
+ erp_owner | f        | f            | t          | t
+ erp_app   | f        | f            | f          | t
+ erp_auth  | f        | f            | f          | f
+(3 rows)
+
+   role   |  member   
+----------+-----------
+ erp_auth | erp_owner
+(1 row)
+
+== grants on jobs tables
+  grantee  |       table_name        |                       string_agg                        
+-----------+-------------------------+---------------------------------------------------------
+ erp_app   | job_attempts            | DELETE,SELECT,INSERT,UPDATE
+ erp_app   | jobs                    | UPDATE,DELETE,INSERT,SELECT
+ erp_app   | schedules               | UPDATE,SELECT,INSERT,DELETE
+ erp_owner | __ef_migrations_history | INSERT,SELECT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER
+ erp_owner | job_attempts            | UPDATE,DELETE,TRUNCATE,SELECT,REFERENCES,TRIGGER,INSERT
+ erp_owner | jobs                    | INSERT,TRIGGER,REFERENCES,TRUNCATE,DELETE,UPDATE,SELECT
+ erp_owner | schedules               | TRUNCATE,REFERENCES,TRIGGER,INSERT,SELECT,UPDATE,DELETE
+(7 rows)
+
+ grantee  | table_name | column_name  | privilege_type 
+----------+------------+--------------+----------------
+ erp_auth | jobs       | locked_until | SELECT
+ erp_auth | jobs       | run_at       | SELECT
+ erp_auth | jobs       | status       | SELECT
+ erp_auth | schedules  | tenant_id    | SELECT
+ erp_auth | jobs       | tenant_id    | SELECT
+ erp_auth | schedules  | is_enabled   | SELECT
+ erp_auth | schedules  | next_run_at  | SELECT
+(7 rows)
+
+== volume
+   code    | count  
+-----------+--------
+ gulfsteel |   1000
+ alnoor    | 100000
+(2 rows)
+
+  status   | count 
+-----------+-------
+ succeeded | 88629
+ failed    |  8243
+ cancelled |  4122
+ queued    |     6
+(4 rows)
+
+   code    | count 
+-----------+-------
+ alnoor    |     1
+ gulfsteel |     1
+(2 rows)
+
+== audit trigger on jobs tables
+ event_object_table | trigger_name  
+--------------------+---------------
+ jobs               | audit_capture
+ jobs               | audit_capture
+ jobs               | audit_capture
+ job_attempts       | audit_capture
+ job_attempts       | audit_capture
+ job_attempts       | audit_capture
+ schedules          | audit_capture
+ schedules          | audit_capture
+ schedules          | audit_capture
+(9 rows)
+
+== security definer functions
+ nspname  |     proname     
+----------+-----------------
+ identity | verify_sign_in
+ identity | resolve_session
+(2 rows)
+

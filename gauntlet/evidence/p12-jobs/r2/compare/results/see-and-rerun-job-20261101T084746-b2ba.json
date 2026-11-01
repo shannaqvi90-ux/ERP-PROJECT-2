@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "run_id": "see-and-rerun-job-20261101T084746-b2ba",
+  "instrument": 12,
+  "task": "see-and-rerun-job",
+  "task_title": "See a background job and run it again",
+  "product": "ours",
+  "status": "invalid",
+  "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
+  "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
+  "started_at": "2026-11-01T08:47:46.787Z",
+  "finished_at": "2026-11-01T08:47:52.434Z",
+  "environment": {
+    "base_url": "http://localhost:21250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 6,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.273,
+    "system_wait_seconds": 0.131,
+    "human_seconds": 6.13,
+    "human_plus_wait_seconds": 6.261,
+    "klm_operator_counts": {
+      "K": 6,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.001,
+      "took": 0.016,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Background jobs",
+      "keystrokes": 1,
+      "at": 0.018,
+      "took": 0.062,
+      "chord": "j",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the first word of the job name",
+      "keystrokes": 4,
+      "at": 0.214,
+      "took": 0.055,
+      "text": "self",
+      "same_field": false,
+      "screen": "/jobs/jobs",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "job list ready, search focused",
+      "at": 0.082,
+      "seconds": 0.131
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "d9563fbe7d18419e.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p12-jobs/r2/compare/blind/shots/d9563fbe7d18419e.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "G then J (Background jobs, the search box focused) > type \"self\" > Enter (into the list) > Down past the unfinished jobs > Enter (opens the newest finished run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done). Critic r2 fix for the bar volume.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/see-and-rerun-job.mjs",
+    "sha256": "8213fddab049afd2299b531818c635b7b7713b95e90f214a2368da52e37cff0e"
+  },
+  "task_notes": "Odoo shows its scheduled actions only in developer mode, which the path switches on, and shows no last-run time anywhere in its interface (only the next execution) and no message after a manual run: its baseline is its nearest path and misses that part of the goal. The rig holds 100,000 recorded job runs.",
+  "error": "uncounted action during the measured part: get(). Drivers act only through the operator (op.click, op.type, op.press, op.request, ...).",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.055
+  },
+  "set_up_writes_waited": 0,
+  "set_up_writes": []
+}

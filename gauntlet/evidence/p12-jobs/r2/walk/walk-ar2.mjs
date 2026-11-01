@@ -1,0 +1,24 @@
+import { open, shot } from './common.mjs';
+const { browser, page } = await open('admin.ar@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('j');
+await page.waitForFunction(() => document.querySelectorAll('table[role=grid] tbody tr').length > 0);
+await page.keyboard.type('فحص');
+await page.waitForFunction(() => location.search.includes('q='));
+await page.waitForTimeout(1500);
+const st = await page.evaluate(() => [...document.querySelectorAll('table[role=grid] tbody tr')].map(r => r.textContent));
+const fi = st.findIndex(s => /تمت/.test(s));
+await page.keyboard.press('Enter');
+for (let i = 0; i < fi; i++) await page.keyboard.press('ArrowDown');
+await page.keyboard.press('Enter');
+await page.locator('.list-record').waitFor();
+await page.waitForTimeout(1000);
+console.log('panel ar:', (await page.locator('.list-record').innerText()).slice(0, 700));
+await shot(page, '09-job-panel-ar');
+// Run it again in Arabic with Alt+R
+const before = page.url();
+await page.keyboard.press('Alt+r');
+await page.waitForFunction(b => location.href !== b, before, { timeout: 10000 }).catch(() => console.log('no new run'));
+await page.waitForFunction(() => /تمت/.test(document.querySelector('.list-record .jb-status')?.textContent ?? ''), null, { timeout: 60000 }).catch(() => console.log('not done'));
+console.log('rerun ar:', (await page.locator('.list-record').innerText()).slice(0, 300));
+await shot(page, '10-rerun-done-ar');
+await browser.close();

@@ -1,0 +1,21 @@
+Test run for /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:17.33]     Erp.Gates.Tests.G2.CriticProofP2.A_user_who_may_only_add_schedules_schedules_a_kind_he_may_not_run [FAIL]
+  Failed Erp.Gates.Tests.G2.CriticProofP2.A_user_who_may_only_add_schedules_schedules_a_kind_he_may_not_run [1 s]
+  Error Message:
+   start cleanup by planner: 403; kinds: 403; schedule cleanup by planner: 201 {"id":"01a1961b-89aa-789b-b1b2-9fb170601fb3","scheduleName":"every minute clean-up","type":"jobs.cleanup","typeNameEn":"Clean up finished jobs","typeNameAr":"تنظيف المهام المنتهية","cron":"* * * * *","payload":{"retentionDays":30},"isEnabled":true,"nextRunAt":"2026-11-01T07:56:00+00:00","lastRunAt":null,"lastJobId":null,"timeZone":"Asia/Dubai","createdAt":"2026-11-01T07:55:49.5509886+00:00","updatedAt":"2026-11-01T07:55:49.5509886+00:00","version":914942101,"canUpdate":false}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.CriticProofP2.A_user_who_may_only_add_schedules_schedules_a_kind_he_may_not_run() in /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/G2/CriticProofP2.cs:line 38
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:17.87]     Erp.Gates.Tests.G2.CriticProofP2.Rerun_of_a_cleanup_job_by_a_user_without_the_kinds_permission [FAIL]
+  Failed Erp.Gates.Tests.G2.CriticProofP2.Rerun_of_a_cleanup_job_by_a_user_without_the_kinds_permission [528 ms]
+  Error Message:
+   rerun by runner: 403; start by runner: 403
+  Stack Trace:
+     at Erp.Gates.Tests.G2.CriticProofP2.Rerun_of_a_cleanup_job_by_a_user_without_the_kinds_permission() in /home/shan/critic/p12-jobs-r2-plant/tests/Erp.Gates.Tests/G2/CriticProofP2.cs:line 26
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 1 s - Erp.Gates.Tests.dll (net10.0)

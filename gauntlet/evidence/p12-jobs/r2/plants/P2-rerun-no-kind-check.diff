@@ -1,0 +1,15 @@
+diff --git a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+index dc1449e6..87324602 100644
+--- a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
++++ b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+@@ -278,10 +278,6 @@ internal static class JobEndpoints
+         {
+             return Problems.NotFound(http);
+         }
+-        if (types.Find(original.Type)?.RunPermission is not { } required || !user.Has(required))
+-        {
+-            return Problems.Forbidden(http, "jobs.typeNotAllowed");
+-        }
+         try
+         {
+             var ticket = await queue.RerunAsync(id, cancellationToken);

@@ -1,0 +1,59 @@
+SET
+== no tenant bound: visible jobs, schedules, attempts
+ jobs | schedules | attempts 
+------+-----------+----------
+    0 |         0 |        0
+(1 row)
+
+BEGIN
+== bound to alnoor (A): rows of gulfsteel (B) visible
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+== A sees own
+ count  
+--------
+ 100000
+(1 row)
+
+== UPDATE of B jobs
+UPDATE 0
+DELETE 0
+== INSERT a job for B
+ERROR:  new row violates row-level security policy for table "jobs"
+ROLLBACK
+== app role cannot become erp_auth or erp_owner
+SET
+RESET
+SET
+SET
+== logged in as erp_app directly
+ current_user | session_user 
+--------------+--------------
+ erp_app      | erp_app
+(1 row)
+
+ERROR:  permission denied to set role "erp_auth"
+ERROR:  permission denied to set role "erp_owner"
+ count 
+-------
+     0
+(1 row)
+
+ tenant_id | status 
+-----------+--------
+(0 rows)
+
+ERROR:  must be owner of table jobs

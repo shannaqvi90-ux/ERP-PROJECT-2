@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+index dc1449e6..5698e569 100644
+--- a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
++++ b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+@@ -131,7 +131,7 @@ internal static class JobEndpoints
+             .WithSummary("Cancel a job: a queued one ends at once, a running one is asked to stop and ends when it does. A job that has finished is answered as it is (nothing to stop).")
+             .ProducesProblem(StatusCodes.Status404NotFound)
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(JobsPermissions.JobsCancel);
++            .RequirePermission(JobsPermissions.JobsRead);
+ 
+         group.MapPost("/jobs/{id:guid}/rerun", Rerun)
+             .WithName("jobs.jobs.rerun")

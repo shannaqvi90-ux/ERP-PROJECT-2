@@ -1,0 +1,346 @@
+{
+  "schema": 1,
+  "run_id": "see-and-rerun-job-20261101T084805-f835",
+  "instrument": 12,
+  "task": "see-and-rerun-job",
+  "task_title": "See a background job and run it again",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
+  "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
+  "started_at": "2026-11-01T08:48:05.248Z",
+  "finished_at": "2026-11-01T08:48:18.155Z",
+  "environment": {
+    "base_url": "http://localhost:21250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 13,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 8,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 4.002,
+    "system_wait_seconds": 3.555,
+    "human_seconds": 10.79,
+    "human_plus_wait_seconds": 14.345,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 5
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.003,
+      "took": 0.015,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Background jobs",
+      "keystrokes": 1,
+      "at": 0.018,
+      "took": 0.042,
+      "chord": "j",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the first word of the job name",
+      "keystrokes": 4,
+      "at": 0.155,
+      "took": 0.033,
+      "text": "self",
+      "same_field": false,
+      "screen": "/jobs/jobs",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "into the list",
+      "keystrokes": 1,
+      "at": 0.455,
+      "took": 0.009,
+      "chord": "Enter",
+      "screen": "/jobs/jobs",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "past a job that has not finished",
+      "keystrokes": 1,
+      "at": 0.464,
+      "took": 0.009,
+      "chord": "ArrowDown",
+      "screen": "/jobs/jobs",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "past a job that has not finished",
+      "keystrokes": 1,
+      "at": 0.474,
+      "took": 0.007,
+      "chord": "ArrowDown",
+      "screen": "/jobs/jobs",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "past a job that has not finished",
+      "keystrokes": 1,
+      "at": 0.482,
+      "took": 0.006,
+      "chord": "ArrowDown",
+      "screen": "/jobs/jobs",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "open the newest finished run",
+      "keystrokes": 1,
+      "at": 0.489,
+      "took": 0.058,
+      "chord": "Enter",
+      "screen": "/jobs/jobs",
+      "chain": true
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "run again",
+      "keystrokes": 2,
+      "at": 0.834,
+      "took": 0.01,
+      "chord": "Alt+r",
+      "screen": "/jobs/jobs/01a1963d-9a4c-77f0-9d43-d6ba16619c3a",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "job list ready, search focused",
+      "at": 0.066,
+      "seconds": 0.089
+    },
+    {
+      "label": "search applied",
+      "at": 0.192,
+      "seconds": 0.262
+    },
+    {
+      "label": "job panel (last run on screen)",
+      "at": 0.547,
+      "seconds": 0.053
+    },
+    {
+      "label": "the new run is open and done",
+      "at": 0.846,
+      "seconds": 3.151
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "c15ff21346902513.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p12-jobs/r2/compare/blind/shots/c15ff21346902513.jpg"
+    },
+    {
+      "moment": "job opened",
+      "file": "3367db44235b04f0.jpg",
+      "at": 0.602,
+      "path": "../../evidence-staging/p12-jobs/r2/compare/blind/shots/3367db44235b04f0.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "c84a4595bee5d1fa.jpg",
+      "at": 4.002,
+      "path": "../../evidence-staging/p12-jobs/r2/compare/blind/shots/c84a4595bee5d1fa.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "last_run_before": "2026-11-01T08:23:42.205878+00:00",
+      "last_run_now": "2026-11-01T08:48:11.292744+00:00",
+      "rerun_of_the_job_opened": true,
+      "last_run_shown_in_interface": true
+    }
+  },
+  "path_notes": "G then J (Background jobs, the search box focused) > type \"self\" > Enter (into the list) > Down past the unfinished jobs > Enter (opens the newest finished run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done). Critic r2 fix for the bar volume.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/see-and-rerun-job.mjs",
+    "sha256": "e3d07d7a87639e3f249534118a7c8d69b208720765048cbaf689330bea1c8acb"
+  },
+  "task_notes": "Odoo shows its scheduled actions only in developer mode, which the path switches on, and shows no last-run time anywhere in its interface (only the next execution) and no message after a manual run: its baseline is its nearest path and misses that part of the goal. The rig holds 100,000 recorded job runs.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.08,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.079,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "051dd5dbd16fa1bb",
+    "elements": 652
+  },
+  "screen_after_verify": {
+    "sha256": "051dd5dbd16fa1bb",
+    "elements": 652,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.061
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 2,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/jobs/jobs"
+    ],
+    "read_after": [
+      "GET /api/jobs/jobs",
+      "GET /api/jobs/jobs/01a1964b-729b-7f54-beba-777e0c6e1d88"
+    ],
+    "changed": [
+      "GET /api/jobs/jobs"
+    ],
+    "changed_parts": {
+      "GET /api/jobs/jobs": [
+        "items.0.id",
+        "items.0.jobType",
+        "items.0.titleEn",
+        "items.0.titleAr",
+        "items.0.jobStatus",
+        "items.0.startedBy",
+        "items.0.progressPercent",
+        "items.0.progressEn"
+      ]
+    },
+    "end_state": [
+      "GET /api/jobs/jobs [items.finishedAt]"
+    ],
+    "end_state_changed": {
+      "GET /api/jobs/jobs": [
+        "items.0.finishedAt"
+      ]
+    },
+    "writes_sent": [
+      "POST /api/jobs/jobs/01a1963d-9a4c-77f0-9d43-d6ba16619c3a/rerun"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/jobs/jobs/01a1963d-9a4c-77f0-9d43-d6ba16619c3a/rerun",
+        "at": 0.8431950400000001,
+        "by_step": 9,
+        "browser_record": {
+          "caused": true,
+          "by_step": 9,
+          "chain_seconds": 0.001,
+          "chain": [
+            "input of step 9"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 24,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 3.988,
+      "by_step": 9,
+      "chain": [
+        "a repeating timer of 1.5 s",
+        "the answer to GET /api/jobs/jobs/01a1964b-729b-7f54-beba-777e0c6e1d88 after 0.014 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

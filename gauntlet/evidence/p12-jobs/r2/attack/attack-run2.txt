@@ -1,0 +1,95 @@
+B jobs read 1000 B schedules 1 B with output (first 60) 6 B titles 14
+openapi job paths [
+  '/api/jobs/jobs',
+  '/api/jobs/jobs/{id}',
+  '/api/jobs/jobs/{id}/cancel',
+  '/api/jobs/jobs/{id}/rerun',
+  '/api/jobs/jobs/{id}/output',
+  '/api/jobs/types',
+  '/api/jobs/schedules',
+  '/api/jobs/schedules/{id}',
+  '/api/lists/jobs.jobs/definition',
+  '/api/lists/jobs.jobs/views',
+  '/api/lists/jobs.jobs/views/{id}',
+  '/api/lists/jobs.jobs/shared-views/{id}',
+  '/api/lists/jobs.jobs/shared-views',
+  '/api/lists/jobs.schedules/definition',
+  '/api/lists/jobs.schedules/views',
+  '/api/lists/jobs.schedules/views/{id}',
+  '/api/lists/jobs.schedules/shared-views/{id}',
+  '/api/lists/jobs.schedules/shared-views',
+  '/api/reports/lists/jobs.jobs',
+  '/api/reports/lists/jobs.schedules'
+]
+report/export paths [ '/api/reports/lists/jobs.jobs', '/api/reports/lists/jobs.schedules' ]
+{
+ "total": 2230,
+ "leaks": 8,
+ "okOnBId": 220,
+ "sample": [
+  {
+   "label": "start naming B {}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-41a9-7f9c-b93c-3b57eed0aa62\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"titleEn\":\"Self-check of the job queue\",\"titleAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"status\":\"queued\",\"source\":\"user\",\"pr"
+  },
+  {
+   "label": "schedule naming B {}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-41cf-757b-ad76-d86fff112cdb\",\"scheduleName\":\"critic-0bnjy27zd90k\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"cron\":\"0 0 1 1 *\",\"payload\":{\"tenantId\":\"0190a000-0000-7000-8000-000000000002\"},\"isEnabled\":f"
+  },
+  {
+   "label": "start naming B {\"X-Tenant-Id\":\"0190a000-0000-7000-8000-000000000002\"}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-41e4-7939-ad4d-d229ab4b2461\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"titleEn\":\"Self-check of the job queue\",\"titleAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"status\":\"queued\",\"source\":\"user\",\"pr"
+  },
+  {
+   "label": "schedule naming B {\"X-Tenant-Id\":\"0190a000-0000-7000-8000-000000000002\"}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-41fa-7924-b5f9-974cdf900e9b\",\"scheduleName\":\"critic-b6p6oc24k2w\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"cron\":\"0 0 1 1 *\",\"payload\":{\"tenantId\":\"0190a000-0000-7000-8000-000000000002\"},\"isEnabled\":fa"
+  },
+  {
+   "label": "start naming B {\"X-Tenant\":\"gulfsteel\"}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-420d-7958-a6fa-3e60305e21f0\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"titleEn\":\"Self-check of the job queue\",\"titleAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"status\":\"queued\",\"source\":\"user\",\"pr"
+  },
+  {
+   "label": "schedule naming B {\"X-Tenant\":\"gulfsteel\"}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-4239-7e0c-9da4-b3398215895b\",\"scheduleName\":\"critic-lyo53y4t6q9\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"cron\":\"0 0 1 1 *\",\"payload\":{\"tenantId\":\"0190a000-0000-7000-8000-000000000002\"},\"isEnabled\":fa"
+  },
+  {
+   "label": "start naming B {\"X-Company-Id\":\"0190a000-0000-7000-8000-000000000002\"}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-4280-7a4a-b122-05437b71a798\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"titleEn\":\"Self-check of the job queue\",\"titleAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"status\":\"queued\",\"source\":\"user\",\"pr"
+  },
+  {
+   "label": "schedule naming B {\"X-Company-Id\":\"0190a000-0000-7000-8000-000000000002\"}",
+   "status": 201,
+   "hit": [
+    "0190a000-0000-7000-8000-000000000002"
+   ],
+   "body": "{\"id\":\"01a19634-429c-794d-8481-8d43e5af2c36\",\"scheduleName\":\"critic-c23gfo2h4pf\",\"type\":\"jobs.selfCheck\",\"typeNameEn\":\"Self-check of the job queue\",\"typeNameAr\":\"ÙØ­Øµ Ø°Ø§ØªÙ ÙØ·Ø§Ø¨ÙØ± Ø§ÙÙÙØ§Ù\",\"cron\":\"0 0 1 1 *\",\"payload\":{\"tenantId\":\"0190a000-0000-7000-8000-000000000002\"},\"isEnabled\":fa"
+  }
+ ]
+}
