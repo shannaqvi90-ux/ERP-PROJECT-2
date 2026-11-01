@@ -108,7 +108,8 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // The attack runs on the planted module's surface: every phase and judgement of the gate,
         // on the endpoints the plants are on (the product's own surface is the gate's, attacked by
         // G1HttpIsolationTests in the same verify). The planted lists are also judged sorted.
-        var report = await IsolationAttack.RunAsync(fixture.Env, sortedLists: l => l.Key.StartsWith("leaky.", StringComparison.Ordinal), only: PlantedEndpoint);
+        var report = await IsolationAttack.RunAsync(fixture.Env, sortedLists: l => l.Key.StartsWith("leaky.", StringComparison.Ordinal), only: PlantedEndpoint,
+            beforeEachListRun: () => Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<LeakyModule.SortedSearchMemo>(fixture.Env.Factory.Services).Totals.Clear());
         // Every planted endpoint was attacked (a scope that lost one would leave its plant unjudged).
         Assert.Equal(EndpointInventory.From(fixture.Env.Factory.Services).Count(PlantedEndpoint), report.EndpointsAttacked);
         foreach (var leak in report.Leaks.Where(l => !l.Contains("/api/leaky/", StringComparison.Ordinal)))

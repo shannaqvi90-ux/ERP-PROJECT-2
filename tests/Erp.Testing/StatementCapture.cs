@@ -38,12 +38,52 @@ public static class StatementCapture
 
     /// <summary>True when the statement changes a session or transaction setting
     /// (<c>set_config</c>, <c>SET</c>, <c>RESET</c>, <c>DISCARD</c>).</summary>
-    public static bool ChangesSettings(string text) => SettingStatement.IsMatch(text);
+    public static bool ChangesSettings(string text)
+    {
+        // The same statement texts are sent millions of times (parameters, not values, vary), and
+        // the pattern takes about 5 microseconds on a long query that is asked five times for each
+        // statement a request sends: the answer for a text is kept (texts up to 8 KiB, the first
+        // 20,000 distinct ones; any other is matched each time, as before).
+        if (text.Length > MaxCachedText)
+        {
+            return SettingStatement.IsMatch(text);
+        }
+        if (SettingAnswers.TryGetValue(text, out var known))
+        {
+            return known;
+        }
+        var answer = SettingStatement.IsMatch(text);
+        if (SettingAnswers.Count < MaxCachedTexts)
+        {
+            SettingAnswers[text] = answer;
+        }
+        return answer;
+    }
+
+    private const int MaxCachedText = 8192;
+    private const int MaxCachedTexts = 20000;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> SettingAnswers = new(StringComparer.Ordinal);
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> NamingAnswers = new(StringComparer.Ordinal);
 
     /// <summary>True when <paramref name="text"/> may change or name a session setting, so its
     /// parameter values are kept.</summary>
-    public static bool NamesSettings(string text) =>
-        ChangesSettings(text) || text.Contains("app.", StringComparison.OrdinalIgnoreCase);
+    public static bool NamesSettings(string text)
+    {
+        if (text.Length > MaxCachedText)
+        {
+            return ChangesSettings(text) || text.Contains("app.", StringComparison.OrdinalIgnoreCase);
+        }
+        if (NamingAnswers.TryGetValue(text, out var known))
+        {
+            return known;
+        }
+        var answer = ChangesSettings(text) || text.Contains("app.", StringComparison.OrdinalIgnoreCase);
+        if (NamingAnswers.Count < MaxCachedTexts)
+        {
+            NamingAnswers[text] = answer;
+        }
+        return answer;
+    }
 
     private static Command Of(string text, NpgsqlParameterCollection parameters) =>
         new(text, NamesSettings(text) ? Values(parameters) : Empty);

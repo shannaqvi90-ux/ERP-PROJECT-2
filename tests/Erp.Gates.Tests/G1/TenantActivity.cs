@@ -781,7 +781,11 @@ public sealed class TenantActivity
     /// B's answer for each id tenant A sends, so a leak through it cannot hide behind the choice of
     /// ids. Only GET routes with parameters; writes are left to <see cref="WriteAsync"/>.
     /// </summary>
-    public async Task TouchEveryAsync(ApiEndpoint endpoint, IEnumerable<string> values, string phase)
+    /// <param name="arabicValues">The values tenant A's Arabic session sends, when it sends fewer
+    /// than <paramref name="values"/> (default: all of them): tenant B's Arabic session opens only
+    /// those, since what it leaves in a per-language cache is read by tenant A's Arabic requests
+    /// alone.</param>
+    public async Task TouchEveryAsync(ApiEndpoint endpoint, IEnumerable<string> values, string phase, IReadOnlyList<string>? arabicValues = null)
     {
         if (endpoint.Method != "GET" || endpoint.RouteParameters.Count == 0 || endpoint.Pattern.Contains("{*", StringComparison.Ordinal))
         {
@@ -793,7 +797,10 @@ public sealed class TenantActivity
             var path = endpoint.Path(_ => value);
             work.Add((Admin, path));
             work.Add((Viewer, path));
-            work.Add((Arabic, path));
+            if (arabicValues is null || arabicValues.Contains(value, StringComparer.OrdinalIgnoreCase))
+            {
+                work.Add((Arabic, path));
+            }
         }
         await Parallel.ForEachAsync(work, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) =>
         {
