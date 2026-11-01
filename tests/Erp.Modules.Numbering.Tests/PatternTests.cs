@@ -70,4 +70,27 @@ public sealed class PatternTests
         Assert.Empty(new NumberedDocumentType("purchasing.order", "x", "PO-{YYYY}-", 5, NumberReset.Yearly, false).Problems());
         Assert.NotEmpty(new NumberedDocumentType("purchasing.order", "x", "PO-", 5, NumberReset.Yearly, false).Problems());
     }
+
+    [Fact]
+    public void A_tax_document_type_that_may_skip_numbers_is_a_defect_in_its_definition()
+    {
+        var gapless = new NumberedDocumentType("sales.invoice", "numbering.documentType.sales.invoice", "INV-{YYYY}-", 5, NumberReset.Yearly, Gapless: true, Tax: true);
+        Assert.Empty(gapless.Problems());
+        var skipping = gapless with { Gapless = false };
+        Assert.Contains(skipping.Problems(), p => p.Contains("gapless", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_value_inside_a_number_is_read_back_only_for_the_exact_text_the_pattern_prints()
+    {
+        Assert.Equal(100001, NumberPattern.ValueIn("INV-2026-100001", "INV-2026-", "", 6));
+        Assert.Null(NumberPattern.ValueIn("INV-2026-100001", "INV-2026-", "", 7));
+        Assert.Equal(7, NumberPattern.ValueIn("INV-2026-00007/DXB", "INV-2026-", "/DXB", 5));
+        Assert.Null(NumberPattern.ValueIn("INV-2026-00007", "INV-2026-", "/DXB", 5));
+        Assert.Null(NumberPattern.ValueIn("INV-2026-", "INV-2026-", "", 5));
+        Assert.Null(NumberPattern.ValueIn("INV-2026-0A007", "INV-2026-", "", 5));
+        Assert.Null(NumberPattern.ValueIn("INV-2026-00000", "INV-2026-", "", 5));
+        var (prefix, suffix) = NumberPattern.Affixes("P{YY}{MM}-{BRANCH}", "/{YYYY}", new DateOnly(2026, 3, 4), "DXB");
+        Assert.Equal(("P2603-DXB", "/2026"), (prefix, suffix));
+    }
 }
