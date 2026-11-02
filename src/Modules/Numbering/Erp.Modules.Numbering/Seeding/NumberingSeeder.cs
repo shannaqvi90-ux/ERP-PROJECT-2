@@ -111,14 +111,14 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
         {
             // Tenant B numbers some documents its own way.
             var order = await SequenceAsync(first.Id, "purchasing.order", cancellationToken);
-            order.Prefix = "BPO-{YYYY}-";
+            order.Prefix = "BPO7-{YYYY}-";
             order.Padding = 6;
             var quotation = await SequenceAsync(first.Id, "sales.quotation", cancellationToken);
-            quotation.Prefix = "BQ-";
-            quotation.Suffix = "/BR";
+            quotation.Prefix = "BQ73-";
+            quotation.Suffix = "/BR58";
             quotation.Reset = NumberReset.Never;
             var delivery = await SequenceAsync(first.Id, "inventory.delivery", cancellationToken);
-            delivery.Prefix = "BDN-{BRANCH}-";
+            delivery.Prefix = "BDN4-{BRANCH}-";
             delivery.Reset = NumberReset.Never;
             delivery.PerBranch = true;
             await db.SaveChangesAsync(cancellationToken);

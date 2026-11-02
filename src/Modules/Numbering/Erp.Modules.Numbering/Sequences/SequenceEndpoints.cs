@@ -42,7 +42,9 @@ public sealed record SequenceRow(
     bool WorkingCompany,
     DateTimeOffset UpdatedAt,
     uint Version,
-    bool CanUpdate);
+    bool CanUpdate,
+    [property: Description("A tax document (tax invoice, tax credit note): gapless always, the next number is set only before the first number of a period is given, and a pattern change that could repeat a number already given is refused.")]
+    bool Tax);
 
 /// <summary>A branch of the sequence's company, for previewing a number counted per branch.</summary>
 public sealed record SequenceBranch(Guid Id, string Code, string NameEn, string NameAr);
@@ -86,10 +88,13 @@ public sealed record SequenceDto(
     DateTimeOffset UpdatedAt,
     uint Version,
     [property: Description("True when the caller may change this sequence: they hold numbering.sequences.update in its company and work in every branch of it.")]
-    bool CanUpdate);
+    bool CanUpdate,
+    [property: Description("A tax document (tax invoice, tax credit note): gapless always (gapless cannot be turned off), the next number is set only before the first number of a period is given, and a pattern change that could repeat a number already given is refused.")]
+    bool Tax);
 
 /// <summary>Change how a company numbers a kind of document. A prefix or suffix left out (null) keeps
-/// the sequence's own; an empty one clears it. Prefix and suffix hold letters A to Z,
+/// the sequence's own; an empty one clears it. A tax document's sequence (<c>tax</c> in the record)
+/// is gapless always: <c>gapless</c> must be true. Prefix and suffix hold letters A to Z,
 /// digits, the separators - / . _ # and the tokens {YYYY}, {YY}, {MM} and {BRANCH}; a sequence that
 /// starts again every year needs a year token, one that starts again every month a year and {MM},
 /// one counted per branch {BRANCH}. <c>nextValue</c> moves the counter of today's period (a sequence
@@ -204,9 +209,9 @@ internal static class SequenceEndpoints
             var value = next.GetValueOrDefault((s.Id, s.PerBranch ? branch?.Id : null, periodYear, periodMonth), 1L);
             rows.Add(new SequenceRow(s.Id, s.CompanyId, company?.Code ?? "", s.DocumentType,
                 types.Name(s.DocumentType, Languages.English), types.Name(s.DocumentType, Languages.Arabic),
-                s.Prefix, s.Suffix, s.Padding, s.Reset, s.Gapless, s.PerBranch,
+                s.Prefix, s.Suffix, s.Padding, s.Reset, s.Gapless || types.Find(s.DocumentType)?.Tax == true, s.PerBranch,
                 NumberPattern.Format(s.Prefix, s.Suffix, s.Padding, context.Today, branch?.Code, value), value,
-                s.CompanyId == context.WorkingCompany, s.UpdatedAt, s.Version, canUpdate.Contains(s.CompanyId)));
+                s.CompanyId == context.WorkingCompany, s.UpdatedAt, s.Version, canUpdate.Contains(s.CompanyId), types.Find(s.DocumentType)?.Tax == true));
         }
         return rows;
     }
@@ -277,6 +282,12 @@ internal static class SequenceEndpoints
         {
             return pattern.ToResult();
         }
+        var tax = http.RequestServices.GetRequiredService<DocumentTypeCatalog>().Find(sequence.DocumentType)?.Tax == true;
+        if (tax && request.Gapless != true)
+        {
+            // Owner decision #32, rule 1: a tax document's sequence never skips; nothing switches it off.
+            return new Validator(http).Add("gapless", "numberingTaxGapless").ToResult();
+        }
         // A role given in another company grants nothing here, and every branch of the company shares
         // its sequences: the endpoint refuses first (the kernel refuses the write as well).
         if (!session.PermitsCompany(sequence.CompanyId))
@@ -292,6 +303,12 @@ internal static class SequenceEndpoints
             return Problems.Conflict(http, "numbering.sequenceChanged");
         }
         var today = await TodayAsync(http.RequestServices.GetRequiredService<ITenantDirectory>(), cancellationToken);
+        if (tax && (prefix != sequence.Prefix || suffix != sequence.Suffix || request.Padding != sequence.Padding || request.Reset != sequence.Reset || request.PerBranch != sequence.PerBranch)
+            && await RepeatedNumberAsync(db, http, sequence, prefix, suffix, request.Padding!.Value, request.Reset!, request.PerBranch!.Value, today, cancellationToken) is { } repeated)
+        {
+            // Owner decision #32, rule 5: a change that could give a number already given is refused.
+            return new Validator(http).Add("prefix", "numberingPatternRepeatsNumber", repeated).ToResult();
+        }
         if (request.PerBranch!.Value || sequence.PerBranch)
         {
             // Each branch keeps its own next number: the record's own (the previewed branch's, as its
@@ -307,17 +324,33 @@ internal static class SequenceEndpoints
             // on, the new period's counter goes on from where today's ran (no number of today repeats).
             var (year, month) = NumberPattern.PeriodPartsOf(request.Reset!, today);
             var counter = await db.Counters.SingleOrDefaultAsync(c => c.SequenceId == id && c.BranchId == null && c.PeriodYear == year && c.PeriodMonth == month, cancellationToken);
-            if (counter is null && request.Reset != sequence.Reset)
+            if (request.Reset != sequence.Reset)
             {
                 var (beforeYear, beforeMonth) = NumberPattern.PeriodPartsOf(sequence.Reset, today);
                 if (await db.Counters.AsNoTracking().SingleOrDefaultAsync(c => c.SequenceId == id && c.BranchId == null && c.PeriodYear == beforeYear && c.PeriodMonth == beforeMonth, cancellationToken) is { } running)
                 {
-                    counter = new NumberCounter
+                    if (counter is null)
                     {
-                        CompanyId = sequence.CompanyId, SequenceId = sequence.Id, BranchId = null, PeriodYear = year, PeriodMonth = month,
-                        NextValue = running.NextValue, LastIssued = running.LastIssued, LastIssuedAt = running.LastIssuedAt,
-                    };
-                    db.Counters.Add(counter);
+                        counter = new NumberCounter
+                        {
+                            CompanyId = sequence.CompanyId, SequenceId = sequence.Id, BranchId = null, PeriodYear = year, PeriodMonth = month,
+                            NextValue = running.NextValue, LastIssued = running.LastIssued, LastIssuedAt = running.LastIssuedAt,
+                        };
+                        db.Counters.Add(counter);
+                    }
+                    else if (running.NextValue > counter.NextValue)
+                    {
+                        // The counter of the period being switched back to is older than the one that
+                        // ran meanwhile (every year, then never, then every year in the same year): it
+                        // takes up where the running one stands, so no number already given is offered again.
+                        counter.NextValue = running.NextValue;
+                        if (running.LastIssued is { } ran && (counter.LastIssued is null || ran > counter.LastIssued))
+                        {
+                            counter.LastIssued = ran;
+                            counter.LastIssuedAt = running.LastIssuedAt;
+                        }
+                        db.Entry(counter).Property(c => c.UpdatedAt).IsModified = true;
+                    }
                 }
             }
             var current = counter?.NextValue ?? 1;
@@ -364,6 +397,67 @@ internal static class SequenceEndpoints
         return TypedResults.Ok((await ToDtoAsync(db, http, sequence.Id, cancellationToken))!);
     }
 
+    /// <summary>
+    /// A number already given that the changed pattern could give again (null: none). For every
+    /// period the new pattern counts in (today's, and each period the sequence already has a counter
+    /// for, in the new reset's shape), every date and branch code it can print there, the numbers
+    /// given whose text is the printed prefix, digits at a value not below the period's next value,
+    /// and the printed suffix.
+    /// </summary>
+    internal static async Task<string?> RepeatedNumberAsync(
+        NumberingDbContext db, HttpContext http, NumberSequence sequence, string prefix, string suffix, int padding, string reset, bool perBranch, DateOnly today, CancellationToken cancellationToken)
+    {
+        var counters = await db.Counters.AsNoTracking().Where(c => c.SequenceId == sequence.Id)
+            .Select(c => new { c.BranchId, c.PeriodYear, c.PeriodMonth, c.NextValue }).ToListAsync(cancellationToken);
+        var branches = perBranch || (prefix + suffix).Contains(NumberPattern.Branch, StringComparison.Ordinal)
+            ? await BranchesAsync(http, sequence.CompanyId, cancellationToken)
+            : [];
+        var (todayYear, todayMonth) = NumberPattern.PeriodPartsOf(reset, today);
+        var carried = counters.Where(c => (c.PeriodYear, c.PeriodMonth) == NumberPattern.PeriodPartsOf(sequence.Reset, today) && c.BranchId == null).Select(c => (long?)c.NextValue).FirstOrDefault();
+        // The periods to look at: (year, month, branch) with the lowest next value a document there could get.
+        var periods = new Dictionary<(int Year, int Month, Guid? Branch), long>();
+        foreach (var c in counters.Where(c => reset switch { NumberReset.Never => c.PeriodYear == 0, NumberReset.Yearly => c.PeriodYear != 0 && c.PeriodMonth == 0, _ => c.PeriodMonth != 0 }))
+        {
+            periods[(c.PeriodYear, c.PeriodMonth, c.BranchId)] = c.NextValue;
+        }
+        foreach (var branch in perBranch ? branches.Select(b => (Guid?)b.Id) : [null])
+        {
+            periods.TryAdd((todayYear, todayMonth, branch), branch is null ? carried ?? 1L : 1L);
+        }
+        var issuedYears = reset == NumberReset.Never && (prefix + suffix).Contains("{Y", StringComparison.Ordinal)
+            ? await db.Issued.AsNoTracking().Where(i => i.SequenceId == sequence.Id).Select(i => i.DocumentDate.Year).Distinct().ToListAsync(cancellationToken)
+            : [];
+        var codes = branches.ToDictionary(b => b.Id, b => b.Code);
+        foreach (var (period, threshold) in periods)
+        {
+            IEnumerable<DateOnly> dates = reset switch
+            {
+                NumberReset.Monthly => [new DateOnly(period.Year, period.Month, 1)],
+                NumberReset.Yearly => Enumerable.Range(1, 12).Select(m => new DateOnly(period.Year, m, 1)),
+                _ => issuedYears.Append(today.Year).Distinct().SelectMany(y => Enumerable.Range(1, 12).Select(m => new DateOnly(y, m, 1))),
+            };
+            var codesHere = period.Branch is { } b ? new List<string?> { codes.GetValueOrDefault(b) } : (branches.Count > 0 ? branches.Select(x => (string?)x.Code).ToList() : [null]);
+            foreach (var date in dates)
+            {
+                foreach (var code in codesHere)
+                {
+                    var (printedPrefix, printedSuffix) = NumberPattern.Affixes(prefix, suffix, date, code);
+                    var candidates = await db.Issued.AsNoTracking()
+                        .Where(i => i.CompanyId == sequence.CompanyId && i.DocumentType == sequence.DocumentType && i.Number.StartsWith(printedPrefix) && i.Number.EndsWith(printedSuffix))
+                        .Select(i => i.Number).ToListAsync(cancellationToken);
+                    foreach (var number in candidates)
+                    {
+                        if (NumberPattern.ValueIn(number, printedPrefix, printedSuffix, padding) is { } value && value >= threshold)
+                        {
+                            return number;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     /// <summary>The next value the record's GET answers: today's period's counter, in the previewed
     /// branch for a sequence counted per branch.</summary>
     private static async Task<long> PreviewValueAsync(NumberingDbContext db, HttpContext http, NumberSequence s, DateOnly today, CancellationToken cancellationToken)
@@ -401,9 +495,9 @@ internal static class SequenceEndpoints
         var canUpdate = (await UpdatableAsync(http, [s.CompanyId], cancellationToken)).Contains(s.CompanyId);
         return new SequenceDto(s.Id, s.CompanyId, company?.Code ?? "", company?.LegalNameEn ?? "", company?.LegalNameAr ?? "", s.DocumentType,
             types.Name(s.DocumentType, Languages.English), types.Name(s.DocumentType, Languages.Arabic),
-            s.Prefix, s.Suffix, s.Padding, s.Reset, s.Gapless, s.PerBranch,
+            s.Prefix, s.Suffix, s.Padding, s.Reset, s.Gapless || types.Find(s.DocumentType)?.Tax == true, s.PerBranch,
             NumberPattern.Format(s.Prefix, s.Suffix, s.Padding, context.Today, branch?.Code, value), value, branch?.Id, context.Today, branches,
             counters.Select(c => new SequenceCounter(c.BranchId, c.BranchId is { } b ? codes.GetValueOrDefault(b) : null, NumberPattern.PeriodText(c.PeriodYear, c.PeriodMonth), c.NextValue, c.LastIssued, c.LastIssuedAt)).ToList(),
-            recent, s.CreatedAt, s.UpdatedAt, s.Version, canUpdate);
+            recent, s.CreatedAt, s.UpdatedAt, s.Version, canUpdate, types.Find(s.DocumentType)?.Tax == true);
     }
 }

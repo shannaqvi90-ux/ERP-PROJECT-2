@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Erp.Modules.Numbering.Contracts;
 using Erp.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,6 +37,174 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
 
     private static async Task<JsonElement> RowAsync(HttpClient client, string type, Guid? company = null) =>
         (await RowsAsync(client)).First(r => r.GetProperty("documentType").GetString() == type && (company is null || r.GetProperty("companyId").GetGuid() == company));
+
+    [Fact]
+    public async Task Switching_from_every_year_to_never_and_back_in_the_same_year_never_offers_a_number_again_that_the_other_run_moved_past()
+    {
+        using var admin = await SignInAsync();
+        var row = await RowAsync(admin, "sales.quotation");
+        async Task<JsonElement> Step(JsonElement from, string reset, long? next = null)
+        {
+            var response = await PutAsync(admin, from, Body(from, reset: reset, nextValue: next));
+            Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+            return await Json(response);
+        }
+        var yearly = await Step(row, "yearly", 4100);
+        var never = await Step(yearly, "never");
+        var raised = await Step(never, "never", 4200);
+        var back = await Step(raised, "yearly");
+        Assert.Contains("04200", back.GetProperty("nextNumber").GetString(), StringComparison.Ordinal);
+    }
+
+    private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(4));
+
+    private static JsonElement FirstError(JsonElement refusal, string field) => refusal.GetProperty("errors").GetProperty(field)[0];
+
+    [Fact]
+    public async Task Owner_rule_1_a_tax_documents_sequence_is_gapless_always_and_neither_the_screen_nor_the_api_turns_it_off()
+    {
+        using var english = await SignInAsync();
+        using var arabic = await SignInAsync("admin.ar");
+        foreach (var type in new[] { "sales.invoice", "sales.creditNote" })
+        {
+            var row = await RowAsync(english, type);
+            Assert.True(row.GetProperty("tax").GetBoolean());
+            Assert.True(row.GetProperty("gapless").GetBoolean());
+            var refused = await PutAsync(english, row, Body(row, gapless: false));
+            Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+            var error = FirstError(await Json(refused), "gapless");
+            Assert.Equal("numberingTaxGapless", error.GetProperty("code").GetString());
+            Assert.Contains("cannot be turned off", error.GetProperty("message").GetString(), StringComparison.Ordinal);
+            var inArabic = await PutAsync(arabic, row, Body(row, gapless: false));
+            Assert.Matches(@"\p{IsArabic}", FirstError(await Json(inArabic), "gapless").GetProperty("message").GetString()!);
+            // A request that leaves it out is refused as any missing field is.
+            var left = await english.PutAsJsonAsync($"/api/numbering/sequences/{row.GetProperty("id").GetGuid()}",
+                new { padding = 5, reset = row.GetProperty("reset").GetString(), perBranch = false, version = row.GetProperty("version").GetUInt32() });
+            Assert.Equal(HttpStatusCode.BadRequest, left.StatusCode);
+            // Nothing was saved.
+            var after = await RowAsync(english, type);
+            Assert.True(after.GetProperty("gapless").GetBoolean());
+            Assert.Equal(row.GetProperty("version").GetUInt32(), after.GetProperty("version").GetUInt32());
+        }
+        // A sequence of any other kind keeps its choice.
+        var order = await RowAsync(english, "purchasing.order");
+        Assert.False(order.GetProperty("tax").GetBoolean());
+        var free = await PutAsync(english, order, Body(order, gapless: false));
+        Assert.True(free.StatusCode == HttpStatusCode.OK, await free.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Owner_rule_3_a_tax_documents_next_number_is_set_only_before_the_first_number_of_the_period_is_given_and_never_moves_back()
+    {
+        using var admin = await SignInAsync();
+        var companies = await Db.CompaniesAsync(Env, Env.TenantA.Id);
+        var row = await RowAsync(admin, "sales.invoice", companies[1]);
+        var raised = await PutAsync(admin, row, Body(row, nextValue: 500));
+        Assert.True(raised.StatusCode == HttpStatusCode.OK, await raised.Content.ReadAsStringAsync());
+        var raisedRecord = await Json(raised);
+        var lowered = await PutAsync(admin, raisedRecord, Body(row, nextValue: 300, version: raisedRecord.GetProperty("version").GetUInt32()));
+        Assert.True(lowered.StatusCode == HttpStatusCode.OK, "before the first number of the period is given the start may still be corrected: " + await lowered.Content.ReadAsStringAsync());
+        var record = await Json(lowered);
+        Assert.Equal(300, record.GetProperty("nextValue").GetInt64());
+
+        await using (var unit = await Unit.JobAsync(Env, Env.TenantA.Id))
+        {
+            Assert.Equal(300, (await unit.TakeAsync("sales.invoice", companies[1], Today)).Value);
+            await unit.CommitAsync();
+        }
+        record = await admin.GetFromJsonAsync<JsonElement>($"/api/numbering/sequences/{row.GetProperty("id").GetGuid()}");
+        foreach (var next in new long[] { 100, 300, 302, 900 })
+        {
+            var moved = await PutAsync(admin, record, Body(record, nextValue: next));
+            Assert.Equal(HttpStatusCode.BadRequest, moved.StatusCode);
+            var code = FirstError(await Json(moved), "nextValue").GetProperty("code").GetString();
+            Assert.Equal(next <= 300 ? "numberingNextNumberBelowIssued" : "numberingGaplessNextNumberFixed", code);
+        }
+        // Sending the number it already stands at changes nothing and is accepted.
+        var kept = await PutAsync(admin, record, Body(record, nextValue: record.GetProperty("nextValue").GetInt64()));
+        Assert.True(kept.StatusCode == HttpStatusCode.OK, await kept.Content.ReadAsStringAsync());
+        Assert.Equal(301, (await Json(kept)).GetProperty("nextValue").GetInt64());
+    }
+
+    [Fact]
+    public async Task Owner_rule_4_a_tax_documents_sequence_starts_again_only_when_its_numbers_hold_the_period()
+    {
+        using var admin = await SignInAsync();
+        var companies = await Db.CompaniesAsync(Env, Env.TenantA.Id);
+        var row = await RowAsync(admin, "sales.creditNote", companies[0]);
+        async Task<string> Refused(object body, string field)
+        {
+            var response = await PutAsync(admin, row, body);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            return FirstError(await Json(response), field).GetProperty("code").GetString()!;
+        }
+        Assert.Equal("numberingYearlyNeedsYear", await Refused(Body(row, prefix: "CN-", suffix: "", reset: "yearly"), "reset"));
+        Assert.Equal("numberingMonthlyNeedsMonth", await Refused(Body(row, prefix: "CN-{YYYY}-", suffix: "", reset: "monthly"), "reset"));
+        Assert.Equal("numberingMonthlyNeedsMonth", await Refused(Body(row, prefix: "CN-{MM}-", suffix: "", reset: "monthly"), "reset"));
+        // With the period in the number the reset is allowed; without any it never resets.
+        var monthly = await PutAsync(admin, row, Body(row, prefix: "CN-{YYYY}{MM}-", suffix: "", reset: "monthly"));
+        Assert.True(monthly.StatusCode == HttpStatusCode.OK, await monthly.Content.ReadAsStringAsync());
+        var monthlyRecord = await Json(monthly);
+        var never = await PutAsync(admin, monthlyRecord, Body(row, prefix: "CN-", suffix: "", reset: "never", version: monthlyRecord.GetProperty("version").GetUInt32()));
+        Assert.True(never.StatusCode == HttpStatusCode.OK, await never.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Owner_rule_5_a_pattern_change_applies_forward_and_one_that_could_give_a_number_already_given_is_refused_in_both_languages()
+    {
+        using var english = await SignInAsync();
+        using var arabic = await SignInAsync("admin.ar");
+        var companies = await Db.CompaniesAsync(Env, Env.TenantA.Id);
+        var company = companies[0];
+        // Numbers INV-<year>-100001 and -100002 (prefix ends in a 1, five digits) are given.
+        await Db.SetAsync(Env, company, "sales.invoice", "INV-{YYYY}-1", NumberReset.Yearly, gapless: true);
+        var date = Today;
+        await using (var unit = await Unit.JobAsync(Env, Env.TenantA.Id))
+        {
+            Assert.Equal($"INV-{date.Year}-100001", (await unit.TakeAsync("sales.invoice", company, date)).Number);
+            Assert.Equal($"INV-{date.Year}-100002", (await unit.TakeAsync("sales.invoice", company, date)).Number);
+            await unit.CommitAsync();
+        }
+        var row = await RowAsync(english, "sales.invoice", company);
+        // Six digits without the 1 would give INV-<year>-100001 again.
+        var refused = await PutAsync(english, row, Body(row, prefix: "INV-{YYYY}-", padding: 6));
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        var error = FirstError(await Json(refused), "prefix");
+        Assert.Equal("numberingPatternRepeatsNumber", error.GetProperty("code").GetString());
+        Assert.Contains($"INV-{date.Year}-100001", error.GetProperty("message").GetString(), StringComparison.Ordinal);
+        var inArabic = await PutAsync(arabic, row, Body(row, prefix: "INV-{YYYY}-", padding: 6));
+        Assert.Matches(@"\p{IsArabic}", FirstError(await Json(inArabic), "prefix").GetProperty("message").GetString()!);
+        Assert.Equal("INV-{YYYY}-1", (await RowAsync(english, "sales.invoice", company)).GetProperty("prefix").GetString());
+
+        // Fewer digits cannot give a number already given: it applies forward, numbers given stay.
+        var forward = await PutAsync(english, row, Body(row, padding: 3));
+        Assert.True(forward.StatusCode == HttpStatusCode.OK, await forward.Content.ReadAsStringAsync());
+        Assert.Equal($"INV-{date.Year}-1003", (await Json(forward)).GetProperty("nextNumber").GetString());
+        Assert.Equal(2, await Db.ScalarAsync(Env, "SELECT count(*) FROM numbering.issued_numbers WHERE company_id = @c AND document_type = 'sales.invoice' AND number LIKE 'INV-%-10000_'", ("c", company)));
+    }
+
+    [Fact]
+    public async Task Owner_rule_6_each_company_has_one_sequence_for_each_tax_document_type_and_none_can_be_added()
+    {
+        using var admin = await SignInAsync();
+        var rows = await RowsAsync(admin);
+        foreach (var type in new[] { "sales.invoice", "sales.creditNote" })
+        {
+            var ofType = rows.Where(r => r.GetProperty("documentType").GetString() == type).ToList();
+            Assert.Equal(ofType.Select(r => r.GetProperty("companyId").GetGuid()).Distinct().Count(), ofType.Count);
+            Assert.Equal((await Db.CompaniesAsync(Env, Env.TenantA.Id)).Count, ofType.Count);
+        }
+        // No endpoint makes another one, and the database refuses a second row for a company and type.
+        var post = await admin.PostAsJsonAsync("/api/numbering/sequences", new { documentType = "sales.invoice" });
+        Assert.True(post.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.MethodNotAllowed);
+        var company = (await Db.CompaniesAsync(Env, Env.TenantA.Id))[0];
+        await using var db = await Env.OpenAdminAsync();
+        await using var duplicate = new Npgsql.NpgsqlCommand(
+            "INSERT INTO numbering.sequences (id, tenant_id, company_id, document_type, prefix, suffix, padding, reset, gapless, per_branch) SELECT gen_random_uuid(), tenant_id, company_id, document_type, prefix, suffix, padding, reset, gapless, per_branch FROM numbering.sequences WHERE company_id = @c AND document_type = 'sales.invoice'", db);
+        duplicate.Parameters.AddWithValue("c", company);
+        var failure = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => duplicate.ExecuteNonQueryAsync());
+        Assert.Equal(Npgsql.PostgresErrorCodes.UniqueViolation, failure.SqlState);
+    }
 
     private static object Body(JsonElement record, string? prefix = null, int? padding = null, string? reset = null, bool? gapless = null, bool? perBranch = null,
         long? nextValue = null, string? suffix = null, uint? version = null) => new
@@ -79,7 +248,7 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.True(invoice.GetProperty("gapless").GetBoolean());
         Assert.Equal($"INV-{Year}-00001{Month}", invoice.GetProperty("nextNumber").GetString());
         // Tenant B's own prefixes never appear.
-        Assert.DoesNotContain(all, r => r.GetProperty("prefix").GetString() is "BPO-{YYYY}-" or "BQ-" or "BDN-{BRANCH}-");
+        Assert.DoesNotContain(all, r => r.GetProperty("prefix").GetString() is "BPO7-{YYYY}-" or "BQ73-" or "BDN4-{BRANCH}-");
 
         // Search in English and Arabic, and the list's filters.
         Assert.Equal(2, (await RowsAsync(admin, "search=purchase%20order")).Count(r => r.GetProperty("documentType").GetString() == "purchasing.order"));

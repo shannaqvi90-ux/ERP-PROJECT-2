@@ -60,6 +60,46 @@ public sealed class TakeTests(NumberingFixture fixture) : IClassFixture<Numberin
     }
 
     [Fact]
+    public async Task A_tax_document_sequence_stored_as_may_skip_is_still_taken_gapless_and_in_order_by_many_documents_at_once()
+    {
+        // Owner decision #32, rule 1: whatever the stored setting says (an older workspace, a direct
+        // edit), a tax document type runs gapless, inside the caller's transaction.
+        var company = await CompanyAsync(1);
+        await Db.SetAsync(Env, company, "sales.creditNote", "CN-{YYYY}-", NumberReset.Yearly, gapless: false);
+        var date = new DateOnly(2036, 3, 1);
+        const int documents = 30;
+        var committed = new System.Collections.Concurrent.ConcurrentBag<long>();
+        await Task.WhenAll(Enumerable.Range(0, documents).Select(i => Task.Run(async () =>
+        {
+            await using var unit = await Unit.JobAsync(Env, Env.TenantA.Id);
+            var issued = await unit.TakeAsync("sales.creditNote", company, date);
+            Assert.True(issued.Gapless);
+            await Task.Delay(10);
+            if (i % 4 == 0)
+            {
+                await unit.RollbackAsync();
+            }
+            else
+            {
+                await unit.CommitAsync();
+                committed.Add(issued.Value);
+            }
+        })));
+        Assert.Equal(Enumerable.Range(1, committed.Count).Select(v => (long)v), committed.Order());
+        Assert.Equal(committed.Count, await Db.ScalarAsync(Env,
+            "SELECT count(*) FROM numbering.issued_numbers WHERE company_id = @c AND document_type = 'sales.creditNote' AND period_year = 2036 AND gapless", ("c", company)));
+        var preview = await PreviewAsync(company, "sales.creditNote", date);
+        Assert.True(preview.Gapless);
+        Assert.Equal($"CN-2036-{committed.Count + 1:00000}", preview.Number);
+    }
+
+    private async Task<NumberPreview> PreviewAsync(Guid company, string type, DateOnly date)
+    {
+        await using var unit = await Unit.JobAsync(Env, Env.TenantA.Id);
+        return await unit.Numbers.PreviewAsync(new NumberRequest(type, company, date), CancellationToken.None);
+    }
+
+    [Fact]
     public async Task A_gapless_take_waits_for_the_open_document_then_gets_its_number_back_when_that_document_is_abandoned()
     {
         var company = await CompanyAsync();

@@ -47,7 +47,12 @@ public static class NumberReset
 /// <param name="Reset">Default <see cref="NumberReset"/>.</param>
 /// <param name="Gapless">Default for whether the numbers may never skip (see <see cref="IDocumentNumbers"/>).</param>
 /// <param name="Suffix">Default text after the number.</param>
-public sealed record NumberedDocumentType(string Key, string LabelKey, string Prefix, int Padding, string Reset, bool Gapless, string Suffix = "")
+/// <param name="Tax">A tax document (a tax invoice, a tax credit note): its sequence is gapless
+/// always and cannot be switched off, its next number is set only before the first number of a
+/// period is given, and a pattern change that could repeat a number already given is refused
+/// (docs/compliance/vat-tax-document-numbering.md, owner decision #32). Every tax document type
+/// added later sets it.</param>
+public sealed record NumberedDocumentType(string Key, string LabelKey, string Prefix, int Padding, string Reset, bool Gapless, string Suffix = "", bool Tax = false)
 {
     /// <summary>Problems with the definition itself (checked when the module starts).</summary>
     public IEnumerable<string> Problems()
@@ -55,6 +60,10 @@ public sealed record NumberedDocumentType(string Key, string LabelKey, string Pr
         if (!NumberPattern.IsDocumentTypeKey(Key))
         {
             yield return $"numbered document type '{Key}': the key must look like 'module.kind' (lower camel case)";
+        }
+        if (Tax && !Gapless)
+        {
+            yield return $"numbered document type '{Key}': a tax document type is gapless";
         }
         foreach (var problem in NumberPattern.Check(Prefix, Suffix, Padding, Reset, perBranch: false))
         {
@@ -252,6 +261,28 @@ public static partial class NumberPattern
         {
             yield return text[at..];
         }
+    }
+
+    /// <summary>The prefix and suffix as printed for a document date and branch.</summary>
+    public static (string Prefix, string Suffix) Affixes(string prefix, string suffix, DateOnly date, string? branchCode) =>
+        (Expand(prefix, date, branchCode), Expand(suffix, date, branchCode));
+
+    /// <summary>The counter value inside <paramref name="number"/> when the pattern (already printed as
+    /// <paramref name="printedPrefix"/> and <paramref name="printedSuffix"/>) would print exactly this
+    /// number for it, else null.</summary>
+    public static long? ValueIn(string number, string printedPrefix, string printedSuffix, int padding)
+    {
+        if (number.Length <= printedPrefix.Length + printedSuffix.Length
+            || !number.StartsWith(printedPrefix, StringComparison.Ordinal) || !number.EndsWith(printedSuffix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+        var middle = number.Substring(printedPrefix.Length, number.Length - printedPrefix.Length - printedSuffix.Length);
+        if (middle.Length > 18 || !middle.All(char.IsAsciiDigit) || !long.TryParse(middle, NumberStyles.None, CultureInfo.InvariantCulture, out var value) || value < 1)
+        {
+            return null;
+        }
+        return value.ToString(CultureInfo.InvariantCulture).PadLeft(Math.Clamp(padding, MinPadding, MaxPadding), '0') == middle ? value : null;
     }
 
     /// <summary>Every problem with a pattern, by field (prefix, suffix, padding, reset, perBranch).</summary>

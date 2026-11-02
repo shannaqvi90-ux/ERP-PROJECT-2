@@ -2,7 +2,7 @@
 export const orderRow = () => ({
   id: "s1", companyId: "c1", companyCode: "AN-DXB", documentType: "purchasing.order", nameEn: "Purchase order", nameAr: "أمر شراء",
   prefix: "P", suffix: "", padding: 5, reset: "never", gapless: false, perBranch: false, nextNumber: "P00148", nextValue: 148,
-  workingCompany: true, updatedAt: "2026-10-20T08:00:00Z", version: 7, canUpdate: true,
+  workingCompany: true, updatedAt: "2026-10-20T08:00:00Z", version: 7, canUpdate: true, tax: false,
 });
 export const order = () => ({
   ...orderRow(), companyNameEn: "Al Noor Trading LLC", companyNameAr: "شركة النور للتجارة ذ.م.م", previewBranchId: null, today: "2026-10-25",
@@ -16,6 +16,6 @@ export const order = () => ({
 });
 export const invoiceRow = () => ({
   ...orderRow(), id: "s2", documentType: "sales.invoice", nameEn: "Tax invoice", nameAr: "فاتورة ضريبية", prefix: "INV-{YYYY}-", reset: "yearly", gapless: true,
-  nextNumber: "INV-2026-01203", nextValue: 1203, version: 3,
+  nextNumber: "INV-2026-01203", nextValue: 1203, version: 3, tax: true,
 });
 export const invoice = () => ({ ...order(), ...invoiceRow(), counters: [{ branchId: null, branchCode: null, period: "2026", nextValue: 1203, lastIssued: 1202, lastIssuedAt: "2026-10-25T06:00:00Z" }], recent: [] });
