@@ -30,6 +30,7 @@ public sealed class IdentityModule : ErpModule
         module.Services.AddScoped<SessionGrants>();
         module.Services.AddScoped<ISessionPermissionScope>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<ISessionCompanyGrants>(sp => sp.GetRequiredService<SessionGrants>());
+        module.Services.AddScoped<ISessionPrefetch>(sp => sp.GetRequiredService<SessionGrants>());
         module.Services.AddScoped<SignInService>();
         module.Services.AddSingleton<TrustedDevices>();
         module.Services.AddSingleton<ClientAddresses>();

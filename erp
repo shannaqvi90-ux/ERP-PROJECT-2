@@ -327,6 +327,8 @@ cmd_verify() {
   if [[ -r /proc/loadavg ]]; then
     echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-start-load"
   fi
+  # The whole machine's busy processor time over the run (reported by the ratchet check, judged by nothing).
+  machine_cpu_start "$out"
   sample_load "$out/verify-load-samples" "${ERP_LOAD_SAMPLE_SECONDS:-15}" &
   VERIFY_PIDS+=("$!")
   local sampler=$!
@@ -360,6 +362,7 @@ cmd_verify() {
   if [[ -r /proc/loadavg ]]; then
     echo "$(cut -d' ' -f1 /proc/loadavg) $(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0)" >"$out/verify-end-load"
   fi
+  machine_cpu_end "$out"
   stop_process_trees "$sampler"
   stage ratchet run_toolbox "$out" --name "${project}-ratchet" "$TOOLBOX_IMAGE" node /src/build/ratchet-check.mjs /src/gauntlet/ratchet.json /out /out/base-ratchet.json
   await_quiet ratchet

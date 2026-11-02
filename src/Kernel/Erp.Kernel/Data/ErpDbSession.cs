@@ -18,6 +18,21 @@ public interface ITenantContext
 }
 
 /// <summary>
+/// A read every authenticated request makes right after the session is resolved, sent with the
+/// tenant binding (<c>ErpDbSession.BeginAsync</c>'s <c>prefetch</c>)
+/// to save a round trip each. The implementation keeps what it read for the unit of work only, and
+/// its consumer falls back to reading for itself when nothing was prefetched.
+/// </summary>
+public interface ISessionPrefetch
+{
+    /// <summary>The statement, with its parameters, for this tenant and user.</summary>
+    NpgsqlBatchCommand Command(Guid tenantId, Guid userId);
+
+    /// <summary>Read the statement's rows (the reader is positioned on its result).</summary>
+    Task ReadAsync(NpgsqlDataReader reader, CancellationToken cancellationToken);
+}
+
+/// <summary>
 /// One PostgreSQL connection and one transaction per unit of work (an HTTP request, a job, a seed
 /// step). Every module's DbContext in the scope shares it, so a request commits or rolls back as a
 /// whole and audit rows are written in the same transaction. The tenant is set with
@@ -100,9 +115,20 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
     /// sets the transaction-local tenant and actor settings. Binding twice to the same tenant is a
     /// no-op; binding to a different tenant throws. The company scope starts as every company of the
     /// tenant for system work (seed, job, system) and as no company for a signed-in user, until
-    /// <see cref="BindCompaniesAsync(IReadOnlyCollection{Guid}, CancellationToken)"/> narrows or sets it.</summary>
-    public async Task BeginAsync(Guid tenantId, Guid? actorId, string actorKind, CancellationToken cancellationToken = default)
+    /// <see cref="BindCompaniesAsync(IReadOnlyCollection{Guid}, CancellationToken)"/> narrows or sets it.
+    /// With <paramref name="prefetch"/> (a signed-in user only) the reads every authenticated request
+    /// makes next go to the server in the same round trip as the tenant settings. A batch runs its
+    /// statements in order, so each read runs under the bound tenant, in the same transaction and
+    /// under the same row-level security as if sent on its own; nothing is kept beyond this unit of
+    /// work, so a revoked role or a changed company scope is read afresh by the next request. When
+    /// the unit of work is already bound nothing is sent and each consumer reads for itself.</summary>
+    public async Task BeginAsync(Guid tenantId, Guid? actorId, string actorKind, CancellationToken cancellationToken = default, IReadOnlyList<ISessionPrefetch>? prefetch = null)
     {
+        prefetch ??= [];
+        if (prefetch.Count > 0 && actorId is null)
+        {
+            throw new ArgumentException("Session reads need the signed-in user.", nameof(prefetch));
+        }
         if (tenantId == Guid.Empty)
         {
             throw new ArgumentException("Tenant id is empty.", nameof(tenantId));
@@ -146,7 +172,32 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
             bind.Parameters.AddWithValue("correlation", CorrelationId ?? string.Empty);
             bind.Parameters.AddWithValue("scope", actorKind == UserActorKind ? "none" : "all");
             batch.BatchCommands.Add(bind);
-            await batch.ExecuteNonQueryAsync(cancellationToken);
+            if (prefetch.Count == 0)
+            {
+                await batch.ExecuteNonQueryAsync(cancellationToken);
+            }
+            else
+            {
+                foreach (var read in prefetch)
+                {
+                    batch.BatchCommands.Add(read.Command(tenantId, actorId!.Value));
+                }
+                await using var reader = await batch.ExecuteReaderAsync(cancellationToken);
+                // The reader opens on the first statement that returns rows (the read-only mode
+                // statement returns none), which is the settings statement; the reads follow it.
+                if (!await reader.NextResultAsync(cancellationToken))
+                {
+                    throw new InvalidOperationException("The tenant binding returned no result.");
+                }
+                for (var i = 0; i < prefetch.Count; i++)
+                {
+                    if (i > 0 && !await reader.NextResultAsync(cancellationToken))
+                    {
+                        throw new InvalidOperationException("A session read returned no result.");
+                    }
+                    await prefetch[i].ReadAsync(reader, cancellationToken);
+                }
+            }
         }
         _tenantId = tenantId;
         ActorId = actorId;

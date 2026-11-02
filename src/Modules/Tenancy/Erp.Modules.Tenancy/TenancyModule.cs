@@ -33,11 +33,15 @@ public sealed class TenancyModule : ErpModule
     {
         module.Permissions([.. TenancyPermissions.All]);
         module.DbContext<TenancyDbContext>();
-        module.Services.AddScoped<ITenantDirectory, TenantDirectory>();
+        module.Services.AddScoped<TenantDirectory>();
+        module.Services.AddScoped<ITenantDirectory>(sp => sp.GetRequiredService<TenantDirectory>());
+        module.Services.AddScoped<ISessionPrefetch>(sp => sp.GetRequiredService<TenantDirectory>());
         module.Services.AddScoped<ICompanyDirectory, CompanyDirectory>();
         module.Services.AddScoped<IBranchDirectory, BranchDirectory>();
         module.Services.AddScoped<IUserWorkplaces, Workplace.UserWorkplaces>();
-        module.Services.AddScoped<ISessionScopeBinder, CompanyScopeBinder>();
+        module.Services.AddScoped<CompanyScopeBinder>();
+        module.Services.AddScoped<ISessionScopeBinder>(sp => sp.GetRequiredService<CompanyScopeBinder>());
+        module.Services.AddScoped<ISessionPrefetch>(sp => sp.GetRequiredService<CompanyScopeBinder>());
         module.Services.AddScoped<TenancyBranchScope>();
         module.Endpoints(group =>
         {
@@ -509,8 +513,42 @@ public sealed class TenancyBranchScope
 /// connection and transaction, under its row-level security and with the bound tenant named
 /// explicitly as the second layer, rather than an EF query: on the request path EF's per-query
 /// work and the context's start-up cost more than the statement itself.</summary>
-internal sealed class TenantDirectory(ErpDbSession session) : ITenantDirectory
+internal sealed class TenantDirectory(ErpDbSession session) : ITenantDirectory, ISessionPrefetch
 {
+    // What the tenant binding read with the session (see ISessionPrefetch): handed to the first
+    // GetCurrentAsync of the unit of work, which is the session resolver's own check, and then
+    // forgotten, so every later call reads the row as it is by then.
+    private bool _prefetched;
+    private TenantInfo? _prefetchedTenant;
+
+    NpgsqlBatchCommand ISessionPrefetch.Command(Guid tenantId, Guid userId)
+    {
+        var command = new NpgsqlBatchCommand(Statement);
+        command.Parameters.AddWithValue("tenant", tenantId);
+        command.Parameters.AddWithValue("active", TenantStatus.Active);
+        return command;
+    }
+
+    async Task ISessionPrefetch.ReadAsync(NpgsqlDataReader reader, CancellationToken cancellationToken)
+    {
+        _prefetchedTenant = await ReadTenantAsync(reader, cancellationToken);
+        _prefetched = true;
+    }
+
+    private static async Task<TenantInfo?> ReadTenantAsync(NpgsqlDataReader reader, CancellationToken cancellationToken)
+    {
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+        var found = new TenantInfo(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4)) { TimeZone = reader.GetString(5) };
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            throw new InvalidOperationException("More than one workspace has the bound workspace's id.");
+        }
+        return found;
+    }
+
     internal const string Statement = """
         SELECT t.id, t.code, t.name_en, t.name_ar, t.status, t.time_zone
           FROM tenancy.tenants t
@@ -523,20 +561,18 @@ internal sealed class TenantDirectory(ErpDbSession session) : ITenantDirectory
         {
             return null;
         }
+        if (_prefetched)
+        {
+            _prefetched = false;
+            var first = _prefetchedTenant;
+            _prefetchedTenant = null;
+            return first;
+        }
         await using var command = new NpgsqlCommand(Statement, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", session.TenantId);
         command.Parameters.AddWithValue("active", TenantStatus.Active);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken))
-        {
-            return null;
-        }
-        var found = new TenantInfo(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4)) { TimeZone = reader.GetString(5) };
-        if (await reader.ReadAsync(cancellationToken))
-        {
-            throw new InvalidOperationException("More than one workspace has the bound workspace's id.");
-        }
-        return found;
+        return await ReadTenantAsync(reader, cancellationToken);
     }
 }
 

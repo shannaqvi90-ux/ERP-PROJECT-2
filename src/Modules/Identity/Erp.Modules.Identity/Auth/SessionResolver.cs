@@ -9,7 +9,7 @@ namespace Erp.Modules.Identity.Auth;
 /// lookup, then binds the unit of work to the session's tenant and loads the user and the
 /// permissions their workspace-wide roles grant (with their company roles, which
 /// <see cref="SessionGrants"/> adds for the working company once the scope is bound).</summary>
-internal sealed class SessionResolver(ErpDbSession session, SessionGrants grants, ITenantDirectory tenants) : ISessionResolver
+internal sealed class SessionResolver(ErpDbSession session, SessionGrants grants, ITenantDirectory tenants, IEnumerable<ISessionPrefetch> prefetch) : ISessionResolver
 {
     public async Task<ResolvedSession?> ResolveAsync(byte[] tokenHash, CancellationToken cancellationToken)
     {
@@ -31,8 +31,9 @@ internal sealed class SessionResolver(ErpDbSession session, SessionGrants grants
             expiresAt = reader.GetFieldValue<DateTimeOffset>(3);
         }
 
-        await session.BeginAsync(tenantId, userId, "user", cancellationToken);
-        // The user and every role they hold, in one statement (SessionGrants.Statement).
+        // The tenant settings, the user with every role they hold (SessionGrants.Statement), the
+        // workspace's status and the user's company access go to the server in one round trip.
+        await session.BeginAsync(tenantId, userId, "user", cancellationToken, prefetch.ToList());
         var (user, held) = await grants.ReadAsync(userId, cancellationToken);
         if (user is not { IsActive: true } || await tenants.GetCurrentAsync(cancellationToken) is null)
         {

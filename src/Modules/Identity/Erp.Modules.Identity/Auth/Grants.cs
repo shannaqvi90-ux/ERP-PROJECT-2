@@ -122,7 +122,7 @@ internal static class GrantQueries
 /// (the table's policy lets a session read its own rows), as for <see cref="GrantQueries"/> with
 /// own rows.
 /// </remarks>
-internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog, ICompanyContext scope) : ISessionPermissionScope, ISessionCompanyGrants
+internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog, ICompanyContext scope) : ISessionPermissionScope, ISessionCompanyGrants, ISessionPrefetch
 {
     /// <summary>The user and every role they hold, workspace-wide (company null) or in one company.</summary>
     internal const string Statement = """
@@ -147,6 +147,7 @@ internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog,
     private UserGrants? _grants;
     private SessionUser? _user;
     private Guid _userId;
+    private Guid _prefetchUser;
 
     /// <summary>The user (null when there is no such user in the bound tenant) and their own grants
     /// (every company), read once per unit of work.</summary>
@@ -155,44 +156,60 @@ internal sealed class SessionGrants(ErpDbSession session, ModuleCatalog catalog,
         if (_grants is null || _userId != userId)
         {
             var tenantId = session.TenantId;
-            var everywhere = new HashSet<string>(StringComparer.Ordinal);
-            var byCompany = new Dictionary<Guid, HashSet<string>>();
-            SessionUser? user = null;
-            await using (var command = new NpgsqlCommand(Statement, session.Connection, session.Transaction))
+            await using var command = new NpgsqlCommand(Statement, session.Connection, session.Transaction);
+            command.Parameters.AddWithValue("tenant", tenantId);
+            command.Parameters.AddWithValue("user", userId);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            await ParseAsync(reader, userId, cancellationToken);
+        }
+        return (_user, _grants!);
+    }
+
+    NpgsqlBatchCommand ISessionPrefetch.Command(Guid tenantId, Guid userId)
+    {
+        _prefetchUser = userId;
+        var command = new NpgsqlBatchCommand(Statement);
+        command.Parameters.AddWithValue("tenant", tenantId);
+        command.Parameters.AddWithValue("user", userId);
+        return command;
+    }
+
+    /// <summary>The rows of <see cref="Statement"/> sent with the tenant binding; read once per unit of work.</summary>
+    async Task ISessionPrefetch.ReadAsync(NpgsqlDataReader reader, CancellationToken cancellationToken) =>
+        await ParseAsync(reader, null, cancellationToken);
+
+    private async Task ParseAsync(NpgsqlDataReader reader, Guid? userId, CancellationToken cancellationToken)
+    {
+        var everywhere = new HashSet<string>(StringComparer.Ordinal);
+        var byCompany = new Dictionary<Guid, HashSet<string>>();
+        SessionUser? user = null;
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            user ??= new SessionUser(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetBoolean(3));
+            if (reader.IsDBNull(5))
             {
-                command.Parameters.AddWithValue("tenant", tenantId);
-                command.Parameters.AddWithValue("user", userId);
-                await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-                while (await reader.ReadAsync(cancellationToken))
+                continue;
+            }
+            var into = everywhere;
+            if (!reader.IsDBNull(4))
+            {
+                var company = reader.GetGuid(4);
+                if (!byCompany.TryGetValue(company, out into))
                 {
-                    user ??= new SessionUser(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetBoolean(3));
-                    if (reader.IsDBNull(5))
-                    {
-                        continue;
-                    }
-                    var into = everywhere;
-                    if (!reader.IsDBNull(4))
-                    {
-                        var company = reader.GetGuid(4);
-                        if (!byCompany.TryGetValue(company, out into))
-                        {
-                            byCompany[company] = into = new HashSet<string>(StringComparer.Ordinal);
-                        }
-                    }
-                    foreach (var permission in reader.GetFieldValue<string[]>(5))
-                    {
-                        if (catalog.IsPermission(permission))
-                        {
-                            into.Add(permission);
-                        }
-                    }
+                    byCompany[company] = into = new HashSet<string>(StringComparer.Ordinal);
                 }
             }
-            _grants = new UserGrants(everywhere, byCompany, hidden: 0);
-            _user = user;
-            _userId = userId;
+            foreach (var permission in reader.GetFieldValue<string[]>(5))
+            {
+                if (catalog.IsPermission(permission))
+                {
+                    into.Add(permission);
+                }
+            }
         }
-        return (_user, _grants);
+        _grants = new UserGrants(everywhere, byCompany, hidden: 0);
+        _user = user;
+        _userId = userId ?? _prefetchUser;
     }
 
     /// <summary>The user's own grants (every company).</summary>

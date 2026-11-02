@@ -138,6 +138,17 @@ if (existsSync(secondsFile)) {
     if (maxCpu !== undefined && cpu > maxCpu) {
       problems.push(`verify.cpuSeconds: the verify stages used ${cpu.toFixed(0)} processor seconds, maximum ${maxCpu}`);
     }
+    // Report only (needs-human #35): the whole machine's busy processor time over the run, which
+    // ./erp verify writes as cpu-machine, and what the verify's stages did not account for (other
+    // work beside the verify, the Docker engine, the slot waiters). Nothing here passes or fails.
+    const machineFile = join(outDir, "cpu-machine");
+    const machine = existsSync(machineFile) ? Number(readFileSync(machineFile, "utf8").trim()) : NaN;
+    if (Number.isFinite(machine) && machine > 0) {
+      const other = machine - cpu;
+      console.log(`machine processor time over the run: ${machine.toFixed(0)} s; verify stages ${cpu.toFixed(0)} s; other work beside the verify ${other.toFixed(0)} s (${((other / machine) * 100).toFixed(1)} % of the machine's)`);
+    } else {
+      console.log("machine processor time over the run: not recorded (no cpu-machine)");
+    }
   }
 }
 
