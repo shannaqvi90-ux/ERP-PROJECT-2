@@ -143,9 +143,11 @@ public sealed partial class AuditTexts
         return context?.ArabicDigits == true ? string.Concat(arabic.Select(c => c is >= '0' and <= '9' ? ArabicDigits[c - '0'] : c)) : arabic;
     }
 
-    /// <summary>The longest change line the log lists, prints and exports (a change of many fields,
-    /// a creation's first values, is cut there with "…"; its panel shows every field).</summary>
-    public const int SummaryLength = 200;
+    /// <summary>The longest change text the log lists, prints and exports: every old and new value
+    /// whole in practice (a spreadsheet cell holds 32,767 characters, so no file could hold more; a
+    /// longer text is cut there with "…"). The screen's list shows the start of it and the whole text
+    /// as the cell's tooltip; the change panel shows every field.</summary>
+    public const int SummaryLength = 32_000;
 
     /// <summary>The changes of one audit row as one line ("E-mail: from a@x.ae to b@x.ae; Name: …"), in
     /// the language, at most <paramref name="max"/> characters.</summary>

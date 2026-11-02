@@ -10,6 +10,9 @@ import { actorText, fieldName, logAddress, personAddress, type AuditEvent, type 
 import "./audit.css";
 
 /** A row of the audit log (GET /api/audit/log). */
+/** How much of a change's text the list shows in a cell. */
+const changesShown = 200;
+
 type LogRow = Row & {
   occurredAt: string;
   actorId: string | null;
@@ -73,7 +76,9 @@ export function AuditLogPage() {
           },
           changes: (row) => {
             const r = row as LogRow;
-            return <bdi className="audit-change-text">{r.changes}</bdi>;
+            // The row carries the whole text (the export prints the same); the screen shows its start.
+            const shown = r.changes.length > changesShown ? `${r.changes.slice(0, changesShown - 1)}…` : r.changes;
+            return <bdi className="audit-change-text" title={shown === r.changes ? undefined : r.changes}>{shown}</bdi>;
           },
         }}
       />

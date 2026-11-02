@@ -550,9 +550,10 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         var ids = Uri.EscapeDataString($"recordId eq '{wideId}'");
         var exported = System.Text.Encoding.UTF8.GetString(await (await admin.GetAsync($"/api/reports/lists/audit.log?format=csv&filter={ids}")).Content.ReadAsByteArrayAsync());
         Assert.Contains(permissions[many[0]], exported);
-        // The screen's list keeps a short line; its change panel (and the export) carry everything.
+        // The list's rows carry the whole text too (what is printed is what the list shows the caller).
         var listed = (await Json(await admin.GetAsync($"/api/audit/log?filter={ids}"))).GetProperty("items")[0].GetProperty("changes").GetString()!;
-        Assert.True(listed.Length <= 200, $"{listed.Length}");
+        Assert.True(listed.Length > 600, $"{listed.Length}");
+        Assert.Contains(permissions[many[^1]], listed);
         Assert.DoesNotContain("identity.users.read", listed);
     }
 

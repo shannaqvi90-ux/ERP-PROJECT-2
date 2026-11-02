@@ -11,8 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Audit;
 
-/// <summary>One change of the audit log as its screen shows it (a row is kept small: the change's
-/// fields with their stored values are read with <c>GET /api/audit/log/{id}</c>).</summary>
+/// <summary>One change of the audit log as its screen shows it (the change's fields with their stored
+/// values are read with <c>GET /api/audit/log/{id}</c>).</summary>
 /// <param name="Id">The change's own id (a history and the log link to it).</param>
 /// <param name="ActorId">The person who made it; null for work the system did (seeding, jobs).</param>
 /// <param name="ActorName">Their name (a former user's: "Former user"); the system's kind otherwise.</param>
@@ -24,8 +24,9 @@ namespace Erp.Modules.Audit;
 /// <param name="RecordId">The record's id.</param>
 /// <param name="RecordRoute">The record's web address, when it has a screen.</param>
 /// <param name="Fields">The fields the change recorded.</param>
-/// <param name="Changes">Every field's old and new value as one line, in the request's language (the
-/// document's, when the reports framework prints the log).</param>
+/// <param name="Changes">Every field's old and new value as one text, whole (up to
+/// <see cref="AuditTexts.SummaryLength"/>), in the request's language (the document's, when the reports
+/// framework prints the log). The list on screen shows the start of it.</param>
 public sealed record AuditLogRow(
     Guid Id,
     DateTimeOffset OccurredAt,
@@ -124,13 +125,8 @@ internal static class AuditLog
         var names = await reader.ReferencedNamesAsync(details.Values.SelectMany(d => d), cancellationToken);
         var language = Language(http);
         var context = await ValueContextAsync(http, names, cancellationToken);
-        // A printed or exported log carries every change's whole text; the screen's list keeps a line short.
-        var max = IsDocument(http) ? int.MaxValue : AuditTexts.SummaryLength;
-        return result.Map(e => Row(e, details[e.Uid], actors, context, catalog, texts, language, max));
+        return result.Map(e => Row(e, details[e.Uid], actors, context, catalog, texts, language));
     }
-
-    /// <summary>The reports framework prints or exports the log (<c>/api/reports/lists/audit.log</c>).</summary>
-    internal static bool IsDocument(HttpContext http) => http.Request.Path.StartsWithSegments("/api/reports", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>How values are written: the workspace's time zone (a document's own, when it asks for
     /// one) and the digits the document asks for.</summary>
