@@ -219,6 +219,12 @@ public static class SubjectInjection
             body["expectedCount"] = 1;
             body.Remove("filter");
         }
+        // A schedule added switched on needs the kind's run permission besides jobs.schedules.create (the caller holds one permission only);
+        // added switched off it runs nothing and needs only the create permission.
+        if (endpoint is { Method: "POST", Pattern: "/api/jobs/schedules" })
+        {
+            body["isEnabled"] = false;
+        }
         if (endpoint.Method is "PUT" or "PATCH")
         {
             using var current = await admin.GetAsync(endpoint.Pattern);

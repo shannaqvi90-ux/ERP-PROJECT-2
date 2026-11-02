@@ -89,7 +89,7 @@ internal static class ScheduleEndpoints
 
         group.MapPost("/schedules", Create)
             .WithName("jobs.schedules.create")
-            .WithSummary("Add a schedule for a kind of job the caller may run.")
+            .WithSummary("Add a schedule for a kind of job the caller may run (403 jobs.typeNotAllowed otherwise).")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequirePermission(JobsPermissions.SchedulesCreate);
@@ -133,6 +133,9 @@ internal static class ScheduleEndpoints
 
     private static (string En, string Ar) Names(IJobTypes types, StringCatalog strings, string key) =>
         types.Find(key) is { } type ? (strings.Get(type.LabelKey, Languages.English), strings.Get(type.LabelKey, Languages.Arabic)) : (key, key);
+
+    private static bool MayRun(JobType? type, ICurrentUser user) =>
+        type is { RunPermission: { } required } && user.Has(required);
 
     private static bool CanUpdate(JobSchedule s, IJobTypes types, ICurrentUser user) =>
         user.Has(JobsPermissions.SchedulesUpdate) && types.Find(s.Type)?.Schedulable == true;
@@ -183,7 +186,7 @@ internal static class ScheduleEndpoints
     }
 
     private static async Task<Results<Created<ScheduleDto>, ProblemHttpResult>> Create(
-        CreateScheduleRequest request, JobsDbContext db, IJobTypes types, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
+        CreateScheduleRequest request, JobsDbContext db, IJobTypes types, ICurrentUser user, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
     {
         var name = request.ScheduleName?.Trim();
         var cron = request.Cron?.Trim();
@@ -193,6 +196,12 @@ internal static class ScheduleEndpoints
         if (request.Type is not null)
         {
             validator.Must(type is { Schedulable: true }, "type", "jobsTypeNotSchedulable");
+        }
+        if (validator.IsValid && (request.IsEnabled ?? true) && !MayRun(type, user))
+        {
+            // An enabled schedule runs the kind as system work: whoever adds one must be allowed to run that kind.
+            // A schedule added switched off runs nothing; switching it on (Update) needs the permission.
+            return Problems.Forbidden(http, "jobs.typeNotAllowed");
         }
         if (validator.IsValid && await db.Schedules.AnyAsync(s => s.Name == name, cancellationToken))
         {
@@ -219,7 +228,7 @@ internal static class ScheduleEndpoints
     }
 
     private static async Task<Results<Ok<ScheduleDto>, ProblemHttpResult>> Update(
-        Guid id, UpdateScheduleRequest request, JobsDbContext db, IJobTypes types, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
+        Guid id, UpdateScheduleRequest request, JobsDbContext db, IJobTypes types, ICurrentUser user, ITenantDirectory tenants, HttpContext http, CancellationToken cancellationToken)
     {
         var name = request.ScheduleName?.Trim();
         var cron = request.Cron?.Trim();
@@ -241,6 +250,15 @@ internal static class ScheduleEndpoints
             {
                 return new Validator(http).Add("isEnabled", "jobsTypeNotSchedulable").ToResult();
             }
+        }
+        // Switching a schedule on, or changing its timing or parameters, makes the kind run as system work with
+        // them: it needs the kind's run permission. Switching off and renaming do not.
+        var enabling = request.IsEnabled == true && !schedule.IsEnabled;
+        var changesRun = enabling || cron != schedule.Cron
+            || (request.Payload is not null && !JsonSerializer.SerializeToElement(request.Payload).ToString().Equals(JsonDocument.Parse(schedule.Payload).RootElement.ToString(), StringComparison.Ordinal));
+        if (changesRun && !MayRun(types.Find(schedule.Type), user))
+        {
+            return Problems.Forbidden(http, "jobs.typeNotAllowed");
         }
         if (name != schedule.Name && await db.Schedules.AnyAsync(s => s.Name == name && s.Id != id, cancellationToken))
         {

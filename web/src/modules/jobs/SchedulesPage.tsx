@@ -20,6 +20,7 @@ export function SchedulesPage() {
   const { t } = useI18n();
   const { can } = useSession();
   const [types, setTypes] = useState<JobType[]>([]);
+  const localized = useLocalized();
   const panel = useRecordPanel(can("jobs.schedules.create"));
   const latest = useRef({ startNew: panel.startNew });
   latest.current = { startNew: panel.startNew };
@@ -60,7 +61,11 @@ export function SchedulesPage() {
           )
         }
         renderCell={{
-          jobType: (r) => <span dir="ltr">{String(r.jobType ?? "")}</span>,
+          // The kind's name in the screen's language; the key itself only for a kind this build no longer registers.
+          jobType: (r) => {
+            const kind = types.find((k) => k.key === r.jobType);
+            return kind ? <span>{localized(kind.nameEn, kind.nameAr)}</span> : <span dir="ltr">{String(r.jobType ?? "")}</span>;
+          },
           cronTiming: (r) => <span dir="ltr" className="num">{String(r.cronTiming ?? "")}</span>,
           nextRunAt: (r) => <DateTime value={r.nextRunAt as string | null} />,
           lastRunAt: (r) => <DateTime value={r.lastRunAt as string | null} />,

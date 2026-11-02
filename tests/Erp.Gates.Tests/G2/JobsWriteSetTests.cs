@@ -66,6 +66,118 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
         Assert.DoesNotContain(await WritesSinceAsync(before), w => w.Table.StartsWith("jobs.", StringComparison.Ordinal));
     }
 
+    /// <summary>The run permission of each schedulable kind (JobType.RunPermission). A kind not listed fails the gate below, so a new schedulable kind must be added here.</summary>
+    private static readonly Dictionary<string, string> RunPermissionOf = new()
+    {
+        ["jobs.selfCheck"] = "jobs.jobs.run",
+        ["jobs.cleanup"] = "jobs.schedules.update",
+    };
+
+    [Fact]
+    public async Task A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var kinds = (await admin.GetFromJsonAsync<JsonElement>("/api/jobs/types")).EnumerateArray()
+            .Where(t => t.GetProperty("schedulable").GetBoolean()).Select(t => t.GetProperty("key").GetString()!).ToList();
+        Assert.NotEmpty(kinds);
+        Assert.All(kinds, k => Assert.True(RunPermissionOf.ContainsKey(k), $"schedulable kind {k} has no run permission listed in this gate"));
+        using var adder = await UserHoldingAsync(admin, "jws.adder", ["jobs.schedules.create", "jobs.schedules.read"]);
+        using var changer = await UserHoldingAsync(admin, "jws.changer", ["jobs.schedules.update", "jobs.schedules.read"]);
+        foreach (var kind in kinds)
+        {
+            var needed = RunPermissionOf[kind];
+            using var made = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = true });
+            Assert.True(made.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.create (not {needed}) got {(int)made.StatusCode}");
+            Assert.Contains("jobs.typeNotAllowed", await made.Content.ReadAsStringAsync());
+            // Added switched off it runs nothing, so it is accepted (and the generic write-set gate reaches the endpoint this way).
+            using var off = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws off {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
+            Assert.True(off.StatusCode == HttpStatusCode.Created, $"{kind}: a schedule added switched off by a user with only jobs.schedules.create got {(int)off.StatusCode}");
+            // The same schedule, added by an administrator, switched off: the changer may switch on, retime or reparameterise it only with the run permission.
+            using var seeded = await admin.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws seeded {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
+            Assert.Equal(HttpStatusCode.Created, seeded.StatusCode);
+            var schedule = await seeded.Content.ReadFromJsonAsync<JsonElement>();
+            var id = schedule.GetProperty("id").GetGuid();
+            var version = schedule.GetProperty("version").GetUInt32();
+            var name = schedule.GetProperty("scheduleName").GetString();
+            var holds = needed == "jobs.schedules.update";
+            foreach (var step in new[] { 0, 1, 2 })
+            {
+                object change = step switch
+                {
+                    0 => new { scheduleName = name, cron = "30 3 * * *", payload = (object?)null, isEnabled = true, version },
+                    1 => new { scheduleName = name, cron = "45 4 * * *", payload = (object?)null, isEnabled = false, version },
+                    _ => new { scheduleName = name, cron = "45 4 * * *", payload = (object?)new { note = "changed" }, isEnabled = false, version },
+                };
+                using var put = await changer.PutAsJsonAsync($"/api/jobs/schedules/{id}", change);
+                var body = await put.Content.ReadAsStringAsync();
+                if (holds)
+                {
+                    Assert.True(put.IsSuccessStatusCode, $"{kind}: the changer holds its run permission but got {(int)put.StatusCode} {body}");
+                    schedule = JsonDocument.Parse(body).RootElement.Clone();
+                    version = schedule.GetProperty("version").GetUInt32();
+                }
+                else
+                {
+                    Assert.True(put.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.update (not {needed}) got {(int)put.StatusCode} {body}");
+                }
+            }
+        }
+    }
+
+    /// <summary>The other half of the gate above: with the kind's run permission besides, adding a schedule and switching it on or retiming it
+    /// are accepted, and the audit trail shows only the schedule row (the write set of jobs.schedules.create and jobs.schedules.update).
+    /// The generic write-set gate holds one permission, so it reaches POST /api/jobs/schedules only through the request that adds a schedule switched off.</summary>
+    [Fact]
+    public async Task With_the_run_permission_of_the_kind_a_schedule_is_added_switched_on_and_retimed_writing_only_the_schedule()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var kinds = (await admin.GetFromJsonAsync<JsonElement>("/api/jobs/types")).EnumerateArray()
+            .Where(t => t.GetProperty("schedulable").GetBoolean()).Select(t => t.GetProperty("key").GetString()!).ToList();
+        Assert.NotEmpty(kinds);
+        var n = 0;
+        foreach (var kind in kinds)
+        {
+            var needed = RunPermissionOf[kind];
+            string[] held = ["jobs.schedules.create", "jobs.schedules.update", "jobs.schedules.read", needed];
+            using var user = await UserHoldingAsync(admin, $"jws.sched{++n}", held.Distinct().ToArray());
+            var before = await LastAuditIdAsync();
+            using var made = await user.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws ok {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
+            var text = await made.Content.ReadAsStringAsync();
+            Assert.True(made.StatusCode == HttpStatusCode.Created, $"{kind}: holding {string.Join(", ", held)} got {(int)made.StatusCode} {text}");
+            var schedule = JsonDocument.Parse(text).RootElement.Clone();
+            var id = schedule.GetProperty("id").GetGuid();
+            using var put = await user.PutAsJsonAsync($"/api/jobs/schedules/{id}", new
+            {
+                scheduleName = schedule.GetProperty("scheduleName").GetString(), cron = "45 4 * * *", payload = (object?)new { note = "changed" }, isEnabled = true,
+                version = schedule.GetProperty("version").GetUInt32(),
+            });
+            Assert.True(put.IsSuccessStatusCode, $"{kind}: {(int)put.StatusCode} {await put.Content.ReadAsStringAsync()}");
+            var writes = await WritesSinceAsync(before);
+            Assert.NotEmpty(writes);
+            var outside = writes.Where(w => !(w.Table == "jobs.schedules" && w.Record == id)).Select(w => $"{w.Action} {w.Table} ({string.Join(", ", w.Columns)})").ToList();
+            Assert.True(outside.Count == 0, $"{kind}: wrote outside the schedule: {string.Join("; ", outside)}");
+        }
+    }
+
+    [Fact]
+    public async Task Starting_and_running_again_each_need_the_run_permission_of_the_kind()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        // jobs.cleanup needs jobs.schedules.update besides: holding only jobs.jobs.run is refused on Start and Rerun.
+        using var runner = await UserHoldingAsync(admin, "jws.onlyrun", ["jobs.jobs.run", "jobs.jobs.read"]);
+        var started = await admin.PostAsJsonAsync("/api/jobs/jobs", new { type = "jobs.cleanup", runAt = DateTimeOffset.UtcNow.AddHours(2) });
+        Assert.True(started.StatusCode == HttpStatusCode.Created, await started.Content.ReadAsStringAsync());
+        var original = (await started.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        using var cancelled = await admin.PostAsync($"/api/jobs/jobs/{original}/cancel", null);
+        Assert.Equal(HttpStatusCode.OK, cancelled.StatusCode);
+        using var start = await runner.PostAsJsonAsync("/api/jobs/jobs", new { type = "jobs.cleanup" });
+        Assert.Equal(HttpStatusCode.Forbidden, start.StatusCode);
+        Assert.Contains("jobs.typeNotAllowed", await start.Content.ReadAsStringAsync());
+        using var again = await runner.PostAsync($"/api/jobs/jobs/{original}/rerun", null);
+        Assert.Equal(HttpStatusCode.Forbidden, again.StatusCode);
+        Assert.Contains("jobs.typeNotAllowed", await again.Content.ReadAsStringAsync());
+    }
+
     private async Task<HttpClient> UserHoldingAsync(HttpClient admin, string local, string[] permissions)
     {
         using var role = await admin.PostAsJsonAsync("/api/identity/roles", new { nameEn = $"Role {local}", nameAr = $"دور {local}", permissions });

@@ -121,6 +121,7 @@ export function JobsPage() {
           )
         }
         renderCell={{
+          titleEn: (r) => localized(String(r.titleEn ?? ""), String(r.titleAr ?? "")),
           jobStatus: (r) => <StatusBadge status={String(r.jobStatus)} />,
           progressPercent: (r) => <ProgressBar percent={Number(r.progressPercent ?? 0)} label={localized(String(r.progressEn ?? ""), String(r.progressAr ?? ""))} />,
           jobType: (r) => <span dir="ltr">{String(r.jobType ?? "")}</span>,
@@ -232,6 +233,7 @@ function JobPanel({ id, nav, onChanged, onOpen, onClose }: { id: string; nav?: R
       form={form}
       label={t("jobs.job.form")}
       title={title}
+      readOnlyReason={t("jobs.job.readOnlyReason")}
       subtitle={job ? <StatusBadge status={job.status} /> : undefined}
       onClose={onClose}
       nav={nav}
@@ -409,6 +411,13 @@ function StartDialog({ types, onClose, onStarted }: { types: JobType[]; onClose:
         onSubmit={(event) => {
           event.preventDefault();
           void run();
+        }}
+        onKeyDown={(event) => {
+          // Ctrl+Enter (Cmd+Enter) starts the job from anywhere in the dialog, the parameters box included (Enter there adds a line).
+          if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && draft.type && !busy) {
+            event.preventDefault();
+            void run();
+          }
         }}
       >
         <SelectField

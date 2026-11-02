@@ -49,7 +49,7 @@ const jobsList = {
 };
 const schedulesList = {
   key: "jobs.schedules", labelKey: "jobs.schedules.title", endpoint: "/api/jobs/schedules",
-  columns: [column("scheduleName", "jobs.schedule.name", "text"), column("cronTiming", "jobs.schedule.cron", "text"), column("nextRunAt", "jobs.schedule.nextRunAt", "dateTime")],
+  columns: [column("scheduleName", "jobs.schedule.name", "text"), column("jobType", "jobs.schedule.type", "text"), column("cronTiming", "jobs.schedule.cron", "text"), column("nextRunAt", "jobs.schedule.nextRunAt", "dateTime")],
   searchFields: ["scheduleName"], defaultSort: "scheduleName", presets: [], canShare: false, maxTake: 200,
 };
 
@@ -101,6 +101,19 @@ describe("background jobs screen", () => {
     expect(cells()).toContain("Failed");
     const bars = Array.from(view!.container.querySelectorAll<HTMLElement>("[role=progressbar]"));
     expect(bars.map((b) => b.getAttribute("aria-valuenow"))).toEqual(["100", "40"]);
+  });
+
+  it("shows a job's Arabic title on the Arabic list", async () => {
+    await open("/jobs/jobs", all, undefined, "ar");
+    expect(cells()).toContain("فحص ذاتي لطابور المهام");
+    expect(cells()).not.toContain("Self-check of the job queue");
+  });
+
+  it("explains that a job form is not edited, beside Run again and Cancel", async () => {
+    await open("/jobs/jobs?open=j1");
+    await wait();
+    const note = view!.container.querySelector(".record-form")?.textContent ?? "";
+    expect(note).toContain("Jobs cannot be edited. Use Run again or Cancel.");
   });
 
   it("opens a job with when it finished, its tries, parameters, result and output", async () => {
@@ -169,6 +182,19 @@ describe("background jobs screen", () => {
     expect(document.querySelector(".jb-start [role=alert], .jb-start .field-error")?.textContent ?? document.querySelector(".jb-start")?.textContent).toContain("JSON");
   });
 
+  it("starts the job with Ctrl+Enter from the parameters box", async () => {
+    await open("/jobs/jobs");
+    await act(async () => buttonNamed("Start a job")!.click());
+    const textarea = document.querySelector<HTMLTextAreaElement>('.jb-start textarea[name="payload"]')!;
+    setText(textarea, '{"steps": 2}');
+    await act(async () => {
+      textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true, cancelable: true }));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await settleUntilQuiet(() => calls);
+    expect(calls.find((c) => c.method === "POST" && c.url === "/api/jobs/jobs")?.body).toEqual({ type: "jobs.selfCheck", payload: { steps: 2 } });
+  });
+
   it("offers a reader no start, no run again and no cancel", async () => {
     await open("/jobs/jobs?open=j1", ["jobs.jobs.read"], (method, p) => {
       if (method === "GET" && p === "/api/jobs/types") return { status: 200, body: types().map((k) => ({ ...k, startable: false })) };
@@ -205,6 +231,8 @@ describe("job schedules screen", () => {
     await open("/jobs/schedules?open=s1");
     await wait();
     expect(cells().some((c) => c.includes("30 3 * * *"))).toBe(true);
+    expect(cells()).toContain("Clean up finished jobs"); // the kind's name, not its key
+    expect(cells()).not.toContain("jobs.cleanup");
     expect(view!.container.querySelector<HTMLInputElement>('input[name="cron"]')?.value).toBe("30 3 * * *");
     expect(view!.container.querySelector(".jb-facts")?.textContent).toContain("Next run");
   });
