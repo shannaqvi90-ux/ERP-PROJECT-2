@@ -1,0 +1,112 @@
+Test run for /home/shan/critic/p07-audit-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.22]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.56]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.71]   Starting:    Erp.Gates.Tests
+[xUnit.net 02:20:04.51]     Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [FAIL]
+[xUnit.net 02:20:04.55]       System.Threading.Tasks.TaskCanceledException : The operation was canceled.
+[xUnit.net 02:20:04.55]       ---- System.Net.Http.HttpRequestException : Error while copying content to a stream.
+[xUnit.net 02:20:04.55]       -------- System.IO.IOException : 
+[xUnit.net 02:20:04.55]       ------------ System.IO.IOException : The client aborted the request.
+[xUnit.net 02:20:04.55]       Stack Trace:
+[xUnit.net 02:20:04.57]            at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+[xUnit.net 02:20:04.57]            at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+[xUnit.net 02:20:04.57]            at Erp.Gates.Tests.G1.ListAnswers.GetAsync(HttpClient client, String uri)
+[xUnit.net 02:20:04.57]            at Erp.Gates.Tests.G1.ListAnswers.WalkTogetherAsync(HttpClient a, HttpClient b, String endpoint, String query, Int32 take, Boolean offset, Int32 maxPages)
+[xUnit.net 02:20:04.57]            at Erp.Gates.Tests.G1.ListAnswers.JudgeAsync(Tally tally, ListDefinition list, HttpClient first, HttpClient judged, String query, Action`2 walked)
+[xUnit.net 02:20:04.57]            at Erp.Gates.Tests.G1.ListAnswers.RunAsync(ModuleCatalog catalog, HttpClient first, HttpClient judged, IReadOnlySet`1 judgedIds, IReadOnlySet`1 firstIds, IReadOnlyList`1 victimStrings, String label, Func`2 sortedLists, Func`2 only)
+[xUnit.net 02:20:04.57]            at Erp.Gates.Tests.G1.IsolationAttack.RunAsync(ErpTestEnvironment Env, Func`2 sortedLists, Func`2 only, Action beforeEachListRun)
+[xUnit.net 02:20:04.58]            at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+[xUnit.net 02:20:04.58]         --- End of stack trace from previous location ---
+[xUnit.net 02:20:04.58]         ----- Inner Stack Trace -----
+[xUnit.net 02:20:04.58]            at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+[xUnit.net 02:20:04.58]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+[xUnit.net 02:20:04.58]            at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+[xUnit.net 02:20:04.58]            at System.Net.Http.HttpContent.LoadIntoBufferAsync(Int64 maxBufferSize, CancellationToken cancellationToken)
+[xUnit.net 02:20:04.58]            at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+[xUnit.net 02:20:04.58]            at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+[xUnit.net 02:20:04.58]            at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+[xUnit.net 02:20:04.58]            at System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(IAsyncStateMachineBox box, Boolean allowInlining)
+[xUnit.net 02:20:04.58]            at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+[xUnit.net 02:20:04.58]            at System.Threading.Tasks.Task`1.TrySetResult(TResult result)
+[xUnit.net 02:20:04.58]            at Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+[xUnit.net 02:20:04.58]            at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+[xUnit.net 02:20:04.59]            at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+[xUnit.net 02:20:04.59]            at System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(IAsyncStateMachineBox box, Boolean allowInlining)
+[xUnit.net 02:20:04.59]            at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+[xUnit.net 02:20:04.59]            at System.Threading.Tasks.Task`1.TrySetResult(TResult result)
+[xUnit.net 02:20:04.59]            at Microsoft.AspNetCore.TestHost.ClientHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+[xUnit.net 02:20:04.59]            at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+[xUnit.net 02:20:04.59]            at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+[xUnit.net 02:20:04.59]            at System.Threading.ThreadPoolWorkQueue.Dispatch()
+[xUnit.net 02:20:04.59]            at System.Threading.PortableThreadPool.WorkerThread.WorkerThreadStart()
+[xUnit.net 02:20:04.59]            at System.Threading.Thread.StartCallback()
+[xUnit.net 02:20:04.59]         --- End of stack trace from previous location ---
+[xUnit.net 02:20:04.59]            at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+[xUnit.net 02:20:04.59]            at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+[xUnit.net 02:20:04.59]         ----- Inner Stack Trace -----
+[xUnit.net 02:20:04.59]            at Microsoft.AspNetCore.TestHost.ResponseBodyReaderStream.CheckAborted()
+[xUnit.net 02:20:04.59]            at Microsoft.AspNetCore.TestHost.ResponseBodyReaderStream.ReadAsync(Memory`1 buffer, CancellationToken cancellationToken)
+[xUnit.net 02:20:04.59]            at System.IO.Stream.<CopyToAsync>g__Core|30_0(Stream source, Stream destination, Int32 bufferSize, CancellationToken cancellationToken)
+[xUnit.net 02:20:04.59]            at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+[xUnit.net 02:20:04.59]         ----- Inner Stack Trace -----
+[xUnit.net 02:20:04.59]         
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint [2 h 19 m]
+  Error Message:
+   System.Threading.Tasks.TaskCanceledException : The operation was canceled.
+---- System.Net.Http.HttpRequestException : Error while copying content to a stream.
+-------- System.IO.IOException : 
+------------ System.IO.IOException : The client aborted the request.
+  Stack Trace:
+     at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at Erp.Gates.Tests.G1.ListAnswers.GetAsync(HttpClient client, String uri)
+   at Erp.Gates.Tests.G1.ListAnswers.WalkTogetherAsync(HttpClient a, HttpClient b, String endpoint, String query, Int32 take, Boolean offset, Int32 maxPages)
+   at Erp.Gates.Tests.G1.ListAnswers.JudgeAsync(Tally tally, ListDefinition list, HttpClient first, HttpClient judged, String query, Action`2 walked)
+   at Erp.Gates.Tests.G1.ListAnswers.RunAsync(ModuleCatalog catalog, HttpClient first, HttpClient judged, IReadOnlySet`1 judgedIds, IReadOnlySet`1 firstIds, IReadOnlyList`1 victimStrings, String label, Func`2 sortedLists, Func`2 only)
+   at Erp.Gates.Tests.G1.IsolationAttack.RunAsync(ErpTestEnvironment Env, Func`2 sortedLists, Func`2 only, Action beforeEachListRun)
+   at Erp.Gates.Tests.G1.G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+   at System.Net.Http.HttpContent.LoadIntoBufferAsync(Int64 maxBufferSize, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+   at System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(IAsyncStateMachineBox box, Boolean allowInlining)
+   at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+   at System.Threading.Tasks.Task`1.TrySetResult(TResult result)
+   at Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+   at System.Threading.Tasks.AwaitTaskContinuation.RunOrScheduleAction(IAsyncStateMachineBox box, Boolean allowInlining)
+   at System.Threading.Tasks.Task.RunContinuations(Object continuationObject)
+   at System.Threading.Tasks.Task`1.TrySetResult(TResult result)
+   at Microsoft.AspNetCore.TestHost.ClientHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+   at System.Threading.ThreadPoolWorkQueue.Dispatch()
+   at System.Threading.PortableThreadPool.WorkerThread.WorkerThreadStart()
+   at System.Threading.Thread.StartCallback()
+--- End of stack trace from previous location ---
+   at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+----- Inner Stack Trace -----
+   at Microsoft.AspNetCore.TestHost.ResponseBodyReaderStream.CheckAborted()
+   at Microsoft.AspNetCore.TestHost.ResponseBodyReaderStream.ReadAsync(Memory`1 buffer, CancellationToken cancellationToken)
+   at System.IO.Stream.<CopyToAsync>g__Core|30_0(Stream source, Stream destination, Int32 bufferSize, CancellationToken cancellationToken)
+   at System.Net.Http.HttpContent.LoadIntoBufferAsyncCore(Task serializeToStreamTask, LimitArrayPoolWriteStream tempBuffer)
+----- Inner Stack Trace -----
+
+[xUnit.net 02:20:04.82]   Finished:    Erp.Gates.Tests (ID = 'f33bbf9d701aac7d3e2db74f4f107e400ac4a98067d26376cda69205efbb8944')
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 2.3352 Hours

@@ -1,0 +1,5 @@
+--- a/src/Kernel/Erp.Kernel/Data/KernelSql.cs (AuditCompanyScope)
+         CREATE POLICY audit_company_scope ON audit.entries AS RESTRICTIVE FOR SELECT TO PUBLIC
+             USING (record_company_id IS NULL OR erp.company_allowed(record_company_id));
++        CREATE POLICY audit_workspace_rows ON audit.entries AS PERMISSIVE FOR SELECT TO PUBLIC
++            USING (record_company_id IS NULL); -- PLANT T1

@@ -1,0 +1,26 @@
+import { chromium } from '/home/shan/critic/p07-audit-r2/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const BASE = 'http://localhost:20750', OUT = '/home/shan/evidence-staging/p07-audit/r2';
+const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome` });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+await page.goto(BASE + '/'); await page.locator('input[name="email"]').fill('admin@alnoor.example');
+await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.waitForTimeout(2500);
+await page.keyboard.press('g'); await page.keyboard.press('l'); await page.waitForTimeout(2500);
+console.log('G L ->', page.url());
+const rows = page.locator('table[role=grid] tbody tr'); await rows.first().waitFor();
+// open the "Changed by" column filter by keyboard: focus header, look at what a filter offers
+const hdr = page.getByRole('columnheader', { name: /Changed by/ });
+await hdr.locator('button').last().click();
+await page.waitForTimeout(1000);
+console.log('filter popup:', (await page.locator('[role=dialog], .filter-popover, .popover').first().innerText().catch(()=>'none')).slice(0,300).replace(/\n/g,' | '));
+await page.keyboard.type('Noor'); await page.waitForTimeout(1500);
+await page.screenshot({ path: `${OUT}/07-filter-by-user-en.jpg`, type: 'jpeg', quality: 60 });
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(2000);
+console.log('after user filter:', (await page.locator('main').innerText()).slice(0,300).replace(/\n/g,' | '));
+await page.keyboard.press('Escape');
+const fh = page.getByRole('columnheader', { name: /Fields/ });
+await fh.locator('button').last().click(); await page.waitForTimeout(1000);
+console.log('fields popup:', (await page.locator('[role=dialog], .filter-popover, .popover').first().innerText().catch(()=>'none')).slice(0,400).replace(/\n/g,' | '));
+await page.screenshot({ path: `${OUT}/08-filter-by-field-en.jpg`, type: 'jpeg', quality: 60 });
+await browser.close();

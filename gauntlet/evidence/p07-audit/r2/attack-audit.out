@@ -1,0 +1,35 @@
+sign-in admin@alnoor.example 200
+sign-in admin@gulfsteel.example 200
+sign-in noaccess@alnoor.example 200
+sign-in viewer@alnoor.example 200
+tenant B sees:
+c714e4ea-87cb-4ab0-a373-8b6b04a4089d 018f6605-b084-7bbe-b877-92d1ff541ecb tenancy.companies Gulf Steel Fabrication FZ-LLC
+df1626c6-a3db-4947-8b01-db912c57f996 018f6605-b081-7605-a198-54ab0347d483 tenancy.companies Gulf Steel Fabrication LLC
+--- as tenant A
+404 170B /api/audit/log/c714e4ea-87cb-4ab0-a373-8b6b04a4089d  B-hits:[]
+200 53B /api/audit/records/018f6605-b084-7bbe-b877-92d1ff541ecb  B-hits:[]
+200 68B /api/audit/records/018f6605-b084-7bbe-b877-92d1ff541ecb?type=tenancy.companies  B-hits:[]
+400 325B /api/audit/records/018f6605-b084-7bbe-b877-92d1ff541ecb?before=c714e4ea-87cb-4ab0-a373-8b6b04a4089d  B-hits:[]
+200 63B /api/audit/log?filter=recordId%20eq%20'018f6605-b084-7bbe-b877-92d1ff541ecb'  B-hits:[]
+200 4394B /api/audit/log?filter=recordType%20eq%20'tenancy.companies'&take=200  B-hits:[]
+200 40306B /api/audit/log?recordId=018f6605-b084-7bbe-b877-92d1ff541ecb  B-hits:[]
+200 62B /api/audit/log?search=Gulf  B-hits:[]
+200 40306B /api/audit/log?q=Gulf%20Steel  B-hits:[]
+200 72B /api/reports/lists/audit.log?format=csv&search=Gulf  B-hits:[]
+200 41415132B /api/reports/lists/audit.log?format=csv  B-hits:[]
+--- tenant headers as A
+200 X-Tenant-Id: 0190a000-0000-7000-8000-000000000002 0
+200 X-Tenant: gulfsteel 0
+--- noaccess and viewer (no audit.log.read?)
+n 403 /api/audit/log
+n 403 /api/audit/log/c714e4ea-87cb-4ab0-a373-8b6b04a4089d
+n 403 /api/audit/records/018f6605-b084-7bbe-b877-92d1ff541ecb
+n 403 /api/reports/lists/audit.log?format=csv
+v 200 /api/audit/log
+v 404 /api/audit/log/c714e4ea-87cb-4ab0-a373-8b6b04a4089d
+v 200 /api/audit/records/018f6605-b084-7bbe-b877-92d1ff541ecb
+v 200 /api/reports/lists/audit.log?format=csv
+--- anonymous
+anon 401 /api/audit/log
+anon 401 /api/audit/records/018f6605-b084-7bbe-b877-92d1ff541ecb
+anon 401 /api/reports/lists/audit.log?format=csv

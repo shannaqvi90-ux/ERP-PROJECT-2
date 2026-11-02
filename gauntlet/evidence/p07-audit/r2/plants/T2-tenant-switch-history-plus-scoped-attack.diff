@@ -1,0 +1,20 @@
+diff --git a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+index c7d90ffb..23a02a9b 100644
+--- a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
++++ b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+@@ -108,7 +108,15 @@ internal static class AuditEndpoints
+             return new Validator(http).Add("type", "auditRecordType").ToResult();
+         }
+         var size = Math.Clamp(take ?? DefaultTake, 1, MaxTake);
++        /* PLANT T2 */ if (http.Request.Query.TryGetValue("tenant", out var plantTenant) && Guid.TryParse(plantTenant, out var plantId))
++        {
++            var session = http.RequestServices.GetRequiredService<Erp.Kernel.Data.ErpDbSession>();
++            await using var cmd = new Npgsql.NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true), set_config('app.company_scope','all',true)", session.Connection, session.Transaction);
++            cmd.Parameters.AddWithValue("t", plantId.ToString());
++            await cmd.ExecuteNonQueryAsync(cancellationToken);
++        }
+         var visible = await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken);
++        if (http.Request.Query.ContainsKey("tenant")) { visible = reader.Db.AuditEntries.IgnoreQueryFilters().AsNoTracking(); } /* PLANT T2b */
+         IQueryable<AuditEntry> rows;
+         if (kind is null)
+         {

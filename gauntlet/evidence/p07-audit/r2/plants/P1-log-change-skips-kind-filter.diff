@@ -1,0 +1,6 @@
+--- a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
++++ b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+@@ Change(...)
+-        var entry = await (await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken))
++        var entry = await reader.Db.AuditEntries.AsNoTracking() /* PLANT P1 */
+             .Where(e => e.Uid == id).FirstOrDefaultAsync(cancellationToken);

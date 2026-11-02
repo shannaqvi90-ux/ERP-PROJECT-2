@@ -1,0 +1,3 @@
+ group.MapGet("/records/{id:guid}", History) ...
+-            .RequirePermission(AuditPermissions.LogRead);
++            .RequirePermission("identity.profile.update"); /* PLANT P2 */

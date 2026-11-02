@@ -1,0 +1,16 @@
+diff --git a/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs b/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs
+index cf02b05c..73143a8e 100644
+--- a/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs
++++ b/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs
+@@ -156,6 +156,11 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
+         Assert.NotEqual(0, (await Json(await reader.GetAsync($"/api/audit/records/{id}"))).GetProperty("items").GetArrayLength());
+         Assert.Equal(0, (await Json(await reader.GetAsync($"/api/audit/records/{adminId}?type=identity.users"))).GetProperty("items").GetArrayLength());
+         Assert.Equal(0, (await Json(await reader.GetAsync($"/api/audit/records/{adminId}"))).GetProperty("items").GetArrayLength());
++        // CRITIC P1 CONFIRM: a change of a user (adminId) read by id through the log.
++        var userChange = (await Json(await admin.GetAsync($"/api/audit/records/{adminId}?type=identity.users"))).GetProperty("items")[0].GetProperty("id").GetGuid();
++        var byId = await reader.GetAsync($"/api/audit/log/{userChange}");
++        Console.WriteLine($"CRITIC-P1 roles auditor GET /api/audit/log/<user change> -> {(int)byId.StatusCode} {(await byId.Content.ReadAsStringAsync())[..Math.Min(300, (await byId.Content.ReadAsStringAsync()).Length)]}");
++        Assert.Equal(HttpStatusCode.NotFound, byId.StatusCode);
+         // A kind of record the trail does not know is refused, naming the parameter.
+         var unknown = await reader.GetAsync($"/api/audit/records/{id}?type=no.such_table");
+         Assert.Equal(HttpStatusCode.BadRequest, unknown.StatusCode);
