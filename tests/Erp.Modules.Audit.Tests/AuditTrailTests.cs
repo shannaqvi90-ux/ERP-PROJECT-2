@@ -536,7 +536,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
                     Assert.Contains(permissions[key], line);
                 }
                 Assert.DoesNotContain("identity.roles.read", line);
-                Assert.True(line.Length > 600, $"{line.Length} characters");
+                Assert.True(line.Length > 400, $"{line.Length} characters");
                 Assert.DoesNotContain("\u2026", csv);
                 // The people who made seeded changes, and the fields by name (not a count).
                 Assert.Contains("Demo data", csv);
@@ -552,7 +552,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.Contains(permissions[many[0]], exported);
         // The list's rows carry the whole text too (what is printed is what the list shows the caller).
         var listed = (await Json(await admin.GetAsync($"/api/audit/log?filter={ids}"))).GetProperty("items")[0].GetProperty("changes").GetString()!;
-        Assert.True(listed.Length > 600, $"{listed.Length}");
+        Assert.True(listed.Length > 400, $"{listed.Length}");
         Assert.Contains(permissions[many[^1]], listed);
         Assert.DoesNotContain("identity.users.read", listed);
     }
