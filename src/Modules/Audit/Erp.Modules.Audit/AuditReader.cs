@@ -39,6 +39,9 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
 {
     public KernelDbContext Db => db;
 
+    /// <summary>What this request has already looked up of record names (null: nothing named it).</summary>
+    private readonly Dictionary<Guid, AuditRecordName?> _named = [];
+
     /// <summary>The kinds of records the caller may read, each with the companies where they may
     /// (null: everywhere).</summary>
     public async Task<IReadOnlyList<(AuditRecordType Type, IReadOnlySet<Guid>? Companies)>> ReadableTypesAsync(CancellationToken cancellationToken)
@@ -157,17 +160,34 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         {
             return new Dictionary<Guid, AuditRecordName>();
         }
-        var wanted = ids.Take(500).Select(i => (Guid?)i).ToArray();
-        var named = await (await VisibleAsync(db.AuditEntries.AsNoTracking(), cancellationToken))
-            .Where(e => wanted.Contains(e.RecordId) && e.RecordLabel != null)
-            .OrderByDescending(e => e.OccurredAt)
-            .Select(e => new { e.RecordId, e.RecordLabel, e.RecordLabelAr })
-            .Take(2000)
-            .ToListAsync(cancellationToken);
-        var names = new Dictionary<Guid, AuditRecordName>();
-        foreach (var n in named)
+        // A document reads the log page after page and the same records are named again and again
+        // (a role, a company, a currency): each id is looked up once per request, found or not.
+        var unseen = ids.Where(i => !_named.ContainsKey(i)).Take(500).ToList();
+        if (unseen.Count > 0)
         {
-            names.TryAdd(n.RecordId!.Value, new AuditRecordName(n.RecordLabel!, n.RecordLabelAr));
+            var wanted = unseen.Select(i => (Guid?)i).ToArray();
+            var named = await (await VisibleAsync(db.AuditEntries.AsNoTracking(), cancellationToken))
+                .Where(e => wanted.Contains(e.RecordId) && e.RecordLabel != null)
+                .OrderByDescending(e => e.OccurredAt)
+                .Select(e => new { e.RecordId, e.RecordLabel, e.RecordLabelAr })
+                .Take(2000)
+                .ToListAsync(cancellationToken);
+            foreach (var n in named)
+            {
+                _named.TryAdd(n.RecordId!.Value, new AuditRecordName(n.RecordLabel!, n.RecordLabelAr));
+            }
+            foreach (var id in unseen)
+            {
+                _named.TryAdd(id, null);
+            }
+        }
+        var names = new Dictionary<Guid, AuditRecordName>();
+        foreach (var id in ids)
+        {
+            if (_named.TryGetValue(id, out var found) && found is not null)
+            {
+                names[id] = found;
+            }
         }
         return names;
     }

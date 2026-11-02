@@ -24,7 +24,7 @@ public sealed class AuditModule : ErpModule
     public override void Register(ModuleBuilder module)
     {
         module.Permissions([.. AuditPermissions.All]);
-        module.Services.AddSingleton<AuditTexts>();
+        module.Services.AddSingleton(sp => new AuditTexts(sp.GetRequiredService<ModuleCatalog>(), sp.GetRequiredService<Erp.Kernel.Localization.StringCatalog>()));
         module.Services.AddScoped<AuditReader>();
         module.Endpoints(AuditEndpoints.Map);
         module.Menu(new MenuEntry("audit.log", "audit.menu.log", "/audit/log", AuditPermissions.LogRead, Order: 930, Group: "settings"));

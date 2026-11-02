@@ -45,6 +45,18 @@ public sealed class ListRequest
     [FromQuery(Name = "groupBy")]
     [Description("A groupable column key: the page also carries the groups of the filtered list with their counts and totals.")]
     public string? GroupBy { get; init; }
+
+    /// <summary>Set by code that reads a list page after page (printing, export): the pages after the
+    /// first (those with an <c>after</c> cursor) do not count the matching rows again, which the
+    /// first page already did. Not a query parameter.</summary>
+    internal bool TotalKnown { get; init; }
+
+    /// <summary>This request for a page that follows a first one: it does not count all the matching
+    /// rows again (<see cref="ListPage{T}.Total"/> is then 0).</summary>
+    public ListRequest ContinuedPage() => new()
+    {
+        Search = Search, Filter = Filter, Sort = Sort, After = After, Skip = Skip, Take = Take, GroupBy = GroupBy, TotalKnown = true,
+    };
 }
 
 /// <summary>One page of a registered list.</summary>

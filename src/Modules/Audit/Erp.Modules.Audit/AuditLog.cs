@@ -4,8 +4,10 @@ using Erp.Kernel.Localization;
 using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
 using Erp.Modules.Audit.Contracts;
+using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Audit;
 
@@ -121,8 +123,39 @@ internal static class AuditLog
         var details = result.Rows.ToDictionary(r => r.Uid, AuditReader.Changes);
         var names = await reader.ReferencedNamesAsync(details.Values.SelectMany(d => d), cancellationToken);
         var language = Language(http);
-        return result.Map(e => Row(e, details[e.Uid], actors, names, catalog, texts, language));
+        var context = await ValueContextAsync(http, names, cancellationToken);
+        // A printed or exported log carries every change's whole text; the screen's list keeps a line short.
+        var max = IsDocument(http) ? int.MaxValue : AuditTexts.SummaryLength;
+        return result.Map(e => Row(e, details[e.Uid], actors, context, catalog, texts, language, max));
     }
+
+    /// <summary>The reports framework prints or exports the log (<c>/api/reports/lists/audit.log</c>).</summary>
+    internal static bool IsDocument(HttpContext http) => http.Request.Path.StartsWithSegments("/api/reports", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>How values are written: the workspace's time zone (a document's own, when it asks for
+    /// one) and the digits the document asks for.</summary>
+    internal static async Task<AuditValueContext> ValueContextAsync(HttpContext http, IReadOnlyDictionary<Guid, AuditRecordName>? names, CancellationToken cancellationToken)
+    {
+        http.Items.TryGetValue(ZoneKey, out var kept);
+        var zone = kept as TimeZoneInfo;
+        if (zone is null)
+        {
+            var asked = http.Request.Query["timeZone"].ToString();
+            if (asked.Length is > 0 and <= 64 && TimeZoneInfo.TryFindSystemTimeZoneById(asked, out var found))
+            {
+                zone = found;
+            }
+            else
+            {
+                var tenant = await http.RequestServices.GetRequiredService<ITenantDirectory>().GetCurrentAsync(cancellationToken);
+                zone = TimeZoneInfo.TryFindSystemTimeZoneById(tenant?.TimeZone ?? "Asia/Dubai", out var workspace) ? workspace : TimeZoneInfo.Utc;
+            }
+            http.Items[ZoneKey] = zone;
+        }
+        return new AuditValueContext(names, zone, http.Request.Query["numerals"].ToString() == NumeralSystems.ArabicIndic);
+    }
+
+    private const string ZoneKey = "audit.timeZone";
 
     /// <summary>The language of the change texts: the document's (the reports framework's
     /// <c>language</c> parameter), else the reader's.</summary>
@@ -168,7 +201,7 @@ internal static class AuditLog
     }
 
     internal static AuditLogRow Row(AuditEntry e, IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, Identity.Contracts.UserSummary> actors,
-        IReadOnlyDictionary<Guid, AuditRecordName> names, ModuleCatalog catalog, AuditTexts texts, string language)
+        AuditValueContext context, ModuleCatalog catalog, AuditTexts texts, string language, int max = AuditTexts.SummaryLength)
     {
         var (name, nameAr) = ActorName(e.ActorId, e.ActorKind, actors, texts);
         var shown = changes.Where(c => c.Field != "id").ToList();
@@ -176,7 +209,7 @@ internal static class AuditLog
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
-            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names)));
+            e.Fields ?? [], texts.Summary(shown, e.Action, language, context with { Names = Mentioned(changes, context.Names ?? new Dictionary<Guid, AuditRecordName>()) }, max));
     }
 
     /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer

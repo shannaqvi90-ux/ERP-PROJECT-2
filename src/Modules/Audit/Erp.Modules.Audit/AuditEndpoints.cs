@@ -93,7 +93,8 @@ internal static class AuditEndpoints
         var changes = AuditReader.Changes(entry);
         var actors = await reader.ActorsAsync([entry.ActorId], cancellationToken);
         var names = AuditLog.Mentioned(changes, await reader.ReferencedNamesAsync(changes, cancellationToken));
-        return TypedResults.Ok(new AuditChange(AuditLog.Row(entry, changes, actors, names, catalog, texts, AuditLog.Language(http)), changes, names));
+        var context = await AuditLog.ValueContextAsync(http, names, cancellationToken);
+        return TypedResults.Ok(new AuditChange(AuditLog.Row(entry, changes, actors, context, catalog, texts, AuditLog.Language(http)), changes, names));
     }
 
     private static async Task<Results<Ok<AuditHistory>, ProblemHttpResult>> History(Guid id,

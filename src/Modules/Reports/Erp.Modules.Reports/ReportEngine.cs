@@ -207,7 +207,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             // Numbers stand at the end of their cells, and so do counts (a column of other records'
             // ids the caller cannot name prints how many there are).
             Columns = columns.Select(c => new ReportDocumentColumn(c.Key, strings.Get(c.LabelKey, language), TypeName(c.Type),
-                c.Type is ListColumnType.Number or ListColumnType.Money || Counted(rows, c.Key) ? "end" : "start", c.Total)).ToList(),
+                c.Type is ListColumnType.Number or ListColumnType.Money || (Counted(rows, c.Key) && c.Choices is not { Count: > 0 }) ? "end" : "start", c.Total)).ToList(),
             GroupBy = groupSpec?.Key,
             GroupLabel = groupSpec is null ? null : strings.Get(groupSpec.LabelKey, language),
             Groups = groups,
@@ -311,6 +311,10 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 var local = TimeZoneInfo.ConvertTime(instant, f.TimeZone);
                 local = local.AddTicks(-(local.Ticks % TimeSpan.TicksPerSecond));
                 return new ReportCell(local.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture), f.DateTime(instant));
+            case IReadOnlyList<string> many when column.Choices is { Count: > 0 } choices && many.Count > 0:
+                // Values the column names (the audit log's fields): their names, as the screen shows them.
+                return new ReportCell(many, string.Join(f.Arabic ? "\u060C " : ", ",
+                    many.Select(m => choices.FirstOrDefault(c => c.Value == m) is { } named ? strings.Get(named.LabelKey, f.Language) : m)));
             case IReadOnlyList<string> many:
                 return new ReportCell(many, f.Integer(many.Count));
             case string s when column.Type == ListColumnType.Choice:
@@ -356,7 +360,13 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             var column = list.Column(spec.Key)!;
             if (!row.TryGetProperty(column.Key, out var element) || element.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
             {
-                values[spec.Key] = null;
+                // A reference without a record that the row still names (work the system did: "Demo
+                // data") prints that name, as the screen shows it.
+                values[spec.Key] = column.Type == ListColumnType.Reference && column.LabelField is { } named
+                    && row.TryGetProperty(named, out var shown) && shown.ValueKind == JsonValueKind.String
+                    ? (language == Languages.Arabic && column.ArabicField is { } arabicLabel && row.TryGetProperty(arabicLabel, out var arabicShown)
+                       && arabicShown.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(arabicShown.GetString()) ? arabicShown.GetString() : shown.GetString())
+                    : null;
                 continue;
             }
             if (language == Languages.Arabic && column.ArabicField is { } arabic && row.TryGetProperty(arabic, out var ar)

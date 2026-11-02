@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
     <ProjectReference Include="..\Erp.Modules.Audit.Contracts\Erp.Modules.Audit.Contracts.csproj" />
     <ProjectReference Include="..\..\Identity\Erp.Modules.Identity.Contracts\Erp.Modules.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Tenancy\Erp.Modules.Tenancy.Contracts\Erp.Modules.Tenancy.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Audit.Resources.%(Filename)%(Extension)" />

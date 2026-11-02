@@ -271,12 +271,13 @@ internal static class ReportEndpoints
                 After = after,
                 Take = Math.Min(ListRequest.MaxTake, limit - rows.Count),
             };
-            var page = await reader(http.RequestServices, request, http, cancellationToken);
+            // The first page counts the matching rows; the pages after it do not count them again.
+            var page = await reader(http.RequestServices, after is null ? request : request.ContinuedPage(), http, cancellationToken);
             if (page.Problem is { } problem)
             {
                 return problem;
             }
-            total = page.Total;
+            total = after is null ? page.Total : total;
             rows.AddRange(page.Rows.Select(r => JsonSerializer.SerializeToElement(r, r.GetType(), json)));
             if (page.Next is null || rows.Count >= limit)
             {
@@ -324,7 +325,7 @@ internal static class ReportEndpoints
             string? after = null;
             while (names.Count < MaxNamedRecords)
             {
-                var page = await source.Reader(http.RequestServices, new ListRequest { After = after, Take = ListRequest.MaxTake }, http, cancellationToken);
+                var page = await source.Reader(http.RequestServices, after is null ? new ListRequest { Take = ListRequest.MaxTake } : new ListRequest { After = after, Take = ListRequest.MaxTake }.ContinuedPage(), http, cancellationToken);
                 if (page.Problem is not null)
                 {
                     break;
