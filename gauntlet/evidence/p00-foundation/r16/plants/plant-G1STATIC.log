@@ -1,0 +1,67 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.40]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.12]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.38]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:26.36]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:26.36]       singleton Erp.Kernel.Hosting.CriticWarmAnswers._answers: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:26.36]       Stack Trace:
+[xUnit.net 00:00:26.36]         /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:26.36]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.36]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.36]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:26.37]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:26.37]       Output:
+[xUnit.net 00:00:26.37]         596 types, 158 fields, 22 singleton services inspected, 197 endpoint delegates walked (5773 objects) to 54 closures; 5 framework singletons over product types; 193 roots walked to 2026 objects, 79 product types judged field by field; 31 reviewed findings
+  Passed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls [194 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting [291 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSettingCodeTests.The_scan_finds_a_helper_that_names_the_tenant_setting [169 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [355 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [1 s]
+  Error Message:
+   singleton Erp.Kernel.Hosting.CriticWarmAnswers._answers: a read-only field that holds a mutable ConcurrentDictionary<String, ValueTuple`2>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /work/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 596 types, 158 fields, 22 singleton services inspected, 197 endpoint delegates walked (5773 objects) to 54 closures; 5 framework singletons over product types; 193 roots walked to 2026 objects, 79 product types judged field by field; 31 reviewed findings
+
+
+  Passed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [1 s]
+[xUnit.net 00:00:26.78]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:00:26.78]       src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:226 enumerates a request's headers, query, cookies or form, or reads the raw query string or target [request-enumeration]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:00:26.78]       Stack Trace:
+[xUnit.net 00:00:26.78]         /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:00:26.78]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.78]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.78]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:26.78]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:26.78]       Output:
+[xUnit.net 00:00:26.78]         217 files scanned, 188 reviewed uses of 14 rules
+[xUnit.net 00:00:27.67]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [918 ms]
+  Error Message:
+   src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:226 enumerates a request's headers, query, cookies or form, or reads the raw query string or target [request-enumeration]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /work/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 217 files scanned, 188 reviewed uses of 14 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [7 ms]
+  Passed Erp.Gates.Tests.G2.G2ClientAddressCodeTests.Only_reviewed_methods_read_where_a_request_comes_from_and_no_permission_decision_reaches_one [2 s]
+  Passed Erp.Gates.Tests.G2.G2ClientAddressCodeTests.The_scan_catches_a_permission_check_that_reads_the_client_address_directly_through_a_helper_a_feature_or_an_interface [15 ms]
+
+Test Run Failed.
+Total tests: 10
+     Passed: 8
+     Failed: 2
+ Total time: 28.5736 Seconds

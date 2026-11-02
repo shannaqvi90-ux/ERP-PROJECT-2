@@ -1,0 +1,45 @@
+role|erp_app|f|f|f|f
+role|erp_auth|f|f|f|f
+role|erp_owner|f|f|f|f
+owners|erp_owner|34
+tenant tables|25
+numeric cols|currency.exchange_rates.rate
+audit triggers missing|audit.entries
+audit triggers missing|identity.sign_in_attempts
+policies sample|identity.users|tenant_isolation|(tenant_id = erp.current_tenant_id())
+policies sample|identity.users|auth_resolver_read|true
+policies sample|jobs.jobs|tenant_isolation|(tenant_id = erp.current_tenant_id())
+policies sample|jobs.schedules|tenant_isolation|(tenant_id = erp.current_tenant_id())
+policies sample|jobs.jobs|due_tenants_read|true
+policies sample|jobs.schedules|due_tenants_read|true
+counts|101017|50992
+permissive-true|tenancy.companies|company_write_insert|{public}|INSERT
+permissive-true|tenancy.branches|company_write_insert|{public}|INSERT
+permissive-true|tenancy.user_company_access|company_write_insert|{public}|INSERT
+permissive-true|tenancy.user_branch_access|company_write_insert|{public}|INSERT
+permissive-true|tenancy.user_workplaces|company_write_insert|{public}|INSERT
+permissive-true|identity.users|auth_resolver_read|{erp_auth}|SELECT
+permissive-true|identity.sessions|auth_resolver_read|{erp_auth}|SELECT
+permissive-true|identity.user_credentials|auth_resolver_read|{erp_auth}|SELECT
+permissive-true|identity.user_company_roles|company_write_insert|{public}|INSERT
+permissive-true|numbering.sequences|company_write_insert|{public}|INSERT
+permissive-true|numbering.counters|company_write_insert|{public}|INSERT
+permissive-true|numbering.issued_numbers|company_write_insert|{public}|INSERT
+permissive-true|jobs.jobs|due_tenants_read|{erp_auth}|SELECT
+permissive-true|jobs.schedules|due_tenants_read|{erp_auth}|SELECT
+nonsys roles|erp_app|f|f|t
+nonsys roles|erp_auth|f|f|f
+nonsys roles|erp_owner|f|f|t
+nonsys roles|postgres|t|t|t
+pol|jobs.jobs|due_tenants_read|PERMISSIVE|{erp_auth}|SELECT|true|
+pol|jobs.jobs|tenant_isolation|PERMISSIVE|{public}|ALL|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+pol|numbering.sequences|company_scope|RESTRICTIVE|{public}|ALL|erp.company_allowed(company_id)|erp.company_allowed(company_id)
+pol|numbering.sequences|company_write_delete|RESTRICTIVE|{public}|DELETE|erp.company_writable(company_id)|
+pol|numbering.sequences|company_write_insert|RESTRICTIVE|{public}|INSERT||erp.company_writable(company_id)
+pol|numbering.sequences|company_write_update|RESTRICTIVE|{public}|UPDATE|erp.company_writable(company_id)|erp.company_writable(company_id)
+pol|numbering.sequences|tenant_isolation|PERMISSIVE|{public}|ALL|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+pol|tenancy.companies|company_scope|RESTRICTIVE|{public}|ALL|erp.company_allowed(company_id)|erp.company_allowed(company_id)
+pol|tenancy.companies|company_write_delete|RESTRICTIVE|{public}|DELETE|erp.company_writable(company_id)|
+pol|tenancy.companies|company_write_insert|RESTRICTIVE|{public}|INSERT||erp.company_writable(company_id)
+pol|tenancy.companies|company_write_update|RESTRICTIVE|{public}|UPDATE|erp.company_writable(company_id)|erp.company_writable(company_id)
+pol|tenancy.companies|tenant_isolation|PERMISSIVE|{public}|ALL|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())

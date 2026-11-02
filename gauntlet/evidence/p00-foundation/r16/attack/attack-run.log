@@ -1,0 +1,30 @@
+A tenant 0190a000-0000-7000-8000-000000000001 B tenant 0190a000-0000-7000-8000-000000000002
+row versions: A1 201 81593154 B 3819017164,536337666,2052633239,2502493019,961882225 A2 201 140806462
+A totals before B writes {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":4,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+A totals after B writes  {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":6,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+B seq 01a19b0e-d6d8-72e0-ba95-3d5ecc47ccff rate 01a19b0e-d5a4-712e-83d3-0f8e3fe0f204 currency 01a19b0e-d56c-7509-9093-1206ad144524
+B job 01a19b0e-d712-7dfa-90b3-751a15f146ad schedule 01a19b0e-d700-74b0-8f4f-1a68c86c4cea
+B create canary user 201
+lists: tenancy.companies,tenancy.branches,tenancy.access,identity.users,identity.roles,numbering.sequences,currency.currencies,currency.rates,jobs.jobs,jobs.schedules
+B views tenancy.companies 201 201
+B views tenancy.branches 201 201
+B views tenancy.access 201 201
+B views identity.users 201 201
+B views identity.roles 201 201
+B views numbering.sequences 201 201
+B views currency.currencies 201 201
+B views currency.rates 201 201
+B views jobs.jobs 201 201
+B views jobs.schedules 201 201
+B logo put 200
+B logo get 200 image/png
+ids shared by A and B answers: 0 
+B-only ids collected: 550
+operations attacked: 191
+documented query-parameter requests: 1210
+switch-input requests: 810
+export requests: 150
+filter requests: 63
+B rows unchanged by A attack: true
+LEAKS: 1
+   DELETE /api/currency/rates/01a19b0e-d5a4-712e-83d3-0f8e3fe0f204 with B id answered 204

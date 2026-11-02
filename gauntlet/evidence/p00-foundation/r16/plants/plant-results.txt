@@ -1,0 +1,25 @@
+Critic p00 r16 plants (plants.diff + CriticPlant.cs + CriticR16Proof.cs; inert unless CRITIC_PLANT names them), run in the
+toolbox (run-in-toolbox.sh / run-plants.sh) on a copy of 5e80b6c3. One build carries both plants, so the static gates see both.
+Control: CriticR16Proof with CRITIC_PLANT=NONE passes 2/2 (plant-PROOFNONE.log): on the real product a no-roles user gets 403
+on /api/identity/users, /API/identity/users and /Api/Identity/Roles, and A's search never carries B's rows.
+With P16,L16 both fail (plant-PROOFALL.log).
+
+PERMISSION PLANT P16 (kernel, src/Kernel/Erp.Kernel/Security/Permissions.cs, PermissionAuthorizationHandler)
+  "only the API needs a permission; the shell's own paths are open to anyone signed in": an ordinal, case-sensitive
+  !path.StartsWith("/api/") test. ASP.NET Core routing is case-insensitive, so /API/identity/users reaches the users endpoint.
+  Proof (plant-PROOFALL.log): no-roles user: GET /api/identity/users?take=1 -> 403; GET /API/identity/users?take=1 -> 200;
+  GET /Api/Identity/Roles?take=1 -> 200.
+  MISSED: G2 + Rules + SelfTests 159/159 passed (plant-G2P16.log, 46.2 min), including G2PermissionTests (grant exactly one),
+  G2ClientOriginTests and G2ClientAddressCodeTests (static: reads of the request reachable from authorization are not flagged
+  for Request.Path). Static G1 set (plant-G1STATIC.log) flagged only L16's code.
+
+TENANT-LEAK PLANT L16 (kernel, src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs, UseErpPlatform + a DI singleton CriticWarmAnswers)
+  a middleware after UseAuthorization keeps the users list's search answers 120 s in a singleton's ConcurrentDictionary keyed
+  by path and query, no tenant.
+  Proof (plant-PROOFALL.log): B has 3 users with a fresh word; A's search for it answers B's rows.
+  CAUGHT statically (plant-G1STATIC.log): G1ProcessStateTests ('singleton Erp.Kernel.Hosting.CriticWarmAnswers._answers: a
+  read-only field that holds a mutable ConcurrentDictionary') and G1TenantSourceTests (ErpPlatform.cs:226 request-enumeration).
+
+Result: G1 caught its plant; G2 missed P16 (path letter case), an unchecked action in p00's kernel permission handler.
+Gate backlog row 3 (Host header, P13 from r14) is still open; this round's gate code does not vary the request beyond the
+client address either.

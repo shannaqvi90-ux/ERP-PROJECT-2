@@ -1,0 +1,28 @@
+build start 07:19:58
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:16.02
+build end 07:21:30
+=== PROOFNONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR16Proof start 07:21:30
+=== PROOFNONE exit 0 end 07:22:11
+Total tests: 2
+ Total time: 39.1112 Seconds
+=== PROOFALL (CRITIC_PLANT=P16,L16) filter FullyQualifiedName~CriticR16Proof start 07:22:11
+=== PROOFALL exit 1 end 07:22:49
+  Failed Erp.Gates.Tests.Critic.CriticR16Proof.A_user_with_no_roles_is_denied_whatever_the_case_of_the_path [2 s]
+  Failed Erp.Gates.Tests.Critic.CriticR16Proof.A_search_answer_never_carries_the_other_tenants_rows [1 s]
+Total tests: 2
+ Total time: 37.2694 Seconds
+=== G1STATIC (CRITIC_PLANT=NONE) filter FullyQualifiedName~G1OutsideProcessStateTests|FullyQualifiedName~G1TenantSourceTests|FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1TenantSettingCodeTests|FullyQualifiedName~G2ClientAddressCodeTests start 07:22:49
+=== G1STATIC exit 1 end 07:23:19
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [1 s]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [918 ms]
+Total tests: 10
+ Total time: 28.5736 Seconds
+=== G2P16 (CRITIC_PLANT=P16) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules|FullyQualifiedName~Erp.Gates.Tests.SelfTests start 07:23:19
+=== G2P16 exit 0 end 08:09:30
+Total tests: 159
+ Total time: 46.1544 Minutes
