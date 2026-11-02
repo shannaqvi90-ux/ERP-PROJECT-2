@@ -1,0 +1,32 @@
+14a15,18
+> // Critic r3: at the bar volume the search matches more than the 10,000 rows the server ranks, so Enter
+> // moves the focus to the list's first row instead of opening it. The newest rows can be unfinished (they
+> // cannot be run again): the expert arrows down to the newest finished self-check and opens it with Enter.
+> const TYPED = 'self';
+16,19c20,24
+<   const page = await api.get(`/api/jobs/jobs?take=1&search=${encodeURIComponent(NAME)}`);
+<   const job = page.items?.[0];
+<   if (!job) throw new Error('our product holds no self-check job');
+<   return job;
+---
+>   const page = await api.get(`/api/jobs/jobs?take=20&search=${encodeURIComponent(TYPED)}`);
+>   const items = page.items ?? [];
+>   const index = items.findIndex(j => j.jobType === 'jobs.selfCheck' && j.jobStatus === 'succeeded' && j.canRerun);
+>   if (index < 0) throw new Error('no finished self-check job among the first 20 rows');
+>   return { ...items[index], index };
+28c33
+<     ctx.state.job = { id: job.id, title: job.titleEn, finishedBefore: job.finishedAt };
+---
+>     ctx.state.job = { id: job.id, title: job.titleEn, finishedBefore: job.finishedAt, index: job.index };
+48c53
+<     await op.type(NAME, { label: 'the job name' });
+---
+>     await op.type(TYPED, { label: 'the job name (first word)' });
+51,52c56,59
+<     await op.waitFor(name => document.querySelector('input.search, input[type="search"]')?.value === name && (document.querySelector('table[role=grid] tbody tr')?.textContent ?? '').includes(name), { label: 'name in the search box and the list filtered to it', arg: NAME });
+<     await op.press('Enter', { label: 'open the best match' });
+---
+>     await op.waitFor(name => document.querySelector('input.search, input[type="search"]')?.value === name && /self/i.test(document.querySelector('table[role=grid] tbody tr')?.textContent ?? '') && /Background jobs: [0-9,]+ rows/.test(document.querySelector('table[role=grid]')?.getAttribute('aria-label') ?? '') && !/: 100,0/.test(document.querySelector('table[role=grid]')?.getAttribute('aria-label') ?? ''), { label: 'name in the search box and the list filtered to it', arg: TYPED });
+>     await op.press('Enter', { label: 'into the list' });
+>     for (let i = 0; i < ctx.state.job.index; i++) await op.press('ArrowDown', { label: 'past an unfinished job' });
+>     await op.press('Enter', { label: 'open the newest finished run' });

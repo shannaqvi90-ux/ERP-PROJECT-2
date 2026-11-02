@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "run_id": "see-and-rerun-job-20261102T070841-6858",
+  "instrument": 12,
+  "task": "see-and-rerun-job",
+  "task_title": "See a background job and run it again",
+  "product": "odoo",
+  "status": "invalid",
+  "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
+  "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
+  "started_at": "2026-11-02T07:08:41.304Z",
+  "finished_at": "2026-11-02T07:09:00.604Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 0,
+    "keystrokes": 0,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0,
+    "system_wait_seconds": 0,
+    "human_seconds": 0,
+    "human_plus_wait_seconds": 0,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 0,
+      "B": 0,
+      "H": 0,
+      "M": 0
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [],
+  "verification": null,
+  "path_notes": "Apps menu > Settings > scroll > Activate the developer mode > Technical > (scroll) Scheduled Actions > search the job > open it > Run Manually. Odoo shows the next execution only; the last run is not shown anywhere in its interface.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/see-and-rerun-job.mjs",
+    "sha256": "cf12a46b7b4f3bfb9bbd21517a3fa1fbf891ef5591b5349d7e6d2ff533802fbc"
+  },
+  "task_notes": "Odoo shows its scheduled actions only in developer mode, which the path switches on, and shows no last-run time anywhere in its interface (only the next execution) and no message after a manual run: its baseline is its nearest path and misses that part of the goal. The rig holds 100,000 recorded job runs.",
+  "error": "action outside the clock (set-up): the task was already done before the clock started (verify() passes on the start screen). Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": null,
+  "requests_after_clock": null,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": true,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.006,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.024
+  },
+  "set_up_writes_waited": 0,
+  "set_up_writes": []
+}

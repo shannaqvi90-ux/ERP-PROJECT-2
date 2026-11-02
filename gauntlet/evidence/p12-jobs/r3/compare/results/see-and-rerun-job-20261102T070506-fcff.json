@@ -1,0 +1,192 @@
+{
+  "schema": 1,
+  "run_id": "see-and-rerun-job-20261102T070506-fcff",
+  "instrument": 12,
+  "task": "see-and-rerun-job",
+  "task_title": "See a background job and run it again",
+  "product": "ours",
+  "status": "error",
+  "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
+  "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
+  "started_at": "2026-11-02T07:05:06.835Z",
+  "finished_at": "2026-11-02T07:07:18.125Z",
+  "environment": {
+    "base_url": "http://localhost:21250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 31,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 121.014,
+    "system_wait_seconds": 0.634,
+    "human_seconds": 13.13,
+    "human_plus_wait_seconds": 13.764,
+    "klm_operator_counts": {
+      "K": 31,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.011,
+      "took": 0.024,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Background jobs",
+      "keystrokes": 1,
+      "at": 0.035,
+      "took": 0.076,
+      "chord": "j",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the job name",
+      "keystrokes": 28,
+      "at": 0.29,
+      "took": 0.226,
+      "text": "Self-check of the job queue",
+      "same_field": false,
+      "screen": "/jobs/jobs",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "open the best match",
+      "keystrokes": 1,
+      "at": 0.978,
+      "took": 0.006,
+      "chord": "Enter",
+      "screen": "/jobs/jobs",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "job list ready, search focused",
+      "at": 0.113,
+      "seconds": 0.176
+    },
+    {
+      "label": "name in the search box and the list filtered to it",
+      "at": 0.517,
+      "seconds": 0.458
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "818a494376cf535c.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p12-jobs/r3/compare/blind/shots/818a494376cf535c.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "0f031075a9cce2e5.jpg",
+      "at": 121.014,
+      "path": "../../evidence-staging/p12-jobs/r3/compare/blind/shots/0f031075a9cce2e5.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "G then J (Background jobs, the search box focused) > type the job name > Enter (opens the newest run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/see-and-rerun-job.mjs",
+    "sha256": "222c9146dc5fe24cfdf3a82b59490eb4cb7d10da3d7828d8e7f5e1d7d730ceea"
+  },
+  "task_notes": "Odoo shows its scheduled actions only in developer mode, which the path switches on, and shows no last-run time anywhere in its interface (only the next execution) and no message after a manual run: its baseline is its nearest path and misses that part of the goal. The rig holds 100,000 recorded job runs.",
+  "error": "Error: waitForFunction: Timeout 120000ms exceeded.\n    (in the driver process)\n    at PageWorld.waitFor (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/page-script.mjs:547:47)\n    at async Operator.waitFor (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/operator.mjs:581:7)\n    at async #op (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/sandbox/bridge.mjs:541:19)\n    at async DriverSession.handle (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/sandbox/bridge.mjs:464:43)",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "error_page": {
+    "url": "/jobs/jobs?q=Self-check+of+the+job+queue",
+    "ready_state": "complete",
+    "title": "Background jobs · ERP",
+    "focused": {
+      "tag": "table",
+      "name": null,
+      "type": null,
+      "label": "Background jobs: 24,623 rows"
+    },
+    "navigation": true,
+    "busy": [],
+    "messages": []
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.162
+  },
+  "set_up_writes_waited": 0,
+  "set_up_writes": [],
+  "failure_capture": {
+    "url": "http://localhost:21250/jobs/jobs?q=Self-check+of+the+job+queue",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+}

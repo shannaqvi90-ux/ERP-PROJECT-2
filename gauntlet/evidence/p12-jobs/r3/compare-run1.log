@@ -1,0 +1,13 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+see-and-rerun-job        odoo  verified  steps 11  keys 31  machine 6.68s  human 34.68s  human+wait 37.311s  -> ../../evidence-staging/p12-jobs/r3/compare/results/see-and-rerun-job-20261102T070430-0a2d.json
+see-and-rerun-job        ours  error     steps 4  keys 31  machine 121.014s  human 13.13s  human+wait 13.764s  (Error: waitForFunction: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p12-jobs/r3/compare/results/see-and-rerun-job-20261102T070506-fcff.json
+    Error: waitForFunction: Timeout 120000ms exceeded.
+        (in the driver process)
+        at PageWorld.waitFor (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/page-script.mjs:547:47)
+        at async Operator.waitFor (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/operator.mjs:581:7)
+        at async #op (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/sandbox/bridge.mjs:541:19)
+        at async DriverSession.handle (file:///home/shan/critic/p12-jobs-r3-cmp/gauntlet/compare/lib/sandbox/bridge.mjs:464:43)
+    page: {"url":"/jobs/jobs?q=Self-check+of+the+job+queue","ready_state":"complete","title":"Background jobs · ERP","focused":{"tag":"table","name":null,"type":null,"label":"Background jobs: 24,623 rows"},"navigation":true,"busy":[],"messages":[]}
+see-and-rerun-job        verdict ours error
+blind review page: ../../../../evidence-staging/p12-jobs/r3/compare/blind/review.html
+output: ../../../../evidence-staging/p12-jobs/r3/compare

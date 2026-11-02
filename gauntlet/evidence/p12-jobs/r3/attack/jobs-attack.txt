@@ -1,0 +1,25 @@
+A token: true B token: true
+A tenant 0190a000-0000-7000-8000-000000000001 B tenant 0190a000-0000-7000-8000-000000000002
+B job 01a19b10-dead-70ee-8896-230e0c9d5331 queued
+B job final succeeded hasOutput true
+B queued 01a19b10-eb85-744d-a3d4-6ca4b7450ee5 B schedule 01a19b10-ebc4-70cb-98a1-fd8c5b9ced6c
+B own output 200 24
+B view {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-5ac7058ab5af80180df8c828730a080c-28021a1c0e78f575-00","errors":{"columns":[{"c
+A start naming B: 201 01a19b11-35e5-7590-af70-2ba23b9f17a1
+A start naming B: 201 01a19b11-3626-7dbd-88d5-69f529892ebf
+requests 1622 leaks/suspicious 0
+user adder [jobs.schedules.create,jobs.schedules.read] sign-in 200
+adder schedule jobs.cleanup: enabled 403 {"type":"urn:erp:problem:jobs.typeNotAllowed","title":"You do not have the permi | disabled 201 | isEnabled omitted 403
+adder start jobs.cleanup: 403
+adder schedule jobs.selfCheck: enabled 403 {"type":"urn:erp:problem:jobs.typeNotAllowed","title":"You do not have the permi | disabled 201 | isEnabled omitted 403
+adder start jobs.selfCheck: 403
+user runner [jobs.jobs.run,jobs.jobs.read] sign-in 200
+runner start cleanup 403 rerun finished cleanup 403 cancel 403 output 403
+noaccess GET /api/jobs/jobs 403
+noaccess GET /api/jobs/types 403
+noaccess GET /api/jobs/schedules 403
+noaccess POST /api/jobs/jobs 403
+noaccess POST /api/jobs/schedules 403
+noaccess GET /api/reports/lists/jobs.jobs?format=csv 403
+noaccess GET /api/reports/lists/jobs.schedules?format=csv 403
+viewer list 200 viewer rerun 403 viewer cancel 403 viewer start 403

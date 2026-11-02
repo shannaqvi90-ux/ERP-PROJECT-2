@@ -1,0 +1,45 @@
+ no_tenant_jobs 
+----------------
+              0
+(1 row)
+
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1793603000.302610
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100002
+(1 row)
+
+ b_sched 
+---------
+       0
+(1 row)
+
+UPDATE 0
+DELETE 0
+ROLLBACK
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1793603000.313384
+(1 row)
+
+ERROR:  new row violates row-level security policy for table "schedules"
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+> set role erp_auth
+ERROR:  permission denied to set role "erp_auth"
+> set role erp_owner
+ERROR:  permission denied to set role "erp_owner"
+> alter table jobs.jobs disable row level security
+ERROR:  must be owner of table jobs
+> select tenant_id from jobs.jobs limit 1
+ tenant_id 
+-----------
+(0 rows)
+

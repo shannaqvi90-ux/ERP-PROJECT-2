@@ -1,0 +1,75 @@
+Test run for /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.40]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.03]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.33]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:24.97]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [FAIL]
+[xUnit.net 00:00:24.97]       jobs.jobs: 50 rows visible without a tenant
+[xUnit.net 00:00:24.97]       jobs.jobs: tenant A sees 50 rows, owns 25
+[xUnit.net 00:00:24.97]       jobs.jobs: tenant A sees 25 rows of other tenants
+[xUnit.net 00:00:24.97]       Stack Trace:
+[xUnit.net 00:00:24.98]         /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(467,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:24.98]         /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(468,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table()
+[xUnit.net 00:00:24.98]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:25.09]     Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [FAIL]
+[xUnit.net 00:00:25.09]       jobs.jobs: unreviewed policy 'jobs.jobs due_tenants_read r erp_auth,erp_app' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+[xUnit.net 00:00:25.09]       jobs.jobs: extra policy due_tenants_read may only grant SELECT to erp_auth
+[xUnit.net 00:00:25.09]       Stack Trace:
+[xUnit.net 00:00:25.09]         /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs(43,0): at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy()
+[xUnit.net 00:00:25.09]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [78 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [16 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [799 ms]
+  Error Message:
+   jobs.jobs: 50 rows visible without a tenant
+jobs.jobs: tenant A sees 50 rows, owns 25
+jobs.jobs: tenant A sees 25 rows of other tenants
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 467
+   at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table() in /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 468
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [28 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [9 ms]
+  Failed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [82 ms]
+  Error Message:
+   jobs.jobs: unreviewed policy 'jobs.jobs due_tenants_read r erp_auth,erp_app' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by erp_auth)
+jobs.jobs: extra policy due_tenants_read may only grant SELECT to erp_auth
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy() in /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G1/G1DatabaseIsolationTests.cs:line 43
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [60 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [112 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [30 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [25 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [5 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [19 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.With_the_run_permission_of_the_kind_a_schedule_is_added_switched_on_and_retimed_writing_only_the_schedule [2 s]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack [1 s]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_reader_and_a_user_who_may_only_cancel_cannot_run_a_finished_job_again [1 s]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Running_a_finished_job_again_writes_one_new_job_and_changes_nothing_else [556 ms]
+[xUnit.net 00:00:33.60]     Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind [FAIL]
+[xUnit.net 00:00:33.60]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:33.60]       Expected: Forbidden
+[xUnit.net 00:00:33.60]       Actual:   Created
+[xUnit.net 00:00:33.60]       Stack Trace:
+[xUnit.net 00:00:33.60]         /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/JobsWriteSetTests.cs(177,0): at Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind()
+[xUnit.net 00:00:33.60]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:33.95]   Finished:    Erp.Gates.Tests (ID = '699205438613fdf59520c0c399826ba825434d34e2261e8aa658d3e0a44fc961')
+  Failed Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind [503 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   Created
+  Stack Trace:
+     at Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind() in /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/JobsWriteSetTests.cs:line 177
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 17
+     Passed: 14
+     Failed: 3
+ Total time: 34.6868 Seconds

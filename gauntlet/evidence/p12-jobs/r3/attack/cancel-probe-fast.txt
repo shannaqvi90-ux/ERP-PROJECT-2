@@ -1,0 +1,12 @@
+trial 0 pause 50ms: status when cancelled running progress 0; cancel -> 200 in 17 ms ; final cancelled progress 80
+trial 1 pause 100ms: status when cancelled running progress 0; cancel -> 200 in 21 ms ; final cancelled progress 35
+trial 2 pause 50ms: status when cancelled running progress 5; cancel -> 409 in 32 ms {"type":"urn:erp:problem:concurrency","title":"Someone else changed this record after you opened it. Reload it and try again.","status":409,; final succeeded progress 100
+trial 3 pause 100ms: status when cancelled running progress 0; cancel -> 200 in 35 ms ; final cancelled progress 35
+trial 4 pause 50ms: status when cancelled running progress 5; cancel -> 200 in 16 ms ; final cancelled progress 80
+trial 5 pause 100ms: status when cancelled running progress 5; cancel -> 200 in 12 ms ; final cancelled progress 50
+trial 6 pause 50ms: status when cancelled running progress 5; cancel -> 200 in 32 ms ; final cancelled progress 80
+trial 7 pause 100ms: status when cancelled running progress 0; cancel -> 200 in 25 ms ; final cancelled progress 35
+trial 8 pause 50ms: status when cancelled running progress 5; cancel -> 200 in 29 ms ; final cancelled progress 80
+trial 9 pause 100ms: status when cancelled running progress 5; cancel -> 200 in 16 ms ; final cancelled progress 50
+trial 10 pause 50ms: status when cancelled running progress 0; cancel -> 200 in 18 ms ; final cancelled progress 80
+trial 11 pause 100ms: status when cancelled running progress 0; cancel -> 200 in 12 ms ; final cancelled progress 35

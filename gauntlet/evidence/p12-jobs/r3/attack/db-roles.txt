@@ -1,0 +1,31 @@
+  rolname  | member_of 
+-----------+-----------
+ erp_owner | erp_auth
+(1 row)
+
+ grantee  | table_name | column_name  | privilege_type 
+----------+------------+--------------+----------------
+ erp_auth | jobs       | locked_until | SELECT
+ erp_auth | jobs       | run_at       | SELECT
+ erp_auth | jobs       | status       | SELECT
+ erp_auth | schedules  | tenant_id    | SELECT
+ erp_auth | jobs       | tenant_id    | SELECT
+ erp_auth | schedules  | is_enabled   | SELECT
+ erp_auth | schedules  | next_run_at  | SELECT
+(7 rows)
+
+  rolname  | rolbypassrls | rolsuper | rolinherit 
+-----------+--------------+----------+------------
+ erp_owner | f            | f        | t
+ erp_app   | f            | f        | f
+ erp_auth  | f            | f        | f
+(3 rows)
+
+      proname      |                                              prosrc                                               
+-------------------+---------------------------------------------------------------------------------------------------
+ current_tenant_id |                                                                                                  +
+                   |         SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text+
+                   |                     THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END            +
+                   |     
+(1 row)
+

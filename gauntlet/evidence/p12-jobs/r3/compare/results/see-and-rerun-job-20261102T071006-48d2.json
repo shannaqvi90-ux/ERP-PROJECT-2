@@ -1,0 +1,314 @@
+{
+  "schema": 1,
+  "run_id": "see-and-rerun-job-20261102T071006-48d2",
+  "instrument": 12,
+  "task": "see-and-rerun-job",
+  "task_title": "See a background job and run it again",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
+  "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
+  "started_at": "2026-11-02T07:10:06.411Z",
+  "finished_at": "2026-11-02T07:10:19.838Z",
+  "environment": {
+    "base_url": "http://localhost:21250",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 5,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.759,
+    "system_wait_seconds": 2.214,
+    "human_seconds": 9.95,
+    "human_plus_wait_seconds": 12.164,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 5
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.002,
+      "took": 0.02,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Background jobs",
+      "keystrokes": 1,
+      "at": 0.026,
+      "took": 0.058,
+      "chord": "j",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the job name (first word)",
+      "keystrokes": 4,
+      "at": 0.258,
+      "took": 0.046,
+      "text": "self",
+      "same_field": false,
+      "screen": "/jobs/jobs",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "into the list",
+      "keystrokes": 1,
+      "at": 0.643,
+      "took": 0.016,
+      "chord": "Enter",
+      "screen": "/jobs/jobs",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "open the newest finished run",
+      "keystrokes": 1,
+      "at": 0.659,
+      "took": 0.064,
+      "chord": "Enter",
+      "screen": "/jobs/jobs",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "run again",
+      "keystrokes": 2,
+      "at": 1.075,
+      "took": 0.02,
+      "chord": "Alt+r",
+      "screen": "/jobs/jobs/01a19b16-56c2-732b-82c3-4bdd8acee863",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "job list ready, search focused",
+      "at": 0.086,
+      "seconds": 0.172
+    },
+    {
+      "label": "name in the search box and the list filtered to it",
+      "at": 0.305,
+      "seconds": 0.335
+    },
+    {
+      "label": "job panel (last run on screen)",
+      "at": 0.724,
+      "seconds": 0.065
+    },
+    {
+      "label": "the new run is open and done",
+      "at": 1.096,
+      "seconds": 1.642
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b80dbd0199c5168a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p12-jobs/r3/compare/blind/shots/b80dbd0199c5168a.jpg"
+    },
+    {
+      "moment": "job opened",
+      "file": "7b5cda662d4e4ac5.jpg",
+      "at": 0.79,
+      "path": "../../evidence-staging/p12-jobs/r3/compare/blind/shots/7b5cda662d4e4ac5.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "3efc70b44f089bc5.jpg",
+      "at": 2.759,
+      "path": "../../evidence-staging/p12-jobs/r3/compare/blind/shots/3efc70b44f089bc5.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "last_run_before": "2026-11-02T07:08:15.837729+00:00",
+      "last_run_now": "2026-11-02T07:10:12.355117+00:00",
+      "rerun_of_the_job_opened": true,
+      "last_run_shown_in_interface": true
+    }
+  },
+  "path_notes": "G then J (Background jobs, the search box focused) > type the job name > Enter (opens the newest run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/see-and-rerun-job.mjs",
+    "sha256": "6dbd24a84de634b8e6c0188d45f862cbf1baeb47b356910d8260ecd5d9ef108e"
+  },
+  "task_notes": "Odoo shows its scheduled actions only in developer mode, which the path switches on, and shows no last-run time anywhere in its interface (only the next execution) and no message after a manual run: its baseline is its nearest path and misses that part of the goal. The rig holds 100,000 recorded job runs.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.008,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.13,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.095,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "e44cb00a4bd0eae1",
+    "elements": 652
+  },
+  "screen_after_verify": {
+    "sha256": "e44cb00a4bd0eae1",
+    "elements": 652,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.111
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 2,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/jobs/jobs"
+    ],
+    "read_after": [
+      "GET /api/jobs/jobs",
+      "GET /api/jobs/jobs/01a19b18-20ad-77dd-9036-b95e95a2cff5"
+    ],
+    "changed": [
+      "GET /api/jobs/jobs"
+    ],
+    "changed_parts": {
+      "GET /api/jobs/jobs": [
+        "items.0.id",
+        "items.0.runAt",
+        "items.0.startedAt",
+        "items.0.finishedAt",
+        "items.0.createdAt",
+        "items.0.updatedAt",
+        "items.0.version",
+        "items.1.id"
+      ]
+    },
+    "end_state": [
+      "GET /api/jobs/jobs [items.finishedAt]"
+    ],
+    "end_state_changed": {
+      "GET /api/jobs/jobs": [
+        "items.0.finishedAt",
+        "items.1.finishedAt"
+      ]
+    },
+    "writes_sent": [
+      "POST /api/jobs/jobs/01a19b16-56c2-732b-82c3-4bdd8acee863/rerun"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/jobs/jobs/01a19b16-56c2-732b-82c3-4bdd8acee863/rerun",
+        "at": 1.0920855880000018,
+        "by_step": 6,
+        "browser_record": {
+          "caused": true,
+          "by_step": 6,
+          "chain_seconds": 0.001,
+          "chain": [
+            "input of step 6"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 21,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 2.701,
+      "by_step": 6,
+      "chain": [
+        "a repeating timer of 1.5 s",
+        "the answer to GET /api/jobs/jobs/01a19b18-20ad-77dd-9036-b95e95a2cff5 after 0.011 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

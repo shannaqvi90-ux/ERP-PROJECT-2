@@ -1,0 +1,17 @@
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ __ef_migrations_history | f              | f
+ jobs                    | t              | t
+ job_attempts            | t              | t
+ schedules               | t              | t
+(4 rows)
+
+  tablename   |    policyname    |   roles    |  cmd   |                 qual                  
+--------------+------------------+------------+--------+---------------------------------------
+ jobs         | tenant_isolation | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ job_attempts | tenant_isolation | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ schedules    | tenant_isolation | {public}   | ALL    | (tenant_id = erp.current_tenant_id())
+ jobs         | due_tenants_read | {erp_auth} | SELECT | true
+ schedules    | due_tenants_read | {erp_auth} | SELECT | true
+(5 rows)
+

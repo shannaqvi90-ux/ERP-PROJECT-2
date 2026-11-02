@@ -1,0 +1,244 @@
+TAP version 13
+# Subtest: causation (round 12): an input task is the step's that began last before it; one before every step causes nothing
+ok 1 - causation (round 12): an input task is the step's that began last before it; one before every step causes nothing
+  ---
+  duration_ms: 13.689698
+  type: 'test'
+  ...
+# Subtest: causation (round 12): a DevTools command inside a step is the step's (a file chosen); outside every step it is the harness reading, and causes nothing
+ok 2 - causation (round 12): a DevTools command inside a step is the step's (a file chosen); outside every step it is the harness reading, and causes nothing
+  ---
+  duration_ms: 7.170214
+  type: 'test'
+  ...
+# Subtest: causation (round 12): a timer counts only when a caused task armed it, once, for at most REACTION_SECONDS
+ok 3 - causation (round 12): a timer counts only when a caused task armed it, once, for at most REACTION_SECONDS
+  ---
+  duration_ms: 1.657834
+  type: 'test'
+  ...
+# Subtest: causation (round 12): an animation frame counts when a caused task asked for it
+ok 4 - causation (round 12): an animation frame counts when a caused task asked for it
+  ---
+  duration_ms: 0.57809
+  type: 'test'
+  ...
+# Subtest: causation (round 12): an answer links a write to the step that sent the request, if it came within LINK_SECONDS; a poll's answer links nothing
+ok 5 - causation (round 12): an answer links a write to the step that sent the request, if it came within LINK_SECONDS; a poll's answer links nothing
+  ---
+  duration_ms: 1.407703
+  type: 'test'
+  ...
+# Subtest: causation (round 12): a task of no traceable origin counts only right after a task a step caused, with nothing else of the page in between
+ok 6 - causation (round 12): a task of no traceable origin counts only right after a task a step caused, with nothing else of the page in between
+  ---
+  duration_ms: 1.70338
+  type: 'test'
+  ...
+# Subtest: causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused
+ok 7 - causation (round 12): a navigation is judged by the task that started it; the clocks are tied by markers; a write the record lacks is not caused
+  ---
+  duration_ms: 1.154345
+  type: 'test'
+  ...
+# Subtest: control (round 12): the honest approval click, a save on a short timer or an animation frame the click asked for, or after reading answers it asked for, and a file chosen verify, and the record says which step
+ok 8 - control (round 12): the honest approval click, a save on a short timer or an animation frame the click asked for, or after reading answers it asked for, and a file chosen verify, and the record says which step
+  ---
+  duration_ms: 28637.83319
+  type: 'test'
+  ...
+# Subtest: control (round 12): a form posted by Enter in its field (a sign-in's shape) is caused by the key
+ok 9 - control (round 12): a form posted by Enter in its field (a sign-in's shape) is caused by the key
+  ---
+  duration_ms: 4411.905464
+  type: 'test'
+  ...
+# Subtest: the clock (round 12, critic plant S3): for a task that saves it starts 1.1-2.1 s after verify()'s read before it; a click is timed from its input, not from the wait for its target
+ok 10 - the clock (round 12, critic plant S3): for a task that saves it starts 1.1-2.1 s after verify()'s read before it; a click is timed from its input, not from the wait for its target
+  ---
+  duration_ms: 5341.992834
+  type: 'test'
+  ...
+# Subtest: control (round 5): the honest path on the slow page waits for the 2 s answer
+ok 11 - control (round 5): the honest path on the slow page waits for the 2 s answer
+  ---
+  duration_ms: 8135.888493
+  type: 'test'
+  ...
+# Subtest: plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid
+ok 12 - plant T2 (round 5): run() returns after the click and verify() waits for the end state -> invalid
+  ---
+  duration_ms: 3409.812208
+  type: 'test'
+  ...
+# Subtest: plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped
+ok 13 - plant T2b (round 5): run() returns after the click and verify() reads once -> the screen is frozen as the clock stopped
+  ---
+  duration_ms: 9683.444679
+  type: 'test'
+  ...
+# Subtest: plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock
+ok 14 - plant T2g (round 5): run() returns while a save is still under way and verify() reads the back end -> the save is on the clock
+  ---
+  duration_ms: 4910.514783
+  type: 'test'
+  ...
+# Subtest: control (round 5): images and reads still loading when run() returns are not waited for
+ok 15 - control (round 5): images and reads still loading when run() returns are not waited for
+  ---
+  duration_ms: 2878.351748
+  type: 'test'
+  ...
+# Subtest: plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid
+ok 16 - plant T2c (round 5): a save committed after its answer, and verify() polls the back end until it shows -> invalid
+  ---
+  duration_ms: 2993.903652
+  type: 'test'
+  ...
+# Subtest: plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops
+ok 17 - plant T2d (round 5): a request the page sends 600 ms after the click cannot finish after the clock stops
+  ---
+  duration_ms: 7893.534312
+  type: 'test'
+  ...
+# Subtest: plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid
+ok 18 - plant T2f (round 5): verify() that sleeps on a timer, or polls a slow read with varied requests -> invalid
+  ---
+  duration_ms: 11052.74772
+  type: 'test'
+  ...
+# Subtest: plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid
+ok 19 - plant T2e (round 5): verify() that waits with ctx.until or waitForURL -> invalid
+  ---
+  duration_ms: 11433.506119
+  type: 'test'
+  ...
+# Subtest: plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid
+ok 20 - plant U4 (round 5): a fetch captured when the driver module loads, used while measured -> invalid
+  ---
+  duration_ms: 2192.404412
+  type: 'test'
+  ...
+# Subtest: plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent
+ok 21 - plant U5 (round 5): process.getBuiltinModule reaches child_process or net while measured -> invalid, nothing sent
+  ---
+  duration_ms: 11806.196427
+  type: 'test'
+  ...
+# Subtest: plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid
+ok 22 - plant U5b (round 5): every other way out of the driver process is refused, in set-up too -> invalid
+  ---
+  duration_ms: 35099.271889
+  type: 'test'
+  ...
+# Subtest: plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness
+ok 23 - plant U5c (round 5): the driver process cannot write outside its scratch folder, itself or through the harness
+  ---
+  duration_ms: 7416.918323
+  type: 'test'
+  ...
+# Subtest: plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid
+ok 24 - plant U5d (round 5): a timer left by set-up that calls the back end while measured -> invalid
+  ---
+  duration_ms: 7126.372089
+  type: 'test'
+  ...
+# Subtest: plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid
+ok 25 - plant U5h (round 5): a slow back-end call set-up leaves running lands before the clock, never inside it -> invalid
+  ---
+  duration_ms: 2889.406372
+  type: 'test'
+  ...
+# Subtest: plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid
+ok 26 - plant U5i (round 5): page script smuggled as a crafted function text cannot run outside the sentinel -> invalid
+  ---
+  duration_ms: 7235.978275
+  type: 'test'
+  ...
+# Subtest: plant U5j (round 5): set-up leaves a request of Playwright's own HTTP client running -> invalid
+ok 27 - plant U5j (round 5): set-up leaves a request of Playwright's own HTTP client running -> invalid
+  ---
+  duration_ms: 4377.053942
+  type: 'test'
+  ...
+# Subtest: plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid
+ok 28 - plant U5k (round 5): an API session with a header that changes what a typed request does -> invalid
+  ---
+  duration_ms: 515.030653
+  type: 'test'
+  ...
+# Subtest: plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver's reach
+ok 29 - plant U5e (round 5): no driver module runs in the harness process, and its clock is out of the driver's reach
+  ---
+  duration_ms: 5473.536898
+  type: 'test'
+  ...
+# Subtest: plant U5f (round 5): a driver object handed straight to execute() is refused, never measured
+ok 30 - plant U5f (round 5): a driver object handed straight to execute() is refused, never measured
+  ---
+  duration_ms: 0.324546
+  type: 'test'
+  ...
+# Subtest: plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent
+ok 31 - plant U5g (round 5, the real driver): ours api-update-user sends its PUT through a child process -> invalid, nothing sent
+  ---
+  duration_ms: 2463.432553
+  type: 'test'
+  ...
+# Subtest: plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid
+ok 32 - plant C2 (round 5): ControlOrMeta+v: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 3111.645299
+  type: 'test'
+  ...
+# Subtest: plant C3 (round 5): an empty copy, then Control+v: text copied in set-up is pasted while measured -> invalid
+ok 33 - plant C3 (round 5): an empty copy, then Control+v: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 3599.672738
+  type: 'test'
+  ...
+# Subtest: plant C4 (round 5): Control+KeyV: text copied in set-up is pasted while measured -> invalid
+ok 34 - plant C4 (round 5): Control+KeyV: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 3332.01069
+  type: 'test'
+  ...
+# Subtest: plant C5 (round 5): control+V written in other cases: text copied in set-up is pasted while measured -> invalid
+ok 35 - plant C5 (round 5): control+V written in other cases: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 3076.017836
+  type: 'test'
+  ...
+# Subtest: plant C6 (round 5): Shift+Control+v: text copied in set-up is pasted while measured -> invalid
+ok 36 - plant C6 (round 5): Shift+Control+v: text copied in set-up is pasted while measured -> invalid
+  ---
+  duration_ms: 3215.843728
+  type: 'test'
+  ...
+# Subtest: control (round 5): the clipboard is empty at the start, whatever set-up copied
+ok 37 - control (round 5): the clipboard is empty at the start, whatever set-up copied
+  ---
+  duration_ms: 4197.860935
+  type: 'test'
+  ...
+# Subtest: KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step
+ok 38 - KLM (round 5): typing right after an Enter that opened a new screen starts with a mental step
+  ---
+  duration_ms: 4625.526691
+  type: 'test'
+  ...
+# Subtest: control C3: a save the page sends a few event-loop turns after the click, or once a slow check the click sent is answered, is caused by the click
+ok 39 - control C3: a save the page sends a few event-loop turns after the click, or once a slow check the click sent is answered, is caused by the click
+  ---
+  duration_ms: 13868.654206
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 204004.477086

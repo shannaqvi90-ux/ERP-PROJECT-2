@@ -1,0 +1,147 @@
+Test run for /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.44]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.06]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.39]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2ClientAddressCodeTests.Only_reviewed_methods_read_where_a_request_comes_from_and_no_permission_decision_reaches_one [1 s]
+  Passed Erp.Gates.Tests.G2.G2ClientAddressCodeTests.The_scan_catches_a_permission_check_that_reads_the_client_address_directly_through_a_helper_a_feature_or_an_interface [37 ms]
+  Passed Erp.Gates.Tests.G2.CurrencyWriteSetTests.A_reader_and_a_caller_outside_the_whole_workspace_change_no_currency [2 s]
+[xUnit.net 00:00:31.46]     Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [FAIL]
+[xUnit.net 00:00:31.46]       Catalogue permissions no endpoint uses (dead permissions confuse role editors): jobs.jobs.output
+[xUnit.net 00:00:31.46]       Stack Trace:
+[xUnit.net 00:00:31.46]         /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(322,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
+[xUnit.net 00:00:31.46]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:31.46]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:31.46]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:31.46]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [8 ms]
+  Error Message:
+   Catalogue permissions no endpoint uses (dead permissions confuse role editors): jobs.jobs.output
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used() in /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 322
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [2 ms]
+  Passed Erp.Gates.Tests.G2.CurrencyWriteSetTests.A_currency_edit_writes_only_that_currencys_in_use_flag_and_rate_age [928 ms]
+  Passed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [2 s]
+  Passed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [1 s]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.With_the_run_permission_of_the_kind_a_schedule_is_added_switched_on_and_retimed_writing_only_the_schedule [3 s]
+[xUnit.net 00:00:42.59]     Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack [FAIL]
+[xUnit.net 00:00:42.59]       jobs.selfCheck: a user with only jobs.schedules.update (not jobs.jobs.run) got 200 {"id":"01a19b22-80f2-788c-9a89-13daddbe7762","scheduleName":"jws seeded jobs.selfCheck fa0e47bd8c30428384899d6a37a1fce1","type":"jobs.selfCheck","typeNameEn":"Self-check of the job queue","typeNameAr":"فحص ذاتي لطابور المهام","cron":"30 3 * * *","payload":{},"isEnabled":true,"nextRunAt":"2026-11-02T23:30:00+00:00","lastRunAt":null,"lastJobId":null,"timeZone":"Asia/Dubai","createdAt":"2026-11-02T07:21:32.146625+00:00","updatedAt":"2026-11-02T07:21:32.1611175+00:00","version":1705476403,"canUpdate":true}
+[xUnit.net 00:00:42.59]       Stack Trace:
+[xUnit.net 00:00:42.59]         /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/JobsWriteSetTests.cs(121,0): at Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack()
+[xUnit.net 00:00:42.59]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack [1 s]
+  Error Message:
+   jobs.selfCheck: a user with only jobs.schedules.update (not jobs.jobs.run) got 200 {"id":"01a19b22-80f2-788c-9a89-13daddbe7762","scheduleName":"jws seeded jobs.selfCheck fa0e47bd8c30428384899d6a37a1fce1","type":"jobs.selfCheck","typeNameEn":"Self-check of the job queue","typeNameAr":"فحص ذاتي لطابور المهام","cron":"30 3 * * *","payload":{},"isEnabled":true,"nextRunAt":"2026-11-02T23:30:00+00:00","lastRunAt":null,"lastJobId":null,"timeZone":"Asia/Dubai","createdAt":"2026-11-02T07:21:32.146625+00:00","updatedAt":"2026-11-02T07:21:32.1611175+00:00","version":1705476403,"canUpdate":true}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack() in /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/JobsWriteSetTests.cs:line 121
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_reader_and_a_user_who_may_only_cancel_cannot_run_a_finished_job_again [1 s]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Running_a_finished_job_again_writes_one_new_job_and_changes_nothing_else [613 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind [503 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [20 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [7 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [2 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches [9 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [25 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [16 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [72 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [51 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [77 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [52 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [1 m]
+  Passed Erp.Gates.Tests.G2.G2SetBasedWriteSourceTests.Only_reviewed_files_write_with_set_based_statements [120 ms]
+  Passed Erp.Gates.Tests.G2.G2SetBasedWriteSourceTests.The_check_catches_a_set_based_write_in_an_unreviewed_file_and_a_new_one_in_a_reviewed_file [1 ms]
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.The_carrier_pattern_finds_the_planted_bearer_bypass [2 ms]
+  Passed Erp.Gates.Tests.G2.G2SessionCarrierSourceTests.Product_code_reads_session_carriers_only_where_reviewed [86 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [9 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [95 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_passkey_removed_whoever_holds_it_and_a_body_flag_that_skips_the_check [1 m 13 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [1 m 4 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [3 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyWritePolicyTests.Every_company_table_carries_the_company_write_policies [53 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyWritePolicyTests.Under_a_write_limit_the_application_role_writes_only_the_permitted_companies_rows [450 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [18 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.No_endpoint_grants_another_modules_permissions_the_caller_lacks [15 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [767 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [12 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [40 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [30 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [1 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [3 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_record_that_grants_access_needs_everything_it_grants [1 m 32 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Nobody_resets_their_own_password_or_ends_their_own_access_through_administration [574 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyAccessGrantTests.Company_access_is_given_and_taken_only_within_what_the_caller_holds_and_never_from_a_stronger_user [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [2 m 16 s]
+[xUnit.net 00:04:30.12]     Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [FAIL]
+[xUnit.net 00:04:30.12]       GET /api/jobs/jobs/{id:guid}/output declares jobs.jobs.read; the reviewed map jobs.txt says jobs.jobs.output
+[xUnit.net 00:04:30.12]       Stack Trace:
+[xUnit.net 00:04:30.12]         /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(95,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission()
+[xUnit.net 00:04:30.12]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:30.12]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:30.12]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:04:30.12]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:04:30.12]       Output:
+[xUnit.net 00:04:30.12]         79 endpoints compared with 6 reviewed map(s)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [603 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [485 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [5 ms]
+  Error Message:
+   GET /api/jobs/jobs/{id:guid}/output declares jobs.jobs.read; the reviewed map jobs.txt says jobs.jobs.output
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission() in /home/shan/critic/p12-jobs-r3-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 95
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 79 endpoints compared with 6 reviewed map(s)
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [11 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [45 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [30 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [30 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [181 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [10 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [43 ms]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.Granting_exactly_one_permission_opens_exactly_its_endpoints_from_every_client_address [2 m 5 s]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.Anonymous_callers_and_unknown_tokens_get_401_from_every_client_address [1 s]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.The_origin_matrices_catch_a_permission_check_that_trusts_where_a_request_comes_from(mode: "shared") [17 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [2 m 45 s]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.The_origin_matrices_catch_a_permission_check_that_trusts_where_a_request_comes_from(mode: "forwarded") [12 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.The_takeover_check_catches_a_target_check_skipped_for_a_documented_query_value [6 s]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.The_origin_matrices_catch_a_permission_check_that_trusts_where_a_request_comes_from(mode: "private") [15 s]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.The_origin_matrices_catch_a_permission_check_that_trusts_where_a_request_comes_from(mode: "loopback") [14 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_users_chosen_by_a_search_or_filter_needs_every_permission_they_hold [51 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [2 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [5 m 44 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.The_report_catalogue_lists_only_what_the_caller_may_run_and_see [620 ms]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.A_user_whose_roles_grant_nothing_is_denied_everything_from_every_client_address [37 s]
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.The_origin_grant_matrix_catches_a_check_that_trusts_loopback_callers_holding_any_permission [2 s]
+[xUnit.net 00:07:45.87]   Finished:    Erp.Gates.Tests (ID = '699205438613fdf59520c0c399826ba825434d34e2261e8aa658d3e0a44fc961')
+  Passed Erp.Gates.Tests.G2.G2ClientOriginTests.Every_client_origin_reaches_the_product_as_the_address_it_stands_for [1 s]
+
+Test Run Failed.
+Total tests: 83
+     Passed: 80
+     Failed: 3
+ Total time: 7.7800 Minutes

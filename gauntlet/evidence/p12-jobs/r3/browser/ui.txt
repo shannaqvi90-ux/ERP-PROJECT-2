@@ -1,0 +1,34 @@
+EN list heading: Background jobs | grid: Background jobs: 100,027 rows | url http://localhost:21250/jobs/jobs
+EN columns:  | Job▾ | Status▾ | Started▾ | Finished▾ | Progress▾
+shot 01-jobs-list-en.jpg
+Start dialog open: true focused: <select id="_r_3_" aria-invalid="false" name="type"><option value="jobs.cleanup">Clean up finished jobs</option><option 
+shot 02-start-dialog-en.jpg
+after Ctrl+Enter url http://localhost:21250/jobs/jobs/01a19b1c-165b-710e-9591-1cbf5f16bc30 dialog visible false
+running panel status: Running | progress: 33%
+shot 03-job-running-progress-en.jpg
+after first Alt+K: status Cancelled | panel message: 
+after cancel status: Cancelled
+shot 04-job-cancelled-en.jpg
+rerun url http://localhost:21250/jobs/jobs/01a19b1c-b6a7-7104-a082-0c80247caf53 status: Done finished: 2 Nov 2026, 11:15 AM
+output downloaded self-check.txt step 1/12 ok | step 2/12 ok | step 3/12 ok | step 4/12 ok | step 5/12 ok | step 6/12 ok | step 7/12 ok | step 8/12 ok | step 9/12 ok | step 10/12 ok | step 11/12 ok | step 12/12 ok | 
+shot 05-rerun-done-output-en.jpg
+a failed clean-up job 01a19b0e-9ee1-7641-b174-893a6292a0a5
+failed job panel status: Failed | error text: Clean up finished jobsFailed‹31 of 100,029›Run againCloseRead only Jobs cannot be edited. Use Run again or Cancel.State3%KindClean up finished jobs (jobs.cleanup)Started byBy handDue2 Nov 2026, 10:58 AMStarted2 Nov 2026, 10:58 AMFinished2 Nov 2026, 10:59 AMTook15 sTries2 of 2The job stopped with an error. (jobs.seed)Parameters{}
+shot 06-failed-job-error-attempts-en.jpg
+EN schedules rows: Clean up finished jobsClean up finished jobs30 3 * * *On3 Nov 2026, 3:30 AM1 Nov 2026, 10:59 AM || crit off jobs.cleanup 1793602959625Clean up finished jobs* * * * *Off || crit off jobs.selfCheck 1793602959658Self-check of the job queue* * * * *Off
+shot 07-schedules-en.jpg
+AR dir: rtl lang: ar
+AR heading: المهام الخلفية | columns:  | المهمة▾ | الحالة▾ | بدأت▾ | انتهت▾ | التقدم▾
+AR first rows: فحص ذاتي لطابور المهامتمت02‏/11‏/2026، 11:15 ص02‏/11‏/2026، 11:15 ص100% || فحص ذاتي لطابور المهامأُلغيت02‏/11‏/2026، 11:14 ص02‏/11‏/2026، 11:14 ص50% || فحص ذاتي لطابور المهامأُلغيت02‏/11‏/2026، 11:14 ص02‏/11‏/2026، 11:14 ص35% || فحص ذاتي لطابور المهامأُلغيت02‏/11‏/2026، 11:14 ص02‏/11‏/2026، 11:14 ص80% || فحص ذاتي لطابور المهامأُلغيت02‏/11‏/2026، 11:14 ص02‏/11‏/2026، 11:14 ص50%
+shot 08-jobs-list-ar.jpg
+AR panel: فحص ذاتي لطابور المهامتمت‹1 من 24,650›إعادة التشغيلتنزيل الناتجإغلاقللعرض فقط لا يمكن تعديل المهام. استخدم إعادة التشغيل أو الإلغاء.الحالة100%الخطوة 12 من 12النوعفحص ذاتي لطابور المهام (jobs.selfCheck)بدأهاإعادة تشغيلموعدها02‏/11‏/2026، 11:15 صبدأت02‏/11‏/2026، 11:15 صانتهت02‏/11‏/2026، 11:15 صاستغرقت11 ثانيةالمحاولات1 من 1المحاولاتالمحاولةبدأتالنتيجةالخطأ102‏/11‏/2026، 11:15 صتمتالمعاملات{
+  "steps": 12,
+  "pauseMilliseconds": 900
+}النتيجة{
+  "steps": 12,
+  "pauseMilliseconds": 900
+}ملف الناتج 
+shot 09-job-panel-ar.jpg
+AR schedules rows: Clean up finished jobsتنظيف المهام المنتهية30 3 * * *مفعّل03‏/11‏/2026، 3:30 ص01‏/11‏/2026، 10:59 ص || crit off jobs.cleanup 1793602959625تنظيف المهام المنتهية* * * * *معطّل || crit off jobs.selfCheck 1793602959658فحص ذاتي لطابور المهام* * * * *معطّل
+shot 10-schedules-ar.jpg
+viewer jobs screen heading: Background jobs | buttons: View: Standard | Columns | Print or export | Job | ▾ | Status | ▾ | Started | ▾ | Finished | ▾ | Progress | ▾
