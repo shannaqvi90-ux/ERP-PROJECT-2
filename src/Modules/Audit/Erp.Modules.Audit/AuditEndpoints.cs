@@ -70,8 +70,8 @@ internal static class AuditEndpoints
         }
         group.MapGet("/records/{id:guid}", History)
             .WithName("audit.history.get")
-            .WithSummary("The history of one record, newest change first: who changed it, when, and each field's old and new value (a creation lists every first value, a deletion every last value). Besides the audit log's permission, the caller needs the permission that reads such records, in the record's company (and its branch, where they may work in only some): otherwise, as for an id that names nothing, the history is empty. With type (schema.table, as /api/lists/audit.log/definition names the kinds of records), only that kind's changes, and for rows a form shows by another record's id (a user's company access by the user's id) every row whose owner column held the id.")
-            .RequirePermission(AuditPermissions.LogRead);
+            .WithSummary("The history of one record, newest change first: who changed it, when, and each field's old and new value (a creation lists every first value, a deletion every last value). Besides the history permission (a form's history panel, not the whole log), the caller needs the permission that reads such records, in the record's company (and its branch, where they may work in only some): otherwise, as for an id that names nothing, the history is empty. With type (schema.table, as /api/lists/audit.log/definition names the kinds of records), only that kind's changes, and for rows a form shows by another record's id (a user's company access by the user's id) every row whose owner column held the id.")
+            .RequirePermission(AuditPermissions.HistoryRead);
     }
 
     private static async Task<Results<Ok<ListPage<AuditLogRow>>, ProblemHttpResult>> Log(

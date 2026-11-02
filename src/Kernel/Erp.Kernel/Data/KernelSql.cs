@@ -242,23 +242,21 @@ internal static class KernelSql
         GRANT USAGE, CREATE ON SCHEMA audit TO erp_auth;
         GRANT INSERT ON audit.entries TO erp_auth;
         GRANT EXECUTE ON FUNCTION audit.field_names(jsonb) TO erp_auth;
-        ALTER FUNCTION audit.capture() OWNER TO erp_auth;
         ALTER FUNCTION audit.capture() SECURITY DEFINER;
         REVOKE ALL ON FUNCTION audit.capture() FROM PUBLIC;
+        ALTER FUNCTION audit.capture() OWNER TO erp_auth;
         REVOKE CREATE ON SCHEMA audit FROM erp_auth;
         REVOKE INSERT ON audit.entries FROM erp_app;
         """;
 
+    /// <summary>Back to the application role writing the trail. The function stays owned by erp_auth (the
+    /// owner can no longer be taken back without that role's own right to hand it over); it runs as its
+    /// caller again, and the application role holds INSERT again.</summary>
     public const string AuditTamperEvidenceDown = """
         GRANT INSERT ON audit.entries TO erp_app;
+        SET LOCAL ROLE erp_auth;
         ALTER FUNCTION audit.capture() SECURITY INVOKER;
-        GRANT CREATE ON SCHEMA audit TO erp_auth;
-        ALTER FUNCTION audit.capture() OWNER TO CURRENT_USER;
-        REVOKE CREATE ON SCHEMA audit FROM erp_auth;
-        REVOKE INSERT ON audit.entries FROM erp_auth;
-        REVOKE EXECUTE ON FUNCTION audit.field_names(jsonb) FROM erp_auth;
-        REVOKE USAGE ON SCHEMA audit FROM erp_auth;
-        REVOKE USAGE ON SCHEMA erp FROM erp_auth;
+        RESET ROLE;
         """;
 
     /// <summary>

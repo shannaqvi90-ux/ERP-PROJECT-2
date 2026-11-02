@@ -109,7 +109,7 @@ const press = (code: string, key: string) =>
 
 describe("a record's history on its form", () => {
   it("shows the latest change under the heading: who, when, and each field's old and new value", async () => {
-    const calls = serve(["identity.users.read", "audit.log.read"]);
+    const calls = serve(["identity.users.read", "audit.history.read", "audit.log.read"]);
     const { container } = await show("en");
     const latest = container.querySelector('[data-testid="audit-latest"]')!;
     expect(latest.textContent).toContain("Changed by Noor Editor");
@@ -122,7 +122,7 @@ describe("a record's history on its form", () => {
   });
 
   it("opens the whole history with Alt+Y: every change, every field, names for ids, secrets hidden, older changes on demand, Escape closes", async () => {
-    const calls = serve(["identity.users.read", "audit.log.read"]);
+    const calls = serve(["identity.users.read", "audit.history.read", "audit.log.read"]);
     const { container } = await show("en");
     expect(container.querySelector('[data-testid="audit-history"]')).toBeNull();
     press("KeyY", "y");
@@ -162,7 +162,7 @@ describe("a record's history on its form", () => {
   });
 
   it("reads in Arabic: field names, the person's Arabic name, the change line", async () => {
-    serve(["identity.users.read", "audit.log.read"]);
+    serve(["identity.users.read", "audit.history.read", "audit.log.read"]);
     const { container } = await show("ar");
     const latest = container.querySelector('[data-testid="audit-latest"]')!;
     expect(latest.textContent).toContain("عدّله نور المحرر");
@@ -172,8 +172,19 @@ describe("a record's history on its form", () => {
     expect(container.querySelector('[data-testid="audit-history"] h3')!.textContent).toBe("السجل");
   });
 
-  it("is offered only to a user whose roles let them read the audit trail", async () => {
-    const calls = serve(["identity.users.read"]);
+  it("is offered to a user who may see histories, without the whole log; the link to the log needs the log", async () => {
+    serve(["identity.users.read", "audit.history.read"]);
+    const { container } = await show("en");
+    expect(container.querySelector('[data-testid="audit-latest"]')).not.toBeNull();
+    press("KeyY", "y");
+    await settle();
+    const panel = container.querySelector('[data-testid="audit-history"]')!;
+    expect(panel).not.toBeNull();
+    expect(panel.querySelector('a[href^="/audit/log"]')).toBeNull();
+  });
+
+  it("is offered only to a user whose roles let them see histories (the log alone is not that)", async () => {
+    const calls = serve(["identity.users.read", "audit.log.read"]);
     const { container } = await show("en");
     expect(container.querySelector('[data-record-panel="audit.history"]')).toBeNull();
     expect(container.querySelector('[data-testid="audit-latest"]')).toBeNull();
@@ -184,7 +195,7 @@ describe("a record's history on its form", () => {
   });
 
   it("is not offered for a record being created", async () => {
-    const calls = serve(["identity.users.read", "audit.log.read"]);
+    const calls = serve(["identity.users.read", "audit.history.read", "audit.log.read"]);
     const { container } = await show("en", null);
     expect(container.querySelector('[data-record-panel="audit.history"]')).toBeNull();
     expect(container.querySelector('[data-testid="audit-latest"]')).toBeNull();
