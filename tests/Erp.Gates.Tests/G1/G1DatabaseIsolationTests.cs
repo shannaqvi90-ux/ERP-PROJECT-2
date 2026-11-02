@@ -316,8 +316,15 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
             Assert.True(function.Owner == DatabaseRoles.AuthResolver, $"{function.Signature} must be owned by {DatabaseRoles.AuthResolver}, not {function.Owner}");
             Assert.True(function.Config.Contains("search_path=", StringComparison.Ordinal), $"{function.Signature} must pin search_path");
         }
-        Assert.True(functions.Count <= Ratchet.Max("g1.securityDefinerFunctions"),
-            $"{functions.Count} security-definer functions; ratchet maximum {Ratchet.Max("g1.securityDefinerFunctions")}");
+        // The reviewed lookups that read across tenants, and the trigger functions that only write the
+        // change that fired them (G1ReviewedLookupTests.Trigger_only_definer_functions_cannot_be_called),
+        // each under its own maximum.
+        var triggers = G1ReviewedLookupTests.TriggerOnly();
+        var lookups = functions.Count(f => !triggers.Contains(f.Signature.Split('(')[0]));
+        Assert.True(lookups <= Ratchet.Max("g1.securityDefinerFunctions"),
+            $"{lookups} security-definer lookup functions; ratchet maximum {Ratchet.Max("g1.securityDefinerFunctions")}");
+        Assert.True(functions.Count - lookups <= Ratchet.Max("g1.securityDefinerTriggerFunctions"),
+            $"{functions.Count - lookups} security-definer trigger functions; ratchet maximum {Ratchet.Max("g1.securityDefinerTriggerFunctions")}");
     }
 
     [Fact]

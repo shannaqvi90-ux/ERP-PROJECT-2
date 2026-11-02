@@ -51,7 +51,7 @@ public sealed class G1ReviewedLookupTests(GateFixture fixture)
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 
-    private static HashSet<string> TriggerOnly() =>
+    internal static HashSet<string> TriggerOnly() =>
         Repo.ReadReviewedList("tests/Gates/security-definer-trigger-only.txt")
             .Select(e => e.Entry.Split('(')[0]).ToHashSet(StringComparer.Ordinal);
 
