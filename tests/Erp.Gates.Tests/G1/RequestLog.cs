@@ -30,7 +30,7 @@ internal static class RequestLog
             var seconds = started.Elapsed.TotalSeconds;
             Record(label + " (FAILED)", request, seconds);
             throw new TimeoutException(
-                $"Request failed after {seconds:0.0} s: [{label}] {request.Method} {request.RequestUri?.OriginalString} " +
+                $"Request failed after {seconds:0.0} s: [{label}] {request.Method} {PathOf(request)} " +
                 $"({e.GetType().Name}: {e.Message}). Slowest requests seen before it:\n{Describe(20)}", e);
         }
     }
@@ -38,9 +38,12 @@ internal static class RequestLog
     public static Task<HttpResponseMessage> GetTimedAsync(this HttpClient client, string uri, string label) =>
         client.SendTimedAsync(new HttpRequestMessage(HttpMethod.Get, uri), label);
 
+    private static string PathOf(HttpRequestMessage request) =>
+        request.RequestUri is { IsAbsoluteUri: true } uri ? uri.PathAndQuery : request.RequestUri?.OriginalString ?? "";
+
     private static void Record(string label, HttpRequestMessage request, double seconds)
     {
-        var line = $"[{label}] {request.Method} {request.RequestUri?.OriginalString}";
+        var line = $"[{label}] {request.Method} {PathOf(request)}";
         lock (Lock)
         {
             if (Slowest.Count >= Kept && seconds <= Slowest[^1].Seconds)
