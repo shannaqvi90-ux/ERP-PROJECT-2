@@ -612,7 +612,7 @@ public static class ListAnswers
 
     internal static async Task<JsonElement?> GetAsync(HttpClient client, string uri)
     {
-        using var response = await client.GetAsync(uri);
+        using var response = await client.GetTimedAsync(uri, "list answer");
         if (!response.IsSuccessStatusCode)
         {
             return null;
