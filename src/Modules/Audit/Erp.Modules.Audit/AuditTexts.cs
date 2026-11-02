@@ -127,7 +127,7 @@ public sealed partial class AuditTexts
     private static partial Regex Instant();
 
     private const string ArabicDigits = "\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669";
-    private static readonly string[] Months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    private static readonly System.Collections.Immutable.ImmutableArray<string> Months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     /// <summary>A moment as the screens write it (web/src/kernel/format.ts): 4 Oct 2026, 5:31 PM in
     /// English; 04/10/2026، 5:31 م in Arabic, with the Arabic-Indic digits when the document asks.</summary>

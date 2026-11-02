@@ -233,9 +233,10 @@ internal static class KernelSql
     /// add a made-up row (any actor, any time). A trigger function cannot be called as a statement,
     /// and the application role holds no EXECUTE on it, so it cannot attach it to a table of its own
     /// either. The row's tenant, actor, time and the rest are written exactly as before: the actor
-    /// and correlation id come from the transaction's settings, the tenant from the changed row, and
-    /// the tenant policy still checks the row against the bound tenant (erp_auth is not the table's
-    /// owner and has no BYPASSRLS).
+    /// and correlation id come from the transaction's settings and the tenant from the changed row
+    /// (for work done with a tenant bound the changed table's own policy has judged that tenant;
+    /// the trail's insert policy for erp_auth, which cannot log in, lets the trigger write it as it
+    /// did for a superuser before).
     /// </summary>
     public const string AuditTamperEvidence = """
         GRANT USAGE ON SCHEMA erp TO erp_auth;
@@ -247,6 +248,9 @@ internal static class KernelSql
         ALTER FUNCTION audit.capture() OWNER TO erp_auth;
         REVOKE CREATE ON SCHEMA audit FROM erp_auth;
         REVOKE INSERT ON audit.entries FROM erp_app;
+        -- The trigger function writes the row of the change that fired it, for the tenant of that row
+        -- (the row security of the changed table has already judged the change); nobody else holds INSERT.
+        CREATE POLICY audit_trigger_insert ON audit.entries AS PERMISSIVE FOR INSERT TO erp_auth WITH CHECK (true);
         -- Creating a table's audit trigger (every tenant table's migration) needs EXECUTE on the function;
         -- the migrations' role holds it, as its owner no longer does.
         SET LOCAL ROLE erp_auth;
@@ -258,6 +262,7 @@ internal static class KernelSql
     /// owner can no longer be taken back without that role's own right to hand it over); it runs as its
     /// caller again, and the application role holds INSERT again.</summary>
     public const string AuditTamperEvidenceDown = """
+        DROP POLICY IF EXISTS audit_trigger_insert ON audit.entries;
         GRANT INSERT ON audit.entries TO erp_app;
         SET LOCAL ROLE erp_auth;
         ALTER FUNCTION audit.capture() SECURITY INVOKER;

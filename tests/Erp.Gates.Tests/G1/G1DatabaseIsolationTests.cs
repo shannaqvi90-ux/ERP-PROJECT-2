@@ -129,7 +129,11 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
                 {
                     problems.Add($"{table}: unreviewed policy '{key}' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by {DatabaseRoles.AuthResolver})");
                 }
-                if (other.Command != "r" || other.Roles is not [DatabaseRoles.AuthResolver])
+                // The audit trail's one writer (p07 tamper evidence): the capture trigger's owner inserts the
+                // row of the change that fired it, for the tenant of the changed row.
+                var triggerWriter = table.Qualified == "audit.entries" && other is { Name: "audit_trigger_insert", Command: "a", Permissive: true, Using: null, Check: "true" }
+                                    && other.Roles is [DatabaseRoles.AuthResolver];
+                if (!triggerWriter && (other.Command != "r" || other.Roles is not [DatabaseRoles.AuthResolver]))
                 {
                     problems.Add($"{table}: extra policy {other.Name} may only grant SELECT to {DatabaseRoles.AuthResolver}");
                 }

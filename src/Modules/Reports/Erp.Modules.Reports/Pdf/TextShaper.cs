@@ -382,7 +382,7 @@ public sealed class TextShaper(PdfFonts fonts)
         return false;
     }
 
-    private static readonly string[] SingleCharacters = Enumerable.Range(0, 0x800).Select(c => ((char)c).ToString()).ToArray();
+    private static readonly System.Collections.Immutable.ImmutableArray<string> SingleCharacters = [.. Enumerable.Range(0, 0x800).Select(c => ((char)c).ToString())];
 
     /// <summary>The characters from <paramref name="start"/> to <paramref name="end"/>; one character is a
     /// string kept for all runs (a document shapes millions of glyphs, nearly every one a single letter).</summary>
