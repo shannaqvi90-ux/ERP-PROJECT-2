@@ -135,6 +135,36 @@ public sealed class RenderingTests(FontsFixture fixture) : IClassFixture<FontsFi
         Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5), $"{clock.Elapsed.TotalSeconds:F1} s");
     }
 
+    /// <summary>Line breaking shapes a line or two per line of the cell, not one string per word of it
+    /// (the audit log's change texts, many words long, took minutes to print): the work is bounded by
+    /// the lines laid out and the distinct words, whatever the order of the words.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Wrapping_shapes_about_a_line_or_two_per_line_not_a_string_per_word(bool arabic)
+    {
+        var shaper = new TextShaper(fixture.Fonts);
+        var text = arabic
+            ? string.Join("؛ ", Enumerable.Range(1, 40).Select(i => $"الاسم: من القيمة{i} إلى القيمة{i + 1}"))
+            : string.Join("; ", Enumerable.Range(1, 40).Select(i => $"Name: from value{i} to value{i + 1}"));
+        var words = text.Split(' ').Distinct().Count();
+        var lines = shaper.Wrap(text, 7.5m, false, arabic, 200m, maxLines: 12);
+        Assert.Equal(12, lines.Count);
+        Assert.All(lines, l => Assert.True(l.Width <= 200.5m && !l.IsEmpty, $"{l.Width}"));
+        // Distinct words (and the space), then at most three whole-line shapings per line.
+        Assert.True(shaper.Shaped <= words + 1 + 12 * 3 + 6, $"{shaper.Shaped} strings shaped for {words} distinct words and {lines.Count} lines");
+        // Each line is as full as it can be: the next word would not have fitted.
+        var all = text.Split(' ');
+        var used = 0;
+        foreach (var line in lines.Take(11))
+        {
+            var count = line.Runs.SelectMany(r => r.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries)).Count();
+            used += count;
+            var longer = shaper.Shape(string.Join(' ', all.Skip(used - count).Take(count + 1)), 7.5m, false, arabic);
+            Assert.True(longer.Width > 200m, $"line of {count} words could take another ({longer.Width})");
+        }
+    }
+
     [Fact]
     public void A_line_narrower_than_one_character_still_ends()
     {

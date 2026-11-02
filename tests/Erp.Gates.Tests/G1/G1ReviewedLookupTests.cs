@@ -21,10 +21,15 @@ public sealed class G1ReviewedLookupTests(GateFixture fixture)
     [Fact]
     public void Every_reviewed_function_has_reviewed_callers_and_sources()
     {
-        var functions = Repo.ReadReviewedList("tests/Gates/security-definer-allowlist.txt")
+        var all = Repo.ReadReviewedList("tests/Gates/security-definer-allowlist.txt")
             .Select(e => e.Entry.Split('(')[0]).ToHashSet(StringComparer.Ordinal);
+        // Trigger functions have no caller to review: they are checked in the database instead.
+        var triggerOnly = TriggerOnly();
+        var functions = all.Where(f => !triggerOnly.Contains(f)).ToHashSet(StringComparer.Ordinal);
         var entries = ReviewedCallers.Read();
         var problems = new List<string>();
+        problems.AddRange(triggerOnly.Where(f => !all.Contains(f)).Select(f => $"{f}: trigger-only but not a reviewed security-definer function"));
+        problems.AddRange(entries.Where(e => triggerOnly.Contains(e.Function)).Select(e => $"{e.Function}: a trigger-only function has no reviewed {e.Kind}"));
         problems.AddRange(entries.Where(e => string.IsNullOrWhiteSpace(e.Reason)).Select(e => $"{e.Function} {e.Kind} {e.Value}: needs a reason"));
         problems.AddRange(entries.Where(e => !functions.Contains(e.Function)).Select(e => $"{e.Function}: not a reviewed security-definer function"));
         foreach (var function in functions)
@@ -44,6 +49,32 @@ public sealed class G1ReviewedLookupTests(GateFixture fixture)
             if (!File.Exists(Repo.PathOf(source.Value.Split('/')))) problems.Add($"{source.Function}: source file {source.Value} does not exist");
         }
         Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
+    private static HashSet<string> TriggerOnly() =>
+        Repo.ReadReviewedList("tests/Gates/security-definer-trigger-only.txt")
+            .Select(e => e.Entry.Split('(')[0]).ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>A SECURITY DEFINER function that is not a cross-tenant lookup must be a trigger function
+    /// (listed in security-definer-trigger-only.txt): it cannot be called as a statement, and the
+    /// application roles cannot attach it to a table of their own.</summary>
+    [Fact]
+    public async Task Trigger_only_definer_functions_cannot_be_called()
+    {
+        var reviewed = Repo.ReadReviewedList("tests/Gates/security-definer-trigger-only.txt");
+        Assert.All(reviewed, r => Assert.False(string.IsNullOrWhiteSpace(r.Reason), $"{r.Entry} needs a reason"));
+        await using var admin = await Env.OpenAdminAsync();
+        var actual = await DbCatalog.ReadAsync(admin, $"""
+            SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', p.prorettype = 'pg_catalog.trigger'::regtype,
+                   has_function_privilege('{DatabaseRoles.App}', p.oid, 'EXECUTE'), has_function_privilege('PUBLIC', p.oid, 'EXECUTE')
+              FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+             WHERE p.prosecdef AND p.prorettype = 'pg_catalog.trigger'::regtype AND {DbCatalog.UserSchemaFilter}
+             ORDER BY 1
+            """, r => (Signature: r.GetString(0), IsTrigger: r.GetBoolean(1), AppExecutes: r.GetBoolean(2), PublicExecutes: r.GetBoolean(3)));
+        // Every definer trigger function is reviewed here, and every reviewed one exists.
+        Assert.Equal(reviewed.Select(r => r.Entry).Order(StringComparer.Ordinal), actual.Select(a => a.Signature).Order(StringComparer.Ordinal));
+        Assert.NotEmpty(actual);
+        Assert.All(actual, a => Assert.False(a.AppExecutes || a.PublicExecutes, $"{a.Signature} must not be executable by {DatabaseRoles.App} or PUBLIC"));
     }
 
     [Fact]

@@ -547,6 +547,14 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         await ExpectDenied(app, tx, problems, "dropping the audit company policy", "DROP POLICY audit_company_scope ON audit.entries");
         await ExpectDenied(app, tx, problems, "turning off row-level security on the trail", "ALTER TABLE audit.entries DISABLE ROW LEVEL SECURITY");
         await ExpectDenied(app, tx, problems, "skipping triggers for the session", "SET session_replication_role = replica");
+        // p07 tamper evidence: the trigger is the only writer, so the application cannot add a made-up
+        // row to its own tenant's trail (any actor, any time), whether by a statement or by copying rows.
+        await ExpectDenied(app, tx, problems, "inserting a made-up audit row for its own tenant",
+            $"INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id) " +
+            $"VALUES ('{Env.TenantA.Id}', now() - interval '1 year', gen_random_uuid(), 'user', 'identity', 'roles', gen_random_uuid(), 'update', '{{}}'::jsonb, 1)");
+        await ExpectDenied(app, tx, problems, "copying audit rows back into the trail",
+            "INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id) " +
+            "SELECT tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id FROM audit.entries LIMIT 1");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 

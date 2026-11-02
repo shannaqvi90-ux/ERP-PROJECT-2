@@ -1,0 +1,6 @@
+# SECURITY DEFINER functions that are trigger functions: they run only as the trigger of a table and
+# cannot be called as a statement, so they have no caller or source file to review the way the
+# cross-tenant lookups in security-definer-callers.txt have. Each must be listed in
+# security-definer-allowlist.txt too, return trigger, and be executable by no application role
+# (G1ReviewedLookupTests.Trigger_only_definer_functions_cannot_be_called). Each line needs a reason after '#'.
+audit.capture()  # The audit trail's only writer: a row trigger on every audited table.
