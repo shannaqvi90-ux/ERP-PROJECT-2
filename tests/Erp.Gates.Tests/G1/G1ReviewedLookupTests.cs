@@ -66,7 +66,7 @@ public sealed class G1ReviewedLookupTests(GateFixture fixture)
         await using var admin = await Env.OpenAdminAsync();
         var actual = await DbCatalog.ReadAsync(admin, $"""
             SELECT n.nspname || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', p.prorettype = 'pg_catalog.trigger'::regtype,
-                   has_function_privilege('{DatabaseRoles.App}', p.oid, 'EXECUTE'), has_function_privilege('PUBLIC', p.oid, 'EXECUTE')
+                   has_function_privilege('{DatabaseRoles.App}', p.oid, 'EXECUTE'), (p.proacl IS NULL OR EXISTS (SELECT 1 FROM aclexplode(p.proacl) a WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE'))
               FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
              WHERE p.prosecdef AND p.prorettype = 'pg_catalog.trigger'::regtype AND {DbCatalog.UserSchemaFilter}
              ORDER BY 1
