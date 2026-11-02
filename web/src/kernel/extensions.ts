@@ -117,12 +117,42 @@ export function isReservedGoToCode(code: string): boolean {
   return code === "KeyG" || code === "KeyH";
 }
 
+/** What a record panel is told about the record form it sits in. */
+export type RecordPanelProps = {
+  /** The kind of record (the server's audited record type, `schema.table`). */
+  type: string;
+  id: string;
+  /** Changes every time the form saves the record (a panel that shows its history reads it again). */
+  revision: number;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
+
+/**
+ * A panel every record form offers for the record it shows (p07: the record's history; later the
+ * record's attachments, approvals ...). `summary` renders under the form's heading, a short line
+ * that may open the panel; `panel` renders below the form while open. The form's toolbar carries a
+ * button that opens and closes it, and `chord` does the same from the keyboard. A form names the
+ * kind of record it shows (RecordForm's `record`); a new record has no panels.
+ */
+export type RecordPanelItem = {
+  key: string;
+  order?: number;
+  permission?: string;
+  /** String key of the toolbar button and of its shortcut's name. */
+  labelKey: string;
+  chord?: string;
+  summary?: ComponentType<RecordPanelProps>;
+  panel: ComponentType<RecordPanelProps>;
+};
+
 export type ModuleExtensions = {
   topbar?: SlotItem[];
   status?: SlotItem[];
   palette?: PaletteSource[];
   actions?: ModuleAction[];
   goTo?: GoToKey[];
+  record?: RecordPanelItem[];
 };
 
 type ExtensionModule = { extensions?: ModuleExtensions };
@@ -130,7 +160,7 @@ type ExtensionModule = { extensions?: ModuleExtensions };
 const found = import.meta.glob<ExtensionModule>("../modules/*/extensions.{ts,tsx}", { eager: true });
 
 export function collectExtensions(sources: Record<string, ExtensionModule>): Required<ModuleExtensions> {
-  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [], goTo: [] };
+  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [], goTo: [], record: [] };
   const goToCodes = new Map<string, string>();
   const seen = new Set<string>();
   for (const [path, module] of Object.entries(sources).sort(([a], [b]) => a.localeCompare(b))) {
@@ -148,6 +178,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     all.topbar.push(...(ext.topbar ?? []));
     all.status.push(...(ext.status ?? []));
     all.palette.push(...(ext.palette ?? []));
+    all.record.push(...(ext.record ?? []));
     for (const action of ext.actions ?? []) {
       if (!action.permission) throw new Error(`Action "${action.key}" of module ${name} names no permission`);
       if ((action.pick || action.then) && !action.command) throw new Error(`Action "${action.key}" of module ${name} asks for a record or a second command but runs no command`);
@@ -167,6 +198,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
   const byOrder = (a: SlotItem, b: SlotItem) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key);
   all.topbar.sort(byOrder);
   all.status.sort(byOrder);
+  all.record.sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key));
   return all;
 }
 

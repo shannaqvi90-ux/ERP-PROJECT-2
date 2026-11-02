@@ -129,6 +129,7 @@ function CurrencyForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Cu
   return (
     <RecordForm
       form={form}
+      record={{ type: "currency.currencies", id }}
       label={t("currency.currency.form")}
       title={currency ? currency.code : ""}
       subtitle={name}

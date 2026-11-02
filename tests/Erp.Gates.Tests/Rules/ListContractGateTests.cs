@@ -82,12 +82,13 @@ public sealed class ListContractGateTests(GateFixture fixture)
         var checks = 0;
         foreach (var list in Catalog.Lists)
         {
+            var window = await WindowAsync(admin, list);
             foreach (var column in list.Columns.Where(c => c.Sortable))
             {
                 foreach (var descending in new[] { false, true })
                 {
                     var sort = (descending ? "-" : "") + column.Key;
-                    var page = await GetAsync(admin, $"{list.Endpoint}?take=200&sort={Uri.EscapeDataString(sort)}");
+                    var page = await GetAsync(admin, Windowed($"{list.Endpoint}?take=200&sort={Uri.EscapeDataString(sort)}", window));
                     var rows = Items(page);
                     if (page.GetProperty("total").GetInt32() > rows.Count)
                     {
@@ -104,7 +105,7 @@ public sealed class ListContractGateTests(GateFixture fixture)
                     var pages = 0;
                     do
                     {
-                        var slice = await GetAsync(admin, $"{list.Endpoint}?take=5&sort={Uri.EscapeDataString(sort)}" + (next is null ? "" : $"&after={Uri.EscapeDataString(next)}"));
+                        var slice = await GetAsync(admin, Windowed($"{list.Endpoint}?take=5&sort={Uri.EscapeDataString(sort)}" + (next is null ? "" : $"&after={Uri.EscapeDataString(next)}"), window));
                         walked.AddRange(Items(slice).Select(r => r.GetProperty("id").GetString()!));
                         next = slice.GetProperty("next").ValueKind == JsonValueKind.String ? slice.GetProperty("next").GetString() : null;
                     }
@@ -115,8 +116,8 @@ public sealed class ListContractGateTests(GateFixture fixture)
                     }
                     checks++;
                 }
-                var up = Items(await GetAsync(admin, $"{list.Endpoint}?take=200&sort={column.Key}")).Select(r => r.GetProperty(column.Key).ToString()).ToList();
-                var down = Items(await GetAsync(admin, $"{list.Endpoint}?take=200&sort=-{column.Key}")).Select(r => r.GetProperty(column.Key).ToString()).ToList();
+                var up = Items(await GetAsync(admin, Windowed($"{list.Endpoint}?take=200&sort={column.Key}", window))).Select(r => r.GetProperty(column.Key).ToString()).ToList();
+                var down = Items(await GetAsync(admin, Windowed($"{list.Endpoint}?take=200&sort=-{column.Key}", window))).Select(r => r.GetProperty(column.Key).ToString()).ToList();
                 if (up.Distinct().Count() > 1 && up.SequenceEqual(down))
                 {
                     problems.Add($"list '{list.Key}': sort={column.Key} and sort=-{column.Key} return the same order; the sort is ignored");
@@ -142,7 +143,8 @@ public sealed class ListContractGateTests(GateFixture fixture)
         var checks = 0;
         foreach (var list in Catalog.Lists)
         {
-            var all = Items(await GetAsync(admin, $"{list.Endpoint}?take=200"));
+            var window = await WindowAsync(admin, list);
+            var all = Items(await GetAsync(admin, Windowed($"{list.Endpoint}?take=200", window)));
             var total = all.Count;
             foreach (var column in list.Columns.Where(c => c.Filterable))
             {
@@ -151,7 +153,7 @@ public sealed class ListContractGateTests(GateFixture fixture)
                 async Task<List<JsonElement>> Filter(string filter)
                 {
                     checks++;
-                    return Items(await GetAsync(admin, $"{list.Endpoint}?take=200&filter={Uri.EscapeDataString(filter)}"));
+                    return Items(await GetAsync(admin, Windowed($"{list.Endpoint}?take=200&filter={Uri.EscapeDataString(filter)}", window)));
                 }
                 void Expect(string filter, List<JsonElement> rows, Func<JsonElement, bool> holds, int? count = null)
                 {
@@ -187,12 +189,29 @@ public sealed class ListContractGateTests(GateFixture fixture)
                         break;
                     }
                     case ListColumnType.Choice:
+                    {
+                        // A choice column holding several values per row (an array, the audit log's
+                        // fields): "eq" selects exactly the rows holding the value, "ne" the others.
+                        static bool Holds(JsonElement v, string value) => v.ValueKind == JsonValueKind.Array
+                            ? v.EnumerateArray().Any(i => i.GetString() == value)
+                            : v.GetString() == value;
+                        var several = present.Any(v => v.ValueKind == JsonValueKind.Array);
                         foreach (var choice in column.Choices ?? [])
                         {
                             Expect($"{column.Key} eq '{choice.Value}'", await Filter($"{column.Key} eq {ListFilterText.Quote(choice.Value)}"),
-                                v => v.GetString() == choice.Value, present.Count(v => v.GetString() == choice.Value));
+                                v => Holds(v, choice.Value), present.Count(v => Holds(v, choice.Value)));
+                        }
+                        if (several)
+                        {
+                            var held = present.SelectMany(v => v.EnumerateArray().Select(i => i.GetString()!)).GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key;
+                            Expect($"{column.Key} ne '{held}'", await Filter($"{column.Key} ne {ListFilterText.Quote(held)}"),
+                                v => v.ValueKind == JsonValueKind.Null || !Holds(v, held), all.Count - present.Count(v => Holds(v, held)));
+                            var pair = present.SelectMany(v => v.EnumerateArray().Select(i => i.GetString()!)).Distinct().Take(2).ToList();
+                            Expect($"{column.Key} in (…)", await Filter($"{column.Key} in ({string.Join(", ", pair.Select(ListFilterText.Quote))})"),
+                                v => pair.Any(p => Holds(v, p)), present.Count(v => pair.Any(p => Holds(v, p))));
                         }
                         break;
+                    }
                     case ListColumnType.Boolean:
                         foreach (var flag in new[] { true, false })
                         {
@@ -246,7 +265,8 @@ public sealed class ListContractGateTests(GateFixture fixture)
         var checks = 0;
         foreach (var list in Catalog.Lists)
         {
-            var all = Items(await GetAsync(admin, $"{list.Endpoint}?take=200"));
+            var window = await WindowAsync(admin, list);
+            var all = Items(await GetAsync(admin, Windowed($"{list.Endpoint}?take=200", window)));
             foreach (var field in list.SearchFields)
             {
                 var row = all.FirstOrDefault(r => r.GetProperty(field).ValueKind == JsonValueKind.String &&
@@ -258,7 +278,7 @@ public sealed class ListContractGateTests(GateFixture fixture)
                 }
                 var words = row.GetProperty(field).GetString()!.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length >= 3).Take(2).ToList();
                 var search = string.Join(' ', words.Select(w => w.ToUpperInvariant()).Reverse());
-                var found = Items(await GetAsync(admin, $"{list.Endpoint}?take=200&search={Uri.EscapeDataString(search)}"));
+                var found = Items(await GetAsync(admin, Windowed($"{list.Endpoint}?take=200&search={Uri.EscapeDataString(search)}", window)));
                 if (found.All(r => r.GetProperty("id").GetString() != row.GetProperty("id").GetString()))
                 {
                     problems.Add($"list '{list.Key}': searching '{search}' does not find the row whose {field} holds those words");
@@ -280,7 +300,7 @@ public sealed class ListContractGateTests(GateFixture fixture)
             }
             foreach (var column in list.Columns.Where(c => c.Groupable))
             {
-                var page = await GetAsync(admin, $"{list.Endpoint}?take=1&groupBy={column.Key}");
+                var page = await GetAsync(admin, Windowed($"{list.Endpoint}?take=1&groupBy={column.Key}", window));
                 var groups = page.GetProperty("groups").EnumerateArray().ToList();
                 var counted = groups.Sum(g => g.GetProperty("count").GetInt32());
                 if (counted != page.GetProperty("total").GetInt32())
@@ -310,6 +330,48 @@ public sealed class ListContractGateTests(GateFixture fixture)
         }
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(checks >= Ratchet.Min("rules.listSearchAndGroupChecks"), $"{checks} search and grouping checks; ratchet minimum {Ratchet.Min("rules.listSearchAndGroupChecks")}");
+    }
+
+    /// <summary>
+    /// A list that grows while the gate reads it (the audit log: every sign-in of the gate suite's
+    /// other tests adds a row) is judged on a fixed window of its rows: those the list held, at most
+    /// 150 of the newest, when the check began, by its default sort's time column (a list newest
+    /// first by a filterable date and time). Every row read for a check is then one of the same rows,
+    /// whatever was added meanwhile; a list that does not grow holds the same rows in the window.
+    /// Null for a list without such a sort (read whole, as before).
+    /// </summary>
+    private static async Task<string?> WindowAsync(HttpClient admin, ListDefinition list)
+    {
+        if (list.DefaultSort is not { } sort || !sort.StartsWith('-') || list.Column(sort[1..].Split(',')[0]) is not { Type: ListColumnType.DateTime, Filterable: true } column)
+        {
+            return null;
+        }
+        var rows = Items(await GetAsync(admin, $"{list.Endpoint}?take=150"));
+        var times = rows.Select(r => r.GetProperty(column.Key)).Where(v => v.ValueKind == JsonValueKind.String).Select(v => v.GetString()!).ToList();
+        if (times.Count == 0)
+        {
+            return null;
+        }
+        return $"{column.Key} ge {ListFilterText.Quote(times[^1])} and {column.Key} le {ListFilterText.Quote(times[0])}";
+    }
+
+    /// <summary>The request read inside the list's window (its filter, if any, and the window).</summary>
+    private static string Windowed(string uri, string? window)
+    {
+        if (window is null)
+        {
+            return uri;
+        }
+        const string marker = "&filter=";
+        var at = uri.IndexOf(marker, StringComparison.Ordinal);
+        if (at < 0)
+        {
+            return $"{uri}&filter={Uri.EscapeDataString(window)}";
+        }
+        var start = at + marker.Length;
+        var end = uri.IndexOf('&', start);
+        var filter = Uri.UnescapeDataString(end < 0 ? uri[start..] : uri[start..end]);
+        return uri[..start] + Uri.EscapeDataString($"({filter}) and ({window})") + (end < 0 ? "" : uri[end..]);
     }
 
     private static async Task ExpectRefusedAsync(HttpClient client, string uri, string parameter, ListDefinition list, List<string> problems)

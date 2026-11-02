@@ -161,6 +161,7 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
   return (
     <RecordForm
       form={form}
+      record={{ type: "numbering.sequences", id }}
       label={t("numbering.sequence.form")}
       title={name}
       subtitle={sequence ? [sequence.companyCode, company].filter(Boolean).join(" · ") : undefined}

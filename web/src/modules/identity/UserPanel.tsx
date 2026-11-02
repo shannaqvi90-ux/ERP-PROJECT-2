@@ -203,7 +203,7 @@ export function NewUserForm({ roles, onCreated, onClose }: { roles: Role[]; onCr
   const canGrantEverywhere = (role: Role) => role.permissions.every((p) => everywhere.has(p));
 
   return (
-    <RecordForm form={form} title={t("identity.users.new")} onClose={onClose} saveLabel={t("identity.form.create")}>
+    <RecordForm form={form} record={{ type: "identity.users", id: null }} title={t("identity.users.new")} onClose={onClose} saveLabel={t("identity.form.create")}>
       <div className="id-form">
         <FormSection columns={false}>
           <div className="field" data-field="email">
@@ -536,7 +536,7 @@ export function UserDetail({
   });
 
   if (!user) {
-    return <RecordForm form={form} title="" onClose={onClose}>{null}</RecordForm>;
+    return <RecordForm form={form} record={{ type: "identity.users", id: userId }} title="" onClose={onClose}>{null}</RecordForm>;
   }
 
   const bind = form.bind;
@@ -620,6 +620,7 @@ export function UserDetail({
     <div className="id-form">
       <RecordForm
         form={form}
+        record={{ type: "identity.users", id: userId }}
         title={userName(user, language)}
         subtitle={
           <>

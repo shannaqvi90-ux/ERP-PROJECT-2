@@ -1,3 +1,4 @@
+using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Lists;
@@ -52,6 +53,16 @@ public sealed class IdentityModule : ErpModule
         module.Menu(new MenuEntry("identity.me", "identity.menu.me", "/identity/me", IdentityPermissions.ProfileUpdate, Order: 990, Group: "personal"));
         module.List(UsersList.Create());
         module.List(RolesList.Create());
+        // The audit trail shows these records' history to whoever may read them.
+        module.AuditedRecord(new AuditRecordType("identity.users", "identity.record.user", IdentityPermissions.UsersRead, "/identity/users/{id}"));
+        module.AuditedRecord(new AuditRecordType("identity.roles", "identity.record.role", IdentityPermissions.RolesRead, "/identity/roles/{id}"));
+        module.AuditedRecord(new AuditRecordType("identity.user_roles", "identity.record.userRole", IdentityPermissions.UsersRead));
+        module.AuditedRecord(new AuditRecordType("identity.user_company_roles", "identity.record.userCompanyRole", IdentityPermissions.UsersRead));
+        // A credential's id is its user's: its history (password set, changed, expired) opens with the user.
+        module.AuditedRecord(new AuditRecordType("identity.user_credentials", "identity.record.credential", IdentityPermissions.UsersRead, "/identity/users/{id}"));
+        // Sessions and passkeys tell where, from what and how a person signs in: the sign-in history's permission.
+        module.AuditedRecord(new AuditRecordType("identity.sessions", "identity.record.session", IdentityPermissions.SignInsRead));
+        module.AuditedRecord(new AuditRecordType("identity.passkeys", "identity.record.passkey", IdentityPermissions.SignInsRead));
         // Reports print both lists exactly as their screens show them, and run users by role.
         module.ListRows(UsersList.Key, async (services, request, http, cancellationToken) =>
             (await UserEndpoints.PageAsync(services.GetRequiredService<IdentityDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));

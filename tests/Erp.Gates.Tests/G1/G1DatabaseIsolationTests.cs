@@ -102,7 +102,25 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
             // a user's own rows read-only outside the scope (exact command and expression there),
             // and the RESTRICTIVE company_write_insert, company_write_update and company_write_delete
             // policies of the company write permission (exactly, by G2CompanyWritePolicyTests).
-            foreach (var other in policies.Where(p => p.Name != "tenant_isolation" &&
+            // The audit trail's company layer (p07): on audit.entries, exactly one RESTRICTIVE
+            // SELECT policy audit_company_scope to PUBLIC with exactly the reviewed expression (a row
+            // about a record of a company is read only inside the reader's company scope), and no
+            // other table may carry a policy by that name.
+            var auditScope = policies.Where(p => p.Name == AuditCompanyScopePolicy).ToList();
+            if (table.Qualified == "audit.entries")
+            {
+                if (auditScope is not [var a] || a.Permissive || a.Command != "r" || a.Roles is not ["public"] ||
+                    a.Using != KernelSql.AuditCompanyScopeExpression || a.Check is not null)
+                {
+                    problems.Add($"{table}: needs exactly one RESTRICTIVE FOR SELECT TO PUBLIC policy {AuditCompanyScopePolicy} USING {KernelSql.AuditCompanyScopeExpression} " +
+                                 $"(found {string.Join("; ", auditScope.Select(p => $"{p.Command} {p.Permissive} [{string.Join(",", p.Roles)}] {p.Using} / {p.Check}"))})");
+                }
+            }
+            else if (auditScope.Count > 0)
+            {
+                problems.Add($"{table}: the {AuditCompanyScopePolicy} policy belongs to audit.entries only");
+            }
+            foreach (var other in policies.Where(p => p.Name != "tenant_isolation" && p.Name != AuditCompanyScopePolicy &&
                                                       !(p.Name is "company_scope" or "company_scope_update" or "company_scope_delete"
                                                           or "company_write_insert" or "company_write_update" or "company_write_delete" && !p.Permissive)))
             {
@@ -119,6 +137,9 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         }
         return (problems, tables.Count);
     }
+
+    /// <summary>The audit trail's company layer (see <see cref="RowLevelSecurityProblemsAsync"/>).</summary>
+    public const string AuditCompanyScopePolicy = "audit_company_scope";
 
     [Fact]
     public async Task Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can()
@@ -518,6 +539,14 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         await ExpectDenied(app, tx, problems, "updating audit entries", "UPDATE audit.entries SET action = 'update'");
         await ExpectDenied(app, tx, problems, "deleting audit entries", "DELETE FROM audit.entries");
         await ExpectDenied(app, tx, problems, "truncating audit entries", "TRUNCATE audit.entries");
+        // p07: nor can it stop the trail recording, or change how it records (it owns none of it).
+        await ExpectDenied(app, tx, problems, "disabling a table's audit trigger", "ALTER TABLE identity.roles DISABLE TRIGGER audit_capture");
+        await ExpectDenied(app, tx, problems, "dropping a table's audit trigger", "DROP TRIGGER audit_capture ON identity.roles");
+        await ExpectDenied(app, tx, problems, "replacing the capture function",
+            "CREATE OR REPLACE FUNCTION audit.capture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$");
+        await ExpectDenied(app, tx, problems, "dropping the audit company policy", "DROP POLICY audit_company_scope ON audit.entries");
+        await ExpectDenied(app, tx, problems, "turning off row-level security on the trail", "ALTER TABLE audit.entries DISABLE ROW LEVEL SECURITY");
+        await ExpectDenied(app, tx, problems, "skipping triggers for the session", "SET session_replication_role = replica");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 

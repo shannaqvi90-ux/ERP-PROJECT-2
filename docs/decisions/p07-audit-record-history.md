@@ -1,0 +1,6 @@
+
+## Fixer 3 (wave serial-12d): merge with p10 numbering, verify runs 14 and 15
+
+Merged the integration branch (p10-numbering r1) into piece/p07-audit. Conflicts were additive (Host project references, permission and read-permission gate lists, sign-in navigation tests, ratchet minimums: the higher of each). Numbering's three audited tables are now registered in NumberingModule.cs: numbering.sequences (read with numbering.sequences.read, route /numbering/sequences/{id}), numbering.counters and numbering.issued_numbers (same read permission, no route: no screen). Label keys numbering.record.* in English and Arabic; 17 audit.field.* names added in both languages; the sequence form names its record. Contacts (p16) was not on the integration branch, so nothing was added for it.
+
+Verify run 14 (.verify-failed/20261030T014249Z-98727): .NET and e2e passed; the web stage failed with 177 unit-test timeouts (5 s limit) while the machine was at load above 50 with two other verifies; the same 634 tests pass alone in 72 s. Verify run 15 (.verify-failed/20261030T090411Z-232255): .NET 835, web 634, e2e 133, compare 488, build 6 all passed; the only failure is verify.cpuSeconds 15,183 s (dotnet 11,956, web 2,480, e2e 688, timing 60) against 10,600, on a busy machine (load up to 53.3 over the run). An integrator's alone run decides (owner decision #31).

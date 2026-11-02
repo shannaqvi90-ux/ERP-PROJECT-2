@@ -36,7 +36,7 @@ function ThingForm({ canEdit = true, onClose = () => undefined, nav }: { canEdit
     save: (draft, thing) => api<Thing>("PUT", "/api/things/t1", { ...draft, version: thing?.version }),
   }, "t1");
   return (
-    <RecordForm form={form} title={form.record?.name ?? ""} onClose={onClose} nav={nav} document={{ report: "test.thing", parameter: "thing", id: "t1" }}>
+    <RecordForm record={{ type: "test.things", id: "t1" }} panels={[]} form={form} title={form.record?.name ?? ""} onClose={onClose} nav={nav} document={{ report: "test.thing", parameter: "thing", id: "t1" }}>
       <FormSection title="Main">
         <TextField field={form.bind("name")} label="Name" />
         <DecimalField field={form.bind("amount")} label="Amount" scale={2} />
@@ -233,7 +233,7 @@ describe("the record form", () => {
         save: (draft, t) => api<Thing>("PUT", "/api/things/t1", { ...draft, version: t?.version }),
       }, "t1");
       return (
-        <RecordForm form={form} title="Desk">
+        <RecordForm record={{ type: "test.things", id: "t1" }} panels={[]} form={form} title="Desk">
           <FormSection title="Main">
             <TextField field={form.bind("name")} label="Name" />
             <TextAreaField field={form.bind("amount")} label="Notes" />
@@ -316,7 +316,7 @@ describe("the record form", () => {
       }, id);
       return (
         <>
-          <RecordForm form={form} title={form.record?.name ?? "New"} after={form.record && <input name="next-step" />}>
+          <RecordForm record={{ type: "test.things", id: "t1" }} panels={[]} form={form} title={form.record?.name ?? "New"} after={form.record && <input name="next-step" />}>
             <FormSection title="Main">
               <TextField field={form.bind("name")} label="Name" />
             </FormSection>
@@ -365,7 +365,7 @@ describe("a record changed elsewhere in fields the form shows (rebase)", () => {
     }, "t1");
     rebase = form.rebase;
     return (
-      <RecordForm form={form} title={form.record?.name ?? ""} onClose={() => undefined}>
+      <RecordForm record={{ type: "test.things", id: "t1" }} panels={[]} form={form} title={form.record?.name ?? ""} onClose={() => undefined}>
         <FormSection title="Main">
           <TextField field={form.bind("name")} label="Name" />
           <DecimalField field={form.bind("amount")} label="Amount" scale={2} />
@@ -410,7 +410,7 @@ describe("a record just created", () => {
       onSaved: (saved) => setId(saved.id),
     }, id);
     return (
-      <RecordForm form={form} title={form.record?.name ?? "New"} onClose={() => undefined} after={form.record && <input aria-label="Below" defaultValue="Desk - " />}>
+      <RecordForm record={{ type: "test.things", id: "t1" }} panels={[]} form={form} title={form.record?.name ?? "New"} onClose={() => undefined} after={form.record && <input aria-label="Below" defaultValue="Desk - " />}>
         <FormSection title="Main">
           <TextField field={form.bind("name")} label="Name" />
         </FormSection>
@@ -550,7 +550,7 @@ describe("the phone field and a completed entry", () => {
       save: (draft, c) => api<Contact>(c ? "PUT" : "POST", c ? "/api/contacts/c1" : "/api/contacts", { ...draft, version: c?.version }),
     }, "c1");
     return (
-      <RecordForm form={form} title={form.record?.name ?? "New"}>
+      <RecordForm record={{ type: "test.things", id: "t1" }} panels={[]} form={form} title={form.record?.name ?? "New"}>
         <FormSection title="Main">
           <TextField field={form.bind("name")} label="Name" />
           <PhoneField field={form.bind("phone")} label="Phone" />

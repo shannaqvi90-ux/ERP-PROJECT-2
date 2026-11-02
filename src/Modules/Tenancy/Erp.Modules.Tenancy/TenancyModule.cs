@@ -1,3 +1,4 @@
+using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
@@ -57,6 +58,15 @@ public sealed class TenancyModule : ErpModule
         module.Menu(new MenuEntry("tenancy.tenant", "tenancy.menu.tenant", "/tenancy/tenant", TenancyPermissions.TenantRead, Order: 900, Group: "settings"));
         module.List(CompaniesList.Create());
         module.List(BranchesList.Create());
+        // The audit trail shows these records' history to whoever may read them.
+        module.AuditedRecord(new AuditRecordType("tenancy.tenants", "tenancy.record.tenant", TenancyPermissions.TenantRead));
+        module.AuditedRecord(new AuditRecordType("tenancy.companies", "tenancy.record.company", TenancyPermissions.CompaniesRead, "/tenancy/companies/{id}"));
+        module.AuditedRecord(new AuditRecordType("tenancy.branches", "tenancy.record.branch", TenancyPermissions.BranchesRead, "/tenancy/branches/{id}", RecordIsBranch: true));
+        // The access form shows a user's company access by the user's id.
+        module.AuditedRecord(new AuditRecordType("tenancy.user_company_access", "tenancy.record.companyAccess", TenancyPermissions.AccessRead, OwnerField: "user_id"));
+        module.AuditedRecord(new AuditRecordType("tenancy.user_branch_access", "tenancy.record.branchAccess", TenancyPermissions.AccessRead));
+        module.AuditedRecord(new AuditRecordType("tenancy.user_workplaces", "tenancy.record.workplace", TenancyPermissions.AccessRead));
+        module.AuditedRecord(new AuditRecordType("tenancy.user_company_totals", "tenancy.record.companyTotals", TenancyPermissions.AccessRead));
         // The access list's rows are identity's users: identity's users list serves its query.
         module.List(AccessList.Definition, servedBy: IdentityLists.Users);
         // Reports print the three lists exactly as their screens show them.

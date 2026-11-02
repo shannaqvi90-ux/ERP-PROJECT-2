@@ -31,6 +31,11 @@ public interface IListBinding
 
     IReadOnlyList<ListBoundColumn> Columns { get; }
 
+    /// <summary>The mapped property the rows' unique id reads (the gates find its database column
+    /// from it: a table keyed by a number, the audit trail, lists rows by another uuid column), or
+    /// null when the id is computed.</summary>
+    string? IdMember => null;
+
     /// <summary>One-word searches of 2 to <see cref="ListSearch.MaxInitials"/> Latin letters also match
     /// a value's initials (see <see cref="ListBinding{T}.Initials"/>).</summary>
     bool SearchesInitials => false;
@@ -136,6 +141,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
             ? _columns.Values.OrderBy(b => b.Order).FirstOrDefault(b => b.Member == property.Name)?.Key
             : null;
 
+    /// <inheritdoc/>
+    public string? IdMember =>
+        _id.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == _id.Parameters[0] ? property.Name : null;
+
     public IReadOnlyList<ListBoundColumn> Columns =>
         _columns.Values.OrderBy(b => b.Order).Select(b => new ListBoundColumn(b.Key, b.ValueType, b.Expression, b.Member)).ToList();
 
@@ -230,6 +239,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
             {
                 yield return $"list '{list}': sortable flag '{column.Key}' must be bound to a non-nullable bool";
             }
+            if (bound.ValueType == typeof(string[]) && (column.Sortable || column.Groupable || column.Aggregate))
+            {
+                yield return $"list '{list}': choice column '{column.Key}' holds several values per row (an array), which cannot be sorted, grouped or totalled";
+            }
         }
         foreach (var key in _columns.Keys.Where(k => Definition.Column(k) is null))
         {
@@ -242,7 +255,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var t = Nullable.GetUnderlyingType(valueType) ?? valueType;
         return type switch
         {
-            ListColumnType.Text or ListColumnType.Choice => t == typeof(string),
+            ListColumnType.Text => t == typeof(string),
+            // A choice column may hold several of its values per row (an array; the audit log's
+            // changed fields): a filter on one value then means "holds that value".
+            ListColumnType.Choice => t == typeof(string) || t == typeof(string[]),
             ListColumnType.Number => t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(decimal),
             ListColumnType.Money => t == typeof(decimal),
             ListColumnType.Date => t == typeof(DateOnly),
@@ -620,6 +636,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
         {
             return Expression.Not(IsNull());
         }
+        if (member.Type == typeof(string[]))
+        {
+            return Holds(condition, member, column);
+        }
         var text = column.Type == ListColumnType.Text;
         var values = condition.Values.Select(v => ToClr(v, member.Type, column)).ToList();
         switch (condition.Operator)
@@ -659,6 +679,24 @@ public sealed class ListBinding<T> : IListBinding where T : class
             default:
                 throw new ListQueryException("filter", "list.operatorNotAllowed", column.Key);
         }
+    }
+
+    /// <summary>A filter on a choice column holding several values per row (an array): <c>eq</c>
+    /// holds that value, <c>ne</c> does not, <c>in</c> holds at least one of them (translated to
+    /// PostgreSQL's array membership; the null tests are handled by the caller).</summary>
+    private static Expression Holds(FilterCondition condition, Expression member, ListColumn column)
+    {
+        var values = condition.Values.Select(v => (string)ToClr(v, typeof(string), column)!).ToList();
+        Expression HoldsOne(string value) => Expression.AndAlso(
+            Expression.NotEqual(member, Expression.Constant(null, typeof(string[]))),
+            Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(string)], member, Box(value, typeof(string))));
+        return condition.Operator switch
+        {
+            FilterOperator.Eq => HoldsOne(values[0]),
+            FilterOperator.Ne => Expression.Not(HoldsOne(values[0])),
+            FilterOperator.In => values.Select(HoldsOne).Aggregate(Expression.OrElse),
+            _ => throw new ListQueryException("filter", "list.operatorNotAllowed", column.Key),
+        };
     }
 
     /// <summary>A filter literal as the bound value's CLR type (already validated for the column type).</summary>

@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Lists;
 using Erp.Kernel.Reports;
@@ -70,6 +71,9 @@ public sealed class ModuleDescriptor
 
     /// <summary>Reports this module contributes.</summary>
     public List<ReportRegistration> Reports { get; } = [];
+
+    /// <summary>The kinds of records of this module whose history the audit trail shows.</summary>
+    public List<AuditRecordType> AuditRecordTypes { get; } = [];
 }
 
 /// <summary>A command-line verb a module adds to the host (<c>Erp.Host &lt;verb&gt; …</c>), for
@@ -83,13 +87,20 @@ public sealed record ModuleCommand(string Verb, string Usage, Func<IServiceProvi
 public sealed class ModuleBuilder
 {
     private readonly ModuleDescriptor _descriptor;
+    private readonly ModuleCatalog? _earlier;
 
-    internal ModuleBuilder(ModuleDescriptor descriptor, IServiceCollection services, IConfiguration configuration)
+    internal ModuleBuilder(ModuleDescriptor descriptor, IServiceCollection services, IConfiguration configuration, ModuleCatalog? earlier = null)
     {
         _descriptor = descriptor;
         Services = services;
         Configuration = configuration;
+        _earlier = earlier;
     }
+
+    /// <summary>The kinds of audited records registered so far: by the modules registered before
+    /// this one, then by this one (the audit module lists them as its log's record types).</summary>
+    public IReadOnlyList<AuditRecordType> AuditRecordTypesSoFar =>
+        [.. (_earlier?.AuditRecordTypes ?? []), .. _descriptor.AuditRecordTypes];
 
     public IServiceCollection Services { get; }
     public IConfiguration Configuration { get; }
@@ -250,6 +261,24 @@ public sealed class ModuleBuilder
         return this;
     }
 
+    /// <summary>Register a table of this module whose records the audit trail shows (every table
+    /// the capture trigger records must be registered; the audit gate checks it): what one record is
+    /// called, the permission that reads it and its web address. Checked at registration.</summary>
+    public ModuleBuilder AuditedRecord(AuditRecordType record)
+    {
+        var problems = record.Problems(Name, _descriptor.Schema).ToList();
+        if (_descriptor.AuditRecordTypes.Any(r => r.Table == record.Table))
+        {
+            problems.Add($"audited record '{record.Table}' is registered twice");
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(string.Join("\n", problems));
+        }
+        _descriptor.AuditRecordTypes.Add(record);
+        return this;
+    }
+
     /// <summary>Register an attack the tenant-isolation gate runs against a surface that is not a
     /// plain HTTP data endpoint (exports, jobs, files).</summary>
     public ModuleBuilder IsolationProbe<TProbe>() where TProbe : class, IIsolationProbe
@@ -289,6 +318,12 @@ public sealed class ModuleCatalog
 
     /// <summary>The registered report with this key, or null.</summary>
     public ReportRegistration? FindReport(string key) => Reports.FirstOrDefault(r => r.Definition.Key == key);
+
+    /// <summary>Every registered kind of audited record, in registration order.</summary>
+    public IEnumerable<AuditRecordType> AuditRecordTypes => _modules.SelectMany(m => m.AuditRecordTypes);
+
+    /// <summary>The registered kind of audited record of this <c>schema.table</c>, or null.</summary>
+    public AuditRecordType? FindAuditRecordType(string table) => AuditRecordTypes.FirstOrDefault(r => r.Table == table);
 
     /// <summary>Every list whose rows reports can print, with its row reader.</summary>
     public IEnumerable<(ListDefinition List, ListRowReader Reader)> PrintableLists =>

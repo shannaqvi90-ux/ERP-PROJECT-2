@@ -200,6 +200,7 @@ function BranchForm({
   return (
     <RecordForm
       form={form}
+      record={{ type: "tenancy.branches", id }}
       label={t("tenancy.branch.form")}
       title={branch ? `${branch.companyCode} · ${branch.code}` : t("tenancy.branch.new")}
       subtitle={branch ? name(branch.nameEn, branch.nameAr) : undefined}

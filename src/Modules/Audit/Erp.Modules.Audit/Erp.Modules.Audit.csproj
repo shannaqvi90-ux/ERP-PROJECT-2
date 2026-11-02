@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Erp.Modules.Audit</RootNamespace>
+    <!-- The audit screens' own string files: the field names of the audit log (its filter choices,
+         and the change texts it prints) are the very texts the screens show. -->
+    <WebAuditStrings>$(MSBuildThisFileDirectory)..\..\..\..\web\src\modules\audit\i18n\</WebAuditStrings>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
+    <ProjectReference Include="..\Erp.Modules.Audit.Contracts\Erp.Modules.Audit.Contracts.csproj" />
+    <ProjectReference Include="..\..\Identity\Erp.Modules.Identity.Contracts\Erp.Modules.Identity.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Audit.Resources.%(Filename)%(Extension)" />
+    <AuditWebStringFile Include="$(WebAuditStrings)*.json" />
+    <EmbeddedResource Include="@(AuditWebStringFile)" LogicalName="audit-web-strings/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <Target Name="RequireAuditWebStrings" BeforeTargets="PrepareForBuild">
+    <Error Condition="'@(AuditWebStringFile)' == ''" Text="The audit screens' string files ($(WebAuditStrings)*.json) are missing; the audit module embeds them." />
+  </Target>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Erp.Modules.Audit.Tests" />
+    <InternalsVisibleTo Include="Erp.Gates.Tests" />
+  </ItemGroup>
+</Project>

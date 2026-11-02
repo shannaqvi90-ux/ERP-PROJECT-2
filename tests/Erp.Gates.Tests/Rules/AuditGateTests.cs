@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Erp.Gates.Tests.Infrastructure;
 using Erp.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
 namespace Erp.Gates.Tests.Rules;
@@ -60,6 +61,128 @@ public sealed class AuditGateTests(AuditFixture fixture) : IClassFixture<AuditFi
         Assert.True(problems.Count == 0, string.Join("\n", problems));
         Assert.True(audited >= Ratchet.Min("rules.auditedTables"), $"{audited} audited tables; ratchet minimum {Ratchet.Min("rules.auditedTables")}");
         Assert.True(exempt.Count <= Ratchet.Max("rules.auditExemptTables"));
+    }
+
+    /// <summary>The columns the capture trigger never records (see <c>KernelSql.CaptureFunctionV2</c>).</summary>
+    private static readonly string[] NeverRecorded = ["tenant_id", "created_at", "created_by", "updated_at", "updated_by"];
+
+    /// <summary>
+    /// p07: the trail can be read. Every audited table is a registered kind of audited record
+    /// (<c>ModuleBuilder.AuditedRecord</c>) with a name in English and Arabic, a declared read
+    /// permission and, when it names one, a web address of a real screen; every registered kind is
+    /// an audited table; and every field the trigger records of every audited table (its columns
+    /// but the tenant and timestamps and the ones its trigger leaves out) has a name in English and
+    /// Arabic (<c>audit.field.&lt;column&gt;</c> in the audit screens' strings), so a history never
+    /// shows a column name. A new table, or a new column, fails here until it can be read.
+    /// </summary>
+    [Fact]
+    public async Task Every_audited_table_is_a_registered_kind_of_record_and_every_recorded_field_has_a_name_in_both_languages()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<Erp.Kernel.Modules.ModuleCatalog>();
+        await using var admin = await Env.OpenAdminAsync();
+        var strings = new Dictionary<string, Dictionary<string, string>>();
+        foreach (var language in new[] { "en", "ar" })
+        {
+            strings[language] = Directory.EnumerateDirectories(Repo.PathOf("web", "src", "modules"))
+                .Select(d => Path.Combine(d, "i18n", $"{language}.json")).Where(File.Exists)
+                .SelectMany(f => JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(f))!)
+                .ToDictionary(p => p.Key, p => p.Value);
+        }
+        var screens = Directory.EnumerateFiles(Repo.PathOf("web", "src", "modules"), "routes.tsx", SearchOption.AllDirectories)
+            .SelectMany(f => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(f), "path: \"([^\"]+)\"").Select(m => m.Groups[1].Value)).ToHashSet();
+        var permissions = catalog.PermissionKeys;
+        var problems = new List<string>();
+        var audited = await DbCatalog.ReadAsync(admin, """
+            SELECT n.nspname || '.' || c.relname, encode(t.tgargs, 'escape')
+              FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+              JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_namespace pn ON pn.oid = p.pronamespace
+             WHERE pn.nspname = 'audit' AND p.proname = 'capture' AND NOT t.tgisinternal
+            """, r => (Table: r.GetString(0), Args: r.GetString(1).Split("\\000", StringSplitOptions.RemoveEmptyEntries)));
+        var fields = 0;
+        foreach (var (table, args) in audited)
+        {
+            if (catalog.FindAuditRecordType(table) is null)
+            {
+                problems.Add($"{table}: audited but not a registered kind of audited record (module.AuditedRecord in its module)");
+            }
+            var parts = table.Split('.');
+            var left = args.Where(a => a.StartsWith('-')).Select(a => a[1..]).Concat(NeverRecorded).ToHashSet();
+            foreach (var column in (await DbCatalog.ColumnsAsync(admin, new TableRef(parts[0], parts[1]))).Select(c => c.Name).Where(c => !left.Contains(c)))
+            {
+                fields++;
+                foreach (var language in strings.Keys.Where(l => !strings[l].ContainsKey($"audit.field.{column}")))
+                {
+                    problems.Add($"{table}.{column}: recorded by the audit trail but has no name in {language} (audit.field.{column} in web/src/modules/audit/i18n/{language}.json)");
+                }
+            }
+        }
+        foreach (var type in catalog.AuditRecordTypes)
+        {
+            if (audited.All(a => a.Table != type.Table))
+            {
+                problems.Add($"{type.Table}: registered as an audited record but the table carries no audit.capture() trigger");
+            }
+            foreach (var language in strings.Keys.Where(l => !strings[l].ContainsKey(type.LabelKey)))
+            {
+                problems.Add($"{type.Table}: its name {type.LabelKey} has no {language} text");
+            }
+            if (!permissions.Contains(type.ReadPermission))
+            {
+                problems.Add($"{type.Table}: read permission {type.ReadPermission} is not declared by any module");
+            }
+            if (type.Route is { } route && !screens.Contains(route[..route.IndexOf("/{id}", StringComparison.Ordinal)]))
+            {
+                problems.Add($"{type.Table}: route {route} opens no screen (web/src/modules/*/routes.tsx)");
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(audited.Count >= Ratchet.Min("rules.auditRecordTypesChecked"), $"{audited.Count} audited tables checked; ratchet minimum {Ratchet.Min("rules.auditRecordTypesChecked")}");
+        Assert.True(fields >= Ratchet.Min("rules.auditFieldsNamed"), $"{fields} recorded fields named; ratchet minimum {Ratchet.Min("rules.auditFieldsNamed")}");
+    }
+
+    /// <summary>A column whose name says it holds a secret or what proves one (a hash, a token, a
+    /// password, a salt, a secret).</summary>
+    private static readonly System.Text.RegularExpressions.Regex SecretColumn = new("(^|_)(hash|token|password|salt|secret)(_|$)");
+
+    /// <summary>Reviewed: columns named like a secret that hold none. A company logo's hash is the
+    /// hash of the image every printed document shows (the history tells that the logo changed).</summary>
+    private static readonly HashSet<string> NotSecret = new(StringComparer.Ordinal) { "tenancy.companies.logo_hash" };
+
+    /// <summary>
+    /// p07: whoever may read a record's history never reads a secret in it. Every column of an
+    /// audited table that holds a secret or a hash of one (by its name) is either left out of the
+    /// trail or recorded as "[redacted]" (a plain trigger argument), never in clear: a hash of a
+    /// short code (a device approval code is eight symbols) is found again by trying every code
+    /// (p07 round 1, found on the integrator's verify screenshots: a user's latest change showed the
+    /// device approval code's SHA-256 under the user's heading).
+    /// </summary>
+    [Fact]
+    public async Task Every_audited_secret_is_redacted_or_left_out()
+    {
+        await using var admin = await Env.OpenAdminAsync();
+        var audited = await DbCatalog.ReadAsync(admin, """
+            SELECT n.nspname || '.' || c.relname, encode(t.tgargs, 'escape')
+              FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+              JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_namespace pn ON pn.oid = p.pronamespace
+             WHERE pn.nspname = 'audit' AND p.proname = 'capture' AND NOT t.tgisinternal
+            """, r => (Table: r.GetString(0), Args: r.GetString(1).Split("\\000", StringSplitOptions.RemoveEmptyEntries)));
+        var problems = new List<string>();
+        var secrets = 0;
+        foreach (var (table, args) in audited)
+        {
+            var parts = table.Split('.');
+            foreach (var column in (await DbCatalog.ColumnsAsync(admin, new TableRef(parts[0], parts[1]))).Select(c => c.Name)
+                         .Where(c => SecretColumn.IsMatch(c) && !NotSecret.Contains($"{table}.{c}")))
+            {
+                secrets++;
+                if (!args.Contains(column, StringComparer.Ordinal) && !args.Contains("-" + column, StringComparer.Ordinal))
+                {
+                    problems.Add($"{table}.{column}: holds a secret or its hash and the audit trail records it in clear (name it in the table's audit.capture() trigger: '{column}' to redact it, '-{column}' to leave it out)");
+                }
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+        Assert.True(secrets >= Ratchet.Min("rules.auditSecretsChecked"), $"{secrets} secret columns of audited tables checked; ratchet minimum {Ratchet.Min("rules.auditSecretsChecked")}");
     }
 
     [Fact]

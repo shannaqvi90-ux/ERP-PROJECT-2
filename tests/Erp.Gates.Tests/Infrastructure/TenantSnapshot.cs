@@ -40,10 +40,14 @@ public sealed class TenantSnapshot
         foreach (var table in await DbCatalog.TenantTablesAsync(admin))
         {
             var columns = await DbCatalog.ColumnsAsync(admin, table);
-            if (columns.Any(c => c.Name == "id" && c.Type == "uuid"))
+            // A row's uuid: its id, or (a table keyed by a number, the audit trail) its uid, the id its
+            // list rows and links carry (p07): those must never reach another tenant either.
+            var idColumn = columns.Any(c => c.Name == "id" && c.Type == "uuid") ? "id"
+                : columns.Any(c => c.Name == "uid" && c.Type == "uuid") ? "uid" : null;
+            if (idColumn is not null)
             {
                 ids[table.Qualified] = await DbCatalog.ReadAsync(admin,
-                    $"SELECT id FROM {table.Qualified} WHERE tenant_id = @t ORDER BY id", r => r.GetGuid(0), ("t", tenantId));
+                    $"SELECT {idColumn} FROM {table.Qualified} WHERE tenant_id = @t ORDER BY {idColumn}", r => r.GetGuid(0), ("t", tenantId));
             }
             var stable = columns.Where(c => !volatileColumns.Contains($"{table.Qualified}.{c.Name}")).Select(c => c.Name);
             var keep = recorded.TryGetValue(table.Qualified, out var condition) ? $" AND NOT ({condition})" : "";

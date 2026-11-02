@@ -252,6 +252,12 @@ export function useSession(): SessionApi {
   return context;
 }
 
+/** The session when the component sits inside the app's session (null on its own, as a kernel
+ * component in a unit test): for parts that are only offered to a signed-in user. */
+export function useSessionIfAny(): SessionApi | null {
+  return useContext(SessionContext);
+}
+
 /** Renders children only when the user holds the permission. */
 export function Can({ permission, children }: { permission: string; children: ReactNode }) {
   return useSession().can(permission) ? <>{children}</> : null;

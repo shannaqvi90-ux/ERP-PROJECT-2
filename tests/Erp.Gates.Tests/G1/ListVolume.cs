@@ -107,7 +107,8 @@ public static partial class ListVolume
     {
         var catalog = env.Factory.Services.GetRequiredService<ModuleCatalog>();
         await using var scope = env.Factory.Services.CreateAsyncScope();
-        var models = catalog.DbContexts.Select(t => ((DbContext)scope.ServiceProvider.GetRequiredService(t)).Model).ToList();
+        // Every module's DbContext, and the kernel's (the audit trail, which the audit log lists).
+        var models = catalog.DbContexts.Append(typeof(Erp.Kernel.Data.KernelDbContext)).Select(t => ((DbContext)scope.ServiceProvider.GetRequiredService(t)).Model).ToList();
         await using var admin = await env.OpenAdminAsync();
         var tally = new Tally();
         foreach (var binding in catalog.ListBindings.Where(l => only?.Invoke(l.Definition) ?? true))
@@ -242,7 +243,11 @@ public static partial class ListVolume
             {
                 tally.Wrong.Enqueue($"tenant {who}: the keyset walk of GET {list.Endpoint} returned {truth.Rows.Count} rows, but the tenant holds {rows} rows in {table}");
             }
-            var own = await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {table} WHERE tenant_id = @t AND id = ANY(@ids)",
+            // The rows' ids are the column the binding's id reads (the audit trail's uid: its own id
+            // is a number).
+            var idMember = binding.IdMember;
+            var idColumn = idMember is not null && entity.FindProperty(idMember)?.GetColumnName() is { } named ? TenantSql.Identifier(named) : "id";
+            var own = await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {table} WHERE tenant_id = @t AND {idColumn} = ANY(@ids)",
                 ("t", tenant.Id), ("ids", truth.Ids.ToArray()));
             if (own != truth.Ids.Count)
             {
@@ -313,7 +318,11 @@ public static partial class ListVolume
                 case ListColumnType.Choice:
                     foreach (var choice in column.Choices ?? [])
                     {
-                        filters.Add((ListFilterText.Eq(key, choice.Value), r => Text(r, key) == choice.Value));
+                        // A choice column holding several values per row (an array, the audit log's
+                        // fields) matches the rows that hold the value.
+                        filters.Add((ListFilterText.Eq(key, choice.Value), r => r.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Array
+                            ? v.EnumerateArray().Any(i => i.ValueKind == JsonValueKind.String && i.GetString() == choice.Value)
+                            : Text(r, key) == choice.Value));
                     }
                     break;
                 case ListColumnType.Boolean:

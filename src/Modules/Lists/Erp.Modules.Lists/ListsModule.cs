@@ -1,3 +1,4 @@
+using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
@@ -25,6 +26,8 @@ public sealed class ListsModule : ErpModule
         module.DbContext<ListsDbContext>();
         module.Endpoints(ViewEndpoints.Map);
         module.Seeder<ListsSeeder>();
+        // Saved views' history: shared views are what people who may share views look after.
+        module.AuditedRecord(new AuditRecordType("lists.saved_views", "lists.audit.savedView", ListsPermissions.ViewsShare));
     }
 }
 

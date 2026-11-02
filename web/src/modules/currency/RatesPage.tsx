@@ -227,6 +227,7 @@ function RateForm({
     <>
       <RecordForm
         form={form}
+        record={{ type: "currency.exchange_rates", id }}
         label={t("currency.rate.form")}
         title={rate ? `${rate.currency} · ${day(rate.rateDate)}` : t("currency.rate.new")}
         subtitle={rate ? t("currency.rate.reads", { currency: rate.currency, quote: rate.quoteCurrency, rate: rateText(rate.rate) }) : undefined}

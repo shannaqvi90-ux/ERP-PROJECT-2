@@ -450,6 +450,12 @@ public static class CompanyAttack
                 return (int)answer.StatusCode;
             }
             var toY = await ChangeCode(yCode);
+            if (toY is >= 200 and < 300)
+            {
+                // The attacker's own record held the victim's code for a moment: the record's history
+                // (the audit trail, p07) keeps it, so answers showing it are the attacker's own data.
+                state.Stored.Add(yCode);
+            }
             var toFresh = await ChangeCode(Reshape(yCode));
             writeOracleChecks++;
             writeOracleSources.Add($"PUT {(branchLayer ? "/api/tenancy/branches/{id:guid}" : "/api/tenancy/companies/{id:guid}")} [code] <- own record");
@@ -851,7 +857,11 @@ public static class CompanyAttack
             bool stored;
             lock (_lock)
             {
-                stored = Stored.Contains(value);
+                // Searches and filters match a piece of a value, and a record's history (the audit
+                // trail, p07) keeps what the attacker stored even after the record is gone: a value
+                // inside one the attacker stored (Y's code in the address of a user it created) finds
+                // that record's history.
+                stored = Stored.Contains(value) || Stored.Any(s => s.Contains(value, StringComparison.OrdinalIgnoreCase));
             }
             if (stored)
             {
@@ -922,6 +932,11 @@ public sealed class CompanySnapshot
 
     public IReadOnlyDictionary<string, string> VictimRows { get; init; } = new Dictionary<string, string>();
 
+    /// <summary>The audit trail's rows about the victim's records (the company's, or the branch's and
+    /// those carrying its <c>branch_id</c>), as a condition on <c>audit.entries</c> with the victim's
+    /// id as <c>@v</c>.</summary>
+    public string? AuditVictimRows { get; init; }
+
     /// <summary>
     /// The text a row holds for the uniqueness checks: every column of a textual type (text, codes,
     /// names, JSON, text arrays), lower-cased, never ids, numbers or timestamps. Comparing the whole
@@ -941,15 +956,19 @@ public sealed class CompanySnapshot
         return parts.Count == 0 ? null : $"concat_ws(chr(31), {string.Join(", ", parts)})";
     }
 
-    /// <summary>True when no row of the tenant outside the victim's rows (and the audit trail)
-    /// holds <paramref name="value"/> in a textual column now, read with the superuser.</summary>
+    /// <summary>True when no row of the tenant outside the victim's rows holds
+    /// <paramref name="value"/> in a textual column now, read with the superuser. The audit trail
+    /// counts too (p07: its rows are read through the audit log): a row about a record outside the
+    /// victim (the attacker's own record that once held the value) explains an answer as well as the
+    /// record itself would; rows about the victim's records are the victim's
+    /// (<see cref="AuditVictimRows"/>).</summary>
     public async Task<bool> OnlyVictimHoldsAsync(ErpTestEnvironment env, Guid tenant, string value)
     {
         await using var admin = await env.OpenAdminAsync();
         foreach (var table in await DbCatalog.TenantTablesAsync(admin))
         {
-            if (table.Schema == "audit") continue;
-            var own = VictimRows.GetValueOrDefault(table.Qualified);
+            var own = table.Qualified == "audit.entries" ? AuditVictimRows : VictimRows.GetValueOrDefault(table.Qualified);
+            if (table.Schema == "audit" && own is null) continue;
             if (TextOfRow(await DbCatalog.ColumnsAsync(admin, table)) is not { } text)
             {
                 continue;
@@ -1025,6 +1044,7 @@ public sealed class CompanySnapshot
             TableColumns = byTable,
             VictimId = company,
             VictimRows = tables.ToDictionary(t => t.Qualified, _ => "company_id = @v"),
+            AuditVictimRows = "record_company_id = @v",
         };
     }
 
@@ -1095,6 +1115,7 @@ public sealed class CompanySnapshot
             TableColumns = byTable,
             VictimId = branch,
             VictimRows = sources.ToDictionary(x => x.Table.Qualified, x => x.Where.Replace("@b", "@v", StringComparison.Ordinal)),
+            AuditVictimRows = "record_id = @v OR record_branch_id = @v",
         };
     }
 

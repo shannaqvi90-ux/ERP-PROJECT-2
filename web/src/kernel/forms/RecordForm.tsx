@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Dialog } from "../dialog";
+import { allowed, extensions, type RecordPanelItem } from "../extensions";
 import { useI18n } from "../i18n";
+import { useSessionIfAny } from "../session";
 import { navigate } from "../router";
 import { chordForAria, chordKeys, useCommand, useShortcut } from "../shortcuts";
 import type { RecordFormState } from "./useRecordForm";
@@ -17,6 +19,10 @@ export type RecordNavigation = {
 
 /** A record printed as a document by a registered report (its id goes in the report's parameter). */
 export type RecordDocument = { report: string; parameter: string; id: string };
+
+/** The record a form shows, by kind (the server's audited record type, `schema.table`) and id:
+ * the record panels every form offers (its history, p07) read it. No id: a new record. */
+export type FormRecord = { type: string; id: string | null | undefined };
 
 /** Whether the open record form is read-only: its sections disable their fields (tabs and
  * actions outside the sections stay usable). */
@@ -72,6 +78,8 @@ export function RecordForm<R, D>({
   narrow,
   children,
   after,
+  record,
+  panels: panelItems = extensions.record,
 }: {
   form: RecordFormState<R, D>;
   title: string;
@@ -88,6 +96,11 @@ export function RecordForm<R, D>({
   children: ReactNode;
   /** Content below the form (related records that save on their own). */
   after?: ReactNode;
+  /** The kind and id of the record the form shows: every record form names it, so the record
+   * panels modules offer (its history) appear on every form (a web gate checks each form names it). */
+  record: FormRecord;
+  /** The record panels on offer (the modules' `record` extensions; a test may pass its own). */
+  panels?: RecordPanelItem[];
 }) {
   const { t } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
@@ -95,6 +108,8 @@ export function RecordForm<R, D>({
   const [asking, setAsking] = useState(false);
   const [printing, setPrinting] = useState(false);
   const editable = !form.readOnly;
+  const recordPanels = useRecordPanels(record, form.isNew, form.record, panelItems);
+  const { panels, panelProps, openPanels, setPanelOpen } = recordPanels;
 
   const save = async (event?: FormEvent) => {
     event?.preventDefault();
@@ -219,6 +234,7 @@ export function RecordForm<R, D>({
               )}
             </h2>
             {subtitle && <div className="record-subtitle muted">{subtitle}</div>}
+            {panels.map((item) => item.summary && <item.summary key={item.key} {...panelProps(item)} />)}
           </div>
           <div className="record-actions" role="toolbar" aria-label={t("forms.toolbar")}>
             {nav && (nav.previous || nav.next) && (
@@ -251,6 +267,9 @@ export function RecordForm<R, D>({
               </span>
             )}
             {document && !form.isNew && <PrintMenu document={document} open={printing} setOpen={setPrinting} />}
+            {panels.map((item) => (
+              <PanelToggle key={item.key} item={item} open={Boolean(openPanels[item.key])} setOpen={setPanelOpen(item.key)} />
+            ))}
             {editable && form.dirty && (
               <button type="button" className="button" onClick={form.discard} title={keyHint(formChords.discard)} aria-keyshortcuts={chordForAria(formChords.discard)}>
                 {t("forms.discard")}
@@ -301,6 +320,7 @@ export function RecordForm<R, D>({
           <div className="record-body">{children}</div>
         </FormContext.Provider>
       </form>
+      {panels.map((item) => openPanels[item.key] && <item.panel key={item.key} {...panelProps(item)} />)}
       {after}
       {asking && (
         <Dialog
@@ -349,6 +369,75 @@ export function RecordForm<R, D>({
         </Dialog>
       )}
     </div>
+  );
+}
+
+/** The record panels a record offers the signed-in user (none outside the app's session, none for
+ * a new record), which are open, and what each is told; `copy` changes on every save. */
+function useRecordPanels(record: FormRecord, isNew: boolean, copy: unknown, items: RecordPanelItem[]) {
+  const session = useSessionIfAny();
+  const recordId = !isNew && record.id ? record.id : null;
+  const panels = recordId && session ? allowed(items, session.can) : [];
+  const [openPanels, setOpenPanels] = useState<Record<string, boolean>>({});
+  const setPanelOpen = (key: string) => (open: boolean) => setOpenPanels((current) => ({ ...current, [key]: open }));
+  // Every save gives the record a new copy: panels that show what happened to it read again.
+  const [revision, setRevision] = useState(0);
+  const seen = useRef(copy);
+  useEffect(() => {
+    if (seen.current !== copy) {
+      if (seen.current !== null) setRevision((r) => r + 1);
+      seen.current = copy;
+    }
+  }, [copy]);
+  const panelProps = (item: RecordPanelItem) => ({
+    type: record.type,
+    id: recordId!,
+    revision,
+    open: Boolean(openPanels[item.key]),
+    setOpen: setPanelOpen(item.key),
+  });
+  return { panels, panelProps, openPanels, setPanelOpen };
+}
+
+/**
+ * The record panels of a record shown without a record form (a screen that only shows a record to
+ * a reader who may not change it): the same summaries, buttons, keys and panels a record form
+ * offers, so a reader finds the record's history wherever the record is shown.
+ */
+export function RecordPanels({ record, copy, panels: panelItems = extensions.record }: { record: FormRecord; copy?: unknown; panels?: RecordPanelItem[] }) {
+  const { t } = useI18n();
+  const { panels, panelProps, openPanels, setPanelOpen } = useRecordPanels(record, false, copy ?? null, panelItems);
+  if (panels.length === 0) return null;
+  return (
+    <div className="record-panels">
+      {panels.map((item) => item.summary && <item.summary key={item.key} {...panelProps(item)} />)}
+      <div className="record-actions" role="toolbar" aria-label={t("forms.toolbar")}>
+        {panels.map((item) => (
+          <PanelToggle key={item.key} item={item} open={Boolean(openPanels[item.key])} setOpen={setPanelOpen(item.key)} />
+        ))}
+      </div>
+      {panels.map((item) => openPanels[item.key] && <item.panel key={item.key} {...panelProps(item)} />)}
+    </div>
+  );
+}
+
+/** A record panel's toolbar button (pressed while the panel is open) and its key. */
+function PanelToggle({ item, open, setOpen }: { item: RecordPanelItem; open: boolean; setOpen: (open: boolean) => void }) {
+  const { t } = useI18n();
+  // A command of the open record (the palette lists it), with the panel's key when it has one.
+  useCommand({ id: `forms.panel.${item.key}`, chord: item.chord, labelKey: item.labelKey, groupKey: "forms.shortcut.group", run: () => setOpen(!open) });
+  return (
+    <button
+      type="button"
+      className={open ? "button active" : "button"}
+      aria-pressed={open}
+      onClick={() => setOpen(!open)}
+      title={item.chord ? `${t(item.labelKey)} (${keyHint(item.chord)})` : t(item.labelKey)}
+      aria-keyshortcuts={item.chord ? chordForAria(item.chord) : undefined}
+      data-record-panel={item.key}
+    >
+      {t(item.labelKey)}
+    </button>
   );
 }
 

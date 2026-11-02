@@ -1,3 +1,4 @@
+using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Money;
@@ -39,6 +40,9 @@ public sealed class CurrencyModule : ErpModule
         module.Menu(new MenuEntry("currency.currencies", "currency.menu.currencies", "/currency/currencies", CurrencyPermissions.CurrenciesRead, Order: 845, Group: "settings"));
         module.List(CurrenciesList.Create());
         module.List(RatesList.Create());
+        // The audit trail shows these records' history to whoever may read them (p07).
+        module.AuditedRecord(new AuditRecordType("currency.currencies", "currency.record.currency", CurrencyPermissions.CurrenciesRead, "/currency/currencies/{id}"));
+        module.AuditedRecord(new AuditRecordType("currency.exchange_rates", "currency.record.rate", CurrencyPermissions.RatesRead, "/currency/rates/{id}"));
         // Reports print both lists exactly as their screens show them.
         module.ListRows(CurrenciesList.Key, async (services, request, http, cancellationToken) =>
             (await CurrencyEndpoints.PageAsync(services.GetRequiredService<CurrencyDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));

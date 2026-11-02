@@ -28,6 +28,35 @@ public sealed class AuditEntry : ITenantOwned
     public JsonDocument Changes { get; set; } = JsonDocument.Parse("{}");
     public long TransactionId { get; set; }
     public string? CorrelationId { get; set; }
+
+    /// <summary>A unique id of the row for lists and links (keyset paging breaks ties with it).</summary>
+    public Guid Uid { get; set; }
+
+    /// <summary><c>schema.table</c> of the changed record (stored, generated from the two columns).</summary>
+    public string RecordType { get; private set; } = "";
+
+    /// <summary>What the record was called when it changed (its name, code or e-mail), so the trail
+    /// names it even after it is renamed or deleted.</summary>
+    public string? RecordLabel { get; set; }
+
+    /// <summary>The record's name in Arabic script, when it has one.</summary>
+    public string? RecordLabelAr { get; set; }
+
+    /// <summary>The record's e-mail or code when it has one (a user's sign-in, a company's code), so
+    /// the trail finds a record by it too.</summary>
+    public string? RecordCode { get; set; }
+
+    /// <summary>The company the record belongs to (its <c>company_id</c>), or null for a record of the
+    /// whole workspace. Row-level security shows the row only inside the reader's company scope.</summary>
+    public Guid? RecordCompanyId { get; set; }
+
+    /// <summary>The branch the record belongs to (its <c>branch_id</c>), or null. A reader who may
+    /// work in only some branches of the record's company sees it only for those branches.</summary>
+    public Guid? RecordBranchId { get; set; }
+
+    /// <summary>The names of the fields the row records (the keys of <see cref="Changes"/>, sorted;
+    /// stored, generated from them).</summary>
+    public string[]? Fields { get; private set; }
 }
 
 /// <summary>Kernel-owned database objects: the <c>erp</c> helper functions row-level security
@@ -55,9 +84,21 @@ public sealed class KernelDbContext(DbContextOptions<KernelDbContext> options, I
             e.Property(x => x.Action).HasMaxLength(10);
             e.Property(x => x.Changes).HasColumnType("jsonb");
             e.Property(x => x.CorrelationId).HasMaxLength(100);
+            e.Property(x => x.Uid).HasDefaultValueSql("gen_random_uuid()");
+            e.Property(x => x.RecordType).HasMaxLength(127).HasComputedColumnSql("((table_schema)::text || '.' || (table_name)::text)", stored: true);
+            e.Property(x => x.RecordLabel).HasMaxLength(200);
+            e.Property(x => x.RecordLabelAr).HasMaxLength(200);
+            e.Property(x => x.RecordCode).HasMaxLength(200);
+            e.Property(x => x.Fields).HasComputedColumnSql("audit.field_names(changes)", stored: true);
             e.HasIndex(x => new { x.TenantId, x.TableName, x.RecordId, x.OccurredAt });
-            e.HasIndex(x => new { x.TenantId, x.OccurredAt });
+            e.HasIndex(x => new { x.TenantId, x.OccurredAt, x.Uid });
             e.HasIndex(x => new { x.TenantId, x.ActorId, x.OccurredAt });
+            e.HasIndex(x => new { x.TenantId, x.RecordType, x.RecordId, x.OccurredAt });
+            e.HasIndex(x => new { x.TenantId, x.Uid }).IsUnique();
+            e.HasIndex(x => x.Fields).HasMethod("gin");
+            e.HasIndex(x => x.RecordLabel).HasMethod("gin").HasOperators("gin_trgm_ops");
+            e.HasIndex(x => x.RecordLabelAr).HasMethod("gin").HasOperators("gin_trgm_ops");
+            e.HasIndex(x => x.RecordCode).HasMethod("gin").HasOperators("gin_trgm_ops");
         });
     }
 }

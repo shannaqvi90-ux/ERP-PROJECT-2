@@ -59,15 +59,52 @@ namespace Erp.Kernel.Data.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("correlation_id");
 
+                    b.PrimitiveCollection<string[]>("Fields")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("text[]")
+                        .HasColumnName("fields")
+                        .HasComputedColumnSql("audit.field_names(changes)", true);
+
                     b.Property<DateTimeOffset>("OccurredAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<Guid?>("RecordBranchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("record_branch_id");
+
+                    b.Property<string>("RecordCode")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("record_code");
+
+                    b.Property<Guid?>("RecordCompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("record_company_id");
+
                     b.Property<Guid?>("RecordId")
                         .HasColumnType("uuid")
                         .HasColumnName("record_id");
+
+                    b.Property<string>("RecordLabel")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("record_label");
+
+                    b.Property<string>("RecordLabelAr")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("record_label_ar");
+
+                    b.Property<string>("RecordType")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasMaxLength(127)
+                        .HasColumnType("character varying(127)")
+                        .HasColumnName("record_type")
+                        .HasComputedColumnSql("((table_schema)::text || '.' || (table_name)::text)", true);
 
                     b.Property<string>("TableName")
                         .IsRequired()
@@ -89,14 +126,50 @@ namespace Erp.Kernel.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("transaction_id");
 
+                    b.Property<Guid>("Uid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("uid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
                     b.HasKey("Id")
                         .HasName("pk_entries");
 
-                    b.HasIndex("TenantId", "OccurredAt")
-                        .HasDatabaseName("ix_entries_tenant_id_occurred_at");
+                    b.HasIndex("Fields")
+                        .HasDatabaseName("ix_entries_fields");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Fields"), "gin");
+
+                    b.HasIndex("RecordCode")
+                        .HasDatabaseName("ix_entries_record_code");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RecordCode"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("RecordCode"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("RecordLabel")
+                        .HasDatabaseName("ix_entries_record_label");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RecordLabel"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("RecordLabel"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("RecordLabelAr")
+                        .HasDatabaseName("ix_entries_record_label_ar");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RecordLabelAr"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("RecordLabelAr"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("TenantId", "Uid")
+                        .IsUnique()
+                        .HasDatabaseName("ix_entries_tenant_id_uid");
 
                     b.HasIndex("TenantId", "ActorId", "OccurredAt")
                         .HasDatabaseName("ix_entries_tenant_id_actor_id_occurred_at");
+
+                    b.HasIndex("TenantId", "OccurredAt", "Uid")
+                        .HasDatabaseName("ix_entries_tenant_id_occurred_at_uid");
+
+                    b.HasIndex("TenantId", "RecordType", "RecordId", "OccurredAt")
+                        .HasDatabaseName("ix_entries_tenant_id_record_type_record_id_occurred_at");
 
                     b.HasIndex("TenantId", "TableName", "RecordId", "OccurredAt")
                         .HasDatabaseName("ix_entries_tenant_id_table_name_record_id_occurred_at");

@@ -23,7 +23,8 @@ public sealed class ListIndexGateTests(GateFixture fixture)
     {
         var catalog = fixture.Env.Factory.Services.GetRequiredService<ModuleCatalog>();
         await using var scope = fixture.Env.Factory.Services.CreateAsyncScope();
-        var models = catalog.DbContexts.Select(t => ((DbContext)scope.ServiceProvider.GetRequiredService(t)).Model).ToList();
+        // Every module's DbContext, and the kernel's (the audit trail, which the audit log lists).
+        var models = catalog.DbContexts.Append(typeof(KernelDbContext)).Select(t => ((DbContext)scope.ServiceProvider.GetRequiredService(t)).Model).ToList();
         await using var admin = await fixture.Env.OpenAdminAsync();
         var problems = new List<string>();
         var checkedIndexes = 0;
