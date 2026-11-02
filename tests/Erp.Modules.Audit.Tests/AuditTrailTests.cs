@@ -291,7 +291,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.NotEmpty(inY);
 
         // Reads the log everywhere, but branches only in company X.
-        var logReader = await CreateRoleAsync(admin, "Log reader", "audit.log.read");
+        var logReader = await CreateRoleAsync(admin, "Log reader", "audit.history.read", "audit.log.read");
         var branchReader = await CreateRoleAsync(admin, "Branch reader", "tenancy.branches.read");
         var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
         {
@@ -312,6 +312,10 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.NotEmpty(branchRows);
         Assert.True(branchRows.IsSubsetOf(inX), "a branch of company Y was shown");
         Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/records/{inX[0]}?type=tenancy.branches")).StatusCode);
+        // A change is read by its id under the same company filter (gate backlog row 14): a branch of company X, yes; of Y, it does not exist.
+        var changeIn = async (Guid branch) => (await Json(await admin.GetAsync($"/api/audit/records/{branch}?type=tenancy.branches"))).GetProperty("items")[0].GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/log/{await changeIn(inX[0])}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await auditor.GetAsync($"/api/audit/log/{await changeIn(inY[0])}")).StatusCode);
         var hidden = await Json(await auditor.GetAsync($"/api/audit/records/{inY[0]}?type=tenancy.branches"));
         Assert.Equal(0, hidden.GetProperty("items").GetArrayLength());
         // Companies are not readable to them at all.
@@ -382,6 +386,8 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             CREATE TABLE public.audit_probe (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid, display_name text, display_name_ar text, custom_fields jsonb, secret text);
             CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON public.audit_probe FOR EACH ROW EXECUTE FUNCTION audit.capture('secret');
             SELECT set_config('app.actor_kind', 'job', true);
+            -- The trail is written by the trigger under the tenant policy, so the change is made in the tenant the way the platform binds it.
+            SELECT set_config('app.tenant_id', '{{Env.TenantA.Id}}', true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
             INSERT INTO public.audit_probe VALUES ('{{id}}', '{{Env.TenantA.Id}}', '{{company}}', 'Probe One', 'مسبار', '{"region": "North", "tier": 1}', 's3cret');
             UPDATE public.audit_probe SET custom_fields = '{"region": "South", "tier": 1, "colour": "red"}', secret = 'other', display_name = 'Probe Two' WHERE id = '{{id}}';
             UPDATE public.audit_probe SET custom_fields = '{"region": "South", "tier": 1, "colour": "red"}' WHERE id = '{{id}}';
