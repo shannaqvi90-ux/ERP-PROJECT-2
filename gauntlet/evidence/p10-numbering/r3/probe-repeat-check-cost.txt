@@ -1,0 +1,8 @@
+Cost of the round-3 repeat check (RepeatedNumberAsync) on PUT /api/numbering/sequences/{id}, demo stack, idle machine (load < 3), 2026-11-02 ~15:10Z.
+Change sent: prefix X-{BRANCH}-{YYYY}-, yearly, gapless, perBranch true; then restored. Branches added to ALN-DXB through POST /api/tenancy/branches (probe.py).
+With 3 branches: sales.invoice 0.04-0.10 s, purchasing.order 0.01 s
+With 403 branches: sales.invoice 2.96 s, purchasing.order 0.01 s
+sales.invoice branches 2403 PUT perBranch+{BRANCH}: 200 16.98s 
+  restore 200 0.04s 
+purchasing.order branches 2403 PUT perBranch+{BRANCH}: 200 0.03s 
+  restore 200 0.03s 

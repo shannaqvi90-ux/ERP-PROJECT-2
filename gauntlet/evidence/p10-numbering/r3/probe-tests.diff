@@ -1,0 +1,89 @@
+diff --git a/tests/Erp.Modules.Numbering.Tests/SequenceApiTests.cs b/tests/Erp.Modules.Numbering.Tests/SequenceApiTests.cs
+index 714b552b..a13e4e54 100644
+--- a/tests/Erp.Modules.Numbering.Tests/SequenceApiTests.cs
++++ b/tests/Erp.Modules.Numbering.Tests/SequenceApiTests.cs
+@@ -463,4 +463,84 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
+         Assert.Equal(11, await Db.ScalarAsync(Env, "SELECT count(*) FROM audit.entries WHERE table_schema = 'numbering' AND table_name = 'sequences' AND action = 'insert' AND changes::text LIKE @c",
+             ("c", $"%{company}%")));
+     }
++
++    [Fact]
++    public async Task CriticProbe_backdated_previous_year_after_a_tax_sequence_switches_from_never_to_yearly()
++    {
++        var o = TestContext.Current.TestOutputHelper!;
++        using var admin = await SignInAsync();
++        var companies = await Db.CompaniesAsync(Env, Env.TenantA.Id);
++        var company = companies[^1];
++        o.WriteLine($"companies {companies.Count}, using last");
++        await Db.SetAsync(Env, company, "sales.invoice", "INV-{YYYY}-", NumberReset.Never, gapless: true);
++        var prev = Today.Year - 1;
++        await using (var unit = await Unit.JobAsync(Env, Env.TenantA.Id))
++        {
++            for (var i = 0; i < 3; i++) o.WriteLine("taken under never, dated " + prev + "-12-20: " + (await unit.TakeAsync("sales.invoice", company, new DateOnly(prev, 12, 20))).Number);
++            await unit.CommitAsync();
++        }
++        var row = await RowAsync(admin, "sales.invoice", company);
++        o.WriteLine("before: " + row.GetProperty("prefix").GetString() + " " + row.GetProperty("reset").GetString() + " next " + row.GetProperty("nextNumber").GetString());
++        var put = await PutAsync(admin, row, Body(row, reset: "yearly"));
++        o.WriteLine("PUT reset yearly (same prefix): " + (int)put.StatusCode + " " + (await put.Content.ReadAsStringAsync())[..Math.Min(300, (await put.Content.ReadAsStringAsync()).Length)]);
++        for (var i = 0; i < 2; i++)
++        {
++            try
++            {
++                await using var unit = await Unit.JobAsync(Env, Env.TenantA.Id);
++                var n = await unit.TakeAsync("sales.invoice", company, new DateOnly(prev, 12, 21));
++                await unit.CommitAsync();
++                o.WriteLine("back-dated take after switch: " + n.Number);
++            }
++            catch (Exception e)
++            {
++                o.WriteLine("back-dated take after switch FAILED: " + e.GetType().Name + ": " + e.Message);
++            }
++        }
++        var given = await Db.ScalarAsync(Env, "SELECT count(*) FROM numbering.issued_numbers WHERE company_id = @c AND document_type = 'sales.invoice' AND number = @n", ("c", company), ("n", $"INV-{prev}-00001"));
++        o.WriteLine($"rows holding INV-{prev}-00001: {given}");
++    }
++
++    [Fact]
++    public async Task CriticProbe_backdated_previous_month_after_a_tax_sequence_switches_from_yearly_to_monthly()
++    {
++        var o = TestContext.Current.TestOutputHelper!;
++        using var admin = await SignInAsync();
++        var companies = await Db.CompaniesAsync(Env, Env.TenantA.Id);
++        var company = companies[^1];
++        await Db.SetAsync(Env, company, "sales.creditNote", "CN-{YYYY}-{MM}-", NumberReset.Yearly, gapless: true);
++        var lastMonth = Today.AddMonths(-1);
++        await using (var unit = await Unit.JobAsync(Env, Env.TenantA.Id))
++        {
++            for (var i = 0; i < 3; i++) o.WriteLine("taken under yearly, dated " + lastMonth + ": " + (await unit.TakeAsync("sales.creditNote", company, lastMonth)).Number);
++            await unit.CommitAsync();
++        }
++        var row = await RowAsync(admin, "sales.creditNote", company);
++        o.WriteLine("before: " + row.GetProperty("prefix").GetString() + " " + row.GetProperty("reset").GetString() + " next " + row.GetProperty("nextNumber").GetString());
++        var put = await PutAsync(admin, row, Body(row, reset: "monthly"));
++        var text = await put.Content.ReadAsStringAsync();
++        o.WriteLine("PUT reset monthly (same prefix): " + (int)put.StatusCode + " " + text[..Math.Min(200, text.Length)]);
++        try
++        {
++            await using var unit = await Unit.JobAsync(Env, Env.TenantA.Id);
++            var n = await unit.TakeAsync("sales.creditNote", company, lastMonth);
++            await unit.CommitAsync();
++            o.WriteLine("back-dated take after switch: " + n.Number);
++        }
++        catch (Exception e)
++        {
++            o.WriteLine("back-dated take after switch FAILED: " + e.GetType().Name + ": " + e.Message);
++        }
++        try
++        {
++            await using var unit = await Unit.JobAsync(Env, Env.TenantA.Id);
++            var n = await unit.TakeAsync("sales.creditNote", company, Today);
++            await unit.CommitAsync();
++            o.WriteLine("take dated today after switch: " + n.Number);
++        }
++        catch (Exception e)
++        {
++            o.WriteLine("take dated today FAILED: " + e.Message);
++        }
++    }
+ }

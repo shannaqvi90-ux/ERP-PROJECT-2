@@ -1,0 +1,42 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 69903989..79d5b3a4 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -134,6 +134,28 @@ internal static class SequenceEndpoints
+             .ProducesProblem(StatusCodes.Status403Forbidden)
+             .ProducesProblem(StatusCodes.Status409Conflict)
+             .RequirePermission(NumberingPermissions.SequencesUpdate);
++
++        // CRITIC PLANT P1: a write (restart every counter of a sequence at 1) guarded by the read permission.
++        group.MapPost("/sequences/{id:guid}/restart", Restart)
++            .WithName("numbering.sequences.restart")
++            .WithSummary("Start a sequence's counters again at 1.")
++            .RequirePermission(NumberingPermissions.SequencesRead);
++    }
++
++    private static async Task<Results<NoContent, ProblemHttpResult>> Restart(Guid id, NumberingDbContext db, HttpContext http, CancellationToken cancellationToken)
++    {
++        var counters = await db.Counters.Where(c => c.SequenceId == id).ToListAsync(cancellationToken);
++        if (counters.Count == 0)
++        {
++            return Problems.NotFound(http);
++        }
++        foreach (var c in counters)
++        {
++            c.NextValue = 1;
++            db.Entry(c).Property(x => x.UpdatedAt).IsModified = true;
++        }
++        await db.SaveChangesAsync(cancellationToken);
++        return TypedResults.NoContent();
+     }
+ 
+     private static async Task<Results<Ok<ListPage<SequenceRow>>, ProblemHttpResult>> List(
+diff --git a/tests/Gates/endpoint-permissions/numbering.txt b/tests/Gates/endpoint-permissions/numbering.txt
+index 63cea805..2f525093 100644
+--- a/tests/Gates/endpoint-permissions/numbering.txt
++++ b/tests/Gates/endpoint-permissions/numbering.txt
+@@ -8,3 +8,4 @@ prefix /api/numbering/
+ GET /api/numbering/sequences numbering.sequences.read # the document numbering list: how each company of the caller's scope numbers each kind of document, and the number its next document would get (no document's data)
+ GET /api/numbering/sequences/{id:guid} numbering.sequences.read # one sequence with its counters by period and branch and the last numbers it gave (numbers only; the documents they went to are their own modules')
+ PUT /api/numbering/sequences/{id:guid} numbering.sequences.update # changing a pattern, when the numbers start again, whether they may skip or the next number changes every later document's number in that company (also needs every branch of the company, checked in the handler)
++POST /api/numbering/sequences/{id:guid}/restart numbering.sequences.read # CRITIC PLANT P1

@@ -1,0 +1,46 @@
+B invoice seq id 01a19b0f-bd1b-790f-91c2-809ff8605555  B company 018f6605-b081-72bb-9934-9cad692bc824  B tenant 0190a000-0000-7000-8000-000000000002
+--- GET B seq as A
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-8de6fbb571dbd2a0c00d6ff876aca86b-63080eba1036fe51-00"} [404]
+
+--- PUT B seq as A
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-cdc0f86c4b05ccc96280d8d9a78df8ec-be6f8c76faf7a508-00"} [404]
+
+--- list ?companyId=018f6605-b081-72bb-9934-9cad692bc824
+total 44 GSF rows 0
+--- list ?filter=companyCode%20contains%20'GSF'
+total 0 GSF rows 0
+--- list ?search=GSF
+total 0 GSF rows 0
+--- list ?q=GSF
+total 44 GSF rows 0
+--- list ?tenantId=0190a000-0000-7000-8000-000000000002
+total 44 GSF rows 0
+--- list ?companyCode=GSF-SHJ
+total 44 GSF rows 0
+--- header X-Tenant: 0190a000-0000-7000-8000-000000000002
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-403bcb1026817b48dc126724f7ea87d7-7edf5af88e6e62e0-00"} [404]
+ list total 44 GSF 0
+--- header X-Tenant-Id: 0190a000-0000-7000-8000-000000000002
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-a45536386602cff6b5bbd397bfa6d58c-e73c919d03e510b4-00"} [404]
+ list total 44 GSF 0
+--- header X-Company: 018f6605-b081-72bb-9934-9cad692bc824
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-a1981c8fd6595812329133d87ff983b2-8078c64bd47a4f96-00"} [404]
+ list total 44 GSF 0
+--- header X-Company-Id: 018f6605-b081-72bb-9934-9cad692bc824
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-6202f954bdd0002a3f4545ac6344b908-780ff5667cff0634-00"} [404]
+ list total 44 GSF 0
+--- header X-Erp-Company: 018f6605-b081-72bb-9934-9cad692bc824
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-c348e78293ce95ded6987c6c74f2fb2a-df6edfa1751daa06-00"} [404]
+ list total 44 GSF 0
+--- header X-Erp-Tenant: 0190a000-0000-7000-8000-000000000002
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-f09beaa0d59462d138561c07525aa48f-41f6b1bbd12bdc2c-00"} [404]
+ list total 44 GSF 0
+--- report export
+csv 200 3867
+0
+pdf 200 18660
+0
+xlsx 200 4274
+0
+--- B seq row after
+INV-{YYYY}- 3690421769

@@ -1,0 +1,15 @@
+--- viewer_alnoor.example
+list 200
+get 200
+put 403
+export 200
+--- noaccess_alnoor.example
+list 403
+get 403
+put 403
+export 403
+--- anonymous
+list 401
+put 401
+--- admin restore padding 5
+put 200

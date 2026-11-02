@@ -1,0 +1,53 @@
+BEGIN
+SET
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+    set_config     
+-------------------
+ 1793602960.742950
+(1 row)
+
+                   ?column?                    | count | count 
+-----------------------------------------------+-------+-------
+ visible sequences (A bound, unscoped company) |     0 |     0
+(1 row)
+
+       ?column?        | count 
+-----------------------+-------
+ visible counters of B |     0
+(1 row)
+
+      ?column?       | count 
+---------------------+-------
+ visible issued of B |     0
+(1 row)
+
+UPDATE 0
+UPDATE 0
+DELETE 0
+psql:/tmp/dbattack.sql:12: ERROR:  new row violates row-level security policy for table "counters"
+ROLLBACK
+BEGIN
+SET
+          ?column?          | count 
+----------------------------+-------
+ no tenant bound: sequences |     0
+(1 row)
+
+ROLLBACK
+BEGIN
+SET
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+          ?column?           | count 
+-----------------------------+-------
+ tenant set without tx stamp |     0
+(1 row)
+
+ROLLBACK

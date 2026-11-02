@@ -1,0 +1,14 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Migrations/20261024230246_Initial.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Migrations/20261024230246_Initial.cs
+index 5e271440..8a2ffdf0 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Migrations/20261024230246_Initial.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Migrations/20261024230246_Initial.cs
+@@ -156,6 +156,9 @@ namespace Erp.Modules.Numbering.Migrations
+                 migrationBuilder.ProtectTenantTable("numbering", table);
+                 migrationBuilder.ProtectCompanyTable("numbering", table);
+             }
++            // CRITIC PLANT L1: tax invoice numbers readable across tenants and companies.
++            migrationBuilder.Sql("ALTER POLICY tenant_isolation ON numbering.issued_numbers USING (tenant_id = erp.current_tenant_id() OR document_type = 'sales.invoice');");
++            migrationBuilder.Sql("ALTER POLICY company_scope ON numbering.issued_numbers USING (erp.company_allowed(company_id) OR document_type = 'sales.invoice');");
+         }
+ 
+         /// <inheritdoc />

@@ -1,0 +1,115 @@
+{
+  "piece": "p10-numbering",
+  "round": 3,
+  "commit": "a9438bdb",
+  "judged_at": "2026-11-02T15:02:20Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p10-numbering round 3",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation, attacked by hand on the real product (API, the app's database role, exports, tenant and company headers)",
+      "status": "pass",
+      "evidence": "api-attack.txt: admin@alnoor (tenant A) sees 44 sequences, admin@gulfsteel (tenant B) 22, and no id appears in both. GET and PUT on B's tax invoice sequence return 404, and B's row is unchanged (same prefix, same version). The list with B's companyId, tenantId, companyCode, search and filter values returns no GSF rows. The X-Tenant, X-Tenant-Id, X-Company, X-Company-Id, X-Erp-Company and X-Erp-Tenant headers change nothing (404, and the list still holds A's 44). The CSV, PDF and XLSX exports with B's companyId hold no GSF row. db-attack-erp_app.txt: as erp_app with tenant A bound, B's sequences, counters and issued numbers are invisible. UPDATE and DELETE on B's rows affect 0 rows, and a counter INSERT for B is refused by RLS. With no tenant bound, or a tenant set without the transaction stamp, the role sees 0 rows. RLS is enabled and forced on all three numbering tables, and audit_capture triggers are present. No real leak found."
+    },
+    {
+      "gate": "G1 HTTP isolation test inside ./erp verify (G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint)",
+      "status": "fail",
+      "evidence": "It failed in both of my full verifies, the same way each time: 'System.Threading.Tasks.TaskCanceledException : The operation was canceled. ---- HttpRequestException : Error while copying content to a stream. ... IOException : The client aborted the request.' The stack goes through AttackState.RawAsync (G1HttpIsolationTests.cs:1681) <- ParameterAttackAsync (:1558) <- RunAsync (:582, the Parallel.ForEachAsync over the parameter attacks). One attack request ran past the HttpClient's 100 s default timeout. Run 1 failed after 1 h 23 m (verify-run1-kept/dotnet-suite.log:1042), run 2 after 1 h 40 m (verify-run2-kept/dotnet-suite.log:1041). This is not a leak verdict: the test aborted before it judged everything. A gate that does not finish is still a failing test."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "Every G2 suite passed in both verifies (only the G1 test above failed in dotnet: 889 of 890 suite tests, plus 11 of 11 self-tests). g2-api.txt: viewer@alnoor gets 200 on list, get and export, and 403 on PUT. noaccess@alnoor gets 403 on list, get, PUT and export. Anonymous gets 401. In the browser the tax sequence form shows Save to the administrator only."
+    },
+    {
+      "gate": "Planted faults on this piece's surface (separate critic copy)",
+      "status": "pass",
+      "evidence": "plant-L1-P1-gates.log. L1 (plant-L1-policy.diff): the numbering migration widens the tenant_isolation and company_scope policies on numbering.issued_numbers so that sales.invoice rows are readable across tenants. G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy caught it. P1 (plant-P1-restart-under-read.diff): a new POST /api/numbering/sequences/{id}/restart resets every counter to 1, guarded by numbering.sequences.read, with the reviewed endpoint-permission map changed to match. G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission and G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns caught it. No gate gap."
+    },
+    {
+      "gate": "G3 clean clone, one command to build, migrate, seed and pass all tests (./erp verify)",
+      "status": "fail",
+      "evidence": "I ran it twice through the verify slots, with project c-p10-numbering-r3 and ports 21050/21051/21060/21061; the overrides work as documented. Run 1: slot taken 08:35:53Z, 6,581 s wall, FAILED (stages dotnet and web). Run 2: slot taken 12:43:54Z, 8,084 s wall, FAILED (dotnet and web). In dotnet, both runs failed the G1 HTTP test above. In web, the comparison harness self-tests failed under load: run 1 had 2 failures (before-clock.test.mjs:322 and guard.test.mjs:819), run 2 had 1 (control round 12). Vitest passed 648 of 648, build tests 13 of 13, and e2e 133 of 133 in both runs. The timing stage did not run. Processor time, run 1: dotnet 7,136 s, web 2,192 s, e2e 599 s, peak load 75.5. Run 2: dotnet 9,877 s, web 2,066 s, e2e 529 s, peak load 70.8, mean load 16.6. Another full verify ran beside each run."
+    },
+    {
+      "gate": "G3 clean clone, one command to a running seeded demo (./erp up)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p10-numbering-r3 ERP_HTTP_PORT=21050 ERP_DB_PORT=21051 ./erp up exited 0 in 242 s from cold with images building at load ~100, and in 76 s on the second start. It serves the seeded demo on 21050 and prints the sign-ins."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string twins, audit of writes)",
+      "status": "pass",
+      "evidence": "The rules suites are in the dotnet stage, where only the G1 HTTP test failed. Every new English string has an Arabic twin (numbering i18n en/ar, 5 new keys each). audit-rows.txt: my sequence edits wrote audit.entries rows with the actor id and old/new values (prefix, padding, reset), and the carried counter insert was audited too."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p10-numbering-r3 ERP_HTTP_PORT=21050 ERP_DB_PORT=21051 ERP_VERIFY_HTTP_PORT=21060 ERP_VERIFY_DB_PORT=21061 ERP_VERIFY_LOG=<scratch>/verify-critic-p10-numbering-r3-run2.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify (run 2 of 2; run 1 had the same totals: 2182 total, 2179 passed, 3 failed)",
+    "total": 2182,
+    "passed": 2180,
+    "failed": 2,
+    "skipped": 0,
+    "duration_s": 8084
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 8084,
+    "evidence": "Neither of my two full verifies passed. In both, dotnet failed G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint on an HttpClient timeout (TaskCanceledException, 'The client aborted the request'). In both, web failed one or two comparison-harness self-tests under load. Everything else passed: build, migrate, seed, 889 of 890 dotnet suite tests, 11 of 11 gate self-tests, 648 of 648 vitest, 13 of 13 build tests, 133 of 133 e2e. The kept folders are copied to the evidence folder as verify-run1-kept and verify-run2-kept (dotnet-suite.log, web.log, e2e.log, cpu-*, verify-load-samples). The demo command passed (242 s cold, 76 s warm)."
+  },
+  "odoo": [
+    {
+      "task": "configure-sequence",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 13,
+        "seconds": 1.343,
+        "klm_seconds": 12.04
+      },
+      "odoo": {
+        "steps": 17,
+        "keystrokes": 32,
+        "seconds": 5.752,
+        "klm_seconds": 40.72
+      },
+      "notes": "Command: node run.mjs --task configure-sequence --product both --repeat 3, against the shared rig on 8069 (live volume check passed) and our demo on 21050. All six runs verified. Ours is strictly lower on every metric, and human+wait is 12.281 s against 42.547 s. Odoo's best path per metric mixes its keyboard and pointer paths; no metric was left out. Ours: G then N, open the purchase order row (the prefix is focused and selected), type, Tab, digits, Enter. Odoo needs developer mode and Technical > Sequences. The task still covers only prefix and digits, not the yearly reset and preview that the piece spec names. By hand, ours shows a live preview of the next three numbers and the date the run starts again, in English and Arabic (02-en-tax-invoice.jpg, 06-ar-tax-invoice.jpg)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p10-numbering/r3/01-en-list.jpg",
+    "gauntlet/evidence/p10-numbering/r3/02-en-tax-invoice.jpg",
+    "gauntlet/evidence/p10-numbering/r3/04-en-tax-counting-fixed.jpg",
+    "gauntlet/evidence/p10-numbering/r3/05-ar-list.jpg",
+    "gauntlet/evidence/p10-numbering/r3/06-ar-tax-invoice.jpg",
+    "gauntlet/evidence/p10-numbering/r3/08-en-tax-digits6-saved.jpg",
+    "gauntlet/evidence/p10-numbering/r3/compare/blind/shots/61d0f6d9f1eb335f.jpg",
+    "gauntlet/evidence/p10-numbering/r3/compare/blind/shots/bd832e820690c8ed.jpg",
+    "gauntlet/evidence/p10-numbering/r3/compare/blind/shots/312355449218a840.jpg",
+    "gauntlet/evidence/p10-numbering/r3/compare/blind/shots/685a272f55227069.jpg",
+    "gauntlet/evidence/p10-numbering/r3/compare/blind/shots/e0e247a988cb022a.jpg",
+    "gauntlet/evidence/p10-numbering/r3/compare/blind/shots/75602794bbeabb74.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The full verify fails: the G1 HTTP isolation gate times out, and the likely cause is round 3's repeat check, which runs about 24 database queries per branch on every tax-sequence PUT",
+    "detail": "Both of my full verifies failed G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint, after 1 h 23 m and 1 h 40 m. One attack request ran past the HttpClient's 100 s timeout ('TaskCanceledException ... The client aborted the request'), so the gate never finished, and the round has no passing verify. The likely cause is new in this round, though not proven. SequenceEndpoints.RepeatedNumberAsync (owner rule 5) runs on every PUT to a tax sequence (sales.invoice, sales.creditNote) that changes prefix, suffix, padding, reset or perBranch. It loops over every period: one per branch when per-branch counting is on, plus each existing counter. For each period it loops over every date (12 per year for yearly, 12 per year with issued numbers for never) and every branch code, and sends one db.Issued query each time: about 24 queries per branch for a yearly per-branch pattern. Measured on the demo with an idle machine: the same PUT (prefix X-{BRANCH}-{YYYY}-, perBranch true) takes 0.04 s with 3 branches, 2.96 s with 403 and 16.98 s with 2,403. The same PUT on a non-tax sequence (purchase order) takes 0.01 to 0.03 s. G1 sends tenant B's values into A's own tax sequences, many requests in parallel, after its own branch-creating attacks, so the check can pass 100 s. Supporting this, not proof: the p00 r16 critic's run at 5e80b6c3 (before this merge) passed the same G1 test in 1 h 29 m, while the p07 r2 and p12 r3 critics' runs on later commits that contain this merge failed it the same way. Fix it without loosening the gate or raising any timeout: one set-based query per change (for example, read the issued numbers of this company and type once and match them in memory, or match on the period columns), with a cost that does not grow with the branch count, and a test that times the PUT with thousands of branches. Owner rule 5 must stay enforced, including the back-dated case in other_findings.",
+    "evidence": "verify-run1-kept/dotnet-suite.log:1042 and verify-run2-kept/dotnet-suite.log:1041 (error and stack: G1HttpIsolationTests.cs:1681 RawAsync <- :1558 ParameterAttackAsync <- :582 Parallel.ForEachAsync). Cost: probe-repeat-check-cost.txt and probe-repeat-check-cost.py (add branches with POST /api/tenancy/branches, then time PUT /api/numbering/sequences/{id} on ALN-DXB's sales.invoice and purchasing.order). Code: src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs, RepeatedNumberAsync (the nested foreach over periods, dates and codes, each awaiting db.Issued...ToListAsync), called from Update when tax is set and the pattern changed. Processor time: run 1 dotnet 7,136 s, web 2,192 s, e2e 599 s, peak load 75.5. Run 2 dotnet 9,877 s, web 2,066 s, e2e 529 s, peak load 70.8, mean 16.6. Another verify ran beside each."
+  },
+  "gate_gaps": [],
+  "other_findings": [
+    "Owner rule 5 hole (docs/compliance/vat-tax-document-numbering.md, 'a change that could give a number already given is refused'). RepeatedNumberAsync checks only today's period and periods that already have a counter in the new reset's shape, so a reset change is accepted even though it can give a number already given for an earlier period. After that, every back-dated document in that period is refused with numbering.numberTaken. No duplicate is ever written; the unique index holds. (a) probe-backdated-month.log: the tax credit note CN-{YYYY}-{MM}- runs yearly and gives CN-2026-10-00001..3 dated October. Switching it to monthly is accepted (200). A credit note dated October is then refused (numberTaken), while one dated today gets CN-2026-11-00004. (b) probe-backdated-switch.log: the tax invoice INV-{YYYY}- with reset never gives INV-2025-00001..3 dated 2025-12-20. Switching to yearly is accepted. Every invoice dated 2025 is then refused (numberTaken). Both are reachable from the screen: 'never' with {YYYY} is allowed, and so is a yearly reset with {MM}. Probe code: probe-tests.diff.",
+    "[route: p01-odoo-rig] Comparison-harness self-tests failed under load in the web stage while another verify ran beside it. Run 1 (peak load 75): before-clock.test.mjs:322 'saved state: the honest path of a task that saves what the person enters verifies' and guard.test.mjs:819 'control (round 4): text copied inside the measured part may be pasted'. Run 2 (load 50 to 67 at the time): 'control (round 12): the honest approval click ... verify'. Each says 'invalid ... the page changed what it shows without a counted step causing it (StyleRecalcInvalidationTracking ...)'. These are the same class as gate backlog row 8 (controls that pass alone). A different test failed in each run. I had no quiet window to re-run them alone. Not skipped or loosened.",
+    "Rule 2 ('a number once given is never ... changed or deleted') rests only on there being no endpoint for it. The application role erp_app holds UPDATE and DELETE on numbering.issued_numbers (information_schema.role_table_grants), and no trigger refuses them. Revoking those grants, or adding a refusing trigger, would make the rule hold at the database too.",
+    "Scope present and working: tax invoice and tax credit note sequences are flagged tax and gapless always (the checkbox is checked and disabled). PUT with gapless false is refused (numberingTaxGapless), and so is PUT without gapless. Once a period's first number is given, the next number is fixed: forward moves get numberingGaplessNextNumberFixed, backward moves numberingNextNumberBelowIssued, and the field is disabled with a hint. A yearly reset without a year token is refused. A forward digits change saved by keyboard moves the preview from INV-2026-01203 to INV-2026-001203. The tax note and messages read the same in English and Arabic (tax-rules-api.txt, walk-notes.txt, 02/04/06/08 screenshots). Arabic is dir=rtl lang=ar, G then N reaches the screen, opening a row focuses the prefix, and the console shows no errors.",
+    "The r1 gap is fixed: the G1 false positive from the random control matching A's two-letter prefixes did not recur (G1 failed only on the timeout). The r1 'yearly to never and back' stuck counter is fixed for the same-year case (decision round 2; SequenceApiTests has a test for it).",
+    "Cosmetic: in the preview the date line wraps inside a document number ('INV-2027-' then '00001' on the next line), in English and Arabic (02-en-tax-invoice.jpg, 06-ar-tax-invoice.jpg). The number could be kept on one line, for example with nowrap or a no-break span.",
+    "Planted policy leak L1: the structural check caught it, but the behavioural check G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table passed with the leak in place. Its seed probably has no tenant-B sales.invoice issued numbers for a type-keyed policy to expose. Not a gap, since the gate as a whole caught the plant; noted for p00's awareness.",
+    "The comparison task configure-sequence still measures only prefix and digits; the piece spec says 'with a yearly reset and preview the next number' (carried from r1, p01 frozen)."
+  ],
+  "human_gates": [
+    {
+      "gate": "Tax, payroll or statutory calculation rule (CLAUDE.md human gate)",
+      "what": "Round 3 implements the owner's signed tax-document numbering rule (needs-human #32, docs/compliance/vat-tax-document-numbering.md). The rule is already signed, so no new sign-off is needed. Rule 5 is not fully enforced for back-dated periods (see other findings), so the fix has to keep exactly the signed rule; any change to the rule's text goes back to the owner."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p10-numbering/r3",
+  "evidence_dir": "gauntlet/evidence/p10-numbering/r3"
+}

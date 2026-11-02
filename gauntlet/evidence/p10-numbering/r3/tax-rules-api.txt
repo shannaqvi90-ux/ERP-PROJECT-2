@@ -1,0 +1,24 @@
+seq 01a19b0f-39c6-7089-be5c-f94e54429041
+{'prefix': 'INV-{YYYY}-', 'suffix': '', 'padding': 5, 'reset': 'yearly', 'gapless': True, 'perBranch': False, 'nextNumber': 'INV-2026-01203', 'nextValue': 1203, 'tax': True, 'today': '2026-11-02'}
+counters [{'branchId': None, 'branchCode': None, 'period': '2026', 'nextValue': 1203, 'lastIssued': 1202, 'lastIssuedAt': '2026-11-02T05:00:28.919572+00:00'}]
+recent [{'number': 'INV-2026-01197', 'documentDate': '2026-11-01', 'issuedAt': '2026-11-02T07:00:28.91999+00:00', 'gapless': True}, {'number': 'INV-2026-01198', 'documentDate': '2026-11-01', 'issuedAt': '2026-11-02T07:00:28.91999+00:00', 'gapless': True}, {'number': 'INV-2026-01201', 'documentDate': '2026-11-02', 'issuedAt': '2026-11-02T07:00:28.91999+00:00', 'gapless': True}]
+--- 1 gapless false
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-7df080698cd1c485b43e348ad7ef4f71-6a6e4a366d4c6e61-00","errors":{"gapless":[{"code":"numberingTaxGapless","message":"A tax invoice or tax credit note sequence never skips a number: this cannot be turned off."}]}} [400]
+
+--- 1b gapless omitted
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-04a275cf101d8b545be5dd02677ff9fd-e8587afd0801d3f2-00","errors":{"gapless":[{"code":"required","message":"Required."}]}} [400]
+
+--- 3 move next forward 5000
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-246333bdf0cfdfc0fd7711a3fa375327-1aaad590bced0c0d-00","errors":{"nextValue":[{"code":"numberingGaplessNextNumberFixed","message":"Numbers of this period have been given and this sequence never skips: the next number stays 1,203."}]}} [400]
+
+--- 3b move next back 10
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-7abb18cf71605da30563204ac840477b-f758ab2d19a430c9-00","errors":{"nextValue":[{"code":"numberingNextNumberBelowIssued","message":"Number 1,202 has already been given. Enter a number above it."}]}} [400]
+
+--- 4 yearly without year token
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-8cde0f246d58843416a6e0a8d5e5a931-a48ecfe72bc41cb4-00","errors":{"reset":[{"code":"numberingYearlyNeedsYear","message":"Numbers that start again every year need the year in the prefix or suffix ({YYYY} or {YY}), or this year's numbers would repeat last year's."}]}} [400]
+
+--- 5a pattern repeat attempt: reset never, prefix INV-2026-0 padding 4
+{"id":"01a19b0f-39c6-7089-be5c-f94e54429041","companyId":"018dca08-f081-7447-888c-cd5aefd65345","companyCode":"ALN-DXB","companyNameEn":"Al Noor Trading LLC","companyNameAr":"شركة النور للتجارة ذ.م.م","documentType":"sales.invoice","nameEn":"Tax invoice","nameAr":"فاتورة ضريبية","prefix":"INV-2026-0","suffix":"","padding":4,"reset":"never","gapless":true,"perBranch":false,"nextNumber":"INV-2026-01
+--- 5b restore yearly INV-{YYYY}- 5
+:00:28.91999+00:00","gapless":true},{"number":"INV-2026-01202","documentDate":"2026-11-02","issuedAt":"2026-11-02T07:00:28.91999+00:00","gapless":true}],"createdAt":"2026-11-02T07:00:28.759671+00:00","updatedAt":"2026-11-02T07:08:27.287+00:00","version":2357977868,"canUpdate":true,"tax":true} [200]
+

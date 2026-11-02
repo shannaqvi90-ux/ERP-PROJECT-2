@@ -1,0 +1,31 @@
+    0 Error(s)
+
+Time Elapsed 00:00:14.45
+Test run for /work/tests/Erp.Modules.Numbering.Tests/bin/Release/net10.0/Erp.Modules.Numbering.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.14]   Discovering: Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:00.29]   Discovered:  Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:00.40]   Starting:    Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:10.63]   Finished:    Erp.Modules.Numbering.Tests (ID = '835e59d3ee2b572f891af69261dcddfde26a7c98952686cdd6df9669cb79567f')
+  Passed Erp.Modules.Numbering.Tests.SequenceApiTests.CriticProbe_backdated_previous_month_after_a_tax_sequence_switches_from_yearly_to_monthly [699 ms]
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 10.9350 Seconds
+Results File: /out/trx/plant_net10.0_20261102082005.trx
+taken under yearly, dated 10/02/2026: CN-2026-10-00001
+taken under yearly, dated 10/02/2026: CN-2026-10-00002
+taken under yearly, dated 10/02/2026: CN-2026-10-00003
+before: CN-{YYYY}-{MM}- yearly next CN-2026-11-00004
+PUT reset monthly (same prefix): 200 {"id":"01a19b58-126f-7665-a692-f04874e0efd4","companyId":"0191260e-f484-7407-8bc8-de574478abfc","companyCode":"A2-CO","companyNameEn":"Alpha Steel Industries","companyNameAr":"الصناعات الفولاذية","doc
+back-dated take after switch FAILED: NumberingException: Document numbering refused: numbering.numberTaken
+take dated today after switch: CN-2026-11-00004
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.14]   Discovering: Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:00.29]   Discovered:  Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:00.40]   Starting:    Erp.Modules.Numbering.Tests
+[xUnit.net 00:00:10.63]   Finished:    Erp.Modules.Numbering.Tests (ID = '835e59d3ee2b572f891af69261dcddfde26a7c98952686cdd6df9669cb79567f')
+
+['Passed', 'Completed']
