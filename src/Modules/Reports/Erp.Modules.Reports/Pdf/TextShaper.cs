@@ -297,33 +297,46 @@ public sealed class TextShaper(PdfFonts fonts)
         face.Font.Shape(buffer);
         var infos = buffer.GlyphInfos;
         var positions = buffer.GlyphPositions;
-        var glyphs = new List<ShapedGlyph>(infos.Length);
-        var glyphText = new List<string>(infos.Length);
-        // Clusters in glyph (visual) order; each cluster's characters span to the next cluster start.
-        var clusterStarts = infos.Select(i => (int)i.Cluster).Distinct().Order().ToList();
-        // Each cluster's end, looked up once (searching the list per glyph made a long run quadratic).
-        var clusterEnd = new Dictionary<int, int>(clusterStarts.Count);
-        for (var c = 0; c < clusterStarts.Count; c++)
+        // Each cluster's characters span to the next cluster start (clusters sorted, each once).
+        var clusterOf = new int[infos.Length];
+        for (var g = 0; g < infos.Length; g++)
         {
-            clusterEnd[clusterStarts[c]] = c + 1 < clusterStarts.Count ? clusterStarts[c + 1] : slice.Length;
+            clusterOf[g] = (int)infos[g].Cluster;
+        }
+        var starts = (int[])clusterOf.Clone();
+        Array.Sort(starts);
+        var unique = 0;
+        for (var g = 0; g < starts.Length; g++)
+        {
+            if (g == 0 || starts[g] != starts[g - 1])
+            {
+                starts[unique++] = starts[g];
+            }
+        }
+        // Each cluster's end, looked up once (searching the list per glyph made a long run quadratic).
+        var clusterEnd = new Dictionary<int, int>(unique);
+        for (var c = 0; c < unique; c++)
+        {
+            clusterEnd[starts[c]] = c + 1 < unique ? starts[c + 1] : slice.Length;
         }
         // The characters of a cluster belong to its widest glyph (the letter); the other glyphs of
         // the cluster are marks and dots drawn on it (Noto Sans Arabic draws dots as separate glyphs).
-        var owner = new Dictionary<int, int>();
+        var owner = new Dictionary<int, int>(unique);
         for (var g = 0; g < infos.Length; g++)
         {
-            var cluster = (int)infos[g].Cluster;
+            var cluster = clusterOf[g];
             if (!owner.TryGetValue(cluster, out var current) || positions[g].XAdvance > positions[current].XAdvance)
             {
                 owner[cluster] = g;
             }
         }
+        var glyphs = new List<ShapedGlyph>(infos.Length);
+        var glyphText = new List<string>(infos.Length);
         for (var g = 0; g < infos.Length; g++)
         {
-            var cluster = (int)infos[g].Cluster;
-            var chars = slice[cluster..clusterEnd[cluster]];
+            var cluster = clusterOf[g];
             glyphs.Add(new ShapedGlyph(infos[g].Codepoint, face.Scale(positions[g].XAdvance), face.Scale(positions[g].XOffset), face.Scale(positions[g].YOffset)));
-            glyphText.Add(owner[cluster] == g ? StripControls(chars) : "");
+            glyphText.Add(owner[cluster] == g ? StripControls(Piece(slice, cluster, clusterEnd[cluster])) : "");
         }
         // A combining mark shaped as a cluster of its own (a damma over a letter) carries no text of
         // its own: its character goes with the letter it sits on (the nearest earlier cluster that
@@ -369,9 +382,25 @@ public sealed class TextShaper(PdfFonts fonts)
         return false;
     }
 
+    private static readonly string[] SingleCharacters = Enumerable.Range(0, 0x800).Select(c => ((char)c).ToString()).ToArray();
+
+    /// <summary>The characters from <paramref name="start"/> to <paramref name="end"/>; one character is a
+    /// string kept for all runs (a document shapes millions of glyphs, nearly every one a single letter).</summary>
+    private static string Piece(string text, int start, int end) =>
+        end - start == 1 && text[start] < SingleCharacters.Length ? SingleCharacters[text[start]] : text[start..end];
+
     private static string StripControls(string text)
     {
-        if (!text.Any(Bidi.IsInvisibleControl))
+        var any = false;
+        foreach (var c in text)
+        {
+            if (Bidi.IsInvisibleControl(c))
+            {
+                any = true;
+                break;
+            }
+        }
+        if (!any)
         {
             return text;
         }

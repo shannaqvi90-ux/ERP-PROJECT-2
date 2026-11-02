@@ -247,6 +247,11 @@ internal static class KernelSql
         ALTER FUNCTION audit.capture() OWNER TO erp_auth;
         REVOKE CREATE ON SCHEMA audit FROM erp_auth;
         REVOKE INSERT ON audit.entries FROM erp_app;
+        -- Creating a table's audit trigger (every tenant table's migration) needs EXECUTE on the function;
+        -- the migrations' role holds it, as its owner no longer does.
+        SET LOCAL ROLE erp_auth;
+        GRANT EXECUTE ON FUNCTION audit.capture() TO erp_owner;
+        RESET ROLE;
         """;
 
     /// <summary>Back to the application role writing the trail. The function stays owned by erp_auth (the
