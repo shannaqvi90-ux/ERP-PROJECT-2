@@ -22,6 +22,26 @@ public sealed class G1CompanyScopeTests(GateFixture fixture)
     /// <summary>Own-row tables whose own rows outside the scope their user's session may move or
     /// delete (reviewed, with the reason).</summary>
     private static readonly IReadOnlySet<string> OwnRowWrites = Repo.ReadReviewedList("tests/Gates/own-row-writes.txt").Select(e => e.Entry).ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>Company tables the application role may only read and insert into (reviewed, with
+    /// the reason, in tests/Gates/append-only-tables.txt): the database itself refuses a change or a
+    /// delete, so the write checks below expect that refusal instead of a write policy's.</summary>
+    internal static readonly IReadOnlySet<string> AppendOnly = Repo.ReadReviewedList("tests/Gates/append-only-tables.txt").Select(e => e.Entry).ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>A problem when the listing and the grants disagree: a listed table must refuse the
+    /// application role UPDATE and DELETE, an unlisted one must allow both (null: they agree).</summary>
+    internal static async Task<string?> AppendOnlyProblemAsync(NpgsqlConnection admin, string name)
+    {
+        var update = await DbCatalog.ScalarAsync<bool>(admin, "SELECT has_table_privilege('erp_app', @t, 'UPDATE')", ("t", name));
+        var delete = await DbCatalog.ScalarAsync<bool>(admin, "SELECT has_table_privilege('erp_app', @t, 'DELETE')", ("t", name));
+        return AppendOnly.Contains(name) switch
+        {
+            true when update || delete => $"{name}: listed in tests/Gates/append-only-tables.txt but the application role may still UPDATE ({update}) or DELETE ({delete})",
+            false when !update || !delete => $"{name}: the application role may not UPDATE ({update}) or DELETE ({delete}) but the table is not listed in tests/Gates/append-only-tables.txt",
+            _ => null,
+        };
+    }
+
     private const string StandardOrOwn = "(erp.company_allowed(company_id) OR (user_id = erp.current_actor_id()))";
 
     [Fact]
@@ -120,6 +140,10 @@ public sealed class G1CompanyScopeTests(GateFixture fixture)
             var columns = await DbCatalog.ColumnsAsync(admin, table);
             var insertable = columns.Where(c => !c.Identity && !c.Generated).Select(c => c.Name).ToList();
             await using var app = await Env.OpenAppAsync();
+            if (await AppendOnlyProblemAsync(admin, name) is { } grants)
+            {
+                problems.Add(grants);
+            }
 
             // Tenant bound, no company bound (a signed-in user before their scope is known): nothing.
             await using (var tx = await app.BeginTransactionAsync())
@@ -156,10 +180,18 @@ public sealed class G1CompanyScopeTests(GateFixture fixture)
                 var foreign = await DbCatalog.ScalarAsync<long>(app, $"SELECT count(*) FROM {name} WHERE company_id <> '{x}'");
                 if (seen != inX) problems.Add($"{name}: with company X bound {seen} rows visible, X owns {inX}");
                 if (foreign != 0) problems.Add($"{name}: with company X bound {foreign} rows of other companies visible");
-                var updated = await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
-                if (updated != 0) problems.Add($"{name}: company X updated {updated} rows of company Y");
-                var deleted = await ExecAsync(app, tx, $"DELETE FROM {name} WHERE company_id = '{y}'");
-                if (deleted != 0) problems.Add($"{name}: company X deleted {deleted} rows of company Y");
+                if (AppendOnly.Contains(name))
+                {
+                    await ExpectDenied(app, tx, problems, $"{name}: company X updating rows of company Y", $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
+                    await ExpectDenied(app, tx, problems, $"{name}: company X deleting rows of company Y", $"DELETE FROM {name} WHERE company_id = '{y}'");
+                }
+                else
+                {
+                    var updated = await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
+                    if (updated != 0) problems.Add($"{name}: company X updated {updated} rows of company Y");
+                    var deleted = await ExecAsync(app, tx, $"DELETE FROM {name} WHERE company_id = '{y}'");
+                    if (deleted != 0) problems.Add($"{name}: company X deleted {deleted} rows of company Y");
+                }
                 await ExpectDenied(app, tx, problems, $"{name}: moving a row of X into Y",
                     $"UPDATE {name} SET company_id = '{y}' WHERE id = (SELECT id FROM {name} LIMIT 1)");
                 var overrides = $"jsonb_build_object('id', gen_random_uuid(), 'company_id', '{y}'::uuid)";
