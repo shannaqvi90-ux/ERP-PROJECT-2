@@ -536,7 +536,8 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
                     Assert.Contains(permissions[key], line);
                 }
                 Assert.DoesNotContain("identity.roles.read", line);
-                Assert.True(line.Length > 400, $"{line.Length} characters");
+                // Whole: the line ends with the last of the forty names, nothing after the cut point is missing.
+                Assert.True(line.LastIndexOf(permissions[many[^1]], StringComparison.Ordinal) > line.IndexOf(permissions[many[0]], StringComparison.Ordinal));
                 Assert.DoesNotContain("\u2026", csv);
                 // The people who made seeded changes, and the fields by name (not a count).
                 Assert.Contains("Demo data", csv);
@@ -552,7 +553,9 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.Contains(permissions[many[0]], exported);
         // The list's rows carry the whole text too (what is printed is what the list shows the caller).
         var listed = (await Json(await admin.GetAsync($"/api/audit/log?filter={ids}"))).GetProperty("items")[0].GetProperty("changes").GetString()!;
-        Assert.True(listed.Length > 400, $"{listed.Length}");
+        // The exported file holds exactly the text the list returns, whole (CSV doubles quotation marks).
+        Assert.Contains(listed.Replace("\"", "\"\""), exported);
+        Assert.Equal(many.Length, many.Count(k => listed.Contains(permissions[k], StringComparison.Ordinal)));
         Assert.Contains(permissions[many[^1]], listed);
         Assert.DoesNotContain("identity.users.read", listed);
     }
