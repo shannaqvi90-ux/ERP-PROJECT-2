@@ -46,7 +46,17 @@ public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixtur
     [Fact]
     public async Task Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
     {
-        var report = await IsolationAttack.RunAsync(Env);
+        IsolationReport report;
+        try
+        {
+            report = await IsolationAttack.RunAsync(Env);
+        }
+        catch (Exception e) when (e is not TimeoutException)
+        {
+            // A failure without a named request still lists the slowest requests seen before it.
+            throw new InvalidOperationException($"{e.Message}\nSlowest requests seen before the failure:\n{RequestLog.Describe(20)}", e);
+        }
+        TestContext.Current.TestOutputHelper?.WriteLine($"Slowest 20 requests of the attack (seconds, label, method, path):\n{RequestLog.Describe(20)}");
         foreach (var phase in report.Phases)
         {
             TestContext.Current.TestOutputHelper?.WriteLine(phase);
@@ -1330,7 +1340,7 @@ public static partial class IsolationAttack
         foreach (var value in ownValues)
         {
             using var probe = new HttpRequestMessage(HttpMethod.Get, endpoint.Path(_ => value));
-            using var response = await attacker.Client.SendAsync(probe);
+            using var response = await attacker.Client.SendTimedAsync(probe, $"own route value probe {attacker.Name} {endpoint.Name}");
             if (response.IsSuccessStatusCode)
             {
                 return value;
@@ -1515,7 +1525,7 @@ public static partial class IsolationAttack
 
         public async Task<int> SendAsync(Attacker attacker, ApiEndpoint endpoint, HttpRequestMessage request, string label, IReadOnlyCollection<string>? sent = null)
         {
-            using var response = await attacker.Client.SendAsync(request);
+            using var response = await attacker.Client.SendTimedAsync(request, label);
             var text = await ResponseText.ReadAsync(response);
             Interlocked.Increment(ref _requests);
             attacker.Count();
@@ -1678,7 +1688,7 @@ public static partial class IsolationAttack
                     : [];
                 request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
             }
-            using var response = await attacker.Client.SendAsync(request);
+            using var response = await attacker.Client.SendTimedAsync(request, $"attack {attacker.Name} {endpoint.Name}");
             Interlocked.Increment(ref _requests);
             attacker.Count();
             var text = await ResponseText.ReadAsync(response);
