@@ -50,3 +50,26 @@ stopwatch per request, negligible. The G1 failure message code runs only on fail
 The same varied-case deny requests also name a rotating Host (`app`, `localhost`, `admin`,
 `internal.erp.local`), no extra requests. Self-test: a handler that passes any signed-in request with
 Host `app` passed 51 of 204 requests and is reported (`g2.hostTrustPlantsCaught` minimum 1).
+
+## 6. Fixer verify (round 17, fix 1) and a control that parsed as a date
+
+Full verify at 2e0fcc07 (start load 1.28, 16 processors; the machine was quiet for most of it):
+dotnet 9,132.8 s, web 2,538.2 s, e2e 521.6 s of processor time (the ratchet stage did not run
+because the dotnet stage failed). Web and e2e passed, `jobs.spec.ts:65` included, and
+`RequestLogTests` passed in the full run.
+
+Two dotnet failures:
+
+1. `G1CompanyIsolationTests` (passed in the earlier verify and alone): `GET /api/currency/convert?date=LIC-2`
+   answered an empty 400, the control answered a validation problem. `Scramble("LIC-2")` had drawn a
+   three-letter month with a day (a date such as `jan-2`), which `DateOnly?` binds, while `LIC-2` does
+   not (an unbound query value is an empty 400). A gate flaw, not a product fault: the control must keep the value's
+   parse class. `Scramble` now redraws (at most 100 times) a control that parses as a date or time
+   when the value does not, and the report prints the text around the first difference of the two
+   answers instead of the first 160 characters (the first 160 were identical here). The test passes
+   alone in 2.5 min; it is not yet confirmed in a full run.
+2. `G1HttpIsolationTests` aborted again, this time on `GET /api/openapi/v1.json?tenantId=...` at
+   113.3 s (HttpClient timeout 100 s), with the audit.log pdf answers at 66 s and the
+   currency.currencies views lists at 90 s in the same minute: a stall of the whole test host
+   while the audit exports run, as in section 1. No p00 endpoint (sign-in, session, tenancy) is
+   in the top 20. The timeout is unchanged, nothing is retried.
