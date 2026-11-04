@@ -13,6 +13,7 @@ public sealed class RequestLogTests
     [Fact]
     public async Task A_timed_out_request_fails_naming_its_label_method_and_path_and_lists_the_slowest_before_it()
     {
+        RequestLog.UsePrivateLog();
         var calls = 0;
         using var client = new HttpClient(new Handler(async request =>
         {

@@ -11,8 +11,19 @@ namespace Erp.Gates.Tests.G1;
 internal static class RequestLog
 {
     private const int Kept = 200;
-    private static readonly object Lock = new();
-    private static readonly List<(string Line, double Seconds)> Slowest = [];
+    private sealed class Sink
+    {
+        public readonly object Lock = new();
+        public readonly List<(string Line, double Seconds)> Slowest = [];
+    }
+
+    private static readonly Sink Shared = new();
+    private static readonly AsyncLocal<Sink?> Private = new();
+    private static Sink Current => Private.Value ?? Shared;
+
+    /// <summary>For the log's own self-test: requests sent from this async flow are kept apart from the
+    /// gate's, which other tests of the same process fill at the same time.</summary>
+    public static void UsePrivateLog() => Private.Value = new Sink();
 
     /// <summary>Sends the request like <see cref="HttpClient.SendAsync(HttpRequestMessage)"/>; a timeout or
     /// transport failure is rethrown naming <paramref name="label"/>, the method and the path with its query.</summary>
@@ -44,17 +55,19 @@ internal static class RequestLog
     private static void Record(string label, HttpRequestMessage request, double seconds)
     {
         var line = $"[{label}] {request.Method} {PathOf(request)}";
-        lock (Lock)
+        var sink = Current;
+        lock (sink.Lock)
         {
-            if (Slowest.Count >= Kept && seconds <= Slowest[^1].Seconds)
+            var slowest = sink.Slowest;
+            if (slowest.Count >= Kept && seconds <= slowest[^1].Seconds)
             {
                 return;
             }
-            Slowest.Add((line, seconds));
-            Slowest.Sort((x, y) => y.Seconds.CompareTo(x.Seconds));
-            if (Slowest.Count > Kept)
+            slowest.Add((line, seconds));
+            slowest.Sort((x, y) => y.Seconds.CompareTo(x.Seconds));
+            if (slowest.Count > Kept)
             {
-                Slowest.RemoveAt(Slowest.Count - 1);
+                slowest.RemoveAt(slowest.Count - 1);
             }
         }
     }
@@ -62,9 +75,10 @@ internal static class RequestLog
     /// <summary>The slowest <paramref name="count"/> requests so far, one per line: seconds, label, method, path.</summary>
     public static string Describe(int count)
     {
-        lock (Lock)
+        var sink = Current;
+        lock (sink.Lock)
         {
-            return string.Join('\n', Slowest.Take(count).Select(s => $"  {s.Seconds,7:0.0} s  {s.Line}"));
+            return string.Join('\n', sink.Slowest.Take(count).Select(s => $"  {s.Seconds,7:0.0} s  {s.Line}"));
         }
     }
 }
