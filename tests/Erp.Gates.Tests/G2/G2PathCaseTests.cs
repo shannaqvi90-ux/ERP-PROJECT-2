@@ -20,6 +20,8 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
 {
     private ErpTestEnvironment Env => fixture.Env;
 
+    internal static readonly string[] Hosts = ["app", "localhost", "admin", "internal.erp.local"];
+
     /// <summary>The path in the varied-case form <paramref name="form"/> (0: upper case, 1: capitalised
     /// segments, 2: alternating case). Route values are GUIDs, whose case routing does not read.</summary>
     internal static string Vary(string pathAndQuery, int form)
@@ -57,6 +59,9 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
                     using var request = G2PermissionTests.Request(endpoint);
                     var original = request.RequestUri!.OriginalString;
                     request.RequestUri = new Uri(Vary(original, requests), UriKind.RelativeOrAbsolute);
+                    // Backlog row 3 (plant P13): the same request also names a rotating Host, so a permission
+                    // rule that trusts the Host header ('app', an internal name) is seen letting it through.
+                    request.Headers.Host = Hosts[(requests / 3) % Hosts.Length];
                     forms.Add(request.RequestUri.OriginalString[..Math.Min(5, request.RequestUri.OriginalString.Length)]);
                     using var response = await carrier.Client.SendTimedAsync(request, "G2 varied case");
                     requests++;
@@ -68,6 +73,34 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
             }
         }
         return (problems, requests, forms.Count);
+    }
+
+    /// <summary>Self-test (plant P13, backlog row 3): a permission rule that trusts the Host header
+    /// 'app'. The deny requests name a rotating Host, so the ones that carry 'app' must be reported.</summary>
+    [Fact]
+    public async Task The_varied_host_deny_catches_a_permission_rule_that_trusts_the_host_header()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var email = $"g2.hosttrust.plant.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        await G2PermissionTests.CreateUserHoldingAsync(admin, email, [], "Nothing host plant", "لا شيء");
+        await using var planted = new ErpAppFactory(PathCaseModule.Settings(Env.Factory.Settings));
+        var plant = planted.Services.GetRequiredService<PathCaseModule.Switch>();
+        var permissioned = EndpointInventory.From(planted.Services).Where(e => !e.IsAnonymous).ToList();
+        plant.HostOn = true;
+        try
+        {
+            var (problems, requests, _) = await DeniedAsync(Env, email, permissioned, planted);
+            TestContext.Current.TestOutputHelper?.WriteLine($"plant P13: {problems.Count} of {requests} requests passed");
+            Assert.NotEmpty(problems);
+            Assert.All(problems, p => Assert.DoesNotContain(": 403", p, StringComparison.Ordinal));
+            // Only the requests that named Host 'app' got through.
+            Assert.True(problems.Count >= requests / Hosts.Length - 3, $"{problems.Count} of {requests} requests passed");
+        }
+        finally
+        {
+            plant.HostOn = false;
+        }
+        Assert.True(1 >= Ratchet.Min("g2.hostTrustPlantsCaught"), $"1 host-trust plant; ratchet minimum {Ratchet.Min("g2.hostTrustPlantsCaught")}");
     }
 
     [Fact]

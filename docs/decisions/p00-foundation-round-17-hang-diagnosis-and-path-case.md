@@ -44,3 +44,9 @@ authorization handler and cost milliseconds each); see the verify numbers in the
 
 Gate requests: about 200 refused requests, a few seconds of processor time. Request labelling: a
 stopwatch per request, negligible. The G1 failure message code runs only on failure.
+
+## 5. Gate backlog row 3 (plant P13, Host header trust)
+
+The same varied-case deny requests also name a rotating Host (`app`, `localhost`, `admin`,
+`internal.erp.local`), no extra requests. Self-test: a handler that passes any signed-in request with
+Host `app` passed 51 of 204 requests and is reported (`g2.hostTrustPlantsCaught` minimum 1).
