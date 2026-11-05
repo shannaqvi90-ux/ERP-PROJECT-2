@@ -1,3 +1,4 @@
+using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Shell;
@@ -29,6 +30,8 @@ public sealed class ContactsModule : ErpModule
         module.Endpoints(ContactEndpoints.Map);
         module.Menu(new MenuEntry("contacts.contacts", "contacts.menu.contacts", "/contacts/contacts", ContactsPermissions.ContactsRead, Order: 100));
         module.List(ContactsList.Create());
+        // The audit trail shows a contact's history to whoever may read contacts (p07).
+        module.AuditedRecord(new AuditRecordType("contacts.contacts", "contacts.record.contact", ContactsPermissions.ContactsRead, "/contacts/contacts/{id}"));
         // Reports print and export the list exactly as the screen shows it, and a contact's card.
         module.ListRows(ContactsList.Key, async (services, request, http, cancellationToken) =>
             (await ContactEndpoints.PageAsync(services.GetRequiredService<ContactsDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));

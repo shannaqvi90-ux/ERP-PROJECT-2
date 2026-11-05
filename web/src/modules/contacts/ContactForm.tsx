@@ -234,6 +234,7 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
   return (
     <RecordForm
       form={form}
+      record={{ type: "contacts.contacts", id }}
       label={t("contacts.contact.form")}
       title={contact ? contactName(contact, language) || t("contacts.contact.unnamed") : t(person ? "contacts.contact.newPerson" : "contacts.contact.new")}
       subtitle={contact ? <ContactSubtitle contact={contact} /> : undefined}
