@@ -914,7 +914,7 @@ public static partial class IsolationAttack
             ListAnswerSortedDiscriminating = listAnswers.Sum(r => r.SortedDiscriminating),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
-            Phases = [.. phases, .. state.BreakdownLines(), $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers, {values.Probe.Count} probe values"],
+            Phases = [.. phases, .. state.BreakdownLines(), $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers ({values.ProductTextMarkersLeftOut} product texts left out), {values.Probe.Count} probe values"],
         };
     }
 

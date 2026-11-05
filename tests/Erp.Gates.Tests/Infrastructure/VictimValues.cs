@@ -37,14 +37,20 @@ public sealed class VictimValues
     /// when a parameter's values are sent as representatives of their classes).</summary>
     public IReadOnlyDictionary<string, string> StringClasses { get; init; } = new Dictionary<string, string>();
 
+    /// <summary>How many long B-only values were left out of the markers because each equals a
+    /// string the product ships to every tenant (<see cref="ProductStrings"/>). They are still sent
+    /// as attack values; they only cannot prove a leak.</summary>
+    public int ProductTextMarkersLeftOut { get; init; }
+
     /// <summary>Sampled ids then every text value.</summary>
     public IEnumerable<string> All => IdSample.Select(i => i.ToString()).Concat(Strings);
 
     /// <param name="publicValues">Text that identifies no tenant although a tenant holds it: the
     /// example values the API document publishes, which the gate's own valid requests use for
     /// fields with a fixed format (codes, currency, country). Left out of the values and markers.</param>
-    public static async Task<VictimValues> ReadAsync(ErpTestEnvironment env, TenantSnapshot victim, Guid attacker, IReadOnlySet<string>? publicValues = null)
+    public static async Task<VictimValues> ReadAsync(ErpTestEnvironment env, TenantSnapshot victim, Guid attacker, IReadOnlySet<string>? publicValues = null, ProductStrings? productStrings = null)
     {
+        productStrings ??= ProductStrings.FromRepository();
         publicValues ??= new HashSet<string>();
         await using var admin = await env.OpenAdminAsync();
         var strings = new List<string>();
@@ -113,6 +119,10 @@ public sealed class VictimValues
         }
         markers = markers.Where(m => !otherRows.Any(row => row.Contains(m.ToLowerInvariant(), StringComparison.Ordinal))).ToList();
 
+        // Nor does text the product itself ships to every tenant (a job type's Arabic name that is
+        // also a seeded schedule name): the other tenant receives it whatever data it holds.
+        markers = productStrings.LeaveOut(markers, out var leftOut);
+
         return new VictimValues
         {
             Ids = victim.AllIds.ToList(),
@@ -120,7 +130,8 @@ public sealed class VictimValues
             Probe = probe.Distinct(StringComparer.Ordinal).ToList(),
             Strings = strings.Distinct(StringComparer.Ordinal).ToList(),
             StringClasses = classes,
-            Markers = markers.Distinct(StringComparer.Ordinal).ToList(),
+            Markers = markers,
+            ProductTextMarkersLeftOut = leftOut,
         };
     }
 }

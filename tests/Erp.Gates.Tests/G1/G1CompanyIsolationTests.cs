@@ -788,6 +788,10 @@ public static class CompanyAttack
         public int Requests => _requests;
         public int DifferentialChecks => _differentialChecks;
 
+        /// <summary>Pairs whose two answers differed only because the list moved while the pair was asked (<see cref="MovingLists"/>).</summary>
+        public int MovedLists => _movedLists;
+        private int _movedLists;
+
         public int StoredSkips { get; private set; }
 
         /// <summary>Y texts the attacker wrote into its own records by successful writes.</summary>
@@ -904,12 +908,23 @@ public static class CompanyAttack
             var right = Normalize(control.Text, value, controlValue);
             if (answer.Status == control.Status && left != right && first is { } earlier && earlier.Answer.Status == answer.Status && earlier.Control.Status == control.Status)
             {
-                var nonces = Nonces.Paths(right, Normalize(earlier.Control.Text, value, controlValue));
-                nonces.UnionWith(Nonces.Paths(left, Normalize(earlier.Answer.Text, value, controlValue)));
+                var firstAnswer = Normalize(earlier.Answer.Text, value, controlValue);
+                var firstControl = Normalize(earlier.Control.Text, value, controlValue);
+                var nonces = Nonces.Paths(right, firstControl);
+                nonces.UnionWith(Nonces.Paths(left, firstAnswer));
                 if (nonces.Count > 0)
                 {
                     left = Nonces.Without(left, nonces);
                     right = Nonces.Without(right, nonces);
+                    firstAnswer = Nonces.Without(firstAnswer, nonces);
+                    firstControl = Nonces.Without(firstControl, nonces);
+                }
+                // A list that gained rows while the pair ran (the audit log, the job runs) answers
+                // differently to the same ask: judged by the order the four answers came in.
+                if (left != right && MovingLists.ExplainedByMovement(firstAnswer, firstControl, left, right))
+                {
+                    left = right;
+                    Interlocked.Increment(ref _movedLists);
                 }
             }
             if (answer.Status != control.Status || left != right)
