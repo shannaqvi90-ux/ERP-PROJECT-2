@@ -261,7 +261,8 @@ test.describe("app shell", () => {
     await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
     await page.keyboard.press("Control+K");
     await page.keyboard.type("alnoor");
-    const all = page.getByRole("option", { name: /^Show all [\d,]+ matches for “alnoor”$/ });
+    // The users' entry (contacts whose e-mail holds the word have their own, under Contacts).
+    const all = page.getByRole("group", { name: "Users", exact: true }).getByRole("option", { name: /^Show all [\d,]+ matches for “alnoor”$/ });
     await expect(all).toBeVisible();
     // Keyboard only: the entry is the last of the users' results (Up from the first wraps to it).
     for (let i = 0; i < 20 && (await all.getAttribute("aria-selected")) !== "true"; i++) await page.keyboard.press("ArrowUp");

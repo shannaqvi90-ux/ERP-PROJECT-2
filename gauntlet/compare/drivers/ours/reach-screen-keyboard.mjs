@@ -15,6 +15,9 @@ async function signIn(ctx) {
 const usersList = () => location.pathname === '/identity/users' && document.querySelectorAll('main table tbody tr').length > 0;
 const nav = async (op) => {
   await op.press('Alt+m', { label: 'navigation pane' });
+  // Contacts and Reports come before the Settings entries, so Users is the third entry.
+  await op.press('ArrowDown', { label: 'next entry' });
+  await op.press('ArrowDown', { label: 'next entry' });
   await op.waitFor(() => document.activeElement?.closest('nav.navpane') && document.activeElement.getAttribute('href') === '/identity/users', { label: 'Users entry focused' });
   await op.press('Enter', { label: 'open' });
   await op.waitFor(usersList, { label: 'users list' });
@@ -38,12 +41,12 @@ const palette = async (op) => {
 };
 export default {
   built: true,
-  path: 'G > U (go-to keys); or Alt+M (navigation pane, Users focused) > Enter; or Ctrl+K > "us" > Enter.',
+  path: 'G > U (go-to keys); or Alt+M (navigation pane) > Down > Down (Users focused) > Enter; or Ctrl+K > "us" > Enter.',
   signIn,
   run: goTo,
   variants: {
     goTo: { path: 'G > U', run: goTo },
-    navigation: { path: 'Alt+M > Enter', run: nav },
+    navigation: { path: 'Alt+M > Down > Down > Enter', run: nav },
     palette: { path: 'Ctrl+K > "us" > Enter', run: palette },
   },
   // Keyboard only: the task says so (keyboardOnly) and the harness fails a run with a pointer step.

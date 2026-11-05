@@ -11,26 +11,26 @@ namespace Erp.Modules.Identity.Tests;
 
 /// <summary>
 /// A module of a later wave, as the identity module will meet it: it brings its own permissions
-/// (view, create, change, delete contacts) and endpoints, and nothing in identity changes. Hosted
-/// only by these tests, the way the contacts directory (p16) will be hosted by the product.
+/// (view, create, change, delete parcels) and endpoints, and nothing in identity changes. Hosted
+/// only by these tests, the way a real module is hosted by the product.
 /// </summary>
-public sealed class LaterContactsModule : ErpModule
+public sealed class LaterMailroomModule : ErpModule
 {
-    public override string Name => "contacts";
+    public override string Name => "mailroom";
 
     public override void Register(ModuleBuilder module)
     {
-        module.Permissions("contacts.contacts.read", "contacts.contacts.create", "contacts.contacts.update", "contacts.contacts.delete");
+        module.Permissions("mailroom.parcels.read", "mailroom.parcels.create", "mailroom.parcels.update", "mailroom.parcels.delete");
         module.Endpoints(group =>
         {
-            group.MapGet("/contacts", () => Results.Ok(new { items = Array.Empty<object>() }))
-                .WithName("contacts.contacts.list").WithSummary("Contacts.").RequirePermission("contacts.contacts.read");
-            group.MapPost("/contacts", () => Results.Created("/api/contacts/contacts/1", new { id = Guid.NewGuid() }))
-                .WithName("contacts.contacts.create").WithSummary("Create a contact.").RequirePermission("contacts.contacts.create");
-            group.MapPut("/contacts/{id:guid}", (Guid id) => Results.Ok(new { id }))
-                .WithName("contacts.contacts.update").WithSummary("Change a contact.").RequirePermission("contacts.contacts.update");
-            group.MapDelete("/contacts/{id:guid}", (Guid id) => Results.NoContent())
-                .WithName("contacts.contacts.delete").WithSummary("Delete a contact.").RequirePermission("contacts.contacts.delete");
+            group.MapGet("/parcels", () => Results.Ok(new { items = Array.Empty<object>() }))
+                .WithName("mailroom.parcels.list").WithSummary("Parcels.").RequirePermission("mailroom.parcels.read");
+            group.MapPost("/parcels", () => Results.Created("/api/mailroom/parcels/1", new { id = Guid.NewGuid() }))
+                .WithName("mailroom.parcels.create").WithSummary("Create a parcel.").RequirePermission("mailroom.parcels.create");
+            group.MapPut("/parcels/{id:guid}", (Guid id) => Results.Ok(new { id }))
+                .WithName("mailroom.parcels.update").WithSummary("Change a parcel.").RequirePermission("mailroom.parcels.update");
+            group.MapDelete("/parcels/{id:guid}", (Guid id) => Results.NoContent())
+                .WithName("mailroom.parcels.delete").WithSummary("Delete a parcel.").RequirePermission("mailroom.parcels.delete");
         });
     }
 }
@@ -41,7 +41,7 @@ public sealed class LaterModuleFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync() => Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?>
     {
-        ["Erp:Testing:ExtraModules"] = typeof(LaterContactsModule).AssemblyQualifiedName,
+        ["Erp:Testing:ExtraModules"] = typeof(LaterMailroomModule).AssemblyQualifiedName,
     });
 
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
@@ -49,8 +49,8 @@ public sealed class LaterModuleFixture : IAsyncLifetime
 
 /// <summary>
 /// Roles are ready for module permissions that do not exist yet: the bar's "create a user with a
-/// restricted role" asks for someone who may view and create contacts and do nothing else. With a
-/// contacts module present, that role is one POST, the user holds exactly those two permissions in
+/// restricted role" asks for someone who may view and create parcels and do nothing else. With a
+/// mailroom module present, that role is one POST, the user holds exactly those two permissions in
 /// the API, the access view explains them, and the permission catalogue offers them in the matrix
 /// under the module's own block. The Administrator role follows the catalogue.
 /// </summary>
@@ -59,23 +59,23 @@ public sealed class ModulePermissionsTests(LaterModuleFixture fixture) : IClassF
     private ErpTestEnvironment Env => fixture.Env;
 
     [Fact]
-    public async Task A_role_that_may_only_view_and_create_contacts_works_end_to_end()
+    public async Task A_role_that_may_only_view_and_create_parcels_works_end_to_end()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
 
         // The Administrator role holds the new module's permissions (kept in step with the catalogue).
         var administrator = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items").EnumerateArray()
             .Single(r => r.GetProperty("isSystem").GetBoolean());
-        Assert.Contains("contacts.contacts.create", administrator.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()));
+        Assert.Contains("mailroom.parcels.create", administrator.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()));
 
         // The catalogue offers the module's permissions with their resource and action, for the matrix.
         var catalogue = await admin.GetFromJsonAsync<JsonElement>("/api/identity/permissions");
-        var contacts = catalogue.EnumerateArray().Where(p => p.GetProperty("module").GetString() == "contacts").ToList();
+        var contacts = catalogue.EnumerateArray().Where(p => p.GetProperty("module").GetString() == "mailroom").ToList();
         Assert.Equal(["create", "delete", "read", "update"], contacts.Select(p => p.GetProperty("action").GetString()!).Order(StringComparer.Ordinal));
-        Assert.All(contacts, p => Assert.Equal("contacts", p.GetProperty("resource").GetString()));
+        Assert.All(contacts, p => Assert.Equal("parcels", p.GetProperty("resource").GetString()));
 
         var role = await admin.PostAsJsonAsync("/api/identity/roles",
-            new { nameEn = "Contacts clerk", nameAr = "كاتب جهات الاتصال", permissions = new[] { "contacts.contacts.read", "contacts.contacts.create" } });
+            new { nameEn = "Parcels clerk", nameAr = "كاتب الطرود", permissions = new[] { "mailroom.parcels.read", "mailroom.parcels.create" } });
         Assert.Equal(HttpStatusCode.Created, role.StatusCode);
         var roleId = (await role.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
         var email = $"hessa.clerk@{Env.TenantA.EmailDomain}";
@@ -84,24 +84,24 @@ public sealed class ModulePermissionsTests(LaterModuleFixture fixture) : IClassF
         Assert.Equal(HttpStatusCode.Created, user.StatusCode);
         var userId = (await user.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
 
-        // In the API: view and create contacts, and nothing else.
+        // In the API: view and create parcels, and nothing else.
         using var clerk = await Env.SignInAsync(email);
-        Assert.Equal(["contacts.contacts.create", "contacts.contacts.read"],
+        Assert.Equal(["mailroom.parcels.create", "mailroom.parcels.read"],
             (await clerk.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("permissions").EnumerateArray().Select(p => p.GetString()!).Order(StringComparer.Ordinal));
-        Assert.Equal(HttpStatusCode.OK, (await clerk.GetAsync("/api/contacts/contacts")).StatusCode);
-        Assert.Equal(HttpStatusCode.Created, (await clerk.PostAsJsonAsync("/api/contacts/contacts", new { })).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await clerk.PutAsJsonAsync($"/api/contacts/contacts/{Guid.NewGuid()}", new { })).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await clerk.DeleteAsync($"/api/contacts/contacts/{Guid.NewGuid()}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await clerk.GetAsync("/api/mailroom/parcels")).StatusCode);
+        Assert.Equal(HttpStatusCode.Created, (await clerk.PostAsJsonAsync("/api/mailroom/parcels", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await clerk.PutAsJsonAsync($"/api/mailroom/parcels/{Guid.NewGuid()}", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await clerk.DeleteAsync($"/api/mailroom/parcels/{Guid.NewGuid()}")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await clerk.GetAsync("/api/identity/users")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await clerk.GetAsync("/api/identity/roles")).StatusCode);
 
         // The access view explains it: two permissions, both from the clerk role.
         var access = await admin.GetFromJsonAsync<JsonElement>($"/api/identity/users/{userId}/access");
         var held = access.GetProperty("permissions").EnumerateArray().ToList();
-        Assert.Equal(["contacts.contacts.create", "contacts.contacts.read"], held.Select(p => p.GetProperty("key").GetString()!).Order(StringComparer.Ordinal));
+        Assert.Equal(["mailroom.parcels.create", "mailroom.parcels.read"], held.Select(p => p.GetProperty("key").GetString()!).Order(StringComparer.Ordinal));
         Assert.All(held, p => Assert.Equal(roleId, p.GetProperty("grantedBy")[0].GetGuid()));
 
-        // A user who may manage users but not contacts cannot hand out the clerk role.
+        // A user who may manage users but not parcels cannot hand out the clerk role.
         var userAdmin = await admin.PostAsJsonAsync("/api/identity/roles",
             new { nameEn = "User desk", nameAr = "مكتب المستخدمين", permissions = new[] { "identity.users.read", "identity.users.create", "identity.roles.read" } });
         var deskEmail = $"desk@{Env.TenantA.EmailDomain}";

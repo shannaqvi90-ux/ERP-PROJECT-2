@@ -36,8 +36,12 @@ afterEach(() => {
 
 const en = (key: string) => translate("en", key);
 
-/** Every permission the identity and tenancy screens and actions know. */
+/** Every permission the identity, tenancy and contacts screens and actions know. */
 const every = [
+  "contacts.contacts.read",
+  "contacts.contacts.create",
+  "contacts.contacts.update",
+  "contacts.contacts.archive",
   "identity.profile.update",
   "identity.users.read",
   "identity.users.create",
@@ -80,7 +84,7 @@ const every = [
 
 /** A user who may read every screen and change nothing but their own settings. */
 const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read",
-  "currency.currencies.read", "currency.rates.read", "numbering.sequences.read", "jobs.jobs.read", "jobs.schedules.read"];
+  "currency.currencies.read", "currency.rates.read", "contacts.contacts.read", "numbering.sequences.read", "jobs.jobs.read", "jobs.schedules.read"];
 
 const session = (permissions: string[], language = "en") => ({
   authenticated: true,
@@ -104,6 +108,16 @@ const definitions: Record<string, unknown> = {
   "jobs.jobs": { key: "jobs.jobs", labelKey: "jobs.jobs.title", endpoint: "/api/jobs/jobs", columns: [column("titleEn")], searchFields: ["titleEn"], defaultSort: "-createdAt", presets: [], canShare: false, maxTake: 200, printable: true },
   "jobs.schedules": { key: "jobs.schedules", labelKey: "jobs.schedules.title", endpoint: "/api/jobs/schedules", columns: [column("scheduleName")], searchFields: ["scheduleName"], defaultSort: "scheduleName", presets: [], canShare: false, maxTake: 200, printable: true },
   "currency.rates": { key: "currency.rates", labelKey: "currency.rates.title", endpoint: "/api/currency/rates", columns: [column("currencyCode")], searchFields: ["currencyCode"], defaultSort: "currencyCode", presets: [], canShare: false, maxTake: 200, printable: true },
+  "contacts.contacts": { key: "contacts.contacts", labelKey: "contacts.contacts.title", endpoint: "/api/contacts/contacts", columns: [column("nameEn")], searchFields: ["nameEn"], defaultSort: "nameEn", presets: [], canShare: false, maxTake: 200, printable: true },
+};
+
+const contactId = "0190a000-0000-7000-8000-0000000000c1";
+const contact = {
+  id: contactId, kind: "organisation", code: "C-DEMO-1", nameEn: "Falcon Building Materials LLC", nameAr: "فالكون لمواد البناء ذ.م.م", organisationId: null,
+  organisationName: null, organisationNameAr: null, jobTitle: null, email: "accounts@falcon.example", phone: "+971 4 555 0100", mobile: null, website: null,
+  addressLine1: null, addressLine2: null, area: null, city: "Dubai", emirate: "dubai", poBox: null, country: "AE", addressAr: null, tags: [],
+  tradeLicenceNumber: null, taxRegistrationNumber: null, defaultCurrency: "AED", creditLimit: null, notes: null, isActive: true, peopleCount: 0,
+  createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z", version: 2,
 };
 const sequenceRow = { id: "seq1", companyId: "c9", companyCode: "AN-AJM", documentType: "purchasing.order", nameEn: "Purchase order", nameAr: "أمر شراء", prefix: "PO-{YYYY}-", suffix: "", padding: 5, reset: "yearly", gapless: false, perBranch: false, nextNumber: "PO-2026-00148", nextValue: 148, workingCompany: true, updatedAt: "2026-10-01T00:00:00Z", version: 1, canUpdate: true };
 const jobRow = { id: "job1", jobType: "jobs.selfCheck", titleEn: "Self-check of the job queue", titleAr: "فحص ذاتي لطابور المهام", jobStatus: "succeeded", startedBy: "user", progressPercent: 100, progressEn: "", progressAr: "", runAt: "2026-10-29T08:00:00Z", startedAt: "2026-10-29T08:00:01Z", finishedAt: "2026-10-29T08:00:03Z", tryCount: 1, maxAttempts: 1, errorCode: null, errorEn: "", errorAr: "", createdAt: "2026-10-29T08:00:00Z", updatedAt: "2026-10-29T08:00:03Z", version: 1, canRerun: false, canCancel: false };
@@ -175,6 +189,10 @@ async function open(
     if (p === "/api/tenancy/branches") return { status: 200, body: { items: [branch], total: 1, next: null } };
     if (p === "/api/tenancy/branches/b1") return { status: 200, body: branch };
     if (p === "/api/tenancy/workplace") return { status: 200, body: workplace };
+    if (p === "/api/contacts/contacts") return { status: 200, body: { items: [contact], total: 1, next: null } };
+    if (p === "/api/contacts/contacts/defaults") return { status: 200, body: { country: "AE", defaultCurrency: "AED", baseCurrency: "AED" } };
+    if (p === "/api/contacts/contacts/duplicates") return { status: 200, body: [] };
+    if (p === `/api/contacts/contacts/${contactId}`) return { status: 200, body: contact };
     if (p === "/api/numbering/sequences") return { status: 200, body: { items: [sequenceRow], total: 1, next: null } };
     if (p === "/api/numbering/sequences/seq1") return { status: 200, body: { ...sequenceRow, companyNameEn: "Al Noor Ajman LLC", companyNameAr: "النور عجمان ذ.م.م", previewBranchId: null, today: "2026-10-25", branches: [], counters: [], recent: [], createdAt: "2026-10-01T00:00:00Z" } };
     if (p === "/api/jobs/types") return { status: 200, body: [{ key: "jobs.selfCheck", nameEn: "Self-check of the job queue", nameAr: "فحص ذاتي لطابور المهام", descriptionEn: null, descriptionAr: null, maxAttempts: 1, timeoutSeconds: 120, startable: true, schedulable: true }] };
@@ -708,6 +726,7 @@ const sweptScreens: Screen[] = [
   { path: "/identity/roles?open=r-clerk" },
   { path: "/tenancy/companies?open=c9" },
   { path: "/tenancy/branches?open=b1" },
+  { path: `/contacts/contacts?open=${contactId}` },
 ];
 
 const label = (screen: Screen) => (screen.tab ? `${screen.path} (${en(screen.tab)})` : screen.path);

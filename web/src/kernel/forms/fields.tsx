@@ -443,12 +443,15 @@ export type LookupRow = { id: string } & Record<string, unknown>;
  * and Enter, or the mouse) and keeps the chosen record's id; Escape or Delete on an empty search
  * clears it. The chosen record's label is read once from the list's endpoint when not given.
  */
-export function LookupField({ field, endpoint, labelOf, initialLabel, ...p }: Common & {
+export function LookupField({ field, endpoint, labelOf, initialLabel, filter, ...p }: Common & {
   field: FieldBinding<string>;
   /** The referenced list's endpoint, for example /api/tenancy/companies. */
   endpoint: string;
   labelOf: (row: LookupRow) => string;
   initialLabel?: string;
+  /** A filter in the list query language the matches must also meet (only active organisations,
+   * for example); the chosen record's own label is read without it. */
+  filter?: string;
 }) {
   const { t } = useI18n();
   const listId = useId();
@@ -485,6 +488,7 @@ export function LookupField({ field, endpoint, labelOf, initialLabel, ...p }: Co
     const timer = window.setTimeout(() => {
       const query = new URLSearchParams({ take: "20" });
       if (text.trim()) query.set("search", text.trim());
+      if (filter) query.set("filter", filter);
       api<{ items: LookupRow[] }>("GET", `${endpoint}?${query}`)
         .then((page) => {
           setOptions(page.items);
@@ -494,7 +498,7 @@ export function LookupField({ field, endpoint, labelOf, initialLabel, ...p }: Co
         .catch(() => setOptions([]));
     }, 150);
     return () => window.clearTimeout(timer);
-  }, [text, endpoint]);
+  }, [text, endpoint, filter]);
 
   const choose = (row: LookupRow | null) => {
     field.onChange(row?.id ?? "");
