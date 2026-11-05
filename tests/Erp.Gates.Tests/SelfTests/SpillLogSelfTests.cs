@@ -64,9 +64,10 @@ public sealed class SpillLogSelfTests
     public void A_text_written_for_every_record_is_read_back_as_one_string()
     {
         var log = NewLog();
+        var unique = new string('t', 300) + Guid.NewGuid().ToString("N");
         for (var i = 0; i < 100; i++)
         {
-            log.Add((new string('t', 300) + "x", i, null, null));
+            log.Add((unique + "x", i, null, null));
         }
         var texts = log.From(0).Select(r => r.Text).ToList();
         Assert.All(texts, t => Assert.Same(texts[0], t));

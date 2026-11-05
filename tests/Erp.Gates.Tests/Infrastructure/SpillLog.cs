@@ -210,7 +210,7 @@ public sealed class SpillReader(Stream stream, Dictionary<string, string>? share
             return SpillStrings.Get(tag - 1);
         }
         var text = ReadString();
-        if (shared is null || text.Length > 256)
+        if (shared is null || text.Length > 8192)
         {
             return text;
         }
