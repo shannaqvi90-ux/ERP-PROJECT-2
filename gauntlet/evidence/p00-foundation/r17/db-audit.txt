@@ -1,0 +1,27 @@
+id|bigint||not null|generated always as identity
+tenant_id|uuid||not null|
+occurred_at|timestamp with time zone||not null|now()
+actor_id|uuid|||
+actor_kind|character varying(20)||not null|
+table_schema|character varying(63)||not null|
+table_name|character varying(63)||not null|
+record_id|uuid|||
+action|character varying(10)||not null|
+changes|jsonb||not null|
+transaction_id|bigint||not null|
+correlation_id|character varying(100)|||
+record_branch_id|uuid|||
+record_code|character varying(200)|||
+record_company_id|uuid|||
+record_label|character varying(200)|||
+record_label_ar|character varying(200)|||
+uid|uuid||not null|gen_random_uuid()
+fields|text[]|||generated always as (audit.field_names(changes)) stored
+record_type|character varying(127)||not null|generated always as ((((table_schema::text || '.'::text) || table_name::text))) stored
+tables with audit trigger|23
+tenant tables without audit trigger|audit.entries
+tenant tables without audit trigger|identity.sign_in_attempts
+recent|2026-11-05 07:19:55.323336+00|user|insert|identity.sessions|{"id": {"new": "01a1aa94-1aba-7712-a922-7442adf27710"}, "user_id": {"new": "01a1aa93-e23a-767d-95bd-944df7d69e02"}, "expires_at": {"new": "2026-11-05T19:19:55.232028+00:00"}, "ip_address": {"new": "17
+recent|2026-11-05 07:19:55.317463+00|user|update|identity.user_credentials|{"changed_at": {"new": "2026-11-05T07:19:55.232028+00:00", "old": "2026-11-05T07:19:40.956114+00:00"}, "changed_by": {"new": "01a1aa93-e23a-767d-95bd-944df7d69e02"}, "must_change": {"new": false, "old
+recent|2026-11-05 07:19:41.469368+00|seed|insert|jobs.schedules|{"id": {"new": "01a1aa93-e481-7410-85f8-800d9d8078f2"}, "cron": {"new": "30 3 * * *"}, "name": {"new": "تنظيف المهام المنتهية"}, "type": {"new": "jobs.cleanup"}, "payload": {"new": {}}, "is_enabled": 
+recent|2026-11-05 07:19:41.399462+00|seed|insert|numbering.sequences|{"id": {"new": "01a1aa93-e443-7412-9604-313810f66b7d"}, "reset": {"new": 2}, "prefix": {"new": "JV-{YYYY}-{MM}-"}, "suffix": {"new": ""}, "gapless": {"new": true}, "padding": {"new": 4}, "company_id":

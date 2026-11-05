@@ -1,0 +1,100 @@
+A tenant 0190a000-0000-7000-8000-000000000001 B tenant 0190a000-0000-7000-8000-000000000002
+row versions: A1 201 2428695409 B 2450088179,60173384,4204978155,115416500,18391266 A2 201 3322112883
+A totals before B writes {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":7,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+A totals after B writes  {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":9,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+B seq 01a1aa84-c1ae-71eb-8bfe-450e1aec46d2 rate 01a1aa84-bfdf-752e-8ca1-b454c05f360d currency 01a1aa84-bf87-7291-a7f4-a21021c7e7e1
+B job 01a1aa84-c1ed-7343-817f-ec123790e072 schedule 01a1aa84-c1e1-718c-bdb3-39d9fe8de35d
+B audit entry 43b87d6d-e8a0-4caf-8127-a34756b52fad
+B create canary user 201
+lists: tenancy.companies,tenancy.branches,tenancy.access,identity.users,identity.roles,numbering.sequences,currency.currencies,currency.rates,jobs.jobs,jobs.schedules,audit.log
+B views tenancy.companies 201 201
+B views tenancy.branches 201 201
+B views tenancy.access 201 201
+B views identity.users 201 201
+B views identity.roles 201 201
+B views numbering.sequences 201 201
+B views currency.currencies 201 201
+B views currency.rates 201 201
+B views jobs.jobs 201 201
+B views jobs.schedules 201 201
+B views audit.log 201 201
+B logo put 200
+B logo get 200 image/png
+ids shared by A and B answers: 0 
+B-only ids collected: 726
+operations attacked: 205
+documented query-parameter requests: 1326
+switch-input requests: 870
+export requests: 160
+filter requests: 63
+path-variant and audit requests: 229
+B rows unchanged by A attack: true
+LEAKS: 68
+   DELETE /api/currency/rates/01a1aa84-bfdf-752e-8ca1-b454c05f360d with B id answered 204
+   GET /api/audit/records/01a1aa8e-52db-7cbd-bf31-dcdd8173e760?type=identity.users with B id answered 200
+   GET /api/audit/log [X-Tenant-Id] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Workspace] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Company-Id] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Erp-Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Forwarded-Host] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [Host] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [cookies] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [X-Tenant-Id] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [X-Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [X-Workspace] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [X-Company-Id] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [X-Erp-Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [X-Forwarded-Host] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [Host] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log [cookies] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log?format=csv&language=en -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log?format=csv&language=ar -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log?format=json&language=en -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log/ [switch headers] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /API/REPORTS/LISTS/AUDIT.LOG [switch headers] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /Api/reports/lists/audit.log [switch headers] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/records/01a1aa8e-52db-7cbd-bf31-dcdd8173e760?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1aa84-bb93-72f5-bf6f-639d73c05fd9?type=identity.users with B id answered 200
+   GET /api/audit/records/018f6605-b084-72c5-aa78-a4a041c593b7?type=identity.users with B id answered 200
+   GET /api/audit/records/018f6605-b085-7a8c-9970-bc83fbe5cb4e?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ed-7343-817f-ec123790e072?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1aa84-bfdf-752e-8ca1-b454c05f360d?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ae-71eb-8bfe-450e1aec46d2?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1aa8e-52db-7cbd-bf31-dcdd8173e760?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1aa84-bb93-72f5-bf6f-639d73c05fd9?type=identity.roles with B id answered 200
+   GET /api/audit/records/018f6605-b084-72c5-aa78-a4a041c593b7?type=identity.roles with B id answered 200
+   GET /api/audit/records/018f6605-b085-7a8c-9970-bc83fbe5cb4e?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ed-7343-817f-ec123790e072?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1aa84-bfdf-752e-8ca1-b454c05f360d?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ae-71eb-8bfe-450e1aec46d2?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1aa8e-52db-7cbd-bf31-dcdd8173e760?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1aa84-bb93-72f5-bf6f-639d73c05fd9?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/018f6605-b084-72c5-aa78-a4a041c593b7?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/018f6605-b085-7a8c-9970-bc83fbe5cb4e?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ed-7343-817f-ec123790e072?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1aa84-bfdf-752e-8ca1-b454c05f360d?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ae-71eb-8bfe-450e1aec46d2?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1aa8e-52db-7cbd-bf31-dcdd8173e760?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1aa84-bb93-72f5-bf6f-639d73c05fd9?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/018f6605-b084-72c5-aa78-a4a041c593b7?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/018f6605-b085-7a8c-9970-bc83fbe5cb4e?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ed-7343-817f-ec123790e072?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1aa84-bfdf-752e-8ca1-b454c05f360d?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ae-71eb-8bfe-450e1aec46d2?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1aa8e-52db-7cbd-bf31-dcdd8173e760?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1aa84-bb93-72f5-bf6f-639d73c05fd9?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/018f6605-b084-72c5-aa78-a4a041c593b7?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/018f6605-b085-7a8c-9970-bc83fbe5cb4e?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ed-7343-817f-ec123790e072?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1aa84-bfdf-752e-8ca1-b454c05f360d?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ae-71eb-8bfe-450e1aec46d2?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1aa8e-52db-7cbd-bf31-dcdd8173e760?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1aa84-bb93-72f5-bf6f-639d73c05fd9?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/018f6605-b084-72c5-aa78-a4a041c593b7?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/018f6605-b085-7a8c-9970-bc83fbe5cb4e?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ed-7343-817f-ec123790e072?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1aa84-bfdf-752e-8ca1-b454c05f360d?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1aa84-c1ae-71eb-8bfe-450e1aec46d2?type=numbering.sequences with B id answered 200

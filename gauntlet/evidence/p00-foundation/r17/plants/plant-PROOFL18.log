@@ -1,0 +1,38 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.63]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.81]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Critic.CriticR17Proof.Tenant_A_never_reads_tenant_B_users_through_a_header_on_a_folder_path [1 s]
+[xUnit.net 00:00:19.66]     Erp.Gates.Tests.Critic.CriticR17Proof.The_health_check_answers_nothing_of_any_workspace [FAIL]
+[xUnit.net 00:00:19.66]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:19.66]                                            ↓ (pos 37)
+[xUnit.net 00:00:19.66]       String: ···"k","workspace":"31 viewer@bravo-cnry0942274a36.exa"···
+[xUnit.net 00:00:19.66]       Found:  "@"
+[xUnit.net 00:00:19.66]       Stack Trace:
+[xUnit.net 00:00:19.66]         /work/tests/Erp.Gates.Tests/Critic/CriticR17Proof.cs(72,0): at Erp.Gates.Tests.Critic.CriticR17Proof.The_health_check_answers_nothing_of_any_workspace()
+[xUnit.net 00:00:19.66]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:19.66]       Output:
+[xUnit.net 00:00:19.66]         GET /api/health?workspace=B -> 200 {"status":"ok","workspace":"31 viewer@bravo-cnry0942274a36.example"}
+[xUnit.net 00:00:19.93]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.Critic.CriticR17Proof.A_user_with_no_roles_is_denied_whatever_the_path_form_or_host [483 ms]
+  Failed Erp.Gates.Tests.Critic.CriticR17Proof.The_health_check_answers_nothing_of_any_workspace [12 ms]
+  Error Message:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                     ↓ (pos 37)
+String: ···"k","workspace":"31 viewer@bravo-cnry0942274a36.exa"···
+Found:  "@"
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR17Proof.The_health_check_answers_nothing_of_any_workspace() in /work/tests/Erp.Gates.Tests/Critic/CriticR17Proof.cs:line 72
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ GET /api/health?workspace=B -> 200 {"status":"ok","workspace":"31 viewer@bravo-cnry0942274a36.example"}
+
+
+
+Test Run Failed.
+Total tests: 3
+     Passed: 2
+     Failed: 1
+ Total time: 20.3439 Seconds

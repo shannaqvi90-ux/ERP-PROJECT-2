@@ -1,0 +1,30 @@
+build start 08:04:34
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:24.95
+build end 08:05:03
+=== PROOFNONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR17Proof start 08:05:03
+=== PROOFNONE exit 0 end 08:05:25
+Total tests: 3
+ Total time: 20.5592 Seconds
+=== PROOFL18 (CRITIC_PLANT=L18) filter FullyQualifiedName~CriticR17Proof start 08:05:25
+=== PROOFL18 exit 1 end 08:05:46
+  Failed Erp.Gates.Tests.Critic.CriticR17Proof.The_health_check_answers_nothing_of_any_workspace [12 ms]
+Total tests: 3
+ Total time: 20.3439 Seconds
+=== G1STATIC (CRITIC_PLANT=NONE) filter FullyQualifiedName~G1OutsideProcessStateTests|FullyQualifiedName~G1TenantSourceTests|FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1TenantSettingCodeTests|FullyQualifiedName~G2ClientAddressCodeTests start 08:05:46
+=== G1STATIC exit 1 end 08:06:04
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [372 ms]
+Total tests: 10
+ Total time: 17.3899 Seconds
+=== KernelP17 (CRITIC_PLANT=P17) filter FullyQualifiedName~Erp start 08:06:04
+=== KernelP17 exit 0 end 08:06:52
+Total tests: 299
+ Total time: 47.3523 Seconds
+=== Modules.IdentityP17 (CRITIC_PLANT=P17) filter FullyQualifiedName~Erp start 08:06:52
+=== Modules.IdentityP17 exit 0 end 08:07:31
+Total tests: 107
+ Total time: 38.3003 Seconds
