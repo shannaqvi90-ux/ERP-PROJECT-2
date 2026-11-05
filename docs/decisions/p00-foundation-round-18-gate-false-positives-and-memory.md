@@ -118,3 +118,9 @@ to 256 characters, so the self-test's 301-character text came back as 100 instan
 (not done in this session, by the round protocol): share inline texts up to 8,192 characters per
 read in `SpillReader.Text()` (the dictionary is per read and holds distinct texts only), and make
 the self-test use a fresh text so it does not depend on the table's state.
+
+## Fixer 1 (round 18): the spill self-test
+
+SpillStrings stops numbering texts after 400,000 entries or 48 M characters, so after a long gate run a 301-character text is written inline, and SpillReader.Text() shared inline texts only up to 256 characters. The limit is now 8,192 characters per read (the per-read dictionary holds distinct texts only), and the self-test A_text_written_for_every_record_is_read_back_as_one_string uses a fresh text with a new Guid so it does not depend on the table's state.
+
+Verify run (not alone, load highest 32.94 on 16 CPUs, start 1.65): every test passed (dotnet 942, web 663, e2e 138, compare 488, build 13). The only ratchet failure was verify.cpuSeconds: 13,384 s (dotnet 10,594, web 2,095, e2e 638, timing 57) against the maximum 13,200 s. Other work beside the verify used 67 % of the machine's processor time in that run; the integrator's alone run decides.
