@@ -89,3 +89,32 @@ would lengthen the wall clock for no processor saving. If the measured peak belo
 ## Measurements
 
 See the section appended after the round's verify.
+
+Round 18 builder verify (commit before this note; machine busy with other containers, not run
+alone): the suite (every gate test except the three long self-tests) passed 256 of 257; the
+failure is this round's own self-test `SpillLogSelfTests.A_text_written_for_every_record_is_read_back_as_one_string`
+(see below). Everything else passed, among them `G1HttpIsolationTests` (2 h in the suite process),
+`G1NonInterferenceTests`, `G1ListVolumeTests` (15 min), `G1CompanyIsolationTests` (7 m 47 s), the
+G2 path-case tests including P17, the three long self-tests.
+
+- Peak resident memory of the `Erp.Gates.Tests` suite process, sampled every 30 s from
+  `docker top` for the whole 2.2 h: **5.27 GB** (round 17 and earlier: 16 to 19 GB). The host's
+  swap stayed at its idle 5.5 GB for the run (no growth). Method differs from the older table
+  (`/usr/bin/time` max RSS on the host, the four processes side by side); same four processes in
+  the verify's toolbox container, the same tests.
+- Processor time of the verify (cpu-dotnet 10,442 s, cpu-web 2,131 s, cpu-e2e 489 s):
+  13,062 s in total, against 13,177 s of round 17's alone run. The spill adds one small binary
+  write per record; it did not show.
+- Product texts left out of the markers on this seed's demo (`tenant B: ... 151 extra markers (0
+  product texts left out)`): 0. Tenant B's draw holds no clean-up job here, which is exactly the
+  seed dependence the rule removes: the Arabic text is now left out whichever tenant draws it.
+- Moving lists: no pair needed the movement rule in this run (no failure to explain); the rule
+  is proven by its self-tests.
+
+Open at the end of the builder's session: the failing self-test. Cause: `SpillStrings` stops
+numbering texts after 400,000 entries or 48 M characters (the long gate run exhausts it), after
+which a 301-character text is written inline and `SpillReader.Text()` shared inline texts only up
+to 256 characters, so the self-test's 301-character text came back as 100 instances. Wanted fix
+(not done in this session, by the round protocol): share inline texts up to 8,192 characters per
+read in `SpillReader.Text()` (the dictionary is per read and holds distinct texts only), and make
+the self-test use a fresh text so it does not depend on the table's state.
