@@ -38,13 +38,23 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
         return varied + tail;
     }
 
+    /// <summary>The path with one '/' added to it, before the query.</summary>
+    internal static string WithTrailingSlash(string pathAndQuery)
+    {
+        var query = pathAndQuery.IndexOf('?');
+        var path = query < 0 ? pathAndQuery : pathAndQuery[..query];
+        var tail = query < 0 ? "" : pathAndQuery[query..];
+        return (path.EndsWith('/') ? path : path + "/") + tail;
+    }
+
     /// <summary>Every permissioned endpoint in a varied-case form, as the cookie session of
     /// <paramref name="email"/> (a user whose roles grant nothing): each must answer 403.</summary>
-    internal static async Task<(List<string> Problems, int Requests, int Forms)> DeniedAsync(
+    internal static async Task<(List<string> Problems, int Requests, int Forms, int SlashRequests)> DeniedAsync(
         ErpTestEnvironment env, string email, IReadOnlyList<ApiEndpoint> permissioned, ErpAppFactory? factory = null)
     {
         var problems = new List<string>();
         var requests = 0;
+        var slashRequests = 0;
         var forms = new HashSet<string>(StringComparer.Ordinal);
         foreach (var carrier in await env.SignInPerCarrierAsync(email, factory))
         {
@@ -69,10 +79,22 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
                     {
                         problems.Add($"{endpoint} as {request.RequestUri.OriginalString}: {(int)response.StatusCode}");
                     }
+
+                    // Backlog row 15 (plant P17): routing ignores a trailing slash, so the same request
+                    // with one more '/' on its path reaches the same endpoint; a permission check that
+                    // tests how the path ends would pass it. One more request per endpoint, lower case.
+                    using var slashed = G2PermissionTests.Request(endpoint);
+                    slashed.RequestUri = new Uri(WithTrailingSlash(slashed.RequestUri!.OriginalString), UriKind.RelativeOrAbsolute);
+                    using var slashedResponse = await carrier.Client.SendTimedAsync(slashed, "G2 trailing slash");
+                    slashRequests++;
+                    if (slashedResponse.StatusCode != HttpStatusCode.Forbidden)
+                    {
+                        problems.Add($"{endpoint} as {slashed.RequestUri.OriginalString}: {(int)slashedResponse.StatusCode}");
+                    }
                 }
             }
         }
-        return (problems, requests, forms.Count);
+        return (problems, requests, forms.Count, slashRequests);
     }
 
     /// <summary>Self-test (plant P13, backlog row 3): a permission rule that trusts the Host header
@@ -89,7 +111,7 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
         plant.HostOn = true;
         try
         {
-            var (problems, requests, _) = await DeniedAsync(Env, email, permissioned, planted);
+            var (problems, requests, _, _) = await DeniedAsync(Env, email, permissioned, planted);
             TestContext.Current.TestOutputHelper?.WriteLine($"plant P13: {problems.Count} of {requests} requests passed");
             Assert.NotEmpty(problems);
             Assert.All(problems, p => Assert.DoesNotContain(": 403", p, StringComparison.Ordinal));
@@ -111,10 +133,12 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
         await G2PermissionTests.CreateUserHoldingAsync(admin, email, [], "Nothing", "لا شيء");
         var permissioned = EndpointInventory.From(Env.Factory.Services).Where(e => !e.IsAnonymous).ToList();
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var (problems, requests, forms) = await DeniedAsync(Env, email, permissioned);
+        var (problems, requests, forms, slashRequests) = await DeniedAsync(Env, email, permissioned);
         TestContext.Current.TestOutputHelper?.WriteLine($"{requests} varied-case requests in {sw.Elapsed.TotalSeconds:0.0} s wall clock");
         Assert.True(problems.Count == 0, string.Join("\n", problems.Take(30)));
         Assert.Equal(permissioned.Count, requests);
+        Assert.Equal(permissioned.Count, slashRequests);
+        Assert.True(slashRequests >= Ratchet.Min("g2.trailingSlashDenyRequests"), $"{slashRequests} trailing-slash deny requests; ratchet minimum {Ratchet.Min("g2.trailingSlashDenyRequests")}");
         Assert.True(forms >= 3, $"{forms} different prefixes sent");
         Assert.True(requests >= Ratchet.Min("g2.pathCaseDenyRequests"), $"{requests} varied-case deny requests; ratchet minimum {Ratchet.Min("g2.pathCaseDenyRequests")}");
     }
@@ -140,7 +164,7 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
         await using var planted = new ErpAppFactory(PathCaseModule.Settings(Env.Factory.Settings));
         var plant = planted.Services.GetRequiredService<PathCaseModule.Switch>();
         var permissioned = EndpointInventory.From(planted.Services).Where(e => !e.IsAnonymous).ToList();
-        var (clean, _, _) = await DeniedAsync(Env, email, permissioned, planted);
+        var (clean, _, _, _) = await DeniedAsync(Env, email, permissioned, planted);
         Assert.True(clean.Count == 0, "Without the plant on, the varied-case deny reported:\n" + string.Join("\n", clean.Take(10)));
         plant.On = true;
         try
@@ -148,7 +172,7 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
             // The lower-case deny cannot see it: the plant leaves /api/ paths to the real check.
             var lower = await CarrierMatrix.DeniedEverythingAsync(Env, email, permissioned, planted, ownIds: false, onlyCarriers: [SessionTokenCarriers.CookieName]);
             Assert.True(lower.Problems.Count == 0, "The lower-case deny matrix reported:\n" + string.Join("\n", lower.Problems.Take(10)));
-            var (problems, requests, _) = await DeniedAsync(Env, email, permissioned, planted);
+            var (problems, requests, _, _) = await DeniedAsync(Env, email, permissioned, planted);
             TestContext.Current.TestOutputHelper?.WriteLine($"plant P16: {problems.Count} of {requests} varied-case requests passed");
             Assert.Equal(permissioned.Count, problems.Count);
             Assert.All(problems, p => Assert.DoesNotContain(": 403", p, StringComparison.Ordinal));
@@ -158,5 +182,43 @@ public sealed class G2PathCaseTests(G2Fixture fixture) : IClassFixture<G2Fixture
             plant.On = false;
         }
         Assert.True(1 >= Ratchet.Min("g2.pathCasePlantsCaught"), $"1 path-case plant; ratchet minimum {Ratchet.Min("g2.pathCasePlantsCaught")}");
+    }
+
+    /// <summary>Self-test (plant P17, backlog row 15): a permission check that passes any signed-in
+    /// request whose path ends in '/'. Every other deny matrix stays clean with it on; the
+    /// trailing-slash request of each endpoint must be reported.</summary>
+    [Fact]
+    public async Task The_trailing_slash_deny_catches_a_permission_check_that_tests_how_the_path_ends()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var email = $"g2.slash.plant.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}";
+        await G2PermissionTests.CreateUserHoldingAsync(admin, email, [], "Nothing slash plant", "لا شيء");
+        await using var planted = new ErpAppFactory(PathCaseModule.Settings(Env.Factory.Settings));
+        var plant = planted.Services.GetRequiredService<PathCaseModule.Switch>();
+        var permissioned = EndpointInventory.From(planted.Services).Where(e => !e.IsAnonymous).ToList();
+        plant.SlashOn = true;
+        try
+        {
+            // The lower-case deny matrix (no trailing slash) cannot see it.
+            var lower = await CarrierMatrix.DeniedEverythingAsync(Env, email, permissioned, planted, ownIds: false, onlyCarriers: [SessionTokenCarriers.CookieName]);
+            Assert.True(lower.Problems.Count == 0, "The lower-case deny matrix reported:\n" + string.Join("\n", lower.Problems.Take(10)));
+            var (problems, _, _, slashRequests) = await DeniedAsync(Env, email, permissioned, planted);
+            TestContext.Current.TestOutputHelper?.WriteLine($"plant P17: {problems.Count} of {slashRequests} trailing-slash requests passed");
+            Assert.Equal(permissioned.Count, problems.Count);
+            Assert.All(problems, p => Assert.EndsWith("/", p.Split(" as ")[1].Split(": ")[0].Split('?')[0], StringComparison.Ordinal));
+        }
+        finally
+        {
+            plant.SlashOn = false;
+        }
+        Assert.True(1 >= Ratchet.Min("g2.trailingSlashPlantsCaught"), $"1 trailing-slash plant; ratchet minimum {Ratchet.Min("g2.trailingSlashPlantsCaught")}");
+    }
+
+    [Fact]
+    public void A_trailing_slash_is_added_before_the_query_and_only_once()
+    {
+        Assert.Equal("/api/identity/users/?take=5", WithTrailingSlash("/api/identity/users?take=5"));
+        Assert.Equal("/api/identity/users/", WithTrailingSlash("/api/identity/users/"));
+        Assert.Equal("/api/x/0f0e/", WithTrailingSlash("/api/x/0f0e"));
     }
 }
