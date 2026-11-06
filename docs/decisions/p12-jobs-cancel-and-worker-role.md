@@ -19,3 +19,10 @@ looked up the names a page's values mention again for every page, although the s
 user ids recur. Change (the same as p09's d445a4ec, taken here so the cost is gone from this branch
 too; identical text, so the merge with p09 is clean): `AuditReader.ReadableTypesAsync` answers once per
 request and `ReferencedNamesAsync` remembers every id it has looked up (found or not).
+
+## Round 4, fixer 4 verify (2026-11-06/07)
+
+ERP_PROJECT=b-p12-jobs, slot 1 of 2 taken 2026-11-06T20:38:32Z, run in a quiet machine (load 1.2 at the start, highest 31). No code change in this fixer.
+Every test passed: dotnet 982, web 691, e2e 143, compare 488, build 13; the G1 test that aborted in fixer 3's run (at load 54 to 69) passed. The only ratchet failure
+was verify.cpuSeconds: 16,295 s (dotnet 13,413, web 2,280, e2e 542, timing 60) against 16,000 s, 295 s over, inside the 500 s allowance of owner decision #34
+for a re-integration. This was not an alone run (other work used 67 % of the machine's processor time); the integrator's alone run decides. Wall time 10,290 s.
