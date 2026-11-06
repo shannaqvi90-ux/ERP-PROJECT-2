@@ -271,6 +271,11 @@ internal static class ReportEndpoints
                 After = after,
                 Take = Math.Min(ListRequest.MaxTake, limit - rows.Count),
             };
+            if (after is not null)
+            {
+                // Later pages of the same selection: the first page's count stands (no recount per page).
+                request = request.ForLaterPage(after, total);
+            }
             var page = await reader(http.RequestServices, request, http, cancellationToken);
             if (page.Problem is { } problem)
             {

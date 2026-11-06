@@ -105,6 +105,23 @@ public sealed class ListEngineTests
     }
 
     [Fact]
+    public async Task A_later_page_of_an_export_keeps_the_total_the_first_page_counted()
+    {
+        var first = await Binding().QueryAsync(Items.AsQueryable(), new ListRequest { Take = 10 }, Http(), CancellationToken.None);
+        Assert.Equal(Items.Count, first.Total);
+        Assert.NotNull(first.Next);
+        // A total handed to the later page stands (no count of its own); the rows are the next ten.
+        var later = await Binding().QueryAsync(Items.AsQueryable(), new ListRequest { Take = 10 }.ForLaterPage(first.Next, 12345), Http(), CancellationToken.None);
+        Assert.Equal(12345, later.Total);
+        Assert.Equal(10, later.Rows.Count);
+        Assert.Empty(first.Rows.Select(r => r.Id).Intersect(later.Rows.Select(r => r.Id)));
+        // Without it the page counts for itself.
+        var counted = await Binding().QueryAsync(Items.AsQueryable(), new ListRequest { Take = 10, After = first.Next }, Http(), CancellationToken.None);
+        Assert.Equal(Items.Count, counted.Total);
+        Assert.Equal(later.Rows.Select(r => r.Id), counted.Rows.Select(r => r.Id));
+    }
+
+    [Fact]
     public void Filters_are_bounded_in_length_and_complexity()
     {
         Assert.Equal("maxLength", Assert.Throws<ListQueryException>(() => ListFilter.Parse(new string('x', ListFilter.MaxLength + 1))).Code);

@@ -289,7 +289,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             source = InMemoryQuery.Over(source);
         }
         var filtered = Filtered(source, plan, database);
-        var total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
+        var total = request.KnownTotal ?? (database ? await filtered.CountAsync(cancellationToken) : filtered.Count());
         IReadOnlyList<ListGroup>? groups;
         try
         {

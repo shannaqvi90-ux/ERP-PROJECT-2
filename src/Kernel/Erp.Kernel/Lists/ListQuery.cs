@@ -45,6 +45,20 @@ public sealed class ListRequest
     [FromQuery(Name = "groupBy")]
     [Description("A groupable column key: the page also carries the groups of the filtered list with their counts and totals.")]
     public string? GroupBy { get; init; }
+
+    private int? _knownTotal;
+
+    /// <summary>The total an earlier page of this same selection already counted, when a caller
+    /// reads the selection page after page (an export): the later pages do not count it again. Not
+    /// public, so it is no query parameter of the API.</summary>
+    internal int? KnownTotal => _knownTotal;
+
+    /// <summary>This request for a later page of a selection whose total is already known: the
+    /// reader skips the count (one scan of the whole selection per page, 500 times for 100,000 rows).</summary>
+    public ListRequest ForLaterPage(string? after, int total) => new()
+    {
+        Search = Search, Filter = Filter, Sort = Sort, After = after, Skip = Skip, Take = Take, GroupBy = GroupBy, _knownTotal = total,
+    };
 }
 
 /// <summary>One page of a registered list.</summary>
