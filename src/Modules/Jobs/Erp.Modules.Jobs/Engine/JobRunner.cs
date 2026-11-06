@@ -49,7 +49,7 @@ public sealed class JobRunner : IDisposable
     private readonly StringCatalog strings;
     private readonly TimeProvider clock;
     private readonly ILogger<JobRunner> log;
-    private readonly string _appConnection;
+    private readonly string _workerConnection;
 
     public JobRunner(IServiceScopeFactory scopes, JobTypes types, StringCatalog strings, TimeProvider clock, IConfiguration configuration, ILogger<JobRunner> log)
     {
@@ -58,7 +58,7 @@ public sealed class JobRunner : IDisposable
         this.strings = strings;
         this.clock = clock;
         this.log = log;
-        _appConnection = configuration.GetConnectionString(ConnectionNames.App) ?? "";
+        _workerConnection = configuration.GetConnectionString(ConnectionNames.Worker) ?? "";
     }
 
     /// <summary>How long a worker's claim on a running job lasts without being renewed.</summary>
@@ -118,16 +118,16 @@ public sealed class JobRunner : IDisposable
     }
 
     /// <summary>The workspaces that have a job due, a running job whose lease ran out or a schedule due,
-    /// the longest waiting first (tenant ids only, see <see cref="JobsSql"/>). Uses the owner role's
-    /// application-role connection of the worker process, through the reviewed function jobs.due_tenants()
-    /// (owned by the narrow lookup role); the worker holds no owner credentials.</summary>
+    /// the longest waiting first (tenant ids only, see <see cref="JobsSql"/>). Uses the
+    /// connection of the worker process as its own login role (erp_worker: seven columns, SELECT-only
+    /// policies, owns nothing); the worker holds no owner credentials.</summary>
     public async Task<IReadOnlyList<Guid>> DueTenantsAsync(CancellationToken cancellationToken)
     {
-        if (_appConnection.Length == 0)
+        if (_workerConnection.Length == 0)
         {
-            throw new InvalidOperationException("The job worker needs the application role's connection string (ConnectionStrings:App).");
+            throw new InvalidOperationException("The job worker needs the lookup role's connection string (ConnectionStrings:Worker) to learn which workspaces have work.");
         }
-        await using var connection = new NpgsqlConnection(_appConnection);
+        await using var connection = new NpgsqlConnection(_workerConnection);
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         var tenants = new List<Guid>();

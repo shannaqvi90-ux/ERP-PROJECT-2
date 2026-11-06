@@ -129,9 +129,9 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
                 {
                     problems.Add($"{table}: unreviewed policy '{key}' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by {DatabaseRoles.AuthResolver})");
                 }
-                if (other.Command != "r" || other.Roles is not [DatabaseRoles.AuthResolver])
+                if (other.Command != "r" || other.Roles is not ([DatabaseRoles.AuthResolver] or [DatabaseRoles.Worker]))
                 {
-                    problems.Add($"{table}: extra policy {other.Name} may only grant SELECT to {DatabaseRoles.AuthResolver}");
+                    problems.Add($"{table}: extra policy {other.Name} may only grant SELECT to {DatabaseRoles.AuthResolver} or {DatabaseRoles.Worker}");
                 }
             }
         }

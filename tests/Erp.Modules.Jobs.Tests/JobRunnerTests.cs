@@ -26,6 +26,8 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IAsyncLifetime
 
     private ErpTestEnvironment Env => fixture.Env;
 
+    private string WorkerConnectionString => Env.Factory.Services.GetRequiredService<IConfiguration>().GetConnectionString("Worker")!;
+
     private SeedTenant A => Env.TenantA;
 
     private SeedTenant B => Env.TenantB;
@@ -262,31 +264,39 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IAsyncLifetime
         Assert.DoesNotContain("ConnectionStrings__Owner", worker);
         Assert.DoesNotContain("ConnectionStrings__Admin", worker);
         Assert.DoesNotContain("erp_owner", worker);
+        Assert.DoesNotContain("erp_auth", worker);
         Assert.Contains("Username=erp_app", worker);
 
-        // The role the worker connects with.
-        await using var app = await Env.OpenAppAsync();
-        await using (var who = new NpgsqlCommand("SELECT current_user", app))
+        Assert.Contains("Username=erp_worker", worker);
+
+        // Both roles the worker connects with.
+        foreach (var (name, connectionString) in new[] { ("erp_app", Env.AppConnectionString), ("erp_worker", WorkerConnectionString) })
         {
-            Assert.Equal("erp_app", (string?)await who.ExecuteScalarAsync());
-        }
-        await using (var attributes = new NpgsqlCommand("SELECT rolsuper OR rolbypassrls OR rolcreaterole OR rolcreatedb FROM pg_roles WHERE rolname = current_user", app))
-        {
-            Assert.False((bool?)await attributes.ExecuteScalarAsync());
-        }
-        await using (var owned = new NpgsqlCommand("SELECT count(*) FROM pg_class c JOIN pg_roles r ON r.oid = c.relowner WHERE r.rolname = current_user AND c.relkind IN ('r', 'p', 'v', 'm', 'S')", app))
-        {
-            Assert.Equal(0L, (long?)await owned.ExecuteScalarAsync());
-        }
-        await using (var schemas = new NpgsqlCommand("SELECT count(*) FROM pg_namespace n JOIN pg_roles r ON r.oid = n.nspowner WHERE r.rolname = current_user", app))
-        {
-            Assert.Equal(0L, (long?)await schemas.ExecuteScalarAsync());
-        }
-        // It cannot become the owner or the lookup role.
-        foreach (var role in new[] { "erp_owner", "erp_auth" })
-        {
-            await using var switchRole = new NpgsqlCommand($"SET ROLE {role}", app);
-            await Assert.ThrowsAsync<PostgresException>(() => switchRole.ExecuteNonQueryAsync());
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync();
+            await using (var who = new NpgsqlCommand("SELECT current_user", connection))
+            {
+                Assert.Equal(name, (string?)await who.ExecuteScalarAsync());
+            }
+            await using (var attributes = new NpgsqlCommand("SELECT rolsuper OR rolbypassrls OR rolcreaterole OR rolcreatedb OR rolreplication FROM pg_roles WHERE rolname = current_user", connection))
+            {
+                Assert.False((bool?)await attributes.ExecuteScalarAsync(), $"{name} has a privileged attribute");
+            }
+            await using (var owned = new NpgsqlCommand("SELECT count(*) FROM pg_class c JOIN pg_roles r ON r.oid = c.relowner WHERE r.rolname = current_user", connection))
+            {
+                Assert.Equal(0L, (long?)await owned.ExecuteScalarAsync());
+            }
+            await using (var schemas = new NpgsqlCommand("SELECT count(*) FROM pg_namespace n JOIN pg_roles r ON r.oid = n.nspowner WHERE r.rolname = current_user", connection))
+            {
+                Assert.Equal(0L, (long?)await schemas.ExecuteScalarAsync());
+            }
+            await using (var members = new NpgsqlCommand("SELECT count(*) FROM pg_auth_members m JOIN pg_roles r ON r.oid = m.member WHERE r.rolname = current_user", connection))
+            {
+                Assert.Equal(0L, (long?)await members.ExecuteScalarAsync());
+            }
+            // Neither can switch off row-level security on a table.
+            await using var alter = new NpgsqlCommand("ALTER TABLE jobs.jobs NO FORCE ROW LEVEL SECURITY", connection);
+            Assert.Equal("42501", (await Assert.ThrowsAsync<PostgresException>(() => alter.ExecuteNonQueryAsync())).SqlState);
         }
     }
 
@@ -385,18 +395,14 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IAsyncLifetime
         Assert.Equal("succeeded", (await fixture.StateAsync(id)).Status);
 
         // The lookup role reads the workspace, state and moment columns and nothing a job holds.
-        await using var owner = new NpgsqlConnection(Env.OwnerConnectionString);
-        await owner.OpenAsync();
+        await using var lookup = new NpgsqlConnection(WorkerConnectionString);
+        await lookup.OpenAsync();
         async Task<string?> Read(string sql)
         {
-            await using var tx = await owner.BeginTransactionAsync();
-            await using (var role = new NpgsqlCommand("SET LOCAL ROLE erp_auth", owner, tx))
-            {
-                await role.ExecuteNonQueryAsync();
-            }
+            await using var tx = await lookup.BeginTransactionAsync();
             try
             {
-                await using var command = new NpgsqlCommand(sql, owner, tx);
+                await using var command = new NpgsqlCommand(sql, lookup, tx);
                 await command.ExecuteScalarAsync();
                 return null;
             }
@@ -415,13 +421,18 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IAsyncLifetime
         {
             Assert.Equal("42501", await Read($"SELECT {column} FROM jobs.schedules LIMIT 1"));
         }
-        // It sees no other module's table either.
+        // It sees no other table either, and writes nothing.
         Assert.Equal("42501", await Read("SELECT 1 FROM jobs.job_attempts LIMIT 1"));
+        Assert.Equal("42501", await Read("SELECT 1 FROM identity.users LIMIT 1"));
+        Assert.Equal("42501", await Read("UPDATE jobs.jobs SET status = 'cancelled'"));
 
-        // Only the owner role may switch to it; the application role cannot.
+        // The application role cannot become it, the owner or the sign-in lookup role.
         await using var app = await Env.OpenAppAsync();
-        await using var switchRole = new NpgsqlCommand("SET ROLE erp_auth", app);
-        Assert.Equal("42501", (await Assert.ThrowsAsync<PostgresException>(() => switchRole.ExecuteNonQueryAsync())).SqlState);
+        foreach (var role in new[] { "erp_worker", "erp_auth", "erp_owner" })
+        {
+            await using var switchRole = new NpgsqlCommand($"SET ROLE {role}", app);
+            Assert.Equal("42501", (await Assert.ThrowsAsync<PostgresException>(() => switchRole.ExecuteNonQueryAsync())).SqlState);
+        }
     }
 
     [Fact]

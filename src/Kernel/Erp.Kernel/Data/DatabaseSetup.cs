@@ -15,6 +15,9 @@ public static class ConnectionNames
     /// <summary>Owner role (erp_owner). Migrations only.</summary>
     public const string Owner = "Owner";
 
+    /// <summary>The job worker's lookup role (erp_worker). Only the worker process gets it, beside the application role's.</summary>
+    public const string Worker = "Worker";
+
     /// <summary>Superuser. Bootstrap only (create roles and the database).</summary>
     public const string Admin = "Admin";
 }
@@ -48,6 +51,13 @@ public sealed class DatabaseBootstrap(IConfiguration configuration, ILogger<Data
             await connection.OpenAsync(cancellationToken);
             await Exec(connection, RoleSql(DatabaseRoles.Owner, "LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS INHERIT", owner.Password), cancellationToken);
             await Exec(connection, RoleSql(DatabaseRoles.App, "LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT", app.Password), cancellationToken);
+            // The job worker's lookup role: it logs in only when a password is configured for it.
+            var worker = configuration.GetConnectionString(ConnectionNames.Worker) is { Length: > 0 } workerString ? new NpgsqlConnectionStringBuilder(workerString) : null;
+            if (worker is not null && (worker.Username != DatabaseRoles.Worker || worker.Database != database || string.IsNullOrEmpty(worker.Password)))
+            {
+                throw new InvalidOperationException($"The worker must connect as {DatabaseRoles.Worker}, with a password, to the same database.");
+            }
+            await Exec(connection, RoleSql(DatabaseRoles.Worker, worker is null ? "NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT" : "LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT", worker?.Password), cancellationToken);
             await Exec(connection, RoleSql(DatabaseRoles.AuthResolver, "NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT", null), cancellationToken);
             // The owner may hand function ownership to erp_auth but does not inherit its rights.
             await Exec(connection, $"GRANT {DatabaseRoles.AuthResolver} TO {DatabaseRoles.Owner} WITH INHERIT FALSE, SET TRUE", cancellationToken);
@@ -62,6 +72,7 @@ public sealed class DatabaseBootstrap(IConfiguration configuration, ILogger<Data
             await Exec(connection, $"ALTER DATABASE {TenantSql.Identifier(database)} OWNER TO {DatabaseRoles.Owner}", cancellationToken);
             await Exec(connection, $"REVOKE ALL ON DATABASE {TenantSql.Identifier(database)} FROM PUBLIC", cancellationToken);
             await Exec(connection, $"GRANT CONNECT, TEMPORARY ON DATABASE {TenantSql.Identifier(database)} TO {DatabaseRoles.App}", cancellationToken);
+            await Exec(connection, $"GRANT CONNECT ON DATABASE {TenantSql.Identifier(database)} TO {DatabaseRoles.Worker}", cancellationToken);
         }
 
         var inDatabase = new NpgsqlConnectionStringBuilder(admin) { Database = database };

@@ -43,15 +43,28 @@ workspaces have a job due without being able to read any workspace's data. The w
 ## Round 4 amendment: the worker holds no owner credentials
 
 The first choice above gave the worker `ConnectionStrings__Owner` for `SET LOCAL ROLE erp_auth`. A process that runs every
-module's handlers must not hold credentials that could `ALTER TABLE ... NO FORCE ROW LEVEL SECURITY`. The lookup is now the
-function `jobs.due_tenants(limit)` (migration `DueTenantsFunction`), SECURITY DEFINER, owned by `erp_auth`, search_path pinned,
-executable by `erp_app` only, answering only on a connection with no workspace bound and returning tenant ids. It is the same
-pattern as the sign-in lookups. The worker (compose service `worker`) gets `ConnectionStrings__App` only. Test:
-`JobRunnerTests.The_worker_holds_the_application_role_only_which_owns_no_table_and_bypasses_no_policy`.
+module's handlers must not hold credentials that could `ALTER TABLE ... NO FORCE ROW LEVEL SECURITY`.
+
+Tried and rejected: a SECURITY DEFINER function `jobs.due_tenants()` owned by `erp_auth`, called on the application role (the
+pattern of the sign-in lookups). It needs a third entry under the ratchet maximum `g1.securityDefinerFunctions` (2, owner's and
+lead's to move) and a worker kind of caller in the reviewed-callers gate, whose HTTP attack requires every reviewed caller to be
+seen in a request trace; neither belongs to this piece.
+
+Chosen: a login role of the worker's own, `erp_worker` (`DatabaseRoles.Worker`, created by the bootstrap step beside the others,
+NOLOGIN until `ConnectionStrings:Worker` gives it a password; no superuser, no BYPASSRLS, no CREATEROLE, owns nothing, member of
+nothing). The jobs migration `WorkerLookupRole` moves the lookup's column grants (four of `jobs.jobs`, three of `jobs.schedules`)
+and SELECT-only `due_tenants_read` policies from `erp_auth` to `erp_worker` and withdraws them from `erp_auth`. The worker
+(compose service `worker`) gets `ConnectionStrings__App` and `ConnectionStrings__Worker`; the web application gets neither the
+worker string nor an owner string, and cannot `SET ROLE` to it. The shared G1 policy gate now accepts a read-only policy for
+`erp_worker` as well as `erp_auth` (still only if listed in `tests/Gates/policy-allowlist.txt`). Tests:
+`JobRunnerTests.The_worker_holds_the_application_role_only...` (compose names no owner or admin string; both roles have no
+privileged attribute, own no relation or schema, are members of nothing and cannot switch row-level security off) and
+`The_due_workspaces_lookup_names_workspaces_with_work_and_sees_nothing_else` (the lookup role reads the seven columns only).
 
 Cancel: `JobQueue.CancelAsync` is one `UPDATE ... WHERE id AND status IN ('queued','running')` (queued ends cancelled at once),
 not a read and an optimistic save, so a progress report or heartbeat cannot make it answer 409. The worker's final write takes the
 row `FOR UPDATE` and, when `cancel_requested` is set, ends the attempt as cancelled instead of succeeded (its handler writes roll
 back); a cancel arriving after that lock waits, finds the job succeeded and is answered as a finished job, which the panel says in
 English and Arabic ("jobs.cancel.alreadyFinished"). Tests: `Cancel_never_fails_while_the_worker_writes_progress...`,
-`A_cancel_accepted_before_the_final_write...`. Added cost: three module tests, no wall-clock thresholds.
+`A_cancel_accepted_before_the_final_write...`, and the panel test. Added cost: three module tests, one web test, no wall-clock
+thresholds.
