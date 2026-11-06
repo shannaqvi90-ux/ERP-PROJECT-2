@@ -118,18 +118,21 @@ public sealed class CustomFieldsDbContext(DbContextOptions<CustomFieldsDbContext
         {
             e.ToTable("definitions", t =>
             {
-                t.HasCheckConstraint("ck_definitions_type", "field_type IN ('text', 'number', 'date', 'boolean', 'select', 'lookup')");
+                t.HasCheckConstraint("ck_definitions_type", "field_type BETWEEN 0 AND 5");
                 t.HasCheckConstraint("ck_definitions_key", "key ~ '^cf[A-Za-z0-9]{1,38}$'");
                 t.HasCheckConstraint("ck_definitions_labels", "btrim(label_en) <> '' AND btrim(label_ar) <> ''");
                 t.HasCheckConstraint("ck_definitions_decimals", "decimals BETWEEN 0 AND 8");
-                t.HasCheckConstraint("ck_definitions_lookup", "(field_type = 'lookup') = (lookup_target IS NOT NULL)");
-                t.HasCheckConstraint("ck_definitions_options", "(field_type = 'select' AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 'select' AND jsonb_array_length(options) = 0)");
+                t.HasCheckConstraint("ck_definitions_lookup", "(field_type = 5) = (lookup_target IS NOT NULL)");
+                t.HasCheckConstraint("ck_definitions_options", "(field_type = 4 AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 4 AND jsonb_array_length(options) = 0)");
             });
             e.Property(x => x.RecordType).HasMaxLength(100);
             e.Property(x => x.Key).HasMaxLength(40);
             e.Property(x => x.LabelEn).HasMaxLength(100);
             e.Property(x => x.LabelAr).HasMaxLength(100);
-            e.Property(x => x.FieldType).HasMaxLength(10);
+            // Kept as a small number (0 text, 1 number, 2 date, 3 yes/no, 4 single select, 5 lookup): the
+            // API's words are not the workspace's data (a "date" among the values would be taken for a
+            // tenant's secret wherever a screen or a printout says "date").
+            e.Property(x => x.FieldType).HasColumnType("smallint").HasConversion(v => FieldTypeCodes.Code(v), c => FieldTypeCodes.Name(c));
             e.Property(x => x.DefaultValue).HasMaxLength(MaxTextLength);
             e.Property(x => x.LookupTarget).HasMaxLength(100);
             e.Property(x => x.Required).HasDefaultValue(false);
@@ -169,6 +172,18 @@ public sealed class CustomFieldsDbContext(DbContextOptions<CustomFieldsDbContext
                 .HasPrincipalKey(d => new { d.TenantId, d.Id }).OnDelete(DeleteBehavior.Restrict);
         });
     }
+}
+
+/// <summary>How <see cref="FieldDefinition.FieldType"/> is stored.</summary>
+internal static class FieldTypeCodes
+{
+    public static short Code(string type) => (short)CustomFieldTypes.All.ToList().IndexOf(type) is var index and >= 0
+        ? index
+        : throw new ArgumentOutOfRangeException(nameof(type), type, "not a custom field type");
+
+    public static string Name(short code) => code >= 0 && code < CustomFieldTypes.All.Count
+        ? CustomFieldTypes.All[code]
+        : throw new ArgumentOutOfRangeException(nameof(code), code, "not a custom field type");
 }
 
 internal sealed class CustomFieldsDbContextDesignFactory : IDesignTimeDbContextFactory<CustomFieldsDbContext>

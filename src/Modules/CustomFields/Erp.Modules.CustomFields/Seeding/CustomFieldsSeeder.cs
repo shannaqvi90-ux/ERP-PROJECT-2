@@ -23,7 +23,7 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
     public int Order => 140;
 
     /// <summary>How many contacts of a gate workspace get values.</summary>
-    public const int GateValuedContacts = 60;
+    public const int GateValuedContacts = 25;
 
     public static readonly ImmutableArray<string> Segments = ["retail", "wholesale", "government", "keyAccount", "distributor"];
 

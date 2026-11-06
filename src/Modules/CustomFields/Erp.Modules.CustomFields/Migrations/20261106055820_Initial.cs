@@ -25,7 +25,7 @@ namespace Erp.Modules.CustomFields.Migrations
                     key = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
                     label_en = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     label_ar = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    field_type = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    field_type = table.Column<short>(type: "smallint", nullable: false),
                     required = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     default_value = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     decimals = table.Column<int>(type: "integer", nullable: false),
@@ -48,9 +48,9 @@ namespace Erp.Modules.CustomFields.Migrations
                     table.CheckConstraint("ck_definitions_decimals", "decimals BETWEEN 0 AND 8");
                     table.CheckConstraint("ck_definitions_key", "key ~ '^cf[A-Za-z0-9]{1,38}$'");
                     table.CheckConstraint("ck_definitions_labels", "btrim(label_en) <> '' AND btrim(label_ar) <> ''");
-                    table.CheckConstraint("ck_definitions_lookup", "(field_type = 'lookup') = (lookup_target IS NOT NULL)");
-                    table.CheckConstraint("ck_definitions_options", "(field_type = 'select' AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 'select' AND jsonb_array_length(options) = 0)");
-                    table.CheckConstraint("ck_definitions_type", "field_type IN ('text', 'number', 'date', 'boolean', 'select', 'lookup')");
+                    table.CheckConstraint("ck_definitions_lookup", "(field_type = 5) = (lookup_target IS NOT NULL)");
+                    table.CheckConstraint("ck_definitions_options", "(field_type = 4 AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 4 AND jsonb_array_length(options) = 0)");
+                    table.CheckConstraint("ck_definitions_type", "field_type BETWEEN 0 AND 5");
                 });
 
             migrationBuilder.CreateTable(

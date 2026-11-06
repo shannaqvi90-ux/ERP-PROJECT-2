@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Erp.Modules.CustomFields.Migrations
 {
     [DbContext(typeof(CustomFieldsDbContext))]
-    [Migration("20261106032940_Initial")]
+    [Migration("20261106055820_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -52,10 +52,8 @@ namespace Erp.Modules.CustomFields.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("default_value");
 
-                    b.Property<string>("FieldType")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                    b.Property<short>("FieldType")
+                        .HasColumnType("smallint")
                         .HasColumnName("field_type");
 
                     b.Property<bool>("IsActive")
@@ -155,11 +153,11 @@ namespace Erp.Modules.CustomFields.Migrations
 
                             t.HasCheckConstraint("ck_definitions_labels", "btrim(label_en) <> '' AND btrim(label_ar) <> ''");
 
-                            t.HasCheckConstraint("ck_definitions_lookup", "(field_type = 'lookup') = (lookup_target IS NOT NULL)");
+                            t.HasCheckConstraint("ck_definitions_lookup", "(field_type = 5) = (lookup_target IS NOT NULL)");
 
-                            t.HasCheckConstraint("ck_definitions_options", "(field_type = 'select' AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 'select' AND jsonb_array_length(options) = 0)");
+                            t.HasCheckConstraint("ck_definitions_options", "(field_type = 4 AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 4 AND jsonb_array_length(options) = 0)");
 
-                            t.HasCheckConstraint("ck_definitions_type", "field_type IN ('text', 'number', 'date', 'boolean', 'select', 'lookup')");
+                            t.HasCheckConstraint("ck_definitions_type", "field_type BETWEEN 0 AND 5");
                         });
                 });
 
