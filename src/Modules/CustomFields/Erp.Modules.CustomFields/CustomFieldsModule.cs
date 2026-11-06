@@ -32,7 +32,7 @@ public sealed class CustomFieldsModule : ErpModule
         module.Services.AddScoped<CustomFieldService>();
         module.Services.AddScoped<ICustomFields>(services => services.GetRequiredService<CustomFieldService>());
         module.Endpoints(FieldEndpoints.Map);
-        module.Menu(new MenuEntry("customfields.fields", "customfields.menu.fields", "/customfields/fields", CustomFieldsPermissions.FieldsRead, Order: 870, Group: "settings"));
+        module.Menu(new MenuEntry("customfields.fields", "customfields.menu.fields", "/customfields/fields", CustomFieldsPermissions.FieldsRead, Order: 865, Group: "settings"));
         module.List(FieldsList.Create(module.CustomFieldRecordTypesSoFar));
         // Reports print the list exactly as the screen shows it.
         module.ListRows(FieldsList.Key, async (services, request, http, cancellationToken) =>

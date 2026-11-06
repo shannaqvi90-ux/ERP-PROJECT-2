@@ -267,4 +267,73 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
         await using var count = new NpgsqlCommand("SELECT count(*) FROM customfields.field_values", app);
         Assert.Equal(0L, (long)(await count.ExecuteScalarAsync(Api.Cancel))!);
     }
+
+    [Fact]
+    public async Task Values_follow_the_records_own_permissions()
+    {
+        var (admin, f, _) = await DefineAsync();
+        using var _ = admin;
+        var contact = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Guarded LLC"), new() { [f.Segment] = "retail" }));
+        var id = contact.GetProperty("id").GetGuid();
+
+        // A reader of contacts reads the values with the contact, and cannot change them (the contact's own permission).
+        using var viewer = await Env.SignInAsync(Env.Email(Env.TenantA, "viewer"));
+        var read = await viewer.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts/{id}", Api.Cancel);
+        Assert.Equal("retail", Api.Entry(read, f.Segment).GetProperty("value").GetString());
+        var update = Api.Contact(contact.GetProperty("nameEn").GetString()!, new() { [f.Segment] = "wholesale" });
+        update["version"] = contact.GetProperty("version").GetUInt32();
+        Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PutAsJsonAsync($"/api/contacts/contacts/{id}", update, Api.Cancel)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await viewer.PostAsJsonAsync("/api/contacts/contacts", Api.Contact(Api.Unique("Not allowed LLC"), new() { [f.Segment] = "retail" }), Api.Cancel)).StatusCode);
+        var unchanged = await admin.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts/{id}", Api.Cancel);
+        Assert.Equal("retail", Api.Entry(unchanged, f.Segment).GetProperty("value").GetString());
+
+        // Someone who may not read contacts sees no value, no field and no column.
+        using var nobody = await Env.SignInAsync(Env.Email(Env.TenantA, "noaccess"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync($"/api/contacts/contacts/{id}", Api.Cancel)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync("/api/contacts/contacts/defaults", Api.Cancel)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync("/api/lists/contacts.contacts/definition", Api.Cancel)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await nobody.GetAsync($"/api/contacts/contacts?filter={Uri.EscapeDataString($"{f.Segment} eq 'retail'")}", Api.Cancel)).StatusCode);
+    }
+
+    [Fact]
+    public async Task The_match_functions_answer_only_for_the_callers_workspace()
+    {
+        var (admin, f, _) = await DefineAsync();
+        using var _ = admin;
+        await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Matched LLC"), new() { [f.Segment] = "retail" }));
+        using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        await Api.CreateContactAsync(other, Api.Contact(Api.Unique("Theirs LLC")));
+        var theirField = await Api.DefineAsync(other, Api.Field("text", Api.Unique("Their text"), "نص"));
+        await using var admin_ = await Env.OpenAdminAsync();
+        async Task<Guid> FieldOf(Guid tenant, string key)
+        {
+            await using var command = new NpgsqlCommand("SELECT id FROM customfields.definitions WHERE tenant_id = @t AND key = @k", admin_);
+            command.Parameters.AddWithValue("t", tenant);
+            command.Parameters.AddWithValue("k", key);
+            return (Guid)(await command.ExecuteScalarAsync(Api.Cancel))!;
+        }
+        var ours = await FieldOf(Env.TenantA.Id, f.Segment);
+        var theirs = await FieldOf(Env.TenantB.Id, theirField.GetProperty("key").GetString()!);
+
+        async Task<long> CountAsync(Guid asTenant, string sql, Guid field)
+        {
+            await using var app = await Env.OpenAppAsync();
+            await using var transaction = await app.BeginTransactionAsync(Api.Cancel);
+            await using (var set = new NpgsqlCommand("SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), set_config('app.company_scope', 'all', true)", app, transaction))
+            {
+                set.Parameters.AddWithValue("t", asTenant.ToString());
+                await set.ExecuteNonQueryAsync(Api.Cancel);
+            }
+            await using var command = new NpgsqlCommand(sql, app, transaction);
+            command.Parameters.AddWithValue("f", field);
+            return (long)(await command.ExecuteScalarAsync(Api.Cancel))!;
+        }
+        // Each tenant reads its own field's values through the functions, and none of the other's.
+        Assert.True(await CountAsync(Env.TenantA.Id, "SELECT count(*) FROM customfields.match_any(@f)", ours) >= 1);
+        Assert.Equal(0, await CountAsync(Env.TenantA.Id, "SELECT count(*) FROM customfields.match_any(@f)", theirs));
+        Assert.Equal(0, await CountAsync(Env.TenantB.Id, "SELECT count(*) FROM customfields.match_any(@f)", ours));
+        Assert.Equal(0, await CountAsync(Env.TenantB.Id, "SELECT count(*) FROM customfields.match_text(@f, 'contains', '')", ours));
+        Assert.Equal(0, await CountAsync(Env.TenantB.Id, "SELECT count(*) FROM customfields.search_text(ARRAY[@f]::uuid[], '%')", ours));
+        Assert.Equal(0, await CountAsync(Env.TenantA.Id, "SELECT count(*) FROM customfields.definitions WHERE id = @f", theirs));
+    }
 }
