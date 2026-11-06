@@ -1,13 +1,13 @@
 import type { FieldOption } from "./types";
 
-/** One option per line: "English | Arabic" (the Arabic label is required; a line with only one text is refused). */
+/** One option per line: "English | Arabic" (a line with only the English label shows it on Arabic screens too). */
 export function parseOptions(text: string, existing: readonly FieldOption[]): { options: { value: string | null; labelEn: string; labelAr: string }[]; bad: boolean } {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== "");
   const parsed = lines.map((line) => {
     const [en, ...rest] = line.split("|");
     return { labelEn: (en ?? "").trim(), labelAr: rest.join("|").trim() };
   });
-  const bad = parsed.some((p) => p.labelEn === "" || p.labelAr === "");
+  const bad = parsed.some((p) => p.labelEn === "");
   // An option keeps the value records already hold: by its English label, else by its place when
   // that place's option has not been matched by a line.
   const used = new Set<string>();

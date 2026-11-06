@@ -98,6 +98,16 @@ public sealed class CustomFieldDefinitionTests(CustomFieldsFixture fixture) : IC
     }
 
     [Fact]
+    public async Task A_blank_arabic_label_shows_the_english_one()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var label = Api.Unique("English only");
+        var field = await Api.DefineAsync(admin, new { recordType = "contacts.contacts", type = "select", labelEn = label, labelAr = "  ", options = new[] { new { value = (string?)null, labelEn = "Alpha", labelAr = (string?)null } } });
+        Assert.Equal(label, field.GetProperty("labelAr").GetString());
+        Assert.Equal("Alpha", field.GetProperty("options")[0].GetProperty("labelAr").GetString());
+    }
+
+    [Fact]
     public async Task Two_fields_with_the_same_label_get_different_names()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
@@ -113,11 +123,11 @@ public sealed class CustomFieldDefinitionTests(CustomFieldsFixture fixture) : IC
         using var arabic = await Env.SignInAsync(Env.Email(Env.TenantA, "admin.ar"));
         var response = await arabic.PostAsJsonAsync("/api/customfields/fields", new
         {
-            recordType = "contacts.contacts", type = "number", labelEn = "عربي فقط", labelAr = "", decimals = 12, @default = "abc",
+            recordType = "contacts.contacts", type = "number", labelEn = "عربي فقط", labelAr = "نص", decimals = 12, @default = "abc",
         }, Api.Cancel);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var errors = (await Api.Json(response)).GetProperty("errors");
-        foreach (var field in new[] { "labelEn", "labelAr", "decimals" })
+        foreach (var field in new[] { "labelEn", "decimals" })
         {
             Assert.True(errors.TryGetProperty(field, out var list), $"no error for {field}: {errors}");
             Assert.Matches("[؀-ۿ]", list[0].GetProperty("message").GetString()!);

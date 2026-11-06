@@ -21,9 +21,9 @@ describe("select options typed one per line", () => {
     expect(options.map((o) => o.value)).toEqual(["retail", "wholesale"]);
   });
 
-  it("flags a line missing its Arabic or English label", () => {
-    expect(parseOptions("Retail", existing).bad).toBe(true);
+  it("flags a line missing its English label; the Arabic one may be left out", () => {
     expect(parseOptions("| تجزئة", existing).bad).toBe(true);
+    expect(parseOptions("Retail", existing).bad).toBe(false);
   });
 
   it("writes the options back as the lines the form edits", () => {

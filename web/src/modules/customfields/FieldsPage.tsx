@@ -92,7 +92,8 @@ const draftOf = (f: CustomField | null, first: string): Draft => ({
   decimals: String(f?.decimals ?? 2),
   options: optionsText(f?.options ?? []),
   lookupTarget: f?.lookupTarget ?? "",
-  searchable: f?.searchable ?? false,
+  // A text field is searched by the list's search box unless it says otherwise.
+  searchable: f?.searchable ?? true,
   sortOrder: f ? String(f.sortOrder) : "",
   isActive: f?.isActive ?? true,
 });
@@ -184,7 +185,7 @@ function FieldForm({ id, nav, onSaved, onClose }: { id: string | null; nav?: Rec
     >
       <FormSection title={t("customfields.section.field")}>
         <TextField field={bind("labelEn")} label={t("customfields.field.label")} dir="ltr" maxLength={100} autoFocus={isNew} hint={t("customfields.field.labelHint")} />
-        <TextField field={bind("labelAr")} label={t("customfields.field.labelAr")} dir="rtl" maxLength={100} />
+        <TextField field={bind("labelAr")} label={t("customfields.field.labelAr")} dir="rtl" maxLength={100} hint={t("customfields.field.labelArHint")} />
         <SelectField
           field={bind("recordType") as FieldBinding<string>}
           label={t("customfields.field.recordType")}

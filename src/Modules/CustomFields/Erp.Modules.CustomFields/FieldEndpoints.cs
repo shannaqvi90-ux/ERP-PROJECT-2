@@ -70,7 +70,7 @@ public sealed record RecordTypeDto(
 
 /// <summary>
 /// Add or change a custom field. <c>recordType</c> and <c>type</c> are chosen when the field is
-/// added and never change. Labels in English and Arabic (both required). <c>default</c> is the value
+/// added and never change. Labels in English and Arabic (the English one is required; a blank Arabic label shows the English one). <c>default</c> is the value
 /// a new record starts with, written as a value of the field's kind (a number with a dot, a date as
 /// yyyy-mm-dd, true or false, an option's value); a lookup has none. <c>decimals</c> (0 to 8) is for
 /// a number. <c>options</c> (1 to 50) is for a single select. <c>lookupTarget</c> is for a lookup.
@@ -161,13 +161,13 @@ internal static class FieldEndpoints
     private static async Task<Results<Created<FieldDto>, ProblemHttpResult>> Create(
         SaveFieldRequest request, CustomFieldsDbContext db, ModuleCatalog catalog, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
-        var validator = new Validator(http).Required("recordType", request.RecordType).Required("type", request.Type)
-            .Required("labelEn", request.LabelEn).Required("labelAr", request.LabelAr);
+        var validator = new Validator(http).Required("recordType", request.RecordType).Required("type", request.Type).Required("labelEn", request.LabelEn);
         var recordType = request.RecordType?.Trim();
         var type = request.Type?.Trim();
         validator.Must(recordType is null || catalog.CustomFieldRecordTypes.Any(t => t.Table == recordType), "recordType", "customFieldRecordType");
         validator.Must(type is null || CustomFieldTypes.All.Contains(type), "type", "customFieldType");
-        var field = new FieldDefinition { RecordType = recordType ?? "", FieldType = type ?? CustomFieldTypes.Text };
+        // A text field is searched by the list's search box unless it says otherwise.
+        var field = new FieldDefinition { RecordType = recordType ?? "", FieldType = type ?? CustomFieldTypes.Text, Searchable = true };
         Check(validator, catalog, field, request);
         if (!validator.IsValid)
         {
@@ -177,7 +177,7 @@ internal static class FieldEndpoints
         {
             return Problems.Forbidden(http, "customfields.workspaceNeedsEveryCompany");
         }
-        if (await db.Definitions.CountAsync(d => d.RecordType == field.RecordType, cancellationToken) >= CustomFieldsDbContext.MaxFieldsPerRecordType)
+        if (field.IsActive && await db.Definitions.CountAsync(d => d.RecordType == field.RecordType && d.IsActive, cancellationToken) >= CustomFieldsDbContext.MaxFieldsPerRecordType)
         {
             return validator.Add("recordType", "customFieldTooMany", CustomFieldsDbContext.MaxFieldsPerRecordType).ToResult();
         }
@@ -198,12 +198,13 @@ internal static class FieldEndpoints
     private static async Task<Results<Ok<FieldDto>, ProblemHttpResult>> Update(
         Guid id, SaveFieldRequest request, CustomFieldsDbContext db, ModuleCatalog catalog, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
     {
-        var validator = new Validator(http).Required("labelEn", request.LabelEn).Required("labelAr", request.LabelAr).Required("version", request.Version);
+        var validator = new Validator(http).Required("labelEn", request.LabelEn).Required("version", request.Version);
         var field = await db.Definitions.SingleOrDefaultAsync(d => d.Id == id, cancellationToken);
         if (field is null)
         {
             return validator.IsValid ? Problems.NotFound(http) : validator.ToResult();
         }
+        var wasActive = field.IsActive;
         validator.Must(request.RecordType is null || request.RecordType.Trim() == field.RecordType, "recordType", "customFieldFixed");
         validator.Must(request.Type is null || request.Type.Trim() == field.FieldType, "type", "customFieldFixed");
         Check(validator, catalog, field, request);
@@ -214,6 +215,10 @@ internal static class FieldEndpoints
         if (!session.HoldsWholeWorkspace)
         {
             return Problems.Forbidden(http, "customfields.workspaceNeedsEveryCompany");
+        }
+        if (field.IsActive && !wasActive && await db.Definitions.CountAsync(d => d.RecordType == field.RecordType && d.IsActive && d.Id != field.Id, cancellationToken) >= CustomFieldsDbContext.MaxFieldsPerRecordType)
+        {
+            return validator.Add("isActive", "customFieldTooMany", CustomFieldsDbContext.MaxFieldsPerRecordType).ToResult();
         }
         db.Entry(field).Property(d => d.Version).OriginalValue = request.Version!.Value;
         if (request.SortOrder is { } order)
@@ -230,7 +235,8 @@ internal static class FieldEndpoints
     private static void Check(Validator validator, ModuleCatalog catalog, FieldDefinition field, SaveFieldRequest request)
     {
         var labelEn = request.LabelEn?.Trim() ?? "";
-        var labelAr = request.LabelAr?.Trim() ?? "";
+        // An Arabic label left out shows the English one on Arabic screens (a label is never blank).
+        var labelAr = string.IsNullOrWhiteSpace(request.LabelAr) ? labelEn : request.LabelAr.Trim();
         validator.MaxLength("labelEn", labelEn, FieldRules.LabelMaxLength).MaxLength("labelAr", labelAr, FieldRules.LabelMaxLength);
         validator.Must(labelEn.Length == 0 || labelEn.Any(char.IsAsciiLetterOrDigit), "labelEn", "customFieldLabelLatin");
         var decimals = request.Decimals ?? field.Decimals;
@@ -252,8 +258,8 @@ internal static class FieldEndpoints
             foreach (var option in given.Take(FieldRules.MaxOptions))
             {
                 var en = option.LabelEn?.Trim() ?? "";
-                var ar = option.LabelAr?.Trim() ?? "";
-                if (en.Length == 0 || ar.Length == 0 || en.Length > FieldRules.LabelMaxLength || ar.Length > FieldRules.LabelMaxLength)
+                var ar = string.IsNullOrWhiteSpace(option.LabelAr) ? en : option.LabelAr.Trim();
+                if (en.Length == 0 || en.Length > FieldRules.LabelMaxLength || ar.Length > FieldRules.LabelMaxLength)
                 {
                     validator.Add("options", "customFieldOptionLabel");
                     continue;
@@ -328,7 +334,7 @@ internal static class FieldEndpoints
         field.Decimals = type == CustomFieldTypes.Number ? decimals : 0;
         field.Options = options;
         field.LookupTarget = lookup;
-        field.Searchable = type == CustomFieldTypes.Text && request.Searchable == true;
+        field.Searchable = type == CustomFieldTypes.Text && (request.Searchable ?? field.Searchable);
         field.IsActive = request.IsActive ?? field.IsActive;
     }
 

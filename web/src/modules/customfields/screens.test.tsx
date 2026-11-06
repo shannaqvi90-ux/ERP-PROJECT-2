@@ -124,14 +124,14 @@ describe("custom fields screen", () => {
     });
   });
 
-  it("refuses options with a missing Arabic label before sending anything", async () => {
+  it("refuses options with a missing English label before sending anything", async () => {
     await open("/customfields/fields?open=new");
     await wait();
     setInput(input("labelEn"), "Credit tier");
     setInput(input("labelAr"), "فئة");
     choose("type", "select");
     await wait();
-    typeInto(area("options"), "Gold");
+    typeInto(area("options"), "| ذهبي");
     await key(input("labelEn"), { key: "Enter", code: "Enter" });
     expect(calls.some((c) => c.method === "POST")).toBe(false);
     expect(view!.container.querySelector('[data-field="options"] .field-error')?.textContent).toContain("English | Arabic");
