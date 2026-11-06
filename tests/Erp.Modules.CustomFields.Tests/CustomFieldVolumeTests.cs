@@ -104,7 +104,7 @@ public sealed class CustomFieldVolumeTests(CustomFieldVolumeFixture fixture) : I
     private async Task<Guid> FieldIdAsync(string key)
     {
         await using var connection = await Env.OpenAdminAsync();
-        await using var command = new NpgsqlCommand("SELECT id FROM customfields.definitions WHERE tenant_id = @t AND key = @k", connection);
+        await using var command = new NpgsqlCommand("SELECT id FROM customfields.definitions WHERE tenant_id = @t AND code = @k", connection);
         command.Parameters.AddWithValue("t", fixture.Main.Id);
         command.Parameters.AddWithValue("k", key);
         return (Guid)(await command.ExecuteScalarAsync(Cancel))!;

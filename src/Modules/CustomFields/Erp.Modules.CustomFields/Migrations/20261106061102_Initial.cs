@@ -22,9 +22,9 @@ namespace Erp.Modules.CustomFields.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     record_type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    key = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
-                    label_en = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    label_ar = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    code = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
+                    name_en = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    name_ar = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     field_type = table.Column<short>(type: "smallint", nullable: false),
                     required = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     default_value = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
@@ -46,8 +46,8 @@ namespace Erp.Modules.CustomFields.Migrations
                     table.PrimaryKey("pk_definitions", x => x.id);
                     table.UniqueConstraint("ak_definitions_tenant_id_id", x => new { x.tenant_id, x.id });
                     table.CheckConstraint("ck_definitions_decimals", "decimals BETWEEN 0 AND 8");
-                    table.CheckConstraint("ck_definitions_key", "key ~ '^cf[A-Za-z0-9]{1,38}$'");
-                    table.CheckConstraint("ck_definitions_labels", "btrim(label_en) <> '' AND btrim(label_ar) <> ''");
+                    table.CheckConstraint("ck_definitions_key", "code ~ '^cf[A-Za-z0-9]{1,38}$'");
+                    table.CheckConstraint("ck_definitions_labels", "btrim(name_en) <> '' AND btrim(name_ar) <> ''");
                     table.CheckConstraint("ck_definitions_lookup", "(field_type = 5) = (lookup_target IS NOT NULL)");
                     table.CheckConstraint("ck_definitions_options", "(field_type = 4 AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 4 AND jsonb_array_length(options) = 0)");
                     table.CheckConstraint("ck_definitions_type", "field_type BETWEEN 0 AND 5");
@@ -62,6 +62,7 @@ namespace Erp.Modules.CustomFields.Migrations
                     record_type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     record_id = table.Column<Guid>(type: "uuid", nullable: false),
                     field_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    code = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
                     text_value = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     number_value = table.Column<decimal>(type: "numeric(28,8)", precision: 28, scale: 8, nullable: true),
                     date_value = table.Column<DateOnly>(type: "date", nullable: true),
@@ -89,10 +90,10 @@ namespace Erp.Modules.CustomFields.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_definitions_tenant_id_record_type_key",
+                name: "ix_definitions_tenant_id_record_type_code",
                 schema: "customfields",
                 table: "definitions",
-                columns: new[] { "tenant_id", "record_type", "key" },
+                columns: new[] { "tenant_id", "record_type", "code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -247,10 +248,7 @@ BEGIN
     IF TG_OP = 'UPDATE' AND v_old IS NOT DISTINCT FROM v_new THEN
         RETURN NULL;
     END IF;
-    SELECT d.key INTO v_key FROM customfields.definitions d WHERE d.tenant_id = v_row.tenant_id AND d.id = v_row.field_id;
-    IF v_key IS NULL THEN
-        RETURN NULL;
-    END IF;
+    v_key := v_row.code;
     SELECT e.record_label, e.record_label_ar, e.record_code, e.record_company_id, e.record_branch_id
       INTO v_label, v_label_ar, v_code, v_company, v_branch
       FROM audit.entries e

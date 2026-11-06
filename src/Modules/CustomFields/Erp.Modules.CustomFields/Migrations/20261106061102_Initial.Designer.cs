@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Erp.Modules.CustomFields.Migrations
 {
     [DbContext(typeof(CustomFieldsDbContext))]
-    [Migration("20261106055820_Initial")]
+    [Migration("20261106061102_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -66,19 +66,19 @@ namespace Erp.Modules.CustomFields.Migrations
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)")
-                        .HasColumnName("key");
+                        .HasColumnName("code");
 
                     b.Property<string>("LabelAr")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("label_ar");
+                        .HasColumnName("name_ar");
 
                     b.Property<string>("LabelEn")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("label_en");
+                        .HasColumnName("name_en");
 
                     b.Property<string>("LookupTarget")
                         .HasMaxLength(100)
@@ -140,7 +140,7 @@ namespace Erp.Modules.CustomFields.Migrations
 
                     b.HasIndex("TenantId", "RecordType", "Key")
                         .IsUnique()
-                        .HasDatabaseName("ix_definitions_tenant_id_record_type_key");
+                        .HasDatabaseName("ix_definitions_tenant_id_record_type_code");
 
                     b.HasIndex("TenantId", "RecordType", "SortOrder")
                         .HasDatabaseName("ix_definitions_tenant_id_record_type_sort_order");
@@ -149,9 +149,9 @@ namespace Erp.Modules.CustomFields.Migrations
                         {
                             t.HasCheckConstraint("ck_definitions_decimals", "decimals BETWEEN 0 AND 8");
 
-                            t.HasCheckConstraint("ck_definitions_key", "key ~ '^cf[A-Za-z0-9]{1,38}$'");
+                            t.HasCheckConstraint("ck_definitions_key", "code ~ '^cf[A-Za-z0-9]{1,38}$'");
 
-                            t.HasCheckConstraint("ck_definitions_labels", "btrim(label_en) <> '' AND btrim(label_ar) <> ''");
+                            t.HasCheckConstraint("ck_definitions_labels", "btrim(name_en) <> '' AND btrim(name_ar) <> ''");
 
                             t.HasCheckConstraint("ck_definitions_lookup", "(field_type = 5) = (lookup_target IS NOT NULL)");
 
@@ -171,6 +171,12 @@ namespace Erp.Modules.CustomFields.Migrations
                     b.Property<bool?>("BoolValue")
                         .HasColumnType("boolean")
                         .HasColumnName("bool_value");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("code");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()

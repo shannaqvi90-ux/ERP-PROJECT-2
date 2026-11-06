@@ -331,7 +331,7 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
         await using var admin_ = await Env.OpenAdminAsync();
         async Task<Guid> FieldOf(Guid tenant, string key)
         {
-            await using var command = new NpgsqlCommand("SELECT id FROM customfields.definitions WHERE tenant_id = @t AND key = @k", admin_);
+            await using var command = new NpgsqlCommand("SELECT id FROM customfields.definitions WHERE tenant_id = @t AND code = @k", admin_);
             command.Parameters.AddWithValue("t", tenant);
             command.Parameters.AddWithValue("k", key);
             return (Guid)(await command.ExecuteScalarAsync(Api.Cancel))!;

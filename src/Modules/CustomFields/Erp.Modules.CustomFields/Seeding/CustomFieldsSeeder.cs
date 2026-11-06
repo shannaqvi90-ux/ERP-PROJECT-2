@@ -23,7 +23,7 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
     public int Order => 140;
 
     /// <summary>How many contacts of a gate workspace get values.</summary>
-    public const int GateValuedContacts = 25;
+    public const int GateValuedContacts = 6;
 
     public static readonly ImmutableArray<string> Segments = ["retail", "wholesale", "government", "keyAccount", "distributor"];
 
@@ -48,9 +48,10 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
         // a contact's create write its custom field value (permission-write-sets.txt).
         segment.DefaultValue = demo ? null : "retail";
         var manager = Define(ContactsTable, "cfAccountManager", context.Mark("Account manager"), context.Mark("مدير الحساب"), CustomFieldTypes.Text, 20, searchable: true);
+        // The demo's other two fields (a date and a yes/no) add nothing the gates need.
         var review = Define(ContactsTable, "cfCreditReview", "Credit review date", "تاريخ مراجعة الائتمان", CustomFieldTypes.Date, 30);
         var vip = Define(ContactsTable, "cfPreferredPartner", "Preferred partner", "شريك مفضل", CustomFieldTypes.Boolean, 40);
-        db.Definitions.AddRange(segment, manager, review, vip);
+        db.Definitions.AddRange(demo ? [segment, manager, review, vip] : [segment, manager]);
         await db.SaveChangesAsync(cancellationToken);
 
         // The gate workspaces hold values on their first contacts only: the isolation gates seed them at the
@@ -65,11 +66,12 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
         var columns = new BulkColumn[]
         {
             new("id", NpgsqlDbType.Uuid), new("tenant_id", NpgsqlDbType.Uuid), new("record_type", NpgsqlDbType.Varchar), new("record_id", NpgsqlDbType.Uuid),
-            new("field_id", NpgsqlDbType.Uuid), new("text_value", NpgsqlDbType.Varchar), new("number_value", NpgsqlDbType.Numeric), new("date_value", NpgsqlDbType.Date),
+            new("field_id", NpgsqlDbType.Uuid), new("code", NpgsqlDbType.Varchar), new("text_value", NpgsqlDbType.Varchar), new("number_value", NpgsqlDbType.Numeric), new("date_value", NpgsqlDbType.Date),
             new("bool_value", NpgsqlDbType.Boolean), new("ref_value", NpgsqlDbType.Uuid), new("created_at", NpgsqlDbType.TimestampTz), new("updated_at", NpgsqlDbType.TimestampTz),
         };
+        var codes = new[] { segment, manager, review, vip }.ToDictionary(d => d.Id, d => d.Key);
         object?[] Row(Guid record, Guid field, string? text = null, DateOnly? date = null, bool? flag = null) =>
-            [Guid.CreateVersion7(at), context.Tenant.Id, ContactsTable, record, field, text, null, date, flag, null, at, at];
+            [Guid.CreateVersion7(at), context.Tenant.Id, ContactsTable, record, field, codes[field], text, null, date, flag, null, at, at];
 
         IEnumerable<object?[]> Rows()
         {

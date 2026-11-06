@@ -98,6 +98,7 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
             return;
         }
         var held = await ReadAsync(fields, [recordId], cancellationToken, tracked: true);
+        var keyOf = fields.ToDictionary(f => f.Id, f => f.Key);
         foreach (var (fieldId, value) in parsed)
         {
             held.TryGetValue((recordId, fieldId), out var row);
@@ -111,7 +112,7 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
             }
             if (row is null)
             {
-                row = new FieldValue { RecordType = recordType, RecordId = recordId, FieldId = fieldId };
+                row = new FieldValue { RecordType = recordType, RecordId = recordId, FieldId = fieldId, Code = keyOf[fieldId] };
                 db.Values.Add(row);
             }
             else if (Same(row, value))

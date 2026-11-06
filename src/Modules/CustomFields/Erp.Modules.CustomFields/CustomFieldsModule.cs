@@ -90,6 +90,11 @@ public sealed class FieldValue : TenantEntity
     public string RecordType { get; set; } = "";
     public Guid RecordId { get; set; }
     public Guid FieldId { get; set; }
+
+    /// <summary>The field's machine name (kept with the value, which never changes it): the audit
+    /// trail names a value by the field it belongs to.</summary>
+    public string Code { get; set; } = "";
+
     public string? TextValue { get; set; }
     public decimal? NumberValue { get; set; }
     public DateOnly? DateValue { get; set; }
@@ -119,16 +124,18 @@ public sealed class CustomFieldsDbContext(DbContextOptions<CustomFieldsDbContext
             e.ToTable("definitions", t =>
             {
                 t.HasCheckConstraint("ck_definitions_type", "field_type BETWEEN 0 AND 5");
-                t.HasCheckConstraint("ck_definitions_key", "key ~ '^cf[A-Za-z0-9]{1,38}$'");
-                t.HasCheckConstraint("ck_definitions_labels", "btrim(label_en) <> '' AND btrim(label_ar) <> ''");
+                t.HasCheckConstraint("ck_definitions_key", "code ~ '^cf[A-Za-z0-9]{1,38}$'");
+                t.HasCheckConstraint("ck_definitions_labels", "btrim(name_en) <> '' AND btrim(name_ar) <> ''");
                 t.HasCheckConstraint("ck_definitions_decimals", "decimals BETWEEN 0 AND 8");
                 t.HasCheckConstraint("ck_definitions_lookup", "(field_type = 5) = (lookup_target IS NOT NULL)");
                 t.HasCheckConstraint("ck_definitions_options", "(field_type = 4 AND jsonb_array_length(options) BETWEEN 1 AND 50) OR (field_type <> 4 AND jsonb_array_length(options) = 0)");
             });
             e.Property(x => x.RecordType).HasMaxLength(100);
-            e.Property(x => x.Key).HasMaxLength(40);
-            e.Property(x => x.LabelEn).HasMaxLength(100);
-            e.Property(x => x.LabelAr).HasMaxLength(100);
+            // The audit trail names a record by its name_en, name_ar and code columns: a field is named by
+            // its labels and its machine name.
+            e.Property(x => x.Key).HasColumnName("code").HasMaxLength(40);
+            e.Property(x => x.LabelEn).HasColumnName("name_en").HasMaxLength(100);
+            e.Property(x => x.LabelAr).HasColumnName("name_ar").HasMaxLength(100);
             // Kept as a small number (0 text, 1 number, 2 date, 3 yes/no, 4 single select, 5 lookup): the
             // API's words are not the workspace's data (a "date" among the values would be taken for a
             // tenant's secret wherever a screen or a printout says "date").
@@ -158,6 +165,7 @@ public sealed class CustomFieldsDbContext(DbContextOptions<CustomFieldsDbContext
                 t.HasCheckConstraint("ck_field_values_one_column", "num_nonnulls(text_value, number_value, date_value, bool_value, ref_value) = 1");
             });
             e.Property(x => x.RecordType).HasMaxLength(100);
+            e.Property(x => x.Code).HasMaxLength(40);
             e.Property(x => x.TextValue).HasMaxLength(MaxTextLength);
             e.Property(x => x.NumberValue).HasPrecision(28, 8);
             // A record holds one value per field; this index also reads a record's values.
