@@ -181,6 +181,116 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Cancel_never_fails_while_the_worker_writes_progress_and_always_reaches_the_job()
+    {
+        // Statement level, no clock: a worker's progress write between a read and a save used to make the cancel answer
+        // a version conflict. Every cancel here races a stream of progress writes and must be accepted at once.
+        const int jobs = 40;
+        var ids = new List<Guid>();
+        for (var i = 0; i < jobs; i++)
+        {
+            ids.Add(await fixture.EnqueueAsync(A, JobTestModule.Slow));
+        }
+        var claimed = (await fixture.Runner.ClaimAsync(500, CancellationToken.None)).Where(c => ids.Contains(c.Id)).ToList();
+        Assert.Equal(jobs, claimed.Count);
+        try
+        {
+            using var done = new CancellationTokenSource();
+            var writers = claimed.Select(c => Task.Run(async () =>
+            {
+                var percent = 0;
+                while (!done.IsCancellationRequested)
+                {
+                    await fixture.Runner.ReportAsync(c, percent++ % 99, new JobText("Working", "جارٍ العمل"), CancellationToken.None);
+                }
+            })).ToList();
+            var answers = await Task.WhenAll(ids.Select(id => fixture.WithQueueAsync(A, q => q.CancelAsync(id))));
+            await done.CancelAsync();
+            await Task.WhenAll(writers);
+            Assert.All(answers, Assert.True);
+            foreach (var c in claimed)
+            {
+                Assert.True((await fixture.StateAsync(c.Id)).CancelRequested);
+                Assert.True(await fixture.Runner.ReportAsync(c, 50, new JobText("Working", "جارٍ العمل"), CancellationToken.None), "the worker is told on its next report");
+            }
+        }
+        finally
+        {
+            foreach (var id in ids)
+            {
+                await fixture.SqlAsync("UPDATE jobs.jobs SET status = 'cancelled', finished_at = now(), locked_by = NULL, locked_until = NULL WHERE id = @id", ("id", id));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task A_cancel_accepted_before_the_final_write_ends_the_job_as_cancelled_and_one_after_it_is_refused()
+    {
+        var late = await fixture.EnqueueAsync(A, JobTestModule.Ok);
+        var claimed = (await fixture.Runner.ClaimAsync(100, CancellationToken.None)).Single(c => c.Id == late);
+        // The handler never looks at its token (it finishes within one heartbeat): only the final write can see the request.
+        Assert.True(await fixture.WithQueueAsync(A, q => q.CancelAsync(late)));
+        await fixture.Runner.ExecuteAsync(claimed, CancellationToken.None);
+        var job = await fixture.StateAsync(late);
+        Assert.Equal(("cancelled", true), (job.Status, job.CancelRequested));
+        Assert.Null(job.OutputName);
+        Assert.Equal("cancelled", (await fixture.AttemptsAsync(late)).Single().Outcome);
+
+        var early = await fixture.EnqueueAsync(A, JobTestModule.Ok);
+        await fixture.Runner.RunOnceAsync();
+        Assert.Equal("succeeded", (await fixture.StateAsync(early)).Status);
+        Assert.False(await fixture.WithQueueAsync(A, q => q.CancelAsync(early)));
+        var after = await fixture.StateAsync(early);
+        Assert.Equal(("succeeded", false), (after.Status, after.CancelRequested));
+    }
+
+    [Fact]
+    public async Task The_worker_holds_the_application_role_only_which_owns_no_table_and_bypasses_no_policy()
+    {
+        // The worker's configuration: compose names no owner connection for it, and its one cross-workspace lookup is a function.
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "compose.yaml")))
+        {
+            dir = dir.Parent;
+        }
+        Assert.NotNull(dir);
+        var compose = File.ReadAllText(Path.Combine(dir.FullName, "compose.yaml"));
+        var start = compose.IndexOf("\n  worker:", StringComparison.Ordinal);
+        Assert.True(start > 0, "compose.yaml has no worker service");
+        var next = compose.IndexOf("\nvolumes:", start, StringComparison.Ordinal);
+        var worker = compose[start..next];
+        Assert.DoesNotContain("ConnectionStrings__Owner", worker);
+        Assert.DoesNotContain("ConnectionStrings__Admin", worker);
+        Assert.DoesNotContain("erp_owner", worker);
+        Assert.Contains("Username=erp_app", worker);
+
+        // The role the worker connects with.
+        await using var app = await Env.OpenAppAsync();
+        await using (var who = new NpgsqlCommand("SELECT current_user", app))
+        {
+            Assert.Equal("erp_app", (string?)await who.ExecuteScalarAsync());
+        }
+        await using (var attributes = new NpgsqlCommand("SELECT rolsuper OR rolbypassrls OR rolcreaterole OR rolcreatedb FROM pg_roles WHERE rolname = current_user", app))
+        {
+            Assert.False((bool?)await attributes.ExecuteScalarAsync());
+        }
+        await using (var owned = new NpgsqlCommand("SELECT count(*) FROM pg_class c JOIN pg_roles r ON r.oid = c.relowner WHERE r.rolname = current_user AND c.relkind IN ('r', 'p', 'v', 'm', 'S')", app))
+        {
+            Assert.Equal(0L, (long?)await owned.ExecuteScalarAsync());
+        }
+        await using (var schemas = new NpgsqlCommand("SELECT count(*) FROM pg_namespace n JOIN pg_roles r ON r.oid = n.nspowner WHERE r.rolname = current_user", app))
+        {
+            Assert.Equal(0L, (long?)await schemas.ExecuteScalarAsync());
+        }
+        // It cannot become the owner or the lookup role.
+        foreach (var role in new[] { "erp_owner", "erp_auth" })
+        {
+            await using var switchRole = new NpgsqlCommand($"SET ROLE {role}", app);
+            await Assert.ThrowsAsync<PostgresException>(() => switchRole.ExecuteNonQueryAsync());
+        }
+    }
+
+    [Fact]
     public async Task A_job_whose_worker_disappeared_is_taken_back_and_the_lost_try_is_recorded()
     {
         var id = await fixture.EnqueueAsync(A, JobTestModule.Ok);

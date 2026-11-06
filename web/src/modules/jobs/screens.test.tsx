@@ -224,6 +224,22 @@ describe("background jobs screen", () => {
     expect(calls.some((c) => c.method === "POST" && c.url === "/api/jobs/jobs/j1/cancel")).toBe(true);
     expect(buttonNamed("Stopping…")?.hasAttribute("disabled")).toBe(true);
   });
+
+  it("says plainly when the job finished on its own before the cancel reached it", async () => {
+    const running = { ...job(), status: "running", finishedAt: null, progress: 90, canRerun: false, canCancel: true, hasOutput: false, canDownload: false };
+    await open("/jobs/jobs?open=j1", all, (method, p) => {
+      if (method === "GET" && p === "/api/jobs/jobs/j1") return { status: 200, body: running };
+      if (method === "POST" && p === "/api/jobs/jobs/j1/cancel") return { status: 200, body: { ...running, status: "succeeded", progress: 100, canCancel: false } };
+      return undefined;
+    });
+    await wait();
+    await act(async () => {
+      buttonNamed("Cancel")!.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await settleUntilQuiet(() => calls);
+    expect(document.body.textContent).toContain("The job had already finished, so it could not be cancelled.");
+  });
 });
 
 describe("job schedules screen", () => {

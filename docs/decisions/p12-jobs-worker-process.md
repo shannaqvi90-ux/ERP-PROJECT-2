@@ -39,3 +39,19 @@ workspaces have a job due without being able to read any workspace's data. The w
   environment nothing runs jobs by itself: tests drive `JobRunner` directly.
 - A gate for p00 to consider (not done here): a first-class `worker:<name>` caller kind for reviewed
   cross-tenant lookups, which would let this lookup be a definer function inside the web process.
+
+## Round 4 amendment: the worker holds no owner credentials
+
+The first choice above gave the worker `ConnectionStrings__Owner` for `SET LOCAL ROLE erp_auth`. A process that runs every
+module's handlers must not hold credentials that could `ALTER TABLE ... NO FORCE ROW LEVEL SECURITY`. The lookup is now the
+function `jobs.due_tenants(limit)` (migration `DueTenantsFunction`), SECURITY DEFINER, owned by `erp_auth`, search_path pinned,
+executable by `erp_app` only, answering only on a connection with no workspace bound and returning tenant ids. It is the same
+pattern as the sign-in lookups. The worker (compose service `worker`) gets `ConnectionStrings__App` only. Test:
+`JobRunnerTests.The_worker_holds_the_application_role_only_which_owns_no_table_and_bypasses_no_policy`.
+
+Cancel: `JobQueue.CancelAsync` is one `UPDATE ... WHERE id AND status IN ('queued','running')` (queued ends cancelled at once),
+not a read and an optimistic save, so a progress report or heartbeat cannot make it answer 409. The worker's final write takes the
+row `FOR UPDATE` and, when `cancel_requested` is set, ends the attempt as cancelled instead of succeeded (its handler writes roll
+back); a cancel arriving after that lock waits, finds the job succeeded and is answered as a finished job, which the panel says in
+English and Arabic ("jobs.cancel.alreadyFinished"). Tests: `Cancel_never_fails_while_the_worker_writes_progress...`,
+`A_cancel_accepted_before_the_final_write...`. Added cost: three module tests, no wall-clock thresholds.

@@ -49,7 +49,7 @@ public sealed class JobRunner : IDisposable
     private readonly StringCatalog strings;
     private readonly TimeProvider clock;
     private readonly ILogger<JobRunner> log;
-    private readonly string _ownerConnection;
+    private readonly string _appConnection;
 
     public JobRunner(IServiceScopeFactory scopes, JobTypes types, StringCatalog strings, TimeProvider clock, IConfiguration configuration, ILogger<JobRunner> log)
     {
@@ -58,7 +58,7 @@ public sealed class JobRunner : IDisposable
         this.strings = strings;
         this.clock = clock;
         this.log = log;
-        _ownerConnection = configuration.GetConnectionString(ConnectionNames.Owner) ?? "";
+        _appConnection = configuration.GetConnectionString(ConnectionNames.App) ?? "";
     }
 
     /// <summary>How long a worker's claim on a running job lasts without being renewed.</summary>
@@ -119,20 +119,17 @@ public sealed class JobRunner : IDisposable
 
     /// <summary>The workspaces that have a job due, a running job whose lease ran out or a schedule due,
     /// the longest waiting first (tenant ids only, see <see cref="JobsSql"/>). Uses the owner role's
-    /// connection of the worker process, switched to the narrow lookup role for this one statement.</summary>
+    /// application-role connection of the worker process, through the reviewed function jobs.due_tenants()
+    /// (owned by the narrow lookup role); the worker holds no owner credentials.</summary>
     public async Task<IReadOnlyList<Guid>> DueTenantsAsync(CancellationToken cancellationToken)
     {
-        if (_ownerConnection.Length == 0)
+        if (_appConnection.Length == 0)
         {
-            throw new InvalidOperationException("The job worker needs the owner role's connection string (ConnectionStrings:Owner) to learn which workspaces have work.");
+            throw new InvalidOperationException("The job worker needs the application role's connection string (ConnectionStrings:App).");
         }
-        await using var connection = new NpgsqlConnection(_ownerConnection);
+        await using var connection = new NpgsqlConnection(_appConnection);
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
-        await using (var role = new NpgsqlCommand("SET LOCAL ROLE erp_auth", connection, transaction))
-        {
-            await role.ExecuteNonQueryAsync(cancellationToken);
-        }
         var tenants = new List<Guid>();
         await using (var command = new NpgsqlCommand(JobsSql.DueTenants, connection, transaction))
         {
@@ -327,6 +324,9 @@ public sealed class JobRunner : IDisposable
                     // Another worker holds the job now; it records what happens.
                     log.LogWarning("Job {Job} lost its lease; its attempt was rolled back.", job.Id);
                     return;
+                case CancelledAtEndException:
+                    await FinishCancelledAsync(job);
+                    return;
                 case OperationCanceledException when lost:
                     return;
                 case OperationCanceledException when stopping:
@@ -359,6 +359,11 @@ public sealed class JobRunner : IDisposable
         var db = services.GetRequiredService<JobsDbContext>();
         var now = clock.GetUtcNow();
         var job = await HeldAsync(db, claimed, cancellationToken) ?? throw new LostLeaseException();
+        if (job.CancelRequested)
+        {
+            // A cancel accepted before the final write wins: the job's own writes roll back with the scope.
+            throw new CancelledAtEndException();
+        }
         job.Status = JobStatus.Succeeded;
         job.FinishedAt = now;
         job.LockedUntil = null;
@@ -565,6 +570,9 @@ public sealed class JobRunner : IDisposable
 
     private static JobText Clip(JobText text) => new(Clip(text.En ?? "", JobText.MaxLength), Clip(text.Ar ?? "", JobText.MaxLength));
 }
+
+/// <summary>A cancel was accepted after the handler's last check: the attempt ends as cancelled, not succeeded.</summary>
+internal sealed class CancelledAtEndException() : InvalidOperationException("The job was cancelled before it could finish.");
 
 internal sealed class LostLeaseException() : InvalidOperationException("The worker no longer holds the job.");
 

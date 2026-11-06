@@ -196,14 +196,18 @@ function JobPanel({ id, nav, onChanged, onOpen, onClose }: { id: string; nav?: R
         onChanged();
         // A new run is the job to watch now; a cancelled job stays open.
         if (what === "rerun") onOpen(next.id);
-        else adopt(next);
+        else {
+          adopt(next);
+          // The job ended on its own before the request reached it: say so rather than show a silent no-op.
+          if (what === "cancel" && next.status !== "cancelled" && !isActive(next.status)) setProblem(t("jobs.cancel.alreadyFinished"));
+        }
       } catch (e) {
         setProblem(e instanceof ApiError || e instanceof Error ? e.message : String(e));
       } finally {
         setBusy(false);
       }
     },
-    [busy, id, adopt, onChanged, onOpen],
+    [busy, id, adopt, onChanged, onOpen, t],
   );
   const latest = useRef(act);
   latest.current = act;
