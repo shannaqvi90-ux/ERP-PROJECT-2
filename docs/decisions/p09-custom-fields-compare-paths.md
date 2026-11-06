@@ -9,8 +9,14 @@ Task: `gauntlet/compare/tasks/custom-field-filter.mjs`; ours driver
 
 Custom fields (navigation) > New custom field > type the label (the cursor is there; a new field is
 Text and searched by the list's search box; the Arabic label may stay blank) > Enter > Contacts
-(navigation; the search box has the focus) > type the contact's name > Enter > click the new field >
-type the value > Ctrl+S > "/" (the search box, text chosen) > type the value: exactly that contact.
+(navigation; the search box has the focus) > the shortest word prefixes of the contact's name that rank
+it first (as the find-record task's expert path does) > Enter > click the new field > type the value >
+Ctrl+S > Escape (closes the form) > "/" (the search box, text chosen) > type the value: exactly that
+contact.
+
+Measured by the harness's health check on a small stack (13 steps, 39 keystrokes, 1.5 s machine, 30 s
+modelled human) against the Odoo reference run of 2026-10-19 (17 steps, 61 keystrokes, 4.5 s machine,
+53 s modelled human): strictly fewer on each. The critic measures it on the 100,000-contact dataset.
 
 ## Paths tried
 
