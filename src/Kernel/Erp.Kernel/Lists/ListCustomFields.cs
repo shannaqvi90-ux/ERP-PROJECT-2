@@ -52,7 +52,8 @@ internal static class ListCustomFields
         Filterable: true,
         Hidden: true,
         Choices: field.Type == CustomFieldTypes.Select ? field.Options.Select(o => new ListChoice(o.Value, field.OptionKey(o.Value))).ToList() : null,
-        LabelField: field.Type == CustomFieldTypes.Lookup ? field.Key + "Name" : null);
+        LabelField: field.Type == CustomFieldTypes.Lookup ? field.Key + "Name" : null,
+        ArabicField: field.Type == CustomFieldTypes.Lookup ? field.Key + "NameAr" : null);
 
     /// <summary>The label strings of the fields (and of a select's options) in both languages,
     /// handed to the screen with the list definition: the tenant's own words, not the product's.</summary>
@@ -123,7 +124,7 @@ internal static class ListCustomFields
             case CustomFieldTypes.Lookup:
                 return Call("MatchRef", id, Boxed(Guid.Parse(value.Text!)));
             case CustomFieldTypes.Select:
-                return Call("MatchText", id, Expression.Constant("exact"), Boxed(value.Text));
+                return Call("MatchText", id, Expression.Constant("eq"), Boxed(value.Text));
             default:
                 return Call("MatchText", id, Expression.Constant(name), Boxed(value.Text));
         }

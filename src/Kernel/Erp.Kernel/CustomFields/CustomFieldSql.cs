@@ -23,7 +23,7 @@ public static class CustomFieldSql
 {
     public const string Schema = "customfields";
 
-    /// <summary>Text and select values. Operators: eq (ignoring case), exact, contains, startswith, endswith.</summary>
+    /// <summary>Text and select values. Operators: eq (ignoring case), contains, startswith, endswith.</summary>
     public static IQueryable<CustomFieldMatch> MatchText(Guid field, string op, string? value) => throw new NotSupportedException();
 
     /// <summary>Number values. Operators: eq, lt, le, gt, ge.</summary>

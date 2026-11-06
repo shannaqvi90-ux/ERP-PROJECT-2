@@ -235,6 +235,9 @@ internal static class FieldEndpoints
         validator.Must(labelEn.Length == 0 || labelEn.Any(char.IsAsciiLetterOrDigit), "labelEn", "customFieldLabelLatin");
         var decimals = request.Decimals ?? field.Decimals;
         var type = field.FieldType;
+        validator.Must(decimals is >= 0 and <= 8, "decimals", "customFieldDecimals");
+        validator.Must(request.SortOrder is null or (>= 0 and <= 10000), "sortOrder", "customFieldSortOrder");
+        decimals = Math.Clamp(decimals, 0, 8);
         validator.Must(request.Decimals is null || type == CustomFieldTypes.Number, "decimals", "customFieldNotNumber");
         validator.Must(request.Searchable is not true || type == CustomFieldTypes.Text, "searchable", "customFieldSearchText");
 
@@ -262,7 +265,7 @@ internal static class FieldEndpoints
                     continue;
                 }
                 var unique = value;
-                for (var n = 2; options.Any(o => o.Value == unique); n++)
+                for (var n = 2; options.Any(o => string.Equals(o.Value, unique, StringComparison.OrdinalIgnoreCase)); n++)
                 {
                     unique = value[..Math.Min(value.Length, FieldRules.OptionValueMaxLength - n.ToString().Length)] + n;
                 }

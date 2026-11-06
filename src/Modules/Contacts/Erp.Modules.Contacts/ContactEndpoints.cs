@@ -89,9 +89,15 @@ public sealed record ContactRow(
     bool IsActive,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    uint Version,
-    [property: JsonExtensionData, Description("The workspace's custom fields of contacts: one property per field, named by its key (cfCustomerSegment), holding the value (a number as text with its decimals, a date as yyyy-mm-dd, an option's value, a record id); a lookup also adds its record's names as <key>Name and <key>NameAr. Fields without a value are left out.")]
-    IDictionary<string, object?>? CustomFields = null);
+    uint Version)
+{
+    /// <summary>The workspace's custom fields of contacts: one property per field, named by its key
+    /// (cfCustomerSegment), holding the value (a number as text with its decimals, a date as yyyy-mm-dd,
+    /// an option's value, a record id); a lookup also adds its record's names as the key followed by Name and NameAr.
+    /// Fields without a value are left out.</summary>
+    [JsonExtensionData]
+    public IDictionary<string, object?>? CustomFields { get; init; }
+}
 
 /// <summary>
 /// Create or change a contact. <c>kind</c> is organisation or person; a person may name the
@@ -266,7 +272,7 @@ internal static class ContactEndpoints
             var organisation = c.OrganisationId is { } o && organisations.TryGetValue(o, out var found) ? found : null;
             return new ContactRow(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
                 c.Email, c.Mobile, c.Phone, c.City, c.Emirate, c.Country, c.Tags, c.TaxRegistrationNumber, c.DefaultCurrency, c.CreditLimitAmount,
-                c.CreditLimitCurrency, c.IsActive, c.CreatedAt, c.UpdatedAt, c.Version, customValues.GetValueOrDefault(c.Id));
+                c.CreditLimitCurrency, c.IsActive, c.CreatedAt, c.UpdatedAt, c.Version) { CustomFields = customValues.GetValueOrDefault(c.Id) };
         });
     }
 
