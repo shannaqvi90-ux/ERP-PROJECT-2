@@ -1,0 +1,251 @@
+{
+  "schema": 1,
+  "run_id": "keyboard-navigation-20261106T024920-f711",
+  "instrument": 12,
+  "task": "keyboard-navigation",
+  "task_title": "Navigate by keyboard",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
+  "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-11-06T02:49:20.918Z",
+  "finished_at": "2026-11-06T02:49:26.160Z",
+  "environment": {
+    "base_url": "http://localhost:21650",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 6,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 6,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.234,
+    "system_wait_seconds": 0.128,
+    "human_seconds": 6.13,
+    "human_plus_wait_seconds": 6.258,
+    "klm_operator_counts": {
+      "K": 6,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.001,
+      "took": 0.007,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Contacts",
+      "keystrokes": 1,
+      "at": 0.011,
+      "took": 0.024,
+      "chord": "o",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.109,
+      "took": 0.006,
+      "chord": "ArrowDown",
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.115,
+      "took": 0.005,
+      "chord": "ArrowDown",
+      "screen": "/contacts/contacts",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.121,
+      "took": 0.002,
+      "chord": "ArrowDown",
+      "screen": "/contacts/contacts",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.124,
+      "took": 0.055,
+      "chord": "Enter",
+      "screen": "/contacts/contacts",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "go-to keys shown",
+      "at": 0.008,
+      "seconds": 0.002
+    },
+    {
+      "label": "contacts list",
+      "at": 0.036,
+      "seconds": 0.072
+    },
+    {
+      "label": "third row active",
+      "at": 0.123,
+      "seconds": 0.001
+    },
+    {
+      "label": "third contact open",
+      "at": 0.18,
+      "seconds": 0.053
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "4d099001a56b2672.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/4d099001a56b2672.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "ae1d7424ffdc1f57.jpg",
+      "at": 0.234,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/ae1d7424ffdc1f57.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "expected": "Abdullah Abdullah Al Dhaheri",
+      "url": "/contacts/contacts/01890e9a-69e0-79b1-8ad2-953e72527bb4"
+    }
+  },
+  "path_notes": "G > O (contacts list, search focused) > Down x3 (third row) > Enter. [critic p16 r2]",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/keyboard-navigation.mjs",
+    "sha256": "6637912c7008d3c90d0e25cc64e6a40a7824e6fdb75f6a869d5e5fb7bd1d4662"
+  },
+  "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.041
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "10bb84f9a1ade9e6",
+    "elements": 1265
+  },
+  "screen_after_verify": {
+    "sha256": "10bb84f9a1ade9e6",
+    "elements": 1265,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.023
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 13,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.207,
+      "by_step": 6,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/audit/records/01890e9a-69e0-79b1-8ad2-953e72527bb4 after 0.007 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

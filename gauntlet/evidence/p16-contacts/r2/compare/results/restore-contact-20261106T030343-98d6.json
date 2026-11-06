@@ -1,0 +1,350 @@
+{
+  "schema": 1,
+  "run_id": "restore-contact-20261106T030343-98d6",
+  "instrument": 12,
+  "task": "restore-contact",
+  "task_title": "Restore an archived contact",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Restore the archived contact Shamma Waleed Al Romaithi to use.",
+  "done_when": "The back end holds the contact as active again.",
+  "started_at": "2026-11-06T03:03:43.366Z",
+  "finished_at": "2026-11-06T03:04:04.459Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.168,
+    "system_wait_seconds": 0.018,
+    "human_seconds": 5.3,
+    "human_plus_wait_seconds": 5.318,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 4,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Actions (gear)",
+      "keystrokes": 0,
+      "at": 0.014,
+      "took": 0.037,
+      "began": 0.001,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Unarchive",
+      "keystrokes": 0,
+      "at": 0.113,
+      "took": 0.037,
+      "began": 0.051,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "done",
+      "at": 0.15,
+      "seconds": 0.001
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 0.151,
+      "seconds": 0.001
+    },
+    {
+      "label": "the product still answering when run() returned (1 request)",
+      "at": 0.152,
+      "seconds": 0.016,
+      "settle": true
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "c71f1d7977307e2e.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/c71f1d7977307e2e.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "4ac8c6f2673b88a9.jpg",
+      "at": 0.168,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/4ac8c6f2673b88a9.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "active": true
+    }
+  },
+  "path_notes": "Actions (gear) > Unarchive.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/restore-contact.mjs",
+    "sha256": "d1f06aa2b866cb470e4375d727f263ec23b35794a0f148a5e04f93065c586f10"
+  },
+  "task_notes": "Set-up puts the contact in the start state through the back end; clean-up makes it active again.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/odoo/contacts/73531",
+    "path": "/odoo/contacts/73531",
+    "query": "",
+    "fragment": "",
+    "fields": 15,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "name_0",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "parent_id_0",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email_0",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone_0",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street_0",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street2_0",
+        "password": false,
+        "value_length": 23,
+        "value": "Saif Zone, PO Box 68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city_0",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "state_id_0",
+        "password": false,
+        "value_length": 12,
+        "value": "Sharjah (AE)"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "country_id_0",
+        "password": false,
+        "value_length": 20,
+        "value": "United Arab Emirates"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "lang_0",
+        "password": false,
+        "value_length": 12,
+        "value": "English (US)"
+      }
+    ],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.01,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.01,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "393749e96cd48c9d",
+    "elements": 1243
+  },
+  "screen_after_verify": {
+    "sha256": "393749e96cd48c9d",
+    "elements": 1243,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.011
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.active"
+      ]
+    },
+    "end_state": [
+      "POST /web/dataset/call_kw/res.partner/read [result.active]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.active"
+      ]
+    },
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.partner/action_unarchive"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /web/dataset/call_kw/res.partner/action_unarchive",
+        "at": 0.14840074900000036,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain_seconds": 0.004,
+          "chain": [
+            "input of step 2"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 24,
+    "not_caused": 4,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.04,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.09,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.107,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.174,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.241,
+      "by_step": 2,
+      "chain": [
+        "an animation frame",
+        "the answer to GET /web/image/res.partner/73531/avatar_128 after 0.009 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/res.partner/write",
+    "browser POST /web/dataset/call_kw/ir.attachment/register_as_main_attachment"
+  ]
+}

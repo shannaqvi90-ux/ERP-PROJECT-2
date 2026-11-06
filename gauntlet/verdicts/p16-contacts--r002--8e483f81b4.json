@@ -1,0 +1,204 @@
+{
+  "piece": "p16-contacts",
+  "round": 2,
+  "commit": "8e483f81b487d0383db419043d6aa64c1c154f1c",
+  "judged_at": "2026-11-06T03:08:18Z",
+  "critic": "fresh critic, p16-contacts round 2",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: ./erp verify (one command: build, migrate, seed, all tests)",
+      "status": "fail",
+      "evidence": "Fresh clone of 8e483f81, ERP_PROJECT=c-p16-contacts-r2, ports 21650/21651 and verify ports 21660/21661 (overridable through the environment). Slot taken 23:44:48Z, run ended 02:32:15Z (about 10,047 s wall). The dotnet, web and compare stages passed. e2e failed with 1 of 143: specs/jobs.spec.ts:65 'background jobs > a running job shows its progress and is cancelled from the panel'. Error: expected .jb-status 'Cancelled', got 'Running' 38 times, then 'Done' 18 times; test timeout 56,693 ms. Load during e2e was 0.5 to 1.3 on 16 threads (verify-kept/verify-load-samples). Processor time: dotnet 13,106 + web 2,224 + e2e 330 = 15,660 s, under the 16,000 s maximum. The ratchet check on the kept folder fails only on suite.e2eTests: 1 failed (ratchet-check.txt). Log: verify-critic-p16-contacts-r2.log, verify-kept/e2e.log."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p16-contacts-r2 ERP_HTTP_PORT=21650 ERP_DB_PORT=21651, with the comparison dataset's users, contacts and rates CSVs: the demo was running in 451 s (most of it image pulls). The alnoor tenant holds 100,000+ contacts and the gulfsteel tenant 1,006."
+    },
+    {
+      "gate": "G1 tenant isolation (gate suites)",
+      "status": "pass",
+      "evidence": "All gate tests passed in my verify: suite 246, self-http 1 (G1HttpIsolationTests, 20.4 min, no abort), self-company 2, self-noninterference 8."
+    },
+    {
+      "gate": "G1 tenant isolation (critic's own attack, tenant A against tenant B)",
+      "status": "pass",
+      "evidence": "isolation-attack.txt: as the alnoor admin against a gulfsteel canary (unique name, email, phone, TRN, code, credit limit). GET/PUT/archive/restore: 404. List search by name, Arabic name, email and TRN: 0 rows. Duplicates by name, email, phone and TRN: []. Contact card report JSON and PDF: 404. A person linked to B's organisation: 400 organisationUnknown. B's code in A: 201 (per-tenant uniqueness, no oracle). List CSV export: header only. An X-Tenant-Id header changes nothing. In the DB the canary is unchanged; contacts.contacts has RLS enabled and forced (owner erp_owner); erp_app is not superuser and has no BYPASSRLS; erp_app sees 0 rows with no tenant, and 0 with app.tenant_id set but no transaction stamp."
+    },
+    {
+      "gate": "G2 permissions (gate suites and probes)",
+      "status": "pass",
+      "evidence": "G2 suites passed. permission-probes.txt: viewer gets 200 on reads and 403 on create/update/archive/restore; noaccess gets 403 on all 10 contacts endpoints and reports."
+    },
+    {
+      "gate": "Planted leak L1 (static cross-tenant cache of contact cards in ContactEndpoints.Get)",
+      "status": "pass",
+      "evidence": "Caught by G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed, which names ContactEndpoints.RecentCards (plant-L1-static-card-cache.diff, plant-L1-process-state.log)."
+    },
+    {
+      "gate": "Planted UI permission fault U1 (Archive button shown for contacts.contacts.update)",
+      "status": "pass",
+      "evidence": "Caught by 3 tests in web/src/modules/contacts/screens.test.tsx (plant-U1-web-unit.log)."
+    },
+    {
+      "gate": "Planted permission faults P1/P2 (archive status written without contacts.contacts.archive)",
+      "status": "fail",
+      "evidence": "Gate gap, not a product fault (see gate_gaps). P1: restore declared with contacts.contacts.update (code and reviewed map). P2: PUT sets is_active = true. G2WriteSetTests (all), Requests_that_only_read and Granting_exactly_one_permission passed 8/8; the Contacts module tests passed 47/47. The real product writes is_active only through archive/restore under contacts.contacts.archive."
+    },
+    {
+      "gate": "Rule gates (licences, decimal money, en/ar strings, audit)",
+      "status": "pass",
+      "evidence": "Part of the passing dotnet and web stages. Web string check: 1,415 keys in English and Arabic. Credit limit columns are numeric(28,10) / numeric(19,8) / numeric(19,4) with currency, rate and base currency; there are no float columns. Audit rows: seed insert, then archive and restore by the user with old and new is_active values (audit-archive-restore.txt)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p16-contacts-r2 ERP_HTTP_PORT=21650 ERP_DB_PORT=21651 ERP_VERIFY_HTTP_PORT=21660 ERP_VERIFY_DB_PORT=21661 gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 2301,
+    "passed": 2300,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 10047
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 10047,
+    "evidence": "./erp verify on a fresh clone: 1 failing e2e test (specs/jobs.spec.ts:65, job cancel from the panel), with load under 1.5. Every other stage passed. ./erp up brought up the seeded demo in 451 s."
+  },
+  "odoo": [
+    {
+      "task": "find-record (find one contact among 100,000)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 14,
+        "seconds": 0.395,
+        "klm_seconds": 5.67
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 30,
+        "seconds": 1.057,
+        "klm_seconds": 17.91
+      },
+      "notes": "Median of 3 verified runs per product on the shared rig. Ours wins every metric on its whole path 'palette-shortest'."
+    },
+    {
+      "task": "keyboard-navigation (open the third contact by keyboard)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 6,
+        "seconds": 0.233,
+        "klm_seconds": 6.13
+      },
+      "odoo": {
+        "steps": 9,
+        "keystrokes": 10,
+        "seconds": 0.723,
+        "klm_seconds": 7.25
+      },
+      "notes": "The ours driver was a stub. The critic wrote it (compare-drivers/drivers/ours/keyboard-navigation.mjs): G > O > Down x3 > Enter. 3 verified runs each."
+    },
+    {
+      "task": "create-contact (critic-added; named in the piece spec)",
+      "winner": "odoo",
+      "ours": {
+        "steps": 8,
+        "keystrokes": 70,
+        "seconds": 0.697,
+        "klm_seconds": 32.25
+      },
+      "odoo": {
+        "steps": 9,
+        "keystrokes": 67,
+        "seconds": 1.703,
+        "klm_seconds": 36.53
+      },
+      "notes": "The critic wrote the task and both drivers (compare-drivers/). The harness verdict is loss on keystrokes. Ours: Contacts (nav) > Alt+N > name > click e-mail > e-mail > click phone > 97145550142 > Enter. Ours wins steps, machine and human seconds. On keystrokes ours' best variant (pointer, about 67) at most ties Odoo's 67, because both type the same name, e-mail and number. The instrument credits the +971 the field shows only when it is on screen as the clock starts, and it refused the national entry 045550142 that ours stores as +971 4 555 0142. A first judged round, so it is not tie-accepted."
+    },
+    {
+      "task": "archive-contact (critic-added; named in the piece spec)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.113,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 0,
+        "seconds": 0.399,
+        "klm_seconds": 7.95
+      },
+      "notes": "Ours: one Archive click. Odoo: gear > Archive > confirm. Keystrokes are 0 for both and left out (needs-human #11). 3 verified runs each."
+    },
+    {
+      "task": "restore-contact (critic-added; named in the piece spec)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.103,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.169,
+        "klm_seconds": 5.3
+      },
+      "notes": "Ours: Restore. Odoo: gear > Unarchive. Keystrokes left out (both 0). 3 verified runs each."
+    },
+    {
+      "task": "custom-field-filter (add a custom field to contacts and filter by it)",
+      "winner": "not-compared",
+      "notes": "Ours cannot do it: there is no custom-field mechanism in the product (no p09 module), and the ours driver is still a stub. Odoo's recorded baseline is 17 steps / 61 keys / about 2.3 s / 54.83 s. A scope gap, counted against the piece."
+    },
+    {
+      "task": "import-5000 (import 5,000 contacts)",
+      "winner": "not-compared",
+      "notes": "Ours cannot do it: there is no import mechanism (no p14 module) and no import on the contacts screen, and the ours driver is still a stub. Odoo's recorded baseline is 7 steps / 0 keys / about 10 s / 17.4 s. A scope gap, counted against the piece."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p16-contacts/r2/01-contacts-list-en.jpg",
+    "gauntlet/evidence/p16-contacts/r2/02-contact-open-en.jpg",
+    "gauntlet/evidence/p16-contacts/r2/03-third-contact-by-keyboard.jpg",
+    "gauntlet/evidence/p16-contacts/r2/04-new-contact-en.jpg",
+    "gauntlet/evidence/p16-contacts/r2/05-contact-archived-en.jpg",
+    "gauntlet/evidence/p16-contacts/r2/06-contacts-list-ar.jpg",
+    "gauntlet/evidence/p16-contacts/r2/07-contact-form-ar.jpg",
+    "gauntlet/evidence/p16-contacts/r2/08-duplicate-warning-ar.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Contacts cannot be imported, given custom fields or given attachments, so 2 of the 5 comparison tasks the spec names cannot be done at all",
+    "detail": "The spec says contacts is the reference consumer of the shared custom-field, attachment, import and export mechanisms. The product has no custom-field, attachment or import module. The contact form offers only Print, History, Archive, Save and Close, and the list offers Print or export but no import. A UAE trading company's first step is to bring in its existing customers and suppliers (thousands of rows from Excel) and add fields of its own (licence expiry, account manager). Odoo does both: import-5000 in 7 steps, a contact property plus filter in 17 steps. Ours cannot do either, so the piece cannot beat Odoo on two named bar tasks whatever else it wins. Also inside the piece: create-contact loses on keystrokes (70 against 67), and contact codes are typed by hand rather than taken from document numbering (p10), which the spec also lists. The verdict is BLOCKED, separately, by one failing e2e test outside this piece (p12 job cancel).",
+    "evidence": "src/Modules holds Audit, Contacts, Currency, Identity, Jobs, Lists, Numbering, Reports and Tenancy, with no CustomFields, Attachments or Import module. gauntlet/compare/drivers/ours/custom-field-filter.mjs and import-5000.mjs are stubs ('not built yet: waits for p09/p14 with p16'). Screenshot 02 shows the record header buttons. ContactsModule.cs line 60 says numbering 'will offer the next one'. compare/results/create-contact-*.json shows ours 8 steps / 70 keys against Odoo 9 / 67."
+  },
+  "gate_gaps": [
+    {
+      "owner": "p16-contacts",
+      "gate": "G2 write sets (G2WriteSetTests / WriteSets.cs with tests/Gates/permission-write-sets.txt); the Contacts module has no ContactsWriteSetTests of its own",
+      "planted": "P1 (plant-P1-restore-under-update.diff): POST /api/contacts/contacts/{id}/restore declared with contacts.contacts.update in ContactEndpoints.Map and in tests/Gates/endpoint-permissions/contacts.txt, so a clerk with only update rights can bring an archived customer back into use. P2 (plant-P2-update-restores.diff): ContactEndpoints.Update sets contact.IsActive = true ('saving brings it back into use'), a write to is_active under contacts.contacts.update, which the reviewed write set explicitly reserves for contacts.contacts.archive.",
+      "evidence": "P1: G2WriteSetTests.Each_permission_writes_only and G2PermissionTests.Granting_exactly_one_permission passed 2/2 (plant-P1-g2.log). The detailed run shows restore 'exercised alone' (plant-P1-writeset-detailed.log), but always on an active contact, so it writes nothing. P2: all G2WriteSetTests plus Requests_that_only_read and Granting_exactly_one passed 8/8 (plant-P2-g2.log); Erp.Modules.Contacts.Tests passed 47/47 (plant-P2-contacts-module-tests.log). The write-set run never sends PUT or restore at an archived contact. The real product's Update never touches is_active, and restore needs contacts.contacts.archive (permission-probes.txt)."
+    }
+  ],
+  "other_findings": [
+    "[route: p12-jobs] Failing e2e test that blocks the round: tests/e2e/specs/jobs.spec.ts:65 'a running job shows its progress and is cancelled from the panel'. After the Cancel click the panel stayed Running, then showed Done; Cancelled never appeared (verify-kept/e2e.log). The load was low (under 1.5). I could not reproduce it on the demo: 3 API cancels and 3 UI cancels each reached 'cancelled' within 2 s (job-cancel-api-repro.txt, job-cancel-ui-repro.txt). This suggests an intermittent race between the Cancel click and the live-updating panel, or a worker that misses a cancel. The toolbox kept no Playwright trace.",
+    "The contacts list's default 'Standard' view shows archived contacts mixed with active ones: the API default total is 100,019, of which 13 are archived. An 'Active' preset exists, but Odoo hides archived contacts by default.",
+    "A credit limit in a foreign currency needs its exchange rate typed by hand (the server answers contactsRateRequired). The form does not offer the workspace's own rate from the currency module, which holds 100,000 rates. The currency suggestions are a fixed list in code.",
+    "Arabic: the duplicate warning joins its reasons with a Latin comma ('الاسم نفسه, البريد نفسه') instead of the Arabic comma '،'.",
+    "The contact code (reference) is typed by hand. Document numbering (p10) is integrated but not used for contacts, although the spec lists numbering among the shared mechanisms contacts builds on.",
+    "Ratchet: my run used 15,660 s of processor time (dotnet 13,106, web 2,224, e2e 330), with load 0.5 to 3 for most of the run. The gate test process reached about 20 GB RSS and swapped, so the dotnet stage took 2.6 h wall. Within the 16,000 s maximum."
+  ],
+  "human_gates": [
+    {
+      "gate": "Tax/statutory rule",
+      "what": "The TRN is validated as exactly 15 digits (Arabic-Indic digits converted), with a database check constraint. The rule matches the owner-signed docs/compliance/vat-trn-format.md (needs-human #10 and #18). No new statutory rule was found."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p16-contacts/r2",
+  "evidence_dir": "gauntlet/evidence/p16-contacts/r2"
+}

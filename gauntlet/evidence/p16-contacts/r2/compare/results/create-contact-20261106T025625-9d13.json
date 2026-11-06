@@ -1,0 +1,1162 @@
+{
+  "schema": 1,
+  "run_id": "create-contact-20261106T025625-9d13",
+  "instrument": 12,
+  "task": "create-contact",
+  "task_title": "Create a contact",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Create the contact \"Falcon Steel Trading LLC\" with the e-mail sales@falconsteel.example and the phone number +971 4 555 0142.",
+  "done_when": "The contact is saved; the back end holds it with that e-mail and phone number.",
+  "started_at": "2026-11-06T02:56:25.098Z",
+  "finished_at": "2026-11-06T02:57:13.390Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 67,
+    "clicks": 4,
+    "scrolls": 0,
+    "field_entries": 3,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.703,
+    "system_wait_seconds": 1.191,
+    "human_seconds": 36.53,
+    "human_plus_wait_seconds": 37.721,
+    "klm_operator_counts": {
+      "K": 71,
+      "P": 4,
+      "B": 8,
+      "H": 5,
+      "M": 7
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.014,
+      "took": 0.036,
+      "began": 0.001,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "at": 0.114,
+      "took": 0.035,
+      "began": 0.051,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "New (hotkey)",
+      "keystrokes": 2,
+      "at": 0.225,
+      "took": 0.011,
+      "chord": "Alt+c",
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 30,
+      "at": 0.436,
+      "took": 0.034,
+      "text": "Falcon Steel Trading LLC",
+      "same_field": false,
+      "screen": "/odoo/contacts/new",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "e-mail field",
+      "keystrokes": 0,
+      "at": 0.496,
+      "took": 0.038,
+      "began": 0.471,
+      "screen": "/odoo/contacts/new",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "type",
+      "label": "e-mail",
+      "keystrokes": 26,
+      "at": 0.539,
+      "took": 0.039,
+      "text": "sales@falconsteel.example",
+      "same_field": true,
+      "screen": "/odoo/contacts/new",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "phone field",
+      "keystrokes": 0,
+      "at": 0.613,
+      "took": 0.035,
+      "began": 0.578,
+      "screen": "/odoo/contacts/new",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "type",
+      "label": "phone",
+      "keystrokes": 11,
+      "at": 0.653,
+      "took": 0.017,
+      "text": "97145550142",
+      "same_field": true,
+      "screen": "/odoo/contacts/new",
+      "chain": true
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "at": 0.77,
+      "took": 0.014,
+      "chord": "Alt+s",
+      "screen": "/odoo/contacts/new",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.149,
+      "seconds": 0.075
+    },
+    {
+      "label": "new contact form, name focused",
+      "at": 0.236,
+      "seconds": 0.2
+    },
+    {
+      "label": "saved",
+      "at": 0.785,
+      "seconds": 0.089
+    },
+    {
+      "label": "the new record's thread loaded",
+      "at": 0.875,
+      "seconds": 0.056
+    },
+    {
+      "label": "the product still answering when run() returned (1 request)",
+      "at": 0.932,
+      "seconds": 0.771,
+      "settle": true
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "22cdeed11602e80a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/22cdeed11602e80a.jpg"
+    },
+    {
+      "moment": "contact filled in",
+      "file": "e9b973c9dc7a9436.jpg",
+      "at": 0.67,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/e9b973c9dc7a9436.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "d49d971ace1e5400.jpg",
+      "at": 1.703,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/d49d971ace1e5400.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "found": [
+        {
+          "id": 435686,
+          "name": "Falcon Steel Trading LLC",
+          "email": "sales@falconsteel.example",
+          "phone": "97145550142"
+        }
+      ]
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Contacts > Alt+C > name > click e-mail > e-mail > click phone > digits > Alt+S | pointer: Apps menu > Contacts > New > name > click e-mail > e-mail > click phone > digits > click Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/create-contact.mjs",
+    "sha256": "129051440fd0ffc1b5c74ede7a7cd0240529da0d7e17f5a47e26f94b5dc6f75e"
+  },
+  "task_notes": "Set-up removes (Odoo) or renames and archives (ours: contacts are never deleted) any earlier copy, so no duplicate warning differs between runs.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.011,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.011,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "95cf507f23157048",
+    "elements": 365
+  },
+  "screen_after_verify": {
+    "sha256": "95cf507f23157048",
+    "elements": 365,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.011
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.partner/search_read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.partner/search_read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.partner/search_read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.partner/search_read": [
+        "result.0.id",
+        "result.0.name",
+        "result.0.email",
+        "result.0.phone",
+        "result"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/res.partner/search_read"
+    ],
+    "end_state": [
+      "POST /web/dataset/call_kw/res.partner/search_read [result.name, result.email, result.phone]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.partner/search_read": [
+        "result.0.name",
+        "result.0.email",
+        "result.0.phone"
+      ]
+    },
+    "end_state_gained": [
+      "Falcon Steel Trading LLC",
+      "sales@falconsteel.example",
+      "+971 4 555 0142"
+    ],
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.partner/autocomplete_by_field",
+      "POST /web/dataset/call_kw/res.partner/web_save"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /web/dataset/call_kw/res.partner/autocomplete_by_field",
+        "at": 0.7257870189999958,
+        "by_step": 8,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.256,
+          "chain": [
+            "input of step 5",
+            "a timer of 0.25 s",
+            "the answer to GET /partner_autocomplete/static/lib/jsvat.js after 0.004 s",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/res.partner/web_save",
+        "at": 0.8042954639999953,
+        "by_step": 9,
+        "browser_record": {
+          "caused": true,
+          "by_step": 9,
+          "chain_seconds": 0.024,
+          "chain": [
+            "input of step 9",
+            "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.016 s"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 114,
+    "not_caused": 7,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.161,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.4,
+        "event": "ParseHTML",
+        "why": "the document /odoo/contacts/new, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.812,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.875,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.925,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.93,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.942,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.708,
+      "by_step": 5,
+      "chain": [
+        "the answer to GET /partner_autocomplete/static/lib/jsvat.js after 0.004 s",
+        "a task that followed at once (a message or an observer)",
+        "the answer to POST /web/dataset/call_kw/res.partner/autocomplete_by_field after 0.976 s",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": [],
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Contacts > Alt+C > name > click e-mail > e-mail > click phone > digits > Alt+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 9,
+        "keystrokes": 71,
+        "clicks": 4,
+        "scrolls": 0,
+        "field_entries": 3,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.703,
+        "system_wait_seconds": 1.191,
+        "human_seconds": 36.53,
+        "human_plus_wait_seconds": 37.721,
+        "klm_operator_counts": {
+          "K": 71,
+          "P": 4,
+          "B": 8,
+          "H": 5,
+          "M": 7
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.014,
+          "took": 0.036,
+          "began": 0.001,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Contacts app",
+          "keystrokes": 0,
+          "at": 0.114,
+          "took": 0.035,
+          "began": 0.051,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "New (hotkey)",
+          "keystrokes": 2,
+          "at": 0.225,
+          "took": 0.011,
+          "chord": "Alt+c",
+          "screen": "/odoo/contacts",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 30,
+          "at": 0.436,
+          "took": 0.034,
+          "text": "Falcon Steel Trading LLC",
+          "same_field": false,
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "e-mail field",
+          "keystrokes": 0,
+          "at": 0.496,
+          "took": 0.038,
+          "began": 0.471,
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 26,
+          "at": 0.539,
+          "took": 0.039,
+          "text": "sales@falconsteel.example",
+          "same_field": true,
+          "screen": "/odoo/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0.613,
+          "took": 0.035,
+          "began": 0.578,
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "type",
+          "label": "phone",
+          "keystrokes": 11,
+          "at": 0.653,
+          "took": 0.017,
+          "text": "97145550142",
+          "same_field": true,
+          "screen": "/odoo/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 0.77,
+          "took": 0.014,
+          "chord": "Alt+s",
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Contacts loaded",
+          "at": 0.149,
+          "seconds": 0.075
+        },
+        {
+          "label": "new contact form, name focused",
+          "at": 0.236,
+          "seconds": 0.2
+        },
+        {
+          "label": "saved",
+          "at": 0.785,
+          "seconds": 0.089
+        },
+        {
+          "label": "the new record's thread loaded",
+          "at": 0.875,
+          "seconds": 0.056
+        },
+        {
+          "label": "the product still answering when run() returned (1 request)",
+          "at": 0.932,
+          "seconds": 0.771,
+          "settle": true
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "found": [
+            {
+              "id": 435686,
+              "name": "Falcon Steel Trading LLC",
+              "email": "sales@falconsteel.example",
+              "phone": "97145550142"
+            }
+          ]
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.011,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.011,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "95cf507f23157048",
+        "elements": 365
+      },
+      "screen_after_verify": {
+        "sha256": "95cf507f23157048",
+        "elements": 365,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.011
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.partner/search_read": [
+            "result.0.id",
+            "result.0.name",
+            "result.0.email",
+            "result.0.phone",
+            "result"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.partner/search_read [result.name, result.email, result.phone]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.partner/search_read": [
+            "result.0.name",
+            "result.0.email",
+            "result.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "Falcon Steel Trading LLC",
+          "sales@falconsteel.example",
+          "+971 4 555 0142"
+        ],
+        "writes_sent": [
+          "POST /web/dataset/call_kw/res.partner/autocomplete_by_field",
+          "POST /web/dataset/call_kw/res.partner/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /web/dataset/call_kw/res.partner/autocomplete_by_field",
+            "at": 0.7257870189999958,
+            "by_step": 8,
+            "browser_record": {
+              "caused": true,
+              "by_step": 5,
+              "chain_seconds": 0.256,
+              "chain": [
+                "input of step 5",
+                "a timer of 0.25 s",
+                "the answer to GET /partner_autocomplete/static/lib/jsvat.js after 0.004 s",
+                "a task that followed at once (a message or an observer)"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/res.partner/web_save",
+            "at": 0.8042954639999953,
+            "by_step": 9,
+            "browser_record": {
+              "caused": true,
+              "by_step": 9,
+              "chain_seconds": 0.024,
+              "chain": [
+                "input of step 9",
+                "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.016 s"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 114,
+        "not_caused": 7,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.161,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.4,
+            "event": "ParseHTML",
+            "why": "the document /odoo/contacts/new, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.812,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.875,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.925,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.93,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.942,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 1.708,
+          "by_step": 5,
+          "chain": [
+            "the answer to GET /partner_autocomplete/static/lib/jsvat.js after 0.004 s",
+            "a task that followed at once (a message or an observer)",
+            "the answer to POST /web/dataset/call_kw/res.partner/autocomplete_by_field after 0.976 s",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Contacts > New > name > click e-mail > e-mail > click phone > digits > click Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 9,
+        "keystrokes": 67,
+        "clicks": 6,
+        "scrolls": 0,
+        "field_entries": 3,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 3.712,
+        "system_wait_seconds": 0.809,
+        "human_seconds": 38.41,
+        "human_plus_wait_seconds": 39.219,
+        "klm_operator_counts": {
+          "K": 67,
+          "P": 6,
+          "B": 12,
+          "H": 6,
+          "M": 7
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.021,
+          "took": 0.035,
+          "began": 0.001,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Contacts app",
+          "keystrokes": 0,
+          "at": 0.121,
+          "took": 0.035,
+          "began": 0.057,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 0.464,
+          "took": 0.102,
+          "began": 0.235,
+          "screen": "/odoo/contacts",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 30,
+          "at": 2.753,
+          "took": 0.035,
+          "text": "Falcon Steel Trading LLC",
+          "same_field": false,
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "e-mail field",
+          "keystrokes": 0,
+          "at": 2.82,
+          "took": 0.038,
+          "began": 2.789,
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 26,
+          "at": 2.863,
+          "took": 0.034,
+          "text": "sales@falconsteel.example",
+          "same_field": true,
+          "screen": "/odoo/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 2.937,
+          "took": 0.036,
+          "began": 2.897,
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "type",
+          "label": "phone",
+          "keystrokes": 11,
+          "at": 2.978,
+          "took": 0.015,
+          "text": "97145550142",
+          "same_field": true,
+          "screen": "/odoo/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 3.121,
+          "took": 0.041,
+          "began": 3.092,
+          "screen": "/odoo/contacts/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Contacts loaded",
+          "at": 0.157,
+          "seconds": 0.077
+        },
+        {
+          "label": "new contact form, name focused",
+          "at": 0.567,
+          "seconds": 0.185
+        },
+        {
+          "label": "saved",
+          "at": 3.163,
+          "seconds": 0.078
+        },
+        {
+          "label": "the new record's thread loaded",
+          "at": 3.242,
+          "seconds": 0.104
+        },
+        {
+          "label": "the product still answering when run() returned (1 request)",
+          "at": 3.347,
+          "seconds": 0.365,
+          "settle": true
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "found": [
+            {
+              "id": 435687,
+              "name": "Falcon Steel Trading LLC",
+              "email": "sales@falconsteel.example",
+              "phone": "97145550142"
+            }
+          ]
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.011,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.01,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "221999067ec1d2ff",
+        "elements": 365
+      },
+      "screen_after_verify": {
+        "sha256": "221999067ec1d2ff",
+        "elements": 365,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.011
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.partner/search_read": [
+            "result.0.id",
+            "result.0.name",
+            "result.0.email",
+            "result.0.phone",
+            "result"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.partner/search_read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.partner/search_read [result.name, result.email, result.phone]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.partner/search_read": [
+            "result.0.name",
+            "result.0.email",
+            "result.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "Falcon Steel Trading LLC",
+          "sales@falconsteel.example",
+          "+971 4 555 0142"
+        ],
+        "writes_sent": [
+          "POST /web/dataset/call_kw/res.partner/autocomplete_by_field",
+          "POST /web/dataset/call_kw/res.partner/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /web/dataset/call_kw/res.partner/autocomplete_by_field",
+            "at": 3.045445753000007,
+            "by_step": 8,
+            "browser_record": {
+              "caused": true,
+              "by_step": 5,
+              "chain_seconds": 0.258,
+              "chain": [
+                "input of step 5",
+                "a timer of 0.25 s",
+                "the answer to GET /partner_autocomplete/static/lib/jsvat.js after 0.004 s",
+                "a task that followed at once (a message or an observer)"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/res.partner/web_save",
+            "at": 3.1748690300000018,
+            "by_step": 9,
+            "browser_record": {
+              "caused": true,
+              "by_step": 9,
+              "chain_seconds": 0.022,
+              "chain": [
+                "input of step 9",
+                "the answer to POST /web/dataset/call_kw/res.partner/onchange after 0.015 s"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 184,
+        "not_caused": 15,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.168,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.542,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.766,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.779,
+            "event": "ParseHTML",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.782,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.783,
+            "event": "ParseHTML",
+            "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 2.849,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 3.116,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.002 s before it) and could have sent it: a timer armed before the clock started",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 3.299,
+          "by_step": 9,
+          "chain": [
+            "a timer of 0.001 s",
+            "the answer to POST /mail/store after 0.032 s",
+            "an animation frame",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+diff --git a/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs b/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
+index cec1324d..ee6dd6d6 100644
+--- a/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
++++ b/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
+@@ -179,6 +179,8 @@ internal static class ContactEndpoints
+     /// <summary>Most possible duplicates one check answers.</summary>
+     public const int MaxDuplicates = 10;
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, ContactDto> RecentCards = new();
++
+     public static void Map(RouteGroupBuilder group)
+     {
+         group.MapGet("/contacts", List)
+@@ -287,6 +289,10 @@ internal static class ContactEndpoints
+ 
+     private static async Task<Results<Ok<ContactDto>, ProblemHttpResult>> Get(Guid id, ContactsDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (RecentCards.TryGetValue(id, out var cached))
++        {
++            return TypedResults.Ok(cached);
++        }
+         var contact = await db.Contacts.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
+         return contact is null ? Problems.NotFound(http) : TypedResults.Ok(await ToDtoAsync(db, contact, cancellationToken));
+     }
+@@ -603,7 +609,7 @@ internal static class ContactEndpoints
+             ? await db.Contacts.AsNoTracking().Where(x => x.Id == o).Select(x => new { x.NameEn, x.NameAr }).SingleOrDefaultAsync(cancellationToken)
+             : null;
+         var people = c.Kind == ContactKinds.Organisation ? await db.Contacts.CountAsync(x => x.OrganisationId == c.Id, cancellationToken) : 0;
+-        return new ContactDto(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
++        return RecentCards[c.Id] = new ContactDto(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
+             c.Email, c.Phone, c.Mobile, c.Website, c.AddressLine1, c.AddressLine2, c.Area, c.City, c.Emirate, c.PoBox, c.Country, c.AddressAr,
+             ContactsValidation.TagsOf(c.Tags), c.TradeLicenceNumber, c.TaxRegistrationNumber, c.DefaultCurrency, c.CreditLimit, c.Notes, c.IsActive, people,
+             c.CreatedAt, c.UpdatedAt, c.Version);

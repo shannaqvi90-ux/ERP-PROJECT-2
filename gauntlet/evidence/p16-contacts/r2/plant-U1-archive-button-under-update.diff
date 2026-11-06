@@ -1,0 +1,13 @@
+diff --git a/web/src/modules/contacts/ContactForm.tsx b/web/src/modules/contacts/ContactForm.tsx
+index a456558f..f59bfd31 100644
+--- a/web/src/modules/contacts/ContactForm.tsx
++++ b/web/src/modules/contacts/ContactForm.tsx
+@@ -242,7 +242,7 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
+       nav={nav}
+       document={contact ? { report: "contacts.contactCard", parameter: "contact", id: contact.id } : undefined}
+       readOnlyReason={contact && !can("contacts.contacts.update") ? t("contacts.contact.readOnly") : undefined}
+-      actions={contact && can("contacts.contacts.archive") ? <ArchiveButton contact={contact} onChanged={form.adopt} /> : undefined}
++      actions={contact && can("contacts.contacts.update") ? <ArchiveButton contact={contact} onChanged={form.adopt} /> : undefined}
+       after={
+         contact && contact.kind === "organisation" ? (
+           <OrganisationPeople organisation={contact} onOpen={onOpen} onNewPerson={can("contacts.contacts.create") && contact.isActive ? onNewPerson : undefined} />

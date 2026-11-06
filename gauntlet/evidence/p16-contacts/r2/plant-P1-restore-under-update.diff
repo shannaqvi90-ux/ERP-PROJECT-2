@@ -1,0 +1,23 @@
+diff --git a/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs b/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
+index cec1324d..887545e9 100644
+--- a/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
++++ b/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
+@@ -223,7 +223,7 @@ internal static class ContactEndpoints
+         group.MapPost("/contacts/{id:guid}/restore", Restore)
+             .WithName("contacts.contacts.restore")
+             .WithSummary("Restore an archived contact to use.")
+-            .RequirePermission(ContactsPermissions.ContactsArchive);
++            .RequirePermission(ContactsPermissions.ContactsUpdate);
+     }
+ 
+     private static async Task<Results<Ok<ListPage<ContactRow>>, ProblemHttpResult>> List(
+diff --git a/tests/Gates/endpoint-permissions/contacts.txt b/tests/Gates/endpoint-permissions/contacts.txt
+index b9b6e8a6..38ff023d 100644
+--- a/tests/Gates/endpoint-permissions/contacts.txt
++++ b/tests/Gates/endpoint-permissions/contacts.txt
+@@ -12,4 +12,4 @@ GET /api/contacts/contacts/{id:guid} contacts.contacts.read # one contact: names
+ POST /api/contacts/contacts contacts.contacts.create # a new organisation or person in the shared directory
+ PUT /api/contacts/contacts/{id:guid} contacts.contacts.update # changing a contact's details, its organisation or its credit limit; never its status
+ POST /api/contacts/contacts/{id:guid}/archive contacts.contacts.archive # taking a contact out of use is its own decision, apart from editing it
+-POST /api/contacts/contacts/{id:guid}/restore contacts.contacts.archive # bringing an archived contact back is the same decision reversed
++POST /api/contacts/contacts/{id:guid}/restore contacts.contacts.update # bringing an archived contact back is the same decision reversed

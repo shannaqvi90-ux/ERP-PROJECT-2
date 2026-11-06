@@ -1,0 +1,327 @@
+{
+  "schema": 1,
+  "run_id": "restore-contact-20261106T030338-3d62",
+  "instrument": 12,
+  "task": "restore-contact",
+  "task_title": "Restore an archived contact",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Restore the archived contact Shamma Waleed Al Romaithi to use.",
+  "done_when": "The back end holds the contact as active again.",
+  "started_at": "2026-11-06T03:03:38.880Z",
+  "finished_at": "2026-11-06T03:03:43.318Z",
+  "environment": {
+    "base_url": "http://localhost:21650",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.103,
+    "system_wait_seconds": 0.052,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.702,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Restore",
+      "keystrokes": 0,
+      "at": 0.014,
+      "took": 0.035,
+      "began": 0.001,
+      "screen": "/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "done",
+      "at": 0.05,
+      "seconds": 0.052
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "937188074438c77a.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/937188074438c77a.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "bb60eeb3f0c39899.jpg",
+      "at": 0.103,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/bb60eeb3f0c39899.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "isActive": true
+    }
+  },
+  "path_notes": "Restore (the record header).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/restore-contact.mjs",
+    "sha256": "fa58557b5ee9888bdec778acdc7de548921b03f676c9e54a647237980ce1206b"
+  },
+  "task_notes": "Set-up puts the contact in the start state through the back end; clean-up makes it active again.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55",
+    "path": "/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55",
+    "query": "",
+    "fragment": "",
+    "fields": 23,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameEn",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameAr",
+        "password": false,
+        "value_length": 16,
+        "value": "شمة وليد الرميثي"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "organisationId",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "code",
+        "password": false,
+        "value_length": 7,
+        "value": "C073519"
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "mobile",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "addressLine1",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "area",
+        "password": false,
+        "value_length": 9,
+        "value": "Saif Zone"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "poBox",
+        "password": false,
+        "value_length": 5,
+        "value": "68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "defaultCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "creditLimitCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      }
+    ],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.007,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.007,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "9f052b2ad819fae5",
+    "elements": 1260
+  },
+  "screen_after_verify": {
+    "sha256": "9f052b2ad819fae5",
+    "elements": 1260,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.007
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55"
+    ],
+    "read_after": [
+      "GET /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55"
+    ],
+    "changed": [
+      "GET /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55"
+    ],
+    "changed_parts": {
+      "GET /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55": [
+        "isActive",
+        "updatedAt",
+        "version"
+      ]
+    },
+    "end_state": [
+      "GET /api/contacts/contacts/* [isActive]"
+    ],
+    "end_state_changed": {
+      "GET /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55": [
+        "isActive"
+      ]
+    },
+    "writes_sent": [
+      "POST /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55/restore"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55/restore",
+        "at": 0.04824812600000041,
+        "by_step": 1,
+        "browser_record": {
+          "caused": true,
+          "by_step": 1,
+          "chain_seconds": 0.001,
+          "chain": [
+            "input of step 1"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 7,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.073,
+      "by_step": 1,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/audit/records/018917b1-0728-7c0e-aa08-bc450a353e55 after 0.006 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /api/contacts/contacts/018917b1-0728-7c0e-aa08-bc450a353e55/archive"
+  ]
+}
