@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Erp.Kernel.CustomFields;
 using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
@@ -21,9 +22,12 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
 
     public int Order => 140;
 
-    public static readonly string[] Segments = ["retail", "wholesale", "government", "keyAccount", "distributor"];
+    /// <summary>How many contacts of a gate workspace get values.</summary>
+    public const int GateValuedContacts = 60;
 
-    public static readonly string[] Managers =
+    public static readonly ImmutableArray<string> Segments = ["retail", "wholesale", "government", "keyAccount", "distributor"];
+
+    public static readonly ImmutableArray<string> Managers =
     [
         "Rashid Al Mansoori", "Mariam Al Ketbi", "Hamdan Al Suwaidi", "Noura Al Dhaheri", "Khalid Al Shamsi", "Aisha Al Nuaimi",
         "Saeed Al Mazrouei", "Fatima Al Kaabi", "Omar Al Hashimi", "Latifa Al Falasi", "Yousef Al Zaabi", "Hessa Al Marri",
@@ -49,7 +53,13 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
         db.Definitions.AddRange(segment, manager, review, vip);
         await db.SaveChangesAsync(cancellationToken);
 
+        // The gate workspaces hold values on their first contacts only: the isolation gates seed them at the
+        // volume of a demo, and every value is an audit row, which a printed or exported audit log pays for.
         var ids = await record.AllIds(context.Services, cancellationToken);
+        if (!demo)
+        {
+            ids = ids.Take(GateValuedContacts).ToList();
+        }
         var random = new Random(StableSeed(context.Tenant.VolumeRowsSeed));
         var at = new DateTimeOffset(2024, 1, 15, 8, 0, 0, TimeSpan.Zero);
         var columns = new BulkColumn[]
@@ -71,11 +81,11 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
                 {
                     continue;
                 }
-                if (random.Next(2) == 0)
+                if (random.Next(10) < 3)
                 {
                     yield return Row(id, review.Id, date: new DateOnly(2025, 1, 1).AddDays(random.Next(0, 730)));
                 }
-                if (random.Next(5) == 0)
+                if (random.Next(10) == 0)
                 {
                     yield return Row(id, vip.Id, flag: true);
                 }

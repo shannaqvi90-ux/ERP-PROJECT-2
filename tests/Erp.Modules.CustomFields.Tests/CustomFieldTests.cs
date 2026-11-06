@@ -58,7 +58,7 @@ internal static class Api
     }
 
     public static JsonElement Entry(JsonElement contact, string key) =>
-        contact.GetProperty("customFields").EnumerateArray().Single(e => e.GetProperty("key").GetString() == key);
+        contact.GetProperty("customFieldDefinitions").EnumerateArray().Single(e => e.GetProperty("key").GetString() == key);
 }
 
 /// <summary>Defining custom fields: the six kinds, names made from the English label, validation in
@@ -146,8 +146,11 @@ public sealed class CustomFieldDefinitionTests(CustomFieldsFixture fixture) : IC
         Assert.Equal("customFieldDefault", await RefusedAsync(Api.Field("date", "Bad date", "س", new { @default = "2026-02-30" }), "default"));
         Assert.Equal("customFieldOptionCount", await RefusedAsync(Api.Field("select", "No options", "س"), "options"));
         Assert.Equal("customFieldLookupTarget", await RefusedAsync(Api.Field("lookup", "No target", "س", new { lookupTarget = "contacts.nothing" }), "lookupTarget"));
-        Assert.Equal("customFieldSearchText", await RefusedAsync(Api.Field("number", "Searchable number", "س", new { searchable = true }), "searchable"));
-        Assert.Equal("customFieldNotNumber", await RefusedAsync(Api.Field("text", "Decimal text", "س", new { decimals = 2 }), "decimals"));
+        // Properties that do not belong to the field's kind are ignored, not refused.
+        var ignored = await Api.DefineAsync(admin, Api.Field("number", Api.Unique("Number with extras"), "س", new { searchable = true, lookupTarget = "contacts.contacts", options = new[] { new { value = (string?)null, labelEn = "x", labelAr = "x" } } }));
+        Assert.False(ignored.GetProperty("searchable").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, ignored.GetProperty("lookupTarget").ValueKind);
+        Assert.Empty(ignored.GetProperty("options").EnumerateArray());
     }
 
     [Fact]

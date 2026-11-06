@@ -96,7 +96,7 @@ export default {
     const fields = await fieldsLabelled(api, label);
     const field = fields[0];
     const contact = ctx.state.contactId ? await api.get(`/api/contacts/contacts/${ctx.state.contactId}`) : null;
-    const entry = (contact?.customFields ?? []).find(e => e.key === field?.key);
+    const entry = (contact?.customFieldDefinitions ?? []).find(e => e.key === field?.key);
     const ui = await ctx.read(() => ({
       rows: [...document.querySelectorAll('table[role=grid] tbody tr')].map(r => r.innerText.replace(/\s+/g, ' ').trim()),
     }));

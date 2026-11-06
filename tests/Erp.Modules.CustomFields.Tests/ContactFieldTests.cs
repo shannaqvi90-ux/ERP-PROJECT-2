@@ -55,7 +55,7 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
         var (admin, f, _) = await DefineAsync();
         using var _ = admin;
         var defaults = await admin.GetFromJsonAsync<JsonElement>("/api/contacts/contacts/defaults", Api.Cancel);
-        var region = defaults.GetProperty("customFields").EnumerateArray().Single(e => e.GetProperty("key").GetString() == f.Region);
+        var region = defaults.GetProperty("customFieldDefinitions").EnumerateArray().Single(e => e.GetProperty("key").GetString() == f.Region);
         Assert.Equal("North", region.GetProperty("value").GetString());
         Assert.True(region.GetProperty("required").GetBoolean());
 
@@ -84,6 +84,30 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
         Assert.False(Api.Entry(after, f.Vip).TryGetProperty("value", out var cleared) && cleared.ValueKind != JsonValueKind.Null);
         var read = await admin.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts/{id}", Api.Cancel);
         Assert.Equal("East", Api.Entry(read, f.Region).GetProperty("value").GetString());
+    }
+
+    [Fact]
+    public async Task A_contact_read_and_sent_back_unchanged_changes_nothing()
+    {
+        var (admin, f, _) = await DefineAsync();
+        using var _ = admin;
+        var created = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Round trip LLC"), new() { [f.Segment] = "wholesale", [f.Score] = 7.5, [f.Vip] = true, [f.Since] = "2026-05-05" }));
+        var values = created.GetProperty("customFields");
+        Assert.Equal("wholesale", values.GetProperty(f.Segment).GetString());
+        Assert.Equal("7.5", values.GetProperty(f.Score).GetString());
+        Assert.True(values.GetProperty(f.Vip).GetBoolean());
+        // The answer's own properties are accepted back as the request (customFields as the values by key).
+        var body = new Dictionary<string, object?>();
+        foreach (var property in created.EnumerateObject().Where(p => p.Name is not ("customFieldDefinitions" or "creditLimit" or "tags" or "peopleCount" or "createdAt" or "updatedAt" or "isActive" or "id" or "organisationName" or "organisationNameAr")))
+        {
+            body[property.Name] = property.Value.Clone();
+        }
+        body["tags"] = Array.Empty<string>();
+        var sent = await admin.PutAsJsonAsync($"/api/contacts/contacts/{created.GetProperty("id").GetGuid()}", body, Api.Cancel);
+        Assert.True(sent.StatusCode == HttpStatusCode.OK, await sent.Content.ReadAsStringAsync(Api.Cancel));
+        var after = await Api.Json(sent);
+        Assert.Equal("wholesale", after.GetProperty("customFields").GetProperty(f.Segment).GetString());
+        Assert.Equal("7.5", after.GetProperty("customFields").GetProperty(f.Score).GetString());
     }
 
     [Fact]

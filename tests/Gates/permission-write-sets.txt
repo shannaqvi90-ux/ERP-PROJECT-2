@@ -52,6 +52,7 @@ contacts.contacts.archive contacts.contacts update is_active  # archiving or res
 # Custom fields: the workspace's definitions (every company shares them), and the values a contact's own endpoints write.
 customfields.fields.manage customfields.definitions insert,update *  # the field added, or its labels, required flag, default, decimals, options, order, search and switch changed; never its kind of record, type or name (the handler refuses, the column is unchanged)
 contacts.contacts.create customfields.field_values insert *  # the new contact's custom field values: the defaults of the fields that have one, and the values sent with it; never another workspace's
+* contacts.contacts update custom_fields.*  # A contact's custom field value changing (a value of a field defined by the workspace) is recorded in the contact's own history as custom_fields.<key> by the values table's history trigger; the value row itself is judged by the write sets of customfields.field_values below (a name chosen by the tenant: only this prefix is open, never a column of the contact)
 customfields.fields.read lists.saved_views insert,update,delete *  # the reader's own views of the custom fields list
 
 # Currency: the workspace's exchange rates (every company shares them). PUT /api/currency/currencies/{id}

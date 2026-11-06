@@ -126,3 +126,11 @@ public interface ICustomFields
     /// record that holds none).</summary>
     Task<IReadOnlyDictionary<Guid, IDictionary<string, object?>>> ValuesAsync(string recordType, IReadOnlyCollection<Guid> recordIds, CancellationToken cancellationToken);
 }
+
+public static class CustomFieldValues
+{
+    /// <summary>A record's values by field key, as a request carries them back (<c>customFields</c>
+    /// of a save): only fields that hold a value.</summary>
+    public static IReadOnlyDictionary<string, JsonElement> Map(IEnumerable<CustomFieldEntry> entries) =>
+        entries.Where(e => e.Value is { ValueKind: not (JsonValueKind.Null or JsonValueKind.Undefined) }).ToDictionary(e => e.Key, e => e.Value!.Value, StringComparer.Ordinal);
+}

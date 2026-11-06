@@ -60,8 +60,10 @@ public sealed record ContactDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     uint Version,
-    [property: Description("The workspace's custom fields of contacts with the contact's values (a new contact: the defaults), in display order.")]
-    IReadOnlyList<CustomFieldEntry>? CustomFields = null);
+    [property: Description("The contact's values of the workspace's custom fields of contacts, by field key; only fields that hold a value. Sent back unchanged in a save, it changes nothing.")]
+    IReadOnlyDictionary<string, JsonElement>? CustomFields = null,
+    [property: Description("The workspace's custom fields of contacts in display order, each with its labels in English and Arabic, kind, options, whether a value is required and the contact's value: what a form shows.")]
+    IReadOnlyList<CustomFieldEntry>? CustomFieldDefinitions = null);
 
 /// <summary>A row of the contacts list (the list query contract). <c>creditLimit</c> is the
 /// limit's amount in <c>creditLimitCurrency</c> (a decimal string), null when none is set.</summary>
@@ -162,7 +164,7 @@ public sealed record ContactDuplicate(
 /// <summary>What a new contact starts with for the caller: the country, and the working
 /// company's base currency as the default currency and as the currency a credit limit's base
 /// amount is stated in.</summary>
-public sealed record ContactDefaults(string Country, string DefaultCurrency, string BaseCurrency, IReadOnlyList<CustomFieldEntry>? CustomFields = null);
+public sealed record ContactDefaults(string Country, string DefaultCurrency, string BaseCurrency, IReadOnlyList<CustomFieldEntry>? CustomFieldDefinitions = null);
 
 /// <summary>What a contact being entered is compared on: <c>sameName</c> and <c>sameNameAr</c> (the
 /// names typed), <c>sameEmail</c>, <c>samePhone</c>, <c>sameMobile</c>, <c>sameTaxNumber</c>;
@@ -651,6 +653,6 @@ internal static class ContactEndpoints
         return new ContactDto(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
             c.Email, c.Phone, c.Mobile, c.Website, c.AddressLine1, c.AddressLine2, c.Area, c.City, c.Emirate, c.PoBox, c.Country, c.AddressAr,
             ContactsValidation.TagsOf(c.Tags), c.TradeLicenceNumber, c.TaxRegistrationNumber, c.DefaultCurrency, c.CreditLimit, c.Notes, c.IsActive, people,
-            c.CreatedAt, c.UpdatedAt, c.Version, custom);
+            c.CreatedAt, c.UpdatedAt, c.Version, custom is null ? null : CustomFieldValues.Map(custom), custom);
     }
 }

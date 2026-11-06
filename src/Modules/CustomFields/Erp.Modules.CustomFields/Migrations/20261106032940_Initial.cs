@@ -234,6 +234,10 @@ DECLARE
     v_company uuid;
     v_branch uuid;
 BEGIN
+    -- Seeded values are the starting data, not changes: they have the table's own capture row only.
+    IF COALESCE(current_setting('app.actor_kind', true), '') = 'seed' THEN
+        RETURN NULL;
+    END IF;
     IF TG_OP IN ('UPDATE', 'DELETE') THEN
         v_old := COALESCE(to_jsonb(OLD.text_value), to_jsonb(OLD.number_value), to_jsonb(OLD.date_value), to_jsonb(OLD.bool_value), to_jsonb(OLD.ref_value));
     END IF;

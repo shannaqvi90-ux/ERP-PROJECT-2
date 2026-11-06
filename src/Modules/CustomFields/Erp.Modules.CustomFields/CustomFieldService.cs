@@ -137,26 +137,32 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
         }
         var held = await ReadAsync(fields, recordIds, cancellationToken);
         var names = await LookupNamesAsync(fields, held.Values, cancellationToken);
-        var byId = fields.ToDictionary(f => f.Id);
-        foreach (var ((record, fieldId), row) in held)
+        // Fields in the workspace's display order, so a row's properties come in the same order every time.
+        foreach (var field in fields)
         {
-            var field = byId[fieldId];
-            if (!result.TryGetValue(record, out var map))
+            foreach (var record in recordIds)
             {
-                result[record] = map = new Dictionary<string, object?>(StringComparer.Ordinal);
-            }
-            map[field.Key] = field.Type switch
-            {
-                CustomFieldTypes.Number => FieldRules.NumberText(row.NumberValue!.Value, field.Decimals),
-                CustomFieldTypes.Date => row.DateValue!.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
-                CustomFieldTypes.Boolean => row.BoolValue,
-                CustomFieldTypes.Lookup => row.RefValue,
-                _ => row.TextValue,
-            };
-            if (field.Type == CustomFieldTypes.Lookup && row.RefValue is { } target && names.TryGetValue(target, out var name))
-            {
-                map[field.Key + "Name"] = name.En;
-                map[field.Key + "NameAr"] = name.Ar;
+                if (!held.TryGetValue((record, field.Id), out var row))
+                {
+                    continue;
+                }
+                if (!result.TryGetValue(record, out var map))
+                {
+                    result[record] = map = new Dictionary<string, object?>(StringComparer.Ordinal);
+                }
+                map[field.Key] = field.Type switch
+                {
+                    CustomFieldTypes.Number => FieldRules.NumberText(row.NumberValue!.Value, field.Decimals),
+                    CustomFieldTypes.Date => row.DateValue!.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                    CustomFieldTypes.Boolean => row.BoolValue,
+                    CustomFieldTypes.Lookup => row.RefValue,
+                    _ => row.TextValue,
+                };
+                if (field.Type == CustomFieldTypes.Lookup && row.RefValue is { } target && names.TryGetValue(target, out var name))
+                {
+                    map[field.Key + "Name"] = name.En;
+                    map[field.Key + "NameAr"] = name.Ar;
+                }
             }
         }
         return result;

@@ -10,7 +10,7 @@ export default {
   // writes that save it (the measured part must send one of them).
   endState: {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/properties.base.definition/read', parts: ['result.properties_definition'] }, { read: 'POST /web/dataset/call_kw/res.partner/read', parts: ['result.properties'] }], writes: ['POST /web/dataset/call_kw/res.partner/web_save'] },
-    ours: { reads: [{ read: 'GET /api/customfields/fields', parts: ['items.labelEn', 'items.fieldType'] }, { read: 'GET /api/contacts/contacts/*', parts: ['customFields.value'] }], writes: ['POST /api/customfields/fields', 'PUT /api/contacts/contacts/*'] },
+    ours: { reads: [{ read: 'GET /api/customfields/fields', parts: ['items.labelEn', 'items.fieldType'] }, { read: 'GET /api/contacts/contacts/*', parts: ['customFieldDefinitions.value'] }], writes: ['POST /api/customfields/fields', 'PUT /api/contacts/contacts/*'] },
   },
   // The writes set-up sends for our product (it switches off any earlier copy of the field: a field is
   // switched off, never deleted), and the one a driver health check sends for the contact (a clean

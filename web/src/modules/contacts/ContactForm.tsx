@@ -88,7 +88,7 @@ export function draftOf(c: Contact | null, defaults: ContactDefaults | null, sta
       creditLimitCurrency: currency,
       creditLimitExchangeRate: "",
       notes: "",
-      ...customDraft(defaults?.customFields),
+      ...customDraft(defaults?.customFieldDefinitions),
     };
   }
   return {
@@ -118,7 +118,7 @@ export function draftOf(c: Contact | null, defaults: ContactDefaults | null, sta
     creditLimitCurrency: c.creditLimit?.currency ?? c.defaultCurrency,
     creditLimitExchangeRate: c.creditLimit && c.creditLimit.currency !== c.creditLimit.baseCurrency ? c.creditLimit.exchangeRate : "",
     notes: c.notes ?? "",
-    ...customDraft(c.customFields),
+    ...customDraft(c.customFieldDefinitions),
   };
 }
 
@@ -214,8 +214,8 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
     canEdit: id === null ? can("contacts.contacts.create") : can("contacts.contacts.update"),
     save: (draft, contact) =>
       contact === null
-        ? api<Contact>("POST", "/api/contacts/contacts", requestOf(draft, null, defaults?.customFields))
-        : api<Contact>("PUT", `/api/contacts/contacts/${contact.id}`, requestOf(draft, contact.version, contact.customFields)),
+        ? api<Contact>("POST", "/api/contacts/contacts", requestOf(draft, null, defaults?.customFieldDefinitions))
+        : api<Contact>("PUT", `/api/contacts/contacts/${contact.id}`, requestOf(draft, contact.version, contact.customFieldDefinitions)),
     onSaved: (saved) => {
       onSaved(saved.id);
       window.dispatchEvent(new Event(contactsChanged));
@@ -340,7 +340,7 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
         />
         <TextField field={bind("tags")} label={t("contacts.contact.tags")} maxLength={400} hint={t("contacts.contact.tagsHint")} />
       </FormSection>
-      <CustomFieldsSection entries={contact ? contact.customFields : defaults?.customFields} bind={form.bind as (key: string) => FieldBinding<string>} />
+      <CustomFieldsSection entries={contact ? contact.customFieldDefinitions : defaults?.customFieldDefinitions} bind={form.bind as (key: string) => FieldBinding<string>} />
       <FormSection title={t("contacts.section.notes")} columns={false}>
         <TextAreaField field={bind("notes")} label={t("contacts.contact.notes")} maxLength={2000} rows={3} />
       </FormSection>

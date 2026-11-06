@@ -15,6 +15,7 @@ static Erp.Modules.Identity.Seeding.DemoPeople.LastNames  # Fixed list of demo l
 # afterwards; the G1 HTTP attack also fingerprints all reachable state before and after the
 # attack and fails if any of it changed while tenants used the app.
 reachable Erp.Kernel.Modules.ModuleDescriptor.AuditRecordTypes  # The kinds of audited records the module registers (immutable records from code: table, label key, read permission, address), filled during registration, identical for every tenant.
+reachable Erp.Kernel.Modules.ModuleDescriptor.CustomFieldRecordTypes  # The kinds of records that may have custom fields (immutable records from code: table, label key, read permission, list key and the delegates that check, name and list records), filled during registration, identical for every tenant.
 reachable Erp.Kernel.Modules.ModuleDescriptor.Commands  # The module's command-line verbs (verb, usage text and handler from code), filled during registration and run only by the operator's command line, never by a request; identical for every tenant.
 reachable Erp.Kernel.Modules.ModuleDescriptor.DbContexts  # The DbContext types the module registered (types from code), filled during registration, identical for every tenant.
 reachable Erp.Kernel.Modules.ModuleDescriptor.EndpointMaps  # The module's endpoint-mapping delegates (route prefix and mapping code), filled during registration and run once while the host maps routes; the delegates and the closures they hold are walked and judged on their own.

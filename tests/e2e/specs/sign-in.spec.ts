@@ -24,7 +24,7 @@ test.describe("sign in to an empty workspace", () => {
     await signIn(page, users.adminArabic);
     await expect(page.getByRole("heading", { name: "مرحبًا، فاطمة الزعابي" })).toBeVisible();
     await expect(page.locator(".workspace-name")).toHaveText("شركة النور للتجارة ذ.م.م");
-    await expect(page.getByRole("navigation").getByRole("link")).toHaveText(["جهات الاتصال", "التقارير", "المستخدمون", "الأدوار", "الوصول إلى الشركات", "الشركات", "الفروع", "العملات", "أسعار الصرف", "ترقيم المستندات", "المهام الخلفية", "جداول المهام", "مساحة العمل", "سجل التدقيق", "حسابي"]);
+    await expect(page.getByRole("navigation").getByRole("link")).toHaveText(["جهات الاتصال", "التقارير", "المستخدمون", "الأدوار", "الوصول إلى الشركات", "الشركات", "الفروع", "العملات", "أسعار الصرف", "ترقيم المستندات", "الحقول المخصصة", "المهام الخلفية", "جداول المهام", "مساحة العمل", "سجل التدقيق", "حسابي"]);
     const topbar = await page.locator(".topbar").boundingBox();
     const brand = await page.locator(".brand").boundingBox();
     expect(brand!.x).toBeGreaterThan(topbar!.width / 2); // mirrored: the brand sits on the right

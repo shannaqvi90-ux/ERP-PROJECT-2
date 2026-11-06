@@ -76,15 +76,16 @@ public sealed record RecordTypeDto(
 /// a number. <c>options</c> (1 to 50) is for a single select. <c>lookupTarget</c> is for a lookup.
 /// <c>searchable</c> (text fields) lets the list's search box match the value. <c>isActive</c> false
 /// switches the field off everywhere without losing its values. On change, <c>version</c> is the
-/// version that was read.
+/// version that was read. Properties that do not belong to the field's kind (decimals of a text field,
+/// options of a number) are ignored.
 /// </summary>
 public sealed record SaveFieldRequest(
     [property: ApiExample("contacts.contacts")] string? RecordType,
     [property: ApiExample("Customer segment"), StringLength(FieldRules.LabelMaxLength)] string? LabelEn,
     [property: ApiExample("شريحة العميل"), StringLength(FieldRules.LabelMaxLength)] string? LabelAr,
-    [property: ApiExample("select")] string? Type,
+    [property: ApiExample("text")] string? Type,
     bool? Required,
-    [property: ApiExample("retail"), StringLength(CustomFieldsDbContext.MaxTextLength)] string? Default,
+    [property: ApiExample("Dubai"), StringLength(CustomFieldsDbContext.MaxTextLength)] string? Default,
     [property: Range(0, 8)] int? Decimals,
     IReadOnlyList<FieldOptionRequest>? Options,
     [property: ApiExample("contacts.contacts")] string? LookupTarget,
@@ -244,8 +245,6 @@ internal static class FieldEndpoints
         validator.Must(decimals is >= 0 and <= 8, "decimals", "customFieldDecimals");
         validator.Must(request.SortOrder is null or (>= 0 and <= 10000), "sortOrder", "customFieldSortOrder");
         decimals = Math.Clamp(decimals, 0, 8);
-        validator.Must(request.Decimals is null || type == CustomFieldTypes.Number, "decimals", "customFieldNotNumber");
-        validator.Must(request.Searchable is not true || type == CustomFieldTypes.Text, "searchable", "customFieldSearchText");
 
         var options = new List<CustomFieldOption>();
         if (type == CustomFieldTypes.Select)
@@ -278,10 +277,6 @@ internal static class FieldEndpoints
                 options.Add(new CustomFieldOption(unique, en, ar));
             }
         }
-        else
-        {
-            validator.Must(request.Options is not { Count: > 0 }, "options", "customFieldNotSelect");
-        }
 
         string? lookup = null;
         if (type == CustomFieldTypes.Lookup)
@@ -290,11 +285,6 @@ internal static class FieldEndpoints
             validator.Required("lookupTarget", lookup);
             validator.Must(lookup is null || catalog.CustomFieldRecordTypes.Any(t => t.Table == lookup && t.Names is not null), "lookupTarget", "customFieldLookupTarget");
             validator.Must(field.LookupTarget is null || lookup == field.LookupTarget, "lookupTarget", "customFieldFixed");
-            validator.Must(string.IsNullOrWhiteSpace(request.Default), "default", "customFieldLookupDefault");
-        }
-        else
-        {
-            validator.Must(request.LookupTarget is null, "lookupTarget", "customFieldNotLookup");
         }
 
         string? defaultValue = null;

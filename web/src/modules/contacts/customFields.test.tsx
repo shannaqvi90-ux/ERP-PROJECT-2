@@ -30,7 +30,7 @@ const contact = () => ({
   id, kind: "organisation", code: null, nameEn: "Falcon Building Materials LLC", nameAr: "فالكون لمواد البناء", organisationId: null, organisationName: null, organisationNameAr: null,
   jobTitle: null, email: null, phone: null, mobile: null, website: null, addressLine1: null, addressLine2: null, area: null, city: "Dubai", emirate: "dubai", poBox: null, country: "AE", addressAr: null,
   tags: [], tradeLicenceNumber: null, taxRegistrationNumber: null, defaultCurrency: "AED", creditLimit: null, notes: null, isActive: true, peopleCount: 0,
-  createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z", version: 7, customFields: entries(),
+  createdAt: "2026-10-03T00:00:00Z", updatedAt: "2026-10-03T00:00:00Z", version: 7, customFields: { cfCustomerSegment: "retail", cfAccountManager: "Rashid" }, customFieldDefinitions: entries(),
 });
 
 async function open(path: string, language: "en" | "ar" = "en") {
@@ -48,11 +48,11 @@ async function open(path: string, language: "en" | "ar" = "en") {
         strings: { "customField.abc.label": { en: "Customer segment", ar: "شريحة العميل" }, "customField.abc.option.retail": { en: "Retail", ar: "تجزئة" } } } };
     }
     if (p.endsWith("/views")) return { status: 200, body: { items: [] } };
-    if (p === "/api/contacts/contacts/defaults") return { status: 200, body: { country: "AE", defaultCurrency: "AED", baseCurrency: "AED", customFields: entries().map((e) => ({ ...e, value: e.key === "cfAccountManager" ? "North team" : null })) } };
+    if (p === "/api/contacts/contacts/defaults") return { status: 200, body: { country: "AE", defaultCurrency: "AED", baseCurrency: "AED", customFieldDefinitions: entries().map((e) => ({ ...e, value: e.key === "cfAccountManager" ? "North team" : null })) } };
     if (p === "/api/contacts/contacts/duplicates") return { status: 200, body: [] };
     if (p === "/api/contacts/contacts" && method === "GET") return { status: 200, body: { items: [{ ...contact(), cfCustomerSegment: "retail" }], total: 1, next: null } };
     if (p === `/api/contacts/contacts/${id}`) return { status: 200, body: method === "PUT" ? { ...contact(), version: 8 } : contact() };
-    if (p === "/api/contacts/contacts" && method === "POST") return { status: 201, body: { ...contact(), id: "new1", customFields: entries() } };
+    if (p === "/api/contacts/contacts" && method === "POST") return { status: 201, body: { ...contact(), id: "new1", customFieldDefinitions: entries() } };
     void body;
     return { status: 404, body: {} };
   });
