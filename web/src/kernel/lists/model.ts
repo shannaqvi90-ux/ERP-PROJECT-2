@@ -48,6 +48,8 @@ export type ListDefinition = {
   maxTake: number;
   /** The reports module prints and exports this list (/api/reports/lists/{key}). */
   printable?: boolean;
+  /** The tenant's own labels (custom fields and their options) by string key, in both languages. */
+  strings?: Record<string, { en: string; ar: string }>;
 };
 
 export type SavedView = {

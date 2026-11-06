@@ -80,11 +80,13 @@ const every = [
   "jobs.schedules.read",
   "jobs.schedules.create",
   "jobs.schedules.update",
+  "customfields.fields.read",
+  "customfields.fields.manage",
 ];
 
 /** A user who may read every screen and change nothing but their own settings. */
 const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read",
-  "currency.currencies.read", "currency.rates.read", "contacts.contacts.read", "numbering.sequences.read", "jobs.jobs.read", "jobs.schedules.read"];
+  "currency.currencies.read", "currency.rates.read", "contacts.contacts.read", "numbering.sequences.read", "jobs.jobs.read", "jobs.schedules.read", "customfields.fields.read"];
 
 const session = (permissions: string[], language = "en") => ({
   authenticated: true,
@@ -103,6 +105,7 @@ const definitions: Record<string, unknown> = {
   "identity.roles": { ...listDefinitions["identity.roles"], printable: true },
   "tenancy.companies": { key: "tenancy.companies", labelKey: "tenancy.companies.title", endpoint: "/api/tenancy/companies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "tenancy.branches": { key: "tenancy.branches", labelKey: "tenancy.branches.title", endpoint: "/api/tenancy/branches", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
+  "customfields.fields": { key: "customfields.fields", labelKey: "customfields.fields.title", endpoint: "/api/customfields/fields", columns: [column("labelEn")], searchFields: ["labelEn"], defaultSort: "recordType", presets: [], canShare: false, maxTake: 200, printable: true },
   "numbering.sequences": { key: "numbering.sequences", labelKey: "numbering.sequences.title", endpoint: "/api/numbering/sequences", columns: [column("nameEn")], searchFields: ["nameEn"], defaultSort: "nameEn", presets: [], canShare: false, maxTake: 200, printable: true },
   "currency.currencies": { key: "currency.currencies", labelKey: "currency.currencies.title", endpoint: "/api/currency/currencies", columns: [column("code")], searchFields: ["code"], defaultSort: "code", presets: [], canShare: false, maxTake: 200, printable: true },
   "jobs.jobs": { key: "jobs.jobs", labelKey: "jobs.jobs.title", endpoint: "/api/jobs/jobs", columns: [column("titleEn")], searchFields: ["titleEn"], defaultSort: "-createdAt", presets: [], canShare: false, maxTake: 200, printable: true },
@@ -193,6 +196,8 @@ async function open(
     if (p === "/api/contacts/contacts/defaults") return { status: 200, body: { country: "AE", defaultCurrency: "AED", baseCurrency: "AED" } };
     if (p === "/api/contacts/contacts/duplicates") return { status: 200, body: [] };
     if (p === `/api/contacts/contacts/${contactId}`) return { status: 200, body: contact };
+    if (p === "/api/customfields/fields") return { status: 200, body: { items: [], total: 0, next: null } };
+    if (p === "/api/customfields/record-types") return { status: 200, body: [{ table: "contacts.contacts", labelKey: "contacts.menu.contacts", canBePointedAt: true, fieldCount: 0 }] };
     if (p === "/api/numbering/sequences") return { status: 200, body: { items: [sequenceRow], total: 1, next: null } };
     if (p === "/api/numbering/sequences/seq1") return { status: 200, body: { ...sequenceRow, companyNameEn: "Al Noor Ajman LLC", companyNameAr: "النور عجمان ذ.م.م", previewBranchId: null, today: "2026-10-25", branches: [], counters: [], recent: [], createdAt: "2026-10-01T00:00:00Z" } };
     if (p === "/api/jobs/types") return { status: 200, body: [{ key: "jobs.selfCheck", nameEn: "Self-check of the job queue", nameAr: "فحص ذاتي لطابور المهام", descriptionEn: null, descriptionAr: null, maxAttempts: 1, timeoutSeconds: 120, startable: true, schedulable: true }] };

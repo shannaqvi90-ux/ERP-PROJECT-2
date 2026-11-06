@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { identityScoped } from "./deviceState";
 import { createFormatter, intlLocale, isNumerals, type Formatter, type Language, type Numerals } from "./format";
 import { formatMessage, type MessageParams } from "./messageFormat";
 
@@ -32,13 +33,27 @@ export function buildCatalog(sources: Record<string, StringModule>): Record<Lang
 
 export const catalog = buildCatalog(files);
 
+/** Text that is the tenant's own, not the product's (the names of its custom fields and their
+ * options, handed over with a list definition): kept per identity and emptied when it ends. */
+const dynamicStrings = identityScoped<string, string>();
+
+export type DynamicStrings = Record<string, { en: string; ar: string }>;
+
+/** Make the tenant's own labels (custom fields) known by their keys, in both languages. */
+export function registerDynamicStrings(strings: DynamicStrings | null | undefined): void {
+  for (const [key, text] of Object.entries(strings ?? {})) {
+    dynamicStrings.set(`en:${key}`, text.en);
+    dynamicStrings.set(`ar:${key}`, text.ar);
+  }
+}
+
 /** Intl locale of a language and digit choice (ar-AE-u-ca-gregory-nu-arab, …). */
 export const localeOf = (language: Language, numerals: Numerals = "latn"): string => intlLocale(language, numerals);
 
 /** Text for a key, with `{name}` placeholders and `{count, plural, …}` filled (numbers formatted
  * for the language and digit choice). A missing key shows the key itself. */
 export function translate(language: Language, key: string, params?: MessageParams, numerals: Numerals = "latn"): string {
-  const text = catalog[language][key] ?? catalog.en[key] ?? key;
+  const text = catalog[language][key] ?? dynamicStrings.get(`${language}:${key}`) ?? catalog.en[key] ?? dynamicStrings.get(`en:${key}`) ?? key;
   if (!params) return text;
   return formatMessage(text, localeOf(language, numerals), params);
 }

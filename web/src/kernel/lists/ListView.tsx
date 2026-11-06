@@ -5,7 +5,7 @@ import { identityScoped } from "../deviceState";
 import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress, replaceAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
-import { useI18n } from "../i18n";
+import { registerDynamicStrings, useI18n } from "../i18n";
 import { chordForAria, chordKeys, useCommand, useShortcut } from "../shortcuts";
 import { cellText, columnLabel, conditionLabel, formatValue, groupTotal, type Formatters } from "./format";
 import {
@@ -175,6 +175,8 @@ export function ListView(props: ListViewProps) {
     ])
       .then(([loaded, saved]) => {
         if (cancelled) return;
+        // The workspace's custom fields are columns too: their labels are the tenant's own words.
+        registerDynamicStrings(loaded.strings);
         setDefinition(loaded);
         setViews(saved.items);
         const address = stateFromAddress(window.location.search, loaded);
