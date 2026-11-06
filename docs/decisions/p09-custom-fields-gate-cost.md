@@ -42,3 +42,23 @@ Change (src/Modules/Audit/Erp.Modules.Audit/AuditReader.cs): the reader is scope
 keeps (1) the readable kinds of record and (2) every id it has already looked up, found or not. A
 printed log then asks the permission store once and reads each distinct id once. Results are
 unchanged. No test, limit or timeout was changed.
+
+### The same failure again in fixer 2's verify, and the larger cause
+
+Verify of d445a4ec (log verify-fixer-p09-custom-fields-r1-f2.log, kept folder
+.verify-failed/20261106T160250Z-2441416): web and e2e passed (web 5,227 s wall, e2e 9,435 s wall), dotnet
+failed after 8,488 s with the same test: audit.log pdf at 167.8 s. The gate's own list walk shows the
+larger gate tenant holds more than 820,000 audit rows (`skip=410182` is half of it), and a plain
+`GET /lists/...` route probe took 90 s in the same minutes, so the host was starved while several
+exports ran. (Another piece's verify ran beside this one for the first two hours; load 25 to 75.)
+
+Larger cause, found in code: a print or export of a list reads it in pages of 200 rows up to the file
+limit (200,000 rows: 1,000 pages), and `ListBinding.QueryAsync` ran `COUNT(*)` of all matching rows on
+every page (with row-level security and the audit log's visibility filter over 820,000 rows). The
+reports framework only uses the total of the first page.
+
+Change: `ListRequest.SkipTotalItem` (an `HttpContext.Items` key, not a query parameter, so no client can
+send it and no list endpoint gains a parameter). The reports framework sets it for every page after the
+first; `QueryAsync` then leaves the count out of a cursor page (Total 0). Screens and the API never set
+it, so their totals are unchanged. This is kernel (p05) and reports code, changed minimally because it is
+the cause; the first page of a document still counts and the document's total is unchanged.
