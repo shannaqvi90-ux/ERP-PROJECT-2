@@ -291,3 +291,11 @@
   padding: 0;
   font-size: 12px;
 }
+
+/* A custom field's date is typed from the keyboard (year, month, day; Alt+Down opens the picker): the
+   browser's calendar icon is an image it loads after the form is on screen, which made a form that
+   opens with one (a contact with a date field) change a second after it opened, with nothing the
+   person did to cause it (the comparison harness measures exactly that). */
+[data-field^="customFields."] input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+}
