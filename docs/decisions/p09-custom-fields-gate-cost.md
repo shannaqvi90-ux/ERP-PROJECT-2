@@ -62,3 +62,18 @@ send it and no list endpoint gains a parameter). The reports framework sets it f
 first; `QueryAsync` then leaves the count out of a cursor page (Total 0). Screens and the API never set
 it, so their totals are unchanged. This is kernel (p05) and reports code, changed minimally because it is
 the cause; the first page of a document still counts and the document's total is unchanged.
+
+### Round 1, fixer 3: the audit log's field filter could not use its index
+
+Verify of 249c4dc9 (log verify-fixer-p09-custom-fields-r1-f3.log, kept folder
+.verify-failed/20261106T180338Z-2489122, dotnet 6,102 s, load 35 to 60 for the first 1.5 h with p12-jobs'
+verify beside it): the audit exports were no longer the slow requests. The failing ones were plain
+`GET /api/audit/log?take=50&filter=fields eq '<column>'` list answers at 225 s, taking down
+G1ListVolumeTests, G1HttpIsolationTests and G1NonInterferenceTests (HttpClient timeout 100 s).
+Cause, checked with `ToQueryString()`: the list framework's multi-value choice filter (p05; used by the audit
+log's `fields` column, p07) translated to `'x' = ANY(fields)`, which cannot use the GIN index on
+`audit_entries.fields` (created for exactly this filter), so each query read all 820,000 audit rows of
+the larger gate tenant, with row-level security and the visibility filter on each, and its COUNT(*) did the
+same again. Change (ListBinding.Holds): `eq`, `ne` and `in` now use array overlap (`fields && @v`, from
+`Intersect(...).Any()`), which the GIN index serves. Results are unchanged (same rows, same null handling).
+Kernel code (p05) changed because it is the cause. No test, limit or timeout was changed.

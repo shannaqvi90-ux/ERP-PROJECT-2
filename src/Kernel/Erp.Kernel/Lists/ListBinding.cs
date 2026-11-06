@@ -725,14 +725,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private static Expression Holds(FilterCondition condition, Expression member, ListColumn column)
     {
         var values = condition.Values.Select(v => (string)ToClr(v, typeof(string), column)!).ToList();
-        Expression HoldsOne(string value) => Expression.AndAlso(
+        // Array overlap (&&), not "value = ANY(column)": the first can use the column's GIN index, the second
+        // reads every row (the audit log's field filter over hundreds of thousands of rows).
+        Expression HoldsAny(IReadOnlyList<string> wanted) => Expression.AndAlso(
             Expression.NotEqual(member, Expression.Constant(null, typeof(string[]))),
-            Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(string)], member, Box(value, typeof(string))));
+            Expression.Call(typeof(Enumerable), nameof(Enumerable.Any), [typeof(string)],
+                Expression.Call(typeof(Enumerable), nameof(Enumerable.Intersect), [typeof(string)], member, Box(wanted.ToArray(), typeof(string[])))));
         return condition.Operator switch
         {
-            FilterOperator.Eq => HoldsOne(values[0]),
-            FilterOperator.Ne => Expression.Not(HoldsOne(values[0])),
-            FilterOperator.In => values.Select(HoldsOne).Aggregate(Expression.OrElse),
+            FilterOperator.Eq => HoldsAny([values[0]]),
+            FilterOperator.Ne => Expression.Not(HoldsAny([values[0]])),
+            FilterOperator.In => HoldsAny(values),
             _ => throw new ListQueryException("filter", "list.operatorNotAllowed", column.Key),
         };
     }
