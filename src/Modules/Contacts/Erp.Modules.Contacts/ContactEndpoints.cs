@@ -1,5 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Erp.Kernel.CustomFields;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Http;
 using Erp.Kernel.Lists;
@@ -14,6 +17,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Validator = Erp.Kernel.Http.Validator;
 
 namespace Erp.Modules.Contacts;
@@ -55,7 +59,9 @@ public sealed record ContactDto(
     int PeopleCount,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    uint Version);
+    uint Version,
+    [property: Description("The workspace's custom fields of contacts with the contact's values (a new contact: the defaults), in display order.")]
+    IReadOnlyList<CustomFieldEntry>? CustomFields = null);
 
 /// <summary>A row of the contacts list (the list query contract). <c>creditLimit</c> is the
 /// limit's amount in <c>creditLimitCurrency</c> (a decimal string), null when none is set.</summary>
@@ -83,7 +89,9 @@ public sealed record ContactRow(
     bool IsActive,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    uint Version);
+    uint Version,
+    [property: JsonExtensionData, Description("The workspace's custom fields of contacts: one property per field, named by its key (cfCustomerSegment), holding the value (a number as text with its decimals, a date as yyyy-mm-dd, an option's value, a record id); a lookup also adds its record's names as <key>Name and <key>NameAr. Fields without a value are left out.")]
+    IDictionary<string, object?>? CustomFields = null);
 
 /// <summary>
 /// Create or change a contact. <c>kind</c> is organisation or person; a person may name the
@@ -96,6 +104,9 @@ public sealed record ContactRow(
 /// left out); in a currency other than the working company's base currency it needs
 /// <c>creditLimitExchangeRate</c> (base-currency units per unit). Leave the amount out for no limit.
 /// On change, <c>version</c> is the version that was read. Archiving is its own action.
+/// <c>customFields</c> holds values of the workspace's custom fields by key (a text, a number or its text, true or false,
+/// a date as yyyy-mm-dd, an option's value, a record id; null clears one): a key left out keeps its value, and on a new
+/// contact starts at the field's default; a required field without a value is refused.
 /// </summary>
 public sealed record SaveContactRequest(
     [property: ApiExample("organisation"), RegularExpression("^(organisation|person)$")] string? Kind,
@@ -124,7 +135,8 @@ public sealed record SaveContactRequest(
     [property: ApiExample("USD"), RegularExpression("^[A-Za-z]{3}$")] string? CreditLimitCurrency,
     [property: ApiExample("3.6725"), RegularExpression("^[0-9]{1,10}(\\.[0-9]{1,8})?$")] string? CreditLimitExchangeRate,
     [property: StringLength(ContactsValidation.NotesMaxLength)] string? Notes,
-    uint? Version);
+    uint? Version,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields = null);
 
 /// <summary>A contact that may be the same as the one being entered, and what it shares with it:
 /// <c>name</c>, <c>email</c>, <c>phone</c> (either number) or <c>taxRegistrationNumber</c>.</summary>
@@ -144,7 +156,7 @@ public sealed record ContactDuplicate(
 /// <summary>What a new contact starts with for the caller: the country, and the working
 /// company's base currency as the default currency and as the currency a credit limit's base
 /// amount is stated in.</summary>
-public sealed record ContactDefaults(string Country, string DefaultCurrency, string BaseCurrency);
+public sealed record ContactDefaults(string Country, string DefaultCurrency, string BaseCurrency, IReadOnlyList<CustomFieldEntry>? CustomFields = null);
 
 /// <summary>What a contact being entered is compared on: <c>sameName</c> and <c>sameNameAr</c> (the
 /// names typed), <c>sameEmail</c>, <c>samePhone</c>, <c>sameMobile</c>, <c>sameTaxNumber</c>;
@@ -246,12 +258,15 @@ internal static class ContactEndpoints
             ? []
             : await db.Contacts.AsNoTracking().Where(c => organisationIds.Contains(c.Id))
                 .Select(c => new { c.Id, c.NameEn, c.NameAr }).ToDictionaryAsync(c => c.Id, cancellationToken);
+        var customValues = http.RequestServices.GetService<ICustomFields>() is { } customFields && result.Rows.Count > 0
+            ? await customFields.ValuesAsync(ContactsModule.RecordType, result.Rows.Select(c => c.Id).ToList(), cancellationToken)
+            : new Dictionary<Guid, IDictionary<string, object?>>();
         return result.Map(c =>
         {
             var organisation = c.OrganisationId is { } o && organisations.TryGetValue(o, out var found) ? found : null;
             return new ContactRow(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
                 c.Email, c.Mobile, c.Phone, c.City, c.Emirate, c.Country, c.Tags, c.TaxRegistrationNumber, c.DefaultCurrency, c.CreditLimitAmount,
-                c.CreditLimitCurrency, c.IsActive, c.CreatedAt, c.UpdatedAt, c.Version);
+                c.CreditLimitCurrency, c.IsActive, c.CreatedAt, c.UpdatedAt, c.Version, customValues.GetValueOrDefault(c.Id));
         });
     }
 
@@ -288,13 +303,14 @@ internal static class ContactEndpoints
     private static async Task<Results<Ok<ContactDto>, ProblemHttpResult>> Get(Guid id, ContactsDbContext db, HttpContext http, CancellationToken cancellationToken)
     {
         var contact = await db.Contacts.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
-        return contact is null ? Problems.NotFound(http) : TypedResults.Ok(await ToDtoAsync(db, contact, cancellationToken));
+        return contact is null ? Problems.NotFound(http) : TypedResults.Ok(await ToDtoAsync(db, contact, http, cancellationToken));
     }
 
-    private static async Task<Ok<ContactDefaults>> Defaults(ICompanyDirectory companies, CancellationToken cancellationToken)
+    private static async Task<Ok<ContactDefaults>> Defaults(ICompanyDirectory companies, HttpContext http, CancellationToken cancellationToken)
     {
         var baseCurrency = await BaseCurrencyAsync(companies, cancellationToken);
-        return TypedResults.Ok(new ContactDefaults(ContactsValidation.UnitedArabEmirates, baseCurrency.Code, baseCurrency.Code));
+        var custom = http.RequestServices.GetService<ICustomFields>() is { } customFields ? await customFields.EntriesAsync(ContactsModule.RecordType, null, cancellationToken) : null;
+        return TypedResults.Ok(new ContactDefaults(ContactsValidation.UnitedArabEmirates, baseCurrency.Code, baseCurrency.Code, custom));
     }
 
     /// <summary>The base currency a credit limit set now is stated in: the working company's (AED
@@ -375,9 +391,13 @@ internal static class ContactEndpoints
         {
             return checks;
         }
+        if (await SaveCustomFieldsAsync(http, contact.Id, isNew: true, request, validator, cancellationToken) is { } custom)
+        {
+            return custom;
+        }
         db.Contacts.Add(contact);
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Created($"/api/contacts/contacts/{contact.Id}", await ToDtoAsync(db, contact, cancellationToken));
+        return TypedResults.Created($"/api/contacts/contacts/{contact.Id}", await ToDtoAsync(db, contact, http, cancellationToken));
     }
 
     private static async Task<Results<Ok<ContactDto>, ProblemHttpResult>> Update(
@@ -399,9 +419,13 @@ internal static class ContactEndpoints
         {
             return checks;
         }
+        if (await SaveCustomFieldsAsync(http, contact.Id, isNew: false, request, validator, cancellationToken) is { } custom)
+        {
+            return custom;
+        }
         db.Entry(contact).Property(c => c.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
-        return TypedResults.Ok(await ToDtoAsync(db, contact, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, contact, http, cancellationToken));
     }
 
     private static Task<Results<Ok<ContactDto>, ProblemHttpResult>> Archive(Guid id, ContactsDbContext db, HttpContext http, CancellationToken cancellationToken) =>
@@ -422,7 +446,19 @@ internal static class ContactEndpoints
             contact.IsActive = active;
             await db.SaveChangesAsync(cancellationToken);
         }
-        return TypedResults.Ok(await ToDtoAsync(db, contact, cancellationToken));
+        return TypedResults.Ok(await ToDtoAsync(db, contact, http, cancellationToken));
+    }
+
+    /// <summary>The custom field values sent with a save (p09): checked and written in this
+    /// transaction by the custom fields module, when the host has it. A problem is the answer.</summary>
+    private static async Task<ProblemHttpResult?> SaveCustomFieldsAsync(HttpContext http, Guid id, bool isNew, SaveContactRequest request, Validator validator, CancellationToken cancellationToken)
+    {
+        if (http.RequestServices.GetService<ICustomFields>() is not { } customFields)
+        {
+            return null;
+        }
+        await customFields.SaveAsync(ContactsModule.RecordType, id, isNew, request.CustomFields, validator, cancellationToken);
+        return validator.IsValid ? null : validator.ToResult();
     }
 
     private static Validator Validate(SaveContactRequest request, HttpContext http, bool requireVersion)
@@ -597,8 +633,9 @@ internal static class ContactEndpoints
         contact.MobileKey = ContactsValidation.PhoneKey(contact.Mobile);
     }
 
-    internal static async Task<ContactDto> ToDtoAsync(ContactsDbContext db, Contact c, CancellationToken cancellationToken)
+    internal static async Task<ContactDto> ToDtoAsync(ContactsDbContext db, Contact c, HttpContext http, CancellationToken cancellationToken)
     {
+        var custom = http.RequestServices.GetService<ICustomFields>() is { } customFields ? await customFields.EntriesAsync(ContactsModule.RecordType, c.Id, cancellationToken) : null;
         var organisation = c.OrganisationId is { } o
             ? await db.Contacts.AsNoTracking().Where(x => x.Id == o).Select(x => new { x.NameEn, x.NameAr }).SingleOrDefaultAsync(cancellationToken)
             : null;
@@ -606,6 +643,6 @@ internal static class ContactEndpoints
         return new ContactDto(c.Id, c.Kind, c.Code, c.NameEn, c.NameAr, c.OrganisationId, organisation?.NameEn, organisation?.NameAr, c.JobTitle,
             c.Email, c.Phone, c.Mobile, c.Website, c.AddressLine1, c.AddressLine2, c.Area, c.City, c.Emirate, c.PoBox, c.Country, c.AddressAr,
             ContactsValidation.TagsOf(c.Tags), c.TradeLicenceNumber, c.TaxRegistrationNumber, c.DefaultCurrency, c.CreditLimit, c.Notes, c.IsActive, people,
-            c.CreatedAt, c.UpdatedAt, c.Version);
+            c.CreatedAt, c.UpdatedAt, c.Version, custom);
     }
 }

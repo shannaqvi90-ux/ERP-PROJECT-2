@@ -1,4 +1,5 @@
 using Erp.Kernel.Audit;
+using Erp.Kernel.CustomFields;
 using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Shell;
@@ -22,6 +23,9 @@ public sealed class ContactsModule : ErpModule
 {
     public override string Name => "contacts";
 
+    /// <summary>The kind of record custom fields are added to (p09).</summary>
+    public const string RecordType = "contacts.contacts";
+
     public override void Register(ModuleBuilder module)
     {
         module.Permissions([.. ContactsPermissions.All]);
@@ -36,6 +40,15 @@ public sealed class ContactsModule : ErpModule
         module.ListRows(ContactsList.Key, async (services, request, http, cancellationToken) =>
             (await ContactEndpoints.PageAsync(services.GetRequiredService<ContactsDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));
         module.Report<Reports.ContactCardReport>(Reports.ContactCardReport.Definition);
+        // Tenants add custom fields to contacts (p09): they appear in the form, the list (column chooser,
+        // filters, search) and the API by themselves. The list's model gets the filter functions
+        // (UseCustomFields below); contacts can also be pointed at by a lookup field.
+        module.CustomFieldRecord(new CustomFieldRecordType(RecordType, "contacts.menu.contacts", ContactsPermissions.ContactsRead, ContactsList.Key,
+            Exists: async (services, id, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().AnyAsync(c => c.Id == id, ct),
+            Names: async (services, ids, ct) => (await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().Where(c => ids.Contains(c.Id))
+                .Select(c => new { c.Id, c.NameEn, c.NameAr }).ToListAsync(ct)).ToDictionary(c => c.Id, c => (c.NameEn, c.NameAr)),
+            LookupEndpoint: "/api/contacts/contacts", LabelProperty: "nameEn", LabelPropertyAr: "nameAr",
+            AllIds: async (services, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().OrderBy(c => c.Id).Select(c => c.Id).ToListAsync(ct)));
         module.Seeder<ContactsSeeder>();
     }
 }
@@ -165,6 +178,8 @@ public sealed class ContactsDbContext : ModuleDbContext
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {
+        // The questions the contacts list asks of custom field values (filters, search): functions only, no table.
+        modelBuilder.UseCustomFields();
         modelBuilder.Entity<Contact>(e =>
         {
             e.ToTable("contacts", t =>

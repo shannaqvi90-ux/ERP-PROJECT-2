@@ -112,12 +112,15 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private readonly Expression<Func<T, Guid>> _id;
     private readonly Func<T, Guid> _idOf;
     private readonly Expression<Func<T, string?>>? _initials;
+    private readonly IReadOnlyList<ExtraColumn> _extra = [];
 
     // A binding never changes once built: Column and InMemory return a new binding, so a
     // registered binding (shared by every request of every tenant) holds no state of its own.
     private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id, Func<T, Guid> idOf,
-        FrozenDictionary<string, Bound> columns, string? inMemoryReason, Expression<Func<T, string?>>? initials = null)
+        FrozenDictionary<string, Bound> columns, string? inMemoryReason, Expression<Func<T, string?>>? initials = null,
+        IReadOnlyList<ExtraColumn>? extra = null)
     {
+        _extra = extra ?? [];
         Definition = definition;
         _id = id;
         _idOf = idOf;
@@ -181,6 +184,15 @@ public sealed class ListBinding<T> : IListBinding where T : class
     /// </summary>
     public ListBinding<T> Initials(Expression<Func<T, string?>> value) =>
         new(Definition, _id, _idOf, _columns, InMemoryReason, value);
+
+    /// <summary>The same binding with the workspace's custom fields added as filterable columns (and
+    /// the text ones searched). Nothing registered changes; the copy serves one request.</summary>
+    private ListBinding<T> WithCustomFields(IReadOnlyList<Erp.Kernel.CustomFields.CustomFieldInfo> fields)
+    {
+        var extra = ListCustomFields.Build(fields);
+        var definition = Definition with { Columns = [.. Definition.Columns, .. extra.Select(e => e.Column)] };
+        return new ListBinding<T>(definition, _id, _idOf, _columns, InMemoryReason, _initials, extra);
+    }
 
     /// <inheritdoc/>
     public IListBinding ServeAs(ListDefinition definition)
@@ -273,6 +285,13 @@ public sealed class ListBinding<T> : IListBinding where T : class
     /// a 400 problem naming the parameter to correct.</summary>
     public async Task<ListResult<T>> QueryAsync(IQueryable<T> source, ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        if (_extra.Count == 0 && InMemoryReason is null && source.Provider is IAsyncQueryProvider &&
+            await ListCustomFields.FieldsAsync(http.RequestServices, Definition.Key, cancellationToken) is { Count: > 0 } fields)
+        {
+            // The workspace's custom fields are columns of this list too (p09): the same binding,
+            // with their filters and search added. Done once per request, only when it defined any.
+            return await WithCustomFields(fields).QueryAsync(source, request, http, cancellationToken);
+        }
         Plan plan;
         try
         {
@@ -478,8 +497,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
                 // Arabic search over 100,000 users). The LIKE patterns stay, so the trigram indexes
                 // still find the rows and the result is exactly theirs (each pattern implies the
                 // expression).
-                conditions.Add(fields.Select(field => RegexMatch(Value(field, row), ListSearch.Pattern(word), database))
-                    .DefaultIfEmpty(Expression.Constant(false)).Aggregate(Expression.OrElse));
+                var spelled = fields.Select(field => RegexMatch(Value(field, row), ListSearch.Pattern(word), database))
+                    .DefaultIfEmpty(Expression.Constant(false)).Aggregate(Expression.OrElse);
+                conditions.Add(ListCustomFields.Searches(_extra)
+                    ? spellings.Select(x => ListCustomFields.Search(_extra, "%" + EscapeLike(x) + "%", new Rebind(_id.Parameters[0], row).Visit(_id.Body))).Aggregate(spelled, Expression.OrElse)
+                    : spelled);
             }
             conditions.Add(AnyField(row, fields, spellings.Select(s => "%" + EscapeLike(s) + "%"), database));
         }
@@ -506,10 +528,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private Expression AnyField(ParameterExpression row, IReadOnlyList<string> fields, IEnumerable<string> patterns, bool database)
     {
         var list = patterns.ToList();
-        return fields
+        var own = fields
             .SelectMany(field => list.Select(pattern => Like(Value(field, row), pattern, database)))
             .DefaultIfEmpty(Expression.Constant(false))
             .Aggregate(Expression.OrElse);
+        if (!database || !ListCustomFields.Searches(_extra))
+        {
+            return own;
+        }
+        // The text custom fields are searched too (a value in any of them matches the word).
+        var id = new Rebind(_id.Parameters[0], row).Visit(_id.Body);
+        return list.Select(pattern => ListCustomFields.Search(_extra, pattern, id)).Aggregate(own, Expression.OrElse);
     }
 
     /// <summary>
@@ -625,6 +654,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private Expression Condition(FilterCondition condition, ParameterExpression row, bool database)
     {
         var column = Definition.Column(condition.Column)!;
+        if (_extra.FirstOrDefault(e => e.Column.Key == column.Key) is { } custom)
+        {
+            return custom.Condition(condition, new Rebind(_id.Parameters[0], row).Visit(_id.Body));
+        }
         var member = Value(column.Key, row);
         var nullable = !member.Type.IsValueType || Nullable.GetUnderlyingType(member.Type) is not null;
         Expression IsNull() => nullable ? Expression.Equal(member, Expression.Constant(null, member.Type)) : Expression.Constant(false);

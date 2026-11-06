@@ -29,7 +29,8 @@ public sealed record ListPresetDto(string Key, string LabelKey, string? Filter, 
 public sealed record ListDefinitionDto(
     string Key, string LabelKey, string Endpoint, IReadOnlyList<ListColumnDto> Columns, IReadOnlyList<string> SearchFields,
     string? DefaultSort, IReadOnlyList<ListPresetDto> Presets, bool CanShare, int MaxTake, bool Printable = false,
-    IReadOnlyList<string>? ArabicSearchFields = null);
+    IReadOnlyList<string>? ArabicSearchFields = null,
+    IReadOnlyDictionary<string, DynamicString>? Strings = null);
 
 public sealed record SavedViewDto(
     Guid Id, string ListKey, string Name, bool IsShared, bool IsDefault, bool IsMine, IReadOnlyList<string> Columns,
@@ -64,8 +65,12 @@ internal static class ViewEndpoints
             var routes = group.MapGroup("/" + key);
             var name = $"lists.{key}";
 
-            routes.MapGet("/definition", (ModuleCatalog c, ICurrentUser caller) =>
-                    TypedResults.Ok(Definition(c.FindList(key)!, caller, c.PrintableLists.Any(p => p.List.Key == key))))
+            routes.MapGet("/definition", async (ModuleCatalog c, ICurrentUser caller, HttpContext http, CancellationToken ct) =>
+                {
+                    // The workspace's custom fields are columns of the list too (p09), with their labels.
+                    var (extended, strings) = await ListCustomFieldDefinitions.ExtendAsync(c.FindList(key)!, http.RequestServices, ct);
+                    return TypedResults.Ok(Definition(extended, caller, c.PrintableLists.Any(p => p.List.Key == key)) with { Strings = strings.Count == 0 ? null : strings });
+                })
                 .WithName($"{name}.definition")
                 .WithSummary($"Definition of the {key} list: columns, types, labels, operators, search fields, default sort, built-in views.")
                 .RequirePermission(list.Permission);
@@ -232,6 +237,7 @@ internal static class ViewEndpoints
     private static async Task<Results<Created<SavedViewDto>, ProblemHttpResult>> Create(
         ListDefinition list, SaveViewRequest request, bool shared, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
     {
+        list = (await ListCustomFieldDefinitions.ExtendAsync(list, http.RequestServices, cancellationToken)).Definition;
         var validator = Validate(list, request, http, requireVersion: false);
         if (!validator.IsValid)
         {
@@ -262,6 +268,7 @@ internal static class ViewEndpoints
     private static async Task<Results<Ok<SavedViewDto>, ProblemHttpResult>> Update(
         ListDefinition list, Guid id, SaveViewRequest request, bool shared, ListsDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
     {
+        list = (await ListCustomFieldDefinitions.ExtendAsync(list, http.RequestServices, cancellationToken)).Definition;
         var validator = Validate(list, request, http, requireVersion: true);
         if (!validator.IsValid)
         {
