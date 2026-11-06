@@ -210,6 +210,59 @@ CREATE FUNCTION customfields.match_any(field uuid) RETURNS TABLE (record_id uuid
 LANGUAGE sql STABLE PARALLEL SAFE AS $$
     SELECT v.record_id FROM customfields.field_values v WHERE v.tenant_id = erp.current_tenant_id() AND v.field_id = field
 $$;");
+            // A value's change is also written into the history of the record that holds it, as the
+            // change of the record's field custom_fields.<key> (the contract of the audit trail: Erp.Kernel
+            // KernelSql.CaptureFunctionV2 records a record's custom fields that way), so the contact's own
+            // history shows who set a segment, from what to what. The row of the values table itself is
+            // recorded by audit.capture() as for any table. The record is named as its last audit entry
+            // named it. Runs as the caller; the entry is inserted under the tenant's policy.
+            migrationBuilder.Sql(@"
+CREATE FUNCTION customfields.audit_record_history() RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, pg_temp
+AS $$
+DECLARE
+    v_row customfields.field_values := COALESCE(NEW, OLD);
+    v_old jsonb;
+    v_new jsonb;
+    v_key text;
+    v_schema text := split_part(v_row.record_type, '.', 1);
+    v_table text := split_part(v_row.record_type, '.', 2);
+    v_label text;
+    v_label_ar text;
+    v_code text;
+    v_company uuid;
+    v_branch uuid;
+BEGIN
+    IF TG_OP IN ('UPDATE', 'DELETE') THEN
+        v_old := COALESCE(to_jsonb(OLD.text_value), to_jsonb(OLD.number_value), to_jsonb(OLD.date_value), to_jsonb(OLD.bool_value), to_jsonb(OLD.ref_value));
+    END IF;
+    IF TG_OP IN ('INSERT', 'UPDATE') THEN
+        v_new := COALESCE(to_jsonb(NEW.text_value), to_jsonb(NEW.number_value), to_jsonb(NEW.date_value), to_jsonb(NEW.bool_value), to_jsonb(NEW.ref_value));
+    END IF;
+    IF TG_OP = 'UPDATE' AND v_old IS NOT DISTINCT FROM v_new THEN
+        RETURN NULL;
+    END IF;
+    SELECT d.key INTO v_key FROM customfields.definitions d WHERE d.tenant_id = v_row.tenant_id AND d.id = v_row.field_id;
+    IF v_key IS NULL THEN
+        RETURN NULL;
+    END IF;
+    SELECT e.record_label, e.record_label_ar, e.record_code, e.record_company_id, e.record_branch_id
+      INTO v_label, v_label_ar, v_code, v_company, v_branch
+      FROM audit.entries e
+     WHERE e.tenant_id = v_row.tenant_id AND e.record_type = v_row.record_type AND e.record_id = v_row.record_id
+     ORDER BY e.occurred_at DESC LIMIT 1;
+    INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes,
+                               transaction_id, correlation_id, record_label, record_label_ar, record_code, record_company_id, record_branch_id)
+    VALUES (v_row.tenant_id, clock_timestamp(), erp.current_actor_id(), COALESCE(NULLIF(current_setting('app.actor_kind', true), ''), 'unknown'),
+            v_schema, v_table, v_row.record_id, 'update',
+            jsonb_build_object('custom_fields.' || v_key, jsonb_strip_nulls(jsonb_build_object('old', v_old, 'new', v_new))),
+            txid_current(), NULLIF(current_setting('app.correlation_id', true), ''), v_label, v_label_ar, v_code, v_company, v_branch);
+    RETURN NULL;
+END;
+$$;");
+            migrationBuilder.Sql("CREATE TRIGGER audit_record_history AFTER INSERT OR UPDATE OR DELETE ON customfields.field_values FOR EACH ROW EXECUTE FUNCTION customfields.audit_record_history();");
+
             migrationBuilder.Sql(@"
 CREATE FUNCTION customfields.search_text(fields uuid[], pattern text) RETURNS TABLE (record_id uuid)
 LANGUAGE sql STABLE PARALLEL SAFE AS $$

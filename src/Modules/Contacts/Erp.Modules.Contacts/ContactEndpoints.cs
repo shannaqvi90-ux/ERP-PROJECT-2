@@ -397,12 +397,14 @@ internal static class ContactEndpoints
         {
             return checks;
         }
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync(cancellationToken);
+        // After the contact itself, so the values' history follows the contact's creation; a refused
+        // value rolls the whole request back (nothing is saved).
         if (await SaveCustomFieldsAsync(http, contact.Id, isNew: true, request, validator, cancellationToken) is { } custom)
         {
             return custom;
         }
-        db.Contacts.Add(contact);
-        await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Created($"/api/contacts/contacts/{contact.Id}", await ToDtoAsync(db, contact, http, cancellationToken));
     }
 
@@ -425,12 +427,12 @@ internal static class ContactEndpoints
         {
             return checks;
         }
+        db.Entry(contact).Property(c => c.UpdatedAt).IsModified = true;
+        await db.SaveChangesAsync(cancellationToken);
         if (await SaveCustomFieldsAsync(http, contact.Id, isNew: false, request, validator, cancellationToken) is { } custom)
         {
             return custom;
         }
-        db.Entry(contact).Property(c => c.UpdatedAt).IsModified = true;
-        await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(await ToDtoAsync(db, contact, http, cancellationToken));
     }
 

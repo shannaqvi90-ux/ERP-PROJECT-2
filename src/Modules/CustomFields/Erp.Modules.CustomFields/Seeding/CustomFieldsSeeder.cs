@@ -40,6 +40,9 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
         var segment = Define(ContactsTable, "cfCustomerSegment", context.Mark("Customer segment"), context.Mark("شريحة العميل"), CustomFieldTypes.Select, 10,
             options: [new("retail", "Retail", "تجزئة"), new("wholesale", "Wholesale", "جملة"), new("government", "Government", "حكومي"),
                       new("keyAccount", "Key account", "حساب رئيسي"), new("distributor", "Distributor", "موزع")]);
+        // The gate workspaces' segment starts at "retail" for a new contact, so the write-set gate sees
+        // a contact's create write its custom field value (permission-write-sets.txt).
+        segment.DefaultValue = demo ? null : "retail";
         var manager = Define(ContactsTable, "cfAccountManager", context.Mark("Account manager"), context.Mark("مدير الحساب"), CustomFieldTypes.Text, 20, searchable: true);
         var review = Define(ContactsTable, "cfCreditReview", "Credit review date", "تاريخ مراجعة الائتمان", CustomFieldTypes.Date, 30);
         var vip = Define(ContactsTable, "cfPreferredPartner", "Preferred partner", "شريك مفضل", CustomFieldTypes.Boolean, 40);

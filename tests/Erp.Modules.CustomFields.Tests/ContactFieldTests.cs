@@ -229,6 +229,15 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
         await using var command = new NpgsqlCommand("SELECT count(*) FROM audit.entries WHERE table_schema = 'customfields' AND table_name = 'field_values' AND changes::text LIKE '%' || @record || '%'", connection);
         command.Parameters.AddWithValue("record", contact.GetProperty("id").GetGuid().ToString());
         Assert.True((long)(await command.ExecuteScalarAsync(Api.Cancel))! >= 2, "the contact's values (region default and segment) are audited");
+        // The contact's own history shows the change of the field, from what to what, as custom_fields.<key>.
+        var update = Api.Contact(contact.GetProperty("nameEn").GetString()!, new() { [f.Segment] = "wholesale" });
+        update["version"] = contact.GetProperty("version").GetUInt32();
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/contacts/contacts/{contact.GetProperty("id").GetGuid()}", update, Api.Cancel)).StatusCode);
+        var history = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/records/{contact.GetProperty("id").GetGuid()}", Api.Cancel);
+        var changes = history.GetProperty("items").EnumerateArray().SelectMany(e => e.GetProperty("changes").EnumerateArray())
+            .Where(c => c.GetProperty("field").GetString() == $"custom_fields.{f.Segment}").ToList();
+        Assert.Contains(changes, c => c.GetProperty("new").GetString() == "retail" && (!c.TryGetProperty("old", out var before) || before.ValueKind == JsonValueKind.Null));
+        Assert.Contains(changes, c => c.GetProperty("old").GetString() == "retail" && c.GetProperty("new").GetString() == "wholesale");
         await using var definitions = new NpgsqlCommand("SELECT count(*) FROM audit.entries WHERE table_schema = 'customfields' AND table_name = 'definitions'", connection);
         Assert.True((long)(await definitions.ExecuteScalarAsync(Api.Cancel))! >= 6);
     }

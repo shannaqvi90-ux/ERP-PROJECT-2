@@ -49,6 +49,11 @@ identity.profile.update identity.passkeys insert,update,delete *  # the caller's
 contacts.contacts.create contacts.contacts insert *  # the new organisation or person
 contacts.contacts.update contacts.contacts update kind,code,name_en,name_ar,organisation_id,job_title,email,phone,mobile,website,address_line1,address_line2,area,city,emirate,po_box,country,address_ar,tags,trade_licence_number,tax_registration_number,default_currency,credit_limit_amount,credit_limit_currency,credit_limit_exchange_rate,credit_limit_base_amount,credit_limit_base_currency,credit_limit_stated,notes  # the contact's details, organisation and credit limit; never its status (is_active is the archive permission's)
 contacts.contacts.archive contacts.contacts update is_active  # archiving or restoring: the status alone
+# Custom fields: the workspace's definitions (every company shares them), and the values a contact's own endpoints write.
+customfields.fields.manage customfields.definitions insert,update *  # the field added, or its labels, required flag, default, decimals, options, order, search and switch changed; never its kind of record, type or name (the handler refuses, the column is unchanged)
+contacts.contacts.create customfields.field_values insert *  # the new contact's custom field values: the defaults of the fields that have one, and the values sent with it; never another workspace's
+customfields.fields.read lists.saved_views insert,update,delete *  # the reader's own views of the custom fields list
+
 # Currency: the workspace's exchange rates (every company shares them). PUT /api/currency/currencies/{id}
 # is judged by CurrencyWriteSetTests instead (tests/Gates/write-set-unexercised.txt says why).
 currency.rates.create currency.exchange_rates insert *  # the rate entered
