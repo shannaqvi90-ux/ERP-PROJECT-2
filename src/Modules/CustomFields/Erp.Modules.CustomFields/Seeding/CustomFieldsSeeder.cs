@@ -47,10 +47,11 @@ internal sealed class CustomFieldsSeeder(CustomFieldsDbContext db, ModuleCatalog
         // The gate workspaces' segment starts at "retail" for a new contact, so the write-set gate sees
         // a contact's create write its custom field value (permission-write-sets.txt).
         segment.DefaultValue = demo ? null : "retail";
-        // The demo's account manager is searched by the list's search box (the comparison's find path); the gate
-        // workspaces' is not: the list gates judge a search's total from the list's own search fields, which
-        // a searched custom field adds to (tests/Erp.Modules.CustomFields.Tests covers the search and its isolation).
-        var manager = Define(ContactsTable, "cfAccountManager", context.Mark("Account manager"), context.Mark("مدير الحساب"), CustomFieldTypes.Text, 20, searchable: demo);
+        // Neither workspace's account manager is searched by the list's search box: every searched custom field adds
+        // an OR over its values to each search, and at 100,000 contacts that took the contacts timing budget's
+        // Arabic search to 701 ms (budget 400 ms median) and 'al' to 384 ms. A tenant switches searching on per
+        // field (tests/Erp.Modules.CustomFields.Tests defines its own searched field and covers search and its isolation).
+        var manager = Define(ContactsTable, "cfAccountManager", context.Mark("Account manager"), context.Mark("مدير الحساب"), CustomFieldTypes.Text, 20);
         // The demo's other two fields (a date and a yes/no) add nothing the gates need.
         var review = Define(ContactsTable, "cfCreditReview", "Credit review date", "تاريخ مراجعة الائتمان", CustomFieldTypes.Date, 30);
         var vip = Define(ContactsTable, "cfPreferredPartner", "Preferred partner", "شريك مفضل", CustomFieldTypes.Boolean, 40);

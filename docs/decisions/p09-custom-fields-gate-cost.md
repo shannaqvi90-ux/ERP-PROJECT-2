@@ -104,3 +104,14 @@ Left alone (p00's gate): 6 "answers that tell tenant B's values apart" for the v
 own earlier attack wrote (body value `attack-{n}`, n a counter that reached 393779); `HeldByAsync` compares whole values only, so a
 tenant B value that equals the counter is not seen as held by A. Suspected chance coincidence of the counter with a tenant B number; not
 touched (p00 owns the machinery). Not run again on its own: it needs the 3 h gate.
+
+### Round 1, fixer 5: the contacts timing budgets
+
+Verify of 216bcfe8 run alone (log verify-fixer-p09-custom-fields-r1-f5.log, kept folder .verify-failed/20261107T080724Z-2642308, load 2 to 24):
+dotnet (11,266 s), web (4,503 s, 134 of 134 mutations caught) and e2e (12,184 s) passed, and no request went past 100 s: the audit export and
+gate faults of the earlier fixers are gone. The timing stage failed on two contacts volume budgets (median under 400 ms): the Arabic
+search 701 ms, `search=محمد` 486 ms, `search=al` 384 ms. The demo workspace's seeded "Account manager" field was searchable; a searched
+custom field adds an OR over its 100,000 values to every search (a hashed sub-plan the trigram indexes cannot join), which is the
+only change to the contacts search path. The seeded field is no longer searchable in the demo (as in the gate workspaces); a tenant still
+switches searching on per field and CustomFieldVolumeTests defines its own searched field. Not measured separately: the next full verify's
+timing stage judges it. If the budgets still fail, replace the OR with a union of the two id sets in ListBinding.AnyField.
