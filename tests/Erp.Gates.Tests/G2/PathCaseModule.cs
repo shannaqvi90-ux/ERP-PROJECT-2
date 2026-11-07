@@ -34,6 +34,9 @@ public sealed class PathCaseModule : ErpModule
 
         /// <summary>Plant P13 (backlog row 3): pass any signed-in request whose Host header is 'app'.</summary>
         public volatile bool HostOn;
+
+        /// <summary>Plant P17 (backlog row 15): pass any signed-in request whose path ends in '/'.</summary>
+        public volatile bool SlashOn;
     }
 
     private sealed class PathCaseHandler(Switch plant) : AuthorizationHandler<PermissionRequirement>
@@ -42,6 +45,11 @@ public sealed class PathCaseModule : ErpModule
         {
             if (plant.On && context.User.Identity?.IsAuthenticated == true && context.Resource is HttpContext http &&
                 !http.Request.Path.Value!.StartsWith("/api/", StringComparison.Ordinal))
+            {
+                context.Succeed(requirement);
+            }
+            if (plant.SlashOn && context.User.Identity?.IsAuthenticated == true && context.Resource is HttpContext slash &&
+                slash.Request.Path.Value!.EndsWith('/'))
             {
                 context.Succeed(requirement);
             }
