@@ -161,7 +161,7 @@ public sealed class CustomFieldDefinitionTests(CustomFieldsFixture fixture) : IC
         var id = field.GetProperty("id").GetGuid();
         var body = new Dictionary<string, object?>
         {
-            ["type"] = "number", ["labelEn"] = "Renamed", ["labelAr"] = "جديد", ["required"] = true, ["version"] = field.GetProperty("version").GetUInt32(),
+            ["type"] = "number", ["labelEn"] = "Renamed", ["labelAr"] = "جديد", ["required"] = true, ["default"] = "Standard", ["version"] = field.GetProperty("version").GetUInt32(),
         };
         var refused = await admin.PutAsJsonAsync($"/api/customfields/fields/{id}", body, Api.Cancel);
         Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);

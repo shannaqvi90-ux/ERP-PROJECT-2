@@ -77,3 +77,30 @@ the larger gate tenant, with row-level security and the visibility filter on eac
 same again. Change (ListBinding.Holds): `eq`, `ne` and `in` now use array overlap (`fields && @v`, from
 `Intersect(...).Any()`), which the GIN index serves. Results are unchanged (same rows, same null handling).
 Kernel code (p05) changed because it is the cause. No test, limit or timeout was changed.
+
+### Round 1, fixer 4: an alone run, and what the shared gate then found in the product
+
+Verify of a6bcedcd run alone (ERP_VERIFY_ALONE=1, after p12's verify ended; log verify-fixer-p09-custom-fields-r1-f4.log, kept folder
+.verify-failed/20261107T025334Z-2595701): load 0.6 to 9, no request past 100 s (slowest 42 s: contacts and companies PDF reports), so
+the earlier timeouts were load. web and e2e passed (web 134 of 134 mutations caught); dotnet failed on G1HttpIsolationTests (3 h 54 min
+wall) with product faults the timeouts had hidden. Every gate POST of `/api/customfields/fields` uses the documented example body
+(label "Customer segment", required true, default "Dubai", every enumerated type and partial bodies), in both tenants, hundreds of times:
+
+1. The machine name of a taken label got the next number (`cfCustomerSegment2`, `3`...), the same in every workspace, so tenant A's answers
+   carried names tenant B also holds (16,671 leaks in the contacts list definition and the POST answers). A taken name now gets six random
+   letters and digits (FieldEndpoints.Create). Names stay unique inside a workspace.
+2. The 40-field cap refused every add after the 40th ("recordType" error), so tenant A's own write-after-write adds failed. A field added
+   beyond the cap is now saved switched off (definition kept, no column, no form field), so the number of columns the gates attack stays
+   bounded and the add succeeds; switching one on past the cap is still refused.
+3. A required field without a default (a lookup, or a body with the default left out) made every contact add of tenant B fail with
+   `customFields.<name>` required (10 writes). A required field now needs a default (error `customFieldRequiredNeedsDefault`, English and
+   Arabic); a lookup cannot be required. Two of the builder's tests were changed for it, not weakened:
+   `A_field_without_a_default_that_is_required_must_be_given_on_a_new_contact` became `A_required_field_needs_a_default_so_a_new_contact_can_always_be_saved`
+   (the refusal at definition, then the default on a new contact, then switching the field off), and `A_fields_kind_and_record_type_never_change...`
+   gives its required field a default.
+
+Left alone (p00's gate): 6 "answers that tell tenant B's values apart" for the value `393779` on `GET /api/identity/roles?filter=nameEn contains`
+(and nameAr, endswith) and `GET /api/audit/log?filter=record contains`. Tenant A's answer is the role named `attack-393779`, which tenant A's
+own earlier attack wrote (body value `attack-{n}`, n a counter that reached 393779); `HeldByAsync` compares whole values only, so a
+tenant B value that equals the counter is not seen as held by A. Suspected chance coincidence of the counter with a tenant B number; not
+touched (p00 owns the machinery). Not run again on its own: it needs the 3 h gate.

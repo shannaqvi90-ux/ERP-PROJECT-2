@@ -143,16 +143,20 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
     }
 
     [Fact]
-    public async Task A_field_without_a_default_that_is_required_must_be_given_on_a_new_contact()
+    public async Task A_required_field_needs_a_default_so_a_new_contact_can_always_be_saved()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var must = await Api.DefineAsync(admin, Api.Field("text", Api.Unique("Must have"), "إلزامي", new { required = true }));
-        var response = await admin.PostAsJsonAsync("/api/contacts/contacts", Api.Contact(Api.Unique("Needs it LLC")), Api.Cancel);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("customFieldRequired", (await Api.Json(response)).GetProperty("errors").GetProperty($"customFields.{Key(must)}")[0].GetProperty("code").GetString());
+        // Without a default every add of a contact would be refused until someone knew the field existed: refused at definition.
+        var refused = await admin.PostAsJsonAsync("/api/customfields/fields", Api.Field("text", Api.Unique("Must have"), "إلزامي", new { required = true }), Api.Cancel);
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Equal("customFieldRequiredNeedsDefault", (await Api.Json(refused)).GetProperty("errors").GetProperty("required")[0].GetProperty("code").GetString());
+        // With a default the contact starts with it, and it cannot be cleared (see Values_are_checked_against_the_field_and_a_required_field_without_one_is_refused).
+        var must = await Api.DefineAsync(admin, Api.Field("text", Api.Unique("Must have"), "إلزامي", new { required = true, @default = "Standard" }));
+        var contact = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Has default LLC")));
+        Assert.Contains("Standard", contact.ToString());
         // Switch it off and the contact saves again.
         var off = await admin.PutAsJsonAsync($"/api/customfields/fields/{must.GetProperty("id").GetGuid()}",
-            new { labelEn = must.GetProperty("labelEn").GetString(), labelAr = must.GetProperty("labelAr").GetString(), required = true, isActive = false, version = must.GetProperty("version").GetUInt32() }, Api.Cancel);
+            new { labelEn = must.GetProperty("labelEn").GetString(), labelAr = must.GetProperty("labelAr").GetString(), required = true, @default = "Standard", isActive = false, version = must.GetProperty("version").GetUInt32() }, Api.Cancel);
         Assert.Equal(HttpStatusCode.OK, off.StatusCode);
         await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Free again LLC")));
     }

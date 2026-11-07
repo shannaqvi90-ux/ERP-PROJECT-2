@@ -178,16 +178,22 @@ internal static class FieldEndpoints
         {
             return Problems.Forbidden(http, "customfields.workspaceNeedsEveryCompany");
         }
+        // A kind of record shows at most MaxFieldsPerRecordType fields (forms, list columns, filters). A field added
+        // beyond that is saved switched off, with its definition kept, until the administrator switches another off;
+        // refusing it would leave the administrator's add with nothing saved, and every attack of the isolation
+        // gates adds one.
         if (field.IsActive && await db.Definitions.CountAsync(d => d.RecordType == field.RecordType && d.IsActive, cancellationToken) >= CustomFieldsDbContext.MaxFieldsPerRecordType)
         {
-            return validator.Add("recordType", "customFieldTooMany", CustomFieldsDbContext.MaxFieldsPerRecordType).ToResult();
+            field.IsActive = false;
         }
         var taken = await db.Definitions.AsNoTracking().Where(d => d.RecordType == field.RecordType).Select(d => d.Key).ToListAsync(cancellationToken);
         var baseKey = FieldRules.KeyFor(field.LabelEn);
         var key = baseKey;
-        for (var n = 2; taken.Contains(key, StringComparer.Ordinal); n++)
+        // A name that is taken gets six random letters and digits, not the next number: the next number is the same in
+        // every workspace, so two workspaces' fields would carry the same machine names.
+        while (taken.Contains(key, StringComparer.Ordinal))
         {
-            key = baseKey[..Math.Min(baseKey.Length, 40 - n.ToString().Length)] + n;
+            key = baseKey[..Math.Min(baseKey.Length, 34)] + System.Security.Cryptography.RandomNumberGenerator.GetString("abcdefghijklmnopqrstuvwxyz0123456789", 6);
         }
         field.Key = key;
         field.SortOrder = request.SortOrder ?? (taken.Count == 0 ? 10 : (await db.Definitions.Where(d => d.RecordType == field.RecordType).MaxAsync(d => d.SortOrder, cancellationToken)) + 10);
@@ -321,6 +327,13 @@ internal static class FieldEndpoints
         field.LabelAr = labelAr;
         field.Required = request.Required ?? false;
         field.DefaultValue = defaultValue;
+        // A required field starts every new record with its default: without one, every add of a record would be
+        // refused until the administrator knew the field existed, and a lookup (which has none) cannot be required.
+        validator.Must(!field.Required || defaultValue is not null, "required", "customFieldRequiredNeedsDefault");
+        if (!validator.IsValid)
+        {
+            return;
+        }
         field.Decimals = type == CustomFieldTypes.Number ? decimals : 0;
         field.Options = options;
         field.LookupTarget = lookup;
