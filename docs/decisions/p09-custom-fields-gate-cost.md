@@ -115,3 +115,14 @@ custom field adds an OR over its 100,000 values to every search (a hashed sub-pl
 only change to the contacts search path. The seeded field is no longer searchable in the demo (as in the gate workspaces); a tenant still
 switches searching on per field and CustomFieldVolumeTests defines its own searched field. Not measured separately: the next full verify's
 timing stage judges it. If the budgets still fail, replace the OR with a union of the two id sets in ListBinding.AnyField.
+
+## Round 1, fixer 4: merge of p00 r18 and the full alone verify
+
+Merged piece/p00-foundation (5d05c3a5, round 18) into this branch, so the G1 marker draw no longer takes a string the
+product ships (the false positive on p12's Arabic job-type text). One conflict, tests/Erp.Gates.Tests/G1/ListVolume.cs:
+p00's version taken (its walk follows the list's own total). Full verify alone (ERP_VERIFY_ALONE=1) of the merged head:
+every test passed (dotnet 1,011, web 719, e2e 146, compare 488, build 13), the timing stage passed (7 of 7, including the
+contacts budgets with the demo account manager no longer searchable), and the only ratchet failure was
+verify.cpuSeconds: 18,770 s against 16,000 (dotnet 15,761, web 2,369, e2e 559, timing 81). That is 2,770 s over, inside
+the 3,500 s first-integration allowance (#34). Load at start 0.56, highest 33.5 (early). Log:
+verify-fixer-p09-custom-fields-r1-f4.log; kept folder .verify-failed/20261107T145607Z-2703336.
