@@ -1,0 +1,7 @@
+# Company tables the application role may only read and insert into: UPDATE and DELETE are revoked
+# from erp_app in the database, so a number or record once written cannot be changed by the
+# application. G1CompanyScopeTests and G2CompanyWritePolicyTests expect the database's refusal for
+# these tables in place of the write policies' filtering, and check this list against the grants
+# (a listed table must refuse both, an unlisted one must allow both).
+# Format: schema.table  # reason
+numbering.issued_numbers  # Owner decision #32, rule 2 (docs/compliance/vat-tax-document-numbering.md): a document number once given is never changed or removed; the table is written by inserts only (DocumentNumbers.RecordStatement).
