@@ -1,0 +1,12 @@
+# Reviewed endpoint-to-permission map of the custom fields module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares, and
+# every line must match an endpoint. A new endpoint, or a changed permission, fails the gate until
+# this file is reviewed and changed with it: the reason after # says why that permission, and no
+# broader one, guards the endpoint.
+prefix /api/customfields/
+
+GET /api/customfields/fields customfields.fields.read # the workspace's custom field definitions: labels, kinds, options and defaults the administrator set (no record's values; values travel with the record's own endpoints and permissions)
+GET /api/customfields/fields/{id:guid} customfields.fields.read # one definition, with its options and default
+POST /api/customfields/fields customfields.fields.manage # adding a field changes the form, list, filters, search and API of a kind of record for every user of the workspace (also needs every company of the workspace, checked in the handler and by the kernel)
+PUT /api/customfields/fields/{id:guid} customfields.fields.manage # changing a label, the required flag, the default or the options, or switching a field off, changes what every user of the workspace sees and may save (also needs every company of the workspace)
+GET /api/customfields/record-types customfields.fields.read # the kinds of record that can have fields, with how many each has (module names and counts, no records)

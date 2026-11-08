@@ -168,6 +168,8 @@ test.describe("app shell", () => {
     await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Document numbering" })).toBeFocused();
     await page.keyboard.press("ArrowDown");
+    await expect(navigation(page).getByRole("link", { name: "Custom fields" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Background jobs" })).toBeFocused();
     await page.keyboard.press("ArrowDown");
     await expect(navigation(page).getByRole("link", { name: "Job schedules" })).toBeFocused();

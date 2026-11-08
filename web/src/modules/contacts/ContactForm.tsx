@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../../kernel/api";
+import { customDraft, customRequest, CustomFieldsSection } from "../../kernel/forms/customFields";
 import { CountryField, LookupField, MoneyField, PhoneField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
-import { useRecordForm } from "../../kernel/forms/useRecordForm";
+import { useRecordForm, type FieldBinding } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
 import { recordPath } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
@@ -51,7 +52,7 @@ export type Draft = {
   creditLimitCurrency: string;
   creditLimitExchangeRate: string;
   notes: string;
-};
+} & Record<`customFields.${string}`, string>;
 
 /** What a new contact starts as: an organisation in the UAE trading in the working company's currency,
  * or a person of the organisation it was started from. */
@@ -87,6 +88,7 @@ export function draftOf(c: Contact | null, defaults: ContactDefaults | null, sta
       creditLimitCurrency: currency,
       creditLimitExchangeRate: "",
       notes: "",
+      ...customDraft(defaults?.customFieldDefinitions),
     };
   }
   return {
@@ -116,13 +118,14 @@ export function draftOf(c: Contact | null, defaults: ContactDefaults | null, sta
     creditLimitCurrency: c.creditLimit?.currency ?? c.defaultCurrency,
     creditLimitExchangeRate: c.creditLimit && c.creditLimit.currency !== c.creditLimit.baseCurrency ? c.creditLimit.exchangeRate : "",
     notes: c.notes ?? "",
+    ...customDraft(c.customFieldDefinitions),
   };
 }
 
 const optional = (value: string) => (value.trim() === "" ? null : value.trim());
 
 /** What the API is sent for a draft (src/Modules/Contacts SaveContactRequest). */
-export function requestOf(draft: Draft, version: number | null) {
+export function requestOf(draft: Draft, version: number | null, entries?: Parameters<typeof customRequest>[0]) {
   const person = draft.kind === "person";
   const amount = optional(draft.creditLimitAmount);
   return {
@@ -153,6 +156,7 @@ export function requestOf(draft: Draft, version: number | null) {
     creditLimitExchangeRate: amount === null ? null : optional(draft.creditLimitExchangeRate),
     notes: optional(draft.notes),
     version,
+    customFields: customRequest(entries, draft),
   };
 }
 
@@ -210,8 +214,8 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
     canEdit: id === null ? can("contacts.contacts.create") : can("contacts.contacts.update"),
     save: (draft, contact) =>
       contact === null
-        ? api<Contact>("POST", "/api/contacts/contacts", requestOf(draft, null))
-        : api<Contact>("PUT", `/api/contacts/contacts/${contact.id}`, requestOf(draft, contact.version)),
+        ? api<Contact>("POST", "/api/contacts/contacts", requestOf(draft, null, defaults?.customFieldDefinitions))
+        : api<Contact>("PUT", `/api/contacts/contacts/${contact.id}`, requestOf(draft, contact.version, contact.customFieldDefinitions)),
     onSaved: (saved) => {
       onSaved(saved.id);
       window.dispatchEvent(new Event(contactsChanged));
@@ -336,6 +340,7 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
         />
         <TextField field={bind("tags")} label={t("contacts.contact.tags")} maxLength={400} hint={t("contacts.contact.tagsHint")} />
       </FormSection>
+      <CustomFieldsSection entries={contact ? contact.customFieldDefinitions : defaults?.customFieldDefinitions} bind={form.bind as (key: string) => FieldBinding<string>} />
       <FormSection title={t("contacts.section.notes")} columns={false}>
         <TextAreaField field={bind("notes")} label={t("contacts.contact.notes")} maxLength={2000} rows={3} />
       </FormSection>

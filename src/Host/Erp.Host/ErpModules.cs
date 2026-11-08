@@ -2,6 +2,7 @@ using Erp.Kernel.Modules;
 using Erp.Modules.Audit;
 using Erp.Modules.Currency;
 using Erp.Modules.Contacts;
+using Erp.Modules.CustomFields;
 using Erp.Modules.Identity;
 using Erp.Modules.Jobs;
 using Erp.Modules.Lists;
@@ -22,6 +23,8 @@ public static class ErpModules
         new CurrencyModule(),
         new JobsModule(),
         new ContactsModule(),
+        // After the modules whose records get custom fields (it lists them as its kinds of record).
+        new CustomFieldsModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.
         new ListsModule(),
         // After every module that registers audited records (they are the audit log's record types).

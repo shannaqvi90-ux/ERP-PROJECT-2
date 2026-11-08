@@ -638,7 +638,12 @@ public static class ListAnswers
         var walks = new[] { new Walk([], []), new Walk([], []) };
         var clients = new[] { a, b };
         var failed = new bool[2];
-        for (var page = 0; page < maxPages && walks.Any(w => !w.Done); page++)
+        // The bound only stops a cursor that never ends. It follows each list's real size: the
+        // largest total any page of the walk has answered (at least twice the pages that holds,
+        // and a thousand more), never less than the caller's floor. Every row is still walked and
+        // judged; a page whose total is not the walk's row count is reported by the caller.
+        var seenTotal = 0;
+        for (var page = 0; page < Math.Max(maxPages, 2 * (seenTotal / Math.Max(take, 1)) + 1000) && walks.Any(w => !w.Done); page++)
         {
             for (var i = 0; i < 2; i++)
             {
@@ -657,6 +662,10 @@ public static class ListAnswers
                     continue;
                 }
                 walk.Pages.Add(answer);
+                if (answer.TryGetProperty("total", out var total) && total.ValueKind == JsonValueKind.Number && total.TryGetInt32(out var t))
+                {
+                    seenTotal = Math.Max(seenTotal, t);
+                }
                 walk.Rows.AddRange(answer.GetProperty("items").EnumerateArray());
                 walk.Next = answer.TryGetProperty("next", out var n) && n.ValueKind == JsonValueKind.String ? n.GetString() : null;
                 walk.Done = walk.Next is null;

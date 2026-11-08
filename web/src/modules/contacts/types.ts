@@ -1,4 +1,5 @@
 /** The contacts directory as the API answers it (src/Modules/Contacts). */
+import type { CustomFieldEntry } from "../../kernel/forms/customFields";
 
 export type ContactKind = "organisation" | "person";
 
@@ -41,6 +42,10 @@ export type Contact = {
   createdAt: string;
   updatedAt: string;
   version: number;
+  /** The contact's values of the workspace's custom fields, by field key (p09). */
+  customFields?: Record<string, unknown>;
+  /** The workspace's custom fields of contacts with this contact's values: what the form shows. */
+  customFieldDefinitions?: CustomFieldEntry[];
 };
 
 export type ContactRow = {
@@ -76,7 +81,7 @@ export type ContactDuplicate = {
   matches: ("name" | "email" | "phone" | "taxRegistrationNumber")[];
 };
 
-export type ContactDefaults = { country: string; defaultCurrency: string; baseCurrency: string };
+export type ContactDefaults = { country: string; defaultCurrency: string; baseCurrency: string; customFieldDefinitions?: CustomFieldEntry[] };
 
 export type ListPage<T> = { items: T[]; total: number; next: string | null };
 
