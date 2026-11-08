@@ -1,0 +1,11 @@
+(a) set prefix CN-{YYYY}-{MM}- yearly: (200, '{"id":"01a1b9ab-cc06-7e22-9eac-c4a4a70818fb","companyId":"018dca08-f081-766c-92a4-b5dabeca9b63","companyCode":"ALN-DXB","companyNameEn":"Al Noor Trading LLC","companyNameAr":"شركة النور للتجارة ذ.م.م","documentType":"sales.creditNote","nameEn":"Tax credit note","nameAr":"إشعار دائن ضريبي","prefix":"')
+counter upd UPDATE 0
+ 
+counter ok
+  preview: CN-2026-11-00004
+(a) switch to monthly -> (400, '{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-6eae84f0ab45f4f5b9992fa04f397c9c-327d0d962397a7f6-00","errors":{"prefix":[{"code":"numberingPatternRepeatsNumber","message":"This change could give CN-2026-10-00001 again, a numb')
+(b) set reset never (prefix CN-{YYYY}-): (200, '{"id":"01a1b9ab-cc11-7cf2-a6e6-1a47540b9f21","companyId":"018dca08-f085-7181-b044-1ee2879acf5b","companyCode":"ALN-FZE","companyNameEn":"Al Noor General Trading FZE","companyNameAr":"النور للتجارة العامة م.م.ح","documentType":"sales.creditNote","nameEn":"Tax credit note","nameAr":"إشعار دائن ضريبي",')
+counter ok
+  preview: CN-2026-00004
+(b) switch to yearly -> (400, '{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-f3f112aed2524144626d8b003ee324cd-ab3eacd4fb406e55-00","errors":{"prefix":[{"code":"numberingPatternRepeatsNumber","message":"This change could give CN-2025-00001 again, a number ')
+(c) control padding 6 on (b) -> (200, '{"id":"01a1b9ab-cc11-7cf2-a6e6-1a47540b9f21","companyId":"018dca08-f085-7181-b044-1ee2879acf5b","companyCode":"ALN-FZE","companyNameEn":"Al Noor General Trading FZE","companyNameAr":"النور للتجارة العامة م.م.ح","documentType":"sales.creditNote","nameEn":"Tax credit note","nameAr":"إشعار دائن ضريبي",')

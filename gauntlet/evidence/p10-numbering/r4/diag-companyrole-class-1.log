@@ -1,0 +1,40 @@
+Test run for /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.29]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.69]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.88]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [3 s]
+[xUnit.net 00:00:48.94]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [FAIL]
+[xUnit.net 00:00:48.94]       Answers carrying company Y's records:
+[xUnit.net 00:00:48.94]       GET /api/audit/records/01a1bac3-5ae4-7787-91d8-9c54769929d7: answered 200 carrying company Y's '01a1bac3-5ae4-7787-91d8-9c54769929d7' BODY={"recordType":null,"items":[{"id":"fa114061-fc48-47ed-8927-7d70ed6c7f5a","occurredAt":"2026-11-08T10:45:27.400586+00:00","actorId":"01a1bac3-5885-713f-9181-1e3fd3dffc9e","actorName":"Manager of X 328ea4b8","actorNameAr":null,"actorKind":"user","action":"insert","changes":[{"field":"branch_id","old":null,"new":"0191260e-f482-74a3-a3ad-b1572d979970"},{"field":"company_id","old":null,"new":"0191260e-f481-73f8-b58c-02136d9b546d"},{"field":"id","old":null,"new":"01a1bac3-5ae4-7787-91d8-9c54769929d7"},{"field":"recent_company_ids","old":null,"new":["0191260e-f481-73f8-b58c-02136d9b546d"]},{"field":"user_id","old":null,"new":"01a1bac3-5885-713f-9181-1e3fd3dffc9e"}]}],"next":null,"names":{"01a1bac3-5885-713f-9181-1e3fd3dffc9e":{"name":"Manager of X 328ea4b8","nameAr":null},"0191260e-f482-74a3-a3ad-b1572d979970":{"name":"Alpha Trading branch one","nameAr":"التجارة فرع أول"},"0191260e-f481-73f8-b58c-02136d9b546d":{"name":"Alpha Trading","nameAr":"التجارة"}}}
+[xUnit.net 00:00:48.94]       Stack Trace:
+[xUnit.net 00:00:48.94]         /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs(255,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y()
+[xUnit.net 00:00:48.94]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:48.94]       Output:
+[xUnit.net 00:00:48.95]         214 endpoints, 3913 requests, 152 one-field variants on POST /api/tenancy/branches, PUT /api/numbering/sequences/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [24 s]
+  Error Message:
+   Answers carrying company Y's records:
+GET /api/audit/records/01a1bac3-5ae4-7787-91d8-9c54769929d7: answered 200 carrying company Y's '01a1bac3-5ae4-7787-91d8-9c54769929d7' BODY={"recordType":null,"items":[{"id":"fa114061-fc48-47ed-8927-7d70ed6c7f5a","occurredAt":"2026-11-08T10:45:27.400586+00:00","actorId":"01a1bac3-5885-713f-9181-1e3fd3dffc9e","actorName":"Manager of X 328ea4b8","actorNameAr":null,"actorKind":"user","action":"insert","changes":[{"field":"branch_id","old":null,"new":"0191260e-f482-74a3-a3ad-b1572d979970"},{"field":"company_id","old":null,"new":"0191260e-f481-73f8-b58c-02136d9b546d"},{"field":"id","old":null,"new":"01a1bac3-5ae4-7787-91d8-9c54769929d7"},{"field":"recent_company_ids","old":null,"new":["0191260e-f481-73f8-b58c-02136d9b546d"]},{"field":"user_id","old":null,"new":"01a1bac3-5885-713f-9181-1e3fd3dffc9e"}]}],"next":null,"names":{"01a1bac3-5885-713f-9181-1e3fd3dffc9e":{"name":"Manager of X 328ea4b8","nameAr":null},"0191260e-f482-74a3-a3ad-b1572d979970":{"name":"Alpha Trading branch one","nameAr":"التجارة فرع أول"},"0191260e-f481-73f8-b58c-02136d9b546d":{"name":"Alpha Trading","nameAr":"التجارة"}}}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y() in /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs:line 255
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 214 endpoints, 3913 requests, 152 one-field variants on POST /api/tenancy/branches, PUT /api/numbering/sequences/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}
+
+
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [6 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [1 s]
+[xUnit.net 00:01:16.01]   Finished:    Erp.Gates.Tests (ID = 'dba294697cb005e29c648485b182b9d3ab60876ed3f87f78f787c89016f9c8e0')
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [19 s]
+
+Test Run Failed.
+Total tests: 6
+     Passed: 5
+     Failed: 1
+ Total time: 1.2750 Minutes

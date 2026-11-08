@@ -1,0 +1,40 @@
+Test run for /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.39]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.87]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.11]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [3 s]
+[xUnit.net 00:01:08.10]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [FAIL]
+[xUnit.net 00:01:08.10]       Answers carrying company Y's records:
+[xUnit.net 00:01:08.10]       GET /api/audit/records/01a1babb-8e0c-7962-88b4-e72f70d5502c: answered 200 carrying company Y's '01a1babb-8e0c-7962-88b4-e72f70d5502c'
+[xUnit.net 00:01:08.10]       Stack Trace:
+[xUnit.net 00:01:08.10]         /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs(255,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y()
+[xUnit.net 00:01:08.11]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:08.11]       Output:
+[xUnit.net 00:01:08.11]         214 endpoints, 3913 requests, 152 one-field variants on POST /api/tenancy/branches, PUT /api/numbering/sequences/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [36 s]
+  Error Message:
+   Answers carrying company Y's records:
+GET /api/audit/records/01a1babb-8e0c-7962-88b4-e72f70d5502c: answered 200 carrying company Y's '01a1babb-8e0c-7962-88b4-e72f70d5502c'
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y() in /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs:line 255
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 214 endpoints, 3913 requests, 152 one-field variants on POST /api/tenancy/branches, PUT /api/numbering/sequences/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}
+
+
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [8 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [1 s]
+[xUnit.net 00:01:42.52]   Finished:    Erp.Gates.Tests (ID = 'dba294697cb005e29c648485b182b9d3ab60876ed3f87f78f787c89016f9c8e0')
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [23 s]
+
+Test Run Failed.
+Total tests: 6
+     Passed: 5
+     Failed: 1
+ Total time: 1.7184 Minutes

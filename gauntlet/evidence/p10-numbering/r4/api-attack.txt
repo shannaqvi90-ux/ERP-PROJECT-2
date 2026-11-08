@@ -1,0 +1,24 @@
+A sees 44 B sees 22
+overlap ids 0
+B tax invoice 01a1b9ac-a38d-73d0-9e9c-29a8b5958ce5 INV-{YYYY}- GSF-SHJ 296493115
+A GET B seq -> 404
+A PUT B seq -> 404 b'{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-f7926466a2bfd2e3a91264dc6fcb38d4-6aec419e0f5c65fc-00"}'
+B own seq after attack 200 INV-{YYYY}-
+A list &companyId=018f6605-b081-7a94-ab46-556f0c334e39 -> 200 44 B rows: 0
+A list &tenantId=x -> 200 44 B rows: 0
+A list &search=GSF-SHJ -> 200 0 B rows: 0
+A list &filter=companyCode eq 'GSF-SHJ' -> 200 0 B rows: 0
+A list &filter=companyId eq '018f6605-b081-7a94-ab46-556f0c334e39' -> 200 0 B rows: 0
+header X-Tenant -> 404
+header X-Tenant-Id -> 404
+header X-Company -> 404
+header X-Company-Id -> 404
+header X-Erp-Company -> 404
+header X-Erp-Tenant -> 404
+export csv 200 3867 contains B marker: False
+export pdf 200 18661 contains B marker: False
+export xlsx 200 4274 contains B marker: False
+views 200 b'{"items":[{"id":"01a1b9ab-0613-7c2a-9ae2-b53305d19704","listKey":"numbering.sequences","name":"Team view","isShared":true,"isDefault":false,"isMine":f'
+viewer list/get/put/export -> [200, 200, 403, 200]
+noaccess list/get/put/export -> [403, 403, 403, 403]
+anon list/get/put/export -> [401, 401, 401, 401]

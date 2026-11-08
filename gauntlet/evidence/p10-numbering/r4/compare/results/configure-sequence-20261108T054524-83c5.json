@@ -1,0 +1,319 @@
+{
+  "schema": 1,
+  "run_id": "configure-sequence-20261108T054524-83c5",
+  "instrument": 12,
+  "task": "configure-sequence",
+  "task_title": "Configure a document sequence",
+  "product": "ours",
+  "status": "invalid",
+  "goal": "Make new purchase orders numbered with the prefix \"PO-2026-\" and 6 digits (for example PO-2026-000123).",
+  "done_when": "The purchase order sequence is saved with that prefix and size; the back end confirms the next number would read like PO-2026-000123.",
+  "started_at": "2026-11-08T05:45:26.316Z",
+  "finished_at": "2026-11-08T05:45:41.541Z",
+  "environment": {
+    "base_url": "http://localhost:21050",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 13,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.582,
+    "system_wait_seconds": 0.274,
+    "human_seconds": 12.04,
+    "human_plus_wait_seconds": 12.314,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 2,
+      "B": 4,
+      "H": 1,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Document numbering (navigation)",
+      "keystrokes": 0,
+      "at": 0.051,
+      "took": 0.143,
+      "began": 0.002,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "the purchase order row",
+      "keystrokes": 0,
+      "at": 0.502,
+      "took": 0.36,
+      "began": 0.402,
+      "screen": "/numbering/sequences",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the prefix",
+      "keystrokes": 10,
+      "at": 0.891,
+      "took": 0.125,
+      "text": "PO-2026-",
+      "same_field": false,
+      "screen": "/numbering/sequences/01a1b9ab-cc07-7ea8-907e-273390e26273",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "to the digits",
+      "keystrokes": 1,
+      "at": 1.017,
+      "took": 0.012,
+      "chord": "Tab",
+      "screen": "/numbering/sequences/01a1b9ab-cc07-7ea8-907e-273390e26273",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "the digits",
+      "keystrokes": 1,
+      "at": 1.031,
+      "took": 0.01,
+      "text": "6",
+      "same_field": false,
+      "screen": "/numbering/sequences/01a1b9ab-cc07-7ea8-907e-273390e26273",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "save (Enter)",
+      "keystrokes": 1,
+      "at": 2.485,
+      "took": 0.025,
+      "chord": "Enter",
+      "screen": "/numbering/sequences/01a1b9ab-cc07-7ea8-907e-273390e26273",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "sequences list",
+      "at": 0.199,
+      "seconds": 0.201
+    },
+    {
+      "label": "prefix field focused, its text chosen",
+      "at": 0.863,
+      "seconds": 0.01
+    },
+    {
+      "label": "saved",
+      "at": 2.515,
+      "seconds": 0.063
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "5ee3630446b053d5.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/5ee3630446b053d5.jpg"
+    },
+    {
+      "moment": "sequence edited",
+      "file": "0ceceac9d53b8481.jpg",
+      "at": 1.043,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/0ceceac9d53b8481.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "1622852416c792ae.jpg",
+      "at": 2.582,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/1622852416c792ae.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "prefix": "PO-2026-",
+      "padding": 6,
+      "next_number": "PO-2026-000148"
+    }
+  },
+  "path_notes": "Document numbering (navigation) > Purchase order (its panel opens on the prefix, chosen) > type the prefix > Tab > type the digits > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/configure-sequence.mjs",
+    "sha256": "2012c5585c1536a14070cc9d8e469c83ae68cdcf58587b651100ee6ee5494cf2"
+  },
+  "task_notes": "Set-up puts the sequence back to its default (prefix P, 5 digits); clean-up does the same. Odoo shows its sequences only in developer mode, which the path switches on.",
+  "error": "action outside the clock (set-up): the page changed what it shows without a counted step causing it (1 change; the first 0.485 s into the measured part, a StyleRecalcInvalidationTracking: a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.041,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.023,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /api/audit/records/01a1b9ab-cc07-7ea8-907e-273390e26273 (fetch)",
+      "GET /api/numbering/sequences (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "571b888069aa4e9d",
+    "elements": 879
+  },
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.032
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/numbering/sequences"
+    ],
+    "read_after": [
+      "GET /api/numbering/sequences"
+    ],
+    "changed": [
+      "GET /api/numbering/sequences"
+    ],
+    "changed_parts": {
+      "GET /api/numbering/sequences": [
+        "items.0.prefix",
+        "items.0.padding",
+        "items.0.nextNumber",
+        "items.0.updatedAt",
+        "items.0.version"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/numbering/sequences"
+    ],
+    "end_state": [
+      "GET /api/numbering/sequences [items.prefix, items.padding]"
+    ],
+    "end_state_changed": {
+      "GET /api/numbering/sequences": [
+        "items.0.prefix",
+        "items.0.padding"
+      ]
+    },
+    "end_state_gained": [
+      "PO-2026-"
+    ],
+    "writes_sent": [
+      "PUT /api/numbering/sequences/01a1b9ab-cc07-7ea8-907e-273390e26273"
+    ],
+    "writes_caused": [
+      {
+        "write": "PUT /api/numbering/sequences/01a1b9ab-cc07-7ea8-907e-273390e26273",
+        "at": 2.504854137000002,
+        "by_step": 6,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.012,
+          "chain": [
+            "input of step 5"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 29,
+    "not_caused": 1,
+    "enforced": true,
+    "not_caused_first": [
+      {
+        "at": 0.485,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 2.601,
+      "by_step": 5,
+      "chain": [
+        "the answer to GET /api/numbering/sequences after 0.018 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch PUT /api/numbering/sequences/01a1b9ab-cc07-7ea8-907e-273390e26273"
+  ]
+}
