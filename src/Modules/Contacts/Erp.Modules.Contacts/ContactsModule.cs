@@ -1,4 +1,5 @@
 using Erp.Kernel.Audit;
+using Erp.Kernel.Attachments;
 using Erp.Kernel.CustomFields;
 using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
@@ -49,6 +50,12 @@ public sealed class ContactsModule : ErpModule
                 .Select(c => new { c.Id, c.NameEn, c.NameAr }).ToListAsync(ct)).ToDictionary(c => c.Id, c => (c.NameEn, c.NameAr)),
             LookupEndpoint: "/api/contacts/contacts", LabelProperty: "nameEn", LabelPropertyAr: "nameAr",
             AllIds: async (services, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().OrderBy(c => c.Id).Select(c => c.Id).ToListAsync(ct)));
+        // Files can be attached to contacts (p11): the attachments module serves them under the contact's
+        // own permissions (read to see, update to add and delete) and the contact form shows them.
+        module.AttachmentRecord(new AttachmentRecordType(RecordType, "contacts.menu.contacts", ContactsPermissions.ContactsRead, ContactsPermissions.ContactsUpdate,
+            Exists: async (services, id, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().AnyAsync(c => c.Id == id, ct),
+            FirstIds: async (services, count, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().OrderBy(c => c.Id).Select(c => c.Id).Take(count).ToListAsync(ct),
+            ListPath: "/api/contacts/contacts"));
         module.Seeder<ContactsSeeder>();
     }
 }

@@ -1,4 +1,5 @@
 using Erp.Kernel.Modules;
+using Erp.Modules.Attachments;
 using Erp.Modules.Audit;
 using Erp.Modules.Currency;
 using Erp.Modules.Contacts;
@@ -25,6 +26,8 @@ public static class ErpModules
         new ContactsModule(),
         // After the modules whose records get custom fields (it lists them as its kinds of record).
         new CustomFieldsModule(),
+        // After the modules whose records take files (the attachments it serves are theirs).
+        new AttachmentsModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.
         new ListsModule(),
         // After every module that registers audited records (they are the audit log's record types).
