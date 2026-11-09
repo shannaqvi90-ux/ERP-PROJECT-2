@@ -10,8 +10,9 @@ Shared gate machinery (p00's) is not edited. The gates reach attachments in thre
 3. **A registered probe** (`AttachmentsIsolationProbe`, `module.IsolationProbe<>()`, kind `File`): signed in as tenant A it attaches a file to
    its own first contact (found through the kind's `ListPath`), then tries every tenant B id as record and as file under both records
    (list, content with and without `inline`, delete, upload), with tenant-switch headers, with file names and route segments that try
-   to leave the folder or name another tenant's folder or key, and finally checks that its own file reads back, that tenant B's file (one the
-   probe has tenant B upload, and the seeded ones, which carry B's canary in name and text) is unchanged and has no planted file, and that
+   to leave the folder or name another tenant's folder or key, and finally checks that its own file reads back, that tenant B's seeded file (found
+   through tenant B's own list; the probe writes nothing as tenant B, whose rows the gate also watches for changes; the seeded files carry B's canary in
+   name and text) is unchanged and has no planted file next to it, and that
    no stored name keeps a separator. Every answer's text, bytes and headers go back to the gate, which looks for B's ids and canaries.
    An attempt that gets no answer, or any of the checks above failing, is a `Failure`, which fails the gate.
 

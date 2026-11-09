@@ -26,7 +26,7 @@ const contactId = (page: Page) => /\/contacts\/contacts\/([0-9a-f-]{36})/.exec(p
 async function clean(page: Page, id: string, prefix: string) {
   const list = (await (await page.request.get(`/api/attachments/contacts.contacts/${id}/files`)).json()) as { items: { id: string; name: string }[] };
   for (const file of list.items.filter((f) => f.name.startsWith(prefix))) {
-    await page.request.delete(`/api/attachments/contacts.contacts/${id}/files/${file.id}`, { headers: { "X-Erp-Request": "1" } });
+    await page.request.delete(`/api/attachments/contacts.contacts/files/${file.id}`, { headers: { "X-Erp-Request": "1" } });
   }
 }
 

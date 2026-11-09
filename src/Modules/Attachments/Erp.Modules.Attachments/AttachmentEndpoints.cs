@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Erp.Kernel.Attachments;
 using Erp.Kernel.Data;
+using Erp.Kernel.Hosting;
 using Erp.Kernel.Http;
 using Erp.Kernel.Localization;
 using Erp.Kernel.Modules;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Validator = Erp.Kernel.Http.Validator;
 
 namespace Erp.Modules.Attachments;
 
@@ -30,6 +33,11 @@ public sealed record AttachmentDto(
     Guid? CreatedBy,
     string? CreatedByName,
     string? CreatedByNameAr);
+
+/// <summary>A file sent as JSON: its name with the extension, and its bytes as base64. The body of an upload may instead be the bytes themselves.</summary>
+public sealed record UploadFileRequest(
+    [property: ApiExample("licence-copy.txt"), StringLength(AttachmentLimits.MaxNameLength)] string? Name,
+    [property: ApiExample("TGljZW5jZSBjb3B5Cg=="), Description("The file's bytes, base64.")] string? Data);
 
 /// <summary>A record's files and the limits an upload must keep.</summary>
 public sealed record AttachmentListDto(
@@ -58,17 +66,18 @@ public static class AttachmentEndpoints
         {
             var record = type;
             var baseName = "attachments." + record.Table;
-            var root = $"/{record.Table}/{{id:guid}}/files";
+            var root = $"/{record.Table}";
 
-            group.MapGet(root, (Guid id, AttachmentsDbContext db, IUserDirectory users, HttpContext http, CancellationToken ct) => ListAsync(record, id, db, users, http, ct))
+            group.MapGet(root + "/{id:guid}/files", (Guid id, AttachmentsDbContext db, IUserDirectory users, HttpContext http, CancellationToken ct) => ListAsync(record, id, db, users, http, ct))
                 .WithName(baseName + ".list")
-                .WithSummary($"The files attached to a record of kind {record.Table}, newest first, with the limits an upload must keep.")
+                .WithSummary($"The files attached to a record of kind {record.Table} (id is the record), newest first, with the limits an upload must keep.")
                 .RequirePermission(record.ReadPermission);
 
-            group.MapPost(root, (Guid id, [FromHeader(Name = NameHeader), Description("The file's name with its extension, as the user knows it, percent-encoded as UTF-8 (folders are dropped).")] string? name, AttachmentsDbContext db, IAttachmentStore store,
-                    ITenantContext tenant, IUserDirectory users, HttpContext http, CancellationToken ct) => UploadAsync(record, id, name, db, store, tenant, users, http, ct))
+            group.MapPost(root + "/{id:guid}/files", (Guid id, [FromHeader(Name = NameHeader), Description("The file's name with its extension, as the user knows it, percent-encoded as UTF-8 (folders are dropped). Used when the body is the file's bytes; with a JSON body the name is in the body.")] string? name,
+                    AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, IUserDirectory users, HttpContext http, CancellationToken ct) => UploadAsync(record, id, name, db, store, tenant, users, http, ct))
                 .WithName(baseName + ".upload")
-                .WithSummary($"Attach one file to a record of kind {record.Table}: the request body is the file's bytes (any content type), the X-File-Name header is its name. Several files are several calls. Checked on the server: size, type from the extension and the bytes, count per record.")
+                .WithSummary($"Attach one file to a record of kind {record.Table} (id is the record). Either the request body is the file's bytes (any content type except JSON; the X-File-Name header is its name; what the screen sends) or it is JSON with the name and the bytes as base64 (for API clients). Several files are several calls. Checked on the server: size, type from the extension and the bytes, count per record.")
+                .Accepts<UploadFileRequest>("application/json")
                 .Accepts<byte[]>("application/octet-stream", "*/*")
                 .ProducesValidationProblem()
                 .ProducesProblem(StatusCodes.Status404NotFound)
@@ -78,19 +87,18 @@ public static class AttachmentEndpoints
                 .Surface(SurfaceKind.File)
                 .RequirePermission(record.WritePermission);
 
-            group.MapGet(root + "/{fileId:guid}/content", (Guid id, Guid fileId, [FromQuery, Description("True to show an image or PDF in the page; otherwise the file is offered for saving.")] bool? inline,
-                    AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => ContentAsync(record, id, fileId, inline == true, db, store, tenant, http, ct))
+            group.MapGet(root + "/files/{id:guid}/content", (Guid id, [FromQuery, Description("True to show an image or PDF in the page; otherwise the file is offered for saving.")] bool? inline,
+                    AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => ContentAsync(record, id, inline == true, db, store, tenant, http, ct))
                 .WithName(baseName + ".content")
-                .WithSummary($"The bytes of one file of a record of kind {record.Table}, to save or (images and PDF, inline=true) to show.")
+                .WithSummary($"The bytes of one file (id is the file) of a record of kind {record.Table}, to save or (images and PDF, inline=true) to show.")
                 .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .Surface(SurfaceKind.File)
                 .RequirePermission(record.ReadPermission);
 
-            group.MapDelete(root + "/{fileId:guid}", (Guid id, Guid fileId, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => DeleteAsync(record, id, fileId, db, store, tenant, http, ct))
+            group.MapDelete(root + "/files/{id:guid}", (Guid id, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => DeleteAsync(record, id, db, store, tenant, http, ct))
                 .WithName(baseName + ".delete")
-                .WithSummary($"Remove one file of a record of kind {record.Table}; its bytes are removed with it. The removal stays in the audit trail.")
-                .ProducesProblem(StatusCodes.Status404NotFound)
+                .WithSummary($"Remove one file (id is the file) of a record of kind {record.Table}; its bytes are removed with it and the removal stays in the audit trail. Deleting a file that is not there (already removed, or never there) answers 204 as well.")
                 .Surface(SurfaceKind.File)
                 .RequirePermission(record.WritePermission);
         }
@@ -116,7 +124,24 @@ public static class AttachmentEndpoints
         {
             return Problems.NotFound(http);
         }
-        var name = FileTypes.CleanName(Decoded(rawName), AttachmentLimits.MaxNameLength);
+        // The body is the file's bytes, or JSON holding the name and the bytes as base64.
+        var json = http.Request.HasJsonContentType();
+        if (http.Request.ContentLength is { } length && length > (json ? JsonBodyLimit : AttachmentLimits.MaxFileBytes))
+        {
+            return TooLarge(http);
+        }
+        Stream body = http.Request.Body;
+        if (json)
+        {
+            var parsed = await ReadJsonAsync(http, cancellationToken);
+            if (parsed.Problem is not null)
+            {
+                return parsed.Problem;
+            }
+            rawName = parsed.Name;
+            body = new MemoryStream(parsed.Bytes ?? []);
+        }
+        var name = FileTypes.CleanName(json ? rawName : Decoded(rawName), AttachmentLimits.MaxNameLength);
         var validator = new Validator(http).Must(name is not null, "name", "attachmentsName");
         if (!validator.IsValid)
         {
@@ -130,19 +155,17 @@ public static class AttachmentEndpoints
                 ["name"] = [new FieldError("attachmentsType", Problems.Create(http, StatusCodes.Status415UnsupportedMediaType, "attachmentsType").Title ?? "attachmentsType")],
             });
         }
-        if (http.Request.ContentLength is { } length && length > AttachmentLimits.MaxFileBytes)
-        {
-            return TooLarge(http);
-        }
         if (await db.Files.CountAsync(f => f.RecordType == record.Table && f.RecordId == id, cancellationToken) >= AttachmentLimits.MaxFilesPerRecord)
         {
             return Problems.Result(http, StatusCodes.Status409Conflict, "attachmentsTooMany", null, AttachmentLimits.MaxFilesPerRecord);
         }
 
+        // The tenant is read now: the unit of work has ended by the time the response completes.
+        var tenantId = tenant.TenantId;
         StoredBlob blob;
         try
         {
-            blob = await store.SaveAsync(tenant.TenantId, http.Request.Body, AttachmentLimits.MaxFileBytes, cancellationToken);
+            blob = await store.SaveAsync(tenantId, body, AttachmentLimits.MaxFileBytes, cancellationToken);
         }
         catch (BlobTooLargeException)
         {
@@ -154,7 +177,7 @@ public static class AttachmentEndpoints
         {
             if (http.Response.StatusCode >= StatusCodes.Status300MultipleChoices)
             {
-                await store.DeleteAsync(tenant.TenantId, blob.Key, CancellationToken.None);
+                await store.DeleteAsync(tenantId, blob.Key, CancellationToken.None);
             }
         });
         if (blob.Size == 0)
@@ -164,7 +187,7 @@ public static class AttachmentEndpoints
                 ["file"] = [new FieldError("attachmentsEmpty", Problems.Create(http, StatusCodes.Status400BadRequest, "attachmentsEmpty").Title ?? "attachmentsEmpty")],
             });
         }
-        if (!await FileTypes.MatchesAsync(kind, blob.Head, () => store.OpenAsync(tenant.TenantId, blob.Key, cancellationToken)))
+        if (!await FileTypes.MatchesAsync(kind, blob.Head, () => store.OpenAsync(tenantId, blob.Key, cancellationToken)))
         {
             return Problems.Result(http, StatusCodes.Status415UnsupportedMediaType, "attachmentsContent", new Dictionary<string, FieldError[]>
             {
@@ -185,7 +208,50 @@ public static class AttachmentEndpoints
         db.Files.Add(file);
         await db.SaveChangesAsync(cancellationToken);
         var names = tenant.ActorId is { } actor ? await users.GetAsync([actor], cancellationToken) : new Dictionary<Guid, UserSummary>();
-        return TypedResults.Created($"/api/attachments/{record.Table}/{id}/files/{file.Id}/content", ToDto(file, names));
+        return TypedResults.Created($"/api/attachments/{record.Table}/files/{file.Id}/content", ToDto(file, names));
+    }
+
+    /// <summary>Most a JSON body may hold: a file of the limit as base64 (four characters for three bytes) and its name.</summary>
+    private const long JsonBodyLimit = AttachmentLimits.MaxFileBytes / 3 * 4 + 4096;
+
+    /// <summary>The name and the bytes of a JSON upload, or the problem to answer.</summary>
+    private static async Task<(string? Name, byte[]? Bytes, ProblemHttpResult? Problem)> ReadJsonAsync(HttpContext http, CancellationToken cancellationToken)
+    {
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while ((read = await http.Request.Body.ReadAsync(chunk, cancellationToken)) > 0)
+        {
+            if (buffer.Length + read > JsonBodyLimit)
+            {
+                return (null, null, TooLarge(http));
+            }
+            buffer.Write(chunk, 0, read);
+        }
+        UploadFileRequest? request;
+        try
+        {
+            request = System.Text.Json.JsonSerializer.Deserialize<UploadFileRequest>(buffer.ToArray(), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            request = null;
+        }
+        if (request is null)
+        {
+            return (null, null, new Validator(http).Must(false, "body", "attachmentsBody").ToResult());
+        }
+        byte[]? bytes = null;
+        if (request.Data is { } text)
+        {
+            var sized = new byte[text.Length / 4 * 3 + 3];
+            if (!Convert.TryFromBase64String(text, sized, out var written))
+            {
+                return (null, null, new Validator(http).Must(false, "data", "attachmentsData").ToResult());
+            }
+            bytes = sized[..written];
+        }
+        return (request.Name, bytes ?? [], null);
     }
 
     /// <summary>The header's name, percent-decoded; null when it is not valid encoded text.</summary>
@@ -204,14 +270,19 @@ public static class AttachmentEndpoints
     private static ProblemHttpResult TooLarge(HttpContext http) =>
         Problems.Result(http, StatusCodes.Status413PayloadTooLarge, "attachmentsTooLarge", null, AttachmentLimits.MaxFileBytes / (1024 * 1024));
 
-    private static async Task<Results<FileStreamHttpResult, ProblemHttpResult>> ContentAsync(
-        AttachmentRecordType record, Guid id, Guid fileId, bool inline, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken cancellationToken)
+    /// <summary>The file with this id of this kind of record, and its record visible to the caller; null otherwise (no such file, another
+    /// workspace's, another kind's, or a record the caller's company scope hides).</summary>
+    private static async Task<AttachedFile?> FindAsync(AttachmentRecordType record, Guid fileId, AttachmentsDbContext db, HttpContext http, bool tracked, CancellationToken cancellationToken)
     {
-        if (!await record.Exists(http.RequestServices, id, cancellationToken))
-        {
-            return Problems.NotFound(http);
-        }
-        var file = await db.Files.AsNoTracking().SingleOrDefaultAsync(f => f.Id == fileId && f.RecordType == record.Table && f.RecordId == id, cancellationToken);
+        var query = tracked ? db.Files.AsQueryable() : db.Files.AsNoTracking();
+        var file = await query.SingleOrDefaultAsync(f => f.Id == fileId && f.RecordType == record.Table, cancellationToken);
+        return file is not null && await record.Exists(http.RequestServices, file.RecordId, cancellationToken) ? file : null;
+    }
+
+    private static async Task<Results<FileStreamHttpResult, ProblemHttpResult>> ContentAsync(
+        AttachmentRecordType record, Guid fileId, bool inline, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken cancellationToken)
+    {
+        var file = await FindAsync(record, fileId, db, http, tracked: false, cancellationToken);
         var stream = file is null ? null : await store.OpenAsync(tenant.TenantId, file.StorageKey, cancellationToken);
         if (file is null || stream is null)
         {
@@ -225,37 +296,29 @@ public static class AttachmentEndpoints
         headers.ContentDisposition = disposition.ToString();
         headers.XContentTypeOptions = "nosniff";
         headers.CacheControl = "private, no-store";
-        if (show)
+        if (show && file.ContentType == "application/pdf")
         {
-            // Shown in the page: a PDF may sit in a frame of this origin; an image is never run as a page.
-            if (file.ContentType == "application/pdf")
-            {
-                headers.XFrameOptions = "SAMEORIGIN";
-                headers.ContentSecurityPolicy = "frame-ancestors 'self'";
-            }
-            else
-            {
-                headers.ContentSecurityPolicy = "default-src 'none'; sandbox";
-            }
+            // A PDF shown in the page may sit in a frame of this origin (the application's own headers forbid framing everything else).
+            headers.XFrameOptions = "SAMEORIGIN";
+            headers.ContentSecurityPolicy = "frame-ancestors 'self'";
         }
         else
         {
+            // A picture is never run as a page, and a download is never rendered.
             headers.ContentSecurityPolicy = "default-src 'none'; sandbox";
         }
         return TypedResults.Stream(stream, file.ContentType, enableRangeProcessing: false);
     }
 
-    private static async Task<Results<NoContent, ProblemHttpResult>> DeleteAsync(
-        AttachmentRecordType record, Guid id, Guid fileId, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken cancellationToken)
+    private static async Task<NoContent> DeleteAsync(
+        AttachmentRecordType record, Guid fileId, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken cancellationToken)
     {
-        if (!await record.Exists(http.RequestServices, id, cancellationToken))
-        {
-            return Problems.NotFound(http);
-        }
-        var file = await db.Files.SingleOrDefaultAsync(f => f.Id == fileId && f.RecordType == record.Table && f.RecordId == id, cancellationToken);
+        // Deleting what is not there is a success: the file is gone either way, and a caller cannot tell a
+        // file that never existed from another workspace's (row-level security hides it).
+        var file = await FindAsync(record, fileId, db, http, tracked: true, cancellationToken);
         if (file is null)
         {
-            return Problems.NotFound(http);
+            return TypedResults.NoContent();
         }
         db.Files.Remove(file);
         await db.SaveChangesAsync(cancellationToken);

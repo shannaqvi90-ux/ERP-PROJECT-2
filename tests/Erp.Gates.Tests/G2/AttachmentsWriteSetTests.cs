@@ -8,10 +8,11 @@ namespace Erp.Gates.Tests.G2;
 
 /// <summary>
 /// G2, what contacts.contacts.update lets a request write through the attachments endpoints. The generic
-/// write-set gate (<see cref="WriteSets"/>) cannot reach them: an upload takes the file's bytes and name,
-/// not a JSON example, and a delete needs a file that exists, so POST and DELETE under
-/// /api/attachments/ are listed in tests/Gates/write-set-unexercised.txt. This gate sends them itself,
-/// as a user holding exactly the permission the endpoint declares: the audit trail must show one new
+/// write-set gate (<see cref="WriteSets"/>) reaches the upload (its JSON form) but cannot reach the delete:
+/// a delete needs a file that exists, and the upload is nested under the contact rather than a collection of
+/// the files the delete names, so DELETE /api/attachments/.../files/{id} is listed in
+/// tests/Gates/write-set-unexercised.txt. This gate sends both itself, as a user holding exactly the
+/// permission the endpoint declares: the audit trail must show one new
 /// attachments.files row for an upload and the removal of that row for a delete, and nothing else (no
 /// change to the contact), and users holding every other contacts permission, or only the read one,
 /// must be refused with nothing written.
@@ -57,7 +58,7 @@ public sealed class AttachmentsWriteSetTests(AttachmentsWriteSetFixture fixture)
         Assert.Contains("name", added.Single().Columns);
 
         before = await LastAuditIdAsync();
-        using var removed = await writer.DeleteAsync($"/api/attachments/contacts.contacts/{contact}/files/{file}");
+        using var removed = await writer.DeleteAsync($"/api/attachments/contacts.contacts/files/{file}");
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         Assert.Equal([("attachments.files", "delete", (Guid?)file)], (await WritesSinceAsync(before)).Select(w => (w.Table, w.Action, w.Record)));
     }
@@ -76,10 +77,10 @@ public sealed class AttachmentsWriteSetTests(AttachmentsWriteSetFixture fixture)
             using var user = await UserHoldingAsync(admin, $"aws.{held.Replace('.', '-')}", [held]);
             using var add = await UploadAsync(user, contact, "refused.pdf");
             Assert.True(add.StatusCode == HttpStatusCode.Forbidden, $"{held}: attaching got {(int)add.StatusCode}");
-            using var delete = await user.DeleteAsync($"/api/attachments/contacts.contacts/{contact}/files/{file}");
+            using var delete = await user.DeleteAsync($"/api/attachments/contacts.contacts/files/{file}");
             Assert.True(delete.StatusCode == HttpStatusCode.Forbidden, $"{held}: deleting got {(int)delete.StatusCode}");
             using var list = await user.GetAsync($"/api/attachments/contacts.contacts/{contact}/files");
-            using var content = await user.GetAsync($"/api/attachments/contacts.contacts/{contact}/files/{file}/content");
+            using var content = await user.GetAsync($"/api/attachments/contacts.contacts/files/{file}/content");
             var mayRead = held == "contacts.contacts.read";
             Assert.True(mayRead == list.IsSuccessStatusCode, $"{held}: listing got {(int)list.StatusCode}");
             Assert.True(mayRead == content.IsSuccessStatusCode, $"{held}: downloading got {(int)content.StatusCode}");

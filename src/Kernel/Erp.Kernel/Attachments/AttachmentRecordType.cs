@@ -14,8 +14,9 @@ namespace Erp.Kernel.Attachments;
 /// <param name="WritePermission">Adds and deletes a record's files.</param>
 /// <param name="Exists">Whether a record of the caller's workspace has this id (row-level security
 /// limits it): a file is never listed for, or added to, another workspace's record or none.</param>
-/// <param name="FirstIds">The ids of the first records of the workspace in a stable order (seeding
-/// the demo's files); null when the kind offers none.</param>
+/// <param name="FirstIds">The ids of the first records of the workspace in the order the kind's list shows
+/// them (seeding the demo's files on the records a person sees first, and the ones the isolation probe finds on
+/// the list's first page); null when the kind offers none.</param>
 /// <param name="ListPath">The API path of a GET that lists the records, answering <c>items</c> with an
 /// <c>id</c> each (the list contract): the isolation gate's probe finds the caller's own record there.</param>
 public sealed record AttachmentRecordType(

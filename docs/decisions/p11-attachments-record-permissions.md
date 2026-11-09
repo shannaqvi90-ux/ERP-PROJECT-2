@@ -8,8 +8,10 @@ Date: 2026-11-09. Piece: p11-attachments, round 1. Status: accepted.
   readPermission, writePermission, exists, firstIds, listPath))` (kernel, `Erp.Kernel.Attachments`). Contacts registers
   `contacts.contacts` with `contacts.contacts.read` and `contacts.contacts.update`; it is the only change in the contacts module
   besides one line in its form (`AttachmentsSection`). The same pattern as p09's `CustomFieldRecord`.
-- The attachments module maps four endpoints for each registered kind at start, under `/api/attachments/{schema.table}/{id}/files`:
-  list (GET), upload (POST), content (GET `.../{fileId}/content`, `?inline=true` for images and PDF) and delete (DELETE). Each one declares
+- The attachments module maps four endpoints for each registered kind at start: list (GET `/api/attachments/{schema.table}/{id}/files`, `id` the
+  record), upload (POST, the same address), content (GET `/api/attachments/{schema.table}/files/{id}/content`, `id` the file, `?inline=true` for
+  images and PDF) and delete (DELETE `/api/attachments/{schema.table}/files/{id}`). A file is addressed by its own id: the row knows its record,
+  so there is no pairing of a record id and a file id to get wrong, and the shared gates' generic writes (a create, then a delete by id) reach them. Each one declares
   the record's own permission, so the G2 gates see ordinary, reviewed permissions: `tests/Gates/endpoint-permissions/attachments.txt`
   lists the four contacts lines. A new kind adds four lines there; nothing passes unreviewed.
 - The module has no permission of its own (a dead permission fails G2). Its audit kind (`attachments.files`) is read with

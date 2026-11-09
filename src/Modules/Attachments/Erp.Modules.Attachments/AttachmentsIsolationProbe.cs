@@ -93,7 +93,8 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
         {
             var root = $"/api/attachments/{type.Table}";
 
-            // The records and files that exist before the attack: the attacker's own, and the victim's.
+            // The records and files that exist before the attack: the attacker's own, and the victim's (its seeded ones: the probe
+            // writes nothing as the victim, so tenant B's data is the same before and after).
             var ownRecord = await FirstRecordAsync(context.Attacker, type.ListPath!, cancellationToken);
             if (ownRecord is null)
             {
@@ -108,46 +109,45 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
                 continue;
             }
 
+            var realIds = new List<Guid>();
             Guid? victimRecord = null;
             Guid? victimFile = null;
-            (string Name, byte[] Bytes)? victimBytes = null;
-            if (context.Victim is not null && await FirstRecordAsync(context.Victim, type.ListPath!, cancellationToken) is { } theirRecord)
+            byte[]? victimBytes = null;
+            if (context.Victim is not null)
             {
-                victimRecord = theirRecord;
-                var canary = context.VictimStrings.FirstOrDefault(s => s.Length >= 6 && s.All(c => c < 128)) ?? "tenant-b-file";
-                var bytes = Encoding.UTF8.GetBytes($"tenant B private file {canary}");
-                var uploaded = await Send(context.Victim, HttpMethod.Post, $"{root}/{theirRecord}/files", bytes, Named("victim-private.txt"), record: false);
-                victimFile = uploaded.Status == HttpStatusCode.Created ? ReadId(uploaded.Body) : null;
-                victimBytes = ("victim-private.txt", bytes);
+                // The victim's seeded files sit on some of its records: the first one of its list's first page that has any.
+                foreach (var theirRecord in await RecordsAsync(context.Victim, type.ListPath!, cancellationToken))
+                {
+                    var theirs = await Send(context.Victim, HttpMethod.Get, $"{root}/{theirRecord}/files", record: false);
+                    var theirFiles = ReadItemIds(theirs.Body).ToList();
+                    realIds.Add(theirRecord);
+                    if (theirFiles.Count == 0)
+                    {
+                        continue;
+                    }
+                    realIds.AddRange(theirFiles);
+                    victimRecord = theirRecord;
+                    victimFile = theirFiles[0];
+                    victimBytes = (await Send(context.Victim, HttpMethod.Get, $"{root}/files/{theirFiles[0]}/content", record: false)).Body;
+                    break;
+                }
                 if (victimFile is null)
                 {
-                    failures.Add($"{type.Table}: the victim could not attach its own file ({(int)uploaded.Status})");
+                    failures.Add($"{type.Table}: the victim has no file to defend (its seeded files are missing)");
                 }
             }
 
-            // The victim's real files (seeded and the one just attached) are always among the identifiers tried.
-            var realIds = new List<Guid>();
-            if (victimRecord is { } listedRecord)
-            {
-                realIds.Add(listedRecord);
-                var theirs = await Send(context.Victim!, HttpMethod.Get, $"{root}/{listedRecord}/files", record: false);
-                realIds.AddRange(ReadItemIds(theirs.Body));
-            }
-
-            // 1. Every victim identifier as the record and as the file, under both records.
+            // 1. Every victim identifier as the record and as the file.
             var tenantHeaders = new Dictionary<string, string> { ["X-Tenant-Id"] = context.VictimTenantId.ToString() };
             foreach (var victim in realIds.Concat(victimIds).Distinct())
             {
                 await Send(context.Attacker, HttpMethod.Get, $"{root}/{victim}/files");
                 await Send(context.Attacker, HttpMethod.Get, $"{root}/{victim}/files", headers: tenantHeaders);
                 await Send(context.Attacker, HttpMethod.Post, $"{root}/{victim}/files", "planted by tenant A"u8.ToArray(), Named("planted.txt"));
-                foreach (var record in new[] { victim, ownRecord.Value })
-                {
-                    await Send(context.Attacker, HttpMethod.Get, $"{root}/{record}/files/{victim}/content");
-                    await Send(context.Attacker, HttpMethod.Get, $"{root}/{record}/files/{victim}/content?inline=true");
-                    await Send(context.Attacker, HttpMethod.Delete, $"{root}/{record}/files/{victim}");
-                }
-                await Send(context.Attacker, HttpMethod.Get, $"{root}/{ownRecord}/files/{victim}/content", headers: new Dictionary<string, string>(tenantHeaders) { ["X-Company-Id"] = victim.ToString() });
+                await Send(context.Attacker, HttpMethod.Get, $"{root}/files/{victim}/content");
+                await Send(context.Attacker, HttpMethod.Get, $"{root}/files/{victim}/content?inline=true");
+                await Send(context.Attacker, HttpMethod.Get, $"{root}/files/{victim}/content", headers: new Dictionary<string, string>(tenantHeaders) { ["X-Company-Id"] = victim.ToString() });
+                await Send(context.Attacker, HttpMethod.Delete, $"{root}/files/{victim}");
             }
 
             // 2. Names and routes that try to leave the tenant's folder or name another tenant's file.
@@ -161,25 +161,25 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
             }
             foreach (var segment in new[] { "..", "%2e%2e", "..%2f", $"..%2f{context.VictimTenantId:N}", $"{context.VictimTenantId:N}", $"{context.VictimTenantId:N}%2f{ownFile:N}", "%00", ownFile.Value.ToString("N") + "/../" + context.VictimTenantId.ToString("N") })
             {
-                await Send(context.Attacker, HttpMethod.Get, $"{root}/{ownRecord}/files/{segment}/content");
+                await Send(context.Attacker, HttpMethod.Get, $"{root}/files/{segment}/content");
                 await Send(context.Attacker, HttpMethod.Get, $"{root}/{segment}/files");
-                await Send(context.Attacker, HttpMethod.Delete, $"{root}/{ownRecord}/files/{segment}");
+                await Send(context.Attacker, HttpMethod.Delete, $"{root}/files/{segment}");
             }
-            foreach (var other in new[] { "../../../../../../etc/passwd", $"{root}/../{type.Table}", $"/api/attachments/..%2f..%2fauth/{ownRecord}/files" })
+            foreach (var other in new[] { $"{root}/files/../../../../../../etc/passwd", $"{root}/../{type.Table}", $"/api/attachments/..%2f..%2fauth/{ownRecord}/files" })
             {
-                await Send(context.Attacker, HttpMethod.Get, other.StartsWith('/') ? other : $"{root}/{ownRecord}/files/{other}");
+                await Send(context.Attacker, HttpMethod.Get, other);
             }
 
             // 3. What must still hold: the attacker reaches its own file, and the victim's files are untouched.
-            var again = await Send(context.Attacker, HttpMethod.Get, $"{root}/{ownRecord}/files/{ownFile}/content", record: false);
+            var again = await Send(context.Attacker, HttpMethod.Get, $"{root}/files/{ownFile}/content", record: false);
             if (again.Status != HttpStatusCode.OK || Encoding.UTF8.GetString(again.Body) != "attacker's own file")
             {
                 failures.Add($"{type.Table}: the attacker's own file could not be read back ({(int)again.Status})");
             }
-            if (victimRecord is { } record2 && victimFile is { } file2 && victimBytes is { } expected)
+            if (victimRecord is { } record2 && victimFile is { } file2 && victimBytes is not null)
             {
-                var back = await Send(context.Victim!, HttpMethod.Get, $"{root}/{record2}/files/{file2}/content", record: false);
-                if (back.Status != HttpStatusCode.OK || !back.Body.SequenceEqual(expected.Bytes))
+                var back = await Send(context.Victim!, HttpMethod.Get, $"{root}/files/{file2}/content", record: false);
+                if (back.Status != HttpStatusCode.OK || !back.Body.SequenceEqual(victimBytes))
                 {
                     failures.Add($"{type.Table}: the victim's file was changed or removed by the attack ({(int)back.Status})");
                 }
@@ -188,9 +188,8 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
                 {
                     failures.Add($"{type.Table}: the attacker attached a file to the victim's record");
                 }
-                await Send(context.Victim!, HttpMethod.Delete, $"{root}/{record2}/files/{file2}", record: false);
             }
-            await Send(context.Attacker, HttpMethod.Delete, $"{root}/{ownRecord}/files/{ownFile}", record: false);
+            await Send(context.Attacker, HttpMethod.Delete, $"{root}/files/{ownFile}", record: false);
         }
         return new IsolationProbeResult(attempts, observed) { Failures = failures };
     }
@@ -198,16 +197,21 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
     /// <summary>The header an upload names its file in.</summary>
     private static Dictionary<string, string> Named(string name) => new() { [AttachmentEndpoints.NameHeader] = Uri.EscapeDataString(name) };
 
-    private static async Task<Guid?> FirstRecordAsync(HttpClient client, string listPath, CancellationToken cancellationToken)
+    private static async Task<Guid?> FirstRecordAsync(HttpClient client, string listPath, CancellationToken cancellationToken) =>
+        (await RecordsAsync(client, listPath, cancellationToken)).Cast<Guid?>().FirstOrDefault();
+
+    /// <summary>The ids of the records on the first page of the kind's list.</summary>
+    private static async Task<List<Guid>> RecordsAsync(HttpClient client, string listPath, CancellationToken cancellationToken)
     {
         using var response = await client.GetAsync(listPath, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            return null;
+            return [];
         }
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-        return document.RootElement.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array && items.GetArrayLength() > 0
-            && items[0].TryGetProperty("id", out var id) && id.TryGetGuid(out var guid) ? guid : null;
+        return document.RootElement.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array
+            ? [.. items.EnumerateArray().Select(i => i.TryGetProperty("id", out var id) && id.TryGetGuid(out var guid) ? guid : Guid.Empty).Where(g => g != Guid.Empty)]
+            : [];
     }
 
     private static Guid? ReadId(byte[] body)

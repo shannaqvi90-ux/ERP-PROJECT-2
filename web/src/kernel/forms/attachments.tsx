@@ -31,9 +31,11 @@ type Progress = { key: number; name: string; state: "uploading" | "failed"; mess
 
 const base = (recordType: string, recordId: string) => `/api/attachments/${recordType}/${recordId}/files`;
 
+/** A file is addressed by its own id: the file knows its record. */
+const fileBase = (recordType: string, fileId: string) => `/api/attachments/${recordType}/files/${fileId}`;
+
 /** The address of a file's bytes (inline shows an image or PDF in the page instead of saving it). */
-export const attachmentUrl = (recordType: string, recordId: string, fileId: string, inline = false) =>
-  `${base(recordType, recordId)}/${fileId}/content${inline ? "?inline=true" : ""}`;
+export const attachmentUrl = (recordType: string, fileId: string, inline = false) => `${fileBase(recordType, fileId)}/content${inline ? "?inline=true" : ""}`;
 
 /** bytes / unit rounded to one decimal, as the decimal string "12.3" (whole-number arithmetic, no binary fractions shown). */
 const tenths = (bytes: number, unit: number) => {
@@ -169,7 +171,7 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
 
   async function remove(file: Attachment) {
     try {
-      await api<void>("DELETE", `${base(recordType, recordId)}/${file.id}`);
+      await api<void>("DELETE", fileBase(recordType, file.id));
       setRemoving(null);
       setRemoveFailed(false);
       setAnnounce(t("attachments.removed", { name: file.name }));
@@ -281,7 +283,7 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
                       <bdi>{file.name}</bdi>
                     </button>
                   ) : (
-                    <a href={attachmentUrl(recordType, recordId, file.id)} download={file.name}>
+                    <a href={attachmentUrl(recordType, file.id)} download={file.name}>
                       <bdi>{file.name}</bdi>
                     </a>
                   )}
@@ -295,7 +297,7 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
                       {t("attachments.preview")}
                     </button>
                   )}
-                  <a className="button" href={attachmentUrl(recordType, recordId, file.id)} download={file.name} aria-label={t("attachments.downloadFile", { name: file.name })}>
+                  <a className="button" href={attachmentUrl(recordType, file.id)} download={file.name} aria-label={t("attachments.downloadFile", { name: file.name })}>
                     {t("attachments.download")}
                   </a>
                   {canWrite && (
@@ -330,9 +332,9 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
             }}
           >
             {previewing.contentType.startsWith("image/") ? (
-              <img src={attachmentUrl(recordType, recordId, previewing.id, true)} alt={previewing.name} />
+              <img src={attachmentUrl(recordType, previewing.id, true)} alt={previewing.name} />
             ) : (
-              <iframe src={attachmentUrl(recordType, recordId, previewing.id, true)} title={previewing.name} />
+              <iframe src={attachmentUrl(recordType, previewing.id, true)} title={previewing.name} />
             )}
           </div>
           <div className="dialog-actions">
@@ -346,7 +348,7 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
                 </button>
               </>
             )}
-            <a className="button" href={attachmentUrl(recordType, recordId, previewing.id)} download={previewing.name}>
+            <a className="button" href={attachmentUrl(recordType, previewing.id)} download={previewing.name}>
               {t("attachments.download")}
             </a>
             <button type="button" className="button primary" onClick={() => setPreviewing(null)}>

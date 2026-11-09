@@ -15,7 +15,7 @@ export default {
   },
   // The writes set-up and clean-up send for our product (they remove any earlier copy of the file), and the
   // one a driver health check sends for the contact (a clean stack without the shared dataset).
-  fixtures: { ours: ['DELETE /api/attachments/contacts.contacts/*/files/*'] },
+  fixtures: { ours: ['DELETE /api/attachments/contacts.contacts/files/*'] },
   healthFixtures: { ours: ['POST /api/contacts/contacts'] },
   enters: ['file'],
   moments: [],

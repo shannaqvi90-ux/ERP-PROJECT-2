@@ -8,6 +8,6 @@
 prefix /api/attachments/
 
 GET /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.read # the names, sizes, kinds, checksums and authors of the files attached to one contact: what a reader of the contact may already see of it (the record must exist in the caller's workspace)
-POST /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.update # attaching a file changes the contact's record, so it needs the permission that changes contacts; the server checks size, kind and count and stores the bytes under a name it makes
-GET /api/attachments/contacts.contacts/{id:guid}/files/{fileId:guid}/content contacts.contacts.read # the bytes of one file of a contact the caller may read, only through that contact (a file id under another contact answers 404)
-DELETE /api/attachments/contacts.contacts/{id:guid}/files/{fileId:guid} contacts.contacts.update # removing a file changes the contact's record; the removal stays in the audit trail
+POST /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.update # attaching a file changes the contact's record ({id}), so it needs the permission that changes contacts; the server checks size, kind and count and stores the bytes under a name it makes
+GET /api/attachments/contacts.contacts/files/{id:guid}/content contacts.contacts.read # the bytes of one file (by the file's own id) of a contact the caller may read; a file of another workspace, or of a contact the caller cannot see, answers 404
+DELETE /api/attachments/contacts.contacts/files/{id:guid} contacts.contacts.update # removing a file (by its own id) changes the contact's record; the removal stays in the audit trail; a file that is not there answers 204 as one that was removed

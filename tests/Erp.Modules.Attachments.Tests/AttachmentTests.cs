@@ -52,6 +52,9 @@ internal static class Api
 
     public static string Root(Guid contact) => $"/api/attachments/{Record}/{contact}/files";
 
+    /// <summary>The address of a file (the file's own id; the record is the file's).</summary>
+    public static string File(Guid file) => $"/api/attachments/{Record}/files/{file}";
+
     public static Task<HttpResponseMessage> UploadAsync(HttpClient client, Guid contact, string name, byte[] bytes, string contentType = "application/octet-stream")
     {
         var content = new ByteArrayContent(bytes);
@@ -112,7 +115,7 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         Assert.Contains("pdf", list.GetProperty("extensions").EnumerateArray().Select(e => e.GetString()));
 
         var id = file.GetProperty("id").GetGuid();
-        using var download = await admin.GetAsync($"{Api.Root(contact)}/{id}/content", Api.Cancel);
+        using var download = await admin.GetAsync($"{Api.File(id)}/content", Api.Cancel);
         Assert.Equal(HttpStatusCode.OK, download.StatusCode);
         Assert.Equal(pdf, await download.Content.ReadAsByteArrayAsync(Api.Cancel));
         Assert.Equal("application/pdf", download.Content.Headers.ContentType?.MediaType);
@@ -120,14 +123,14 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         Assert.Equal("Trade licence.pdf", download.Content.Headers.ContentDisposition?.FileNameStar ?? download.Content.Headers.ContentDisposition?.FileName?.Trim('"'));
         Assert.Contains("nosniff", download.Headers.GetValues("X-Content-Type-Options"));
 
-        using var inline = await admin.GetAsync($"{Api.Root(contact)}/{id}/content?inline=true", Api.Cancel);
+        using var inline = await admin.GetAsync($"{Api.File(id)}/content?inline=true", Api.Cancel);
         Assert.Equal("inline", inline.Content.Headers.ContentDisposition?.DispositionType);
         Assert.Contains("SAMEORIGIN", inline.Headers.GetValues("X-Frame-Options"));
 
-        using var removed = await admin.DeleteAsync($"{Api.Root(contact)}/{id}", Api.Cancel);
+        using var removed = await admin.DeleteAsync(Api.File(id), Api.Cancel);
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         Assert.Equal(0, (await Api.ListAsync(admin, contact)).GetProperty("total").GetInt32());
-        using var gone = await admin.GetAsync($"{Api.Root(contact)}/{id}/content", Api.Cancel);
+        using var gone = await admin.GetAsync($"{Api.File(id)}/content", Api.Cancel);
         Assert.Equal(HttpStatusCode.NotFound, gone.StatusCode);
     }
 
@@ -141,7 +144,7 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         var list = await Api.ListAsync(admin, contact);
         Assert.Equal(6, list.GetProperty("total").GetInt32());
         var id = list.GetProperty("items")[0].GetProperty("id").GetGuid();
-        using var picture = await admin.GetAsync($"{Api.Root(contact)}/{id}/content?inline=true", Api.Cancel);
+        using var picture = await admin.GetAsync($"{Api.File(id)}/content?inline=true", Api.Cancel);
         Assert.Equal("image/png", picture.Content.Headers.ContentType?.MediaType);
         Assert.Contains("sandbox", string.Join(' ', picture.Headers.GetValues("Content-Security-Policy")));
     }
@@ -213,17 +216,18 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         using var admin = await AdminAsync();
         var contact = await Api.NewContactAsync(admin);
         var results = new List<HttpStatusCode>();
-        for (var i = 0; i < 101; i++)
+        var most = Erp.Modules.Attachments.Contracts.AttachmentLimits.MaxFilesPerRecord;
+        for (var i = 0; i <= most; i++)
         {
             using var response = await Api.UploadAsync(admin, contact, $"n{i}.txt", Encoding.ASCII.GetBytes("note " + i));
             results.Add(response.StatusCode);
-            if (i == 100)
+            if (i == most)
             {
                 Assert.Equal("attachmentsTooMany", await Api.ProblemCodeAsync(response));
             }
         }
-        Assert.Equal(100, results.Count(r => r == HttpStatusCode.Created));
-        Assert.Equal(HttpStatusCode.Conflict, results[100]);
+        Assert.Equal(most, results.Count(r => r == HttpStatusCode.Created));
+        Assert.Equal(HttpStatusCode.Conflict, results[most]);
     }
 
     [Fact]
@@ -270,17 +274,17 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
 
         using var reader = await Env.SignInAsync(await Api.UserHoldingAsync(Env, admin, "reader", "contacts.contacts.read"));
         Assert.Equal(1, (await Api.ListAsync(reader, contact)).GetProperty("total").GetInt32());
-        using var read = await reader.GetAsync($"{Api.Root(contact)}/{id}/content", Api.Cancel);
+        using var read = await reader.GetAsync($"{Api.File(id)}/content", Api.Cancel);
         Assert.Equal(HttpStatusCode.OK, read.StatusCode);
         using var cannotAdd = await Api.UploadAsync(reader, contact, "x.pdf", Api.Pdf());
         Assert.Equal(HttpStatusCode.Forbidden, cannotAdd.StatusCode);
-        using var cannotDelete = await reader.DeleteAsync($"{Api.Root(contact)}/{id}", Api.Cancel);
+        using var cannotDelete = await reader.DeleteAsync(Api.File(id), Api.Cancel);
         Assert.Equal(HttpStatusCode.Forbidden, cannotDelete.StatusCode);
 
         using var writer = await Env.SignInAsync(await Api.UserHoldingAsync(Env, admin, "writer", "contacts.contacts.update"));
         using var cannotList = await writer.GetAsync(Api.Root(contact), Api.Cancel);
         Assert.Equal(HttpStatusCode.Forbidden, cannotList.StatusCode);
-        using var cannotRead = await writer.GetAsync($"{Api.Root(contact)}/{id}/content", Api.Cancel);
+        using var cannotRead = await writer.GetAsync($"{Api.File(id)}/content", Api.Cancel);
         Assert.Equal(HttpStatusCode.Forbidden, cannotRead.StatusCode);
         using var added = await Api.UploadAsync(writer, contact, "added.pdf", Api.Pdf());
         Assert.Equal(HttpStatusCode.Created, added.StatusCode);
@@ -302,38 +306,66 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         var id = file.GetProperty("id").GetGuid();
 
         using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
-        foreach (var path in new[] { Api.Root(contact), $"{Api.Root(contact)}/{id}/content" })
+        foreach (var path in new[] { Api.Root(contact), $"{Api.File(id)}/content" })
         {
             using var response = await other.GetAsync(path, Api.Cancel);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
-        using var delete = await other.DeleteAsync($"{Api.Root(contact)}/{id}", Api.Cancel);
-        Assert.Equal(HttpStatusCode.NotFound, delete.StatusCode);
+        // A delete of a file that is not theirs is a delete of a file that is not there: the same answer, and the file stays.
+        using var delete = await other.DeleteAsync(Api.File(id), Api.Cancel);
+        Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
         using var plant = await Api.UploadAsync(other, contact, "planted.pdf", Api.Pdf());
         Assert.Equal(HttpStatusCode.NotFound, plant.StatusCode);
-        // B's own contact with A's file id: nothing either.
-        var theirs = await Api.NewContactAsync(other);
-        using var mixed = await other.GetAsync($"{Api.Root(theirs)}/{id}/content", Api.Cancel);
-        Assert.Equal(HttpStatusCode.NotFound, mixed.StatusCode);
         Assert.Equal(1, (await Api.ListAsync(admin, contact)).GetProperty("total").GetInt32());
-        using var still = await admin.GetAsync($"{Api.Root(contact)}/{id}/content", Api.Cancel);
+        using var still = await admin.GetAsync($"{Api.File(id)}/content", Api.Cancel);
         Assert.Equal(HttpStatusCode.OK, still.StatusCode);
     }
 
     [Fact]
-    public async Task A_file_of_one_record_is_not_reachable_through_another()
+    public async Task Deleting_a_file_that_is_not_there_answers_as_deleting_one_that_is_and_a_record_that_is_not_there_has_no_files()
     {
         using var admin = await AdminAsync();
-        var first = await Api.NewContactAsync(admin);
-        var second = await Api.NewContactAsync(admin);
-        var file = await Api.UploadedAsync(admin, first, "mine.pdf", Api.Pdf());
-        var id = file.GetProperty("id").GetGuid();
-        using var read = await admin.GetAsync($"{Api.Root(second)}/{id}/content", Api.Cancel);
-        Assert.Equal(HttpStatusCode.NotFound, read.StatusCode);
-        using var delete = await admin.DeleteAsync($"{Api.Root(second)}/{id}", Api.Cancel);
-        Assert.Equal(HttpStatusCode.NotFound, delete.StatusCode);
+        var contact = await Api.NewContactAsync(admin);
+        var file = (await Api.UploadedAsync(admin, contact, "twice.pdf", Api.Pdf())).GetProperty("id").GetGuid();
+        using var first = await admin.DeleteAsync(Api.File(file), Api.Cancel);
+        using var again = await admin.DeleteAsync(Api.File(file), Api.Cancel);
+        using var never = await admin.DeleteAsync(Api.File(Guid.NewGuid()), Api.Cancel);
+        Assert.Equal([HttpStatusCode.NoContent, HttpStatusCode.NoContent, HttpStatusCode.NoContent], [first.StatusCode, again.StatusCode, never.StatusCode]);
         using var unknown = await admin.GetAsync(Api.Root(Guid.NewGuid()), Api.Cancel);
         Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
+        using var uploadUnknown = await Api.UploadAsync(admin, Guid.NewGuid(), "x.pdf", Api.Pdf());
+        Assert.Equal(HttpStatusCode.NotFound, uploadUnknown.StatusCode);
+    }
+
+    [Fact]
+    public async Task A_file_can_be_sent_as_json_with_its_bytes_as_base64()
+    {
+        using var admin = await AdminAsync();
+        var contact = await Api.NewContactAsync(admin);
+        var pdf = Api.Pdf("json");
+        using var created = await admin.PostAsJsonAsync(Api.Root(contact), new { name = "From API.pdf", data = Convert.ToBase64String(pdf) }, Api.Cancel);
+        var text = await created.Content.ReadAsStringAsync(Api.Cancel);
+        Assert.True(created.StatusCode == HttpStatusCode.Created, text);
+        var id = JsonDocument.Parse(text).RootElement.GetProperty("id").GetGuid();
+        using var back = await admin.GetAsync($"{Api.File(id)}/content", Api.Cancel);
+        Assert.Equal(pdf, await back.Content.ReadAsByteArrayAsync(Api.Cancel));
+        // The same checks as the raw upload.
+        foreach (var (body, status) in new (object Body, HttpStatusCode Status)[]
+        {
+            (new { name = "x.pdf", data = "not base64!!" }, HttpStatusCode.BadRequest),
+            (new { name = "x.pdf" }, HttpStatusCode.BadRequest),
+            (new { data = Convert.ToBase64String(pdf) }, HttpStatusCode.BadRequest),
+            (new { name = "x.exe", data = Convert.ToBase64String(pdf) }, HttpStatusCode.UnsupportedMediaType),
+            (new { name = "x.pdf", data = Convert.ToBase64String("MZ program"u8.ToArray()) }, HttpStatusCode.UnsupportedMediaType),
+            (new { name = "../../x.pdf", data = Convert.ToBase64String(pdf) }, HttpStatusCode.Created),
+        })
+        {
+            using var response = await admin.PostAsJsonAsync(Api.Root(contact), body, Api.Cancel);
+            Assert.True(response.StatusCode == status, $"{JsonSerializer.Serialize(body)}: {(int)response.StatusCode} {await response.Content.ReadAsStringAsync(Api.Cancel)}");
+        }
+        using var notJson = new HttpRequestMessage(HttpMethod.Post, Api.Root(contact)) { Content = new StringContent("{not json", System.Text.Encoding.UTF8, "application/json") };
+        using var broken = await admin.SendAsync(notJson, Api.Cancel);
+        Assert.Equal(HttpStatusCode.BadRequest, broken.StatusCode);
     }
 
     [Fact]
@@ -343,7 +375,7 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         var contact = await Api.NewContactAsync(admin);
         var file = await Api.UploadedAsync(admin, contact, "audited.pdf", Api.Pdf());
         var id = file.GetProperty("id").GetGuid();
-        using var removed = await admin.DeleteAsync($"{Api.Root(contact)}/{id}", Api.Cancel);
+        using var removed = await admin.DeleteAsync(Api.File(id), Api.Cancel);
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
 
         await using var db = await Env.OpenAdminAsync();
@@ -475,7 +507,7 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
             {
                 withFiles++;
                 var first = list.GetProperty("items")[0].GetProperty("id").GetGuid();
-                using var content = await admin.GetAsync($"{Api.Root(item.GetProperty("id").GetGuid())}/{first}/content", Api.Cancel);
+                using var content = await admin.GetAsync($"{Api.File(first)}/content", Api.Cancel);
                 Assert.Equal(HttpStatusCode.OK, content.StatusCode);
             }
         }

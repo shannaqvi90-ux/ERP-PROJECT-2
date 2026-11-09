@@ -14,7 +14,7 @@ async function removeCopies(ctx) {
   if (!ctx.state.contactId) return;
   const api = await oursAs(ctx.product, 'admin');
   const list = await api.get(ROOT(ctx.state.contactId));
-  for (const file of list.items.filter(f => f.name === ctx.task.input.file)) await api.request('DELETE', `${ROOT(ctx.state.contactId)}/${file.id}`);
+  for (const file of list.items.filter(f => f.name === ctx.task.input.file)) await api.request('DELETE', `/api/attachments/contacts.contacts/files/${file.id}`);
 }
 
 export default {

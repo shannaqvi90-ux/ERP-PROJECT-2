@@ -34,13 +34,13 @@ public sealed class AttachmentGateTests(GateFixture fixture)
         Assert.NotEmpty(catalog.AttachmentRecordTypes);
         foreach (var kind in catalog.AttachmentRecordTypes)
         {
-            var root = $"/api/attachments/{kind.Table}/{{id:guid}}/files";
+            var root = $"/api/attachments/{kind.Table}";
             var expected = new (string Method, string Pattern, string Permission)[]
             {
-                ("GET", root, kind.ReadPermission),
-                ("POST", root, kind.WritePermission),
-                ("GET", root + "/{fileId:guid}/content", kind.ReadPermission),
-                ("DELETE", root + "/{fileId:guid}", kind.WritePermission),
+                ("GET", root + "/{id:guid}/files", kind.ReadPermission),
+                ("POST", root + "/{id:guid}/files", kind.WritePermission),
+                ("GET", root + "/files/{id:guid}/content", kind.ReadPermission),
+                ("DELETE", root + "/files/{id:guid}", kind.WritePermission),
             };
             if (kind.ReadPermission == kind.WritePermission)
             {

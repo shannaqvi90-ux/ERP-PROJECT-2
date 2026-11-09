@@ -50,14 +50,19 @@ public sealed class ProbeSelfTests
                 return Json(HttpStatusCode.OK, new { items = world.Records.Where(r => r.Value == tenant).Select(r => new { id = r.Key }) });
             }
             var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            // api attachments contacts.contacts {record} files [{file} content]
-            if (parts.Length < 5 || parts[1] != "attachments" || !Guid.TryParse(parts[3], out var record))
+            // api attachments contacts.contacts {record} files            (list, upload)
+            // api attachments contacts.contacts files {file} [content]    (content, delete)
+            if (parts.Length < 5 || parts[1] != "attachments")
             {
                 return Json(HttpStatusCode.NotFound, new { code = "notFound" });
             }
-            var mine = world.Records.TryGetValue(record, out var owner) && owner == tenant;
-            if (parts.Length == 5)
+            if (parts[3] != "files")
             {
+                if (!Guid.TryParse(parts[3], out var record) || parts.Length != 5)
+                {
+                    return Json(HttpStatusCode.NotFound, new { code = "notFound" });
+                }
+                var mine = world.Records.TryGetValue(record, out var owner) && owner == tenant;
                 if (request.Method == HttpMethod.Get)
                 {
                     return mine ? Json(HttpStatusCode.OK, new { items = world.Files.Where(f => f.Record == record && f.Tenant == tenant).Select(f => new { id = f.Id, name = f.Name }) }) : Json(HttpStatusCode.NotFound, new { code = "notFound" });
@@ -72,21 +77,20 @@ public sealed class ProbeSelfTests
                 world.Files.Add(file);
                 return Json(HttpStatusCode.Created, new { id = file.Id, name = file.Name });
             }
-            if (!Guid.TryParse(parts[5], out var fileId))
+            if (!Guid.TryParse(parts[4], out var fileId))
             {
                 return Json(HttpStatusCode.NotFound, new { code = "notFound" });
             }
             if (request.Method == HttpMethod.Delete)
             {
-                var victim = world.Files.FirstOrDefault(f => f.Id == fileId && (fault.HasFlag(Fault.DeleteAnyTenant) || (f.Tenant == tenant && f.Record == record && mine)));
-                if (victim is null)
+                var victim = world.Files.FirstOrDefault(f => f.Id == fileId && (fault.HasFlag(Fault.DeleteAnyTenant) || f.Tenant == tenant));
+                if (victim is not null)
                 {
-                    return Json(HttpStatusCode.NotFound, new { code = "notFound" });
+                    world.Files.Remove(victim);
                 }
-                world.Files.Remove(victim);
                 return new HttpResponseMessage(HttpStatusCode.NoContent);
             }
-            var found = world.Files.FirstOrDefault(f => f.Id == fileId && (fault.HasFlag(Fault.ReadAnyTenant) || (f.Tenant == tenant && mine && f.Record == record)));
+            var found = parts.Length == 6 ? world.Files.FirstOrDefault(f => f.Id == fileId && (fault.HasFlag(Fault.ReadAnyTenant) || f.Tenant == tenant)) : null;
             return found is null ? Json(HttpStatusCode.NotFound, new { code = "notFound" }) : new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(found.Bytes) };
         }
     }

@@ -6,6 +6,7 @@ import { AttachmentsSection } from "./attachments";
 
 const record = "0190a000-0000-7000-8000-0000000000c1";
 const base = `/api/attachments/contacts.contacts/${record}/files`;
+const fileBase = "/api/attachments/contacts.contacts/files";
 
 const file = (id: string, name: string, over: Record<string, unknown> = {}) => ({
   id, name, contentType: name.endsWith(".png") ? "image/png" : name.endsWith(".pdf") ? "application/pdf" : "text/plain; charset=utf-8", sizeBytes: 2048, sha256: "a".repeat(64),
@@ -149,7 +150,7 @@ describe("the files of a record", () => {
     expect(document.querySelector('[role="dialog"]')!.textContent).toContain("notes.txt will be removed");
     await act(async () => [...document.querySelectorAll<HTMLElement>('[role="dialog"] button')].find((b) => b.textContent === "Delete")!.click());
     for (let i = 0; i < 3; i++) await settle();
-    expect(calls.some((c) => c.method === "DELETE" && c.url === `${base}/f3`)).toBe(true);
+    expect(calls.some((c) => c.method === "DELETE" && c.url === `${fileBase}/f3`)).toBe(true);
     expect(text()).toContain("2 attachments");
     expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
@@ -158,11 +159,11 @@ describe("the files of a record", () => {
     await show();
     await act(async () => button("Preview Seal.png").click());
     const dialog = () => document.querySelector<HTMLElement>('[role="dialog"]')!;
-    expect(dialog().querySelector("img")!.getAttribute("src")).toBe(`${base}/f2/content?inline=true`);
+    expect(dialog().querySelector("img")!.getAttribute("src")).toBe(`${fileBase}/f2/content?inline=true`);
     await act(async () => {
       dialog().querySelector(".attachments-view")!.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowRight" }));
     });
-    expect(dialog().querySelector("iframe")!.getAttribute("src")).toBe(`${base}/f1/content?inline=true`);
+    expect(dialog().querySelector("iframe")!.getAttribute("src")).toBe(`${fileBase}/f1/content?inline=true`);
     // Escape closes it.
     await act(async () => {
       dialog().dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
@@ -173,7 +174,7 @@ describe("the files of a record", () => {
   it("offers a plain file as a download link to its bytes", async () => {
     await show();
     const link = [...view!.container.querySelectorAll<HTMLAnchorElement>("a")].find((a) => a.textContent === "notes.txt")!;
-    expect(link.getAttribute("href")).toBe(`${base}/f3/content`);
+    expect(link.getAttribute("href")).toBe(`${fileBase}/f3/content`);
     expect(link.hasAttribute("download")).toBe(true);
   });
 });

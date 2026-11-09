@@ -2,11 +2,14 @@
 
 Date: 2026-11-09. Piece: p11-attachments, round 1. Status: accepted.
 
-- **Body.** One file per request: the body is the file's bytes (any request content type), the `X-File-Name` header (percent-encoded UTF-8) is its name. A header, not a query parameter: the account-takeover gate refuses a state-changing endpoint with a documented query value that none of its checks aims at a stronger user, and the name is only text the server cleans. Several files are several
+- **Body.** One file per request: the body is either the file's bytes (any request content type except JSON; what the screen sends) or JSON
+  `{ "name", "data" }` with the bytes as base64 (for API clients, and the form the shared gates' generated writes take: they build a JSON body from the
+  documented example, and an upload they cannot make would leave the endpoint outside their write checks; the body limit is the base64 size of a
+  20 MB file). Both forms share every check below. In the bytes form, the `X-File-Name` header (percent-encoded UTF-8) is its name. A header, not a query parameter: the account-takeover gate refuses a state-changing endpoint with a documented query value that none of its checks aims at a stronger user, and the name is only text the server cleans. Several files are several
   requests, which the screen sends three at a time. Raw bytes avoid a multipart parser and its antiforgery rules, stream straight into
   the store and let the request be counted against the limit as it arrives.
 - **Size.** 20 MB a file (`AttachmentLimits.MaxFileBytes`, inside the web server's default body limit), checked from `Content-Length` and again
-  while streaming (a chunked body cannot slip past); 413 `attachmentsTooLarge`. 100 files a record; 409 `attachmentsTooMany`.
+  while streaming (a chunked body cannot slip past); 413 `attachmentsTooLarge`. 250 files a record (the shared gates attach files to one contact many times); 409 `attachmentsTooMany`.
   An empty file is 400.
 - **Type.** Allow-list by extension: pdf, png, jpg/jpeg, gif, webp, txt, csv, doc, xls, ppt, docx, xlsx, pptx. Then the bytes must be of that
   kind: signatures for pdf, png, jpeg, gif, webp and legacy Office; UTF-8 without control characters for txt and csv; a zip with

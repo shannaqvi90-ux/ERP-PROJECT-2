@@ -8,7 +8,7 @@ public static class AttachmentLimits
     public const long MaxFileBytes = 20L * 1024 * 1024;
 
     /// <summary>Most files one record may hold.</summary>
-    public const int MaxFilesPerRecord = 100;
+    public const int MaxFilesPerRecord = 250;
 
     /// <summary>Longest file name kept (a longer one is shortened, its extension kept).</summary>
     public const int MaxNameLength = 150;
