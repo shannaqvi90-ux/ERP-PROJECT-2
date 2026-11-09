@@ -103,7 +103,7 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
     return null;
   }
 
-  async function send(file: File) {
+  async function send(file: File): Promise<Attachment | null> {
     const response = await fetch(base(recordType, recordId), {
       method: "POST",
       headers: { "X-Erp-Request": "1", "X-File-Name": encodeURIComponent(file.name), "Content-Type": "application/octet-stream", Accept: "application/json", "Accept-Language": requestLanguage() },
@@ -113,8 +113,7 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
     if (response.ok) {
       // The answer is read to its end: a request is finished only when its body is, and the page's own tracking of requests
       // (and a test's) waits for that.
-      await response.text();
-      return;
+      return (JSON.parse(await response.text()) as Attachment | null) ?? null;
     }
     if (response.status === 401) window.dispatchEvent(new Event(sessionEndedEvent));
     let message = `HTTP ${response.status}`;
@@ -145,8 +144,10 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
       while (next < sendable.length) {
         const { file, key } = sendable[next++]!;
         try {
-          await send(file);
+          const made = await send(file);
           added++;
+          // The file is listed as soon as the server has stored it; the list is read again when the batch is done.
+          if (made) setList((current) => (current ? { ...current, items: [made, ...current.items.filter((i) => i.id !== made.id)], total: current.total + 1 } : current));
           setProgress((current) => current.filter((p) => p.key !== key));
         } catch (error) {
           setProgress((current) => current.map((p) => (p.key === key ? { ...p, state: "failed", message: error instanceof Error ? error.message : String(error) } : p)));
@@ -154,7 +155,9 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
       }
     };
     await Promise.all(Array.from({ length: Math.min(3, sendable.length) }, worker));
-    await load();
+    // Every file the server answered is listed already; the list is read again only when a file did not go (it may have been stored
+    // before the connection failed).
+    if (added < sendable.length) await load();
     if (added > 0) setAnnounce(t("attachments.added", { count: added }));
   }
 
