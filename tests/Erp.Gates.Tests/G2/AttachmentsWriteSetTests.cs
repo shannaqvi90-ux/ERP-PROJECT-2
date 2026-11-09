@@ -8,10 +8,9 @@ namespace Erp.Gates.Tests.G2;
 
 /// <summary>
 /// G2, what contacts.contacts.update lets a request write through the attachments endpoints. The generic
-/// write-set gate (<see cref="WriteSets"/>) reaches the upload (its JSON form) but cannot reach the delete:
-/// a delete needs a file that exists, and the upload is nested under the contact rather than a collection of
-/// the files the delete names, so DELETE /api/attachments/.../files/{id} is listed in
-/// tests/Gates/write-set-unexercised.txt. This gate sends both itself, as a user holding exactly the
+/// write-set gate (<see cref="WriteSets"/>) cannot reach them: the record an upload names in {id} is a
+/// contact, made by another module's endpoint, and a delete needs a file that exists, so POST and DELETE under
+/// /api/attachments/ are listed in tests/Gates/write-set-unexercised.txt. This gate sends both itself, as a user holding exactly the
 /// permission the endpoint declares: the audit trail must show one new
 /// attachments.files row for an upload and the removal of that row for a delete, and nothing else (no
 /// change to the contact), and users holding every other contacts permission, or only the read one,
