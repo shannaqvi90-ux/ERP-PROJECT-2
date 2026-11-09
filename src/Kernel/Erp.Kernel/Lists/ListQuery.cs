@@ -15,6 +15,16 @@ public sealed class ListRequest
 {
     public const int DefaultTake = 50;
     public const int MaxTake = 200;
+
+    /// <summary>Most rows one page holds for a caller that walks the whole list (a print or an export):
+    /// a page costs the same to start whatever its size (a filter on a custom field answers its matching
+    /// ids once a page), so the walk reads fewer, larger pages.</summary>
+    public const int MaxWalkTake = 2000;
+
+    /// <summary>The <c>HttpContext.Items</c> key a caller sets to <c>true</c> while it walks the list page
+    /// by page (the reports module's print and export): the page may then hold up to
+    /// <see cref="MaxWalkTake"/> rows. Not a query parameter: no client can ask for it.</summary>
+    public const string WalkItem = "erp.list.walk";
     public const int MaxSearchLength = 200;
     public const int MaxSearchWords = 8;
 

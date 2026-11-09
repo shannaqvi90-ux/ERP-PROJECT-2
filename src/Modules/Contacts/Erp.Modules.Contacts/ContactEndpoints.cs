@@ -97,7 +97,7 @@ public sealed record ContactRow(
     /// (cfCustomerSegment), holding the value (a number as text with its decimals, a date as yyyy-mm-dd,
     /// an option's value, a record id); a lookup also adds its record's names as the key followed by Name and NameAr.
     /// Fields without a value are left out.</summary>
-    [JsonExtensionData]
+    [JsonExtensionData, Erp.Kernel.Hosting.CustomFieldValues]
     public IDictionary<string, object?>? CustomFields { get; init; }
 }
 

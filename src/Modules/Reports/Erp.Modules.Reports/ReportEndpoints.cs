@@ -273,10 +273,11 @@ internal static class ReportEndpoints
                 Filter = Single(query, "filter"),
                 Sort = Single(query, "sort"),
                 After = after,
-                Take = Math.Min(ListRequest.MaxTake, limit - rows.Count),
+                Take = Math.Min(ListRequest.MaxWalkTake, limit - rows.Count),
             };
             // The first page counts the matching rows; the pages after it do not count again.
             http.Items[ListRequest.SkipTotalItem] = after is not null;
+            http.Items[ListRequest.WalkItem] = true;
             ListResult<object> page;
             try
             {
@@ -285,6 +286,7 @@ internal static class ReportEndpoints
             finally
             {
                 http.Items.Remove(ListRequest.SkipTotalItem);
+                http.Items.Remove(ListRequest.WalkItem);
             }
             if (page.Problem is { } problem)
             {

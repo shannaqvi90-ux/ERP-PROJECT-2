@@ -95,7 +95,7 @@ test.describe("custom fields", () => {
     expect(await page.evaluate(() => document.documentElement.dir)).toBe("rtl");
   });
 
-  test("a list filtered by a custom field prints and exports, and an export that cannot be made says so in both languages", async ({ page }) => {
+  test("a list filtered by a custom field prints and exports in both languages", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
     await expect(page.locator("main h1")).toBeVisible();
@@ -117,18 +117,38 @@ test.describe("custom fields", () => {
       expect(answer.status(), await answer.text()).toBe(200);
       expect(await answer.text()).toContain(language === "ar" ? "شريحة العميل" : "Customer segment");
     }
+  });
 
-    // A selection the server cannot build shows a message, in each language, instead of a silent cancel.
-    for (const [language, message] of [["en", "The file could not be made"], ["ar", "تعذر إنشاء الملف"]] as const) {
+  for (const [language, message, button] of [["en", "The file could not be made", "Print or export"], ["ar", "تعذر إنشاء الملف", "طباعة أو تصدير"]] as const) {
+    test(`an export the server cannot build says so (${language})`, async ({ page }) => {
       await freshStart(page, language);
       await signIn(page, language === "en" ? users.admin : users.adminArabic);
-      await page.route("**/api/reports/lists/contacts.contacts?*format=json*", (route) => route.fulfill({ status: 500, contentType: "application/json", body: "{}" }));
-      await page.goto("/contacts/contacts");
+      await page.locator('nav a[href="/contacts/contacts"]').click();
       await expect(listRows(page).first()).toBeVisible();
-      await page.getByRole("button", { name: language === "ar" ? "طباعة أو تصدير" : "Print or export" }).click();
+      await page.route((url) => url.pathname.startsWith("/api/reports/lists/") && url.searchParams.get("format") === "json", (route) =>
+        route.fulfill({ status: 500, contentType: "application/json", body: "{}" }));
+      await page.getByRole("button", { name: button }).click();
       await expect(page.getByRole("alert").filter({ hasText: message })).toBeVisible();
-      await page.unroute("**/api/reports/lists/contacts.contacts?*format=json*");
-    }
+    });
+  }
+
+  test("Alt+Shift+F in a custom field of a contact lists the contacts that hold its value", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
+    const filter = encodeURIComponent("cfCustomerSegment eq 'government'");
+    const answer = await page.request.get(`/api/contacts/contacts?take=1&filter=${filter}`);
+    expect(answer.status(), await answer.text()).toBe(200);
+    const found = (await answer.json()) as { items: { id: string }[] };
+    await page.goto(`/contacts/contacts/${found.items[0]!.id}`);
+    const segment = page.locator('[data-field="customFields.cfCustomerSegment"] select');
+    await expect(segment).toHaveValue("government");
+    await segment.focus();
+    await page.keyboard.press("Alt+Shift+KeyF");
+    await expect(page.locator(".record-form")).toHaveCount(0);
+    await expect(page.getByText("Customer segment is Government")).toBeVisible();
+    await expect(listRows(page).first()).toBeVisible();
+    expect(((await (await page.request.get(`/api/contacts/contacts?take=1&filter=${filter}`)).json()) as { total: number }).total).toBeGreaterThan(100);
   });
 
   test("a reader sees the definitions but is offered no way to change them", async ({ page }) => {

@@ -205,4 +205,34 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
         var log = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/log?filter={Uri.EscapeDataString($"recordId eq '{contact.GetProperty("id").GetGuid()}'")}&language=ar", Api.Cancel);
         Assert.Contains(log.GetProperty("items").EnumerateArray(), r => r.GetProperty("changes").GetString()!.Contains("حد الجولة"));
     }
+
+    [Fact]
+    public async Task Another_workspace_cannot_print_sort_or_group_by_our_field_or_see_its_values_in_a_file()
+    {
+        var (admin, f) = await DefineAsync();
+        using var _ = admin;
+        var canary = Api.Unique($"{f.Stem} Canary LLC");
+        await Api.CreateContactAsync(admin, Api.Contact(canary, new() { [f.Segment] = "retail", [f.Credit] = 777.77 }));
+        using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        foreach (var query in new[]
+        {
+            $"columns=nameEn,{f.Credit}&format=csv&language=en&numerals=latn",
+            $"filter={Uri.EscapeDataString($"{f.Segment} eq 'retail'")}&columns=nameEn&format=csv&language=en&numerals=latn",
+            $"sort={f.Credit}&columns=nameEn&format=pdf&language=ar&numerals=latn",
+            $"groupBy={f.Segment}&columns=nameEn&format=xlsx&language=en&numerals=latn",
+        })
+        {
+            var response = await other.GetAsync($"/api/reports/lists/contacts.contacts?{query}", Api.Cancel);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.DoesNotContain("777.77", await response.Content.ReadAsStringAsync(Api.Cancel));
+        }
+        foreach (var query in new[] { $"sort={f.Credit}", $"groupBy={f.Segment}", $"sort=-{f.Segment}&groupBy={f.Segment}" })
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, (await other.GetAsync($"/api/contacts/contacts?{query}", Api.Cancel)).StatusCode);
+        }
+        // Their own file holds none of our contacts.
+        var theirs = await other.GetAsync("/api/reports/lists/contacts.contacts?columns=nameEn&format=csv&language=en&numerals=latn", Api.Cancel);
+        Assert.Equal(HttpStatusCode.OK, theirs.StatusCode);
+        Assert.DoesNotContain(canary, await theirs.Content.ReadAsStringAsync(Api.Cancel));
+    }
 }

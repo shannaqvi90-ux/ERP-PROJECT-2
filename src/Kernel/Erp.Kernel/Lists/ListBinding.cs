@@ -307,7 +307,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         Plan plan;
         try
         {
-            plan = PlanFor(request);
+            plan = PlanFor(request, http.Items.TryGetValue(ListRequest.WalkItem, out var walking) && walking is true ? ListRequest.MaxWalkTake : ListRequest.MaxTake);
         }
         catch (ListQueryException e)
         {
@@ -424,7 +424,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         string? GroupBy,
         bool Relevance);
 
-    private Plan PlanFor(ListRequest request)
+    private Plan PlanFor(ListRequest request, int maxTake = ListRequest.MaxTake)
     {
         var words = new List<string>();
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -486,7 +486,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             after = ListCursor.Decode(request.After, ListSortKey.Format(sort),
                 sort.Select(k => k.Column == ListSearch.RelevanceKey ? typeof(int) : _columns[k.Column].ValueType).ToList());
         }
-        var take = Math.Clamp(request.Take ?? ListRequest.DefaultTake, 1, ListRequest.MaxTake);
+        var take = Math.Clamp(request.Take ?? ListRequest.DefaultTake, 1, maxTake);
         var skip = Math.Max(0, request.Skip ?? 0);
         return new Plan(words.Select(w => (w, ListSearch.Spellings(w))).ToList(), filter, sort, after, skip, take, groupBy, relevance);
     }
