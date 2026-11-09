@@ -343,7 +343,7 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         using var admin = await AdminAsync();
         var contact = await Api.NewContactAsync(admin);
         var pdf = Api.Pdf("json");
-        using var created = await admin.PostAsJsonAsync(Api.Root(contact), new { name = "From API.pdf", data = Convert.ToBase64String(pdf) }, Api.Cancel);
+        using var created = await admin.PostAsJsonAsync(Api.Root(contact), new { file = "From API.pdf", data = Convert.ToBase64String(pdf) }, Api.Cancel);
         var text = await created.Content.ReadAsStringAsync(Api.Cancel);
         Assert.True(created.StatusCode == HttpStatusCode.Created, text);
         var id = JsonDocument.Parse(text).RootElement.GetProperty("id").GetGuid();
@@ -352,10 +352,10 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         // The same checks as the raw upload.
         foreach (var (body, status) in new (object Body, HttpStatusCode Status)[]
         {
-            (new { name = "x.pdf", data = "not base64!!" }, HttpStatusCode.BadRequest),
-            (new { name = "x.pdf" }, HttpStatusCode.BadRequest),
+            (new { file = "x.pdf", data = "not base64!!" }, HttpStatusCode.BadRequest),
+            (new { file = "x.pdf" }, HttpStatusCode.BadRequest),
             (new { data = Convert.ToBase64String(pdf) }, HttpStatusCode.BadRequest),
-            (new { name = "x.exe", data = Convert.ToBase64String(pdf) }, HttpStatusCode.UnsupportedMediaType),
+            (new { file = "x.exe", data = Convert.ToBase64String(pdf) }, HttpStatusCode.UnsupportedMediaType),
             (new { name = "x.pdf", data = Convert.ToBase64String("MZ program"u8.ToArray()) }, HttpStatusCode.UnsupportedMediaType),
             (new { name = "../../x.pdf", data = Convert.ToBase64String(pdf) }, HttpStatusCode.Created),
         })

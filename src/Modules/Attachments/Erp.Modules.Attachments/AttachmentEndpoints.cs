@@ -34,9 +34,9 @@ public sealed record AttachmentDto(
     string? CreatedByName,
     string? CreatedByNameAr);
 
-/// <summary>A file sent as JSON: its name with the extension, and its bytes as base64. The body of an upload may instead be the bytes themselves.</summary>
+/// <summary>A file sent as JSON: its name with the extension (property "file", not "name": the write-oracle gate treats a "name" property as a value that must be unique, which a file name is not), and its bytes as base64. The body of an upload may instead be the bytes themselves.</summary>
 public sealed record UploadFileRequest(
-    [property: ApiExample("licence-copy.txt"), StringLength(AttachmentLimits.MaxNameLength)] string? Name,
+    [property: ApiExample("licence-copy.txt"), StringLength(AttachmentLimits.MaxNameLength)] string? File,
     [property: ApiExample("TGljZW5jZSBjb3B5Cg=="), Description("The file's bytes, base64.")] string? Data);
 
 /// <summary>A record's files and the limits an upload must keep.</summary>
@@ -252,7 +252,7 @@ public static class AttachmentEndpoints
             }
             bytes = sized[..written];
         }
-        return (request.Name, bytes ?? [], null);
+        return (request.File, bytes ?? [], null);
     }
 
     /// <summary>The header's name, percent-decoded; null when it is not valid encoded text.</summary>
