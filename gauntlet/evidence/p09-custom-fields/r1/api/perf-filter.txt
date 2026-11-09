@@ -1,0 +1,30 @@
+== cfAccountManager eq 'Omar Haddad'
+200 171ms {"items":[],"total":0,"next":null,"groups":null,"ranked":false}
+== cfAccountManager contains 'had'
+200 48ms {"items":[],"total":0,"next":null,"groups":null,"ranked":false}
+== cfCreditReview ge '2026-06-01' and cfCreditReview lt '2026-07-01'
+200 330ms {"items":[{"id":"018889ee-b2f0-7e92-bef4-059e20dbd107","kind":"person","code":"C009240","nameEn":"Abdullah Amal Reyes","nameAr":"عبدالله أمل رييس","organisation
+== cfPreferredPartner eq true
+200 85ms {"items":[{"id":"01888226-5028-782f-932a-420939658917","kind":"person","code":"C005711","nameEn":"Abdullah Abdullah Al Dhaheri","nameAr":"عبدالله عبدالله الظاهر
+== cfCustomerSegment eq 'government' and cfPreferredPartner eq true
+200 195ms {"items":[{"id":"0188b058-7840-72c9-b1ca-5ddbb4eddfe6","kind":"person","code":"C026658","nameEn":"Abdullah Ahmed Obaid","nameAr":"عبدالله أحمد عبيد","organisati
+== cfCustomerSegment in ('retail','wholesale')
+200 301ms {"items":[{"id":"01894ac2-54c8-7b6c-ba6b-cf2ce7e28eed","kind":"person","code":"C096675","nameEn":"Abdullah Abdullah Al Marri","nameAr":"عبدالله عبدالله المري","
+== cfAccountManager eq null
+200 326ms {"items":[],"total":0,"next":null,"groups":null,"ranked":false}
+== filter=cfAccountManager%20contains%20'ketb'&take=3&count=true
+200 79ms {"items":[{"id":"01888226-5028-782f-932a-420939658917","kind":"person","code":"C005711","nameEn":"Abdullah Abdullah Al Dhaheri","nameAr":"عبدالله عبدالله الظاهري","organisationId":"01887f82-8440-73f7-be95-a6dc7c5523a0","organisationName":"Falcon Glass FZE","or
+== filter=cfAccountManager%20eq%20'Mariam%20Al%20Ketbi'&take=3&count=true
+200 165ms {"items":[{"id":"01888226-5028-782f-932a-420939658917","kind":"person","code":"C005711","nameEn":"Abdullah Abdullah Al Dhaheri","nameAr":"عبدالله عبدالله الظاهري","organisationId":"01887f82-8440-73f7-be95-a6dc7c5523a0","organisationName":"Falcon Glass FZE","or
+== search=Ketbi&take=3&count=true
+200 58ms {"items":[{"id":"0188b12d-5088-7e9b-9c89-f501a75fd7b7","kind":"person","code":"C027035","nameEn":"Wei Ali Al Ketbi","nameAr":"وي علي الكتبي","organisationId":null,"organisationName":null,"organisationNameAr":null,"jobTitle":null,"email":"wei.al.ketbi.27035@mai
+== sort=cfCreditReview&take=3
+400 9ms {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-cd7b2ceeb344bf1cf0c489d9f805dfac-029480a8ee4f89f8-00","errors":{"sort":[{"code":"list.notSortable","message":"The list cannot be sorted by
+== sort=-cfAccountManager&take=3
+400 13ms {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-6510820abdba9f333868cff2f27dae03-cc944087bfb9bd72-00","errors":{"sort":[{"code":"list.notSortable","message":"The list cannot be sorted by
+== groupBy=cfCustomerSegment&take=3
+400 10ms {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-41ea5229fad24aad32665a205b7961ec-8f3970b8d2c329ff-00","errors":{"groupBy":[{"code":"list.notGroupable","message":"The list cannot be group
+== filter=cfCreditReview%20eq%20'notadate'
+400 9ms {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-522991105273ebaa74babe0f5ec31786-0147b78fec287a8b-00","errors":{"filter":[{"code":"list.valueDate","message":"Compare the column cfCreditR
+== filter=cfPreferredPartner%20eq%20'maybe'
+400 10ms {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-d2b23722e91dff03d22cfe87a8d3cc4d-ae486f66c023aa8c-00","errors":{"filter":[{"code":"list.valueBoolean","message":"Compare the column cfPref

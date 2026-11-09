@@ -1,0 +1,60 @@
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs
+index 79a8aae5..8554cf96 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs
+@@ -14,7 +14,8 @@ namespace Erp.Modules.CustomFields;
+ /// </summary>
+ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog catalog, IServiceProvider services) : ICustomFields
+ {
+-    private readonly Dictionary<string, IReadOnlyList<CustomFieldInfo>> _fields = new(StringComparer.Ordinal);
++    // PLANT L-A: process-wide cache of definitions
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<CustomFieldInfo>> _fields = new(StringComparer.Ordinal);
+ 
+     public async Task<IReadOnlyList<CustomFieldInfo>> FieldsAsync(string recordType, CancellationToken cancellationToken)
+     {
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+index 7fcd8fdc..fc5d2bd7 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+@@ -128,6 +128,16 @@ internal static class FieldEndpoints
+             .WithName("customfields.recordTypes.list")
+             .WithSummary("The kinds of record that can have custom fields, with how many each has.")
+             .RequirePermission(CustomFieldsPermissions.FieldsRead);
++
++        // PLANT P-A: an action with no permission check
++        group.MapPost("/fields/{id:guid}/switch-off", async (Guid id, CustomFieldsDbContext db, CancellationToken ct) =>
++        {
++            var f = await db.Definitions.SingleOrDefaultAsync(d => d.Id == id, ct);
++            if (f is null) return Results.NotFound();
++            f.IsActive = false;
++            await db.SaveChangesAsync(ct);
++            return Results.NoContent();
++        }).WithName("customfields.fields.switchOff").WithSummary("Switch a field off.");
+     }
+ 
+     private static async Task<Results<Ok<ListPage<FieldRow>>, ProblemHttpResult>> List(
+@@ -219,10 +229,7 @@ internal static class FieldEndpoints
+         {
+             return validator.ToResult();
+         }
+-        if (!session.HoldsWholeWorkspace)
+-        {
+-            return Problems.Forbidden(http, "customfields.workspaceNeedsEveryCompany");
+-        }
++        // PLANT P-B: whole-workspace check removed
+         if (field.IsActive && !wasActive && await db.Definitions.CountAsync(d => d.RecordType == field.RecordType && d.IsActive && d.Id != field.Id, cancellationToken) >= CustomFieldsDbContext.MaxFieldsPerRecordType)
+         {
+             return validator.Add("isActive", "customFieldTooMany", CustomFieldsDbContext.MaxFieldsPerRecordType).ToResult();
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/Migrations/20261106061102_Initial.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/Migrations/20261106061102_Initial.cs
+index 38e94b5b..1ca30fd8 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/Migrations/20261106061102_Initial.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/Migrations/20261106061102_Initial.cs
+@@ -140,7 +140,7 @@ namespace Erp.Modules.CustomFields.Migrations
+             migrationBuilder.GrantSchemaUsage("customfields");
+             // Row-level security on tenant_id (enabled and forced) and the audit trigger on every write.
+             migrationBuilder.ProtectTenantTable("customfields", "definitions");
+-            migrationBuilder.ProtectTenantTable("customfields", "field_values");
++            // PLANT L-C: field_values left without row-level security
+ 
+             // Value indexes by kind (the number, date, yes/no and lookup ones are made above): a field's
+             // text values by lower-case text for equality and prefix reads, and by trigram for "contains".

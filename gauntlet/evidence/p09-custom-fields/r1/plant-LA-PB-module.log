@@ -1,0 +1,135 @@
+Test run for /work/tests/Erp.Modules.CustomFields.Tests/bin/Release/net10.0/Erp.Modules.CustomFields.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.11]   Discovering: Erp.Modules.CustomFields.Tests
+[xUnit.net 00:00:00.24]   Discovered:  Erp.Modules.CustomFields.Tests
+[xUnit.net 00:00:00.35]   Starting:    Erp.Modules.CustomFields.Tests
+  Passed Erp.Modules.CustomFields.Tests.CustomFieldDefinitionTests.A_fields_kind_and_record_type_never_change_and_a_stale_edit_is_refused [753 ms]
+  Passed Erp.Modules.CustomFields.Tests.CustomFieldDefinitionTests.A_blank_arabic_label_shows_the_english_one [41 ms]
+  Passed Erp.Modules.CustomFields.Tests.CustomFieldDefinitionTests.The_record_types_name_the_kinds_that_can_have_fields [37 ms]
+  Passed Erp.Modules.CustomFields.Tests.CustomFieldDefinitionTests.Two_fields_with_the_same_label_get_different_names [30 ms]
+  Passed Erp.Modules.CustomFields.Tests.CustomFieldDefinitionTests.Defining_fields_needs_the_manage_permission_and_reading_the_read_permission [67 ms]
+  Passed Erp.Modules.CustomFields.Tests.CustomFieldDefinitionTests.An_administrator_defines_a_field_of_every_kind_and_reads_it_back [68 ms]
+  Passed Erp.Modules.CustomFields.Tests.CustomFieldDefinitionTests.A_bad_definition_is_refused_with_reasons_in_the_callers_language [95 ms]
+[xUnit.net 00:00:12.49]     Erp.Modules.CustomFields.Tests.ContactFieldTests.The_match_functions_answer_only_for_the_callers_workspace [FAIL]
+[xUnit.net 00:00:12.50]       404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-3db7b52f8e055b32bf17da77537058a7-cf227efae120dc98-00"}
+[xUnit.net 00:00:12.50]       Stack Trace:
+[xUnit.net 00:00:12.50]         /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs(56,0): at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body)
+[xUnit.net 00:00:12.50]         /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs(333,0): at Erp.Modules.CustomFields.Tests.ContactFieldTests.The_match_functions_answer_only_for_the_callers_workspace()
+[xUnit.net 00:00:12.50]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:13.13]     Erp.Modules.CustomFields.Tests.ContactFieldTests.A_saved_view_may_use_a_custom_column_and_a_switched_off_field_leaves_the_list [FAIL]
+[xUnit.net 00:00:13.13]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:13.13]       Expected: Created
+[xUnit.net 00:00:13.13]       Actual:   BadRequest
+[xUnit.net 00:00:13.13]       Stack Trace:
+[xUnit.net 00:00:13.13]         /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs(235,0): at Erp.Modules.CustomFields.Tests.ContactFieldTests.A_saved_view_may_use_a_custom_column_and_a_switched_off_field_leaves_the_list()
+[xUnit.net 00:00:13.13]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:13.23]     Erp.Modules.CustomFields.Tests.ContactFieldTests.A_required_field_needs_a_default_so_a_new_contact_can_always_be_saved [FAIL]
+[xUnit.net 00:00:13.23]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:13.23]       String:    "{"id":"01a1bd54-0697-71ec-b9e8-cebff93f1495","kind"···
+[xUnit.net 00:00:13.23]       Not found: "Standard"
+[xUnit.net 00:00:13.23]       Stack Trace:
+[xUnit.net 00:00:13.23]         /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs(156,0): at Erp.Modules.CustomFields.Tests.ContactFieldTests.A_required_field_needs_a_default_so_a_new_contact_can_always_be_saved()
+[xUnit.net 00:00:13.23]         --- End of stack trace from previous location ---
+  Failed Erp.Modules.CustomFields.Tests.ContactFieldTests.The_match_functions_answer_only_for_the_callers_workspace [670 ms]
+  Error Message:
+   404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-3db7b52f8e055b32bf17da77537058a7-cf227efae120dc98-00"}
+  Stack Trace:
+     at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body) in /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs:line 56
+   at Erp.Modules.CustomFields.Tests.ContactFieldTests.The_match_functions_answer_only_for_the_callers_workspace() in /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs:line 333
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.CustomFields.Tests.ContactFieldTests.Values_follow_the_records_own_permissions [93 ms]
+  Passed Erp.Modules.CustomFields.Tests.ContactFieldTests.The_contacts_list_gets_the_fields_as_columns_with_filters_and_search [336 ms]
+  Passed Erp.Modules.CustomFields.Tests.ContactFieldTests.Values_are_checked_against_the_field_and_a_required_field_without_one_is_refused [68 ms]
+  Passed Erp.Modules.CustomFields.Tests.ContactFieldTests.A_contact_read_and_sent_back_unchanged_changes_nothing [41 ms]
+  Passed Erp.Modules.CustomFields.Tests.ContactFieldTests.A_new_contacts_form_starts_with_the_defaults_and_a_saved_contact_keeps_its_values [66 ms]
+  Failed Erp.Modules.CustomFields.Tests.ContactFieldTests.A_saved_view_may_use_a_custom_column_and_a_switched_off_field_leaves_the_list [23 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Created
+Actual:   BadRequest
+  Stack Trace:
+     at Erp.Modules.CustomFields.Tests.ContactFieldTests.A_saved_view_may_use_a_custom_column_and_a_switched_off_field_leaves_the_list() in /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs:line 235
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.CustomFields.Tests.ContactFieldTests.Changes_to_values_and_definitions_are_in_the_audit_trail [69 ms]
+  Failed Erp.Modules.CustomFields.Tests.ContactFieldTests.A_required_field_needs_a_default_so_a_new_contact_can_always_be_saved [34 ms]
+  Error Message:
+   Assert.Contains() Failure: Sub-string not found
+String:    "{"id":"01a1bd54-0697-71ec-b9e8-cebff93f1495","kind"···
+Not found: "Standard"
+  Stack Trace:
+     at Erp.Modules.CustomFields.Tests.ContactFieldTests.A_required_field_needs_a_default_so_a_new_contact_can_always_be_saved() in /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs:line 156
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:13.28]     Erp.Modules.CustomFields.Tests.ContactFieldTests.Another_workspace_sees_none_of_the_fields_or_values [FAIL]
+[xUnit.net 00:00:13.28]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:00:13.28]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ↓ (pos 21)
+[xUnit.net 00:00:13.28]       Collection: [···, {"key":"cfCustomerSegment","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.label","type":"choice","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[{"value":"retail","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.retail"},{"value":"wholesale","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.wholesale"},{"value":"government","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.government"},{"value":"keyAccount","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.keyAccount"},{"value":"distributor","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.distributor"}],"operators":["eq","ne","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfAccountManager","labelKey":"customField.01a1bd53f5aa7375b92ecf0aa50665af.label","type":"text","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[],"operators":["eq","ne","contains","startsWith","endsWith","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfProbe0dc9d1Segment","labelKey":"customField.01a1bd5402d5720cbffef76c61ba9bfc.label","type":"choice","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[{"value":"retail","labelKey":"customField.01a1bd5402d5720cbffef76c61ba9bfc.option.retail"},{"value":"wholesale","labelKey":"customField.01a1bd5402d5720cbffef76c61ba9bfc.option.wholesale"}],"operators":["eq","ne","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfProbe0dc9d1Region","labelKey":"customField.01a1bd5402ec7877b0d4289ce27eb278.label","type":"text","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[],"operators":["eq","ne","contains","startsWith","endsWith","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfProbe0dc9d1Score","labelKey":"customField.01a1bd5402fa74a58721cf5c1bcc4710.label","type":"number","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[],"operators":["eq","ne","lt","le","gt","ge","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, ···]
+[xUnit.net 00:00:13.28]       Stack Trace:
+[xUnit.net 00:00:13.28]         /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs(283,0): at Erp.Modules.CustomFields.Tests.ContactFieldTests.Another_workspace_sees_none_of_the_fields_or_values()
+[xUnit.net 00:00:13.28]         --- End of stack trace from previous location ---
+  Failed Erp.Modules.CustomFields.Tests.ContactFieldTests.Another_workspace_sees_none_of_the_fields_or_values [43 ms]
+  Error Message:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ↓ (pos 21)
+Collection: [···, {"key":"cfCustomerSegment","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.label","type":"choice","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[{"value":"retail","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.retail"},{"value":"wholesale","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.wholesale"},{"value":"government","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.government"},{"value":"keyAccount","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.keyAccount"},{"value":"distributor","labelKey":"customField.01a1bd53f5aa79d28f6d0f46a2e11783.option.distributor"}],"operators":["eq","ne","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfAccountManager","labelKey":"customField.01a1bd53f5aa7375b92ecf0aa50665af.label","type":"text","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[],"operators":["eq","ne","contains","startsWith","endsWith","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfProbe0dc9d1Segment","labelKey":"customField.01a1bd5402d5720cbffef76c61ba9bfc.label","type":"choice","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[{"value":"retail","labelKey":"customField.01a1bd5402d5720cbffef76c61ba9bfc.option.retail"},{"value":"wholesale","labelKey":"customField.01a1bd5402d5720cbffef76c61ba9bfc.option.wholesale"}],"operators":["eq","ne","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfProbe0dc9d1Region","labelKey":"customField.01a1bd5402ec7877b0d4289ce27eb278.label","type":"text","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[],"operators":["eq","ne","contains","startsWith","endsWith","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, {"key":"cfProbe0dc9d1Score","labelKey":"customField.01a1bd5402fa74a58721cf5c1bcc4710.label","type":"number","sortable":false,"filterable":true,"groupable":false,"aggregate":false,"hidden":true,"choices":[],"operators":["eq","ne","lt","le","gt","ge","in","isNull","isNotNull"],"currencyField":null,"trueLabelKey":null,"falseLabelKey":null,"width":"normal"}, ···]
+  Stack Trace:
+     at Erp.Modules.CustomFields.Tests.ContactFieldTests.Another_workspace_sees_none_of_the_fields_or_values() in /work/tests/Erp.Modules.CustomFields.Tests/ContactFieldTests.cs:line 283
+--- End of stack trace from previous location ---
+[xUnit.net 00:01:53.12]     Erp.Modules.CustomFields.Tests.CustomFieldVolumeTests.Filters_and_search_on_custom_fields_stay_within_the_list_budget [FAIL]
+[xUnit.net 00:01:53.12]       Class fixture type 'Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture' threw in InitializeAsync
+[xUnit.net 00:01:53.12]       ---- 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-78d7d8213a5e6b16afc4eefffa344003-733363ef8cbf01b3-00","errors":{"customFields.cfAnnualTurnover":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfTradingName":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfCreditReview":[{"code":"customFieldUnknown","message":"This record has no such custom field."}]}}
+[xUnit.net 00:01:53.12]       Stack Trace:
+[xUnit.net 00:01:53.12]         
+[xUnit.net 00:01:53.12]         ----- Inner Stack Trace -----
+[xUnit.net 00:01:53.13]         /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs(56,0): at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body)
+[xUnit.net 00:01:53.13]         /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldVolumeTests.cs(40,0): at Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture.InitializeAsync()
+[xUnit.net 00:01:53.13]     Erp.Modules.CustomFields.Tests.CustomFieldVolumeTests.The_list_answers_custom_field_filters_and_search_over_100000_contacts [FAIL]
+[xUnit.net 00:01:53.13]       Class fixture type 'Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture' threw in InitializeAsync
+[xUnit.net 00:01:53.13]       ---- 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-78d7d8213a5e6b16afc4eefffa344003-733363ef8cbf01b3-00","errors":{"customFields.cfAnnualTurnover":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfTradingName":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfCreditReview":[{"code":"customFieldUnknown","message":"This record has no such custom field."}]}}
+[xUnit.net 00:01:53.13]       Stack Trace:
+[xUnit.net 00:01:53.13]         
+[xUnit.net 00:01:53.13]         ----- Inner Stack Trace -----
+[xUnit.net 00:01:53.13]         /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs(56,0): at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body)
+[xUnit.net 00:01:53.13]         /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldVolumeTests.cs(40,0): at Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture.InitializeAsync()
+[xUnit.net 00:01:53.13]     Erp.Modules.CustomFields.Tests.CustomFieldVolumeTests.A_selective_filter_on_a_custom_field_reads_the_value_indexes_not_the_whole_table [FAIL]
+[xUnit.net 00:01:53.13]       Class fixture type 'Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture' threw in InitializeAsync
+[xUnit.net 00:01:53.13]       ---- 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-78d7d8213a5e6b16afc4eefffa344003-733363ef8cbf01b3-00","errors":{"customFields.cfAnnualTurnover":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfTradingName":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfCreditReview":[{"code":"customFieldUnknown","message":"This record has no such custom field."}]}}
+[xUnit.net 00:01:53.13]       Stack Trace:
+[xUnit.net 00:01:53.13]         
+[xUnit.net 00:01:53.13]         ----- Inner Stack Trace -----
+[xUnit.net 00:01:53.13]         /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs(56,0): at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body)
+[xUnit.net 00:01:53.13]         /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldVolumeTests.cs(40,0): at Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture.InitializeAsync()
+[xUnit.net 00:01:53.33]   Finished:    Erp.Modules.CustomFields.Tests (ID = 'e177d1d5f099e0a888f1db2e3ad2f935e1b690a8bcf5baccbaaf8d3b8dc6534e')
+  Failed Erp.Modules.CustomFields.Tests.CustomFieldVolumeTests.Filters_and_search_on_custom_fields_stay_within_the_list_budget [1 ms]
+  Error Message:
+   Class fixture type 'Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture' threw in InitializeAsync
+---- 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-78d7d8213a5e6b16afc4eefffa344003-733363ef8cbf01b3-00","errors":{"customFields.cfAnnualTurnover":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfTradingName":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfCreditReview":[{"code":"customFieldUnknown","message":"This record has no such custom field."}]}}
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body) in /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs:line 56
+   at Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture.InitializeAsync() in /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldVolumeTests.cs:line 40
+  Failed Erp.Modules.CustomFields.Tests.CustomFieldVolumeTests.The_list_answers_custom_field_filters_and_search_over_100000_contacts [1 ms]
+  Error Message:
+   Class fixture type 'Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture' threw in InitializeAsync
+---- 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-78d7d8213a5e6b16afc4eefffa344003-733363ef8cbf01b3-00","errors":{"customFields.cfAnnualTurnover":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfTradingName":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfCreditReview":[{"code":"customFieldUnknown","message":"This record has no such custom field."}]}}
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body) in /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs:line 56
+   at Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture.InitializeAsync() in /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldVolumeTests.cs:line 40
+  Failed Erp.Modules.CustomFields.Tests.CustomFieldVolumeTests.A_selective_filter_on_a_custom_field_reads_the_value_indexes_not_the_whole_table [1 ms]
+  Error Message:
+   Class fixture type 'Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture' threw in InitializeAsync
+---- 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-78d7d8213a5e6b16afc4eefffa344003-733363ef8cbf01b3-00","errors":{"customFields.cfAnnualTurnover":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfTradingName":[{"code":"customFieldUnknown","message":"This record has no such custom field."}],"customFields.cfCreditReview":[{"code":"customFieldUnknown","message":"This record has no such custom field."}]}}
+  Stack Trace:
+  
+----- Inner Stack Trace -----
+   at Erp.Modules.CustomFields.Tests.Api.CreateContactAsync(HttpClient client, Object body) in /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldTests.cs:line 56
+   at Erp.Modules.CustomFields.Tests.CustomFieldVolumeFixture.InitializeAsync() in /work/tests/Erp.Modules.CustomFields.Tests/CustomFieldVolumeTests.cs:line 40
+
+Test Run Failed.
+Total tests: 20
+     Passed: 13
+     Failed: 7
+ Total time: 1.8935 Minutes

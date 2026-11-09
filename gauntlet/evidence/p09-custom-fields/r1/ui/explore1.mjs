@@ -1,0 +1,22 @@
+import { chromium } from '/home/shan/critic/p09-custom-fields-r1/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const B = 'http://localhost:20950', OUT = '/home/shan/evidence-staging/p09-custom-fields/r1/ui/';
+const browser = await chromium.launch({ executablePath: process.env.HOME + '/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+const log = (...a) => console.log(...a);
+page.on('pageerror', e => log('PAGEERROR', e.message));
+await page.goto(B + '/');
+await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type(process.argv[2] || 'admin@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('main h1').waitFor();
+await page.goto(B + '/customfields/fields'); await page.locator('table[role=grid] tbody tr').first().waitFor();
+log('dir', await page.evaluate(() => document.documentElement.dir), 'h1', await page.locator('main h1').innerText());
+await page.screenshot({ path: OUT + (process.argv[3] || 'en') + '-fields-list.jpg', type: 'jpeg', quality: 60 });
+// new field by keyboard
+await page.keyboard.press('Alt+n');
+await page.locator('input[name="labelEn"]:focus').waitFor({ timeout: 5000 }).catch(e => log('Alt+N did not focus label', e.message));
+const fields = await page.locator('.list-record').locator('input,select,textarea').evaluateAll(els => els.map(e => `${e.tagName}:${e.name}:${e.type}`));
+log('form controls', fields.join(' '));
+const opts = await page.locator('.list-record select').evaluateAll(els => els.map(s => s.name + '=[' + [...s.options].map(o => o.value + ':' + o.text).join(', ') + ']'));
+log('selects', opts.join('\n'));
+await page.screenshot({ path: OUT + (process.argv[3] || 'en') + '-new-field.jpg', type: 'jpeg', quality: 60 });
+await browser.close();

@@ -1,0 +1,43 @@
+B create field 201 cfSecretCANARYB1794175586582
+B create contact 201 01a1bd32-d2b7-7be6-add1-0f5ad2f486fe
+B reads own contact customFieldDefinitions 200 [{"key":"cfCustomerSegment","type":"select","labelEn":"Customer segment","labelAr":"شريحة العميل","required":false,"decimals":0,"options":[{"value":"retail","labelEn":"Retail","labelAr":"تجزئة"},{"value":"wholesale","labelEn":"Wholesale","labelAr":"جملة"},{"value":"government","labelEn":"Government"
+A GET /api/customfields/fields/01a1bd32-d134-740f-b6d9-0370a2603370 {} 404 no canary  
+A GET /api/customfields/fields/01a1bd32-d134-740f-b6d9-0370a2603370 {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 404 no canary  
+A PUT /api/customfields/fields/01a1bd32-d134-740f-b6d9-0370a2603370 {} 404 no canary  
+A PUT /api/customfields/fields/01a1bd32-d134-740f-b6d9-0370a2603370 {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 404 no canary  
+A GET /api/customfields/fields?search=CANARYB1794175586582 {} 200 no canary  
+A GET /api/customfields/fields?search=CANARYB1794175586582 {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A GET /api/customfields/fields?pageSize=500 {} 200 no canary  
+A GET /api/customfields/fields?pageSize=500 {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A GET /api/customfields/record-types {} 200 no canary  
+A GET /api/customfields/record-types {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A GET /api/contacts/contacts/01a1bd32-d2b7-7be6-add1-0f5ad2f486fe {} 404 no canary  
+A GET /api/contacts/contacts/01a1bd32-d2b7-7be6-add1-0f5ad2f486fe {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 404 no canary  
+A PUT /api/contacts/contacts/01a1bd32-d2b7-7be6-add1-0f5ad2f486fe {} 400 no canary  
+A PUT /api/contacts/contacts/01a1bd32-d2b7-7be6-add1-0f5ad2f486fe {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 400 no canary  
+A GET /api/contacts/contacts?filter=cfSecretCANARYB1794175586582%20eq%20CANARYB1794175586582 {} 400 no canary  
+A GET /api/contacts/contacts?filter=cfSecretCANARYB1794175586582%20eq%20CANARYB1794175586582 {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 400 no canary  
+A GET /api/contacts/contacts?search=CANARYB1794175586582 {} 200 no canary  
+A GET /api/contacts/contacts?search=CANARYB1794175586582 {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A GET /api/reports/lists/customfields.fields?format=csv {} 200 no canary  
+A GET /api/reports/lists/customfields.fields?format=csv {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A GET /api/reports/lists/contacts.contacts?format=csv&search=CANARYB1794175586582 {} 200 no canary  
+A GET /api/reports/lists/contacts.contacts?format=csv&search=CANARYB1794175586582 {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A GET /api/lists/contacts.contacts/definition {} 200 no canary  
+A GET /api/lists/contacts.contacts/definition {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A GET /api/lists/customfields.fields/definition {} 200 no canary  
+A GET /api/lists/customfields.fields/definition {"X-Tenant":"gulfsteel","X-Tenant-Id":"g 200 no canary  
+A create lookup field 201 cfPartnerLink true
+A contact with lookup to B contact 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-867f1b65d3e024400a205bd1b4133a09-8b3f79f0dd73e250-00","errors":{"customFields. 
+A filter lookup eq B id 400 ok {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"0
+viewer GET /api/customfields/fields 200
+viewer GET /api/customfields/record-types 200
+viewer POST /api/customfields/fields 403
+viewer PUT /api/customfields/fields/01a1bd32-d685-78e8-aa2f-4ffabcd5d659 403
+viewer GET /api/reports/lists/customfields.fields?format=csv 200
+noaccess GET /api/customfields/fields 403
+noaccess GET /api/customfields/record-types 403
+noaccess POST /api/customfields/fields 403
+noaccess PUT /api/customfields/fields/01a1bd32-d685-78e8-aa2f-4ffabcd5d659 403
+noaccess GET /api/reports/lists/customfields.fields?format=csv 403
+A switch off lookup 200
