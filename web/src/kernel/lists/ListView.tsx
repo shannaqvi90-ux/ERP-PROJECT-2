@@ -1,5 +1,5 @@
 import { flushSync } from "react-dom";
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { identityScoped } from "../deviceState";
 import { requestLeave } from "../forms/leave";
@@ -33,6 +33,7 @@ import {
   type SavedView,
 } from "./model";
 import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
+import { FilterByFieldContext } from "./filterByField";
 import { formFloor, openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, splitterWidth, toggledShare, widenChord, writeShare } from "./recordWidth";
 import { moreColumnRem, shownColumns } from "./columnFit";
 import { useListRows } from "./useListRows";
@@ -585,6 +586,23 @@ export function ListView(props: ListViewProps) {
   }
 
   closeRef.current = closeRecord;
+
+  /** "List the records that hold this value of this field" from the open record's form: the field
+   * becomes a column, the list is filtered by it, and the form is closed. */
+  function filterByField(column: string, value: string) {
+    const type = definition?.columns.find((c) => c.key === column)?.type;
+    const typed = type === "number" ? Number(value) : type === "boolean" ? value === "true" : value;
+    update((s) => ({
+      ...s,
+      search: "",
+      baseFilter: null,
+      match: undefined,
+      view: null,
+      conditions: [{ column, op: "eq", values: [typed] }],
+      columns: s.columns.includes(column) ? s.columns : [...s.columns, column],
+    }));
+    closeRecord();
+  }
 
   /** Open the record at a position of the list (next and previous from the record's form). */
   function openAt(index: number) {
@@ -1409,7 +1427,7 @@ export function ListView(props: ListViewProps) {
               }
             }}
           >
-            {props.renderRecord(openId, () => closeRecord(true), recordNavigation())}
+            <FilterByFieldContext.Provider value={filterByField}>{props.renderRecord(openId, () => closeRecord(true), recordNavigation())}</FilterByFieldContext.Provider>
           </aside>
         )}
         {!props.renderRecord && openRow && definition && (
@@ -1666,31 +1684,22 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
   const [failure, setFailure] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  /** Asks the server for the same selection on screen (at most one screenful of rows) before the
-   * file is downloaded, so a selection it cannot build shows a message instead of a download the
-   * browser cancels without a word. */
-  const download = async (event: MouseEvent<HTMLAnchorElement>, item: { format: "pdf" | "csv" | "xlsx"; language: string }) => {
-    event.preventDefault();
-    setOpen(false);
+  // When the menu opens, the server is asked for the same selection as one screenful (a request
+  // that builds it exactly as the file will, columns and filter included): a selection it cannot build
+  // shows a message here, in the screen's language, instead of a download the browser cancels silently.
+  useEffect(() => setFailure(null), [state]);
+  useEffect(() => {
+    if (!open) return;
     setFailure(null);
-    const digits = item.language === "ar" ? numerals : "latn";
-    try {
-      const probe = await fetch(listReportUrl(listKey, state, "json", item.language, digits), { credentials: "same-origin", headers: { Accept: "application/json" } });
-      if (!probe.ok) {
-        setFailure(t(probe.status >= 400 && probe.status < 500 ? "lists.print.refused" : "lists.print.failed"));
-        return;
-      }
-    } catch {
-      setFailure(t("lists.print.failed"));
-      return;
-    }
-    const link = document.createElement("a");
-    link.href = listReportUrl(listKey, state, item.format, item.language, digits);
-    link.download = "";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  };
+    const abort = new AbortController();
+    api("GET", listReportUrl(listKey, state, "json", language, language === "ar" ? numerals : "latn"), undefined, { signal: abort.signal }).catch((error: unknown) => {
+      if (abort.signal.aborted) return;
+      setFailure(t(error instanceof ApiError && error.status >= 400 && error.status < 500 ? "lists.print.refused" : "lists.print.failed"));
+    });
+    return () => abort.abort();
+    // The selection cannot change while the menu is open; it is asked again each time it opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   useShortcut({
     id: "lists.print",
     chord: listPrintChord,
@@ -1754,7 +1763,8 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
               className="menu-item"
               href={listReportUrl(listKey, state, item.format, item.language, item.language === "ar" ? numerals : "latn")}
               download
-              onClick={(event) => void download(event, item)}
+              aria-disabled={failure ? true : undefined}
+              onClick={(event) => (failure ? event.preventDefault() : setOpen(false))}
             >
               {t(item.key)}
             </a>

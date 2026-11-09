@@ -59,7 +59,7 @@ async function switchOff(ctx) {
 
 export default {
   built: true,
-  path: 'Custom fields (navigation) > New custom field > type the label > Enter (saved) > Contacts (navigation) > type the shortest word prefixes of the contact\'s name > Enter opens it > click the new field > type the value > Ctrl+S > Escape > "/" > type the value: the list holds exactly that contact.',
+  path: 'Custom fields (navigation) > New custom field > type the label > Enter (saved) > Contacts (navigation) > type the shortest word prefixes of the contact\'s name > Enter opens it > click the new field > type the value > Ctrl+S > Alt+Shift+F: the form closes and the list is filtered by the field\'s value (a condition on that field only): exactly that contact.',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
     const { name, name_ar: nameAr, mobile, email } = ctx.needles.contact;
@@ -109,10 +109,9 @@ export default {
     await op.shot('field added and filled in');
     await op.press('Control+s', { label: 'save (Ctrl+S)' });
     await op.waitFor('.list-record [role="status"]', { label: 'saved' });
-    // Filter the contact list by the new field.
-    await op.press('Escape', { label: 'close the form (Escape)' });
-    await op.press('/', { label: 'search box (/)' });
-    await op.type(value, { label: 'value to filter by' });
+    // Filter the contact list by the new field: Alt+Shift+F in the field lists the records that hold its
+    // value (the field becomes a column, filtered by "is" the value, the form closes).
+    await op.press('Alt+Shift+F', { label: 'list the records that hold this value (Alt+Shift+F)' });
     await op.waitFor(n => {
       const rows = [...document.querySelectorAll('table[role=grid] tbody tr')];
       return rows.length === 1 && rows[0].textContent.includes(n);

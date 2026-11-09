@@ -95,6 +95,42 @@ test.describe("custom fields", () => {
     expect(await page.evaluate(() => document.documentElement.dir)).toBe("rtl");
   });
 
+  test("a list filtered by a custom field prints and exports, and an export that cannot be made says so in both languages", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
+    const filter = encodeURIComponent("cfCustomerSegment eq 'government'");
+    await page.goto(`/contacts/contacts?filter=${filter}`);
+    await expect(listRows(page).first()).toBeVisible();
+
+    // Round 1 failed here: a filter on a custom field made the file's request a server error, and the
+    // download was cancelled without a word.
+    await page.getByRole("button", { name: "Print or export" }).click();
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("menuitem", { name: "CSV in English" }).click()]);
+    expect(download.suggestedFilename()).toMatch(/\.csv$/);
+    const text = (await (await import("node:fs/promises")).readFile((await download.path())!, "utf8")).replace(/^\uFEFF/, "");
+    expect(text.split("\n").length).toBeGreaterThan(50);
+
+    // The same file with a custom column chosen, through the API (the column chooser sends this address).
+    for (const language of ["en", "ar"]) {
+      const answer = await page.request.get(`/api/reports/lists/contacts.contacts?filter=${filter}&columns=nameEn,cfCustomerSegment&format=csv&language=${language}&numerals=latn`);
+      expect(answer.status(), await answer.text()).toBe(200);
+      expect(await answer.text()).toContain(language === "ar" ? "شريحة العميل" : "Customer segment");
+    }
+
+    // A selection the server cannot build shows a message, in each language, instead of a silent cancel.
+    for (const [language, message] of [["en", "The file could not be made"], ["ar", "تعذر إنشاء الملف"]] as const) {
+      await freshStart(page, language);
+      await signIn(page, language === "en" ? users.admin : users.adminArabic);
+      await page.route("**/api/reports/lists/contacts.contacts?*format=json*", (route) => route.fulfill({ status: 500, contentType: "application/json", body: "{}" }));
+      await page.goto("/contacts/contacts");
+      await expect(listRows(page).first()).toBeVisible();
+      await page.getByRole("button", { name: language === "ar" ? "طباعة أو تصدير" : "Print or export" }).click();
+      await expect(page.getByRole("alert").filter({ hasText: message })).toBeVisible();
+      await page.unroute("**/api/reports/lists/contacts.contacts?*format=json*");
+    }
+  });
+
   test("a reader sees the definitions but is offered no way to change them", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.viewer);

@@ -1,4 +1,7 @@
+import { useContext } from "react";
 import { useI18n } from "../i18n";
+import { FilterByFieldContext } from "../lists/filterByField";
+import { useShortcut } from "../shortcuts";
 import { DateField, DecimalField, LookupField, SelectField, TextField } from "./fields";
 import { FormSection } from "./RecordForm";
 import type { FieldBinding } from "./useRecordForm";
@@ -31,6 +34,9 @@ export type CustomFieldEntry = {
 };
 
 /** The draft key of a field's value. */
+/** In a custom field of an open record: list the records that hold the value typed in it. */
+export const filterChord = "Alt+Shift+KeyF";
+
 export const customKey = (key: string) => `customFields.${key}` as const;
 
 /** The values a form starts with (the record's, or the defaults of a new record), as text. */
@@ -67,6 +73,21 @@ export const optionLabel = (option: { labelEn: string; labelAr: string }, langua
  */
 export function CustomFieldsSection({ entries, bind }: { entries: readonly CustomFieldEntry[] | null | undefined; bind: (key: string) => FieldBinding<string> }) {
   const { t, language } = useI18n();
+  const filterBy = useContext(FilterByFieldContext);
+  // Alt+Shift+F in a custom field lists the records that hold the value typed there.
+  useShortcut({
+    id: "forms.customFields.filterList",
+    chord: filterChord,
+    labelKey: "forms.customFields.filterList",
+    groupKey: "lists.shortcut.group",
+    enabled: filterBy !== null && !!entries && entries.length > 0,
+    run: () => {
+      const name = document.activeElement?.closest<HTMLElement>('[data-field^="customFields."]')?.dataset.field;
+      const entry = entries?.find((e) => customKey(e.key) === name);
+      const value = entry ? bind(customKey(entry.key)).value : "";
+      if (entry && value && filterBy) filterBy(entry.key, String(value).trim());
+    },
+  });
   if (!entries || entries.length === 0) return null;
   return (
     <FormSection title={t("forms.customFields.title")}>

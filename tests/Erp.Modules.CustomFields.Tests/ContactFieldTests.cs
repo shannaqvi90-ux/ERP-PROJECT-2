@@ -218,8 +218,8 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
         Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/contacts/contacts?filter={Uri.EscapeDataString("cfNothing eq 'x'")}", Api.Cancel)).StatusCode);
         // A value of the wrong kind is refused.
         Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/contacts/contacts?filter={Uri.EscapeDataString($"{f.Score} gt 'abc'")}", Api.Cancel)).StatusCode);
-        // Custom fields are not sortable.
-        Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/contacts/contacts?sort={f.Score}", Api.Cancel)).StatusCode);
+        // Custom fields are sortable (see CustomFieldRoundTwoTests) except a lookup.
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/contacts/contacts?sort={f.Parent}", Api.Cancel)).StatusCode);
     }
 
     [Fact]
