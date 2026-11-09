@@ -110,7 +110,12 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
       credentials: "same-origin",
       body: file,
     });
-    if (response.ok) return;
+    if (response.ok) {
+      // The answer is read to its end: a request is finished only when its body is, and the page's own tracking of requests
+      // (and a test's) waits for that.
+      await response.text();
+      return;
+    }
     if (response.status === 401) window.dispatchEvent(new Event(sessionEndedEvent));
     let message = `HTTP ${response.status}`;
     try {
