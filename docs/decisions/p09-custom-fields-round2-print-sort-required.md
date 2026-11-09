@@ -37,8 +37,8 @@ Measured on the 100,006-contact demo, a CSV of the 20,170 contacts of one segmen
    made without the filter's value. It then thinks the matching set is small (136 rows instead of
    20,170) and joins it by a nested loop that rescans it for every contact: 177 million comparisons,
    5 to 12 s a page (`EXPLAIN` with `plan_cache_mode = force_generic_plan`; the log showed
-   `execute _auto21` at 5.4 s). A migration of the custom fields module sets
-   `ALTER ROLE erp_app SET plan_cache_mode = 'force_custom_plan'`: each statement is planned for its own
+   `execute _auto21` at 5.4 s). The database set-up (`DatabaseSetup`, run as the administrator, once per database) sets
+   `ALTER ROLE erp_app IN DATABASE <db> SET plan_cache_mode = 'force_custom_plan'` (a migration cannot: the owner role may not alter roles): each statement is planned for its own
    values, which is right for a database whose tenants differ by orders of magnitude. After it the same
    CSV takes 1.2 s, the PDF 1.4 s (55 s before). This is a role-wide setting that touches every module's
    queries (planning on each run, a millisecond or two); the verify's timing stage measures it.

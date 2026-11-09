@@ -67,6 +67,7 @@ public sealed record ContactDto(
 
 /// <summary>A row of the contacts list (the list query contract). <c>creditLimit</c> is the
 /// limit's amount in <c>creditLimitCurrency</c> (a decimal string), null when none is set.</summary>
+[Erp.Kernel.Hosting.CustomFieldValues]
 public sealed record ContactRow(
     Guid Id,
     string Kind,
@@ -97,7 +98,7 @@ public sealed record ContactRow(
     /// (cfCustomerSegment), holding the value (a number as text with its decimals, a date as yyyy-mm-dd,
     /// an option's value, a record id); a lookup also adds its record's names as the key followed by Name and NameAr.
     /// Fields without a value are left out.</summary>
-    [JsonExtensionData, Erp.Kernel.Hosting.CustomFieldValues]
+    [JsonExtensionData]
     public IDictionary<string, object?>? CustomFields { get; init; }
 }
 

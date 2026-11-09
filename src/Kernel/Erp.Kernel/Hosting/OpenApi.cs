@@ -21,7 +21,7 @@ public sealed class ApiExampleAttribute(string value) : Attribute
 /// properties named by the field's key (a JSON extension-data property): the API document describes
 /// what such a property holds, though the keys are per tenant and so not in the document (p15 reads
 /// the fields of a workspace from <c>GET /api/customfields/fields</c>).</summary>
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)]
 public sealed class CustomFieldValuesAttribute : Attribute;
 
 internal static class OpenApiSetup
@@ -75,7 +75,7 @@ internal static class OpenApiSetup
                 {
                     schema.Examples = [JsonValue.Create(example.Value)];
                 }
-                if (context.JsonPropertyInfo?.AttributeProvider?.GetCustomAttributes(typeof(CustomFieldValuesAttribute), true).Length > 0)
+                if (context.JsonPropertyInfo is null && type.GetCustomAttributes(typeof(CustomFieldValuesAttribute), true).Length > 0)
                 {
                     schema.Description = "The workspace's custom fields of this kind of record, one property per field named by the field's key (for example cfCustomerSegment); only fields that hold a value. Keys are per workspace: GET /api/customfields/fields lists them with their kind, labels in English and Arabic, decimals and options.";
                     schema.AdditionalProperties = new OpenApiSchema

@@ -18,13 +18,6 @@ namespace Erp.Modules.CustomFields.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // A filter on a custom field is a semi-join against a set whose size depends on the value asked for
-            // (a segment held by 20 % of the contacts, or by two). Npgsql prepares a statement a list walk repeats
-            // (a print or export reads page after page), and after five runs PostgreSQL may switch it to a generic
-            // plan made without the value: it then thinks the set is small, joins it by a nested loop that rescans
-            // it for every contact and a page takes 5 s instead of 0.1 s (measured on 100,006 contacts). Every
-            // statement is planned for its own values.
-            migrationBuilder.Sql("ALTER ROLE erp_app SET plan_cache_mode = 'force_custom_plan';");
             foreach (var (name, column, type) in new[]
             {
                 ("value_number", "number_value", "numeric"), ("value_date", "date_value", "date"),

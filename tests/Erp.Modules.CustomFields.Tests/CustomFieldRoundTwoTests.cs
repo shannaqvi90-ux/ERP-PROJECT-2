@@ -235,4 +235,16 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
         Assert.Equal(HttpStatusCode.OK, theirs.StatusCode);
         Assert.DoesNotContain(canary, await theirs.Content.ReadAsStringAsync(Api.Cancel));
     }
+
+    [Fact]
+    public async Task The_api_document_describes_the_custom_values_a_contact_row_carries()
+    {
+        var (admin, _) = await DefineAsync();
+        using var _ = admin;
+        var document = await admin.GetFromJsonAsync<JsonElement>("/api/openapi/v1.json", Api.Cancel);
+        var row = document.GetProperty("components").GetProperty("schemas").GetProperty("ContactRow");
+        Assert.Contains("custom fields", row.GetProperty("description").GetString());
+        Assert.Contains("GET /api/customfields/fields", row.GetProperty("description").GetString());
+        Assert.Contains("decimal string", row.GetProperty("additionalProperties").GetProperty("description").GetString());
+    }
 }
