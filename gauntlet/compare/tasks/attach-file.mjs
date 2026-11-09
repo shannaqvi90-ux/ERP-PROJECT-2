@@ -11,7 +11,12 @@ export default {
   // writes that save it (the measured part must send one of them).
   endState: {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/ir.attachment/search_read', parts: ['result.name', 'result.file_size'] }], writes: ['POST /mail/attachment/upload'] },
+    ours: { reads: [{ read: 'GET /api/attachments/contacts.contacts/*/files', parts: ['items.name', 'items.sizeBytes'] }], writes: ['POST /api/attachments/contacts.contacts/*/files'] },
   },
+  // The writes set-up and clean-up send for our product (they remove any earlier copy of the file), and the
+  // one a driver health check sends for the contact (a clean stack without the shared dataset).
+  fixtures: { ours: ['DELETE /api/attachments/contacts.contacts/*/files/*'] },
+  healthFixtures: { ours: ['POST /api/contacts/contacts'] },
   enters: ['file'],
   moments: [],
   start: 'Signed in, with the contact {contact.name} open on screen.',

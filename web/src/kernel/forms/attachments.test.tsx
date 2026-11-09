@@ -26,9 +26,9 @@ function install() {
     if (method === "GET" && url === base) {
       return new Response(JSON.stringify({ items, total: items.length, maxFiles: 100, maxFileBytes: 20 * 1024 * 1024, extensions: ["pdf", "png", "txt"] }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
-    if (method === "POST" && url.startsWith(base)) {
+    if (method === "POST" && url === base) {
       if (refuse) return new Response(JSON.stringify({ title: refuse.title, code: "attachmentsType" }), { status: refuse.status, headers: { "Content-Type": "application/problem+json" } });
-      const name = decodeURIComponent(new URL(url, "http://x").searchParams.get("name")!);
+      const name = decodeURIComponent((init?.headers as Record<string, string>)["X-File-Name"]!);
       items = [file(`n-${items.length}`, name, { sizeBytes: (init?.body as File).size }), ...items];
       return new Response(JSON.stringify(items[0]), { status: 201, headers: { "Content-Type": "application/json" } });
     }
@@ -107,7 +107,7 @@ describe("the files of a record", () => {
     await show();
     await choose(new File(["%PDF-1.4 a"], "A one.pdf", { type: "application/pdf" }), new File(["note"], "b.txt", { type: "text/plain" }));
     const posts = calls.filter((c) => c.method === "POST");
-    expect(posts.map((p) => decodeURIComponent(p.url.split("name=")[1]!)).sort()).toEqual(["A one.pdf", "b.txt"]);
+    expect(posts.map((p) => decodeURIComponent(p.headers["X-File-Name"]!)).sort()).toEqual(["A one.pdf", "b.txt"]);
     expect(posts.every((p) => p.headers["X-Erp-Request"] === "1" && p.headers["Content-Type"] === "application/octet-stream")).toBe(true);
     expect(text()).toContain("5 attachments");
     expect(view!.container.querySelector('[role="status"]')!.textContent).toBe("2 files attached");
@@ -124,7 +124,7 @@ describe("the files of a record", () => {
     });
     for (let i = 0; i < 4; i++) await settle();
     expect(event.defaultPrevented).toBe(true);
-    expect(calls.some((c) => c.method === "POST" && c.url.includes("dropped.txt"))).toBe(true);
+    expect(calls.some((c) => c.method === "POST" && c.headers["X-File-Name"] === "dropped.txt")).toBe(true);
   });
 
   it("does not send a file the server would refuse, and says why", async () => {

@@ -20,8 +20,7 @@ internal sealed class AttachmentsSeeder(AttachmentsDbContext db, ModuleCatalog c
     public int Order => 150;
 
     /// <summary>A 1 by 1 pixel PNG (the demo's picture).</summary>
-    private static readonly byte[] Png = Convert.FromBase64String(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+    private const string PngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
     public async Task SeedAsync(TenantSeedContext context, CancellationToken cancellationToken)
     {
@@ -45,7 +44,7 @@ internal sealed class AttachmentsSeeder(AttachmentsDbContext db, ModuleCatalog c
             };
             if (demo)
             {
-                files.Add(("company-seal-" + number + ".png", "image/png", Png));
+                files.Add(("company-seal-" + number + ".png", "image/png", Convert.FromBase64String(PngBase64)));
             }
             foreach (var (name, contentType, bytes) in files)
             {

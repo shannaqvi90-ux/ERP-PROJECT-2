@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -24,7 +25,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
     /// <summary>Most victim identifiers tried as record and as file (the gate's tenant holds hundreds; its real files are always tried).</summary>
     private const int MaxVictimIds = 120;
 
-    private static readonly string[] TraversalNames =
+    private static readonly ImmutableArray<string> TraversalNames =
     [
         "../../../etc/passwd.txt", "..\\..\\..\\windows\\win.txt", "/etc/shadow.txt", "C:\\Windows\\system.txt", "....//....//x.txt",
         "%2e%2e%2f%2e%2e%2fx.txt", "..%2f..%2fx.txt", "a/../../b.txt", "x.txt\0.png", ".htaccess.txt", "con.txt",
@@ -34,7 +35,11 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
 
     public string Name => "attachments files";
 
-    public async Task<IsolationProbeResult> RunAsync(IsolationProbeContext context, CancellationToken cancellationToken)
+    public Task<IsolationProbeResult> RunAsync(IsolationProbeContext context, CancellationToken cancellationToken) =>
+        RunAsync(catalog.AttachmentRecordTypes, context, cancellationToken);
+
+    /// <summary>The attack over the given kinds of record (the self-tests run it against a planted server).</summary>
+    internal static async Task<IsolationProbeResult> RunAsync(IEnumerable<AttachmentRecordType> types, IsolationProbeContext context, CancellationToken cancellationToken)
     {
         var observed = new List<string>();
         var failures = new List<string>();
@@ -77,7 +82,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
         }
 
         var victimIds = context.VictimIds.Append(context.VictimTenantId).Distinct().Take(MaxVictimIds).ToList();
-        foreach (var type in catalog.AttachmentRecordTypes.Where(t => t.ListPath is not null))
+        foreach (var type in types.Where(t => t.ListPath is not null))
         {
             var root = $"/api/attachments/{type.Table}";
 
@@ -88,7 +93,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
                 failures.Add($"{type.Table}: the attacker has no record to attach a file to (nothing to compare the attack with)");
                 continue;
             }
-            var own = await Send(context.Attacker, HttpMethod.Post, $"{root}/{ownRecord}/files?name=attacker-own.txt", "attacker's own file"u8.ToArray());
+            var own = await Send(context.Attacker, HttpMethod.Post, $"{root}/{ownRecord}/files", "attacker's own file"u8.ToArray(), Named("attacker-own.txt"));
             var ownFile = own.Status == HttpStatusCode.Created ? ReadId(own.Body) : null;
             if (ownFile is null)
             {
@@ -104,7 +109,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
                 victimRecord = theirRecord;
                 var canary = context.VictimStrings.FirstOrDefault(s => s.Length >= 6 && s.All(c => c < 128)) ?? "tenant-b-file";
                 var bytes = Encoding.UTF8.GetBytes($"tenant B private file {canary}");
-                var uploaded = await Send(context.Victim, HttpMethod.Post, $"{root}/{theirRecord}/files?name=victim-private.txt", bytes, record: false);
+                var uploaded = await Send(context.Victim, HttpMethod.Post, $"{root}/{theirRecord}/files", bytes, Named("victim-private.txt"), record: false);
                 victimFile = uploaded.Status == HttpStatusCode.Created ? ReadId(uploaded.Body) : null;
                 victimBytes = ("victim-private.txt", bytes);
                 if (victimFile is null)
@@ -128,7 +133,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
             {
                 await Send(context.Attacker, HttpMethod.Get, $"{root}/{victim}/files");
                 await Send(context.Attacker, HttpMethod.Get, $"{root}/{victim}/files", headers: tenantHeaders);
-                await Send(context.Attacker, HttpMethod.Post, $"{root}/{victim}/files?name=planted.txt", "planted by tenant A"u8.ToArray());
+                await Send(context.Attacker, HttpMethod.Post, $"{root}/{victim}/files", "planted by tenant A"u8.ToArray(), Named("planted.txt"));
                 foreach (var record in new[] { victim, ownRecord.Value })
                 {
                     await Send(context.Attacker, HttpMethod.Get, $"{root}/{record}/files/{victim}/content");
@@ -141,7 +146,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
             // 2. Names and routes that try to leave the tenant's folder or name another tenant's file.
             foreach (var name in TraversalNames)
             {
-                var sent = await Send(context.Attacker, HttpMethod.Post, $"{root}/{ownRecord}/files?name={Uri.EscapeDataString(name)}", "traversal"u8.ToArray());
+                var sent = await Send(context.Attacker, HttpMethod.Post, $"{root}/{ownRecord}/files", "traversal"u8.ToArray(), Named(name));
                 if (sent.Status == HttpStatusCode.Created && ReadName(sent.Body) is { } stored && stored.IndexOfAny(['/', '\\', '\0']) >= 0)
                 {
                     failures.Add($"{type.Table}: a stored file name keeps a path separator ({stored})");
@@ -182,6 +187,9 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
         }
         return new IsolationProbeResult(attempts, observed) { Failures = failures };
     }
+
+    /// <summary>The header an upload names its file in.</summary>
+    private static Dictionary<string, string> Named(string name) => new() { [AttachmentEndpoints.NameHeader] = Uri.EscapeDataString(name) };
 
     private static async Task<Guid?> FirstRecordAsync(HttpClient client, string listPath, CancellationToken cancellationToken)
     {

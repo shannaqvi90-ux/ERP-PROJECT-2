@@ -55,7 +55,8 @@ internal static class Api
     {
         var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new(contentType);
-        return client.PostAsync($"{Root(contact)}?name={Uri.EscapeDataString(name)}", content, Cancel);
+        content.Headers.Add("X-File-Name", Uri.EscapeDataString(name));
+        return client.PostAsync(Root(contact), content, Cancel);
     }
 
     public static async Task<JsonElement> UploadedAsync(HttpClient client, Guid contact, string name, byte[] bytes)
@@ -178,7 +179,8 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         using var large = await Api.UploadAsync(admin, contact, "big.pdf", big);
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, large.StatusCode);
         Assert.Equal("attachmentsTooLarge", await Api.ProblemCodeAsync(large));
-        using var chunked = new HttpRequestMessage(HttpMethod.Post, $"{Api.Root(contact)}?name=big.pdf") { Content = new StreamContent(new MemoryStream(big)) };
+        using var chunked = new HttpRequestMessage(HttpMethod.Post, Api.Root(contact)) { Content = new StreamContent(new MemoryStream(big)) };
+        chunked.Headers.Add("X-File-Name", "big.pdf");
         using var chunkedAnswer = await admin.SendAsync(chunked, Api.Cancel);
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, chunkedAnswer.StatusCode);
         // Nothing of the refused files was kept.

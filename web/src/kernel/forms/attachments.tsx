@@ -35,6 +35,12 @@ const base = (recordType: string, recordId: string) => `/api/attachments/${recor
 export const attachmentUrl = (recordType: string, recordId: string, fileId: string, inline = false) =>
   `${base(recordType, recordId)}/${fileId}/content${inline ? "?inline=true" : ""}`;
 
+/** bytes / unit rounded to one decimal, as the decimal string "12.3" (whole-number arithmetic, no binary fractions shown). */
+const tenths = (bytes: number, unit: number) => {
+  const n = Math.round((bytes * 10) / unit);
+  return `${Math.floor(n / 10)}.${n % 10}`;
+};
+
 const extensionOf = (name: string) => {
   const dot = name.lastIndexOf(".");
   return dot > 0 && dot < name.length - 1 ? name.slice(dot + 1).toLowerCase() : "";
@@ -82,9 +88,9 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
   const extensions = list?.extensions ?? [];
   const size = (bytes: number) =>
     bytes >= 1024 * 1024
-      ? t("attachments.size.mb", { value: format.decimal((bytes / (1024 * 1024)).toFixed(1), 1) })
+      ? t("attachments.size.mb", { value: format.decimal(tenths(bytes, 1024 * 1024), 1) })
       : bytes >= 1024
-        ? t("attachments.size.kb", { value: format.decimal((bytes / 1024).toFixed(1), 1) })
+        ? t("attachments.size.kb", { value: format.decimal(tenths(bytes, 1024), 1) })
         : t("attachments.size.bytes", { count: bytes });
 
   /** The reason a file cannot be attached, before anything is sent (the server checks again). */
@@ -96,9 +102,9 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
   }
 
   async function send(file: File) {
-    const response = await fetch(`${base(recordType, recordId)}?name=${encodeURIComponent(file.name)}`, {
+    const response = await fetch(base(recordType, recordId), {
       method: "POST",
-      headers: { "X-Erp-Request": "1", "Content-Type": "application/octet-stream", Accept: "application/json", "Accept-Language": requestLanguage() },
+      headers: { "X-Erp-Request": "1", "X-File-Name": encodeURIComponent(file.name), "Content-Type": "application/octet-stream", Accept: "application/json", "Accept-Language": requestLanguage() },
       credentials: "same-origin",
       body: file,
     });

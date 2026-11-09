@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.IO.Compression;
 using System.Text;
 
@@ -14,7 +15,7 @@ internal static class FileTypes
 {
     internal sealed record Kind(string Extension, string ContentType, bool Inline, string Family);
 
-    private static readonly Kind[] Kinds =
+    private static readonly ImmutableArray<Kind> Kinds =
     [
         new("pdf", "application/pdf", true, "pdf"),
         new("png", "image/png", true, "png"),
@@ -33,7 +34,7 @@ internal static class FileTypes
     ];
 
     /// <summary>The extensions accepted, for messages and the API description.</summary>
-    public static IReadOnlyList<string> Extensions { get; } = [.. Kinds.Select(k => k.Extension)];
+    public static ImmutableArray<string> Extensions { get; } = [.. Kinds.Select(k => k.Extension)];
 
     /// <summary>The kind for a file name's extension, or null when it is not accepted.</summary>
     public static Kind? ForName(string name)

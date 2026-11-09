@@ -1,0 +1,13 @@
+# Reviewed endpoint-to-permission map of the attachments module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares, and
+# every line must match an endpoint. A new endpoint, a new kind of record that takes files (one set
+# of four lines each) or a changed permission fails the gate until this file is reviewed and changed
+# with it: the reason after # says why that permission, and no broader one, guards the endpoint.
+# The attachments module has no permission of its own: a file is as private as the record it is
+# attached to, so each set is guarded by the record's own read permission (see) and write permission (change).
+prefix /api/attachments/
+
+GET /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.read # the names, sizes, kinds, checksums and authors of the files attached to one contact: what a reader of the contact may already see of it (the record must exist in the caller's workspace)
+POST /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.update # attaching a file changes the contact's record, so it needs the permission that changes contacts; the server checks size, kind and count and stores the bytes under a name it makes
+GET /api/attachments/contacts.contacts/{id:guid}/files/{fileId:guid}/content contacts.contacts.read # the bytes of one file of a contact the caller may read, only through that contact (a file id under another contact answers 404)
+DELETE /api/attachments/contacts.contacts/{id:guid}/files/{fileId:guid} contacts.contacts.update # removing a file changes the contact's record; the removal stays in the audit trail

@@ -48,6 +48,9 @@ public sealed record AttachmentListDto(
 /// </summary>
 public static class AttachmentEndpoints
 {
+    /// <summary>The request header that carries an uploaded file's name (percent-encoded UTF-8).</summary>
+    public const string NameHeader = "X-File-Name";
+
     public static void Map(RouteGroupBuilder group)
     {
         var catalog = ((IEndpointRouteBuilder)group).ServiceProvider.GetRequiredService<ModuleCatalog>();
@@ -62,16 +65,17 @@ public static class AttachmentEndpoints
                 .WithSummary($"The files attached to a record of kind {record.Table}, newest first, with the limits an upload must keep.")
                 .RequirePermission(record.ReadPermission);
 
-            group.MapPost(root, (Guid id, [FromQuery, Description("The file's name with its extension, as the user knows it (folders are dropped).")] string? name, AttachmentsDbContext db, IAttachmentStore store,
+            group.MapPost(root, (Guid id, [FromHeader(Name = NameHeader), Description("The file's name with its extension, as the user knows it, percent-encoded as UTF-8 (folders are dropped).")] string? name, AttachmentsDbContext db, IAttachmentStore store,
                     ITenantContext tenant, IUserDirectory users, HttpContext http, CancellationToken ct) => UploadAsync(record, id, name, db, store, tenant, users, http, ct))
                 .WithName(baseName + ".upload")
-                .WithSummary($"Attach one file to a record of kind {record.Table}: the request body is the file's bytes (any content type), name is its name. Several files are several calls. Checked on the server: size, type from the extension and the bytes, count per record.")
+                .WithSummary($"Attach one file to a record of kind {record.Table}: the request body is the file's bytes (any content type), the X-File-Name header is its name. Several files are several calls. Checked on the server: size, type from the extension and the bytes, count per record.")
                 .Accepts<byte[]>("application/octet-stream", "*/*")
                 .ProducesValidationProblem()
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .ProducesProblem(StatusCodes.Status409Conflict)
                 .ProducesProblem(StatusCodes.Status413PayloadTooLarge)
                 .ProducesProblem(StatusCodes.Status415UnsupportedMediaType)
+                .Surface(SurfaceKind.File)
                 .RequirePermission(record.WritePermission);
 
             group.MapGet(root + "/{fileId:guid}/content", (Guid id, Guid fileId, [FromQuery, Description("True to show an image or PDF in the page; otherwise the file is offered for saving.")] bool? inline,
@@ -80,12 +84,14 @@ public static class AttachmentEndpoints
                 .WithSummary($"The bytes of one file of a record of kind {record.Table}, to save or (images and PDF, inline=true) to show.")
                 .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
                 .ProducesProblem(StatusCodes.Status404NotFound)
+                .Surface(SurfaceKind.File)
                 .RequirePermission(record.ReadPermission);
 
             group.MapDelete(root + "/{fileId:guid}", (Guid id, Guid fileId, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => DeleteAsync(record, id, fileId, db, store, tenant, http, ct))
                 .WithName(baseName + ".delete")
                 .WithSummary($"Remove one file of a record of kind {record.Table}; its bytes are removed with it. The removal stays in the audit trail.")
                 .ProducesProblem(StatusCodes.Status404NotFound)
+                .Surface(SurfaceKind.File)
                 .RequirePermission(record.WritePermission);
         }
     }
@@ -110,7 +116,7 @@ public static class AttachmentEndpoints
         {
             return Problems.NotFound(http);
         }
-        var name = FileTypes.CleanName(rawName, AttachmentLimits.MaxNameLength);
+        var name = FileTypes.CleanName(Decoded(rawName), AttachmentLimits.MaxNameLength);
         var validator = new Validator(http).Must(name is not null, "name", "attachmentsName");
         if (!validator.IsValid)
         {
@@ -180,6 +186,19 @@ public static class AttachmentEndpoints
         await db.SaveChangesAsync(cancellationToken);
         var names = tenant.ActorId is { } actor ? await users.GetAsync([actor], cancellationToken) : new Dictionary<Guid, UserSummary>();
         return TypedResults.Created($"/api/attachments/{record.Table}/{id}/files/{file.Id}/content", ToDto(file, names));
+    }
+
+    /// <summary>The header's name, percent-decoded; null when it is not valid encoded text.</summary>
+    private static string? Decoded(string? raw)
+    {
+        try
+        {
+            return raw is null ? null : Uri.UnescapeDataString(raw);
+        }
+        catch (UriFormatException)
+        {
+            return null;
+        }
     }
 
     private static ProblemHttpResult TooLarge(HttpContext http) =>
