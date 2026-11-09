@@ -372,8 +372,33 @@ export function MoneyField({
   );
 }
 
-/** A calendar date (yyyy-mm-dd), with the browser's date picker. */
-export function DateField({ field, min, max, ...p }: Common & { field: FieldBinding<string>; min?: string; max?: string }) {
+/** A calendar date (yyyy-mm-dd), with the browser's date picker. With `typed`, a text box that takes
+ * the date as typed (yyyy-mm-dd, in either set of digits) and says so in the screen's language: the
+ * browser's own picker writes its placeholder in the browser's language, not the screen's. */
+export function DateField({ field, min, max, typed, ...p }: Common & { field: FieldBinding<string>; min?: string; max?: string; typed?: boolean }) {
+  const { t } = useI18n();
+  if (typed) {
+    return (
+      <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
+        {(a11y) => (
+          <input
+            {...a11y}
+            name={field.name}
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            placeholder={t("forms.date.placeholder")}
+            maxLength={10}
+            autoComplete="off"
+            value={field.value ?? ""}
+            disabled={p.disabled || field.readOnly}
+            autoFocus={p.autoFocus}
+            onChange={(e) => field.onChange(latinDigits(e.target.value).replace(/[^0-9-]/g, ""))}
+          />
+        )}
+      </Field>
+    );
+  }
   return (
     <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
       {(a11y) => (

@@ -191,7 +191,19 @@ public sealed class ListBinding<T> : IListBinding where T : class
     {
         var extra = ListCustomFields.Build(fields);
         var definition = Definition with { Columns = [.. Definition.Columns, .. extra.Select(e => e.Column)] };
-        return new ListBinding<T>(definition, _id, _idOf, _columns, InMemoryReason, _initials, extra);
+        // A field is ordered and grouped by its value held in the other table: bound as a scalar of the
+        // row's id (customfields.value_*), so the sort, the cursor's comparison and the grouping use the
+        // list's own machinery. The cursor's value is read from the store (ValueOfAsync), not from the row.
+        var columns = new Dictionary<string, Bound>(_columns, StringComparer.Ordinal);
+        var row = Expression.Parameter(typeof(T), "row");
+        foreach (var e in extra)
+        {
+            if (ListCustomFields.ValueOf(e.Field, new Rebind(_id.Parameters[0], row).Visit(_id.Body)) is { } value)
+            {
+                columns[e.Column.Key] = new Bound(e.Column.Key, value.Type, Expression.Lambda(value, row), null, _ => null, columns.Count);
+            }
+        }
+        return new ListBinding<T>(definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason, _initials, extra);
     }
 
     /// <inheritdoc/>
@@ -364,8 +376,13 @@ public sealed class ListBinding<T> : IListBinding where T : class
             rows.RemoveAt(rows.Count - 1);
             var last = rows[^1];
             var lastRank = ranks?[rows.Count - 1];
+            var customValues = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var key in plan.Sort.Where(k => _extra.Any(e => e.Column.Key == k.Column)))
+            {
+                customValues[key.Column] = await ValueOfAsync(source, key.Column, _idOf(last), cancellationToken);
+            }
             next = ListCursor.Encode(ListSortKey.Format(plan.Sort),
-                plan.Sort.Select(k => k.Column == ListSearch.RelevanceKey ? lastRank : _columns[k.Column].Getter(last)).ToList(), _idOf(last));
+                plan.Sort.Select(k => k.Column == ListSearch.RelevanceKey ? lastRank : customValues.TryGetValue(k.Column, out var held) ? held : _columns[k.Column].Getter(last)).ToList(), _idOf(last));
         }
         return ListResult<T>.Valid(rows, total, next, groups, plan.Relevance);
     }
@@ -1005,6 +1022,22 @@ public sealed class ListBinding<T> : IListBinding where T : class
             .OrderBy(r => r.Key is null ? 1 : 0)
             .Select(r => new ListGroup(r.Key, r.Count, totals.Count == 0 ? null : totals.Select((t, i) => (t.Key, Sum: r.Sum(i) ?? 0m)).ToDictionary(x => x.Key, x => x.Sum)))
             .ToList();
+    }
+
+    /// <summary>A custom field's value for one row, read from the store: what the cursor of a list ordered by it carries.</summary>
+    private async Task<object?> ValueOfAsync(IQueryable<T> source, string column, Guid id, CancellationToken cancellationToken)
+    {
+        var bound = _columns[column];
+        var method = typeof(ListBinding<T>).GetMethod(nameof(ValueOfCoreAsync), BindingFlags.NonPublic | BindingFlags.Instance)!.MakeGenericMethod(bound.ValueType);
+        return await (Task<object?>)method.Invoke(this, [source, bound.Expression, id, cancellationToken])!;
+    }
+
+    private async Task<object?> ValueOfCoreAsync<TValue>(IQueryable<T> source, LambdaExpression value, Guid id, CancellationToken cancellationToken)
+    {
+        var row = value.Parameters[0];
+        var same = Expression.Lambda<Func<T, bool>>(Expression.Equal(new Rebind(_id.Parameters[0], row).Visit(_id.Body), Box(id, typeof(Guid))), row);
+        var found = await source.Where(same).Select((Expression<Func<T, TValue>>)value).Take(1).ToListAsync(cancellationToken);
+        return found.Count == 0 ? null : found[0];
     }
 
     private static Func<T, object?> CompileGetter<TValue>(Expression<Func<T, TValue>> value)

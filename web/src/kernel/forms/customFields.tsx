@@ -77,7 +77,7 @@ export function CustomFieldsSection({ entries, bind }: { entries: readonly Custo
           case "number":
             return <DecimalField key={entry.key} field={field} label={label} scale={entry.decimals} />;
           case "date":
-            return <DateField key={entry.key} field={field} label={label} />;
+            return <DateField key={entry.key} field={field} label={label} typed />;
           case "boolean":
             return (
               <SelectField

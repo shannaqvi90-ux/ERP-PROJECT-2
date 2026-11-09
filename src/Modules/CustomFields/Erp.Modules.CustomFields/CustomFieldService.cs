@@ -27,6 +27,18 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
         return _fields[recordType] = rows.Select(Info).ToList();
     }
 
+    public async Task<IReadOnlyDictionary<string, CustomFieldInfo>> DescribeAsync(IReadOnlyCollection<string> keys, string? recordType, CancellationToken cancellationToken)
+    {
+        if (keys.Count == 0)
+        {
+            return new Dictionary<string, CustomFieldInfo>();
+        }
+        var wanted = keys.ToList();
+        var rows = await db.Definitions.AsNoTracking().Where(d => wanted.Contains(d.Key) && (recordType == null || d.RecordType == recordType))
+            .OrderByDescending(d => d.IsActive).ThenBy(d => d.CreatedAt).ToListAsync(cancellationToken);
+        return rows.GroupBy(d => d.Key, StringComparer.Ordinal).ToDictionary(g => g.Key, g => Info(g.First()), StringComparer.Ordinal);
+    }
+
     internal static CustomFieldInfo Info(FieldDefinition d) => new(d.Id, d.RecordType, d.Key, d.LabelEn, d.LabelAr, d.FieldType, d.Required,
         d.DefaultValue, d.Decimals, d.Options, d.LookupTarget, d.SortOrder, d.Searchable);
 
@@ -81,14 +93,18 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
             }
             parsed[field.Id] = await ParseAsync(field, json, validator, cancellationToken);
         }
+        // A record saved before its field became required holds no value for it: any save of the record
+        // (not only its creation) gives it one, the field's default, or is refused when there is none.
+        var held = await ReadAsync(fields, [recordId], cancellationToken, tracked: true);
         foreach (var field in fields.Where(f => !parsed.ContainsKey(f.Id)))
         {
-            if (isNew && field.Default is { } text)
+            var missing = !isNew && field.Required && !held.ContainsKey((recordId, field.Id));
+            if ((isNew || missing) && field.Default is { } text)
             {
                 var defaulted = await ParseAsync(field, JsonSerializer.SerializeToElement(text), validator, cancellationToken);
                 parsed[field.Id] = defaulted;
             }
-            else if (isNew && field.Required)
+            else if ((isNew || missing) && field.Required)
             {
                 validator.Add($"customFields.{field.Key}", "customFieldRequired");
             }
@@ -97,7 +113,6 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
         {
             return;
         }
-        var held = await ReadAsync(fields, [recordId], cancellationToken, tracked: true);
         var keyOf = fields.ToDictionary(f => f.Id, f => f.Key);
         foreach (var (fieldId, value) in parsed)
         {

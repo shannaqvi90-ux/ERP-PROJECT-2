@@ -100,13 +100,14 @@ public sealed class AuditTexts
 
     /// <summary>The changes of one audit row as one line ("E-mail: from a@x.ae to b@x.ae; Name: …"), in
     /// the language, at most <paramref name="max"/> characters.</summary>
-    public string Summary(IReadOnlyList<AuditFieldChange> changes, string action, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels, int max = SummaryLength)
+    public string Summary(IReadOnlyList<AuditFieldChange> changes, string action, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels, int max = SummaryLength,
+        IReadOnlyDictionary<string, AuditFieldLabel>? fieldLabels = null)
     {
         var builder = new StringBuilder();
         var separator = Get("audit.value.separator", language);
         foreach (var change in changes)
         {
-            var field = FieldName(change.Field, language);
+            var field = fieldLabels is not null && fieldLabels.TryGetValue(change.Field, out var custom) ? custom.For(language) : FieldName(change.Field, language);
             var line = action switch
             {
                 "insert" => Get("audit.value.set", language, ("field", field), ("new", Value(change.New, language, labels))),

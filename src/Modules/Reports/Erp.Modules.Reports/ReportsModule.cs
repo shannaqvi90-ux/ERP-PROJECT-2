@@ -22,6 +22,7 @@ public sealed class ReportsModule : ErpModule
     {
         module.Permissions([.. ReportsPermissions.All]);
         module.Services.AddSingleton<WebStrings>();
+        module.Services.AddSingleton<Erp.Kernel.Localization.IWebTexts>(services => services.GetRequiredService<WebStrings>());
         module.Services.AddSingleton(services => ReportLimits.From(services.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>()));
         module.Services.AddSingleton<PdfFonts>();
         module.Services.AddSingleton<PdfReportRenderer>();

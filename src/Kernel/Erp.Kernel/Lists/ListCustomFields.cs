@@ -50,10 +50,13 @@ internal static class ListCustomFields
             _ => ListColumnType.Text,
         },
         Filterable: true,
+        Sortable: field.Type != CustomFieldTypes.Lookup,
+        Groupable: field.Type is CustomFieldTypes.Select or CustomFieldTypes.Boolean,
         Hidden: true,
         Choices: field.Type == CustomFieldTypes.Select ? field.Options.Select(o => new ListChoice(o.Value, field.OptionKey(o.Value))).ToList() : null,
         LabelField: field.Type == CustomFieldTypes.Lookup ? field.Key + "Name" : null,
-        ArabicField: field.Type == CustomFieldTypes.Lookup ? field.Key + "NameAr" : null);
+        ArabicField: field.Type == CustomFieldTypes.Lookup ? field.Key + "NameAr" : null,
+        Decimals: field.Type == CustomFieldTypes.Number ? field.Decimals : null);
 
     /// <summary>The label strings of the fields (and of a select's options) in both languages,
     /// handed to the screen with the list definition: the tenant's own words, not the product's.</summary>
@@ -69,6 +72,21 @@ internal static class ListCustomFields
             }
         }
         return strings;
+    }
+
+    /// <summary>The field's value for the record whose id is <paramref name="id"/>, as a scalar the
+    /// store can order and group by (<c>customfields.value_*</c>); null for a kind that is not ordered.</summary>
+    public static Expression? ValueOf(CustomFieldInfo field, Expression id)
+    {
+        var name = field.Type switch
+        {
+            CustomFieldTypes.Number => "ValueNumber",
+            CustomFieldTypes.Date => "ValueDate",
+            CustomFieldTypes.Boolean => "ValueBool",
+            CustomFieldTypes.Lookup => null,
+            _ => "ValueText",
+        };
+        return name is null ? null : Call(name, Boxed(field.Id), id);
     }
 
     public static IReadOnlyList<ExtraColumn> Build(IReadOnlyList<CustomFieldInfo> fields) =>

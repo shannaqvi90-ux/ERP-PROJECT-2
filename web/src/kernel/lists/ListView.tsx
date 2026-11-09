@@ -1,5 +1,5 @@
 import { flushSync } from "react-dom";
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { identityScoped } from "../deviceState";
 import { requestLeave } from "../forms/leave";
@@ -1663,8 +1663,34 @@ export const listPrintChord = "Alt+Shift+KeyR";
 function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }) {
   const { t, numerals, language } = useI18n();
   const [open, setOpen] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  /** Asks the server for the same selection on screen (at most one screenful of rows) before the
+   * file is downloaded, so a selection it cannot build shows a message instead of a download the
+   * browser cancels without a word. */
+  const download = async (event: MouseEvent<HTMLAnchorElement>, item: { format: "pdf" | "csv" | "xlsx"; language: string }) => {
+    event.preventDefault();
+    setOpen(false);
+    setFailure(null);
+    const digits = item.language === "ar" ? numerals : "latn";
+    try {
+      const probe = await fetch(listReportUrl(listKey, state, "json", item.language, digits), { credentials: "same-origin", headers: { Accept: "application/json" } });
+      if (!probe.ok) {
+        setFailure(t(probe.status >= 400 && probe.status < 500 ? "lists.print.refused" : "lists.print.failed"));
+        return;
+      }
+    } catch {
+      setFailure(t("lists.print.failed"));
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = listReportUrl(listKey, state, item.format, item.language, digits);
+    link.download = "";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
   useShortcut({
     id: "lists.print",
     chord: listPrintChord,
@@ -1714,6 +1740,11 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
       >
         {t("lists.print.open")}
       </button>
+      {failure && (
+        <div className="alert" role="alert">
+          {failure}
+        </div>
+      )}
       {open && (
         <div className="menu" role="menu" ref={menuRef} aria-label={t("lists.print.open")} onKeyDown={onKey}>
           {items.map((item) => (
@@ -1723,7 +1754,7 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
               className="menu-item"
               href={listReportUrl(listKey, state, item.format, item.language, item.language === "ar" ? numerals : "latn")}
               download
-              onClick={() => setOpen(false)}
+              onClick={(event) => void download(event, item)}
             >
               {t(item.key)}
             </a>

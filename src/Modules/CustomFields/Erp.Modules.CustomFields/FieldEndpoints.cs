@@ -5,6 +5,7 @@ using Erp.Kernel.Data;
 using Erp.Kernel.Hosting;
 using Erp.Kernel.Http;
 using Erp.Kernel.Lists;
+using Erp.Kernel.Localization;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Modules.CustomFields.Contracts;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Validator = Erp.Kernel.Http.Validator;
 
 namespace Erp.Modules.CustomFields;
@@ -169,7 +171,7 @@ internal static class FieldEndpoints
         validator.Must(type is null || CustomFieldTypes.All.Contains(type), "type", "customFieldType");
         // A text field is searched by the list's search box unless it says otherwise.
         var field = new FieldDefinition { RecordType = recordType ?? "", FieldType = type ?? CustomFieldTypes.Text, Searchable = true };
-        Check(validator, catalog, field, request);
+        Check(validator, catalog, http.RequestServices.GetService<IWebTexts>(), field, request);
         if (!validator.IsValid)
         {
             return validator.ToResult();
@@ -214,7 +216,7 @@ internal static class FieldEndpoints
         var wasActive = field.IsActive;
         validator.Must(request.RecordType is null || request.RecordType.Trim() == field.RecordType, "recordType", "customFieldFixed");
         validator.Must(request.Type is null || request.Type.Trim() == field.FieldType, "type", "customFieldFixed");
-        Check(validator, catalog, field, request);
+        Check(validator, catalog, http.RequestServices.GetService<IWebTexts>(), field, request);
         if (!validator.IsValid)
         {
             return validator.ToResult();
@@ -239,13 +241,15 @@ internal static class FieldEndpoints
 
     /// <summary>The request's checks and, when they pass, its changes applied to the definition
     /// (the record type and type are already set).</summary>
-    private static void Check(Validator validator, ModuleCatalog catalog, FieldDefinition field, SaveFieldRequest request)
+    private static void Check(Validator validator, ModuleCatalog catalog, IWebTexts? texts, FieldDefinition field, SaveFieldRequest request)
     {
         var labelEn = request.LabelEn?.Trim() ?? "";
         // An Arabic label left out shows the English one on Arabic screens (a label is never blank).
         var labelAr = string.IsNullOrWhiteSpace(request.LabelAr) ? labelEn : request.LabelAr.Trim();
         validator.MaxLength("labelEn", labelEn, FieldRules.LabelMaxLength).MaxLength("labelAr", labelAr, FieldRules.LabelMaxLength);
         validator.Must(labelEn.Length == 0 || labelEn.Any(char.IsAsciiLetterOrDigit), "labelEn", "customFieldLabelLatin");
+        validator.Must(!NamesBuiltInField(catalog, texts, field.RecordType, labelEn, Languages.English), "labelEn", "customFieldLabelBuiltIn");
+        validator.Must(labelAr == labelEn || !NamesBuiltInField(catalog, texts, field.RecordType, labelAr, Languages.Arabic), "labelAr", "customFieldLabelBuiltIn");
         var decimals = request.Decimals ?? field.Decimals;
         var type = field.FieldType;
         validator.Must(decimals is >= 0 and <= 8, "decimals", "customFieldDecimals");
@@ -308,8 +312,9 @@ internal static class FieldEndpoints
                 case CustomFieldTypes.Boolean when text is "true" or "false":
                     defaultValue = text;
                     break;
-                case CustomFieldTypes.Select when options.Any(o => o.Value == text):
-                    defaultValue = text;
+                case CustomFieldTypes.Select when OptionNamed(options, text) is { } named:
+                    // The default may be named by the option's value, or by its label in either language.
+                    defaultValue = named.Value;
                     break;
                 case CustomFieldTypes.Text when text.Length <= CustomFieldsDbContext.MaxTextLength:
                     defaultValue = text;
@@ -340,6 +345,25 @@ internal static class FieldEndpoints
         field.Searchable = type == CustomFieldTypes.Text && (request.Searchable ?? field.Searchable);
         field.IsActive = request.IsActive ?? field.IsActive;
     }
+
+    private static CustomFieldOption? OptionNamed(IReadOnlyList<CustomFieldOption> options, string text) =>
+        options.FirstOrDefault(o => o.Value == text)
+        ?? options.FirstOrDefault(o => string.Equals(o.Value, text, StringComparison.OrdinalIgnoreCase))
+        ?? options.FirstOrDefault(o => string.Equals(o.LabelEn, text, StringComparison.OrdinalIgnoreCase) || string.Equals(o.LabelAr, text, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Whether the label is the label of one of the record type's own fields (the columns its
+    /// list shows) in the same language: two fields of a record would look alike on screen and on paper.</summary>
+    private static bool NamesBuiltInField(ModuleCatalog catalog, IWebTexts? texts, string recordType, string label, string language)
+    {
+        if (texts is null || label.Length == 0 || catalog.CustomFieldRecordTypes.FirstOrDefault(t => t.Table == recordType) is not { } kind
+            || catalog.FindList(kind.ListKey) is not { } list)
+        {
+            return false;
+        }
+        return list.Columns.Any(c => texts.Find(c.LabelKey, language) is { } own && string.Equals(Normal(own), Normal(label), StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string Normal(string text) => string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 
     private static FieldDto ToDto(FieldDefinition d, ErpDbSession session) => new(d.Id, d.RecordType, d.Key, d.LabelEn, d.LabelAr, d.FieldType, d.Required,
         d.DefaultValue, d.Decimals, d.Options, d.LookupTarget, d.SortOrder, d.Searchable, d.IsActive, d.CreatedAt, d.UpdatedAt, d.Version, session.HoldsWholeWorkspace);

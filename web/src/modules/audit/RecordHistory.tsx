@@ -3,7 +3,7 @@ import type { RecordPanelProps } from "../../kernel/extensions";
 import { useI18n } from "../../kernel/i18n";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
-import { actorText, fieldName, logAddress, readHistory, shownChanges, valueText, type AuditEvent, type AuditHistory, type ValueFormat } from "./model";
+import { actorText, fieldDecimals, fieldLabel, logAddress, readHistory, shownChanges, valueText, type AuditEvent, type AuditHistory, type ValueFormat } from "./model";
 import "./audit.css";
 
 /** The words for who made a change: "Created by …", "Changed by …", "Deleted by …". */
@@ -11,18 +11,19 @@ export function actionKey(action: AuditEvent["action"]): string {
   return action === "insert" ? "audit.history.created" : action === "delete" ? "audit.history.deleted" : "audit.history.changed";
 }
 
-function useValueFormat(names: AuditHistory["names"] | undefined): ValueFormat {
-  const { t, formatDateTime, formatNumber, language } = useI18n();
-  return useMemo(() => ({ t, formatDateTime, formatNumber, language, names }), [t, formatDateTime, formatNumber, language, names]);
+function useValueFormat(names: AuditHistory["names"] | undefined, fields?: AuditHistory["fields"]): ValueFormat {
+  const { t, formatDateTime, formatNumber, language, format } = useI18n();
+  return useMemo(() => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names, fields }), [t, formatDateTime, formatNumber, format, language, names, fields]);
 }
 
 /** One change's field as a line: "E-mail: from old to new" (a creation's "E-mail: value"). */
 export function changeLine(event: AuditEvent, field: { field: string; old?: unknown; new?: unknown }, f: ValueFormat): string {
-  const name = fieldName(field.field, f.t);
-  if (event.action === "insert") return f.t("audit.value.set", { field: name, new: valueText(field.new, f) });
-  if (event.action === "delete") return f.t("audit.value.set", { field: name, new: valueText(field.old, f) });
-  if (field.new === null || field.new === undefined) return f.t("audit.value.cleared", { field: name, old: valueText(field.old, f) });
-  return f.t("audit.value.from", { field: name, old: valueText(field.old, f), new: valueText(field.new, f) });
+  const name = fieldLabel(field.field, f);
+  const decimals = fieldDecimals(field.field, f);
+  if (event.action === "insert") return f.t("audit.value.set", { field: name, new: valueText(field.new, f, decimals) });
+  if (event.action === "delete") return f.t("audit.value.set", { field: name, new: valueText(field.old, f, decimals) });
+  if (field.new === null || field.new === undefined) return f.t("audit.value.cleared", { field: name, old: valueText(field.old, f, decimals) });
+  return f.t("audit.value.from", { field: name, old: valueText(field.old, f, decimals), new: valueText(field.new, f, decimals) });
 }
 
 /**
@@ -33,18 +34,18 @@ export function changeLine(event: AuditEvent, field: { field: string; old?: unkn
  */
 export function LastChange({ type, id, revision, open, setOpen }: RecordPanelProps) {
   const { t, language, formatDateTime } = useI18n();
-  const [latest, setLatest] = useState<{ event: AuditEvent; names: AuditHistory["names"] } | null>(null);
+  const [latest, setLatest] = useState<{ event: AuditEvent; names: AuditHistory["names"]; fields?: AuditHistory["fields"] } | null>(null);
   useEffect(() => {
     const abort = new AbortController();
     readHistory(type, id, { take: 1, signal: abort.signal }).then(
-      (page) => setLatest(page.items[0] ? { event: page.items[0], names: page.names } : null),
+      (page) => setLatest(page.items[0] ? { event: page.items[0], names: page.names, fields: page.fields } : null),
       // The latest change is a convenience of the heading: a record without one (or a reader
       // the history is not for) shows nothing there; the History panel says why.
       () => !abort.signal.aborted && setLatest(null),
     );
     return () => abort.abort();
   }, [type, id, revision]);
-  const f = useValueFormat(latest?.names);
+  const f = useValueFormat(latest?.names, latest?.fields);
   if (!latest) return null;
   const { event } = latest;
   const lines = shownChanges(event).map((c) => changeLine(event, c, f));
@@ -74,7 +75,7 @@ export function LastChange({ type, id, revision, open, setOpen }: RecordPanelPro
  * button takes the focus back).
  */
 export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) {
-  const { t, language, formatDateTime, formatNumber } = useI18n();
+  const { t, language, formatDateTime } = useI18n();
   const { can } = useSession();
   const headingId = useId();
   const [pages, setPages] = useState<AuditHistory[]>([]);
@@ -101,11 +102,12 @@ export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) 
   }, []);
 
   const names = useMemo(() => Object.assign({}, ...pages.map((p) => p.names)), [pages]);
-  const f = useMemo<ValueFormat>(() => ({ t, formatDateTime, formatNumber, language, names }), [t, formatDateTime, formatNumber, language, names]);
+  const fieldLabels = useMemo(() => Object.assign({}, ...pages.map((p) => p.fields ?? {})), [pages]);
+  const f = useValueFormat(names, fieldLabels);
   const events = pages.flatMap((p) => p.items);
   const next = pages.at(-1)?.next ?? null;
   const wanted = find.trim().toLocaleLowerCase();
-  const matches = (field: string) => !wanted || fieldName(field, t).toLocaleLowerCase().includes(wanted) || field.includes(wanted);
+  const matches = (field: string) => !wanted || fieldLabel(field, f).toLocaleLowerCase().includes(wanted) || field.includes(wanted);
   const shown = events
     .map((event) => ({ event, fields: shownChanges(event).filter((c) => matches(c.field)) }))
     .filter((e) => !wanted || e.fields.length > 0);
@@ -176,9 +178,9 @@ export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) 
                 <tbody>
                   {fields.map((c) => (
                     <tr key={c.field}>
-                      <th scope="row">{fieldName(c.field, t)}</th>
-                      {event.action !== "insert" && <td className="audit-old"><bdi>{valueText(c.old, f)}</bdi></td>}
-                      {event.action !== "delete" && <td className="audit-new"><bdi>{valueText(c.new, f)}</bdi></td>}
+                      <th scope="row">{fieldLabel(c.field, f)}</th>
+                      {event.action !== "insert" && <td className="audit-old"><bdi>{valueText(c.old, f, fieldDecimals(c.field, f))}</bdi></td>}
+                      {event.action !== "delete" && <td className="audit-new"><bdi>{valueText(c.new, f, fieldDecimals(c.field, f))}</bdi></td>}
                     </tr>
                   ))}
                 </tbody>

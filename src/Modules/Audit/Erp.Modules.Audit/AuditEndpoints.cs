@@ -39,7 +39,9 @@ public sealed record AuditEvent(
 /// <param name="Items">The changes of this page.</param>
 /// <param name="Next">Pass as <c>before</c> to read older changes; null when there are none.</param>
 /// <param name="Names">Names of the records the values refer to by id, where the reader may read them.</param>
-public sealed record AuditHistory(string? RecordType, IReadOnlyList<AuditEvent> Items, Guid? Next, IReadOnlyDictionary<Guid, AuditRecordName> Names);
+/// <param name="Fields">The tenant's own names (English, Arabic) and decimals of the custom fields the changes mention, by stored field name (<c>custom_fields.key</c>).</param>
+public sealed record AuditHistory(string? RecordType, IReadOnlyList<AuditEvent> Items, Guid? Next, IReadOnlyDictionary<Guid, AuditRecordName> Names,
+    IReadOnlyDictionary<string, AuditFieldLabel>? Fields = null);
 
 internal static class AuditEndpoints
 {
@@ -93,7 +95,8 @@ internal static class AuditEndpoints
         var changes = AuditReader.Changes(entry);
         var actors = await reader.ActorsAsync([entry.ActorId], cancellationToken);
         var names = AuditLog.Mentioned(changes, await reader.ReferencedNamesAsync(changes, cancellationToken));
-        return TypedResults.Ok(new AuditChange(AuditLog.Row(entry, changes, actors, names, catalog, texts, AuditLog.Language(http)), changes, names));
+        var labels = await AuditLog.CustomFieldLabelsAsync(http.RequestServices, changes, entry.RecordType, cancellationToken);
+        return TypedResults.Ok(new AuditChange(AuditLog.Row(entry, changes, actors, names, catalog, texts, AuditLog.Language(http), labels), changes, names, labels));
     }
 
     private static async Task<Results<Ok<AuditHistory>, ProblemHttpResult>> History(Guid id,
@@ -155,6 +158,7 @@ internal static class AuditEndpoints
             var (name, nameAr) = AuditLog.ActorName(e.ActorId, e.ActorKind, actors, texts);
             return new AuditEvent(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, changes[e.Uid]);
         }).ToList();
-        return TypedResults.Ok(new AuditHistory(kind?.Table, items, next, names));
+        var fieldLabels = await AuditLog.CustomFieldLabelsAsync(http.RequestServices, changes.Values.SelectMany(c => c), kind?.Table, cancellationToken);
+        return TypedResults.Ok(new AuditHistory(kind?.Table, items, next, names, fieldLabels));
     }
 }

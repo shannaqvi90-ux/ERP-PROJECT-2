@@ -116,3 +116,14 @@ public sealed class StringCatalog
         return args.Length == 0 ? text : MessageFormat.Format(text, language, args);
     }
 }
+
+/// <summary>
+/// The texts of the web app's screens (the strings of <c>web/src/modules/*/i18n</c>), for the server
+/// code that must compare what a user types with what the screens already say (a custom field's
+/// label against the record's own fields). Implemented by the module that embeds those files.
+/// </summary>
+public interface IWebTexts
+{
+    /// <summary>The text of a screen string in the language, or null when the app has none.</summary>
+    string? Find(string key, string language);
+}
