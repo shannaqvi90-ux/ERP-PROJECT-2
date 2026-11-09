@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Kernel.Lists;
 
@@ -303,6 +304,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
             // The workspace's custom fields are columns of this list too (p09): the same binding,
             // with their filters and search added. Done once per request, only when it defined any.
             return await WithCustomFields(fields).QueryAsync(source, request, http, cancellationToken);
+        }
+        if (_extra.Count > 0 && source.Provider is IAsyncQueryProvider && http.RequestServices.GetService<Erp.Kernel.Data.ErpDbSession>() is { } session)
+        {
+            // The workspace has custom fields: plan this request's statements for their own values (see ErpDbSession).
+            await session.UseCustomPlansAsync(cancellationToken);
         }
         Plan plan;
         try

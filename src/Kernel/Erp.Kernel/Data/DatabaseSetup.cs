@@ -62,13 +62,6 @@ public sealed class DatabaseBootstrap(IConfiguration configuration, ILogger<Data
             await Exec(connection, $"ALTER DATABASE {TenantSql.Identifier(database)} OWNER TO {DatabaseRoles.Owner}", cancellationToken);
             await Exec(connection, $"REVOKE ALL ON DATABASE {TenantSql.Identifier(database)} FROM PUBLIC", cancellationToken);
             await Exec(connection, $"GRANT CONNECT, TEMPORARY ON DATABASE {TenantSql.Identifier(database)} TO {DatabaseRoles.App}", cancellationToken);
-            // Every statement is planned for its own values (p09 round 2). Npgsql prepares a statement a list walk
-            // repeats and, after five runs, PostgreSQL may switch to a generic plan made without the values: for a
-            // filter on a custom field it then thinks the matching set is small, joins it by a nested loop that rescans
-            // it for every contact, and a page takes 5 s instead of 0.1 s (docs/decisions/p09-custom-fields-round2-
-            // print-sort-required.md). Tenants differ by orders of magnitude, so a plan made without the values is
-            // wrong for some of them.
-            await Exec(connection, $"ALTER ROLE {DatabaseRoles.App} IN DATABASE {TenantSql.Identifier(database)} SET plan_cache_mode = 'force_custom_plan'", cancellationToken);
         }
 
         var inDatabase = new NpgsqlConnectionStringBuilder(admin) { Database = database };

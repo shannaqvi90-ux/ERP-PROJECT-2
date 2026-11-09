@@ -112,11 +112,13 @@ public sealed class CustomFieldGateTests(GateFixture fixture)
                 {
                     problems.Add($"customfields.{name}: security definer would read every workspace's values; custom field functions run as the caller");
                 }
-                if (name.StartsWith("match_", StringComparison.Ordinal) || name == "search_text")
+                // The match, search and value functions are read by lists: STABLE so the planner can turn them into a join
+                // or an inlined subquery (a value function is what a list sorts and groups by).
+                if (name.StartsWith("match_", StringComparison.Ordinal) || name.StartsWith("value_", StringComparison.Ordinal) || name == "search_text")
                 {
                     if (reader.GetChar(2) != 's')
                     {
-                        problems.Add($"customfields.{name}: a match function must be STABLE so the planner can turn it into a join");
+                        problems.Add($"customfields.{name}: a match or value function must be STABLE so the planner can turn it into a join");
                     }
                 }
                 else if (!reader.GetString(3).Contains("search_path", StringComparison.Ordinal))
@@ -124,9 +126,9 @@ public sealed class CustomFieldGateTests(GateFixture fixture)
                     problems.Add($"customfields.{name}: a trigger function pins its search path");
                 }
             }
-            if (found < 8)
+            if (found < 12)
             {
-                problems.Add($"customfields: {found} functions found, expected the seven match functions and the history trigger");
+                problems.Add($"customfields: {found} functions found, expected the seven match functions, the four value functions and the history trigger");
             }
         }
         Assert.True(problems.Count == 0, string.Join("\n", problems));

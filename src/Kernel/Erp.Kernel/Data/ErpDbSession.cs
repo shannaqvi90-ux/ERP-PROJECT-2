@@ -321,6 +321,27 @@ public sealed class ErpDbSession : ITenantContext, ICompanyContext, IWorkspaceSc
         return command;
     }
 
+    private bool _customPlans;
+
+    /// <summary>Plan every statement of this unit of work for its own values (<c>plan_cache_mode =
+    /// force_custom_plan</c>, transaction-local). Npgsql prepares a statement that is run again (a list walk
+    /// reads page after page) and after five runs PostgreSQL may switch it to a generic plan made without the
+    /// values; for a filter on a custom field it then thinks the matching set is small and joins it by a nested
+    /// loop that rescans it for every row (a page took 5 s instead of 0.1 s on 100,006 contacts). Used by a
+    /// list whose workspace defines custom fields; everything else keeps the server's choice
+    /// (docs/decisions/p09-custom-fields-round2-print-sort-required.md).</summary>
+    public async Task UseCustomPlansAsync(CancellationToken cancellationToken = default)
+    {
+        if (_customPlans || Transaction is null)
+        {
+            return;
+        }
+        _customPlans = true;
+        await using var batch = new NpgsqlBatch(Connection, Transaction);
+        batch.BatchCommands.Add(new NpgsqlBatchCommand("SELECT set_config('plan_cache_mode', 'force_custom_plan', true)"));
+        await batch.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     public bool AllCompanies => HasTenant && _companies.All;
 
     public IReadOnlyList<Guid> CompanyIds => HasTenant ? _companies.CompanyIds : [];
