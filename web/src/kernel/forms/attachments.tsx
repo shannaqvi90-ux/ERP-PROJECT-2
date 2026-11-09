@@ -243,7 +243,9 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
           {t("attachments.drop")}
         </div>
       )}
-      <div className="visually-hidden" role="status" aria-live="polite">
+      {/* A live region without the status role: the form's own "Saved." notice is the one status on the screen
+          (drivers and tests wait for it), and an empty status region would answer them early. */}
+      <div className="visually-hidden" aria-live="polite">
         {announce}
       </div>
       {progress.length > 0 && (

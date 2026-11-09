@@ -77,8 +77,9 @@ public static class AttachmentEndpoints
                     AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, IUserDirectory users, HttpContext http, CancellationToken ct) => UploadAsync(record, id, name, db, store, tenant, users, http, ct))
                 .WithName(baseName + ".upload")
                 .WithSummary($"Attach one file to a record of kind {record.Table} (id is the record). Either the request body is the file's bytes (any content type except JSON; the X-File-Name header is its name; what the screen sends) or it is JSON with the name and the bytes as base64 (for API clients). Several files are several calls. Checked on the server: size, type from the extension and the bytes, count per record.")
-                .Accepts<UploadFileRequest>("application/json")
-                .Accepts<byte[]>("application/octet-stream", "*/*")
+                // One declaration: a second one replaces the first in the API description. The JSON form is the one described
+                // (its schema is what a client or a gate builds a body from); the bytes form takes any other content type.
+                .Accepts<UploadFileRequest>("application/json", "application/octet-stream", "*/*")
                 .ProducesValidationProblem()
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .ProducesProblem(StatusCodes.Status409Conflict)

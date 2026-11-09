@@ -111,7 +111,8 @@ describe("the files of a record", () => {
     expect(posts.map((p) => decodeURIComponent(p.headers["X-File-Name"]!)).sort()).toEqual(["A one.pdf", "b.txt"]);
     expect(posts.every((p) => p.headers["X-Erp-Request"] === "1" && p.headers["Content-Type"] === "application/octet-stream")).toBe(true);
     expect(text()).toContain("5 attachments");
-    expect(view!.container.querySelector('[role="status"]')!.textContent).toBe("2 files attached");
+    expect(view!.container.querySelector('[aria-live="polite"]')!.textContent).toBe("2 files attached");
+    expect(view!.container.querySelector('[role="status"]')).toBeNull();
   });
 
   it("takes files dropped on the section", async () => {
