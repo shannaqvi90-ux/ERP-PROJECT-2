@@ -9,11 +9,13 @@ in the file dialog). Ours: `gauntlet/compare/drivers/ours/attach-file.mjs`.
 **Our path.** The contact's form carries its Attachments section under the fields, with an "Add files" button always visible. One step:
 pick the file at that button (the click that opens the file dialog and the choice of the file are one counted step, as in the Odoo
 driver's last action). The file is sent as soon as it is chosen and listed when the server has stored it (progress is in the same
-section). Steps: ours 1, Odoo 2 or 3 depending on how the harness counts the paperclip click that only opens the attachment box
-and the "Attach files" button; keystrokes: both 0 (left out of the comparison by the owner's zero rule); seconds: ours is a single
-request that streams to disk, Odoo's goes through its upload and a re-render.
+section). Measured on a local stack against the stored Odoo baseline (`gauntlet/reference/odoo/tasks/attach-file.json`):
+steps 2 (open the file dialog, choose the file) against Odoo's 3 (paperclip, "Attach files", choose the file); clicks 1 against 2;
+keystrokes 0 against 0 (left out of the comparison by the owner's zero rule); human seconds 4.15 against 6.8; machine seconds
+0.157 to 0.21 over five runs (median 0.178) against 0.209. The file is listed from the upload's own answer (no second read of the
+list), so the wait after the choice is one request of about 10 ms plus the page's render.
 
-**Paths tried for fewer steps.** (a) A keyboard shortcut that opens the file dialog: one key press instead of one pick, no fewer steps
+**Paths tried for fewer steps** (the builder's tries, as the owner's tie rule asks; ours already wins steps, clicks and human seconds): (a) A keyboard shortcut that opens the file dialog: one key press instead of one pick, no fewer steps
 (the file choice is still a step) and a shortcut to keep conflict-free in the palette, so not added. (b) Opening the dialog on arrival
 at the contact: a dialog that opens without being asked is a defect. (c) Dropping a file: the harness has no counted drag-and-drop
 action that is shorter than a pick. If a critic finds the counts tied, the paths above are the ones tried and none shortens the

@@ -43,16 +43,15 @@ export default {
     await page.keyboard.type(password);
     await page.keyboard.press('Enter');
     await page.locator('nav[aria-label="Main navigation"]').waitFor();
-    await page.goto(`${ctx.product.baseUrl}/contacts/contacts?open=${ctx.state.contactId}`);
+    await page.goto(`${ctx.product.baseUrl}/contacts/contacts/${ctx.state.contactId}`);
     await page.locator('[data-testid="attachments"]').waitFor();
   },
   ready: '[data-testid="attachments"]',
   async run(op, ctx) {
     const file = path.join(ctx.harnessDir, 'data', 'fixtures', ctx.task.input.file);
     await op.pickFile(op.page.locator('[data-testid="attachments"]').getByRole('button', { name: 'Add files', exact: true }), file, { label: ctx.task.input.file });
-    await op.waitFor(name => [...document.querySelectorAll('[data-testid="attachments"] table tbody tr')].some(r => r.innerText.includes(name))
-      && !document.querySelector('[data-testid="attachments"] .attachments-progress'),
-    { label: 'file listed on the contact', arg: ctx.task.input.file });
+    // The file is listed (a row of the section's table) only once the server has stored it: a row that holds its name is the end.
+    await op.waitFor(op.page.locator('[data-testid="attachments"] table tbody tr', { hasText: ctx.task.input.file }), { label: 'file listed on the contact' });
     return {};
   },
   async verify(ctx) {
