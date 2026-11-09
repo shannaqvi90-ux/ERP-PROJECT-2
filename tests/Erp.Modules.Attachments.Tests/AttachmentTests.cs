@@ -356,8 +356,8 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
             (new { file = "x.pdf" }, HttpStatusCode.BadRequest),
             (new { data = Convert.ToBase64String(pdf) }, HttpStatusCode.BadRequest),
             (new { file = "x.exe", data = Convert.ToBase64String(pdf) }, HttpStatusCode.UnsupportedMediaType),
-            (new { name = "x.pdf", data = Convert.ToBase64String("MZ program"u8.ToArray()) }, HttpStatusCode.UnsupportedMediaType),
-            (new { name = "../../x.pdf", data = Convert.ToBase64String(pdf) }, HttpStatusCode.Created),
+            (new { file = "x.pdf", data = Convert.ToBase64String("MZ program"u8.ToArray()) }, HttpStatusCode.UnsupportedMediaType),
+            (new { file = "../../x.pdf", data = Convert.ToBase64String(pdf) }, HttpStatusCode.Created),
         })
         {
             using var response = await admin.PostAsJsonAsync(Api.Root(contact), body, Api.Cancel);
