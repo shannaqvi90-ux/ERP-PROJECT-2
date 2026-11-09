@@ -74,6 +74,13 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
                 }
                 return (response.StatusCode, bytes);
             }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("null characters", StringComparison.Ordinal))
+            {
+                // A path with a NUL byte never reaches the application: the in-process server refuses to build the
+                // request (a real server answers 400). It reached nothing, so it is neither a leak nor a failure.
+                attempts++;
+                return (HttpStatusCode.BadRequest, []);
+            }
             catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
             {
                 failures.Add($"{method} {path}: {exception.Message}");

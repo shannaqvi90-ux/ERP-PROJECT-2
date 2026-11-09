@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Erp.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
 namespace Erp.Modules.Attachments.Tests;
@@ -388,6 +389,77 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         bad.Parameters.AddWithValue("k", $"{Env.TenantB.Id:N}/{Guid.NewGuid():N}");
         var error = await Assert.ThrowsAsync<PostgresException>(() => bad.ExecuteNonQueryAsync(Api.Cancel));
         Assert.Equal("23514", error.SqlState);
+    }
+
+    [Fact]
+    public async Task Every_file_on_the_volume_sits_in_its_own_workspaces_folder_and_belongs_to_a_row_of_that_workspace()
+    {
+        using var a = await AdminAsync();
+        using var b = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        await Api.UploadedAsync(a, await Api.NewContactAsync(a), "from-a.pdf", Api.Pdf("a"));
+        await Api.UploadedAsync(b, await Api.NewContactAsync(b), "from-b.pdf", Api.Pdf("b"));
+        await using var owner = await Env.OpenAdminAsync();
+        await using var read = new NpgsqlCommand("SELECT tenant_id, storage_key FROM attachments.files", owner);
+        var rows = new List<(Guid Tenant, string Key)>();
+        await using (var reader = await read.ExecuteReaderAsync(Api.Cancel))
+        {
+            while (await reader.ReadAsync(Api.Cancel))
+            {
+                rows.Add((reader.GetGuid(0), reader.GetString(1)));
+            }
+        }
+        Assert.Contains(rows, r => r.Tenant == Env.TenantA.Id);
+        Assert.Contains(rows, r => r.Tenant == Env.TenantB.Id);
+        var root = Path.GetFullPath(fixture.Root);
+        foreach (var (tenant, key) in rows)
+        {
+            Assert.StartsWith(tenant.ToString("N") + "/", key);
+            Assert.True(File.Exists(Path.Combine(root, key.Replace('/', Path.DirectorySeparatorChar))), $"{key}: no file on the volume");
+        }
+        // The other way round: every file on the volume belongs to a row of the folder's tenant (the folders
+        // of other tests' workspaces are not this database's, so only the two gate workspaces are judged).
+        foreach (var tenant in new[] { Env.TenantA.Id, Env.TenantB.Id })
+        {
+            var folder = Path.Combine(root, tenant.ToString("N"));
+            // The bytes of a refused upload go just after its answer: give them a moment.
+            List<string> orphans = [];
+            for (var attempt = 0; attempt < 30; attempt++)
+            {
+                orphans = [.. Directory.GetFiles(folder).Where(f => !rows.Any(r => r.Tenant == tenant && r.Key == $"{tenant:N}/{Path.GetFileName(f)}")).Select(f => Path.GetFileName(f)!)];
+                if (orphans.Count == 0)
+                {
+                    break;
+                }
+                await Task.Delay(100, Api.Cancel);
+            }
+            Assert.True(orphans.Count == 0, $"files on the volume that no row of {tenant:N} names: {string.Join(", ", orphans)}");
+        }
+    }
+
+    [Fact]
+    public async Task The_isolation_probe_runs_against_the_real_server_and_finds_nothing()
+    {
+        using var attacker = await AdminAsync();
+        using var victim = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        await using var owner = await Env.OpenAdminAsync();
+        var ids = new List<Guid>();
+        foreach (var table in new[] { "attachments.files", "contacts.contacts" })
+        {
+            await using var read = new NpgsqlCommand($"SELECT id FROM {table} WHERE tenant_id = @t", owner);
+            read.Parameters.AddWithValue("t", Env.TenantB.Id);
+            await using var reader = await read.ExecuteReaderAsync(Api.Cancel);
+            while (await reader.ReadAsync(Api.Cancel))
+            {
+                ids.Add(reader.GetGuid(0));
+            }
+        }
+        Assert.NotEmpty(ids);
+        var catalog = Env.Factory.Services.GetRequiredService<Erp.Kernel.Modules.ModuleCatalog>();
+        var context = new Erp.Kernel.Security.IsolationProbeContext(attacker, Env.TenantA.Id, Env.TenantB.Id, ids, [Env.TenantB.Canary!], victim);
+        var result = await AttachmentsIsolationProbe.RunAsync(catalog.AttachmentRecordTypes, context, Api.Cancel);
+        Assert.Empty(result.Failures);
+        Assert.True(result.Attempts > 100, $"{result.Attempts} attempts");
+        Assert.DoesNotContain(result.Observed, o => o.Contains(Env.TenantB.Canary!, StringComparison.Ordinal) || ids.Any(id => o.Contains(id.ToString(), StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
