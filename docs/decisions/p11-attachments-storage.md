@@ -34,3 +34,13 @@ Date: 2026-11-09. Piece: p11-attachments, round 1. Status: accepted.
 - Bytes in PostgreSQL (`bytea`, as company logos): simple and transactional, but 20 MB rows bloat backups, the audit trigger and the
   buffer cache. The spec asks for a storage interface and a volume.
 - A client-supplied extension or name in the stored path: the usual source of traversal and of served-as-script bugs.
+
+## Processor time of round 1 (fixer verify)
+
+Full verify of this branch, run through the verify slots on a quiet machine (load 2 to 12, peak 87 only
+in the web stage's start), 2026-11-10 20:20 UTC to 2026-11-11 about 00:15 UTC: every test passed
+(dotnet 1077, web 731, e2e 150, compare 488, build 13). The only ratchet line that failed was
+verify.cpuSeconds: 19,957 s against the maximum 18,700 s (dotnet 16,801.7 s, web 2,458.7 s,
+compare/e2e/timing the rest). G1HttpIsolationTests took 2 h 59 m of wall time; G1ListVolumeTests passed
+(27 m 44 s). This is p11's first integration, so owner decision #34 allows a rise of at most 3,500 s;
+the run is 1,257 s over the maximum. Kept folder: .verify-failed/20261110T235333Z-5477.
