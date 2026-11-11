@@ -125,6 +125,11 @@ public interface ICustomFields
     /// <summary>The values of many records for list pages, as plain values by field key (null for a
     /// record that holds none).</summary>
     Task<IReadOnlyDictionary<Guid, IDictionary<string, object?>>> ValuesAsync(string recordType, IReadOnlyCollection<Guid> recordIds, CancellationToken cancellationToken);
+
+    /// <summary>The fields with these machine names, switched off ones too (a record's history names a
+    /// field that was later switched off), keyed by name. With <paramref name="recordType"/> only that
+    /// kind of record's fields; without, a name shared by several kinds gives the one in use.</summary>
+    Task<IReadOnlyDictionary<string, CustomFieldInfo>> DescribeAsync(IReadOnlyCollection<string> keys, string? recordType, CancellationToken cancellationToken);
 }
 
 public static class CustomFieldValues

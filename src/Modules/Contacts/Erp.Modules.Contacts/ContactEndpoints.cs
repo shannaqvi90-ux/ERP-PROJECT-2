@@ -67,6 +67,7 @@ public sealed record ContactDto(
 
 /// <summary>A row of the contacts list (the list query contract). <c>creditLimit</c> is the
 /// limit's amount in <c>creditLimitCurrency</c> (a decimal string), null when none is set.</summary>
+[Erp.Kernel.Hosting.CustomFieldValues]
 public sealed record ContactRow(
     Guid Id,
     string Kind,

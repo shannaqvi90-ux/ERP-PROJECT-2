@@ -16,7 +16,7 @@ internal static class FieldsList
         ListBinding<FieldRow>.For(new ListDefinition(
                 Key, "customfields.fields.title", CustomFieldsPermissions.FieldsRead, "/api/customfields/fields",
                 [
-                    new ListColumn("labelEn", "customfields.field.label", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "labelAr", Width: ListColumnWidth.Wide),
+                    new ListColumn("labelEn", "customfields.field.name", ListColumnType.Text, Sortable: true, Filterable: true, ArabicField: "labelAr", Width: ListColumnWidth.Wide),
                     new ListColumn("labelAr", "customfields.field.labelAr", ListColumnType.Text, Sortable: true, Filterable: true, Hidden: true, Width: ListColumnWidth.Wide),
                     new ListColumn("recordType", "customfields.field.recordType", ListColumnType.Choice, Sortable: true, Filterable: true, Groupable: true,
                         Choices: recordTypes.Select(t => new ListChoice(t.Table, t.LabelKey)).ToList()),

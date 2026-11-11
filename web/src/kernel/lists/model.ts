@@ -30,6 +30,8 @@ export type ListColumn = {
   falseLabelKey?: string | null;
   /** How much of the list's width the column asks for (short codes narrow, legal names wide). */
   width?: "normal" | "narrow" | "wide";
+  /** For a custom number field: the decimals it was declared with. */
+  decimals?: number | null;
 };
 
 export type ListPreset = { key: string; labelKey: string; filter: string | null; sort: string | null; groupBy: string | null };

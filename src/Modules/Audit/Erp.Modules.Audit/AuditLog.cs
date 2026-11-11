@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Localization;
@@ -45,7 +46,14 @@ public sealed record AuditLogRow(
 /// <param name="Change">The change as the log lists it.</param>
 /// <param name="Details">Every field's old and new value, as stored, by field name.</param>
 /// <param name="Names">Names of the records the values refer to by id, where the reader may read them.</param>
-public sealed record AuditChange(AuditLogRow Change, IReadOnlyList<AuditFieldChange> Details, IReadOnlyDictionary<Guid, AuditRecordName> Names);
+public sealed record AuditChange(AuditLogRow Change, IReadOnlyList<AuditFieldChange> Details, IReadOnlyDictionary<Guid, AuditRecordName> Names,
+    IReadOnlyDictionary<string, AuditFieldLabel>? Fields = null);
+
+/// <summary>A tenant-defined field as the trail names it: its labels in both languages and, for a number, its decimals.</summary>
+public sealed record AuditFieldLabel(string LabelEn, string LabelAr, string Type, int Decimals)
+{
+    public string For(string language) => language == "ar" && !string.IsNullOrWhiteSpace(LabelAr) ? LabelAr : LabelEn;
+}
 
 /// <summary>
 /// The audit log list: every recorded change of the business records the caller may read, newest
@@ -121,7 +129,26 @@ internal static class AuditLog
         var details = result.Rows.ToDictionary(r => r.Uid, AuditReader.Changes);
         var names = await reader.ReferencedNamesAsync(details.Values.SelectMany(d => d), cancellationToken);
         var language = Language(http);
-        return result.Map(e => Row(e, details[e.Uid], actors, names, catalog, texts, language));
+        var labels = await CustomFieldLabelsAsync(http.RequestServices, details.Values.SelectMany(d => d), null, cancellationToken);
+        return result.Map(e => Row(e, details[e.Uid], actors, names, catalog, texts, language, labels));
+    }
+
+    /// <summary>The prefix of a custom field's name in a record's history (the contract of audit.capture()).</summary>
+    public const string CustomFieldPrefix = "custom_fields.";
+
+    /// <summary>The tenant's own labels of the custom fields the changes mention (none when the host has no
+    /// custom fields), by stored field name.</summary>
+    internal static async Task<IReadOnlyDictionary<string, AuditFieldLabel>> CustomFieldLabelsAsync(IServiceProvider services, IEnumerable<AuditFieldChange> changes,
+        string? recordType, CancellationToken cancellationToken)
+    {
+        var keys = changes.Select(c => c.Field).Where(f => f.StartsWith(CustomFieldPrefix, StringComparison.Ordinal)).Distinct(StringComparer.Ordinal)
+            .Select(f => f[CustomFieldPrefix.Length..]).ToList();
+        if (keys.Count == 0 || services.GetService<Erp.Kernel.CustomFields.ICustomFields>() is not { } customFields)
+        {
+            return new Dictionary<string, AuditFieldLabel>();
+        }
+        var found = await customFields.DescribeAsync(keys, recordType, cancellationToken);
+        return found.ToDictionary(p => CustomFieldPrefix + p.Key, p => new AuditFieldLabel(p.Value.LabelEn, p.Value.LabelAr, p.Value.Type, p.Value.Decimals), StringComparer.Ordinal);
     }
 
     /// <summary>The language of the change texts: the document's (the reports framework's
@@ -168,7 +195,8 @@ internal static class AuditLog
     }
 
     internal static AuditLogRow Row(AuditEntry e, IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, Identity.Contracts.UserSummary> actors,
-        IReadOnlyDictionary<Guid, AuditRecordName> names, ModuleCatalog catalog, AuditTexts texts, string language)
+        IReadOnlyDictionary<Guid, AuditRecordName> names, ModuleCatalog catalog, AuditTexts texts, string language,
+        IReadOnlyDictionary<string, AuditFieldLabel>? fieldLabels = null)
     {
         var (name, nameAr) = ActorName(e.ActorId, e.ActorKind, actors, texts);
         var shown = changes.Where(c => c.Field != "id").ToList();
@@ -176,7 +204,7 @@ internal static class AuditLog
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
-            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names)));
+            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels));
     }
 
     /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer

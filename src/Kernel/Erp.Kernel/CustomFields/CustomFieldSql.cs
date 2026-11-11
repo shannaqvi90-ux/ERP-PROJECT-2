@@ -44,6 +44,18 @@ public static class CustomFieldSql
     /// <summary>Records whose text value in any of the fields matches the LIKE pattern (case-insensitive, backslash escapes).</summary>
     public static IQueryable<CustomFieldMatch> SearchText(Guid[] fields, string pattern) => throw new NotSupportedException();
 
+    /// <summary>The record's value of a number field (null when it holds none): what a list sorts and groups by.</summary>
+    public static decimal? ValueNumber(Guid field, Guid record) => throw new NotSupportedException();
+
+    /// <summary>The record's value of a date field.</summary>
+    public static DateOnly? ValueDate(Guid field, Guid record) => throw new NotSupportedException();
+
+    /// <summary>The record's value of a yes/no field.</summary>
+    public static bool? ValueBool(Guid field, Guid record) => throw new NotSupportedException();
+
+    /// <summary>The record's value of a text or single-select field.</summary>
+    public static string? ValueText(Guid field, Guid record) => throw new NotSupportedException();
+
     public static MethodInfo MethodOf(string name) => typeof(CustomFieldSql).GetMethod(name)!;
 
     /// <summary>Teach a module's model the functions above (call it from the module's model
@@ -60,6 +72,7 @@ public static class CustomFieldSql
         {
             (nameof(MatchText), "match_text"), (nameof(MatchNumber), "match_number"), (nameof(MatchDate), "match_date"),
             (nameof(MatchBool), "match_bool"), (nameof(MatchRef), "match_ref"), (nameof(MatchAny), "match_any"), (nameof(SearchText), "search_text"),
+            (nameof(ValueNumber), "value_number"), (nameof(ValueDate), "value_date"), (nameof(ValueBool), "value_bool"), (nameof(ValueText), "value_text"),
         })
         {
             modelBuilder.HasDbFunction(MethodOf(method)).HasSchema(Schema).HasName(name);
