@@ -1,0 +1,69 @@
+Test run for /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.43]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.01]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.30]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G2.G2CompanyWritePolicyTests.Every_company_table_carries_the_company_write_policies [75 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyWritePolicyTests.Under_a_write_limit_the_application_role_writes_only_the_permitted_companies_rows [384 ms]
+[xUnit.net 00:00:31.20]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [FAIL]
+[xUnit.net 00:00:31.21]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:31.21]                  ↓ (pos 0)
+[xUnit.net 00:00:31.21]       Expected: "numbering.companyNeedsEveryBranch"
+[xUnit.net 00:00:31.21]       Actual:   "companyNeedsEveryBranch"
+[xUnit.net 00:00:31.21]                  ↑ (pos 0)
+[xUnit.net 00:00:31.21]       Stack Trace:
+[xUnit.net 00:00:31.21]         /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(128,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence()
+[xUnit.net 00:00:31.21]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [2 s]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "numbering.companyNeedsEveryBranch"
+Actual:   "companyNeedsEveryBranch"
+           ↑ (pos 0)
+  Stack Trace:
+     at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence() in /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 128
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [683 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [2 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [3 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [6 s]
+[xUnit.net 00:01:35.33]     Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [FAIL]
+[xUnit.net 00:01:35.33]       Answers carrying company Y's records:
+[xUnit.net 00:01:35.33]       GET /api/audit/records/01a1cb17-9999-769a-a496-93878ae259a4: answered 200 carrying company Y's '01a1cb17-9999-769a-a496-93878ae259a4'
+[xUnit.net 00:01:35.33]       Stack Trace:
+[xUnit.net 00:01:35.33]         /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs(255,0): at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y()
+[xUnit.net 00:01:35.33]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:35.33]       Output:
+[xUnit.net 00:01:35.33]         230 endpoints, 4162 requests, 152 one-field variants on POST /api/tenancy/branches, PUT /api/numbering/sequences/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [56 s]
+  Error Message:
+   Answers carrying company Y's records:
+GET /api/audit/records/01a1cb17-9999-769a-a496-93878ae259a4: answered 200 carrying company Y's '01a1cb17-9999-769a-a496-93878ae259a4'
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y() in /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G2/G2CompanyRoleTests.cs:line 255
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 230 endpoints, 4162 requests, 152 one-field variants on POST /api/tenancy/branches, PUT /api/numbering/sequences/{id:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}
+
+
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [59 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [2 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [10 s]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.An_administrator_of_one_company_grants_and_acts_only_within_it [1 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches [6 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [8 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_permission_held_in_one_company_is_denied_while_working_in_another [14 s]
+[xUnit.net 00:03:06.53]   Finished:    Erp.Gates.Tests (ID = 'dba294697cb005e29c648485b182b9d3ab60876ed3f87f78f787c89016f9c8e0')
+  Passed Erp.Gates.Tests.G1.G1BranchScopeAttackTests.A_user_limited_to_one_branch_cannot_reach_another_branch_of_the_company_through_any_endpoint [2 m 23 s]
+
+Test Run Failed.
+Total tests: 17
+     Passed: 15
+     Failed: 2
+ Total time: 3.1227 Minutes

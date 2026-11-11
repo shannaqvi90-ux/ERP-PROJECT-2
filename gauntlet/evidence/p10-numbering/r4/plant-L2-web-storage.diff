@@ -1,0 +1,19 @@
+diff --git a/web/src/modules/numbering/SequencesPage.tsx b/web/src/modules/numbering/SequencesPage.tsx
+index c26b96a2..0bb792e8 100644
+--- a/web/src/modules/numbering/SequencesPage.tsx
++++ b/web/src/modules/numbering/SequencesPage.tsx
+@@ -105,8 +105,14 @@ function SequenceForm({ id, row, nav, onSaved, onClose }: { id: string; row?: Se
+   const [canUpdate, setCanUpdate] = useState(row?.canUpdate ?? true);
+   const read = (signal?: AbortSignal) =>
+     api<Sequence>("GET", `/api/numbering/sequences/${id}`, undefined, { signal }).then((s) => {
++      // PLANT L2 (critic): keep the last sequence seen, and show it when the server will not.
++      try { localStorage.setItem(`numbering.sequence.${id}`, JSON.stringify(s)); } catch { /* ignore */ }
+       setCanUpdate(s.canUpdate);
+       return s;
++    }).catch((e) => {
++      const kept = localStorage.getItem(`numbering.sequence.${id}`);
++      if (kept) return JSON.parse(kept) as Sequence;
++      throw e;
+     });
+   const message = (code: string, args?: (string | number)[]) =>
+     t(`numbering.validation.${code}`, Object.fromEntries((args ?? []).map((a, i) => [String(i), typeof a === "number" ? format.number(a) : a])));

@@ -1,0 +1,10 @@
+import { open, shot } from './lib.mjs';
+const { b, p } = await open(process.argv[2]);
+await p.goto('http://localhost:21050/numbering/sequences'); await p.waitForTimeout(2000);
+await p.keyboard.press('/'); await p.keyboard.type('PV- ALN-DXB'); await p.waitForTimeout(1500);
+await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
+await p.keyboard.press('Alt+y'); await p.waitForTimeout(3000);
+const d = p.locator('main');
+console.log((await d.innerText()).slice(0, 1500));
+await shot(p, process.argv[3]);
+await b.close();

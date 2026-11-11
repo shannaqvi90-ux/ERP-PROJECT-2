@@ -1,0 +1,10 @@
+B /api/audit/log?take=50&filter=fields%20eq%20%27city%27 -> 200 in 0.3s total=1011 items=50
+A /api/audit/log?take=50&filter=fields%20eq%20%27columns%27 -> 200 in 1.7s total=13 items=13
+B /api/audit/log?take=100&filter=fields%20eq%20%27email%27&skip=205010 -> 200 in 0.1s total=2013 items=0
+B /api/audit/log?take=50&filter=fields%20eq%20%27reset%27 -> 200 in 0.1s total=22 items=22
+A /api/audit/log?take=50&filter=fields%20eq%20%27prefix%27 -> 200 in 1.2s total=45 items=45
+A /api/audit/log?take=100&filter=fields%20eq%20%27status%27&skip=51250 -> 200 in 0.9s total=100001 items=100
+B /api/audit/log?take=50 -> 200 in 0.1s total=9086 items=50
+A /api/audit/log?take=20002 -> 200 in 0.3s total=740567 items=200
+A /api/audit/log?take=30017 -> 200 in 0.3s total=740567 items=200
+A take=20002 and take=30017 answers identical (no writes between): True 126744 126744

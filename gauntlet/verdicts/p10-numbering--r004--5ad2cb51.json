@@ -1,0 +1,110 @@
+{
+  "piece": "p10-numbering",
+  "round": 4,
+  "commit": "5ad2cb51",
+  "judged_at": "2026-11-11T22:40:09Z",
+  "critic": "fresh critic, p10-numbering round 4",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation, attacked by hand on the real product (API, exports, saved views, audit history, spoofed headers)",
+      "status": "pass",
+      "evidence": "api-attack-b.txt. admin@alnoor (tenant A) sees 44 sequences and admin@gulfsteel (tenant B) sees 22, with no id in both. A's GET and PUT on B's sales.invoice sequence get 404, and B's row is unchanged (same prefix and version). Filters and searches on B's company ids and codes (GSF-SHJ, GSF-RAK) return 0 B rows. Six tenant and company headers, set to B's company id or B's domain, get 404. /api/reports/lists/numbering.sequences as csv, xlsx (unzipped), pdf and json, plain and filtered to B's company, holds no B marker. A cannot GET, PUT or DELETE B's private saved view of the list, and A's view list does not show it. GET /api/audit/records/{B's sequence} returns no items for A, while A's own sequence returns its history."
+    },
+    {
+      "gate": "G1 at the database, as the app role erp_app",
+      "status": "pass",
+      "evidence": "db-attack-erp_app-b.txt. With no tenant bound, or a tenant set without the transaction stamp, 0 rows are visible. With tenant A bound, the role sees 44 sequences (0 foreign), 10 counters and 33 issued numbers. UPDATE of B's sequences and DELETE of B's counters touch 0 rows. INSERT of a sequence or an issued number for B is refused by RLS. UPDATE or DELETE of issued_numbers gets 'permission denied' (grants erp_app=ar). Numbering has no jobs or file paths of its own."
+    },
+    {
+      "gate": "G2 permissions on p10's surface (by hand)",
+      "status": "pass",
+      "evidence": "api-attack-b.txt. viewer@alnoor: list 200, get 200, PUT 403, export 200. noaccess@alnoor: 403 on all four. Anonymous: 401 on all four. In the browser the viewer sees 11 sequences (first company only), the form has no Save and its fields are disabled (b10-viewer-read-only.jpg)."
+    },
+    {
+      "gate": "G1/G2 inside the full verify on p10's surface",
+      "status": "pass",
+      "evidence": "verify-kept/20261111T222900Z-296539/dotnet-suite.log. Passed: G1HttpIsolationTests.Tenant_A_cannot_reach_tenant_B_through_any_endpoint (3 h 15 m, no abort), G1NonInterferenceTests (56 m), G1NumberingContractTests, G1CompanyScopeTests, G2PermissionTests (all), NumberingWriteSetTests (both), G2CompanyRoleTests (all six, including A_role_held_in_company_X_acts_on_nothing_of_company_Y) and G2CompanyWritePolicyTests. G1ListVolume walked numbering.sequences (A 22 / B 22 rows, 111 queries) cleanly."
+    },
+    {
+      "gate": "Planted faults on this piece's surface (separate worktree, now removed)",
+      "status": "pass",
+      "evidence": "Every effective plant was caught. L1 (plant-L1-P1.diff): GET /api/numbering/sequences/{id} falls back to a detached session bound to a tenant id taken from an X-Erp-Workspace header. Caught by G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work (plant-L1-P2-gates.log). L2 (plant-L2-web-storage.diff): the sequence form keeps each sequence in localStorage and shows it when the server refuses. Caught by G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed (plant-L2-gates.log). P1: POST /api/numbering/sequences/{id}/skip with no permission. The host refuses to start ('declares no permission'; plant-L1-P1-gates-a.log). P3 (plant-P3-no-company-check.diff): PUT without the company and every-branch permission checks. Caught by NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence, and the kernel still refused the write (plant-P3-gates.log). P2: a GET that moves counters on with ?advance. No gate failed, but the kernel runs every GET in a read-only transaction, so the plant cannot write in the real product. That makes it no gate gap."
+    },
+    {
+      "gate": "G3 clean clone, one command builds, migrates, seeds and passes every test (./erp verify, ERP_VERIFY_ALONE=1)",
+      "status": "fail",
+      "evidence": "Slot taken 2026-11-11T18:45:42Z (after a 16,275 s wait for two other critics' verifies), FAILED at 22:29:00Z after 13,398 s. Load mean 5.4, peak 35.6 (the peak was during its own build). Stage web passed (vitest 719/719, build 13/13, compare harness 488/488, 134/134 instrument mutations caught). Stage e2e passed (146/146 and the ours-driver health check). Stage dotnet failed with 3 of 1,003 tests failing, none on p10's surface: (1) G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint, a differential on GET /api/audit/log?take=20002 (company Y's PO box used as take); (2) G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume, 25 answers of /api/audit/log?filter=fields eq '<field>' 'not answered with 200'; (3) GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks, where the planted /api/leaky/lookup?email= leak was not caught (GateSelfTests.cs:149). The demo command passed: ./erp up 762 s at load ~70, and again 505 s."
+    }
+  ],
+  "tests": {
+    "command": "ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p10-numbering-r4 ERP_HTTP_PORT=21050 ERP_DB_PORT=21051 ERP_VERIFY_HTTP_PORT=21060 ERP_VERIFY_DB_PORT=21061 ERP_VERIFY_KEEP_DIR=/home/shan/evidence-staging/p10-numbering/r4/verify-kept ERP_VERIFY_LOG=<scratch>/verify-critic-p10-numbering-r4b.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 2369,
+    "passed": 2366,
+    "failed": 3,
+    "skipped": 0,
+    "duration_s": 13398
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 13398,
+    "evidence": "One full alone verify was run: dotnet 1,000/1,003, vitest 719/719, build 13/13, compare 488/488, e2e 146/146. The three .NET failures are p00 gate tests on p07's audit log and on the gate's own self-test (details in hard_gates). Processor time: dotnet 17,465 s, web 2,475 s, e2e 580 s, total 20,520 s. The ratchet did not run because a stage failed. Kept: verify-kept/20261111T222900Z-296539/ (dotnet-suite.log, dotnet-self-http.log, load samples) and verify-critic-p10-numbering-r4b.log. I did not run a second full verify (an alone run would wait about 4 h behind another verify, then take about 4 h). The same code (17ba3338 = 5ad2cb51 without two verdict records) passed all 2,381 tests in p09's critic's clean-clone verify, so these failures look nondeterministic. They are still failing tests. The demo command ./erp up passed: 762 s cold at load ~70, and 505 s."
+  },
+  "odoo": [
+    {
+      "task": "configure-sequence",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 13,
+        "seconds": 1.54,
+        "klm_seconds": 12.04
+      },
+      "odoo": {
+        "steps": 17,
+        "keystrokes": 32,
+        "seconds": 6.144,
+        "klm_seconds": 40.72
+      },
+      "notes": "Command: node run.mjs --task configure-sequence --product both --repeat 3. Odoo is the shared rig on 8069 (live check passed, 100,000+ rows in each of 7 lists; job_runs falls below the bar about 2026-11-12T15:15Z) and ours is the demo on 21050, at load ~75. All 6 runs verified. Ours: 6 steps, 13 keys, machine 1.43/1.54/1.56 s, human 12.04 s (human+wait 12.29 to 12.39 s). Odoo: 17 steps, 32 keys, machine 5.90/6.14/6.21 s, human 40.72 s (human+wait 42.66 to 43.67 s). The harness verdict is win, ours is strictly lower on every metric, and no metric was left out. The task covers only prefix and digits. I checked the spec's 'yearly reset and preview' by hand, by keyboard. G N, '/', type, Down, Enter opens the sequence. Changing the prefix, digits and 'Starts again' updates the preview live: the next three numbers, plus 'Starts again on 1 Jan 2027 with SB-27/0001' (b03) or '1 Dec 2026 with PV-2026-12-00001' (b07, Arabic). Enter from a text field saves. Odoo shows no formatted preview."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p10-numbering/r4/b01-en-form-opened.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b02-en-monthly-preview.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b03-en-yearly-preview.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b04-en-saved.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b05-en-monthly-without-month-saved-attempt.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b06-ar-list.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b07-ar-monthly-preview.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b09-en-history.jpg",
+    "gauntlet/evidence/p10-numbering/r4/b10-viewer-read-only.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Still no green full verify: three p00 gate tests on the audit log and the HTTP attack self-test failed in a quiet alone run, though p10's own surface held everywhere",
+    "detail": "p10 is ready on its own merits. The configure-sequence comparison is a clear win (6 steps and 13 keys against 17 and 32; 12 s against 41 s modelled). Yearly and monthly reset with a live preview works by keyboard in English and Arabic. Every hand attack and every effective plant on p10's surface was refused or caught. All p10 gates passed in the full run. But a round needs one full passing ./erp verify, and my alone verify of 5ad2cb51 (load mean 5.4) failed 3 of 1,003 .NET tests, all outside p10. (1) G1CompanyIsolationTests flags GET /api/audit/log?take=20002 as telling company Y's PO box apart. On the demo, take=20002 and take=30017 give byte-identical answers (126,744 bytes, total 740,567) when nothing writes in between. So this looks like the audit log moving under parallel gate writes, not a leak. (2) G1ListVolumeTests: 25 /api/audit/log?filter=fields eq '<field>' answers were not 200, even with a6bcedcd (GIN overlap) in the tree. On the demo the same requests answer 200 in 0.1 to 1.7 s at load 75. (3) GateSelfTests' HTTP attack missed the planted /api/leaky/lookup?email= leak. The same code passed all 2,381 tests in p09's critic's run of 17ba3338, so these gates are nondeterministic. Until p00 makes them deterministic (or an integrator's alone run comes out green), p10 cannot get a clean round. No p10 change can fix this.",
+    "evidence": "verify-kept/20261111T222900Z-296539/dotnet-suite.log lines ~898-910 (company isolation oracle) and ~1153-1216 (list volume, 25 audit-log answers). verify-kept/20261111T222900Z-296539/dotnet-self-http.log lines 7-56 ('Assert.Contains() Failure' at GateSelfTests.cs:149; no 'leaks on /api/leaky/lookup' line). verify-load-samples has mean 5.4 and peak 35.6. probe-audit-filter.txt reproduces the same requests on the demo: all 200, and the take=20002 vs take=30017 bodies are identical. To reproduce: ERP_VERIFY_ALONE=1 ./erp verify through the slot script at 5ad2cb51."
+  },
+  "gate_gaps": [],
+  "other_findings": [
+    "[route: p00-foundation] GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks failed in a quiet alone run. The HTTP attack did not catch the planted e-mail lookup leak (/api/leaky/lookup?email=, GateSelfTests.cs:149), while 17 other planted endpoints were caught. In this run the attack's catch of a lookup-by-e-mail leak depends on chance (the same test passed in p09's critic's run of the same code). That is a gate weakness of the isolation attack, outside p10.",
+    "[route: p00-foundation] G1ListVolumeTests: 25 /api/audit/log answers with a fields filter (both tenants, take 50/100, various skips) 'not answered with 200' in the gate environment, with a6bcedcd present. The gate does not print the status or time, so the cause cannot be seen. On the demo the same requests answer 200 in 0.1 to 1.7 s (probe-audit-filter.txt). The same symptom was reported for p12 r4.",
+    "[route: p00-foundation] G1CompanyIsolationTests differential on GET /api/audit/log?take=20002 (company Y's PO box as the take value). take does not filter, and on a still demo the two answers are identical. The moving-list handling brought by p00 r18 still lets the audit log's own growth under parallel gate tests count as an oracle.",
+    "[route: p07-audit] G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y failed again when run as part of a class subset in my plant P3 run: GET /api/audit/records/{id} answered 200 with company Y's record (plant-P3-gates.log). It is unrelated to the plant and passed in the full verify, the same order-dependent failure the first round-4 critic reported.",
+    "Audit history still shows reset codes, not names. After 'Every year' to 'Every month', the history reads 'Restarts 1 -> 2' and the form's Arabic latest-change line reads 'إعادة البدء: من 1 إلى 2'. The creation entry shows 'Document type payments.payment' (a key). This is unchanged since the first round-4 judgement (b09-en-history.jpg).",
+    "Preview out of sight while choosing the reset. At 1440x900 the 'Next numbers' preview sits at the top of the form panel. When focus is on 'Starts again' the panel has scrolled, so the user cannot see the preview change as they pick Every year or Every month (b02, b03).",
+    "Choosing 'Every month' with a pattern that has no {MM}: the preview says only 'Correct the pattern to see the next numbers'. No field is marked invalid and no reason is shown until Save is pressed. Then 'Numbers that start again every month need the year and the month...' appears under Starts again (b02 vs b05).",
+    "Enter while the 'Starts again' select has the focus does not save (native select); Enter from a text field or Ctrl+S does. In the list, the Next number column is cut to 'PV-2026-11-000…' when the form panel is open (b09).",
+    "Arabic: the list and form are right to left, codes and patterns are isolated left to right and read in the right order (checked by character positions), and the preview sentence and labels are in Arabic (b06, b07).",
+    "The earlier round-4 critic's staging folder (/home/shan/evidence-staging/p10-numbering/r4, already recorded in gauntlet/evidence/p10-numbering/r4) was moved to /home/shan/evidence-staging/p10-numbering/r4-first-judgement-be417ecb so this judgement's files are not mixed with it. My screenshots are named b01 to b10 so the copy does not overwrite the earlier ones.",
+    "Licences and Odoo: p10 adds no third-party package, and nothing seen in its screens or text is copied from Odoo. Money is not in p10's scope (numbering holds no amounts)."
+  ],
+  "human_gates": [
+    {
+      "gate": "Tax / statutory calculation rule",
+      "what": "p10 enforces the VAT tax-document numbering rules from docs/compliance/vat-tax-document-numbering.md, which the owner signed off in decision #32. Tax invoice and credit note sequences are always gapless, given numbers are append-only (the app role has no UPDATE or DELETE), and a pattern change that could repeat a number is refused. Any further change to these rules goes back to the owner."
+    }
+  ],
+  "evidence_staging": "/home/shan/evidence-staging/p10-numbering/r4",
+  "evidence_dir": "gauntlet/evidence/p10-numbering/r4"
+}

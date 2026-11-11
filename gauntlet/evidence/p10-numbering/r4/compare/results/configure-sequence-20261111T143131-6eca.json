@@ -1,0 +1,1576 @@
+{
+  "schema": 1,
+  "run_id": "configure-sequence-20261111T143131-6eca",
+  "instrument": 12,
+  "task": "configure-sequence",
+  "task_title": "Configure a document sequence",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Make new purchase orders numbered with the prefix \"PO-2026-\" and 6 digits (for example PO-2026-000123).",
+  "done_when": "The purchase order sequence is saved with that prefix and size; the back end confirms the next number would read like PO-2026-000123.",
+  "started_at": "2026-11-11T14:31:31.647Z",
+  "finished_at": "2026-11-11T14:32:46.209Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 17,
+    "keystrokes": 32,
+    "clicks": 9,
+    "scrolls": 2,
+    "field_entries": 3,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 6.214,
+    "system_wait_seconds": 1.808,
+    "human_seconds": 40.72,
+    "human_plus_wait_seconds": 43.668,
+    "klm_operator_counts": {
+      "K": 32,
+      "P": 11,
+      "B": 22,
+      "H": 6,
+      "M": 12
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.037,
+      "took": 0.063,
+      "began": 0.001,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Settings app",
+      "keystrokes": 0,
+      "at": 0.15,
+      "took": 0.061,
+      "began": 0.102,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "scroll",
+      "label": "scroll to the bottom of the settings",
+      "keystrokes": 0,
+      "at": 0.839,
+      "took": 0.051,
+      "began": 0.824,
+      "screen": "/odoo/settings",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Activate the developer mode",
+      "keystrokes": 0,
+      "at": 0.96,
+      "took": 0.195,
+      "began": 0.891,
+      "screen": "/odoo/settings",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Technical menu",
+      "keystrokes": 0,
+      "at": 1.786,
+      "took": 0.359,
+      "began": 1.685,
+      "screen": "/odoo/settings",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "scroll",
+      "label": "scroll the menu to Sequences",
+      "keystrokes": 0,
+      "at": 2.201,
+      "took": 0.056,
+      "began": 2.196,
+      "screen": "/odoo/settings",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Sequences",
+      "keystrokes": 0,
+      "at": 2.308,
+      "took": 0.054,
+      "began": 2.258,
+      "screen": "/odoo/settings",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "type",
+      "label": "search",
+      "keystrokes": 16,
+      "at": 4.759,
+      "took": 0.252,
+      "text": "Purchase Order",
+      "same_field": false,
+      "screen": "/odoo/action-26",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "at": 5.012,
+      "took": 0.029,
+      "chord": "Enter",
+      "screen": "/odoo/action-26",
+      "chain": true
+    },
+    {
+      "n": 10,
+      "kind": "click",
+      "label": "open Purchase Order",
+      "keystrokes": 0,
+      "at": 5.211,
+      "took": 0.105,
+      "began": 5.148,
+      "screen": "/odoo/action-26",
+      "chain": false
+    },
+    {
+      "n": 11,
+      "kind": "click",
+      "label": "prefix field",
+      "keystrokes": 0,
+      "at": 5.53,
+      "took": 0.068,
+      "began": 5.447,
+      "screen": "/odoo/action-26/3",
+      "chain": false
+    },
+    {
+      "n": 12,
+      "kind": "key",
+      "label": "select the old prefix",
+      "keystrokes": 2,
+      "at": 5.598,
+      "took": 0.009,
+      "chord": "Control+a",
+      "screen": "/odoo/action-26/3",
+      "chain": true
+    },
+    {
+      "n": 13,
+      "kind": "type",
+      "label": "prefix",
+      "keystrokes": 10,
+      "at": 5.608,
+      "took": 0.058,
+      "text": "PO-2026-",
+      "same_field": false,
+      "screen": "/odoo/action-26/3",
+      "chain": true
+    },
+    {
+      "n": 14,
+      "kind": "click",
+      "label": "sequence size field",
+      "keystrokes": 0,
+      "at": 5.724,
+      "took": 0.056,
+      "began": 5.667,
+      "screen": "/odoo/action-26/3",
+      "chain": false
+    },
+    {
+      "n": 15,
+      "kind": "key",
+      "label": "select the old size",
+      "keystrokes": 2,
+      "at": 5.78,
+      "took": 0.012,
+      "chord": "Control+a",
+      "screen": "/odoo/action-26/3",
+      "chain": true
+    },
+    {
+      "n": 16,
+      "kind": "type",
+      "label": "size",
+      "keystrokes": 1,
+      "at": 5.793,
+      "took": 0.006,
+      "text": "6",
+      "same_field": false,
+      "screen": "/odoo/action-26/3",
+      "chain": true
+    },
+    {
+      "n": 17,
+      "kind": "click",
+      "label": "Save",
+      "keystrokes": 0,
+      "at": 6.107,
+      "took": 0.067,
+      "began": 6.046,
+      "screen": "/odoo/action-26/3",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Settings loaded",
+      "at": 0.212,
+      "seconds": 0.578
+    },
+    {
+      "label": "settings page",
+      "at": 0.793,
+      "seconds": 0.03
+    },
+    {
+      "label": "developer mode on",
+      "at": 1.157,
+      "seconds": 0.527
+    },
+    {
+      "label": "technical menu open",
+      "at": 2.145,
+      "seconds": 0.023
+    },
+    {
+      "label": "sequence list, search focused",
+      "at": 2.363,
+      "seconds": 0.39
+    },
+    {
+      "label": "search result",
+      "at": 5.045,
+      "seconds": 0.1
+    },
+    {
+      "label": "sequence form",
+      "at": 5.317,
+      "seconds": 0.129
+    },
+    {
+      "label": "saved",
+      "at": 6.175,
+      "seconds": 0.031
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "88f41390805e4478.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/88f41390805e4478.jpg"
+    },
+    {
+      "moment": "sequence edited",
+      "file": "ad418a5235b2605d.jpg",
+      "at": 5.8,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/ad418a5235b2605d.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "c78c72f919235dcb.jpg",
+      "at": 6.214,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/c78c72f919235dcb.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "prefix": "PO-2026-",
+      "padding": 6,
+      "next_number": "PO-2026-000122"
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Alt+S | pointer: Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/configure-sequence.mjs",
+    "sha256": "e33592fa29380afb73f621fb8fd34634cec4fdb0f4b96dd3a1a0f943e9e15664"
+  },
+  "task_notes": "Set-up puts the sequence back to its default (prefix P, 5 digits); clean-up does the same. Odoo shows its sequences only in developer mode, which the path switches on.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.021,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.023,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /bus/websocket_worker_bundle (script)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "4d21a74175e6bdd0",
+    "elements": 265
+  },
+  "screen_after_verify": {
+    "sha256": "4d21a74175e6bdd0",
+    "elements": 265,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.005,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.031
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/ir.sequence/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/ir.sequence/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/ir.sequence/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/ir.sequence/read": [
+        "result.0.prefix",
+        "result.0.padding"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/ir.sequence/read"
+    ],
+    "end_state": [
+      "POST /web/dataset/call_kw/ir.sequence/read [result.prefix, result.padding]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/ir.sequence/read": [
+        "result.0.prefix",
+        "result.0.padding"
+      ]
+    },
+    "end_state_gained": [
+      "PO-2026-"
+    ],
+    "writes_sent": [
+      "POST /base_setup/data",
+      "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+      "POST /base_setup/data",
+      "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+      "POST /web/dataset/call_kw/ir.sequence/web_save"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /base_setup/data",
+        "at": 0.6423815049999976,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain_seconds": 0.364,
+          "chain": [
+            "input of step 2",
+            "the answer to POST /web/action/load after 0.05 s",
+            "an animation frame",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.105 s",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.284 s"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+        "at": 0.6430481969999964,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain_seconds": 0.449,
+          "chain": [
+            "input of step 2",
+            "the answer to POST /web/action/load after 0.05 s",
+            "an animation frame",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.105 s",
+            "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.284 s"
+          ]
+        }
+      },
+      {
+        "write": "POST /base_setup/data",
+        "at": 2.004121948,
+        "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "browser_record": {
+          "caused": false,
+          "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+          "chain": []
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+        "at": 2.0046990309999964,
+        "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "browser_record": {
+          "caused": false,
+          "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+          "chain": []
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/ir.sequence/web_save",
+        "at": 6.167888666000014,
+        "by_step": 17,
+        "browser_record": {
+          "caused": true,
+          "by_step": 17,
+          "chain_seconds": 0.018,
+          "chain": [
+            "input of step 17"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 133,
+    "not_caused": 33,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.788,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.885,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.935,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.952,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.002,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 1.02,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.007 s before it) and could have sent it: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 1.555,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.618,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/3/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 6.192,
+      "by_step": 17,
+      "chain": [
+        "input of step 17",
+        "the answer to POST /web/dataset/call_kw/ir.sequence/web_save after 0.028 s",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/ir.sequence/write"
+  ],
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "pointer",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Alt+S",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 17,
+        "keystrokes": 34,
+        "clicks": 8,
+        "scrolls": 2,
+        "field_entries": 3,
+        "key_chords": 4,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 8.076,
+        "system_wait_seconds": 3.885,
+        "human_seconds": 40.72,
+        "human_plus_wait_seconds": 44.605,
+        "klm_operator_counts": {
+          "K": 34,
+          "P": 10,
+          "B": 20,
+          "H": 5,
+          "M": 12
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.044,
+          "took": 0.066,
+          "began": 0.002,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.157,
+          "took": 0.062,
+          "began": 0.111,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "scroll",
+          "label": "scroll to the bottom of the settings",
+          "keystrokes": 0,
+          "at": 2.654,
+          "took": 0.059,
+          "began": 2.641,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Activate the developer mode",
+          "keystrokes": 0,
+          "at": 2.78,
+          "took": 0.189,
+          "began": 2.715,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "Technical menu",
+          "keystrokes": 0,
+          "at": 3.693,
+          "took": 0.258,
+          "began": 3.6,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "scroll",
+          "label": "scroll the menu to Sequences",
+          "keystrokes": 0,
+          "at": 4.088,
+          "took": 0.063,
+          "began": 3.997,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Sequences",
+          "keystrokes": 0,
+          "at": 4.215,
+          "took": 0.064,
+          "began": 4.152,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "type",
+          "label": "search",
+          "keystrokes": 16,
+          "at": 6.803,
+          "took": 0.172,
+          "text": "Purchase Order",
+          "same_field": false,
+          "screen": "/odoo/action-26",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 6.976,
+          "took": 0.021,
+          "chord": "Enter",
+          "screen": "/odoo/action-26",
+          "chain": true
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "open Purchase Order",
+          "keystrokes": 0,
+          "at": 7.188,
+          "took": 0.07,
+          "began": 7.134,
+          "screen": "/odoo/action-26",
+          "chain": false
+        },
+        {
+          "n": 11,
+          "kind": "click",
+          "label": "prefix field",
+          "keystrokes": 0,
+          "at": 7.441,
+          "took": 0.049,
+          "began": 7.4,
+          "screen": "/odoo/action-26/3",
+          "chain": false
+        },
+        {
+          "n": 12,
+          "kind": "key",
+          "label": "select the old prefix",
+          "keystrokes": 2,
+          "at": 7.491,
+          "took": 0.013,
+          "chord": "Control+a",
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 13,
+          "kind": "type",
+          "label": "prefix",
+          "keystrokes": 10,
+          "at": 7.504,
+          "took": 0.056,
+          "text": "PO-2026-",
+          "same_field": false,
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 14,
+          "kind": "click",
+          "label": "sequence size field",
+          "keystrokes": 0,
+          "at": 7.603,
+          "took": 0.056,
+          "began": 7.561,
+          "screen": "/odoo/action-26/3",
+          "chain": false
+        },
+        {
+          "n": 15,
+          "kind": "key",
+          "label": "select the old size",
+          "keystrokes": 2,
+          "at": 7.66,
+          "took": 0.016,
+          "chord": "Control+a",
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 16,
+          "kind": "type",
+          "label": "size",
+          "keystrokes": 1,
+          "at": 7.677,
+          "took": 0.005,
+          "text": "6",
+          "same_field": false,
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 17,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 7.988,
+          "took": 0.038,
+          "chord": "Alt+s",
+          "screen": "/odoo/action-26/3",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.221,
+          "seconds": 2.399
+        },
+        {
+          "label": "settings page",
+          "at": 2.621,
+          "seconds": 0.019
+        },
+        {
+          "label": "developer mode on",
+          "at": 2.976,
+          "seconds": 0.623
+        },
+        {
+          "label": "technical menu open",
+          "at": 3.951,
+          "seconds": 0.008
+        },
+        {
+          "label": "sequence list, search focused",
+          "at": 4.28,
+          "seconds": 0.521
+        },
+        {
+          "label": "search result",
+          "at": 6.999,
+          "seconds": 0.134
+        },
+        {
+          "label": "sequence form",
+          "at": 7.259,
+          "seconds": 0.137
+        },
+        {
+          "label": "saved",
+          "at": 8.029,
+          "seconds": 0.044
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "prefix": "PO-2026-",
+          "padding": 6,
+          "next_number": "PO-2026-000122"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.006,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.035,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.006,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.03,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "GET /bus/websocket_worker_bundle (script)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "88580888c575bf7c",
+        "elements": 265
+      },
+      "screen_after_verify": {
+        "sha256": "88580888c575bf7c",
+        "elements": 265,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.04
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/ir.sequence/read": [
+            "result.0.prefix",
+            "result.0.padding"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/ir.sequence/read [result.prefix, result.padding]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/ir.sequence/read": [
+            "result.0.prefix",
+            "result.0.padding"
+          ]
+        },
+        "end_state_gained": [
+          "PO-2026-"
+        ],
+        "writes_sent": [
+          "POST /base_setup/data",
+          "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+          "POST /base_setup/data",
+          "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+          "POST /web/dataset/call_kw/ir.sequence/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /base_setup/data",
+            "at": 2.2830393489999987,
+            "not_caused": "2.064 s after step 2 ended",
+            "browser_record": {
+              "caused": false,
+              "why": "it went out 2.019 s after the input of step 2 that began its chain (input of step 2 > the answer to POST /web/action/load after 0.069 s > an animation frame > the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 1.586 s > the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.373 s): delays that add up to more than 2 s link nothing (the page held the write back)",
+              "chain": [
+                "input of step 2",
+                "the answer to POST /web/action/load after 0.069 s",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 1.586 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.373 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 2.2832049949999926,
+            "not_caused": "2.064 s after step 2 ended",
+            "browser_record": {
+              "caused": false,
+              "why": "it went out 2.079 s after the input of step 2 that began its chain (input of step 2 > the answer to POST /web/action/load after 0.069 s > an animation frame > the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 1.586 s > the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.373 s): delays that add up to more than 2 s link nothing (the page held the write back)",
+              "chain": [
+                "input of step 2",
+                "the answer to POST /web/action/load after 0.069 s",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 1.586 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.373 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /base_setup/data",
+            "at": 3.949764658,
+            "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "browser_record": {
+              "caused": false,
+              "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+              "chain": []
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 3.9499026840000004,
+            "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "browser_record": {
+              "caused": false,
+              "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+              "chain": []
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.sequence/web_save",
+            "at": 8.037796965000002,
+            "by_step": 17,
+            "browser_record": {
+              "caused": true,
+              "by_step": 17,
+              "chain_seconds": 0.023,
+              "chain": [
+                "input of step 17",
+                "a timer of 0 s"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 132,
+        "not_caused": 29,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 2.376,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 2.457,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 2.824,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 2.994,
+            "event": "ScheduleStyleRecalculation",
+            "why": "it followed the answer to GET /web/assets/c619d5f/web.assets_web_print.min.css, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 3.467,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 3.541,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/3/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 3.541,
+            "event": "ScheduleStyleRecalculation",
+            "why": "it followed the answer to GET /web/assets/3e97dca/web.material_symbols_outlined.min.woff2, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 3.546,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 8.063,
+          "by_step": 17,
+          "chain": [
+            "input of step 17",
+            "a timer of 0 s",
+            "the answer to POST /web/dataset/call_kw/ir.sequence/web_save after 0.028 s",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/ir.sequence/write"
+      ]
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > scroll > developer mode > Technical > Sequences > search > open > click prefix, Ctrl+A, type > click size, Ctrl+A, type > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 17,
+        "keystrokes": 32,
+        "clicks": 9,
+        "scrolls": 2,
+        "field_entries": 3,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 6.214,
+        "system_wait_seconds": 1.808,
+        "human_seconds": 41.86,
+        "human_plus_wait_seconds": 43.668,
+        "klm_operator_counts": {
+          "K": 32,
+          "P": 11,
+          "B": 22,
+          "H": 6,
+          "M": 12
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.037,
+          "took": 0.063,
+          "began": 0.001,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.15,
+          "took": 0.061,
+          "began": 0.102,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "scroll",
+          "label": "scroll to the bottom of the settings",
+          "keystrokes": 0,
+          "at": 0.839,
+          "took": 0.051,
+          "began": 0.824,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "Activate the developer mode",
+          "keystrokes": 0,
+          "at": 0.96,
+          "took": 0.195,
+          "began": 0.891,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "Technical menu",
+          "keystrokes": 0,
+          "at": 1.786,
+          "took": 0.359,
+          "began": 1.685,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "scroll",
+          "label": "scroll the menu to Sequences",
+          "keystrokes": 0,
+          "at": 2.201,
+          "took": 0.056,
+          "began": 2.196,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Sequences",
+          "keystrokes": 0,
+          "at": 2.308,
+          "took": 0.054,
+          "began": 2.258,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "type",
+          "label": "search",
+          "keystrokes": 16,
+          "at": 4.759,
+          "took": 0.252,
+          "text": "Purchase Order",
+          "same_field": false,
+          "screen": "/odoo/action-26",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 5.012,
+          "took": 0.029,
+          "chord": "Enter",
+          "screen": "/odoo/action-26",
+          "chain": true
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "open Purchase Order",
+          "keystrokes": 0,
+          "at": 5.211,
+          "took": 0.105,
+          "began": 5.148,
+          "screen": "/odoo/action-26",
+          "chain": false
+        },
+        {
+          "n": 11,
+          "kind": "click",
+          "label": "prefix field",
+          "keystrokes": 0,
+          "at": 5.53,
+          "took": 0.068,
+          "began": 5.447,
+          "screen": "/odoo/action-26/3",
+          "chain": false
+        },
+        {
+          "n": 12,
+          "kind": "key",
+          "label": "select the old prefix",
+          "keystrokes": 2,
+          "at": 5.598,
+          "took": 0.009,
+          "chord": "Control+a",
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 13,
+          "kind": "type",
+          "label": "prefix",
+          "keystrokes": 10,
+          "at": 5.608,
+          "took": 0.058,
+          "text": "PO-2026-",
+          "same_field": false,
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 14,
+          "kind": "click",
+          "label": "sequence size field",
+          "keystrokes": 0,
+          "at": 5.724,
+          "took": 0.056,
+          "began": 5.667,
+          "screen": "/odoo/action-26/3",
+          "chain": false
+        },
+        {
+          "n": 15,
+          "kind": "key",
+          "label": "select the old size",
+          "keystrokes": 2,
+          "at": 5.78,
+          "took": 0.012,
+          "chord": "Control+a",
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 16,
+          "kind": "type",
+          "label": "size",
+          "keystrokes": 1,
+          "at": 5.793,
+          "took": 0.006,
+          "text": "6",
+          "same_field": false,
+          "screen": "/odoo/action-26/3",
+          "chain": true
+        },
+        {
+          "n": 17,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 6.107,
+          "took": 0.067,
+          "began": 6.046,
+          "screen": "/odoo/action-26/3",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.212,
+          "seconds": 0.578
+        },
+        {
+          "label": "settings page",
+          "at": 0.793,
+          "seconds": 0.03
+        },
+        {
+          "label": "developer mode on",
+          "at": 1.157,
+          "seconds": 0.527
+        },
+        {
+          "label": "technical menu open",
+          "at": 2.145,
+          "seconds": 0.023
+        },
+        {
+          "label": "sequence list, search focused",
+          "at": 2.363,
+          "seconds": 0.39
+        },
+        {
+          "label": "search result",
+          "at": 5.045,
+          "seconds": 0.1
+        },
+        {
+          "label": "sequence form",
+          "at": 5.317,
+          "seconds": 0.129
+        },
+        {
+          "label": "saved",
+          "at": 6.175,
+          "seconds": 0.031
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "prefix": "PO-2026-",
+          "padding": 6,
+          "next_number": "PO-2026-000122"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.021,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.023,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "GET /bus/websocket_worker_bundle (script)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "4d21a74175e6bdd0",
+        "elements": 265
+      },
+      "screen_after_verify": {
+        "sha256": "4d21a74175e6bdd0",
+        "elements": 265,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.005,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.031
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/ir.sequence/read": [
+            "result.0.prefix",
+            "result.0.padding"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/ir.sequence/read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/ir.sequence/read [result.prefix, result.padding]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/ir.sequence/read": [
+            "result.0.prefix",
+            "result.0.padding"
+          ]
+        },
+        "end_state_gained": [
+          "PO-2026-"
+        ],
+        "writes_sent": [
+          "POST /base_setup/data",
+          "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+          "POST /base_setup/data",
+          "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+          "POST /web/dataset/call_kw/ir.sequence/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /base_setup/data",
+            "at": 0.6423815049999976,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain_seconds": 0.364,
+              "chain": [
+                "input of step 2",
+                "the answer to POST /web/action/load after 0.05 s",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.105 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.284 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 0.6430481969999964,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain_seconds": 0.449,
+              "chain": [
+                "input of step 2",
+                "the answer to POST /web/action/load after 0.05 s",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.105 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.284 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /base_setup/data",
+            "at": 2.004121948,
+            "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "browser_record": {
+              "caused": false,
+              "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+              "chain": []
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 2.0046990309999964,
+            "not_caused": "the browser's record shows it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "browser_record": {
+              "caused": false,
+              "why": "it followed the answer to POST /web/dataset/call_kw/res.config.settings/onchange, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+              "chain": []
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.sequence/web_save",
+            "at": 6.167888666000014,
+            "by_step": 17,
+            "browser_record": {
+              "caused": true,
+              "by_step": 17,
+              "chain_seconds": 0.018,
+              "chain": [
+                "input of step 17"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 133,
+        "not_caused": 33,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.788,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 0.885,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 0.935,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.952,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.002,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 1.02,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.007 s before it) and could have sent it: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 1.555,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "an animation frame asked for by a task no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.618,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.partner/3/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (ServiceWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 6.192,
+          "by_step": 17,
+          "chain": [
+            "input of step 17",
+            "the answer to POST /web/dataset/call_kw/ir.sequence/web_save after 0.028 s",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /web/dataset/call_kw/ir.sequence/write"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+== as erp_app, no tenant bound
+SET
+ seqs 
+------
+    0
+(1 row)
+
+ issued 
+--------
+      0
+(1 row)
+
+== tenant set without the transaction stamp
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+ set_config 
+------------
+ all
+(1 row)
+
+ count 
+-------
+     0
+(1 row)
+
+== tenant A bound properly inside a transaction
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     
+--------------------------------------+-------------------+------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1794407394.284705 | all        | 1794407394.284705
+(1 row)
+
+ a_seqs | foreign_rows 
+--------+--------------
+     44 |            0
+(1 row)
+
+ a_counters 
+------------
+         10
+(1 row)
+
+ a_issued 
+----------
+       33
+(1 row)
+
+UPDATE 0
+DELETE 0
+SAVEPOINT
+ERROR:  invalid input syntax for type smallint: "never"
+LINE 1: ...7000-8000-000000000002',company_id,'x.y','P','',5,'never',fa...
+                                                             ^
+ROLLBACK
+== UPDATE/DELETE of issued numbers (own tenant)
+ERROR:  permission denied for table issued_numbers
+ROLLBACK
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     
+--------------------------------------+-------------------+------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1794407394.290262 | all        | 1794407394.290262
+(1 row)
+
+ERROR:  permission denied for table issued_numbers
+ROLLBACK
+== tenant B rows seen as postgres (control)
+RESET
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000002 |    22
+ 0190a000-0000-7000-8000-000000000001 |    44
+(2 rows)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000002 |    27
+ 0190a000-0000-7000-8000-000000000001 |    33
+(2 rows)
+
+== INSERT a sequence and an issued number for tenant B while bound to A
+SET
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     
+--------------------------------------+-------------------+------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1794407403.390526 | all        | 1794407403.390526
+(1 row)
+
+SAVEPOINT
+ERROR:  new row violates row-level security policy for table "sequences"
+ROLLBACK
+ERROR:  new row violates row-level security policy for table "issued_numbers"
+ROLLBACK

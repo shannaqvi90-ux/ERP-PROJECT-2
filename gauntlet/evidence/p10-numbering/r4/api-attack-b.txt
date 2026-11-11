@@ -1,0 +1,55 @@
+sign-in admin@alnoor.example 200 token
+sign-in admin@gulfsteel.example 200 token
+sign-in viewer@alnoor.example 200 token
+sign-in noaccess@alnoor.example 200 token
+A list 200 44 B list 200 22
+ids in both: 0
+B companies {'018f6605-b084-70f0-9910-c84340905884', '018f6605-b081-764d-8324-79504aa65daf'} {'GSF-RAK', 'GSF-SHJ'}
+B types ['accounting.journal', 'inventory.delivery', 'inventory.receipt', 'payments.payment', 'payments.receipt', 'purchasing.bill', 'purchasing.order', 'sales.creditNote', 'sales.invoice', 'sales.order', 'sales.quotation']
+B target 01a1cb01-a024-7b31-be2c-184e0445aabb sales.invoice INV-{YYYY}-
+A GET B row 404
+A PUT B row 404 b'{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-4ff993c633f3c1319683f9162841c5e2-cc23c361ba8556bf-00"}'
+B row unchanged: True INV-{YYYY}- 670183091
+A list &filter=companyId eq '018f6605-b084-70f0-9910-c84340905884' 200 B rows: 0
+A list &filter=companyId eq '018f6605-b081-764d-8324-79504aa65daf' 200 B rows: 0
+A list &search=GSF-RAK 200 B rows: 0
+A list &search=GSF-SHJ 200 B rows: 0
+A list &filter=companyCode eq 'GSF-RAK' 200 B rows: 0
+A list &filter=companyCode eq 'GSF-SHJ' 200 B rows: 0
+A GET B row with X-Tenant = 018f6605-b084-70f0-9910-c84340905884 -> 404
+A GET B row with X-Tenant = gulfsteel.example -> 404
+A GET B row with X-Tenant-Id = 018f6605-b084-70f0-9910-c84340905884 -> 404
+A GET B row with X-Tenant-Id = gulfsteel.example -> 404
+A GET B row with X-Company = 018f6605-b084-70f0-9910-c84340905884 -> 404
+A GET B row with X-Company = gulfsteel.example -> 404
+A GET B row with X-Company-Id = 018f6605-b084-70f0-9910-c84340905884 -> 404
+A GET B row with X-Company-Id = gulfsteel.example -> 404
+A GET B row with X-Workspace = 018f6605-b084-70f0-9910-c84340905884 -> 404
+A GET B row with X-Workspace = gulfsteel.example -> 404
+A GET B row with X-Erp-Company = 018f6605-b084-70f0-9910-c84340905884 -> 404
+A GET B row with X-Erp-Company = gulfsteel.example -> 404
+A export csv plain 200 3867 B marker in body: False
+A export csv Bfilter 200 78 B marker in body: False
+A export xlsx plain 200 4274 B marker in body: False
+A export xlsx Bfilter 200 2366 B marker in body: False
+A export pdf plain 200 18660 B marker in body: False
+A export pdf Bfilter 200 11996 B marker in body: False
+A export json plain 200 16041 B marker in body: False
+A export json Bfilter 200 1461 B marker in body: False
+B create view 400 b'{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-6bcdd6817787d5e1ede410080b3fef9c-0aab9198b4a23281-00","errors":{"columns":[{"c'
+A GET B view 404
+A DELETE B view 404
+B DELETE own view 404
+A audit of B sequence 200 b'{"recordType":"numbering.sequences","items":[],"next":null,"names":{}}'
+viewer: list 200 get 200 put 403 export 200
+noaccess: list 403 get 403 put 403 export 403
+anonymous: list 401 get 401 put 401 export 401
+A xlsx unzipped plain 200 B marker: False A marker: True
+A xlsx unzipped Bfilter 200 B marker: False A marker: False
+B create view(2) 201 b'{"id":"01a1cb03-6c15-7ca8-947a-98a363810df7","listKey":"numbering.sequences","name":"B private view","isShared":false,"isDefault":false,"isMine":true,"columns":'
+A GET B view 404
+A PUT B view 400
+A DELETE B view 404
+A views list has B view: False
+B DELETE own view 204
+A audit of own sequence (control) 200 1
