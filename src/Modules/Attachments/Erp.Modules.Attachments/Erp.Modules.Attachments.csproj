@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Erp.Modules.Attachments</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
+    <ProjectReference Include="..\Erp.Modules.Attachments.Contracts\Erp.Modules.Attachments.Contracts.csproj" />
+    <ProjectReference Include="..\..\Identity\Erp.Modules.Identity.Contracts\Erp.Modules.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Audit\Erp.Modules.Audit.Contracts\Erp.Modules.Audit.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Attachments.Resources.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Erp.Modules.Attachments.Tests" />
+  </ItemGroup>
+</Project>

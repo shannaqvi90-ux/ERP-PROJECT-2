@@ -1,0 +1,90 @@
+/* The files of a record (p11): logical properties only, so the section mirrors for Arabic. */
+.attachments {
+  position: relative;
+}
+
+.attachments.dragging {
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px;
+}
+
+.attachments-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.attachments-head h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.attachments-hint {
+  margin-block: 4px;
+  font-size: 12px;
+}
+
+.attachments-drop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.attachments-progress {
+  list-style: none;
+  margin-block: 6px;
+  margin-inline: 0;
+  padding: 0;
+  font-size: 13px;
+}
+
+.attachments-progress .failed {
+  color: var(--danger);
+}
+
+.attachments-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.attachments-actions .button {
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 8px;
+  text-decoration: none;
+}
+
+.attachments-preview {
+  inline-size: min(900px, 94vw);
+}
+
+.attachments-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-block-size: 70vh;
+  min-block-size: 200px;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.attachments-view img {
+  max-inline-size: 100%;
+  max-block-size: 70vh;
+  object-fit: contain;
+}
+
+.attachments-view iframe {
+  inline-size: 100%;
+  block-size: 70vh;
+  border: 0;
+}

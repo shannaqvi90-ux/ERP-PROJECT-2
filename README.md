@@ -149,6 +149,14 @@ Open Background jobs (G then J): the list of 100,000 jobs in the demo, a job's p
    (`docs/decisions/p04-shell-layout-and-extension-points.md`, `p04-shell-go-to-keys.md`). Format numbers,
    amounts and dates with `useI18n().format`, never `toLocaleString`.
 
+8. Files on a record (p11). A module whose records take attachments registers the kind,
+   `module.AttachmentRecord(new AttachmentRecordType("schema.table", labelKey, readPermission, writePermission, exists, firstIds, listPath))`,
+   and shows `AttachmentsSection` (`web/src/kernel/forms/attachments.tsx`) in the record's form. The attachments
+   module then serves `/api/attachments/schema.table/{id}/files` (list, upload, content, delete) under the
+   record's own permissions; add the four lines to `tests/Gates/endpoint-permissions/attachments.txt`
+   (`docs/decisions/p11-attachments-record-permissions.md`). Bytes sit behind `IAttachmentStore` (a local volume,
+   `Erp:Attachments:Root`; `docs/decisions/p11-attachments-storage.md`).
+
 The gates then attack the new endpoints and tables automatically: every documented route, query
 and body parameter receives the other tenant's ids, e-mails, codes and names, GETs are checked for
 existence oracles, and grant fields (`roleIds`, `permissions`) are checked for escalation. Every

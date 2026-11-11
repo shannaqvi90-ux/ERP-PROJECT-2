@@ -77,6 +77,9 @@ public sealed class ModuleDescriptor
 
     /// <summary>The kinds of records of this module that tenants may add custom fields to (p09).</summary>
     public List<Erp.Kernel.CustomFields.CustomFieldRecordType> CustomFieldRecordTypes { get; } = [];
+
+    /// <summary>The kinds of records of this module that files can be attached to (p11).</summary>
+    public List<Erp.Kernel.Attachments.AttachmentRecordType> AttachmentRecordTypes { get; } = [];
 }
 
 /// <summary>A command-line verb a module adds to the host (<c>Erp.Host &lt;verb&gt; …</c>), for
@@ -322,6 +325,39 @@ public sealed class ModuleBuilder
         return this;
     }
 
+    /// <summary>Let files be attached to a kind of this module's records (p11): the attachments module
+    /// serves their files under the record's own permissions (<see cref="Erp.Kernel.Attachments.AttachmentRecordType"/>).
+    /// The module adds nothing else: no table, no endpoint.</summary>
+    public ModuleBuilder AttachmentRecord(Erp.Kernel.Attachments.AttachmentRecordType record)
+    {
+        var problems = new List<string>();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(record.Table, "^[a-z_][a-z0-9_]{0,62}\\.[a-z_][a-z0-9_]{0,62}$") || !record.Table.StartsWith(_descriptor.Schema + ".", StringComparison.Ordinal))
+        {
+            problems.Add($"attachment record '{record.Table}': must look like '{_descriptor.Schema}.table'");
+        }
+        if (_descriptor.AttachmentRecordTypes.Any(r => r.Table == record.Table))
+        {
+            problems.Add($"attachment record '{record.Table}' is registered twice");
+        }
+        foreach (var permission in new[] { record.ReadPermission, record.WritePermission })
+        {
+            if (!PermissionDefinition.IsValidKey(permission))
+            {
+                problems.Add($"attachment record '{record.Table}': '{permission}' is not a permission key");
+            }
+        }
+        if (string.IsNullOrWhiteSpace(record.LabelKey))
+        {
+            problems.Add($"attachment record '{record.Table}': needs a label key");
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(string.Join("\n", problems));
+        }
+        _descriptor.AttachmentRecordTypes.Add(record);
+        return this;
+    }
+
     /// <summary>Register an attack the tenant-isolation gate runs against a surface that is not a
     /// plain HTTP data endpoint (exports, jobs, files).</summary>
     public ModuleBuilder IsolationProbe<TProbe>() where TProbe : class, IIsolationProbe
@@ -367,6 +403,9 @@ public sealed class ModuleCatalog
 
     /// <summary>Every kind of record that may have custom fields.</summary>
     public IEnumerable<Erp.Kernel.CustomFields.CustomFieldRecordType> CustomFieldRecordTypes => _modules.SelectMany(m => m.CustomFieldRecordTypes);
+
+    /// <summary>Every kind of record that files can be attached to (p11).</summary>
+    public IEnumerable<Erp.Kernel.Attachments.AttachmentRecordType> AttachmentRecordTypes => _modules.SelectMany(m => m.AttachmentRecordTypes);
 
     /// <summary>The registered kind of audited record of this <c>schema.table</c>, or null.</summary>
     public AuditRecordType? FindAuditRecordType(string table) => AuditRecordTypes.FirstOrDefault(r => r.Table == table);

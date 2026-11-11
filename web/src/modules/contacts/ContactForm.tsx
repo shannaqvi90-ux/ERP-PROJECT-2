@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../../kernel/api";
+import { AttachmentsSection } from "../../kernel/forms/attachments";
 import { customDraft, customRequest, CustomFieldsSection } from "../../kernel/forms/customFields";
 import { CountryField, LookupField, MoneyField, PhoneField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
@@ -248,8 +249,13 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
       readOnlyReason={contact && !can("contacts.contacts.update") ? t("contacts.contact.readOnly") : undefined}
       actions={contact && can("contacts.contacts.archive") ? <ArchiveButton contact={contact} onChanged={form.adopt} /> : undefined}
       after={
-        contact && contact.kind === "organisation" ? (
-          <OrganisationPeople organisation={contact} onOpen={onOpen} onNewPerson={can("contacts.contacts.create") && contact.isActive ? onNewPerson : undefined} />
+        contact ? (
+          <>
+            {contact.kind === "organisation" && (
+              <OrganisationPeople organisation={contact} onOpen={onOpen} onNewPerson={can("contacts.contacts.create") && contact.isActive ? onNewPerson : undefined} />
+            )}
+            <AttachmentsSection recordType="contacts.contacts" recordId={contact.id} canRead={can("contacts.contacts.read")} canWrite={can("contacts.contacts.update")} />
+          </>
         ) : undefined
       }
     >

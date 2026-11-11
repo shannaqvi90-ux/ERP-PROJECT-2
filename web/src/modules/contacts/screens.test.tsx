@@ -131,7 +131,7 @@ const without = (permission: string) => all.filter((p) => p !== permission);
 /** What disappears when one permission is taken away (everything else stays). */
 const needs: Record<string, (c: string) => boolean> = {
   "contacts.contacts.create": (c) => c === "button:New contact" || c === "button:New person here",
-  "contacts.contacts.update": (c) => c === "button:Save" || c === "button:Discard" || c.startsWith("field:"),
+  "contacts.contacts.update": (c) => c === "button:Save" || c === "button:Discard" || c === "button:Add files" || c.startsWith("field:"),
   "contacts.contacts.archive": (c) => c === "button:Archive" || c === "button:Restore",
 };
 
@@ -146,7 +146,7 @@ describe("the contacts screen offers exactly what the user may do", () => {
     for (const permission of Object.keys(needs)) {
       expect(full.filter(needs[permission]!), `offers something that needs ${permission}`).not.toEqual([]);
     }
-    expect(full).toEqual(expect.arrayContaining(["button:New contact", "button:Archive", "button:New person here", "field:nameEn", "field:nameAr"]));
+    expect(full).toEqual(expect.arrayContaining(["button:New contact", "button:Archive", "button:New person here", "button:Add files", "field:nameEn", "field:nameAr"]));
   });
 
   for (const permission of all) {

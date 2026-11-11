@@ -47,9 +47,13 @@ services:
       Erp__Seed__ContactsCsv: ${ERP_SEED_CONTACTS_CSV_IN_CONTAINER:-}
       # The comparison dataset's exchange rates; ./erp sets these from ERP_SEED_RATES_CSV.
       Erp__Seed__RatesCsv: ${ERP_SEED_RATES_CSV_IN_CONTAINER:-}
+      # Where attachment bytes live (a local volume; docs/decisions/p11-attachments-storage.md).
+      Erp__Attachments__Root: /data/attachments
     volumes:
       - ${ERP_SEED_DATA_DIR:-./build/no-seed-data}:/seed-data:ro
       - ${ERP_SEED_RATES_DIR:-./build/no-seed-data}:/seed-rates:ro
+      # The demo's attachments (a few files on contacts) are written here and read by the app.
+      - attachments-data:/data/attachments
     depends_on:
       db:
         condition: service_healthy
@@ -66,6 +70,9 @@ services:
       # proxy's X-Forwarded-For, nearest hop only. Empty: the TCP peer address is used.
       Erp__Http__KnownProxies: ${ERP_KNOWN_PROXIES:-}
       Erp__Http__KnownNetworks: ${ERP_KNOWN_NETWORKS:-}
+      Erp__Attachments__Root: /data/attachments
+    volumes:
+      - attachments-data:/data/attachments
     ports:
       - "${ERP_HTTP_PORT:-8080}:8080"
     depends_on:
@@ -93,6 +100,7 @@ services:
 
 volumes:
   db-data:
+  attachments-data:
 
 secrets:
   # Extra CA certificates for networks that re-terminate TLS; ./erp sets ERP_EXTRA_CA_CERTS when the

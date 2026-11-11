@@ -38,6 +38,9 @@ ENV ASPNETCORE_URLS=http://+:8080 \
     DOTNET_RUNNING_IN_CONTAINER=true \
     PGGSSENCMODE=disable \
     ASPNETCORE_ENVIRONMENT=Production
+# The attachments volume (compose mounts it at /data/attachments): owned by the application user, so a new
+# named volume starts writable by it.
+RUN mkdir -p /data/attachments && chown app:app /data/attachments
 USER app
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "Erp.Host.dll"]
