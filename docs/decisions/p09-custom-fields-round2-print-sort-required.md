@@ -143,3 +143,13 @@ be listed in the document; p15 reads the workspace's fields from that endpoint.
 New tests: 7 module tests (HTTP, one shared container, about 25 s of processor time), 8 web unit tests,
 1 end-to-end test; no new endpoint; no new filterable or sortable column in a registered list (custom
 columns are per request). The G1/G2 matrices are unchanged. Expected to add well under 100 s to the verify.
+
+## Fixer verify (round 2, fix 1)
+
+Full verify on fde7e319 (compose project b-p09-custom-fields), run through the verify slots: every test passed
+(dotnet 1,023, web unit 727, e2e 150, compare 488, build 13). The G1 list volume gate (audit log deep pages) and the
+G2 report data gate passed; the G2 failure of the earlier run ('prints 8800' for the audit.log XLSX) did not
+repeat, and the same test run alone passed once too (8 m 35 s), so it was the race with parallel gate tests that
+write role records, not the 2,000-row print walk. Processor time 18,978 s (dotnet 15,906, web 2,390, e2e 598,
+timing 85) against the 18,700 s maximum: the only ratchet failure, 278 s over, within a re-integration's 500 s
+allowance; the integrator's alone run decides. Load was low (1.3 at the start, 1.5 at the end).
