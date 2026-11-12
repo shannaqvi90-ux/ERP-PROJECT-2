@@ -102,6 +102,17 @@ a module that is off is gone for that tenant everywhere (menu, screens, routes, 
 permissions, search) without losing its data; the isolation and permission gates attack every
 switchable endpoint with the module off. The platform core pieces stay always on.
 
+OWNER DECISION, 2026-11-12 (needs-human #44). The owner: "aur bhi kuch abhi se decide karna ho
+to kar lo ... q k phr hum is project ko baad main sale karnay ki try karainge. to usi hisab se
+sochna". On the lead's four proposals the owner chose all four. The lead's wording of what was
+approved, all part of the platform core: (a) plans and limits per tenant (switchable modules,
+active users, file storage) with an operator console, in p17; (b) a tenant's full data export in
+open formats (p14) and closing a tenant, with deletion only after a retention period that is a
+human gate (p17); (c) a shared notification service, in-app and e-mail behind an interface, used by
+approvals, invitations and password resets (p13); (d) webhooks for integrations, signed, retried,
+logged and safe against server-side request forgery (p15). Taking payment, a real mail service,
+hosting and the retention period stay human gates.
+
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not
 judge.

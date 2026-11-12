@@ -1,4 +1,4 @@
-# p17 — Modules switched on per tenant
+# p17 — Modules, plans and the tenant lifecycle
 
 Added by the owner on 2026-11-12 (needs-human #43), so that a customer can take only the modules
 it needs (for example only HR and payroll), and so that every business module after the platform
@@ -24,5 +24,21 @@ core is built switchable from its first day.
   demo module shows the mechanism end to end; the demo tenant has it on, a second demo tenant has
   it off.
 
+- Plans and limits (owner decision 2026-11-12, needs-human #44, for selling the product): each
+  tenant has a plan that sets its switchable modules and its limits (at least the number of active
+  users and the file storage it may use). Reaching a limit is refused on the server with a clear
+  message in English and Arabic (no partial writes), and the tenant's administrator sees its use
+  against its limits. Billing (taking payment) is out of scope: it needs a paid service, a human
+  gate.
+- Operator console: a screen for the platform operator (separate from every tenant, its own
+  permission, audited) listing tenants with their plan, modules, use and state, to create, suspend,
+  reactivate and close a tenant and change its plan; the operator commands do the same.
+- Closing a tenant: closing stops every sign-in and job at once, keeps the data for a retention
+  period, offers the tenant's full export (p14) during it, and only then deletes the tenant's data
+  everywhere (database rows, files, search entries), with a record of the deletion that holds no
+  tenant data. The retention period is a statutory question (UAE tax records and data protection
+  law): implement it as a setting, list the default as a human gate in needs-human, and never pick
+  the period from memory (CLAUDE.md rule 8).
+
 Compared against Odoo: turn a module on for a company and reach its first screen (in Odoo
-Community, installing an app from Apps), and find out which modules a company has.
+Community, installing an app from Apps), and find out which modules a company has; see a tenant's use against its plan.
