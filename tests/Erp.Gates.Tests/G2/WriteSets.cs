@@ -45,7 +45,13 @@ public static class WriteSets
 
         public bool Covers(string permission, Write write) =>
             (Permission == "*" || Permission == permission) && Table == write.Table && Actions.Contains(write.Action) &&
-            (Columns is null || write.Columns.All(Columns.Contains));
+            (Columns is null || write.Columns.All(IsListed));
+
+        /// <summary>A column the line names, or one under a prefix it names as <c>prefix.*</c>
+        /// (only the custom fields' history entries, <c>custom_fields.*</c>, use one: a tenant names
+        /// those columns, so no list can).</summary>
+        private bool IsListed(string column) =>
+            Columns!.Contains(column) || Columns.Any(c => c.EndsWith(".*", StringComparison.Ordinal) && column.StartsWith(c[..^1], StringComparison.Ordinal) && column.Length > c.Length - 1);
     }
 
     /// <summary>One audited row change: the table (schema.table), the action and the changed columns.</summary>

@@ -1,0 +1,17 @@
+Test run for /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:23.59]     Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [FAIL]
+  Failed Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed [21 ms]
+  Error Message:
+   web/src/modules/numbering/SequencesPage.tsx local-storage 2: this carrier outlives the document and can hand one person's data to the next on the device. Forget it when the identity ends (kernel/deviceState), keep the data in memory, or review it in tests/Gates/client-carriers.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed() in /home/shan/critic/p10-numbering-r4-plant/tests/Erp.Gates.Tests/G1/G1ClientStateTests.cs:line 175
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     5, Skipped:     0, Total:     6, Duration: 290 ms - Erp.Gates.Tests.dll (net10.0)

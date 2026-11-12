@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "run_id": "attach-file-20261111T143548-fc12",
+  "instrument": 12,
+  "task": "attach-file",
+  "task_title": "Attach a file to a record",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
+  "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
+  "started_at": "2026-11-11T14:35:48.108Z",
+  "finished_at": "2026-11-11T14:36:00.690Z",
+  "environment": {
+    "base_url": "http://localhost:21150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 1,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.359,
+    "system_wait_seconds": 0.238,
+    "human_seconds": 4.15,
+    "human_plus_wait_seconds": 4.388,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 6,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "at": 0.047,
+      "took": 0.043,
+      "began": 0.002,
+      "screen": "/contacts/contacts/018917b1-0728-7d24-aaba-2d735c642e05",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "file-pick",
+      "label": "trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "at": 0.09,
+      "took": 0.027,
+      "file": "trade-licence-TL-2026-73519.pdf",
+      "screen": "/contacts/contacts/018917b1-0728-7d24-aaba-2d735c642e05",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "file listed on the contact",
+      "at": 0.119,
+      "seconds": 0.238
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "63c2cd514f4fb4e7.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p11-attachments/r1/compare/blind/shots/63c2cd514f4fb4e7.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "39d946092fb91480.jpg",
+      "at": 0.359,
+      "path": "../../evidence-staging/p11-attachments/r1/compare/blind/shots/39d946092fb91480.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "attachments": [
+        {
+          "id": "01a1cb09-7388-77a8-8daf-d67959a24ddc",
+          "name": "trade-licence-TL-2026-73519.pdf",
+          "contentType": "application/pdf",
+          "sizeBytes": 417,
+          "sha256": "0ab1f902dfcf2468d9bc6871dbb51f1a6bdcc74a13a07380e2190f317c5daade",
+          "previewable": true,
+          "createdAt": "2026-11-11T14:35:56.703487+00:00",
+          "createdBy": "01a1cb00-6273-7c3d-9c6b-a1807be95c6f",
+          "createdByName": "Mariam Al Mansoori",
+          "createdByNameAr": "مريم المنصوري"
+        }
+      ],
+      "shown": {
+        "listed": 1
+      }
+    }
+  },
+  "path_notes": "Pick the file at the \"Add files\" button of the contact's Attachments section (the file dialog and the choice of the file are one step); the file is listed on the contact.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/attach-file.mjs",
+    "sha256": "c3e49f404ca34a4d837ae9bd37a555b891cd26fe0c675349eed6a25407482123"
+  },
+  "task_notes": "The file is committed (data/fixtures). Clean-up deletes the attachment.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/contacts/contacts/018917b1-0728-7d24-aaba-2d735c642e05",
+    "path": "/contacts/contacts/018917b1-0728-7d24-aaba-2d735c642e05",
+    "query": "",
+    "fragment": "",
+    "fields": 25,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameEn",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameAr",
+        "password": false,
+        "value_length": 16,
+        "value": "شمة وليد الرميثي"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "organisationId",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "code",
+        "password": false,
+        "value_length": 7,
+        "value": "C073519"
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "mobile",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "addressLine1",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "area",
+        "password": false,
+        "value_length": 9,
+        "value": "Saif Zone"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "poBox",
+        "password": false,
+        "value_length": 5,
+        "value": "68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "defaultCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "creditLimitCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "customFields.cfAccountManager",
+        "password": false,
+        "value_length": 18,
+        "value": "Rashid Al Mansoori"
+      }
+    ],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.007,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.038,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.047,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "68ad70c107e6d232",
+    "elements": 1313
+  },
+  "screen_after_verify": {
+    "sha256": "68ad70c107e6d232",
+    "elements": 1313,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.084
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files"
+    ],
+    "read_after": [
+      "GET /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files"
+    ],
+    "changed": [
+      "GET /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files"
+    ],
+    "changed_parts": {
+      "GET /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files": [
+        "items.0.id",
+        "items.0.name",
+        "items.0.contentType",
+        "items.0.sizeBytes",
+        "items.0.sha256",
+        "items.0.previewable",
+        "items.0.createdAt",
+        "items.0.createdBy"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files"
+    ],
+    "end_state": [
+      "GET /api/attachments/contacts.contacts/*/files [items.name, items.sizeBytes]"
+    ],
+    "end_state_changed": {
+      "GET /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files": [
+        "items.0.name",
+        "items.0.sizeBytes"
+      ]
+    },
+    "end_state_gained": [
+      "trade-licence-TL-2026-73519.pdf"
+    ],
+    "writes_sent": [
+      "POST /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files",
+        "at": 0.1173220930000025,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain_seconds": 0.004,
+          "chain": [
+            "a DevTools command of step 2"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 5,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.267,
+      "by_step": 2,
+      "chain": [
+        "the answer to POST /api/attachments/contacts.contacts/018917b1-0728-7d24-aaba-2d735c642e05/files after 0.129 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

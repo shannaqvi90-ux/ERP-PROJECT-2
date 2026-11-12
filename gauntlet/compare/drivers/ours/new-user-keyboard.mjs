@@ -29,18 +29,21 @@ const goTo = async op => {
 };
 const nav = async op => {
   await op.press('Alt+m', { label: 'navigation pane' });
+  // Contacts and Reports come before the Settings entries, so Users is the third entry.
+  await op.press('ArrowDown', { label: 'next entry' });
+  await op.press('ArrowDown', { label: 'next entry' });
   await op.waitFor(() => document.activeElement?.closest('nav.navpane') && document.activeElement.getAttribute('href') === '/identity/users', { label: 'Users entry focused' });
   await op.press('Enter', { label: 'open' });
   await op.waitFor(usersList, { label: 'users list' });
   return newUser(op);
 };
-// p04 round 11: the command palette starts New user from anywhere, and "n" alone puts it first
+// p04 round 11: the command palette starts New user from anywhere. "n" put it first until Contacts offered New contact too (equal match, module order); "new u" ranks it first
 // (actions lead a one-letter query; "New user" is the first module action offered), so the form is
 // three keys away from the screen shown after sign-in, with no screen in between.
 const palette = async op => {
   await op.press('Control+k', { label: 'command palette' });
   await op.waitFor('[role=dialog] input[role=combobox]', { label: 'palette open' });
-  await op.type('n', { label: 'action search' });
+  await op.type('new u', { label: 'action search' });
   await op.waitFor(() => (document.querySelector('[role=option][aria-selected=true]')?.textContent || '').trim().startsWith('New user'), { label: 'New user first' });
   await op.press('Enter', { label: 'start' });
   return newUserReady(op);
@@ -51,13 +54,13 @@ const newUserReady = async op => {
 };
 export default {
   built: true,
-  path: 'G > U (users list) > Alt+N (new user, e-mail focused); or Alt+M (navigation pane, Users focused) > Enter > Alt+N; or Ctrl+K > "n" > Enter (New user, from the palette).',
+  path: 'G > U (users list) > Alt+N (new user, e-mail focused); or Alt+M (navigation pane) > Down > Down (Users focused) > Enter > Alt+N; or Ctrl+K > "new u" > Enter (New user, from the palette).',
   signIn,
   run: goTo,
   variants: {
     goTo: { path: 'G > U > Alt+N', run: goTo },
-    navigation: { path: 'Alt+M > Enter > Alt+N', run: nav },
-    palette: { path: 'Ctrl+K > "n" > Enter', run: palette },
+    navigation: { path: 'Alt+M > Down > Down > Enter > Alt+N', run: nav },
+    palette: { path: 'Ctrl+K > "new u" > Enter', run: palette },
   },
   // Keyboard only: the task says so (keyboardOnly) and the harness fails a run with a pointer step.
   async verify(ctx) {

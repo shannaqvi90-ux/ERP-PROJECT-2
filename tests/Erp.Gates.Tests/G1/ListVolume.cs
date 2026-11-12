@@ -117,7 +117,7 @@ public static partial class ListVolume
             // Each tenant walks the whole list in its default order, page n of A just before page n
             // of B; every page's total must be the walk's row count.
             var walkTake = ListRequest.MaxTake;
-            var (walkA, walkB) = await ListAnswers.WalkTogetherAsync(a, b, list.Endpoint, "", walkTake, maxPages: 2 * volume / walkTake + 1000);
+            var (walkA, walkB) = await ListAnswers.WalkTogetherAsync(a, b, list.Endpoint, "", walkTake, maxPages: 2 * volume / walkTake + 1000); // a floor: the walk raises it to follow the list's own total
             if (walkA is null || walkB is null)
             {
                 tally.Wrong.Enqueue($"list '{list.Key}': the keyset walk of GET {list.Endpoint} did not finish (A {(walkA is null ? "failed" : "ok")}, B {(walkB is null ? "failed" : "ok")})");

@@ -77,9 +77,11 @@ test('every Odoo driver is built; placeholders in task text resolve from the dat
 test('an unbuilt driver reports "not built" without touching a browser', async () => {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'compare-nb-'));
   try {
-    const d = await loadDriver('ours', 'find-record');
-    if (d.built !== false) return; // filled in by a later piece
-    const r = await runTask('find-record', 'ours', { outDir: out });
+    // The first task whose ours driver is still unbuilt (find-record was, until p16 built it).
+    let id = null;
+    for (const t of await loadTasks()) if (id === null && (await loadDriver('ours', t.id)).built === false) id = t.id;
+    if (id === null) return; // every driver built
+    const r = await runTask(id, 'ours', { outDir: out });
     assert.equal(r.status, 'not_built');
     assert.match(r.error, /not built/);
     const file = path.join(out, 'results', `${r.run_id}.json`);

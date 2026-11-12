@@ -1,0 +1,20 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6fb562c1..dcd0e5de 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -290,14 +290,7 @@ internal static class SequenceEndpoints
+         }
+         // A role given in another company grants nothing here, and every branch of the company shares
+         // its sequences: the endpoint refuses first (the kernel refuses the write as well).
+-        if (!session.PermitsCompany(sequence.CompanyId))
+-        {
+-            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+-        }
+-        if (!session.HoldsEveryBranch(sequence.CompanyId))
+-        {
+-            return Problems.Forbidden(http, "numbering.companyNeedsEveryBranch");
+-        }
++        // PLANT P3 (critic): the company and every-branch permission checks are gone.
+         if (sequence.Version != request.Version)
+         {
+             return Problems.Conflict(http, "numbering.sequenceChanged");

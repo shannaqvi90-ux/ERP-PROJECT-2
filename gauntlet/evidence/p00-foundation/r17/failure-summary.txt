@@ -1,0 +1,32 @@
+Critic p00-foundation r17 (417f1990): full verify failure summary, for a fixer with no history.
+
+Command: ERP_PROJECT=c-p00-foundation-r17 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061
+  ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r17.log gauntlet/tools/verify-slot.sh ./erp verify
+Slot taken 06:58:23Z, FAILED 09:32:21Z (9,238 s). Kept folder: verify-failed/ (copy of .verify-failed/20261105T093221Z-1980425).
+Failing stage: dotnet (dotnet.status '1 8412'). web 663/663, e2e 138/138 + ours-drivers health check all verified,
+compare 488/488, build 13/13. dotnet 921 passed, 1 failed, 0 skipped. Timing and ratchet stages did not run.
+
+Failing test: Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint
+  (8 m 30 s, 06:59:25-07:07:56Z; tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs line 49, report.Oracles)
+  "Answers that tell company Y's values apart from values that exist nowhere:
+   company X read-only user -> GET /api/audit/log?take=20002: 200 ...panies: (empty); User: Works in X only"},{"id":"ded6bc45-...",
+   "occurredAt":"2026-11-05T06:59:24.638492+00:00",... but for a value that exists nowhere 200 ...panies: (empty); User: Works in
+   X only"}],"total":307,"next":"eyJzIjoiLW9jY3VycmVkQXQiLCJrIjpbIjIwMjYtMTEtMDVUMDY6NTk6MjQuNjU5NDcy..."
+  Std out: 207 endpoints, 178756 requests, 39 company Y markers, 39540 differential checks, 9 write oracle checks.
+
+Reading: 20002 is one of company Y's values sent in the 'take' parameter. The audit log clamps take to 200
+(src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs:110, MaxTake 200), so take=20002 and the control both ask for 200 of
+307 rows; the value cannot change the answer. The two answers' 200-row windows differ by one row at the boundary (the control
+ends at 06:59:24.659 with a next cursor, the Y answer continues with an older row at 06:59:24.638), and the gate's second ask
+of the pair differed again. So the read-only user's audit log changed while the pair was asked: not a company-Y oracle on
+the real product, but a differential the gate cannot hold steady on a list that is still being written. Suspected: rows
+written in that environment during the read batch (for example jobs the earlier write batches queued, run by the job runner
+and recorded in the audit trail), more likely when the machine is slow. Not confirmed.
+Run alone (rerun/rerun-1.log, rerun-2.log; unplanted copy, toolbox, quiet machine): passed twice, 2 m 26 s and 2 m 25 s.
+Load during the failure: 15 to 31 on 16 threads (verify-failed/verify-load-samples 06:59-07:08Z). The critic's own demo build
+and 100,000-row seed (./erp up, 06:59-07:03Z) and live attack (07:04Z on) ran beside it.
+Processor time: dotnet 10,838 s, web 2,312.9 s, e2e 487.3 s = 13,638 s (no timing stage), against the 13,200 s maximum, on a
+machine the critic also loaded (demo stack, attack, comparison, planted-gate runs of 25 min).
+What a fix needs: the company differential must not flag a list that moves for reasons other than the value sent (e.g. take
+answers from a frozen point, compare only rows older than the pair's start, or quiesce the job runner during read batches),
+without weakening the check for real oracles. Never retry more, raise a timeout or skip it.

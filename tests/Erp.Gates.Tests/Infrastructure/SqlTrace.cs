@@ -82,13 +82,37 @@ public sealed record TracedSettingChange(SqlSettings.Change Change, string? Endp
 /// </summary>
 public static class SqlTrace
 {
-    private static readonly ConcurrentQueue<TracedCall> Calls = new();
-    private static readonly ConcurrentQueue<TracedBind> Binds = new();
-    private static readonly ConcurrentQueue<TracedSetting> Settings = new();
-    private static readonly ConcurrentQueue<(string Request, long Sequence, object? App)> ReadOnlys = new();
-    private static readonly ConcurrentQueue<TracedSettingChange> Changes = new();
-    private static readonly ConcurrentQueue<(string Where, string Statement, object? App)> Unobserved = new();
-    private static readonly ConcurrentQueue<(string Where, string Statement, object? App)> StatisticsReads = new();
+    // The records live in files (SpillLog), not in memory: over an attack they number millions and
+    // were most of the memory of the gate process. Each is still kept, in order, and read back whole.
+    private static readonly SpillLog<TracedCall> Calls = new(
+        (w, c) => { w.Text(c.Function); w.Text(c.Endpoint); w.Text(c.Path); w.Write(c.ResolvingSession); w.App(c.App); w.Write7BitEncodedInt(c.Port ?? -1); w.Text(c.Statement); w.Text(c.Database); },
+        r => new TracedCall(r.RequiredText(), r.Text(), r.Text(), r.ReadBoolean(), r.App(), r.Read7BitEncodedInt() is var port and >= 0 ? port : null, r.RequiredText(), r.Text()));
+    private static readonly SpillLog<TracedBind> Binds = new(
+        (w, b) => { w.Text(b.Tenant); w.Text(b.ActorKind); w.Text(b.Endpoint); w.Text(b.Path); w.Text(b.Method); w.Write(b.ResolvingSession); w.Text(b.PrincipalTenant); w.App(b.App);
+            w.Text(b.Request); w.Write(b.Sequence); w.Write(b.ReadOnlyRequest); },
+        r => new TracedBind(r.RequiredText(), r.RequiredText(), r.Text(), r.Text(), r.Text(), r.ReadBoolean(), r.Text(), r.App())
+        {
+            Request = r.Text(),
+            Sequence = r.ReadInt64(),
+            ReadOnlyRequest = r.ReadBoolean(),
+        });
+    private static readonly SpillLog<TracedSetting> Settings = new(
+        (w, s) => { w.Text(s.Statement); w.Text(s.Endpoint); w.Text(s.Path); w.Text(s.Caller); w.Write(s.FromSession); w.Text(s.User); w.App(s.App); },
+        r => new TracedSetting(r.RequiredText(), r.Text(), r.Text(), r.Text(), r.ReadBoolean(), r.Text(), r.App()));
+    private static readonly SpillLog<(string Request, long Sequence, object? App)> ReadOnlys = new(
+        (w, x) => { w.Text(x.Request); w.Write(x.Sequence); w.App(x.App); },
+        r => (r.RequiredText(), r.ReadInt64(), r.App()));
+    private static readonly SpillLog<TracedSettingChange> Changes = new(
+        (w, c) => { w.Text(c.Change.Name); w.Text(c.Change.Value); w.Write(c.Change.Computed); w.Flag(c.Change.Local); w.Text(c.Change.Source);
+            w.Text(c.Endpoint); w.Text(c.Path); w.Text(c.Method); w.Text(c.Request); w.Text(c.RequiredTenant); w.Write(c.ResolvingSession); w.Text(c.Caller); w.Write(c.ProcessId); w.App(c.App); },
+        r => new TracedSettingChange(new SqlSettings.Change(r.Text(), r.Text(), r.ReadBoolean(), r.Flag(), r.RequiredText()),
+            r.Text(), r.Text(), r.Text(), r.Text(), r.Text(), r.ReadBoolean(), r.Text(), r.ReadInt32(), r.App()));
+    private static readonly SpillLog<(string Where, string Statement, object? App)> Unobserved = new(
+        (w, x) => { w.Text(x.Where); w.Text(x.Statement); w.App(x.App); },
+        r => (r.RequiredText(), r.RequiredText(), r.App()));
+    private static readonly SpillLog<(string Where, string Statement, object? App)> StatisticsReads = new(
+        (w, x) => { w.Text(x.Where); w.Text(x.Statement); w.App(x.App); },
+        r => (r.RequiredText(), r.RequiredText(), r.App()));
     private static readonly ConcurrentDictionary<object, int> ObservedByApp = new(ReferenceEqualityComparer.Instance);
     private static readonly ConcurrentDictionary<(object App, string Request), string> Principals = new();
     private static int _requestStatements;
@@ -122,7 +146,7 @@ public static class SqlTrace
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
         var port = env.DatabasePort;
-        return Calls.Skip(since).Where(c => ReferenceEquals(c.App, app) || (c.App is null && c.Port == port && c.Database == env.DatabaseName)).ToList();
+        return Calls.From(since).Where(c => ReferenceEquals(c.App, app) || (c.App is null && c.Port == port && c.Database == env.DatabaseName)).ToList();
     }
 
     public static int Mark => Calls.Count;
@@ -139,7 +163,7 @@ public static class SqlTrace
     public static IReadOnlyList<TracedSettingChange> ChangesFor(ErpTestEnvironment env, TraceMark since)
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
-        return Changes.Skip(since.Changes).Where(c => ReferenceEquals(c.App, app)).ToList();
+        return Changes.From(since.Changes).Where(c => ReferenceEquals(c.App, app)).ToList();
     }
 
     /// <summary>The tenant a request may run under once its session is known: the signed-in
@@ -156,7 +180,7 @@ public static class SqlTrace
     public static IReadOnlyList<string> UnobservedFor(ErpTestEnvironment env, TraceMark since)
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
-        return Unobserved.Skip(since.Unobserved).Where(u => ReferenceEquals(u.App, app))
+        return Unobserved.From(since.Unobserved).Where(u => ReferenceEquals(u.App, app))
             .Select(u => $"{u.Where}: {u.Statement}").Distinct().ToList();
     }
 
@@ -168,21 +192,21 @@ public static class SqlTrace
     public static IReadOnlyList<(string Request, long Sequence)> ReadOnlyFor(ErpTestEnvironment env, TraceMark since)
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
-        return ReadOnlys.Skip(since.ReadOnlys).Where(r => ReferenceEquals(r.App, app)).Select(r => (r.Request, r.Sequence)).ToList();
+        return ReadOnlys.From(since.ReadOnlys).Where(r => ReferenceEquals(r.App, app)).Select(r => (r.Request, r.Sequence)).ToList();
     }
 
     /// <summary>Tenant bindings made by one environment's application since <paramref name="since"/>.</summary>
     public static IReadOnlyList<TracedBind> BindsFor(ErpTestEnvironment env, TraceMark since)
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
-        return Binds.Skip(since.Binds).Where(b => ReferenceEquals(b.App, app)).ToList();
+        return Binds.From(since.Binds).Where(b => ReferenceEquals(b.App, app)).ToList();
     }
 
     /// <summary>Setting statements sent inside one environment's requests since <paramref name="since"/>.</summary>
     public static IReadOnlyList<TracedSetting> SettingsFor(ErpTestEnvironment env, TraceMark since)
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
-        return Settings.Skip(since.Settings).Where(b => ReferenceEquals(b.App, app)).ToList();
+        return Settings.From(since.Settings).Where(b => ReferenceEquals(b.App, app)).ToList();
     }
 
     /// <summary>Statements sent inside requests (any environment) since <paramref name="since"/>.</summary>
@@ -223,7 +247,7 @@ public static class SqlTrace
     public static IReadOnlyList<string> WholeTableReadsFor(ErpTestEnvironment env)
     {
         var app = env.Factory.Services.GetService(typeof(ModuleCatalog));
-        return StatisticsReads.Where(s => ReferenceEquals(s.App, app)).Select(s => $"{s.Where}: {s.Statement}").Distinct().ToList();
+        return StatisticsReads.From(0).Where(s => ReferenceEquals(s.App, app)).Select(s => $"{s.Where}: {s.Statement}").Distinct().ToList();
     }
 
     private static void Capture(Activity activity)
@@ -274,7 +298,7 @@ public static class SqlTrace
         {
             if (activity.OperationName == TenantBinding.BindActivity && activity.GetCustomProperty(CallerProperty) is Caller bind && bind.Path is not null)
             {
-                Binds.Enqueue(new TracedBind(Intern(activity.GetTagItem(TenantBinding.TenantTag) as string) ?? "", Intern(activity.GetTagItem(TenantBinding.ActorKindTag) as string) ?? "",
+                Binds.Add(new TracedBind(Intern(activity.GetTagItem(TenantBinding.TenantTag) as string) ?? "", Intern(activity.GetTagItem(TenantBinding.ActorKindTag) as string) ?? "",
                     Intern(bind.Endpoint), bind.Path, bind.Method, bind.ResolvingSession, Intern(bind.PrincipalTenant), bind.App)
                 {
                     Request = bind.Request,
@@ -284,7 +308,7 @@ public static class SqlTrace
             }
             else if (activity.OperationName == TenantBinding.ReadOnlyActivity && activity.GetCustomProperty(CallerProperty) is Caller { Request: { } request } readOnly)
             {
-                ReadOnlys.Enqueue((request, readOnly.Sequence, readOnly.App));
+                ReadOnlys.Add((request, readOnly.Sequence, readOnly.App));
             }
             return;
         }
@@ -303,7 +327,7 @@ public static class SqlTrace
             var capture = StatementCapture.Of(activity);
             if (ChangesSettings(text))
             {
-                Settings.Enqueue(new TracedSetting(Intern(text)!, Intern(inRequest.Endpoint), inRequest.Path, Intern(capture?.Caller), inRequest.FromSession,
+                Settings.Add(new TracedSetting(Intern(text)!, Intern(inRequest.Endpoint), inRequest.Path, Intern(capture?.Caller), inRequest.FromSession,
                     Intern(UserOf(activity)), inRequest.App));
             }
             // The tenant each statement runs under: every setting change is read with the values of
@@ -327,7 +351,7 @@ public static class SqlTrace
                                  c.Name.Equals(SqlSettings.TenantSetting, StringComparison.OrdinalIgnoreCase) ||
                                  (c.Name.StartsWith("app.", StringComparison.OrdinalIgnoreCase) && c.Local != true)))
                     {
-                        Changes.Enqueue(new TracedSettingChange(new SqlSettings.Change(Intern(change.Name), Intern(change.Value), change.Computed, change.Local, Intern(change.Source)!),
+                        Changes.Add(new TracedSettingChange(new SqlSettings.Change(Intern(change.Name), Intern(change.Value), change.Computed, change.Local, Intern(change.Source)!),
                             Intern(inRequest.Endpoint), inRequest.Path, inRequest.Method, inRequest.Request,
                             Intern(inRequest.RequiredTenant), inRequest.ResolvingSession, Intern(captured.Caller), captured.ProcessId, inRequest.App));
                     }
@@ -335,11 +359,11 @@ public static class SqlTrace
             }
             else
             {
-                Unobserved.Enqueue(($"{inRequest.Method} {inRequest.Path}", text.Length <= 160 ? text : text[..160] + "…", inRequest.App));
+                Unobserved.Add(($"{inRequest.Method} {inRequest.Path}", text.Length <= 160 ? text : text[..160] + "…", inRequest.App));
             }
             if (ReadsWholeTableFigures(text))
             {
-                StatisticsReads.Enqueue(($"{inRequest.Method} {inRequest.Path}", text.Length <= 240 ? text : text[..240] + "…", inRequest.App));
+                StatisticsReads.Add(($"{inRequest.Method} {inRequest.Path}", text.Length <= 240 ? text : text[..240] + "…", inRequest.App));
             }
         }
         // No lower-case copy of every statement (millions over an attack): the names are ASCII. One
@@ -363,7 +387,7 @@ public static class SqlTrace
                 string s when int.TryParse(s, out var p) => p,
                 _ => (int?)null,
             };
-            Calls.Enqueue(new TracedCall(function, caller.Endpoint, caller.Path, caller.ResolvingSession, caller.App, port, text, activity.GetTagItem("db.namespace") as string));
+            Calls.Add(new TracedCall(function, caller.Endpoint, caller.Path, caller.ResolvingSession, caller.App, port, text, activity.GetTagItem("db.namespace") as string));
         }
     }
 

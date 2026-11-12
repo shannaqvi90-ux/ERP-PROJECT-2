@@ -1,0 +1,998 @@
+{
+  "schema": 1,
+  "run_id": "create-contact-20261106T025818-063a",
+  "instrument": 12,
+  "task": "create-contact",
+  "task_title": "Create a contact",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Create the contact \"Falcon Steel Trading LLC\" with the e-mail sales@falconsteel.example and the phone number +971 4 555 0142.",
+  "done_when": "The contact is saved; the back end holds it with that e-mail and phone number.",
+  "started_at": "2026-11-06T02:58:18.735Z",
+  "finished_at": "2026-11-06T02:58:34.186Z",
+  "environment": {
+    "base_url": "http://localhost:21650",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 8,
+    "keystrokes": 70,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 3,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.679,
+    "system_wait_seconds": 0.126,
+    "human_seconds": 32.25,
+    "human_plus_wait_seconds": 32.376,
+    "klm_operator_counts": {
+      "K": 70,
+      "P": 3,
+      "B": 6,
+      "H": 5,
+      "M": 5
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Contacts (navigation)",
+      "keystrokes": 0,
+      "at": 0.016,
+      "took": 0.052,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "New contact (Alt+N)",
+      "keystrokes": 2,
+      "at": 0.137,
+      "took": 0.084,
+      "chord": "Alt+n",
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 30,
+      "at": 0.228,
+      "took": 0.045,
+      "text": "Falcon Steel Trading LLC",
+      "same_field": false,
+      "screen": "/contacts/contacts/new",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "e-mail field",
+      "keystrokes": 0,
+      "at": 0.298,
+      "took": 0.034,
+      "began": 0.274,
+      "screen": "/contacts/contacts/new",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "e-mail",
+      "keystrokes": 26,
+      "at": 0.337,
+      "took": 0.04,
+      "text": "sales@falconsteel.example",
+      "same_field": true,
+      "screen": "/contacts/contacts/new",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "phone field",
+      "keystrokes": 0,
+      "at": 0.414,
+      "took": 0.036,
+      "began": 0.377,
+      "screen": "/contacts/contacts/new",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "type",
+      "label": "phone",
+      "keystrokes": 11,
+      "at": 0.456,
+      "took": 0.021,
+      "text": "97145550142",
+      "same_field": true,
+      "screen": "/contacts/contacts/new",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "Save (key)",
+      "keystrokes": 1,
+      "at": 0.613,
+      "took": 0.012,
+      "chord": "Enter",
+      "screen": "/contacts/contacts/new",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "contacts list",
+      "at": 0.07,
+      "seconds": 0.067
+    },
+    {
+      "label": "new contact form, name focused",
+      "at": 0.221,
+      "seconds": 0.007
+    },
+    {
+      "label": "saved",
+      "at": 0.626,
+      "seconds": 0.052
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "bc443bc123114212.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/bc443bc123114212.jpg"
+    },
+    {
+      "moment": "contact filled in",
+      "file": "102af398fed98a33.jpg",
+      "at": 0.477,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/102af398fed98a33.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "58fa8b034f4c274c.jpg",
+      "at": 0.679,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/58fa8b034f4c274c.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "found": [
+        {
+          "id": "01a1aecb-0176-7090-9a07-e7daf8f31025",
+          "kind": "organisation",
+          "code": null,
+          "nameEn": "Falcon Steel Trading LLC",
+          "nameAr": "",
+          "organisationId": null,
+          "organisationName": null,
+          "organisationNameAr": null,
+          "jobTitle": null,
+          "email": "sales@falconsteel.example",
+          "mobile": null,
+          "phone": "+971 4 555 0142",
+          "city": null,
+          "emirate": null,
+          "country": "AE",
+          "tags": null,
+          "taxRegistrationNumber": null,
+          "defaultCurrency": "AED",
+          "creditLimit": null,
+          "creditLimitCurrency": null,
+          "isActive": true,
+          "createdAt": "2026-11-06T02:58:22.199193+00:00",
+          "updatedAt": "2026-11-06T02:58:22.199193+00:00",
+          "version": 2848245834
+        }
+      ]
+    }
+  },
+  "path_notes": "keyboard: Contacts > Alt+N > name > click e-mail > e-mail > click phone > digits > Enter | pointer: Contacts > New contact > name > click e-mail > e-mail > click phone > digits > Save",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-contact.mjs",
+    "sha256": "41b5fe6c7915d0779eb5f8c3bf46bb73019d83ccea1f7bd6691ab06b38df4c2e"
+  },
+  "task_notes": "Set-up removes (Odoo) or renames and archives (ours: contacts are never deleted) any earlier copy, so no duplicate warning differs between runs.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.014,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.018,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "980c6f87eea3515b",
+    "elements": 1256
+  },
+  "screen_after_verify": {
+    "sha256": "980c6f87eea3515b",
+    "elements": 1256,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.012
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/contacts/contacts"
+    ],
+    "read_after": [
+      "GET /api/contacts/contacts"
+    ],
+    "changed": [
+      "GET /api/contacts/contacts"
+    ],
+    "changed_parts": {
+      "GET /api/contacts/contacts": [
+        "items.0.id",
+        "items.0.kind",
+        "items.0.code",
+        "items.0.nameEn",
+        "items.0.nameAr",
+        "items.0.organisationId",
+        "items.0.organisationName",
+        "items.0.organisationNameAr"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/contacts/contacts"
+    ],
+    "end_state": [
+      "GET /api/contacts/contacts [items.nameEn, items.email, items.phone]"
+    ],
+    "end_state_changed": {
+      "GET /api/contacts/contacts": [
+        "items.0.nameEn",
+        "items.0.email",
+        "items.0.phone"
+      ]
+    },
+    "end_state_gained": [
+      "Falcon Steel Trading LLC",
+      "sales@falconsteel.example",
+      "+971 4 555 0142"
+    ],
+    "writes_sent": [
+      "POST /api/contacts/contacts"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/contacts/contacts",
+        "at": 0.6243300570000138,
+        "by_step": 8,
+        "browser_record": {
+          "caused": true,
+          "by_step": 8,
+          "chain_seconds": 0.008,
+          "chain": [
+            "input of step 8"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 82,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.658,
+      "by_step": 8,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/contacts/contacts after 0.012 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [],
+  "screenshots_path": "keyboard",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "keyboard",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "counts_path": "keyboard",
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Contacts > Alt+N > name > click e-mail > e-mail > click phone > digits > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 8,
+        "keystrokes": 70,
+        "clicks": 3,
+        "scrolls": 0,
+        "field_entries": 3,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.679,
+        "system_wait_seconds": 0.126,
+        "human_seconds": 32.25,
+        "human_plus_wait_seconds": 32.376,
+        "klm_operator_counts": {
+          "K": 70,
+          "P": 3,
+          "B": 6,
+          "H": 5,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts (navigation)",
+          "keystrokes": 0,
+          "at": 0.016,
+          "took": 0.052,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New contact (Alt+N)",
+          "keystrokes": 2,
+          "at": 0.137,
+          "took": 0.084,
+          "chord": "Alt+n",
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 30,
+          "at": 0.228,
+          "took": 0.045,
+          "text": "Falcon Steel Trading LLC",
+          "same_field": false,
+          "screen": "/contacts/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "e-mail field",
+          "keystrokes": 0,
+          "at": 0.298,
+          "took": 0.034,
+          "began": 0.274,
+          "screen": "/contacts/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 26,
+          "at": 0.337,
+          "took": 0.04,
+          "text": "sales@falconsteel.example",
+          "same_field": true,
+          "screen": "/contacts/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0.414,
+          "took": 0.036,
+          "began": 0.377,
+          "screen": "/contacts/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "phone",
+          "keystrokes": 11,
+          "at": 0.456,
+          "took": 0.021,
+          "text": "97145550142",
+          "same_field": true,
+          "screen": "/contacts/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "key",
+          "label": "Save (key)",
+          "keystrokes": 1,
+          "at": 0.613,
+          "took": 0.012,
+          "chord": "Enter",
+          "screen": "/contacts/contacts/new",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "contacts list",
+          "at": 0.07,
+          "seconds": 0.067
+        },
+        {
+          "label": "new contact form, name focused",
+          "at": 0.221,
+          "seconds": 0.007
+        },
+        {
+          "label": "saved",
+          "at": 0.626,
+          "seconds": 0.052
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "found": [
+            {
+              "id": "01a1aecb-0176-7090-9a07-e7daf8f31025",
+              "kind": "organisation",
+              "code": null,
+              "nameEn": "Falcon Steel Trading LLC",
+              "nameAr": "",
+              "organisationId": null,
+              "organisationName": null,
+              "organisationNameAr": null,
+              "jobTitle": null,
+              "email": "sales@falconsteel.example",
+              "mobile": null,
+              "phone": "+971 4 555 0142",
+              "city": null,
+              "emirate": null,
+              "country": "AE",
+              "tags": null,
+              "taxRegistrationNumber": null,
+              "defaultCurrency": "AED",
+              "creditLimit": null,
+              "creditLimitCurrency": null,
+              "isActive": true,
+              "createdAt": "2026-11-06T02:58:22.199193+00:00",
+              "updatedAt": "2026-11-06T02:58:22.199193+00:00",
+              "version": 2848245834
+            }
+          ]
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.014,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.018,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "980c6f87eea3515b",
+        "elements": 1256
+      },
+      "screen_after_verify": {
+        "sha256": "980c6f87eea3515b",
+        "elements": 1256,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.012
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/contacts/contacts"
+        ],
+        "read_after": [
+          "GET /api/contacts/contacts"
+        ],
+        "changed": [
+          "GET /api/contacts/contacts"
+        ],
+        "changed_parts": {
+          "GET /api/contacts/contacts": [
+            "items.0.id",
+            "items.0.kind",
+            "items.0.code",
+            "items.0.nameEn",
+            "items.0.nameAr",
+            "items.0.organisationId",
+            "items.0.organisationName",
+            "items.0.organisationNameAr"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/contacts/contacts"
+        ],
+        "end_state": [
+          "GET /api/contacts/contacts [items.nameEn, items.email, items.phone]"
+        ],
+        "end_state_changed": {
+          "GET /api/contacts/contacts": [
+            "items.0.nameEn",
+            "items.0.email",
+            "items.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "Falcon Steel Trading LLC",
+          "sales@falconsteel.example",
+          "+971 4 555 0142"
+        ],
+        "writes_sent": [
+          "POST /api/contacts/contacts"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/contacts/contacts",
+            "at": 0.6243300570000138,
+            "by_step": 8,
+            "browser_record": {
+              "caused": true,
+              "by_step": 8,
+              "chain_seconds": 0.008,
+              "chain": [
+                "input of step 8"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 82,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.658,
+          "by_step": 8,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/contacts/contacts after 0.012 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "pointer",
+      "path": "Contacts > New contact > name > click e-mail > e-mail > click phone > digits > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 8,
+        "keystrokes": 67,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 3,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.805,
+        "system_wait_seconds": 0.149,
+        "human_seconds": 35.76,
+        "human_plus_wait_seconds": 35.909,
+        "klm_operator_counts": {
+          "K": 67,
+          "P": 5,
+          "B": 10,
+          "H": 6,
+          "M": 6
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts (navigation)",
+          "keystrokes": 0,
+          "at": 0.016,
+          "took": 0.053,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "New contact",
+          "keystrokes": 0,
+          "at": 0.165,
+          "took": 0.088,
+          "began": 0.139,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 30,
+          "at": 0.288,
+          "took": 0.046,
+          "text": "Falcon Steel Trading LLC",
+          "same_field": false,
+          "screen": "/contacts/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "e-mail field",
+          "keystrokes": 0,
+          "at": 0.365,
+          "took": 0.034,
+          "began": 0.335,
+          "screen": "/contacts/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 26,
+          "at": 0.403,
+          "took": 0.043,
+          "text": "sales@falconsteel.example",
+          "same_field": true,
+          "screen": "/contacts/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "phone field",
+          "keystrokes": 0,
+          "at": 0.481,
+          "took": 0.035,
+          "began": 0.446,
+          "screen": "/contacts/contacts/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "phone",
+          "keystrokes": 11,
+          "at": 0.521,
+          "took": 0.021,
+          "text": "97145550142",
+          "same_field": true,
+          "screen": "/contacts/contacts/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 0.715,
+          "took": 0.036,
+          "began": 0.687,
+          "screen": "/contacts/contacts/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "contacts list",
+          "at": 0.069,
+          "seconds": 0.069
+        },
+        {
+          "label": "new contact form, name focused",
+          "at": 0.253,
+          "seconds": 0.028
+        },
+        {
+          "label": "saved",
+          "at": 0.752,
+          "seconds": 0.052
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "found": [
+            {
+              "id": "01a1aecb-20e4-7928-86cb-115285df65eb",
+              "kind": "organisation",
+              "code": null,
+              "nameEn": "Falcon Steel Trading LLC",
+              "nameAr": "",
+              "organisationId": null,
+              "organisationName": null,
+              "organisationNameAr": null,
+              "jobTitle": null,
+              "email": "sales@falconsteel.example",
+              "mobile": null,
+              "phone": "+971 4 555 0142",
+              "city": null,
+              "emirate": null,
+              "country": "AE",
+              "tags": null,
+              "taxRegistrationNumber": null,
+              "defaultCurrency": "AED",
+              "creditLimit": null,
+              "creditLimitCurrency": null,
+              "isActive": true,
+              "createdAt": "2026-11-06T02:58:30.244743+00:00",
+              "updatedAt": "2026-11-06T02:58:30.244743+00:00",
+              "version": 2984231212
+            }
+          ]
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.02,
+          "verified": true
+        },
+        {
+          "requests": 2,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.013,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "07ac008c72c26f88",
+        "elements": 1256
+      },
+      "screen_after_verify": {
+        "sha256": "07ac008c72c26f88",
+        "elements": 1256,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.013
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 1,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/contacts/contacts"
+        ],
+        "read_after": [
+          "GET /api/contacts/contacts"
+        ],
+        "changed": [
+          "GET /api/contacts/contacts"
+        ],
+        "changed_parts": {
+          "GET /api/contacts/contacts": [
+            "items.0.id",
+            "items.0.kind",
+            "items.0.code",
+            "items.0.nameEn",
+            "items.0.nameAr",
+            "items.0.organisationId",
+            "items.0.organisationName",
+            "items.0.organisationNameAr"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/contacts/contacts"
+        ],
+        "end_state": [
+          "GET /api/contacts/contacts [items.nameEn, items.email, items.phone]"
+        ],
+        "end_state_changed": {
+          "GET /api/contacts/contacts": [
+            "items.0.nameEn",
+            "items.0.email",
+            "items.0.phone"
+          ]
+        },
+        "end_state_gained": [
+          "Falcon Steel Trading LLC",
+          "sales@falconsteel.example",
+          "+971 4 555 0142"
+        ],
+        "writes_sent": [
+          "POST /api/contacts/contacts"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/contacts/contacts",
+            "at": 0.7508557989999827,
+            "by_step": 8,
+            "browser_record": {
+              "caused": true,
+              "by_step": 8,
+              "chain_seconds": 0.003,
+              "chain": [
+                "input of step 8"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 86,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.79,
+          "by_step": 8,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/contacts/contacts after 0.013 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": []
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Erp.Modules.Contacts</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Kernel\Erp.Kernel\Erp.Kernel.csproj" />
+    <ProjectReference Include="..\Erp.Modules.Contacts.Contracts\Erp.Modules.Contacts.Contracts.csproj" />
+    <ProjectReference Include="..\..\Tenancy\Erp.Modules.Tenancy.Contracts\Erp.Modules.Tenancy.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Modules.Contacts.Resources.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Erp.Modules.Contacts.Tests" />
+  </ItemGroup>
+</Project>

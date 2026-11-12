@@ -1,0 +1,50 @@
+== as tenant A (alnoor admin) against tenant B canary 01a1aebb-ddee-7866-9be7-3073c324eab9
+--- GET contact
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-4b57f1eef773a9ec233cd1865a99a342-866590e7c7aa3c0d-00"}
+[http 404]
+--- PUT contact
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-7c674827cd93089efba6e614eb5950d9-d191ce74ae5a88dd-00"}
+[http 404]
+--- archive
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-b09f973bdc4f61672749b153e8a1b35f-46419d1d77552ae3-00"}
+[http 404]
+--- restore
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-0348f6fa47dc0d4320d2df2f670aeb3d-1aee87181c6493f9-00"}
+[http 404]
+--- list search zqxcanary
+{"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[http 200]
+--- list search TRN
+{"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[http 200]
+--- list search email
+{"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[http 200]
+--- list search arabic
+{"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+[http 200]
+--- duplicates by email/trn/phone/name
+[]
+[http 200]
+--- report contact card
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-475804329e16645c70cff290b96680f7-411f9003f3cca555-00"}
+[http 404]
+--- report contact card pdf
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-4ee7ddeccbbb86009a5edc9e18343052-7263b9362a84aef6-00"}
+[http 404]
+--- create person in B org
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-fcc10b99c8493e82ec823cccac732236-c7802024a9138709-00","errors":{"organisationId":[{"code":"contactsOrganisationUnknown","message":"This organisation was not found."}]}}
+[http 400]
+--- create with B code
+{"id":"01a1aebc-1886-7b1c-8d48-b5b99b4c5e34","kind":"organisation","code":"ZQCANARY1","nameEn":"Code probe","nameAr":"","organisationId":null,"organisationName":null,"organisationNameAr":null,"jobTitle":null,"email":null,"phone":null,"mobile":null,"website":null,"addressLine1":null,"addressLine2":nu
+[http 201]
+--- list filter id
+{"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-e3f373c5dd916da0ccec19cd928c95c8-6dc51bdb3eb31ac8-00","errors":{"filter":[{"code":"list.filterSyntax","message":"The filter could not be read. Write conditions as column operator
+[http 400]
+--- list print csv search
+﻿Name,Type,Organisation,E-mail,Mobile,Phone,City,Emirate,Tags,Status
+
+[http 200]
+--- tenant header switch
+{"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-6ed4860399b238ecb7bfe0eac5e75eb2-5e9b8a801c01ea35-00"}
+[http 404]

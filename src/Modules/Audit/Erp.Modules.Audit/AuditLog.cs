@@ -1,18 +1,17 @@
+using Microsoft.Extensions.DependencyInjection;
 using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Localization;
 using Erp.Kernel.Lists;
 using Erp.Kernel.Modules;
 using Erp.Modules.Audit.Contracts;
-using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.Audit;
 
-/// <summary>One change of the audit log as its screen shows it (the change's fields with their stored
-/// values are read with <c>GET /api/audit/log/{id}</c>).</summary>
+/// <summary>One change of the audit log as its screen shows it (a row is kept small: the change's
+/// fields with their stored values are read with <c>GET /api/audit/log/{id}</c>).</summary>
 /// <param name="Id">The change's own id (a history and the log link to it).</param>
 /// <param name="ActorId">The person who made it; null for work the system did (seeding, jobs).</param>
 /// <param name="ActorName">Their name (a former user's: "Former user"); the system's kind otherwise.</param>
@@ -24,9 +23,8 @@ namespace Erp.Modules.Audit;
 /// <param name="RecordId">The record's id.</param>
 /// <param name="RecordRoute">The record's web address, when it has a screen.</param>
 /// <param name="Fields">The fields the change recorded.</param>
-/// <param name="Changes">Every field's old and new value as one text, whole (up to
-/// <see cref="AuditTexts.SummaryLength"/>), in the request's language (the document's, when the reports
-/// framework prints the log). The list on screen shows the start of it.</param>
+/// <param name="Changes">Every field's old and new value as one line, in the request's language (the
+/// document's, when the reports framework prints the log).</param>
 public sealed record AuditLogRow(
     Guid Id,
     DateTimeOffset OccurredAt,
@@ -48,7 +46,14 @@ public sealed record AuditLogRow(
 /// <param name="Change">The change as the log lists it.</param>
 /// <param name="Details">Every field's old and new value, as stored, by field name.</param>
 /// <param name="Names">Names of the records the values refer to by id, where the reader may read them.</param>
-public sealed record AuditChange(AuditLogRow Change, IReadOnlyList<AuditFieldChange> Details, IReadOnlyDictionary<Guid, AuditRecordName> Names);
+public sealed record AuditChange(AuditLogRow Change, IReadOnlyList<AuditFieldChange> Details, IReadOnlyDictionary<Guid, AuditRecordName> Names,
+    IReadOnlyDictionary<string, AuditFieldLabel>? Fields = null);
+
+/// <summary>A tenant-defined field as the trail names it: its labels in both languages and, for a number, its decimals.</summary>
+public sealed record AuditFieldLabel(string LabelEn, string LabelAr, string Type, int Decimals)
+{
+    public string For(string language) => language == "ar" && !string.IsNullOrWhiteSpace(LabelAr) ? LabelAr : LabelEn;
+}
 
 /// <summary>
 /// The audit log list: every recorded change of the business records the caller may read, newest
@@ -124,34 +129,27 @@ internal static class AuditLog
         var details = result.Rows.ToDictionary(r => r.Uid, AuditReader.Changes);
         var names = await reader.ReferencedNamesAsync(details.Values.SelectMany(d => d), cancellationToken);
         var language = Language(http);
-        var context = await ValueContextAsync(http, names, cancellationToken);
-        return result.Map(e => Row(e, details[e.Uid], actors, context, catalog, texts, language));
+        var labels = await CustomFieldLabelsAsync(http.RequestServices, details.Values.SelectMany(d => d), null, cancellationToken);
+        return result.Map(e => Row(e, details[e.Uid], actors, names, catalog, texts, language, labels));
     }
 
-    /// <summary>How values are written: the workspace's time zone (a document's own, when it asks for
-    /// one) and the digits the document asks for.</summary>
-    internal static async Task<AuditValueContext> ValueContextAsync(HttpContext http, IReadOnlyDictionary<Guid, AuditRecordName>? names, CancellationToken cancellationToken)
+    /// <summary>The prefix of a custom field's name in a record's history (the contract of audit.capture()).</summary>
+    public const string CustomFieldPrefix = "custom_fields.";
+
+    /// <summary>The tenant's own labels of the custom fields the changes mention (none when the host has no
+    /// custom fields), by stored field name.</summary>
+    internal static async Task<IReadOnlyDictionary<string, AuditFieldLabel>> CustomFieldLabelsAsync(IServiceProvider services, IEnumerable<AuditFieldChange> changes,
+        string? recordType, CancellationToken cancellationToken)
     {
-        http.Items.TryGetValue(ZoneKey, out var kept);
-        var zone = kept as TimeZoneInfo;
-        if (zone is null)
+        var keys = changes.Select(c => c.Field).Where(f => f.StartsWith(CustomFieldPrefix, StringComparison.Ordinal)).Distinct(StringComparer.Ordinal)
+            .Select(f => f[CustomFieldPrefix.Length..]).ToList();
+        if (keys.Count == 0 || services.GetService<Erp.Kernel.CustomFields.ICustomFields>() is not { } customFields)
         {
-            var asked = http.Request.Query["timeZone"].ToString();
-            if (asked.Length is > 0 and <= 64 && TimeZoneInfo.TryFindSystemTimeZoneById(asked, out var found))
-            {
-                zone = found;
-            }
-            else
-            {
-                var tenant = await http.RequestServices.GetRequiredService<ITenantDirectory>().GetCurrentAsync(cancellationToken);
-                zone = TimeZoneInfo.TryFindSystemTimeZoneById(tenant?.TimeZone ?? "Asia/Dubai", out var workspace) ? workspace : TimeZoneInfo.Utc;
-            }
-            http.Items[ZoneKey] = zone;
+            return new Dictionary<string, AuditFieldLabel>();
         }
-        return new AuditValueContext(names, zone, http.Request.Query["numerals"].ToString() == NumeralSystems.ArabicIndic);
+        var found = await customFields.DescribeAsync(keys, recordType, cancellationToken);
+        return found.ToDictionary(p => CustomFieldPrefix + p.Key, p => new AuditFieldLabel(p.Value.LabelEn, p.Value.LabelAr, p.Value.Type, p.Value.Decimals), StringComparer.Ordinal);
     }
-
-    private const string ZoneKey = "audit.timeZone";
 
     /// <summary>The language of the change texts: the document's (the reports framework's
     /// <c>language</c> parameter), else the reader's.</summary>
@@ -197,7 +195,8 @@ internal static class AuditLog
     }
 
     internal static AuditLogRow Row(AuditEntry e, IReadOnlyList<AuditFieldChange> changes, IReadOnlyDictionary<Guid, Identity.Contracts.UserSummary> actors,
-        AuditValueContext context, ModuleCatalog catalog, AuditTexts texts, string language, int max = AuditTexts.SummaryLength)
+        IReadOnlyDictionary<Guid, AuditRecordName> names, ModuleCatalog catalog, AuditTexts texts, string language,
+        IReadOnlyDictionary<string, AuditFieldLabel>? fieldLabels = null)
     {
         var (name, nameAr) = ActorName(e.ActorId, e.ActorKind, actors, texts);
         var shown = changes.Where(c => c.Field != "id").ToList();
@@ -205,7 +204,7 @@ internal static class AuditLog
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
-            e.Fields ?? [], texts.Summary(shown, e.Action, language, context with { Names = Mentioned(changes, context.Names ?? new Dictionary<Guid, AuditRecordName>()) }, max));
+            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels));
     }
 
     /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer

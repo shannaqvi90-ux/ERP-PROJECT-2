@@ -1,0 +1,22 @@
+import { open, shot } from './lib.mjs';
+const { b, p } = await open('admin.ar');
+console.log('dir', await p.evaluate(() => document.documentElement.dir), 'lang', await p.evaluate(() => document.documentElement.lang));
+await p.keyboard.press('g'); await p.keyboard.press('n'); await p.waitForTimeout(2500);
+console.log('URL', p.url());
+await shot(p, 'b06-ar-list');
+await p.keyboard.press('/'); await p.keyboard.type('PV- ALN-DXB'); await p.waitForTimeout(1500);
+await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
+await p.keyboard.press('Control+a'); await p.keyboard.type('PV-{YYYY}-{MM}-');
+await p.keyboard.press('Tab'); await p.keyboard.press('Tab'); await p.keyboard.press('Tab');
+await p.keyboard.press('ArrowDown'); await p.waitForTimeout(900);
+console.log((await p.locator('form').first().innerText()).slice(0, 700));
+await shot(p, 'b07-ar-monthly-preview');
+await p.keyboard.press('Shift+Tab'); await p.keyboard.press('Shift+Tab'); await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
+console.log('--- saved\n', (await p.locator('form').first().innerText()).slice(0, 500));
+// History by keyboard? find the History button
+const hist = p.getByRole('button', { name: /سجل|History|التاريخ|السجل/ }).first();
+await hist.focus(); await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
+const dlg = p.locator('[role=dialog]').last();
+console.log('--- history\n', (await dlg.innerText().catch(() => p.locator('body').innerText())).slice(0, 1500));
+await shot(p, 'b08-ar-history');
+await b.close();

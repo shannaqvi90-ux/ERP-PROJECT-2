@@ -1,0 +1,34 @@
+Critic p00 r17 plants (plants.diff + CriticPlant.cs + CriticR17Proof.cs; inert unless CRITIC_PLANT names them), run in the
+toolbox (run-in-toolbox.sh / run-plants.sh) on a copy of 417f1990 (/home/shan/critic/p00-foundation-r17-plant).
+Control: CriticR17Proof with CRITIC_PLANT=NONE passes (run 1: 2/2, run 2: 3/3; plant-PROOFNONE.log): on the real code a no-roles
+user gets 403 on /api/identity/users, /api/identity/users/, /api/identity/roles/, /API/identity/users and Host 'app'; A never
+reads B's users through X-Tenant-Id; the health check answers {"status":"ok"} for ?workspace=<B id>.
+
+PERMISSION PLANT P17 (kernel, src/Kernel/Erp.Kernel/Security/Permissions.cs, PermissionAuthorizationHandler)
+  "folder paths ending in '/' are the shell's own and need no permission": any signed-in request whose path ends in '/' passes
+  every permission. ASP.NET Core routing ignores a trailing slash, so /api/identity/users/ reaches the users endpoint.
+  Proof (plant-PROOFALL.log, CRITIC_PLANT=P13,P16,P17,L17): no-roles user: GET /api/identity/users/?take=1 -> 200,
+  GET /api/identity/roles/?take=1 -> 200 (and /api/identity/users?take=1 -> 403).
+  MISSED: G2 + Rules + SelfTests 168/168 passed with P17 on (plant-G2P17.log, 23.6 min); Kernel tests 299/299 and Identity
+  module tests 107/107 passed (plant-KernelP17.log, plant-Modules.IdentityP17.log). Static set (plant-G1STATIC.log, run 2)
+  flagged only L18. G2PathCaseTests varies letter case and Host, never a trailing slash.
+  Real product: clean (attack/g2-live.txt: no-roles user, 204 operations x {plain, trailing slash, upper case, %61pi}: all 403).
+
+PERMISSION RE-PLANTS P13 (Host 'app' trusted; backlog row 3) and P16 (ordinal case-sensitive '/api/'; backlog row 13)
+  CAUGHT: G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case fails under each
+  (plant-CASE13.log, plant-CASE16.log: e.g. 'GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200').
+  (The self-test The_varied_case_deny_catches_... also fails there because its own unplanted baseline is no longer clean.)
+
+TENANT-LEAK PLANT L17 (kernel, ErpPlatform.cs, middleware after UseAuthorization): on a path ending in '/', X-Tenant-Id
+  replaces the principal's tenant claim. NOT LIVE (plant-PROOFALL.log: A's admin still sees none of B's users): the unit of
+  work is bound to the session's tenant when the session is resolved during authentication (Identity SessionResolver), so a
+  later principal rewrite cannot rebind it. Recorded as a strength, not a gate result.
+
+TENANT-LEAK PLANT L18 (kernel, ErpPlatform.cs, the anonymous GET /api/health): ?workspace=<tenant id> binds that workspace as
+  system work and answers its user count and newest e-mail.
+  Proof (plant-PROOFL18.log): anonymous GET /api/health?workspace=<B id> -> 200 {"status":"ok","workspace":"31 viewer@bravo-...example"}.
+  CAUGHT statically (plant-G1STATIC.log, run 2): G1TenantSourceTests 'src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:242 binds a
+  unit of work to a tenant [bind]: only reviewed files may'. The dynamic G1 HTTP attack was not run with L18 (cost).
+
+Result: G1 caught its live plant (L18); G2 now catches P13 and P16 (backlog rows 3 and 13 closed in effect) but misses P17
+(trailing slash), an unchecked action in p00's kernel permission handler -> gate gap, owner p00-foundation.

@@ -1,0 +1,38 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6fb562c1..4fabb08f 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -134,6 +134,17 @@ internal static class SequenceEndpoints
+             .ProducesProblem(StatusCodes.Status403Forbidden)
+             .ProducesProblem(StatusCodes.Status409Conflict)
+             .RequirePermission(NumberingPermissions.SequencesUpdate);
++
++        // PLANT P1 (critic): skip one number of today's period; no permission check at all.
++        group.MapPost("/sequences/{id:guid}/skip", async (Guid id, NumberingDbContext db, CancellationToken ct) =>
++            {
++                var counters = await db.Counters.Where(c => c.SequenceId == id).ToListAsync(ct);
++                foreach (var c in counters) { c.NextValue += 1; }
++                await db.SaveChangesAsync(ct);
++                return TypedResults.NoContent();
++            })
++            .WithName("numbering.sequences.skip")
++            .WithSummary("Skip one number.");
+     }
+ 
+     private static async Task<Results<Ok<ListPage<SequenceRow>>, ProblemHttpResult>> List(
+@@ -245,6 +256,15 @@ internal static class SequenceEndpoints
+     private static async Task<Results<Ok<SequenceDto>, ProblemHttpResult>> Get(Guid id, NumberingDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
+         var dto = await ToDtoAsync(db, http, id, cancellationToken);
++        // PLANT L1 (critic): support staff may look at another workspace's sequence by naming it.
++        if (dto is null && http.Request.Headers.TryGetValue("X-Erp-Workspace", out var named) && Guid.TryParse(named.ToString(), out var workspace))
++        {
++            var session = http.RequestServices.GetRequiredService<ErpDbSession>();
++            await using var other = http.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
++            var detached = other.ServiceProvider.GetRequiredService<ErpDbSession>();
++            await detached.BeginAsync(workspace, session.ActorId, session.ActorKind, cancellationToken);
++            dto = await ToDtoAsync(other.ServiceProvider.GetRequiredService<NumberingDbContext>(), http, id, cancellationToken);
++        }
+         return dto is null ? Problems.NotFound(http) : TypedResults.Ok(dto);
+     }
+ 

@@ -39,12 +39,17 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
 {
     public KernelDbContext Db => db;
 
-    /// <summary>What this request has already looked up of record names (null: nothing named it).</summary>
-    private readonly Dictionary<Guid, AuditRecordName?> _named = [];
-
     /// <summary>The kinds of records the caller may read, each with the companies where they may
     /// (null: everywhere).</summary>
-    public async Task<IReadOnlyList<(AuditRecordType Type, IReadOnlySet<Guid>? Companies)>> ReadableTypesAsync(CancellationToken cancellationToken)
+    public Task<IReadOnlyList<(AuditRecordType Type, IReadOnlySet<Guid>? Companies)>> ReadableTypesAsync(CancellationToken cancellationToken) =>
+        readableTypes ??= ReadTypesAsync(cancellationToken);
+
+    // The reader is scoped to one request, in which the caller's permissions do not change: a print
+    // or export reads the log page by page, and each page asked the permission store again for every
+    // kind of record (twice a page); one answer serves the request.
+    private Task<IReadOnlyList<(AuditRecordType Type, IReadOnlySet<Guid>? Companies)>>? readableTypes;
+
+    private async Task<IReadOnlyList<(AuditRecordType Type, IReadOnlySet<Guid>? Companies)>> ReadTypesAsync(CancellationToken cancellationToken)
     {
         var readable = new List<(AuditRecordType, IReadOnlySet<Guid>?)>();
         foreach (var type in catalog.AuditRecordTypes)
@@ -125,6 +130,8 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         return wanted.Count == 0 ? new Dictionary<Guid, UserSummary>() : await users.GetAsync(wanted, cancellationToken);
     }
 
+    private readonly Dictionary<Guid, AuditRecordName?> knownNames = [];
+
     /// <summary>
     /// The names of the records that values in <paramref name="changes"/> refer to by id (a role id
     /// in a user's roles, the company of a branch), as the audit trail last named them, among the
@@ -160,33 +167,42 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         {
             return new Dictionary<Guid, AuditRecordName>();
         }
-        // A document reads the log page after page and the same records are named again and again
-        // (a role, a company, a currency): each id is looked up once per request, found or not.
-        var unseen = ids.Where(i => !_named.ContainsKey(i)).Take(500).ToList();
-        if (unseen.Count > 0)
-        {
-            var wanted = unseen.Select(i => (Guid?)i).ToArray();
-            var named = await (await VisibleAsync(db.AuditEntries.AsNoTracking(), cancellationToken))
-                .Where(e => wanted.Contains(e.RecordId) && e.RecordLabel != null)
-                .OrderByDescending(e => e.OccurredAt)
-                .Select(e => new { e.RecordId, e.RecordLabel, e.RecordLabelAr })
-                .Take(2000)
-                .ToListAsync(cancellationToken);
-            foreach (var n in named)
-            {
-                _named.TryAdd(n.RecordId!.Value, new AuditRecordName(n.RecordLabel!, n.RecordLabelAr));
-            }
-            foreach (var id in unseen)
-            {
-                _named.TryAdd(id, null);
-            }
-        }
+        // An id read once in this request (found or not) is not read again: a printed log asks page
+        // after page, and the same company, role and user ids recur in them.
         var names = new Dictionary<Guid, AuditRecordName>();
         foreach (var id in ids)
         {
-            if (_named.TryGetValue(id, out var found) && found is not null)
+            if (knownNames.TryGetValue(id, out var known))
             {
-                names[id] = found;
+                if (known is not null)
+                {
+                    names[id] = known;
+                }
+            }
+        }
+        var asked = ids.Where(i => !knownNames.ContainsKey(i)).Take(500).ToList();
+        if (asked.Count == 0)
+        {
+            return names;
+        }
+        var wanted = asked.Select(i => (Guid?)i).ToArray();
+        var named = await (await VisibleAsync(db.AuditEntries.AsNoTracking(), cancellationToken))
+            .Where(e => wanted.Contains(e.RecordId) && e.RecordLabel != null)
+            .OrderByDescending(e => e.OccurredAt)
+            .Select(e => new { e.RecordId, e.RecordLabel, e.RecordLabelAr })
+            .Take(2000)
+            .ToListAsync(cancellationToken);
+        foreach (var id in asked)
+        {
+            knownNames[id] = null;
+        }
+        foreach (var n in named)
+        {
+            var name = new AuditRecordName(n.RecordLabel!, n.RecordLabelAr);
+            if (knownNames[n.RecordId!.Value] is null)
+            {
+                knownNames[n.RecordId.Value] = name;
+                names[n.RecordId.Value] = name;
             }
         }
         return names;

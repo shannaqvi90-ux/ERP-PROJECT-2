@@ -1,0 +1,13 @@
+diff --git a/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs b/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
+index cec1324d..588c277a 100644
+--- a/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
++++ b/src/Modules/Contacts/Erp.Modules.Contacts/ContactEndpoints.cs
+@@ -399,6 +399,8 @@ internal static class ContactEndpoints
+         {
+             return checks;
+         }
++        // Saving a contact brings it back into use.
++        contact.IsActive = true;
+         db.Entry(contact).Property(c => c.UpdatedAt).IsModified = true;
+         await db.SaveChangesAsync(cancellationToken);
+         return TypedResults.Ok(await ToDtoAsync(db, contact, cancellationToken));

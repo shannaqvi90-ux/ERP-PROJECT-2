@@ -1,0 +1,45 @@
+using System.Net;
+using System.Text.Json;
+using Erp.Testing;
+
+namespace Erp.Modules.Attachments.Tests;
+
+/// <summary>Critic p11 r1: proves the planted faults are real in the planted product (not part of the product).</summary>
+public sealed class PlantProofTests(AttachmentsFixture fixture) : IClassFixture<AttachmentsFixture>
+{
+    private ErpTestEnvironment Env => fixture.Env;
+
+    [Fact]
+    public async Task P1_tenant_A_reads_tenant_B_bytes_through_a_client_supplied_key()
+    {
+        using var a = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        using var b = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var bContact = await Api.NewContactAsync(b);
+        var secret = System.Text.Encoding.ASCII.GetBytes("TENANT-B-SECRET-" + Guid.NewGuid());
+        var bFile = await Api.UploadedAsync(b, bContact, "b-secret.txt", secret);
+        // the gate knows B's rows; read B's storage key straight from the database as the test owner
+        await using var conn = new Npgsql.NpgsqlConnection(Env.AdminConnectionString);
+        await conn.OpenAsync(Api.Cancel);
+        await using var cmd = new Npgsql.NpgsqlCommand("select storage_key from attachments.files where id = @id", conn);
+        cmd.Parameters.AddWithValue("id", bFile.GetProperty("id").GetGuid());
+        var key = (string)(await cmd.ExecuteScalarAsync(Api.Cancel))!;
+        var aContact = await Api.NewContactAsync(a);
+        var aFile = await Api.UploadedAsync(a, aContact, "a.txt", "mine"u8.ToArray());
+        using var leak = await a.GetAsync($"{Api.File(aFile.GetProperty("id").GetGuid())}/content?version={Uri.EscapeDataString(key)}", Api.Cancel);
+        var body = await leak.Content.ReadAsByteArrayAsync(Api.Cancel);
+        Assert.Equal(secret, body); // the leak is real
+    }
+
+    [Fact]
+    public async Task P2_a_reader_deletes_a_file_through_the_read_endpoint()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var contact = await Api.NewContactAsync(admin);
+        var file = await Api.UploadedAsync(admin, contact, "keep.txt", "keep"u8.ToArray());
+        using var reader = await Env.SignInAsync(await Api.UserHoldingAsync(Env, admin, "reader", "contacts.contacts.read"));
+        using var del = await reader.DeleteAsync(Api.File(file.GetProperty("id").GetGuid()), Api.Cancel);
+        Assert.Equal(HttpStatusCode.Forbidden, del.StatusCode);
+        using var get = await reader.GetAsync($"{Api.File(file.GetProperty("id").GetGuid())}/content?remove=true", Api.Cancel);
+        Assert.Equal(0, (await Api.ListAsync(admin, contact)).GetProperty("total").GetInt32()); // the reader removed it
+    }
+}

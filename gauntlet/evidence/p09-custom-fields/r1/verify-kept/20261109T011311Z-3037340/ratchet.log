@@ -1,0 +1,14 @@
+
+verify wall time before the ratchet: 12405 s (maximum on a quiet machine 3600 s; not judged: the machine was busy (load 1.08 at the start, 1.6 at the end, highest 33.12 over 829 readings (827 samples while the stages ran) on 16 CPUs; quiet is at most 0.5 per CPU at every reading))
+verify processor time: 19624 s (dotnet 16388, web 2582, e2e 572, timing 82; maximum 18700 s)
+machine processor time over the run: 60652 s; verify stages 19624 s; other work beside the verify 41028 s (67.6 % of the machine's)
+
+Test counts this run:
+  suite.dotnetTests      passed  1015  failed 0  skipped 0  (minimum 985)
+  suite.webUnitTests     passed   719  failed 0  skipped 0  (minimum 719)
+  suite.e2eTests         passed   146  failed 0  skipped 0  (minimum 146)
+  suite.compareTests     passed   488  failed 0  skipped 0  (minimum 487)
+  suite.buildTests       passed    13  failed 0  skipped 0  (minimum 13)
+
+Ratchet check FAILED:
+  verify.cpuSeconds: the verify stages used 19624 processor seconds, maximum 18700

@@ -1,0 +1,15 @@
+Critic p09 r2 browser runs (Playwright 1.63 Chromium, demo seeded with the shared dataset, 100,007 contacts), key output lines:
+ui1 (en): Alt+N on Custom fields focuses "Label (English)"; tab order Label (English) | Label (Arabic) | Added to | Type | Required | Searched | Default | Order.
+ui2 (en, keyboard only): "Insurance cover", Type typed "Number", Decimals 2, Ctrl+S -> saved (3.4 s incl. waits).
+ui5 (en): Contacts > Columns > tick "Insurance cover" > header menu: Sort ascending / Sort descending / Filter... / Hide this column > Filter: From/To > 5000 > Enter
+   -> url ?filter=cfInsuranceCover+ge+5000&cols=...,cfInsuranceCover ; "18 contacts"; cells show 5,000.56 6,000.56 ...
+   Print or export: PDF/CSV/Excel in English and Arabic; CSV, Excel, PDF downloads all succeeded with the custom column and the filter
+   (en-export.csv: header "...,Insurance cover", 18 rows, 5000.56...; en-export.xlsx K1 "Insurance cover", K2 5000.56).
+ui5 (ar): dir rtl; header menu ترتيب تصاعدي / ترتيب تنازلي / تصفية… / إخفاء هذا العمود; filter dialog تصفية: التغطية التأمينية / من / إلى;
+   CSV/Excel/PDF in Arabic downloaded; ar-export.csv header ends "التغطية التأمينية".
+ui6 (en): contact form shows "Insurance cover" 5000.56 and "Incoterm" select (— none —, EXW, FOB, CIF); typed 1234.56, Ctrl+S "Saved.";
+   History: "Insurance cover: from 5,000.56 to 1,234.56"; Alt+Shift+F in the field -> ?filter=cfInsuranceCover+eq+1234.56, "1 contact".
+ui6 (ar): select shows Arabic option labels; "تم الحفظ."; history "التغطية التأمينية: من 6,000.56 إلى 1,234.56".
+   Alt+Shift+F right after opening the History panel did not filter (url stayed on the record); ui7 without the panel: Alt+Shift+F works in ar and en.
+ui8 (ar): fields list headers التسمية / يُضاف إلى / النوع / مطلوب / الحالة; types نص, رقم, تاريخ, نعم/لا, اختيار واحد, سجل مرتبط;
+   custom date field placeholder "سنة-شهر-يوم".

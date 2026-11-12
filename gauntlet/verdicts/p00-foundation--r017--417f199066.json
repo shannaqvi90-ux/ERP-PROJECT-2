@@ -1,0 +1,123 @@
+{
+  "piece": "p00-foundation",
+  "round": 17,
+  "commit": "417f19906615a4dc8baf167e2b8a8c6a9b40e243",
+  "judged_at": "2026-11-05T09:40:58Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p00-foundation round 17",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, every test)",
+      "status": "fail",
+      "evidence": "In a fresh clone of 417f1990, verify failed after 9,238 s, timed from the slot being taken at 06:58:23Z. Only the dotnet stage failed: 921 passed and 1 failed (Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint). Everything else passed: web 663/663, e2e 138/138 with the ours-drivers health check all verified, compare 488/488, build 13/13. Files: verify-critic-p00-foundation-r17.log, verify-failed/, failure-summary.txt."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p00-foundation-r17 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up exited 0 after 260 s. It served the demo with 100,005 users and printed the URL and the sign-ins (erp-up.log). The port and project overrides were honoured."
+    },
+    {
+      "gate": "G1 tenant isolation: my own live attack as tenant A (alnoor) against tenant B (gulfsteel)",
+      "status": "pass",
+      "evidence": "Live attack on the real product (attack/attack.mjs, attack-run.log). It sent 205 operations with B's ids, 1,326 requests on documented query parameters, 870 tenant-switch requests (headers, query and cookies), 160 export requests, 63 filter requests, and 229 path-form and audit requests (trailing slash, upper case, switch headers, /api/audit/records with B's ids, audit log filters and exports). B's rows were the same before and after. All 68 flagged lines were triaged and none is a leak (attack/attack-triage.txt, probe-audit.txt). The audit-records answers for B's ids are identical to the answer for a random id. The only appearance of B's tenant id in A's audit log is a payload A itself sent. The DELETE /api/currency/rates/<B id> 204 no-op is unchanged since round 15."
+    },
+    {
+      "gate": "G1 tenant isolation: the database role the app uses",
+      "status": "pass",
+      "evidence": "db-roles.txt: erp_app is not superuser, has no BYPASSRLS and owns no tables (erp_owner owns all 34). All 25 tenant tables have RLS enabled and forced. Unbound, erp_app sees 0 users and 0 audit rows. A bogus tenant id sees 0 rows. 'SET row_security = off' raises an error. The non-tenant tables sign_in_secret and sign_in_failures refuse erp_app."
+    },
+    {
+      "gate": "G2 permissions on the real product",
+      "status": "pass",
+      "evidence": "attack/g2-live.txt: the no-roles user sent 204 documented operations in four forms (plain, trailing slash, upper case, %61pi) and got 403 on all of them. The double-slash form got 404. Browser: the no-roles shell shows no areas, and a direct URL shows 'No access'. The viewer has no New button, and the viewer's POST of a role is refused with 403 (browser/walk.log)."
+    },
+    {
+      "gate": "G1 gate self-check: a tenant leak planted in p00's kernel",
+      "status": "pass",
+      "evidence": "Plant L18 is live: an anonymous GET /api/health?workspace=<B id> bound B and answered its user count and an e-mail (plants/plant-PROOFL18.log). G1TenantSourceTests caught it with 'ErpPlatform.cs:242 binds a unit of work to a tenant [bind]' (plants/plant-G1STATIC.log). Plant L17 never went live, which is a strength: X-Tenant-Id rewriting the principal after authorization cannot rebind, because the session is bound when it is resolved."
+    },
+    {
+      "gate": "G2 gate self-check: an unchecked action planted in p00's kernel",
+      "status": "fail",
+      "evidence": "P13 (Host 'app') and P16 (case-sensitive '/api/') are now caught by G2PathCaseTests (plants/plant-CASE13.log, plant-CASE16.log). P17 is missed: PermissionAuthorizationHandler passes any path ending in '/'. With it on, every one of the 168 G2, Rules and SelfTests tests passed, and so did all 299 Kernel and 107 Identity tests. Meanwhile a no-roles user got 200 on /api/identity/users/ (plants/plant-PROOFALL.log). The real product is clean on this, so it counts as a gate gap, not a product fault."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR string parity, audit coverage)",
+      "status": "pass",
+      "evidence": "These ran inside the verify's dotnet stage, and their only failure there was the G1 company test. My database check found no real or double precision columns. Audit triggers are on 23 tables. The only tenant tables without one are audit.entries and identity.sign_in_attempts, which are on the reviewed exemption list. Password and token hashes are stored as [redacted] in audit changes (db-audit.txt)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p00-foundation-r17 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r17.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 2224,
+    "passed": 2223,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 9238
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 9238,
+    "evidence": "./erp verify from a fresh clone failed in 9,238 s, timed from the slot being taken at 06:58:23Z until 09:32:21Z. The failure was one test in the dotnet stage: G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint. Its message: 'Answers that tell company Y's values apart from values that exist nowhere: company X read-only user -> GET /api/audit/log?take=20002 ...'. Run on its own twice on a quiet machine, the test passed (rerun/rerun-1.log in 2 min 26 s, rerun-2.log in 2 min 25 s). Load while it failed was 15 to 31 on 16 threads. Processor time was 13,638 s (dotnet 10,838, web 2,312.9, e2e 487.3; no timing stage) against the 13,200 s maximum, on a machine my demo build and seed, live attack, comparison and plant runs were also loading. ./erp up passed in 260 s. Checking the ratchet by hand reported only 'suite.dotnetTests: 1 failed' (ratchet-check.txt)."
+  },
+  "odoo": [
+    {
+      "task": "sign-in (sign in to an empty workspace)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.09,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.984,
+        "klm_seconds": 4.68
+      },
+      "notes": "The shared rig on :8069 passed run.mjs's live volume check (at least 100,000 rows in each of 7 main lists). Command: COMPARE_OURS_URL=http://localhost:20050 node run.mjs --task sign-in --product both --repeat 3 --out <staging>/compare. It exited 0 and every run was verified. Figures are medians of 3. Ours was judged on its whole 'passkey' path. Steps 1 < 2, machine time 0.09 < 0.984 s, KLM 2.03 < 4.68 s, human+wait about 2.12 < 5.57 s. Keystrokes were exactly 0 in both and are left out (needs-human #11). Blind shots were pruned to the median run of each product (compare/PRUNED.txt). Empty workspace: I created emptyco with ./erp tenant create --language ar. Its owner signed in by keyboard with 85 keys, chose a new password, and reached an RTL Arabic home in 2.45 s (browser/empty.log, 08-empty-workspace-ar.jpg)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r17/01-sign-in-en.jpg",
+    "gauntlet/evidence/p00-foundation/r17/02-sign-in-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r17/03-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r17/04-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r17/05-roles-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r17/06-no-roles-user.jpg",
+    "gauntlet/evidence/p00-foundation/r17/07-no-roles-direct-url.jpg",
+    "gauntlet/evidence/p00-foundation/r17/08-empty-workspace-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r17/compare/blind/shots/0c9af4b5fa214046.jpg",
+    "gauntlet/evidence/p00-foundation/r17/compare/blind/shots/a7dec950b6891677.jpg",
+    "gauntlet/evidence/p00-foundation/r17/compare/blind/shots/5ef50083efa9c601.jpg",
+    "gauntlet/evidence/p00-foundation/r17/compare/blind/shots/16f798b0e0724e7f.jpg"
+  ],
+  "biggest_gap": {
+    "title": "p00's own G1 company gate fails on a correct product when the machine is busy: its differential flags the audit log because the log changes while it is being asked",
+    "detail": "The full verify at 417f1990 failed on one test: G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint, which is p00's own gate. It reported company X's read-only user getting different answers from GET /api/audit/log?take=20002 (20002 is one of company Y's values) and from the same request with a value that exists nowhere. On the real product the value cannot matter. The audit log clamps take to 200 (src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs:110), so both requests ask for 200 of 307 rows. The two windows differ by one row at the boundary: the control ends at 06:59:24.659 with a next cursor, and the Y answer goes on to an older row at 06:59:24.638. The gate's second ask of the same pair also differed. So the user's audit log moved during the pair; this is not a company-Y oracle. Run on its own on a quiet machine, the test passed twice (2 min 26 s and 2 min 25 s). In the suite, at a load of 15 to 31 on 16 threads, it took 8 min 30 s and failed. A gate that flags a correct product depending on machine load still counts as a failing test, so the round is blocked. It also matters beyond this round. Every module a UAE trading or manufacturing company needs (sales, purchasing, stock, VAT) writes audit rows and queues jobs, so more lists will move while the gate reads them, and integrations will keep failing at random. The fix must keep the differential strict for real oracles, for example by comparing only rows written before the pair started, or by quiescing the job runner during read batches. A retry, a longer timeout or a skip is not a fix.",
+    "evidence": "failure-summary.txt and verify-failed/dotnet-suite.log line 814 (the full message is in verify-failed/trx/suite_net10.0_20261105091834.trx). Load: verify-failed/verify-load-samples, 06:59-07:08Z. Runs alone: rerun/rerun.sh, rerun-1.log, rerun-2.log (toolbox, unplanted copy of 417f1990, filter FullyQualifiedName~G1CompanyIsolationTests). To reproduce: run ./erp verify at 417f1990 while the machine is busy, for example with ./erp up seeding a second stack. The test fails intermittently, so it may take more than one run."
+  },
+  "gate_gaps": [
+    {
+      "owner": "p00-foundation",
+      "gate": "G2 permissions (G2PermissionTests, G2PathCaseTests, G2ClientOriginTests, G2ClientAddressCodeTests; Rules; SelfTests)",
+      "planted": "Plant P17 in the kernel's PermissionAuthorizationHandler (src/Kernel/Erp.Kernel/Security/Permissions.cs). Any signed-in request whose path ends in '/' passes every permission. Routing ignores a trailing slash, so /api/identity/users/ and /api/identity/roles/ reach their endpoints with no permission check. Files: plants/plants.diff, plants/CriticPlant.cs, plants/CriticR17Proof.cs.",
+      "evidence": "plants/plant-PROOFALL.log: a no-roles user gets 403 on GET /api/identity/users?take=1, but 200 on /api/identity/users/?take=1 and on /api/identity/roles/?take=1. plants/plant-G2P17.log: all 168 G2, Rules and SelfTests tests passed with the plant on (23.6 min). plant-KernelP17.log (299/299) and plant-Modules.IdentityP17.log (107/107) passed too. G2PathCaseTests varies letter case and Host but never adds a trailing slash. The real product is clean: attack/g2-live.txt shows 403 on all 204 operations with a trailing slash."
+    }
+  ],
+  "other_findings": [
+    "Backlog rows 3 (the Host header, plant P13) and 13 (path letter case, plant P16) now hold against my own re-plants. G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case fails under each of them (plants/plant-CASE13.log, plant-CASE16.log).",
+    "The static gate set (G1TenantSourceTests, G1ProcessStateTests, G1OutsideProcessStateTests, G1TenantSettingCodeTests, G2ClientAddressCodeTests) does not flag a permission handler that reads Request.Path or Request.Host (plant-G1STATIC.log, run 1). Today the dynamic G2 tests cover the Host and letter-case variants, but not the trailing slash (see gate_gaps).",
+    "Tenant binding is robust. A middleware that rewrites the principal's tenant claim from X-Tenant-Id after authorization (plant L17) leaked nothing, because the unit of work is bound to the session's tenant when the session is resolved. A header-chosen tenant at resolution would find no user and fail closed.",
+    "The new audit surface (p07) passed my live attack. /api/audit/records/<B id>?type=... answers {items:[]} exactly as it does for a random id. Audit log filters and exports with B's values carry nothing of B's. Password and token hashes are stored as [redacted].",
+    "[route: p07-audit] On the demo, the audit-log list export runs repeated 'SELECT count(*) FROM audit.entries WHERE tenant_id = $1 AND record_type = ANY($2)' queries, keeping the database container at about 220% CPU. Exporting in every format made my 160-request export section run for more than 10 minutes. This is not a leak, but the export is slow on the 450,000-row demo audit log.",
+    "[route: p04-shell] The Arabic shell at 1366 px still cuts the command-search placeholder to 'البحث في ال...' (04-shell-ar.jpg), unchanged since round 15.",
+    "English and Arabic (browser/walk.log): the sign-in screen and shell switch to lang ar and dir rtl, and the navigation sits on the right in Arabic (left 1158, right 1366). The only Latin text on the Arabic sign-in screen is 'English'. In the Arabic shell the only Latin text is the company and branch codes, 'Ctrl K' and the workspace code. Keyboard sign-in takes 0.58 s. 40 Tab presses in the English shell never land on the body. Ctrl+K, typing الأدوار and Enter opens the roles screen in RTL. After sign-out the API answers 401.",
+    "Money: there are no floating-point columns anywhere in the database (db-roles.txt).",
+    "Processor time: 13,638 s without the timing stage (dotnet 10,838, web 2,312.9, e2e 487.3) against the 13,200 s maximum. My demo stack, attack, comparison and 25 minutes of planted-gate runs were beside it, and median load was 4.2 (highest 31). The integrator's alone run is the measure (#22, #31, #34)."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p00-foundation/r17",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r17"
+}

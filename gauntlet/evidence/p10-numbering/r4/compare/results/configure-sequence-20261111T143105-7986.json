@@ -1,0 +1,316 @@
+{
+  "schema": 1,
+  "run_id": "configure-sequence-20261111T143105-7986",
+  "instrument": 12,
+  "task": "configure-sequence",
+  "task_title": "Configure a document sequence",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Make new purchase orders numbered with the prefix \"PO-2026-\" and 6 digits (for example PO-2026-000123).",
+  "done_when": "The purchase order sequence is saved with that prefix and size; the back end confirms the next number would read like PO-2026-000123.",
+  "started_at": "2026-11-11T14:31:05.567Z",
+  "finished_at": "2026-11-11T14:31:18.769Z",
+  "environment": {
+    "base_url": "http://localhost:21050",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 13,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.562,
+    "system_wait_seconds": 0.275,
+    "human_seconds": 12.04,
+    "human_plus_wait_seconds": 12.315,
+    "klm_operator_counts": {
+      "K": 13,
+      "P": 2,
+      "B": 4,
+      "H": 1,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Document numbering (navigation)",
+      "keystrokes": 0,
+      "at": 0.07,
+      "took": 0.147,
+      "began": 0.002,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "the purchase order row",
+      "keystrokes": 0,
+      "at": 0.489,
+      "took": 0.287,
+      "began": 0.443,
+      "screen": "/numbering/sequences",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the prefix",
+      "keystrokes": 10,
+      "at": 0.808,
+      "took": 0.096,
+      "text": "PO-2026-",
+      "same_field": false,
+      "screen": "/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "to the digits",
+      "keystrokes": 1,
+      "at": 0.905,
+      "took": 0.01,
+      "chord": "Tab",
+      "screen": "/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "the digits",
+      "keystrokes": 1,
+      "at": 0.915,
+      "took": 0.01,
+      "text": "6",
+      "same_field": false,
+      "screen": "/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "save (Enter)",
+      "keystrokes": 1,
+      "at": 1.48,
+      "took": 0.035,
+      "chord": "Enter",
+      "screen": "/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "sequences list",
+      "at": 0.22,
+      "seconds": 0.221
+    },
+    {
+      "label": "prefix field focused, its text chosen",
+      "at": 0.778,
+      "seconds": 0.013
+    },
+    {
+      "label": "saved",
+      "at": 1.515,
+      "seconds": 0.041
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "4ef28b981c3474fc.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/4ef28b981c3474fc.jpg"
+    },
+    {
+      "moment": "sequence edited",
+      "file": "80421ddc75817411.jpg",
+      "at": 0.926,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/80421ddc75817411.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "a872af6b41433583.jpg",
+      "at": 1.562,
+      "path": "../../evidence-staging/p10-numbering/r4/compare/blind/shots/a872af6b41433583.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "prefix": "PO-2026-",
+      "padding": 6,
+      "next_number": "PO-2026-000148"
+    }
+  },
+  "path_notes": "Document numbering (navigation) > Purchase order (its panel opens on the prefix, chosen) > type the prefix > Tab > type the digits > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/configure-sequence.mjs",
+    "sha256": "2012c5585c1536a14070cc9d8e469c83ae68cdcf58587b651100ee6ee5494cf2"
+  },
+  "task_notes": "Set-up puts the sequence back to its default (prefix P, 5 digits); clean-up does the same. Odoo shows its sequences only in developer mode, which the path switches on.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.042,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.047,
+      "verified": true,
+      "gap_seconds": 1.102
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /api/audit/records/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8 (fetch)",
+      "GET /api/numbering/sequences (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "70732094ccd83bce",
+    "elements": 881
+  },
+  "screen_after_verify": {
+    "sha256": "70732094ccd83bce",
+    "elements": 881,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.037
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/numbering/sequences"
+    ],
+    "read_after": [
+      "GET /api/numbering/sequences"
+    ],
+    "changed": [
+      "GET /api/numbering/sequences"
+    ],
+    "changed_parts": {
+      "GET /api/numbering/sequences": [
+        "items.0.prefix",
+        "items.0.padding",
+        "items.0.nextNumber",
+        "items.0.updatedAt",
+        "items.0.version"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/numbering/sequences"
+    ],
+    "end_state": [
+      "GET /api/numbering/sequences [items.prefix, items.padding]"
+    ],
+    "end_state_changed": {
+      "GET /api/numbering/sequences": [
+        "items.0.prefix",
+        "items.0.padding"
+      ]
+    },
+    "end_state_gained": [
+      "PO-2026-"
+    ],
+    "writes_sent": [
+      "PUT /api/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8"
+    ],
+    "writes_caused": [
+      {
+        "write": "PUT /api/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8",
+        "at": 1.501936600999994,
+        "by_step": 6,
+        "browser_record": {
+          "caused": true,
+          "by_step": 6,
+          "chain_seconds": 0.002,
+          "chain": [
+            "input of step 6"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 25,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 1.543,
+      "by_step": 6,
+      "chain": [
+        "input of step 6",
+        "the answer to PUT /api/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8 after 0.042 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch PUT /api/numbering/sequences/01a1cafe-46ba-7ae8-a6b5-3c2465d0acb8"
+  ]
+}

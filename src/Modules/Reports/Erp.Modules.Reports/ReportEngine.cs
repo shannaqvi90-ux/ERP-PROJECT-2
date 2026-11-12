@@ -17,7 +17,7 @@ public sealed record ReportOptions(string Language, string Numerals, TimeZoneInf
 /// <param name="TrueLabelKey">A boolean column's word for true (a list column's "Active"); null: "Yes".</param>
 /// <param name="FalseLabelKey">A boolean column's word for false; null: "No".</param>
 internal sealed record ColumnSpec(string Key, string LabelKey, ListColumnType Type, bool Total, IReadOnlyList<ListChoice>? Choices,
-    string? TrueLabelKey = null, string? FalseLabelKey = null);
+    string? TrueLabelKey = null, string? FalseLabelKey = null, int? Decimals = null);
 
 /// <summary>
 /// Builds a <see cref="ReportDocument"/> from a report's data or a list's rows: picks every label
@@ -25,9 +25,16 @@ internal sealed record ColumnSpec(string Key, string LabelKey, ListColumnType Ty
 /// and overall (decimal arithmetic only), and stamps who printed it and when. The same document
 /// is then shown on screen, printed, rendered as PDF or exported.
 /// </summary>
-public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrentUser caller, IUserDirectory users, ICompanyDirectory companies, ITenantDirectory tenants,
+public sealed class ReportEngine(WebStrings webStrings, TimeProvider time, ICurrentUser caller, IUserDirectory users, ICompanyDirectory companies, ITenantDirectory tenants,
     ReportLimits limits)
 {
+    private readonly WebStrings plain = webStrings;
+    private WebStrings strings = webStrings;
+
+    /// <summary>Adds the tenant's own words (a custom field's label and its options', in both
+    /// languages) to the texts this request's document uses. The engine is scoped to the request.</summary>
+    public void UseLabels(IReadOnlyDictionary<string, DynamicString> labels) => strings = labels.Count == 0 ? plain : plain.With(labels);
+
     /// <summary>Most rows a document shown on screen holds by default (<see cref="ReportLimits.ScreenRows"/>):
     /// the browser draws it as one table. Its PDF and exports hold the whole selection.</summary>
     public const int DocumentRowLimit = 2000;
@@ -139,11 +146,11 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         {
             parameters.Add(new ReportDocumentFact(strings.Get("reports.param.groupBy", f.Language), strings.Get(list.Column(groupBy)!.LabelKey, f.Language), groupBy));
         }
-        var specs = columns.Select(c => new ColumnSpec(c.Key, c.LabelKey, c.Type, c.Aggregate, c.Choices, c.TrueLabelKey, c.FalseLabelKey)).ToList();
+        var specs = columns.Select(c => new ColumnSpec(c.Key, c.LabelKey, c.Type, c.Aggregate, c.Choices, c.TrueLabelKey, c.FalseLabelKey, c.Decimals)).ToList();
         if (groupBy is not null && specs.All(s => s.Key != groupBy))
         {
             var group = list.Column(groupBy)!;
-            specs.Add(new ColumnSpec(group.Key, group.LabelKey, group.Type, false, group.Choices, group.TrueLabelKey, group.FalseLabelKey));
+            specs.Add(new ColumnSpec(group.Key, group.LabelKey, group.Type, false, group.Choices, group.TrueLabelKey, group.FalseLabelKey, group.Decimals));
         }
         var elsewhere = columns.Where(c => c.InCompany?.ElsewhereLabelKey is not null)
             .ToDictionary(c => c.Key, c => strings.Get(c.InCompany!.ElsewhereLabelKey!, f.Language), StringComparer.Ordinal);
@@ -207,7 +214,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             // Numbers stand at the end of their cells, and so do counts (a column of other records'
             // ids the caller cannot name prints how many there are).
             Columns = columns.Select(c => new ReportDocumentColumn(c.Key, strings.Get(c.LabelKey, language), TypeName(c.Type),
-                c.Type is ListColumnType.Number or ListColumnType.Money || (Counted(rows, c.Key) && c.Choices is not { Count: > 0 }) ? "end" : "start", c.Total)).ToList(),
+                c.Type is ListColumnType.Number or ListColumnType.Money || Counted(rows, c.Key) ? "end" : "start", c.Total)).ToList(),
             GroupBy = groupSpec?.Key,
             GroupLabel = groupSpec is null ? null : strings.Get(groupSpec.LabelKey, language),
             Groups = groups,
@@ -295,7 +302,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             case ReportMoney money:
                 return new ReportCell(new { amount = money.Amount.ToString(CultureInfo.InvariantCulture), currency = money.Currency }, f.Money(money.Amount, money.Currency));
             case decimal d:
-                return new ReportCell(d.ToString(CultureInfo.InvariantCulture), column.Type == ListColumnType.Money ? f.Decimal(d, 2) : f.Decimal(d));
+                return new ReportCell(d.ToString(CultureInfo.InvariantCulture), f.Decimal(d, column.Decimals ?? (column.Type == ListColumnType.Money ? 2 : 0)));
             case int or long or short:
                 var number = Convert.ToInt64(value, CultureInfo.InvariantCulture);
                 return new ReportCell(number, f.Integer(number));
@@ -311,10 +318,6 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
                 var local = TimeZoneInfo.ConvertTime(instant, f.TimeZone);
                 local = local.AddTicks(-(local.Ticks % TimeSpan.TicksPerSecond));
                 return new ReportCell(local.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture), f.DateTime(instant));
-            case IReadOnlyList<string> many when column.Choices is { Count: > 0 } choices && many.Count > 0:
-                // Values the column names (the audit log's fields): their names, as the screen shows them.
-                return new ReportCell(many, string.Join(f.Arabic ? "\u060C " : ", ",
-                    many.Select(m => choices.FirstOrDefault(c => c.Value == m) is { } named ? strings.Get(named.LabelKey, f.Language) : m)));
             case IReadOnlyList<string> many:
                 return new ReportCell(many, f.Integer(many.Count));
             case string s when column.Type == ListColumnType.Choice:
@@ -360,13 +363,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
             var column = list.Column(spec.Key)!;
             if (!row.TryGetProperty(column.Key, out var element) || element.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
             {
-                // A reference without a record that the row still names (work the system did: "Demo
-                // data") prints that name, as the screen shows it.
-                values[spec.Key] = column.Type == ListColumnType.Reference && column.LabelField is { } named
-                    && row.TryGetProperty(named, out var shown) && shown.ValueKind == JsonValueKind.String
-                    ? (language == Languages.Arabic && column.ArabicField is { } arabicLabel && row.TryGetProperty(arabicLabel, out var arabicShown)
-                       && arabicShown.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(arabicShown.GetString()) ? arabicShown.GetString() : shown.GetString())
-                    : null;
+                values[spec.Key] = null;
                 continue;
             }
             if (language == Languages.Arabic && column.ArabicField is { } arabic && row.TryGetProperty(arabic, out var ar)
@@ -486,7 +483,7 @@ public sealed class ReportEngine(WebStrings strings, TimeProvider time, ICurrent
         foreach (var condition in conditions)
         {
             var column = list.Column(condition.Column)!;
-            var spec = new ColumnSpec(column.Key, column.LabelKey, column.Type, false, column.Choices, column.TrueLabelKey, column.FalseLabelKey);
+            var spec = new ColumnSpec(column.Key, column.LabelKey, column.Type, false, column.Choices, column.TrueLabelKey, column.FalseLabelKey, column.Decimals);
             var op = condition.Operator switch
             {
                 FilterOperator.StartsWith => "startsWith",

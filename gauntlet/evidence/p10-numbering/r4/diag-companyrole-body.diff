@@ -1,0 +1,13 @@
+diff --git a/tests/Erp.Gates.Tests/G2/CompanyRoleRecords.cs b/tests/Erp.Gates.Tests/G2/CompanyRoleRecords.cs
+index edc24420..2f738972 100644
+--- a/tests/Erp.Gates.Tests/G2/CompanyRoleRecords.cs
++++ b/tests/Erp.Gates.Tests/G2/CompanyRoleRecords.cs
+@@ -154,7 +154,7 @@ public static class CompanyRoleRecords
+             }
+             if (before.FindMarker(text) is { } marker)
+             {
+-                leaks.Add($"{label}: answered {status} carrying company Y's '{marker}'");
++                leaks.Add($"{label}: answered {status} carrying company Y's '{marker}' BODY={(text.Length > 3000 ? text[..3000] : text)}");
+             }
+             return (status, text);
+         }

@@ -1,0 +1,26 @@
+    [90m161| [39m      expect(less, `without ${permission}`).toEqual(full.filter((c) =>…
+    [90m   | [39m                                            [31m^[39m
+    [90m162| [39m    })[33m;[39m
+    [90m163| [39m  }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/contacts/screens.test.tsx[2m > [22mthe contacts screen offers exactly what the user may do[2m > [22man archived contact offers Restore, not Archive, and says it is archived
+[31m[1mAssertionError[22m: expected [ 'button:Close', …(30) ] to not include 'button:Restore'[39m
+[36m [2m❯[22m src/modules/contacts/screens.test.tsx:[2m174:24[22m[39m
+    [90m172| [39m    [34mcloseView[39m()[33m;[39m
+    [90m173| [39m    const reader = await open(without("contacts.contacts.archive"), { …
+    [90m174| [39m    [34mexpect[39m(reader)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m"button:Restore"[39m)[33m;[39m
+    [90m   | [39m                       [31m^[39m
+    [90m175| [39m  })[33m;[39m
+    [90m176| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m56 passed[39m[22m[90m (57)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m687 passed[39m[22m[90m (690)[39m
+[2m   Start at [22m 03:47:56
+[2m   Duration [22m 78.56s[2m (transform 22.84s, setup 1.43s, import 48.29s, tests 370.49s, environment 31.88s)[22m
+
+Caught by: src/modules/contacts/screens.test.tsx (3 tests): without contacts.contacts.archive exactly the actions that need it disappear; without contacts.contacts.update ...; an archived contact offers Restore

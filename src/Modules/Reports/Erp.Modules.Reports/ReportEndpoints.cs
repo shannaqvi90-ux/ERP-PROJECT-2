@@ -235,7 +235,11 @@ internal static class ReportEndpoints
     private static async Task<IResult> PrintListAsync((ListDefinition List, ListRowReader Reader) printable, HttpContext http, ReportEngine engine, PdfReportRenderer pdf,
         ITenantDirectory tenants, JsonSerializerOptions json, CancellationToken cancellationToken)
     {
-        var (list, reader) = printable;
+        var (registered, reader) = printable;
+        // The tenant's custom fields are columns of the list too (p09): chosen as printed columns,
+        // filtered on, and labelled with the tenant's own words in both languages.
+        var (list, dynamicLabels) = await ListCustomFieldDefinitions.ExtendAsync(registered, http.RequestServices, cancellationToken);
+        engine.UseLabels(dynamicLabels);
         var validator = new Validator(http);
         var query = http.Request.Query;
         var common = await CommonAsync(http, validator, list.Columns.Where(c => c.Groupable).Select(c => c.Key).ToList(), null, tenants, cancellationToken);
@@ -269,15 +273,29 @@ internal static class ReportEndpoints
                 Filter = Single(query, "filter"),
                 Sort = Single(query, "sort"),
                 After = after,
-                Take = Math.Min(ListRequest.MaxTake, limit - rows.Count),
+                Take = Math.Min(ListRequest.MaxWalkTake, limit - rows.Count),
             };
-            // The first page counts the matching rows; the pages after it do not count them again.
-            var page = await reader(http.RequestServices, after is null ? request : request.ContinuedPage(), http, cancellationToken);
+            // The first page counts the matching rows; the pages after it do not count again.
+            http.Items[ListRequest.SkipTotalItem] = after is not null;
+            http.Items[ListRequest.WalkItem] = true;
+            ListResult<object> page;
+            try
+            {
+                page = await reader(http.RequestServices, request, http, cancellationToken);
+            }
+            finally
+            {
+                http.Items.Remove(ListRequest.SkipTotalItem);
+                http.Items.Remove(ListRequest.WalkItem);
+            }
             if (page.Problem is { } problem)
             {
                 return problem;
             }
-            total = after is null ? page.Total : total;
+            if (after is null)
+            {
+                total = page.Total;
+            }
             rows.AddRange(page.Rows.Select(r => JsonSerializer.SerializeToElement(r, r.GetType(), json)));
             if (page.Next is null || rows.Count >= limit)
             {
@@ -325,7 +343,7 @@ internal static class ReportEndpoints
             string? after = null;
             while (names.Count < MaxNamedRecords)
             {
-                var page = await source.Reader(http.RequestServices, after is null ? new ListRequest { Take = ListRequest.MaxTake } : new ListRequest { After = after, Take = ListRequest.MaxTake }.ContinuedPage(), http, cancellationToken);
+                var page = await source.Reader(http.RequestServices, new ListRequest { After = after, Take = ListRequest.MaxTake }, http, cancellationToken);
                 if (page.Problem is not null)
                 {
                     break;

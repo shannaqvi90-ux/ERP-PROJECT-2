@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Kernel.Lists;
 
@@ -112,12 +113,15 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private readonly Expression<Func<T, Guid>> _id;
     private readonly Func<T, Guid> _idOf;
     private readonly Expression<Func<T, string?>>? _initials;
+    private readonly IReadOnlyList<ExtraColumn> _extra = [];
 
     // A binding never changes once built: Column and InMemory return a new binding, so a
     // registered binding (shared by every request of every tenant) holds no state of its own.
     private ListBinding(ListDefinition definition, Expression<Func<T, Guid>> id, Func<T, Guid> idOf,
-        FrozenDictionary<string, Bound> columns, string? inMemoryReason, Expression<Func<T, string?>>? initials = null)
+        FrozenDictionary<string, Bound> columns, string? inMemoryReason, Expression<Func<T, string?>>? initials = null,
+        IReadOnlyList<ExtraColumn>? extra = null)
     {
+        _extra = extra ?? [];
         Definition = definition;
         _id = id;
         _idOf = idOf;
@@ -181,6 +185,27 @@ public sealed class ListBinding<T> : IListBinding where T : class
     /// </summary>
     public ListBinding<T> Initials(Expression<Func<T, string?>> value) =>
         new(Definition, _id, _idOf, _columns, InMemoryReason, value);
+
+    /// <summary>The same binding with the workspace's custom fields added as filterable columns (and
+    /// the text ones searched). Nothing registered changes; the copy serves one request.</summary>
+    private ListBinding<T> WithCustomFields(IReadOnlyList<Erp.Kernel.CustomFields.CustomFieldInfo> fields)
+    {
+        var extra = ListCustomFields.Build(fields);
+        var definition = Definition with { Columns = [.. Definition.Columns, .. extra.Select(e => e.Column)] };
+        // A field is ordered and grouped by its value held in the other table: bound as a scalar of the
+        // row's id (customfields.value_*), so the sort, the cursor's comparison and the grouping use the
+        // list's own machinery. The cursor's value is read from the store (ValueOfAsync), not from the row.
+        var columns = new Dictionary<string, Bound>(_columns, StringComparer.Ordinal);
+        var row = Expression.Parameter(typeof(T), "row");
+        foreach (var e in extra)
+        {
+            if (ListCustomFields.ValueOf(e.Field, new Rebind(_id.Parameters[0], row).Visit(_id.Body)) is { } value)
+            {
+                columns[e.Column.Key] = new Bound(e.Column.Key, value.Type, Expression.Lambda(value, row), null, _ => null, columns.Count);
+            }
+        }
+        return new ListBinding<T>(definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason, _initials, extra);
+    }
 
     /// <inheritdoc/>
     public IListBinding ServeAs(ListDefinition definition)
@@ -273,10 +298,22 @@ public sealed class ListBinding<T> : IListBinding where T : class
     /// a 400 problem naming the parameter to correct.</summary>
     public async Task<ListResult<T>> QueryAsync(IQueryable<T> source, ListRequest request, HttpContext http, CancellationToken cancellationToken)
     {
+        if (_extra.Count == 0 && InMemoryReason is null && source.Provider is IAsyncQueryProvider &&
+            await ListCustomFields.FieldsAsync(http.RequestServices, Definition.Key, cancellationToken) is { Count: > 0 } fields)
+        {
+            // The workspace's custom fields are columns of this list too (p09): the same binding,
+            // with their filters and search added. Done once per request, only when it defined any.
+            return await WithCustomFields(fields).QueryAsync(source, request, http, cancellationToken);
+        }
+        if (_extra.Count > 0 && source.Provider is IAsyncQueryProvider && http.RequestServices.GetService<Erp.Kernel.Data.ErpDbSession>() is { } session)
+        {
+            // The workspace has custom fields: plan this request's statements for their own values (see ErpDbSession).
+            await session.UseCustomPlansAsync(cancellationToken);
+        }
         Plan plan;
         try
         {
-            plan = PlanFor(request);
+            plan = PlanFor(request, http.Items.TryGetValue(ListRequest.WalkItem, out var walking) && walking is true ? ListRequest.MaxWalkTake : ListRequest.MaxTake);
         }
         catch (ListQueryException e)
         {
@@ -289,8 +326,12 @@ public sealed class ListBinding<T> : IListBinding where T : class
             source = InMemoryQuery.Over(source);
         }
         var filtered = Filtered(source, plan, database);
-        // A page that continues one already read (printing, export) does not count the rows again.
-        var total = request.TotalKnown && plan.After is not null ? 0 : database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
+        // A reader that walks the whole list page by page (a print or an export) knows the total from
+        // the first page and says so; a count of the matching rows on every following page of a
+        // large list (the audit log's hundreds of thousands) was most of what such a walk cost.
+        var total = plan.After is not null && http.Items.TryGetValue(ListRequest.SkipTotalItem, out var skip) && skip is true
+            ? 0
+            : database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
         IReadOnlyList<ListGroup>? groups;
         try
         {
@@ -341,8 +382,13 @@ public sealed class ListBinding<T> : IListBinding where T : class
             rows.RemoveAt(rows.Count - 1);
             var last = rows[^1];
             var lastRank = ranks?[rows.Count - 1];
+            var customValues = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var key in plan.Sort.Where(k => _extra.Any(e => e.Column.Key == k.Column)))
+            {
+                customValues[key.Column] = await ValueOfAsync(source, key.Column, _idOf(last), cancellationToken);
+            }
             next = ListCursor.Encode(ListSortKey.Format(plan.Sort),
-                plan.Sort.Select(k => k.Column == ListSearch.RelevanceKey ? lastRank : _columns[k.Column].Getter(last)).ToList(), _idOf(last));
+                plan.Sort.Select(k => k.Column == ListSearch.RelevanceKey ? lastRank : customValues.TryGetValue(k.Column, out var held) ? held : _columns[k.Column].Getter(last)).ToList(), _idOf(last));
         }
         return ListResult<T>.Valid(rows, total, next, groups, plan.Relevance);
     }
@@ -384,7 +430,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         string? GroupBy,
         bool Relevance);
 
-    private Plan PlanFor(ListRequest request)
+    private Plan PlanFor(ListRequest request, int maxTake = ListRequest.MaxTake)
     {
         var words = new List<string>();
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -446,7 +492,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             after = ListCursor.Decode(request.After, ListSortKey.Format(sort),
                 sort.Select(k => k.Column == ListSearch.RelevanceKey ? typeof(int) : _columns[k.Column].ValueType).ToList());
         }
-        var take = Math.Clamp(request.Take ?? ListRequest.DefaultTake, 1, ListRequest.MaxTake);
+        var take = Math.Clamp(request.Take ?? ListRequest.DefaultTake, 1, maxTake);
         var skip = Math.Max(0, request.Skip ?? 0);
         return new Plan(words.Select(w => (w, ListSearch.Spellings(w))).ToList(), filter, sort, after, skip, take, groupBy, relevance);
     }
@@ -479,8 +525,11 @@ public sealed class ListBinding<T> : IListBinding where T : class
                 // Arabic search over 100,000 users). The LIKE patterns stay, so the trigram indexes
                 // still find the rows and the result is exactly theirs (each pattern implies the
                 // expression).
-                conditions.Add(fields.Select(field => RegexMatch(Value(field, row), ListSearch.Pattern(word), database))
-                    .DefaultIfEmpty(Expression.Constant(false)).Aggregate(Expression.OrElse));
+                var spelled = fields.Select(field => RegexMatch(Value(field, row), ListSearch.Pattern(word), database))
+                    .DefaultIfEmpty(Expression.Constant(false)).Aggregate(Expression.OrElse);
+                conditions.Add(ListCustomFields.Searches(_extra)
+                    ? spellings.Select(x => ListCustomFields.Search(_extra, "%" + EscapeLike(x) + "%", new Rebind(_id.Parameters[0], row).Visit(_id.Body))).Aggregate(spelled, Expression.OrElse)
+                    : spelled);
             }
             conditions.Add(AnyField(row, fields, spellings.Select(s => "%" + EscapeLike(s) + "%"), database));
         }
@@ -507,10 +556,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private Expression AnyField(ParameterExpression row, IReadOnlyList<string> fields, IEnumerable<string> patterns, bool database)
     {
         var list = patterns.ToList();
-        return fields
+        var own = fields
             .SelectMany(field => list.Select(pattern => Like(Value(field, row), pattern, database)))
             .DefaultIfEmpty(Expression.Constant(false))
             .Aggregate(Expression.OrElse);
+        if (!database || !ListCustomFields.Searches(_extra))
+        {
+            return own;
+        }
+        // The text custom fields are searched too (a value in any of them matches the word).
+        var id = new Rebind(_id.Parameters[0], row).Visit(_id.Body);
+        return list.Select(pattern => ListCustomFields.Search(_extra, pattern, id)).Aggregate(own, Expression.OrElse);
     }
 
     /// <summary>
@@ -626,6 +682,10 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private Expression Condition(FilterCondition condition, ParameterExpression row, bool database)
     {
         var column = Definition.Column(condition.Column)!;
+        if (_extra.FirstOrDefault(e => e.Column.Key == column.Key) is { } custom)
+        {
+            return custom.Condition(condition, new Rebind(_id.Parameters[0], row).Visit(_id.Body));
+        }
         var member = Value(column.Key, row);
         var nullable = !member.Type.IsValueType || Nullable.GetUnderlyingType(member.Type) is not null;
         Expression IsNull() => nullable ? Expression.Equal(member, Expression.Constant(null, member.Type)) : Expression.Constant(false);
@@ -688,14 +748,17 @@ public sealed class ListBinding<T> : IListBinding where T : class
     private static Expression Holds(FilterCondition condition, Expression member, ListColumn column)
     {
         var values = condition.Values.Select(v => (string)ToClr(v, typeof(string), column)!).ToList();
-        Expression HoldsOne(string value) => Expression.AndAlso(
+        // Array overlap (&&), not "value = ANY(column)": the first can use the column's GIN index, the second
+        // reads every row (the audit log's field filter over hundreds of thousands of rows).
+        Expression HoldsAny(IReadOnlyList<string> wanted) => Expression.AndAlso(
             Expression.NotEqual(member, Expression.Constant(null, typeof(string[]))),
-            Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(string)], member, Box(value, typeof(string))));
+            Expression.Call(typeof(Enumerable), nameof(Enumerable.Any), [typeof(string)],
+                Expression.Call(typeof(Enumerable), nameof(Enumerable.Intersect), [typeof(string)], member, Box(wanted.ToArray(), typeof(string[])))));
         return condition.Operator switch
         {
-            FilterOperator.Eq => HoldsOne(values[0]),
-            FilterOperator.Ne => Expression.Not(HoldsOne(values[0])),
-            FilterOperator.In => values.Select(HoldsOne).Aggregate(Expression.OrElse),
+            FilterOperator.Eq => HoldsAny([values[0]]),
+            FilterOperator.Ne => Expression.Not(HoldsAny([values[0]])),
+            FilterOperator.In => HoldsAny(values),
             _ => throw new ListQueryException("filter", "list.operatorNotAllowed", column.Key),
         };
     }
@@ -965,6 +1028,22 @@ public sealed class ListBinding<T> : IListBinding where T : class
             .OrderBy(r => r.Key is null ? 1 : 0)
             .Select(r => new ListGroup(r.Key, r.Count, totals.Count == 0 ? null : totals.Select((t, i) => (t.Key, Sum: r.Sum(i) ?? 0m)).ToDictionary(x => x.Key, x => x.Sum)))
             .ToList();
+    }
+
+    /// <summary>A custom field's value for one row, read from the store: what the cursor of a list ordered by it carries.</summary>
+    private async Task<object?> ValueOfAsync(IQueryable<T> source, string column, Guid id, CancellationToken cancellationToken)
+    {
+        var bound = _columns[column];
+        var method = typeof(ListBinding<T>).GetMethod(nameof(ValueOfCoreAsync), BindingFlags.NonPublic | BindingFlags.Instance)!.MakeGenericMethod(bound.ValueType);
+        return await (Task<object?>)method.Invoke(this, [source, bound.Expression, id, cancellationToken])!;
+    }
+
+    private async Task<object?> ValueOfCoreAsync<TValue>(IQueryable<T> source, LambdaExpression value, Guid id, CancellationToken cancellationToken)
+    {
+        var row = value.Parameters[0];
+        var same = Expression.Lambda<Func<T, bool>>(Expression.Equal(new Rebind(_id.Parameters[0], row).Visit(_id.Body), Box(id, typeof(Guid))), row);
+        var found = await source.Where(same).Select((Expression<Func<T, TValue>>)value).Take(1).ToListAsync(cancellationToken);
+        return found.Count == 0 ? null : found[0];
     }
 
     private static Func<T, object?> CompileGetter<TValue>(Expression<Func<T, TValue>> value)

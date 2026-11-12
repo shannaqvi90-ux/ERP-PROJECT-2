@@ -1,0 +1,123 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.16]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.52]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:17.03]     Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively [FAIL]
+[xUnit.net 00:00:17.03]       Without the plant on, the varied-case deny reported:
+[xUnit.net 00:00:17.03]       GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+[xUnit.net 00:00:17.03]       GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/A12e43ad-573c-47cb-88d2-ec95bc3dadc8: 404
+[xUnit.net 00:00:17.03]       GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/Fc4164F8-fDaC-433a-9204-Dc088bE73129: 200
+[xUnit.net 00:00:17.03]       GET /api/currency/convert as http://localhost/API/CURRENCY/CONVERT: 400
+[xUnit.net 00:00:17.03]       GET /api/currency/currencies as http://localhost/Api/Currency/Currencies: 200
+[xUnit.net 00:00:17.03]       GET /api/currency/currencies/{id:guid} as http://localhost/ApI/CuRrEnCy/cUrReNcIeS/De0179D1-b63C-4aB4-80a5-9a000d5625A5: 404
+[xUnit.net 00:00:17.03]       PUT /api/currency/currencies/{id:guid} as http://localhost/API/CURRENCY/CURRENCIES/C2BB3F57-AE50-4828-AEEE-4019DA16E371: 400
+[xUnit.net 00:00:17.03]       GET /api/currency/rates as http://localhost/Api/Currency/Rates: 200
+[xUnit.net 00:00:17.03]       POST /api/currency/rates as http://localhost/ApI/CuRrEnCy/rAtEs: 400
+[xUnit.net 00:00:17.03]       POST /api/currency/rates/import as http://localhost/API/CURRENCY/RATES/IMPORT: 400
+[xUnit.net 00:00:17.03]       Stack Trace:
+[xUnit.net 00:00:17.03]         /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs(144,0): at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively()
+[xUnit.net 00:00:17.03]         /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs(160,0): at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively()
+[xUnit.net 00:00:17.03]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively [3 s]
+  Error Message:
+   Without the plant on, the varied-case deny reported:
+GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/A12e43ad-573c-47cb-88d2-ec95bc3dadc8: 404
+GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/Fc4164F8-fDaC-433a-9204-Dc088bE73129: 200
+GET /api/currency/convert as http://localhost/API/CURRENCY/CONVERT: 400
+GET /api/currency/currencies as http://localhost/Api/Currency/Currencies: 200
+GET /api/currency/currencies/{id:guid} as http://localhost/ApI/CuRrEnCy/cUrReNcIeS/De0179D1-b63C-4aB4-80a5-9a000d5625A5: 404
+PUT /api/currency/currencies/{id:guid} as http://localhost/API/CURRENCY/CURRENCIES/C2BB3F57-AE50-4828-AEEE-4019DA16E371: 400
+GET /api/currency/rates as http://localhost/Api/Currency/Rates: 200
+POST /api/currency/rates as http://localhost/ApI/CuRrEnCy/rAtEs: 400
+POST /api/currency/rates/import as http://localhost/API/CURRENCY/RATES/IMPORT: 400
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively() in /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs:line 144
+   at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively() in /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs:line 160
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_host_deny_catches_a_permission_rule_that_trusts_the_host_header [3 s]
+[xUnit.net 00:00:20.92]     Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case [FAIL]
+[xUnit.net 00:00:20.92]       GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+[xUnit.net 00:00:20.92]       GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/6b022da4-8700-432c-84a4-1f99854e9690: 404
+[xUnit.net 00:00:20.92]       GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/30083aD3-28cD-4c19-80a8-F9C4B649AdCb: 200
+[xUnit.net 00:00:20.92]       GET /api/currency/convert as http://localhost/API/CURRENCY/CONVERT: 400
+[xUnit.net 00:00:20.92]       GET /api/currency/currencies as http://localhost/Api/Currency/Currencies: 200
+[xUnit.net 00:00:20.92]       GET /api/currency/currencies/{id:guid} as http://localhost/ApI/CuRrEnCy/cUrReNcIeS/9fCf289c-4C38-4b2e-8B4E-C79616D46aBb: 404
+[xUnit.net 00:00:20.92]       PUT /api/currency/currencies/{id:guid} as http://localhost/API/CURRENCY/CURRENCIES/AA60FAAC-55E4-4D97-8DBC-92B67399386E: 400
+[xUnit.net 00:00:20.92]       GET /api/currency/rates as http://localhost/Api/Currency/Rates: 200
+[xUnit.net 00:00:20.92]       POST /api/currency/rates as http://localhost/ApI/CuRrEnCy/rAtEs: 400
+[xUnit.net 00:00:20.92]       POST /api/currency/rates/import as http://localhost/API/CURRENCY/RATES/IMPORT: 400
+[xUnit.net 00:00:20.92]       GET /api/currency/rates/lookup as http://localhost/Api/Currency/Rates/Lookup: 400
+[xUnit.net 00:00:20.92]       DELETE /api/currency/rates/{id:guid} as http://localhost/ApI/CuRrEnCy/rAtEs/02e7eDb2-428c-4F83-8719-f3596931eB97: 204
+[xUnit.net 00:00:20.92]       GET /api/currency/rates/{id:guid} as http://localhost/API/CURRENCY/RATES/8609E429-F1DE-44A6-B47A-F72B04E1EAE6: 404
+[xUnit.net 00:00:20.92]       PUT /api/currency/rates/{id:guid} as http://localhost/Api/Currency/Rates/Adf8197d-3816-4aa1-a003-708b9885b40a: 400
+[xUnit.net 00:00:20.92]       GET /api/identity/companies as http://localhost/ApI/IdEnTiTy/cOmPaNiEs: 200
+[xUnit.net 00:00:20.92]       POST /api/identity/me/devices/approve as http://localhost/API/IDENTITY/ME/DEVICES/APPROVE: 400
+[xUnit.net 00:00:20.92]       GET /api/identity/me/passkeys as http://localhost/Api/Identity/Me/Passkeys: 200
+[xUnit.net 00:00:20.92]       POST /api/identity/me/passkeys as http://localhost/ApI/IdEnTiTy/mE/PaSsKeYs: 400
+[xUnit.net 00:00:20.92]       POST /api/identity/me/passkeys/options as http://localhost/API/IDENTITY/ME/PASSKEYS/OPTIONS: 200
+[xUnit.net 00:00:20.92]       DELETE /api/identity/me/passkeys/{id:guid} as http://localhost/Api/Identity/Me/Passkeys/92d64cfe-639f-4494-9b6a-30838b1afcb5: 404
+[xUnit.net 00:00:20.92]       GET /api/identity/me/passkeys/{id:guid} as http://localhost/ApI/IdEnTiTy/mE/PaSsKeYs/eA20d0aD-F980-4B82-8c87-f1b19B78fE19: 404
+[xUnit.net 00:00:20.92]       PUT /api/identity/me/passkeys/{id:guid} as http://localhost/API/IDENTITY/ME/PASSKEYS/C87026B1-8039-4A26-BE77-F0FE75BE2895: 400
+[xUnit.net 00:00:20.92]       PUT /api/identity/me/preferences as http://localhost/Api/Identity/Me/Preferences: 400
+[xUnit.net 00:00:20.92]       GET /api/identity/permissions as http://localhost/ApI/IdEnTiTy/pErMiSsIoNs: 200
+[xUnit.net 00:00:20.92]       GET /api/identity/roles as http://localhost/API/IDENTITY/ROLES: 200
+[xUnit.net 00:00:20.92]       POST /api/identity/roles as http://localhost/Api/Identity/Roles: 400
+[xUnit.net 00:00:20.92]       DELETE /api/identity/roles/{id:guid} as http://localhost/ApI/IdEnTiTy/rOlEs/bAdE174D-0aBd-4F65-B135-7A6647c683a0: 404
+[xUnit.net 00:00:20.92]       GET /api/identity/roles/{id:guid} as http://localhost/API/IDENTITY/ROLES/FCE2B837-7B16-4516-BE87-0F82FBA7AD17: 404
+[xUnit.net 00:00:20.92]       PUT /api/identity/roles/{id:guid} as http://localhost/Api/Identity/Roles/05c41cbd-d97c-4559-a14c-55c1838a58c2: 400
+[xUnit.net 00:00:20.92]       POST /api/identity/roles/{id:guid}/copy as http://localhost/ApI/IdEnTiTy/rOlEs/fC151E73-5b2d-49d1-9aAa-aC010562e2fF/CoPy: 400
+[xUnit.net 00:00:20.92]       Stack Trace:
+[xUnit.net 00:00:20.92]         /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs(116,0): at Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case()
+[xUnit.net 00:00:20.92]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:20.92]       Output:
+[xUnit.net 00:00:20.92]         204 varied-case requests in 0.6 s wall clock
+[xUnit.net 00:00:21.17]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_forms_differ_from_the_lower_case_path_and_keep_the_query [6 ms]
+  Failed Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case [768 ms]
+  Error Message:
+   GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/6b022da4-8700-432c-84a4-1f99854e9690: 404
+GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/30083aD3-28cD-4c19-80a8-F9C4B649AdCb: 200
+GET /api/currency/convert as http://localhost/API/CURRENCY/CONVERT: 400
+GET /api/currency/currencies as http://localhost/Api/Currency/Currencies: 200
+GET /api/currency/currencies/{id:guid} as http://localhost/ApI/CuRrEnCy/cUrReNcIeS/9fCf289c-4C38-4b2e-8B4E-C79616D46aBb: 404
+PUT /api/currency/currencies/{id:guid} as http://localhost/API/CURRENCY/CURRENCIES/AA60FAAC-55E4-4D97-8DBC-92B67399386E: 400
+GET /api/currency/rates as http://localhost/Api/Currency/Rates: 200
+POST /api/currency/rates as http://localhost/ApI/CuRrEnCy/rAtEs: 400
+POST /api/currency/rates/import as http://localhost/API/CURRENCY/RATES/IMPORT: 400
+GET /api/currency/rates/lookup as http://localhost/Api/Currency/Rates/Lookup: 400
+DELETE /api/currency/rates/{id:guid} as http://localhost/ApI/CuRrEnCy/rAtEs/02e7eDb2-428c-4F83-8719-f3596931eB97: 204
+GET /api/currency/rates/{id:guid} as http://localhost/API/CURRENCY/RATES/8609E429-F1DE-44A6-B47A-F72B04E1EAE6: 404
+PUT /api/currency/rates/{id:guid} as http://localhost/Api/Currency/Rates/Adf8197d-3816-4aa1-a003-708b9885b40a: 400
+GET /api/identity/companies as http://localhost/ApI/IdEnTiTy/cOmPaNiEs: 200
+POST /api/identity/me/devices/approve as http://localhost/API/IDENTITY/ME/DEVICES/APPROVE: 400
+GET /api/identity/me/passkeys as http://localhost/Api/Identity/Me/Passkeys: 200
+POST /api/identity/me/passkeys as http://localhost/ApI/IdEnTiTy/mE/PaSsKeYs: 400
+POST /api/identity/me/passkeys/options as http://localhost/API/IDENTITY/ME/PASSKEYS/OPTIONS: 200
+DELETE /api/identity/me/passkeys/{id:guid} as http://localhost/Api/Identity/Me/Passkeys/92d64cfe-639f-4494-9b6a-30838b1afcb5: 404
+GET /api/identity/me/passkeys/{id:guid} as http://localhost/ApI/IdEnTiTy/mE/PaSsKeYs/eA20d0aD-F980-4B82-8c87-f1b19B78fE19: 404
+PUT /api/identity/me/passkeys/{id:guid} as http://localhost/API/IDENTITY/ME/PASSKEYS/C87026B1-8039-4A26-BE77-F0FE75BE2895: 400
+PUT /api/identity/me/preferences as http://localhost/Api/Identity/Me/Preferences: 400
+GET /api/identity/permissions as http://localhost/ApI/IdEnTiTy/pErMiSsIoNs: 200
+GET /api/identity/roles as http://localhost/API/IDENTITY/ROLES: 200
+POST /api/identity/roles as http://localhost/Api/Identity/Roles: 400
+DELETE /api/identity/roles/{id:guid} as http://localhost/ApI/IdEnTiTy/rOlEs/bAdE174D-0aBd-4F65-B135-7A6647c683a0: 404
+GET /api/identity/roles/{id:guid} as http://localhost/API/IDENTITY/ROLES/FCE2B837-7B16-4516-BE87-0F82FBA7AD17: 404
+PUT /api/identity/roles/{id:guid} as http://localhost/Api/Identity/Roles/05c41cbd-d97c-4559-a14c-55c1838a58c2: 400
+POST /api/identity/roles/{id:guid}/copy as http://localhost/ApI/IdEnTiTy/rOlEs/fC151E73-5b2d-49d1-9aAa-aC010562e2fF/CoPy: 400
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case() in /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs:line 116
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 204 varied-case requests in 0.6 s wall clock
+
+
+
+Test Run Failed.
+Total tests: 4
+     Passed: 2
+     Failed: 2
+ Total time: 21.4522 Seconds

@@ -372,8 +372,33 @@ export function MoneyField({
   );
 }
 
-/** A calendar date (yyyy-mm-dd), with the browser's date picker. */
-export function DateField({ field, min, max, ...p }: Common & { field: FieldBinding<string>; min?: string; max?: string }) {
+/** A calendar date (yyyy-mm-dd), with the browser's date picker. With `typed`, a text box that takes
+ * the date as typed (yyyy-mm-dd, in either set of digits) and says so in the screen's language: the
+ * browser's own picker writes its placeholder in the browser's language, not the screen's. */
+export function DateField({ field, min, max, typed, ...p }: Common & { field: FieldBinding<string>; min?: string; max?: string; typed?: boolean }) {
+  const { t } = useI18n();
+  if (typed) {
+    return (
+      <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
+        {(a11y) => (
+          <input
+            {...a11y}
+            name={field.name}
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            placeholder={t("forms.date.placeholder")}
+            maxLength={10}
+            autoComplete="off"
+            value={field.value ?? ""}
+            disabled={p.disabled || field.readOnly}
+            autoFocus={p.autoFocus}
+            onChange={(e) => field.onChange(latinDigits(e.target.value).replace(/[^0-9-]/g, ""))}
+          />
+        )}
+      </Field>
+    );
+  }
   return (
     <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
       {(a11y) => (
@@ -443,12 +468,15 @@ export type LookupRow = { id: string } & Record<string, unknown>;
  * and Enter, or the mouse) and keeps the chosen record's id; Escape or Delete on an empty search
  * clears it. The chosen record's label is read once from the list's endpoint when not given.
  */
-export function LookupField({ field, endpoint, labelOf, initialLabel, ...p }: Common & {
+export function LookupField({ field, endpoint, labelOf, initialLabel, filter, ...p }: Common & {
   field: FieldBinding<string>;
   /** The referenced list's endpoint, for example /api/tenancy/companies. */
   endpoint: string;
   labelOf: (row: LookupRow) => string;
   initialLabel?: string;
+  /** A filter in the list query language the matches must also meet (only active organisations,
+   * for example); the chosen record's own label is read without it. */
+  filter?: string;
 }) {
   const { t } = useI18n();
   const listId = useId();
@@ -485,6 +513,7 @@ export function LookupField({ field, endpoint, labelOf, initialLabel, ...p }: Co
     const timer = window.setTimeout(() => {
       const query = new URLSearchParams({ take: "20" });
       if (text.trim()) query.set("search", text.trim());
+      if (filter) query.set("filter", filter);
       api<{ items: LookupRow[] }>("GET", `${endpoint}?${query}`)
         .then((page) => {
           setOptions(page.items);
@@ -494,7 +523,7 @@ export function LookupField({ field, endpoint, labelOf, initialLabel, ...p }: Co
         .catch(() => setOptions([]));
     }, 150);
     return () => window.clearTimeout(timer);
-  }, [text, endpoint]);
+  }, [text, endpoint, filter]);
 
   const choose = (row: LookupRow | null) => {
     field.onChange(row?.id ?? "");

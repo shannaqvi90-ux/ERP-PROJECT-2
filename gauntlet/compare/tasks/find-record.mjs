@@ -13,5 +13,8 @@ export default {
   // piece of it (its letters in order), and no screen shows it before that (lib/runner.mjs findsProblem).
   finds: 'contact.name',
   data: ['contact.name', 'contact.mobile', 'contact.email'],
+  // Set-up writes nothing on the dataset; a driver health check (a clean stack) creates the contact.
+  fixtures: { ours: [] },
+  healthFixtures: { ours: ['POST /api/contacts/contacts'] },
   notes: 'The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.',
 };

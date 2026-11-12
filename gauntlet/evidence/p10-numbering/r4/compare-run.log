@@ -1,0 +1,17 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-11-12T15:15:40.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing;
+                                                     the lead or the owner runs it there, needs-human #13: never stop, recreate or reset the shared rig)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig, for a builder or critic; then COMPARE_ODOO_URL=http://localhost:<port>)
+    tools/odoo-reference/up.sh --status             (what is running and the recorded volume; changes nothing)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+configure-sequence       ours  verified  steps 6  keys 13  machine 1.54s  human 12.04s  human+wait 12.389s  -> ../../evidence-staging/p10-numbering/r4/compare/results/configure-sequence-20261111T143047-77b9.json
+configure-sequence       ours  verified  steps 6  keys 13  machine 1.562s  human 12.04s  human+wait 12.315s  -> ../../evidence-staging/p10-numbering/r4/compare/results/configure-sequence-20261111T143105-7986.json
+configure-sequence       ours  verified  steps 6  keys 13  machine 1.426s  human 12.04s  human+wait 12.293s  -> ../../evidence-staging/p10-numbering/r4/compare/results/configure-sequence-20261111T143118-3642.json
+configure-sequence       odoo  verified  steps 17  keys 32  machine 6.214s  human 40.72s  human+wait 43.668s  -> ../../evidence-staging/p10-numbering/r4/compare/results/configure-sequence-20261111T143131-6eca.json
+configure-sequence       odoo  verified  steps 17  keys 32  machine 5.904s  human 40.72s  human+wait 42.662s  -> ../../evidence-staging/p10-numbering/r4/compare/results/configure-sequence-20261111T143246-1f45.json
+configure-sequence       odoo  verified  steps 17  keys 32  machine 6.144s  human 40.72s  human+wait 42.798s  -> ../../evidence-staging/p10-numbering/r4/compare/results/configure-sequence-20261111T143355-e381.json
+configure-sequence       verdict win
+blind review page: ../../../../evidence-staging/p10-numbering/r4/compare/blind/review.html
+output: ../../../../evidence-staging/p10-numbering/r4/compare

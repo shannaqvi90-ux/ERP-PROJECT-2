@@ -104,15 +104,25 @@ public sealed class G2CompanyWritePolicyTests(GateFixture fixture)
                 await LimitAsync(app, tx, [x], marked: true);
                 var seenY = await DbCatalog.ScalarAsync<long>(app, $"SELECT count(*) FROM {name} WHERE company_id = '{y}'");
                 if (seenY != inY) problems.Add($"{name}: under a write limit to X, {seenY} of Y's {inY} rows readable (reads must not change)");
-                var updated = await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
-                if (updated != 0) problems.Add($"{name}: under a write limit to X, {updated} rows of Y updated");
-                var deleted = await ExecAsync(app, tx, $"DELETE FROM {name} WHERE company_id = '{y}'");
-                if (deleted != 0) problems.Add($"{name}: under a write limit to X, {deleted} rows of Y deleted");
+                var appendOnly = G1CompanyScopeTests.AppendOnly.Contains(name);
+                if (appendOnly)
+                {
+                    // The application role may only read and insert (reviewed list): the database refuses a change.
+                    await ExpectDeniedAsync(app, tx, problems, $"{name}: under a write limit to X, updating rows of Y", $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
+                    await ExpectDeniedAsync(app, tx, problems, $"{name}: under a write limit to X, deleting rows of Y", $"DELETE FROM {name} WHERE company_id = '{y}'");
+                }
+                else
+                {
+                    var updated = await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
+                    if (updated != 0) problems.Add($"{name}: under a write limit to X, {updated} rows of Y updated");
+                    var deleted = await ExecAsync(app, tx, $"DELETE FROM {name} WHERE company_id = '{y}'");
+                    if (deleted != 0) problems.Add($"{name}: under a write limit to X, {deleted} rows of Y deleted");
+                }
                 await ExpectDeniedAsync(app, tx, problems, $"{name}: under a write limit to X, inserting a row into Y", insertIntoY);
                 await ExpectDeniedAsync(app, tx, problems, $"{name}: under a write limit to X, moving a row of X into Y",
                     $"UPDATE {name} SET company_id = '{y}' WHERE id = (SELECT id FROM {name} WHERE company_id = '{x}' LIMIT 1)");
                 // The control: X's rows are written as before.
-                var own = await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{x}'");
+                var own = appendOnly ? inX : await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{x}'");
                 if (own != inX) problems.Add($"{name}: under a write limit to X, {own} of X's {inX} rows updated (expected all)");
                 await tx.RollbackAsync();
             }
@@ -125,7 +135,7 @@ public sealed class G2CompanyWritePolicyTests(GateFixture fixture)
                 {
                     await none.ExecuteNonQueryAsync();
                 }
-                var updated = await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
+                var updated = G1CompanyScopeTests.AppendOnly.Contains(name) ? inY : await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id = '{y}'");
                 if (updated != inY) problems.Add($"{name}: without a write limit {updated} of Y's {inY} rows updated, so the refusals above prove nothing");
                 await tx.RollbackAsync();
             }
@@ -135,7 +145,7 @@ public sealed class G2CompanyWritePolicyTests(GateFixture fixture)
             {
                 await G1CompanyScopeTests.BindAsync(app, tx, tenant, actor, scope: "list", companies: [x, y]);
                 await LimitAsync(app, tx, [x, y], marked: false);
-                var updated = await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id IN ('{x}', '{y}')");
+                var updated = G1CompanyScopeTests.AppendOnly.Contains(name) ? 0 : await ExecAsync(app, tx, $"UPDATE {name} SET company_id = company_id WHERE company_id IN ('{x}', '{y}')");
                 if (updated != 0) problems.Add($"{name}: a write limit not marked with this transaction let {updated} rows be updated (expected none: fail closed)");
                 await ExpectDeniedAsync(app, tx, problems, $"{name}: a write limit not marked with this transaction, inserting a row", insertIntoY);
                 await tx.RollbackAsync();

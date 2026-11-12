@@ -1,0 +1,31 @@
+Test run for /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.44]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.06]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.33]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions [25 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.Only_the_store_touches_the_file_system_and_it_builds_paths_only_from_names_it_made [31 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_database_refuses_a_file_row_that_names_another_tenants_bytes_and_a_row_without_a_checksum [38 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_source_checks_catch_a_client_name_in_a_path_a_path_API_outside_the_store_and_a_loose_key [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [12 ms]
+  Passed Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row [2 s]
+  Passed Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [3 m 49 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [15 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [22 ms]
+[xUnit.net 00:05:02.52]   Finished:    Erp.Gates.Tests (ID = 'ec344aa157700c825cb92f4dc8361bbec4543a2ec04d2263b025a2302a676b96')
+  Passed Erp.Gates.Tests.G1.G1AttachmentsAttackTests.Tenant_A_cannot_reach_tenant_B_s_files_through_the_attachments_endpoints [4 m 24 s]
+
+Test Run Successful.
+Total tests: 11
+     Passed: 11
+ Total time: 5.0547 Minutes
+
+real	5m4.397s
+user	6m4.919s
+sys	0m54.387s
+EXIT 0

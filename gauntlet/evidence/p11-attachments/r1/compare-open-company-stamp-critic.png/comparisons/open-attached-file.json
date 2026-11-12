@@ -1,0 +1,42 @@
+{
+  "task": "open-attached-file",
+  "verdict": "loss",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 2,
+      "odoo": 2,
+      "outcome": "tie (a tie is a loss)"
+    },
+    "keystrokes": {
+      "ours": 0,
+      "odoo": 0,
+      "outcome": "left out (both exactly 0)",
+      "left_out": true
+    },
+    "machine_seconds": {
+      "ours": 0.166,
+      "odoo": 0.278,
+      "outcome": "win"
+    },
+    "human_seconds": {
+      "ours": 5.3,
+      "odoo": 5.3,
+      "outcome": "tie (a tie is a loss)"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 5.31,
+      "odoo": 5.322,
+      "outcome": "win"
+    }
+  },
+  "left_out": [
+    "keystrokes"
+  ],
+  "left_out_note": "Left out of this comparison: keystrokes (both products exactly 0, a count metric; owner decision 2026-10-08, needs-human #11).",
+  "runs": {
+    "ours": "../../evidence-staging/p11-attachments/r1/compare-open-company-stamp-critic.png/results/open-attached-file-20261111T152317-b561.json",
+    "odoo": "../../evidence-staging/p11-attachments/r1/compare-open-company-stamp-critic.png/results/open-attached-file-20261111T152253-67b2.json"
+  }
+}

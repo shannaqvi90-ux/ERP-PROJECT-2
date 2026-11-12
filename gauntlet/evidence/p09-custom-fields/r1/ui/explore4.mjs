@@ -1,0 +1,35 @@
+import { chromium } from '/home/shan/critic/p09-custom-fields-r1/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const B = 'http://localhost:20950', OUT = '/home/shan/evidence-staging/p09-custom-fields/r1/ui/';
+const browser = await chromium.launch({ executablePath: process.env.HOME + '/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+const log = (...a) => console.log(...a);
+page.on('pageerror', e => log('PAGEERROR', e.message));
+await page.goto(B + '/');
+await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type('admin.ar@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('main h1').waitFor();
+await page.goto(B + '/customfields/fields'); await page.locator('table[role=grid] tbody tr').first().waitFor();
+log('dir', await page.evaluate(() => document.documentElement.dir), 'lang', await page.evaluate(() => document.documentElement.lang), 'h1', await page.locator('main h1').innerText());
+log('rows', (await page.locator('table[role=grid] tbody tr').allInnerTexts()).map(t => t.replace(/\s+/g, ' ')).join(' | '));
+// open first row by keyboard
+await page.locator('table[role=grid] tbody tr').first().click();
+await page.keyboard.press('Enter');
+await page.waitForTimeout(800);
+await page.screenshot({ path: OUT + 'ar-fields-form.jpg', type: 'jpeg', quality: 60 });
+// Arabic in English-only labelled field: cfCreditLimit has Arabic label; 'Partner link' has none
+await page.goto(B + '/contacts/contacts?filter=' + encodeURIComponent("cfCreditLimit ge 1000") + '&cols=nameAr%2Cemail%2CcfCreditLimit%2CcfCustomerSegment%2CcfPreferredPartner');
+await page.locator('table[role=grid] tbody tr').first().waitFor();
+log('headers', (await page.locator('table[role=grid] thead th').allInnerTexts()).join(' | '));
+log('row', (await page.locator('table[role=grid] tbody tr').first().innerText()).replace(/\s+/g, ' '));
+log('chips', (await page.locator('main').innerText()).split('\n').slice(0, 6).join(' / '));
+await page.keyboard.press('Enter').catch(()=>{});
+await page.locator('table[role=grid] tbody tr').first().click();
+await page.keyboard.press('Enter');
+await page.waitForTimeout(1200);
+const sec = page.locator('.list-record');
+const txt = await sec.innerText().catch(() => '');
+const i = txt.indexOf('الحقول');
+log('custom section', txt.slice(Math.max(0, i - 10), i + 300).replace(/\n/g, ' / '));
+await sec.locator('label', { hasText: 'حد الائتمان' }).last().scrollIntoViewIfNeeded().catch(() => log('no ar label'));
+await page.screenshot({ path: OUT + 'ar-contact-custom-fields.jpg', type: 'jpeg', quality: 60 });
+await browser.close();

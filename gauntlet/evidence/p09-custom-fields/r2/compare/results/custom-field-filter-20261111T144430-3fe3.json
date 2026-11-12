@@ -1,0 +1,596 @@
+{
+  "schema": 1,
+  "run_id": "custom-field-filter-20261111T144430-3fe3",
+  "instrument": 12,
+  "task": "custom-field-filter",
+  "task_title": "Add a custom field and filter by it",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Add a text field \"Licence ref\" to contacts, record \"LR-7731\" in it on the contact Shamma Waleed Al Romaithi, then filter the contact list to the contacts whose Licence ref is LR-7731.",
+  "done_when": "The contact list shows exactly one contact, Shamma Waleed Al Romaithi, filtered by the new field.",
+  "started_at": "2026-11-11T14:44:30.289Z",
+  "finished_at": "2026-11-11T14:45:23.091Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 17,
+    "keystrokes": 61,
+    "clicks": 11,
+    "scrolls": 0,
+    "field_entries": 4,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 9.992,
+    "system_wait_seconds": 2.336,
+    "human_seconds": 53.48,
+    "human_plus_wait_seconds": 55.816,
+    "klm_operator_counts": {
+      "K": 61,
+      "P": 11,
+      "B": 22,
+      "H": 8,
+      "M": 14
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.058,
+      "took": 0.069,
+      "began": 0.005,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "at": 0.165,
+      "took": 0.064,
+      "began": 0.128,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "at": 1.006,
+      "took": 0.416,
+      "text": "Shamma Waleed Al Romaithi",
+      "same_field": false,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "at": 1.423,
+      "took": 0.034,
+      "chord": "Enter",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the contact",
+      "keystrokes": 0,
+      "at": 1.915,
+      "took": 0.09,
+      "began": 1.862,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "actions menu",
+      "keystrokes": 0,
+      "at": 2.4,
+      "took": 0.073,
+      "began": 2.315,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Edit Properties",
+      "keystrokes": 0,
+      "at": 3.087,
+      "took": 0.064,
+      "began": 2.474,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "type",
+      "label": "field label",
+      "keystrokes": 12,
+      "at": 5.299,
+      "took": 0.11,
+      "text": "Licence ref",
+      "same_field": false,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Add",
+      "keystrokes": 0,
+      "at": 5.534,
+      "took": 0.145,
+      "began": 5.411,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 10,
+      "kind": "click",
+      "label": "focus value",
+      "keystrokes": 0,
+      "at": 5.825,
+      "took": 0.163,
+      "began": 5.693,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 11,
+      "kind": "type",
+      "label": "value",
+      "keystrokes": 9,
+      "at": 6.016,
+      "took": 0.127,
+      "text": "LR-7731",
+      "same_field": true,
+      "screen": "/odoo/contacts/73531",
+      "chain": true
+    },
+    {
+      "n": 12,
+      "kind": "click",
+      "label": "Save",
+      "keystrokes": 0,
+      "at": 6.861,
+      "took": 0.307,
+      "began": 6.738,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 13,
+      "kind": "click",
+      "label": "breadcrumb: Contacts",
+      "keystrokes": 0,
+      "at": 7.55,
+      "took": 0.283,
+      "began": 7.378,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 14,
+      "kind": "key",
+      "label": "drop the name filter",
+      "keystrokes": 1,
+      "at": 7.854,
+      "took": 0.02,
+      "chord": "Backspace",
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 15,
+      "kind": "type",
+      "label": "value to filter by",
+      "keystrokes": 9,
+      "at": 8.719,
+      "took": 0.263,
+      "text": "LR-7731",
+      "same_field": false,
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 16,
+      "kind": "click",
+      "label": "expand Search Properties",
+      "keystrokes": 0,
+      "at": 9.155,
+      "took": 0.09,
+      "began": 8.986,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 17,
+      "kind": "click",
+      "label": "Licence ref line",
+      "keystrokes": 0,
+      "at": 9.555,
+      "took": 0.226,
+      "began": 9.246,
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.23,
+      "seconds": 0.207
+    },
+    {
+      "label": "contact list, search focused",
+      "at": 0.438,
+      "seconds": 0.008
+    },
+    {
+      "label": "one result",
+      "at": 1.46,
+      "seconds": 0.401
+    },
+    {
+      "label": "contact form",
+      "at": 2.005,
+      "seconds": 0.308
+    },
+    {
+      "label": "new field popover, label focused",
+      "at": 3.152,
+      "seconds": 0.142
+    },
+    {
+      "label": "field on the form",
+      "at": 5.68,
+      "seconds": 0.012
+    },
+    {
+      "label": "saved",
+      "at": 7.173,
+      "seconds": 0.203
+    },
+    {
+      "label": "contact list",
+      "at": 7.839,
+      "seconds": 0.014
+    },
+    {
+      "label": "filter dropped, full list back",
+      "at": 7.876,
+      "seconds": 0.842
+    },
+    {
+      "label": "filtered to one contact",
+      "at": 9.786,
+      "seconds": 0.199
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "e8e2f9e563ef4e81.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p09-custom-fields/r2/compare/blind/shots/e8e2f9e563ef4e81.jpg"
+    },
+    {
+      "moment": "field added and filled in",
+      "file": "644616eafc4ca524.jpg",
+      "at": 6.145,
+      "path": "../../evidence-staging/p09-custom-fields/r2/compare/blind/shots/644616eafc4ca524.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "340f8efb4b24e0b0.jpg",
+      "at": 9.992,
+      "path": "../../evidence-staging/p09-custom-fields/r2/compare/blind/shots/340f8efb4b24e0b0.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "field": {
+        "name": "8d085b8062abf6d9",
+        "type": "char",
+        "string": "Licence ref",
+        "default": false
+      },
+      "stored": "LR-7731",
+      "rows": [
+        "Zenith General Trading Est., Shamma Waleed Al Romaithi shamma.al.romaithi.73519@mail.example +971 54 427 3034 United Arab Emirates"
+      ],
+      "facets": [
+        "Licence ref (Contact Properties) LR-7731"
+      ]
+    }
+  },
+  "path_notes": "Find the contact (Apps menu > Contacts > type the name > Enter > open it) > actions menu (⋮) > Edit Properties > label > Add > type the value > Save > breadcrumb back to Contacts > Backspace (drop the name filter) > type the value > expand \"Search Properties\" > choose the Licence ref line.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/custom-field-filter.mjs",
+    "sha256": "7e9d64012c58ed0f0dc80f47997c4bfd67e2cb74a607f3f62f2b60ae59199d17"
+  },
+  "task_notes": "Set-up removes any earlier copy of the field.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 6,
+      "longest_pause_seconds": 0.012,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.15,
+      "verified": true
+    },
+    {
+      "requests": 6,
+      "longest_pause_seconds": 0.02,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.211,
+      "verified": true,
+      "gap_seconds": 1.102
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "a616d5ceb2633ad6",
+    "elements": 213
+  },
+  "screen_after_verify": {
+    "sha256": "a616d5ceb2633ad6",
+    "elements": 213,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 4,
+    "requests": 6,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.143
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 4,
+    "reads_after": 4,
+    "read_both_times": 4,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.partner/search",
+      "POST /web/dataset/call_kw/res.partner/read",
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.partner/search",
+      "POST /web/dataset/call_kw/res.partner/read",
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/properties.base.definition/read": [
+        "result.0.properties_definition.0.name",
+        "result.0.properties_definition.0.type",
+        "result.0.properties_definition.0.string",
+        "result.0.properties_definition.0.default",
+        "result.0.properties_definition"
+      ],
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.properties.0.name",
+        "result.0.properties.0.type",
+        "result.0.properties.0.string",
+        "result.0.properties.0.default",
+        "result.0.properties.0.value",
+        "result.0.properties"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/properties.base.definition/read",
+      "POST /web/dataset/call_kw/res.partner/read"
+    ],
+    "end_state": [
+      "POST /web/dataset/call_kw/properties.base.definition/read [result.properties_definition]",
+      "POST /web/dataset/call_kw/res.partner/read [result.properties]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/properties.base.definition/read": [
+        "result.0.properties_definition.0.name",
+        "result.0.properties_definition.0.type",
+        "result.0.properties_definition.0.string",
+        "result.0.properties_definition.0.default",
+        "result.0.properties_definition"
+      ],
+      "POST /web/dataset/call_kw/res.partner/read": [
+        "result.0.properties.0.name",
+        "result.0.properties.0.type",
+        "result.0.properties.0.string",
+        "result.0.properties.0.default",
+        "result.0.properties.0.value",
+        "result.0.properties"
+      ]
+    },
+    "end_state_gained": [
+      "Licence ref",
+      "LR-7731"
+    ],
+    "writes_sent": [
+      "POST /web/dataset/call_kw/ir.attachment/register_as_main_attachment",
+      "POST /web/dataset/call_kw/properties.base.definition/has_access",
+      "POST /web/dataset/call_kw/res.partner/web_save",
+      "POST /web/dataset/call_kw/properties.base.definition/get_properties_base_definition"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /web/dataset/call_kw/ir.attachment/register_as_main_attachment",
+        "at": 2.5523502149999984,
+        "by_step": 6,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.574,
+          "chain": [
+            "input of step 5",
+            "the answer to POST /web/dataset/call_kw/res.partner/web_read after 0.112 s",
+            "an animation frame",
+            "a timer of 0.001 s",
+            "the answer to POST /mail/store after 0.193 s"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/properties.base.definition/has_access",
+        "at": 3.1423887130000003,
+        "by_step": 7,
+        "browser_record": {
+          "caused": true,
+          "by_step": 7,
+          "chain_seconds": 0.011,
+          "chain": [
+            "input of step 7"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/res.partner/web_save",
+        "at": 7.132182032,
+        "by_step": 12,
+        "browser_record": {
+          "caused": true,
+          "by_step": 12,
+          "chain_seconds": 0.125,
+          "chain": [
+            "input of step 12"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/properties.base.definition/get_properties_base_definition",
+        "at": 9.275045724,
+        "by_step": 16,
+        "browser_record": {
+          "caused": true,
+          "by_step": 16,
+          "chain_seconds": 0.046,
+          "chain": [
+            "input of step 16",
+            "the answer to POST /web/dataset/call_kw/res.partner/fields_get after 0.032 s"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 265,
+    "not_caused": 84,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.116,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.01 s before it) and could have sent it: a DevTools command of the harness during step 1 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.246,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 1,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/171959/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.002,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/113478/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.004,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/134985/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.006,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/101218/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.007,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/96687/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.066,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/101687/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 9.839,
+      "by_step": 17,
+      "chain": [
+        "input of step 17",
+        "the answer to POST /web/dataset/call_kw/res.partner/web_search_read after 0.173 s",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

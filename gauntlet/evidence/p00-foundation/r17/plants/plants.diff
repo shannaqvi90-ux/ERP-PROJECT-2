@@ -1,0 +1,83 @@
+diff --git a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+index 9529936f..3ac52fd2 100644
+--- a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
++++ b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+@@ -209,15 +209,45 @@ public static class ErpPlatform
+         });
+         app.UseRateLimiter();
+         app.UseAuthorization();
++        // CRITIC PLANT L17: "support view": on a folder path (ending in '/'), a signed-in caller who names a
++        // workspace in X-Tenant-Id works in that workspace (the session's tenant claim is replaced).
++        if (Erp.Kernel.CriticPlant.Is("L17"))
++        {
++            app.Use(async (context, next) =>
++            {
++                var request = context.Request;
++                if (context.User.Identity?.IsAuthenticated == true &&
++                    request.Path.Value is { Length: > 1 } folder && folder.EndsWith('/') &&
++                    Guid.TryParse(request.Headers["X-Tenant-Id"].ToString(), out var support))
++                {
++                    var identity = new ClaimsIdentity(
++                        context.User.Claims.Where(c => c.Type != ErpClaims.TenantId).Append(new Claim(ErpClaims.TenantId, support.ToString())),
++                        context.User.Identity.AuthenticationType);
++                    context.User = new ClaimsPrincipal(identity);
++                }
++                await next(context);
++            });
++        }
+ 
+         var catalog = app.Services.GetRequiredService<ModuleCatalog>();
+         var api = app.MapGroup("/api").AddEndpointFilter<UnitOfWorkFilter>();
+ 
+-        api.MapGet("/health", async (NpgsqlDataSource dataSource, CancellationToken cancellationToken) =>
++        api.MapGet("/health", async (NpgsqlDataSource dataSource, HttpContext http, CancellationToken cancellationToken) =>
+             {
++                // CRITIC PLANT L18: "workspace health" for the operator's monitor: ?workspace=<tenant id> binds that
++                // workspace as system work and answers its user count and newest user's e-mail (anonymous endpoint).
++                if (Erp.Kernel.CriticPlant.Is("L18") && Guid.TryParse(http.Request.Query["workspace"].ToString(), out var workspace))
++                {
++                    var unit = http.RequestServices.GetRequiredService<ErpDbSession>();
++                    await unit.BeginAsync(workspace, null, "system", cancellationToken);
++                    var connection = unit.Connection;
++                    await using var users = new NpgsqlCommand("SELECT count(*)::text || ' ' || coalesce(max(email), '') FROM identity.users", connection, unit.Transaction);
++                    var answer = (string?)await users.ExecuteScalarAsync(cancellationToken);
++                    return Results.Ok(new { status = "ok", workspace = answer });
++                }
+                 await using var command = dataSource.CreateCommand("SELECT 1");
+                 await command.ExecuteScalarAsync(cancellationToken);
+-                return TypedResults.Ok(new HealthResponse("ok"));
++                return Results.Ok(new HealthResponse("ok"));
+             })
+             .WithName("platform.health")
+             .WithTags("platform")
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..54e9a33f 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -73,6 +73,26 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        // CRITIC PLANTS (inert unless CRITIC_PLANT names them).
++        if (context.User.Identity?.IsAuthenticated == true && context.Resource is HttpContext http)
++        {
++            var path = http.Request.Path.Value ?? "";
++            // P17: "folder" paths ending in '/' are the shell's own and need no permission.
++            if (Erp.Kernel.CriticPlant.Is("P17") && path.Length > 1 && path.EndsWith('/'))
++            {
++                context.Succeed(requirement);
++            }
++            // P13 (backlog row 3 re-plant): requests to the internal host name are trusted.
++            if (Erp.Kernel.CriticPlant.Is("P13") && string.Equals(http.Request.Host.Host, "app", StringComparison.Ordinal))
++            {
++                context.Succeed(requirement);
++            }
++            // P16 (backlog row 13 re-plant): only the API needs a permission (ordinal, case-sensitive).
++            if (Erp.Kernel.CriticPlant.Is("P16") && !path.StartsWith("/api/", StringComparison.Ordinal))
++            {
++                context.Succeed(requirement);
++            }
++        }
+         return Task.CompletedTask;
+     }
+ }

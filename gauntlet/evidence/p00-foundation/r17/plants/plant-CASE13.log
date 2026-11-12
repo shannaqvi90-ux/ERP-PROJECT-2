@@ -1,0 +1,123 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.17]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.53]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:16.85]     Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively [FAIL]
+[xUnit.net 00:00:16.85]       Without the plant on, the varied-case deny reported:
+[xUnit.net 00:00:16.85]       GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+[xUnit.net 00:00:16.85]       GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/304cf336-6db2-4c33-9bd2-6411951c630f: 404
+[xUnit.net 00:00:16.85]       GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/0e9dD86b-7A95-463d-bC43-89F5B03492A5: 200
+[xUnit.net 00:00:16.85]       GET /api/currency/rates/{id:guid} as http://localhost/API/CURRENCY/RATES/01E5B8BA-A738-41C6-A547-92CA0931375F: 404
+[xUnit.net 00:00:16.85]       PUT /api/currency/rates/{id:guid} as http://localhost/Api/Currency/Rates/2f96f426-cbd1-4fe7-81c1-be34a40a11c9: 400
+[xUnit.net 00:00:16.85]       GET /api/identity/companies as http://localhost/ApI/IdEnTiTy/cOmPaNiEs: 200
+[xUnit.net 00:00:16.85]       GET /api/identity/roles as http://localhost/API/IDENTITY/ROLES: 200
+[xUnit.net 00:00:16.85]       POST /api/identity/roles as http://localhost/Api/Identity/Roles: 400
+[xUnit.net 00:00:16.85]       DELETE /api/identity/roles/{id:guid} as http://localhost/ApI/IdEnTiTy/rOlEs/d8916E49-Dd20-443A-9dEb-a58C78246D36: 404
+[xUnit.net 00:00:16.85]       GET /api/identity/users/{id:guid}/access as http://localhost/API/IDENTITY/USERS/88A9B630-8EA8-49FA-A118-E243465A253B/ACCESS: 404
+[xUnit.net 00:00:16.85]       Stack Trace:
+[xUnit.net 00:00:16.85]         /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs(144,0): at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively()
+[xUnit.net 00:00:16.85]         /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs(160,0): at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively()
+[xUnit.net 00:00:16.85]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively [3 s]
+  Error Message:
+   Without the plant on, the varied-case deny reported:
+GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/304cf336-6db2-4c33-9bd2-6411951c630f: 404
+GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/0e9dD86b-7A95-463d-bC43-89F5B03492A5: 200
+GET /api/currency/rates/{id:guid} as http://localhost/API/CURRENCY/RATES/01E5B8BA-A738-41C6-A547-92CA0931375F: 404
+PUT /api/currency/rates/{id:guid} as http://localhost/Api/Currency/Rates/2f96f426-cbd1-4fe7-81c1-be34a40a11c9: 400
+GET /api/identity/companies as http://localhost/ApI/IdEnTiTy/cOmPaNiEs: 200
+GET /api/identity/roles as http://localhost/API/IDENTITY/ROLES: 200
+POST /api/identity/roles as http://localhost/Api/Identity/Roles: 400
+DELETE /api/identity/roles/{id:guid} as http://localhost/ApI/IdEnTiTy/rOlEs/d8916E49-Dd20-443A-9dEb-a58C78246D36: 404
+GET /api/identity/users/{id:guid}/access as http://localhost/API/IDENTITY/USERS/88A9B630-8EA8-49FA-A118-E243465A253B/ACCESS: 404
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively() in /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs:line 144
+   at Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively() in /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs:line 160
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_host_deny_catches_a_permission_rule_that_trusts_the_host_header [2 s]
+[xUnit.net 00:00:20.09]     Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case [FAIL]
+[xUnit.net 00:00:20.09]       GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+[xUnit.net 00:00:20.09]       GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/8f3e30c9-6d89-4c02-8f73-22ec2a5e4fa6: 404
+[xUnit.net 00:00:20.09]       GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/1cB32c04-f335-41D6-a9aE-5e250fFa093a: 200
+[xUnit.net 00:00:20.09]       GET /api/currency/rates/{id:guid} as http://localhost/API/CURRENCY/RATES/8156097B-E838-4BDD-8410-5E4E04C0F891: 404
+[xUnit.net 00:00:20.09]       PUT /api/currency/rates/{id:guid} as http://localhost/Api/Currency/Rates/0d2d2b5c-0f51-46c2-8c64-22ca0f631529: 400
+[xUnit.net 00:00:20.09]       GET /api/identity/companies as http://localhost/ApI/IdEnTiTy/cOmPaNiEs: 200
+[xUnit.net 00:00:20.09]       GET /api/identity/roles as http://localhost/API/IDENTITY/ROLES: 200
+[xUnit.net 00:00:20.09]       POST /api/identity/roles as http://localhost/Api/Identity/Roles: 400
+[xUnit.net 00:00:20.09]       DELETE /api/identity/roles/{id:guid} as http://localhost/ApI/IdEnTiTy/rOlEs/fCe7e1dA-42A0-4A93-85A0-fB862902a1d6: 404
+[xUnit.net 00:00:20.09]       GET /api/identity/users/{id:guid}/access as http://localhost/API/IDENTITY/USERS/9BF36616-3FEB-4530-864D-C6DDA566048C/ACCESS: 404
+[xUnit.net 00:00:20.09]       GET /api/identity/users/{id:guid}/default-company as http://localhost/Api/Identity/Users/Bd4fd181-2309-476e-9740-5cd4e7391ef9/Default-company: 404
+[xUnit.net 00:00:20.09]       PUT /api/identity/users/{id:guid}/default-company as http://localhost/ApI/IdEnTiTy/uSeRs/f7aE7E8E-F6Bf-4F7D-B3Ef-9A8E3EcE6EfD/DeFaUlT-CoMpAnY: 400
+[xUnit.net 00:00:20.09]       GET /api/jobs/jobs/{id:guid} as http://localhost/API/JOBS/JOBS/ABE3FF24-9DD2-422D-9A85-E23373511340: 404
+[xUnit.net 00:00:20.09]       POST /api/jobs/jobs/{id:guid}/cancel as http://localhost/Api/Jobs/Jobs/79b77580-ffea-4b46-8217-ad9c80127484/Cancel: 404
+[xUnit.net 00:00:20.09]       GET /api/jobs/jobs/{id:guid}/output as http://localhost/ApI/JoBs/jObS/5744Ec20-d4aA-4020-94aF-21Fe79C9Da60/oUtPuT: 404
+[xUnit.net 00:00:20.09]       GET /api/lists/audit.log/shared-views/{id:guid} as http://localhost/API/LISTS/AUDIT.LOG/SHARED-VIEWS/A2CD56E8-CD7B-4368-8331-E003CE584840: 404
+[xUnit.net 00:00:20.09]       PUT /api/lists/audit.log/shared-views/{id:guid} as http://localhost/Api/Lists/Audit.log/Shared-views/41e48320-bd87-4b25-81e4-d3cbbde2b5f7: 404
+[xUnit.net 00:00:20.09]       GET /api/lists/audit.log/views as http://localhost/ApI/LiStS/AuDiT.LoG/ViEwS: 200
+[xUnit.net 00:00:20.09]       GET /api/lists/currency.currencies/views as http://localhost/API/LISTS/CURRENCY.CURRENCIES/VIEWS: 200
+[xUnit.net 00:00:20.09]       POST /api/lists/currency.currencies/views as http://localhost/Api/Lists/Currency.currencies/Views: 400
+[xUnit.net 00:00:20.09]       DELETE /api/lists/currency.currencies/views/{id:guid} as http://localhost/ApI/LiStS/CuRrEnCy.cUrReNcIeS/ViEwS/Ee17C197-7FcE-455e-8929-5fFa256e9b80: 404
+[xUnit.net 00:00:20.09]       DELETE /api/lists/currency.rates/views/{id:guid} as http://localhost/API/LISTS/CURRENCY.RATES/VIEWS/29D72AA0-BC8D-45CB-A82D-310A04958AD2: 404
+[xUnit.net 00:00:20.09]       GET /api/lists/currency.rates/views/{id:guid} as http://localhost/Api/Lists/Currency.rates/Views/4504ea1d-0794-41f2-a1c0-1fadae482f53: 404
+[xUnit.net 00:00:20.09]       PUT /api/lists/currency.rates/views/{id:guid} as http://localhost/ApI/LiStS/CuRrEnCy.rAtEs/vIeWs/e56Df8c1-Df6a-4B81-8a45-2F3300c98A51: 400
+[xUnit.net 00:00:20.09]       PUT /api/lists/identity.roles/views/{id:guid} as http://localhost/API/LISTS/IDENTITY.ROLES/VIEWS/369EAF91-478E-4D7D-98E6-59B7F06FE87F: 400
+[xUnit.net 00:00:20.09]       GET /api/lists/identity.users/definition as http://localhost/Api/Lists/Identity.users/Definition: 200
+[xUnit.net 00:00:20.09]       POST /api/lists/identity.users/shared-views as http://localhost/ApI/LiStS/IdEnTiTy.uSeRs/sHaReD-ViEwS: 404
+[xUnit.net 00:00:20.09]       POST /api/lists/jobs.jobs/shared-views as http://localhost/API/LISTS/JOBS.JOBS/SHARED-VIEWS: 404
+[xUnit.net 00:00:20.09]       DELETE /api/lists/jobs.jobs/shared-views/{id:guid} as http://localhost/Api/Lists/Jobs.jobs/Shared-views/4a7b12ec-19ae-4486-a57e-97ed7e850a86: 404
+[xUnit.net 00:00:20.09]       GET /api/lists/jobs.jobs/shared-views/{id:guid} as http://localhost/ApI/LiStS/JoBs.jObS/ShArEd-vIeWs/eB2E0C60-A34b-495A-8f4f-f0c6659EcE1E: 404
+[xUnit.net 00:00:20.09]       Stack Trace:
+[xUnit.net 00:00:20.09]         /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs(116,0): at Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case()
+[xUnit.net 00:00:20.09]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:20.09]       Output:
+[xUnit.net 00:00:20.09]         204 varied-case requests in 0.5 s wall clock
+[xUnit.net 00:00:20.34]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_forms_differ_from_the_lower_case_path_and_keep_the_query [6 ms]
+  Failed Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case [641 ms]
+  Error Message:
+   GET /api/audit/log as http://localhost/API/AUDIT/LOG: 200
+GET /api/audit/log/{id:guid} as http://localhost/Api/Audit/Log/8f3e30c9-6d89-4c02-8f73-22ec2a5e4fa6: 404
+GET /api/audit/records/{id:guid} as http://localhost/ApI/AuDiT/ReCoRdS/1cB32c04-f335-41D6-a9aE-5e250fFa093a: 200
+GET /api/currency/rates/{id:guid} as http://localhost/API/CURRENCY/RATES/8156097B-E838-4BDD-8410-5E4E04C0F891: 404
+PUT /api/currency/rates/{id:guid} as http://localhost/Api/Currency/Rates/0d2d2b5c-0f51-46c2-8c64-22ca0f631529: 400
+GET /api/identity/companies as http://localhost/ApI/IdEnTiTy/cOmPaNiEs: 200
+GET /api/identity/roles as http://localhost/API/IDENTITY/ROLES: 200
+POST /api/identity/roles as http://localhost/Api/Identity/Roles: 400
+DELETE /api/identity/roles/{id:guid} as http://localhost/ApI/IdEnTiTy/rOlEs/fCe7e1dA-42A0-4A93-85A0-fB862902a1d6: 404
+GET /api/identity/users/{id:guid}/access as http://localhost/API/IDENTITY/USERS/9BF36616-3FEB-4530-864D-C6DDA566048C/ACCESS: 404
+GET /api/identity/users/{id:guid}/default-company as http://localhost/Api/Identity/Users/Bd4fd181-2309-476e-9740-5cd4e7391ef9/Default-company: 404
+PUT /api/identity/users/{id:guid}/default-company as http://localhost/ApI/IdEnTiTy/uSeRs/f7aE7E8E-F6Bf-4F7D-B3Ef-9A8E3EcE6EfD/DeFaUlT-CoMpAnY: 400
+GET /api/jobs/jobs/{id:guid} as http://localhost/API/JOBS/JOBS/ABE3FF24-9DD2-422D-9A85-E23373511340: 404
+POST /api/jobs/jobs/{id:guid}/cancel as http://localhost/Api/Jobs/Jobs/79b77580-ffea-4b46-8217-ad9c80127484/Cancel: 404
+GET /api/jobs/jobs/{id:guid}/output as http://localhost/ApI/JoBs/jObS/5744Ec20-d4aA-4020-94aF-21Fe79C9Da60/oUtPuT: 404
+GET /api/lists/audit.log/shared-views/{id:guid} as http://localhost/API/LISTS/AUDIT.LOG/SHARED-VIEWS/A2CD56E8-CD7B-4368-8331-E003CE584840: 404
+PUT /api/lists/audit.log/shared-views/{id:guid} as http://localhost/Api/Lists/Audit.log/Shared-views/41e48320-bd87-4b25-81e4-d3cbbde2b5f7: 404
+GET /api/lists/audit.log/views as http://localhost/ApI/LiStS/AuDiT.LoG/ViEwS: 200
+GET /api/lists/currency.currencies/views as http://localhost/API/LISTS/CURRENCY.CURRENCIES/VIEWS: 200
+POST /api/lists/currency.currencies/views as http://localhost/Api/Lists/Currency.currencies/Views: 400
+DELETE /api/lists/currency.currencies/views/{id:guid} as http://localhost/ApI/LiStS/CuRrEnCy.cUrReNcIeS/ViEwS/Ee17C197-7FcE-455e-8929-5fFa256e9b80: 404
+DELETE /api/lists/currency.rates/views/{id:guid} as http://localhost/API/LISTS/CURRENCY.RATES/VIEWS/29D72AA0-BC8D-45CB-A82D-310A04958AD2: 404
+GET /api/lists/currency.rates/views/{id:guid} as http://localhost/Api/Lists/Currency.rates/Views/4504ea1d-0794-41f2-a1c0-1fadae482f53: 404
+PUT /api/lists/currency.rates/views/{id:guid} as http://localhost/ApI/LiStS/CuRrEnCy.rAtEs/vIeWs/e56Df8c1-Df6a-4B81-8a45-2F3300c98A51: 400
+PUT /api/lists/identity.roles/views/{id:guid} as http://localhost/API/LISTS/IDENTITY.ROLES/VIEWS/369EAF91-478E-4D7D-98E6-59B7F06FE87F: 400
+GET /api/lists/identity.users/definition as http://localhost/Api/Lists/Identity.users/Definition: 200
+POST /api/lists/identity.users/shared-views as http://localhost/ApI/LiStS/IdEnTiTy.uSeRs/sHaReD-ViEwS: 404
+POST /api/lists/jobs.jobs/shared-views as http://localhost/API/LISTS/JOBS.JOBS/SHARED-VIEWS: 404
+DELETE /api/lists/jobs.jobs/shared-views/{id:guid} as http://localhost/Api/Lists/Jobs.jobs/Shared-views/4a7b12ec-19ae-4486-a57e-97ed7e850a86: 404
+GET /api/lists/jobs.jobs/shared-views/{id:guid} as http://localhost/ApI/LiStS/JoBs.jObS/ShArEd-vIeWs/eB2E0C60-A34b-495A-8f4f-f0c6659EcE1E: 404
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case() in /work/tests/Erp.Gates.Tests/G2/G2PathCaseTests.cs:line 116
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 204 varied-case requests in 0.5 s wall clock
+
+
+
+Test Run Failed.
+Total tests: 4
+     Passed: 2
+     Failed: 2
+ Total time: 20.6237 Seconds

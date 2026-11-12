@@ -885,7 +885,7 @@ public sealed class TenantActivity
             }
             request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
         }
-        using var response = await actor.Client.SendAsync(request);
+        using var response = await actor.Client.SendTimedAsync(request, label);
         var text = await Infrastructure.ResponseText.ReadAsync(response);
         var status = (int)response.StatusCode;
         var location = response.Headers.Location?.ToString() ?? "";
@@ -983,7 +983,7 @@ public sealed class TenantActivity
                 return path;
             }
             using var probe = new HttpRequestMessage(HttpMethod.Get, readPath);
-            using var response = await prober.Client.SendAsync(probe);
+            using var response = await prober.Client.SendTimedAsync(probe, "tenant B route probe");
             Interlocked.Increment(ref _requests);
             if (response.IsSuccessStatusCode)
             {

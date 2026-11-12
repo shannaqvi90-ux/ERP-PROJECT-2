@@ -52,11 +52,24 @@ public sealed class G1PrintFileTests(GateFixture fixture)
             var catalog = await client.GetFromJsonAsync<JsonElement>("/api/reports/catalog", TestContext.Current.CancellationToken);
             var company = (await client.GetFromJsonAsync<JsonElement>("/api/tenancy/companies?take=1", TestContext.Current.CancellationToken))
                 .GetProperty("items")[0].GetProperty("id").GetString();
+            // A required parameter names a record of its lookup list (a company's profile, a contact's
+            // card): the first record that list answers this workspace; a company otherwise.
+            var firstOf = new Dictionary<string, string?>(StringComparer.Ordinal);
+            foreach (var parameter in catalog.GetProperty("items").EnumerateArray().SelectMany(r => r.GetProperty("parameters").EnumerateArray()))
+            {
+                if (parameter.TryGetProperty("lookupEndpoint", out var endpoint) && endpoint.GetString() is { } list && !firstOf.ContainsKey(list))
+                {
+                    var rows = (await client.GetFromJsonAsync<JsonElement>($"{list}?take=1", TestContext.Current.CancellationToken)).GetProperty("items");
+                    firstOf[list] = rows.GetArrayLength() > 0 ? rows[0].GetProperty("id").GetString() : null;
+                }
+            }
+            string? ValueOf(JsonElement parameter) =>
+                parameter.TryGetProperty("lookupEndpoint", out var endpoint) && endpoint.GetString() is { } list ? firstOf[list] ?? company : company;
             var paths = catalog.GetProperty("lists").EnumerateArray().Select(l => l.GetProperty("path").GetString() + "?")
                 .Concat(catalog.GetProperty("items").EnumerateArray().Select(r =>
                     r.GetProperty("path").GetString() + "?" + string.Concat(r.GetProperty("parameters").EnumerateArray()
                         .Where(p => p.GetProperty("required").GetBoolean())
-                        .Select(p => $"{p.GetProperty("key").GetString()}={company}&"))))
+                        .Select(p => $"{p.GetProperty("key").GetString()}={ValueOf(p)}&"))))
                 .ToList();
             Assert.True(paths.Count >= 9, $"{paths.Count} printable paths");
             foreach (var path in paths)

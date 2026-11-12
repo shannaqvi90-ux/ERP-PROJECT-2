@@ -1,0 +1,20 @@
+create required date 400 undefined
+edit existing contact lacking required value 200 ""
+switch off required 404
+label Credit limit 400 {"labelEn":[{"code":"customFieldLabelBuiltIn","message":"A field of this record is already called that. Choose a label that tells the two apart."}]}
+Arabic label = built-in Arabic 400 {"labelAr":[{"code":"customFieldLabelBuiltIn","message":"A field of this record is already called that. Choose a label that tells the two apart."}]}
+openapi has cfInsuranceCover false cfCustomerSegment true mentions customFields 2
+schema ContactDto {"required":["id","kind","code","nameEn","nameAr","organisationId","organisationName","organisationNameAr","jobTitle","email","phone","mobile","website","addressLine1","addressLine2","area","city","emirate","poBox","country","addressAr","tags","tradeLicenceNumber","taxRegistrationNumber","defaultCurrency","creditLimit","notes","isActive","peopleCount","createdAt","updatedAt","version"],"type":"object","properties":{"id":{"type":"string","format":"uuid"},"kind":{"type":"string"},"code":{"type":["null","string"]},"nameEn":{"type":"string"},"nameAr":{"type":"string"},"organisationId":{"type":["null","string"],"format":"uuid"},"organisationName":{"type":["null","string"]},"organisationNameAr":{"
+schema ContactRow {"required":["id","kind","code","nameEn","nameAr","organisationId","organisationName","organisationNameAr","jobTitle","email","mobile","phone","city","emirate","country","tags","taxRegistrationNumber","defaultCurrency","creditLimit","creditLimitCurrency","isActive","createdAt","updatedAt","version"],"type":"object","properties":{"id":{"type":"string","format":"uuid"},"kind":{"type":"string"},"code":{"type":["null","string"]},"nameEn":{"type":"string"},"nameAr":{"type":"string"},"organisationId":{"type":["null","string"],"format":"uuid"},"organisationName":{"type":["null","string"]},"organisationNameAr":{"type":["null","string"]},"jobTitle":{"type":["null","string"]},"email":{"type":["null","
+schema ListPageOfContactRow {"required":["items","total"],"type":"object","properties":{"items":{"type":"array","items":{"$ref":"#/components/schemas/ContactRow"},"description":"The rows of this page."},"total":{"pattern":"^-?(?:0|[1-9]\\d*)$","type":["integer","string"],"description":"Rows matching the search and filter (all pages).","format":"int32"},"next":{"type":["null","string"],"description":"Pass as `after` to read the following page; null on the last page."},"groups":{"type":["null","array"],"items":{"$ref":"#/components/schemas/ListGroup"},"description":"With `groupBy`: every group of the matching rows, ordered by key."},"ranked":{"type":"boolean","description":"The rows are in relevance order, best match fir
+200 1523ms /api/contacts/contacts?sort=-cfInsuranceCover&take=3 [null,null,null]
+200 1504ms /api/contacts/contacts?groupBy=cfIncoterm [{"key":null,"count":100008,"totals":null,"moneyTotals":null}]
+400 15ms /api/contacts/contacts?groupBy=cfInsuranceCover {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-4d7e931bd16d2912857b991f1fc5b51b-92c540cfda59151f-00","errors":{"groupBy":[{"code":"list.notGroupable","message":"The list cannot be grouped by the column cfInsuranceCover."}]}}
+400 28ms /api/contacts/contacts?groupBy=cfAccountManager {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-9d342c7619a28861cbdef500d90f9daa-c02405de781213a5-00","errors":{"groupBy":[{"code":"list.notGroupable","message":"The list cannot be grouped by the column cfAccountManager."}]}}
+select cfCustomerSegment ["retail","wholesale","government","keyAccount","distributor"] default null
+select cfIncoterm ["eXW","fOB","cIF"] default fOB
+select cfPaymentTerms ["cash","net30","net60"] default null
+select cfDeliveryMode ["sea","air"] default air
+select cfDeliveryModeTwo ["sea","air"] default null
+select cfShippingLine ["mSC","maersk"] default null
+select cfShippingLineTwo ["mSC","maersk"] default null

@@ -1,0 +1,22 @@
+== viewer
+GET /api/contacts/contacts?take=1 -> 200
+GET /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78 -> 200
+GET /api/contacts/contacts/duplicates?sameName=Yousef%20Hind%20Wang -> 200
+GET /api/contacts/contacts/defaults -> 200
+POST /api/contacts/contacts -> 403
+PUT /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78 -> 403
+POST /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78/archive -> 403
+POST /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78/restore -> 403
+GET /api/reports/run/contacts.contactCard?contact=0188940b-46b8-707c-ac26-785b57c94f78 -> 200
+GET /api/reports/lists/contacts.contacts?format=csv&take=5 -> 200
+== noaccess
+GET /api/contacts/contacts?take=1 -> 403
+GET /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78 -> 403
+GET /api/contacts/contacts/duplicates?sameName=Yousef%20Hind%20Wang -> 403
+GET /api/contacts/contacts/defaults -> 403
+POST /api/contacts/contacts -> 403
+PUT /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78 -> 403
+POST /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78/archive -> 403
+POST /api/contacts/contacts/0188940b-46b8-707c-ac26-785b57c94f78/restore -> 403
+GET /api/reports/run/contacts.contactCard?contact=0188940b-46b8-707c-ac26-785b57c94f78 -> 403
+GET /api/reports/lists/contacts.contacts?format=csv&take=5 -> 403

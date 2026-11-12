@@ -24,6 +24,16 @@ const WAVE = args.wave
 const BUILDER_MODEL = args.builderModel || 'sonnet'
 const BUILDER_EFFORT = args.builderEffort || 'medium'
 const MAX_FIXES = args.maxFixes || 5
+// Owner decision 2026-11-09 (needs-human #41), opt-in per workflow so earlier runs resume unchanged:
+// targetedBuilds: builders and fixers run only the targeted tests of what they changed; the integrator's
+// alone run is the first full verify (the critic's clean clone the second). When that run fails, one
+// fixer gets its failure and the integrator tries again (integrationRetries, default 1).
+// acceptMinor: a LOSS whose every gap is minor (strict list in the critic prompt) is accepted for now:
+// the verdict stays LOSS in the record, the piece gets no more rounds this wave, and its gaps go to
+// gauntlet/followups.md, to be worked in a later follow-up round, never dropped.
+const TARGETED = !!args.targetedBuilds
+const ACCEPT_MINOR = !!args.acceptMinor
+const INTEG_RETRIES = TARGETED ? (args.integrationRetries ?? 1) : 0
 
 // One writer at a time in the integration working tree.
 let lock = Promise.resolve()
@@ -78,6 +88,10 @@ const VERDICT_SCHEMA = {
       owner: { type: 'string', description: 'piece id that owns the gate' }, gate: { type: 'string' }, planted: { type: 'string', description: 'what you planted and where' }, evidence: { type: 'string' } },
       required: ['owner', 'gate', 'planted', 'evidence'] } },
     other_findings: { type: 'array', items: { type: 'string' } },
+    ...(ACCEPT_MINOR ? {
+      minor_only: { type: 'boolean', description: 'only for a LOSS: true when every gap is minor under the owner decision of 2026-11-09 (needs-human #41) as the prompt defines it; otherwise false' },
+      followups: { type: 'array', description: 'when minor_only is true: every remaining gap, each fixable in one short session', items: { type: 'object', properties: { title: { type: 'string' }, detail: { type: 'string' }, evidence: { type: 'string' } }, required: ['title', 'detail'] } },
+    } : {}),
     human_gates: { type: 'array', items: { type: 'object', properties: { gate: { type: 'string' }, what: { type: 'string' } }, required: ['gate', 'what'] } },
     evidence_staging: { type: 'string', description: 'absolute path of the staging folder holding evidence files' },
     evidence_dir: { type: 'string', description: 'repo-relative final evidence folder gauntlet/evidence/<piece>/r<round>' },
@@ -136,7 +150,7 @@ Worktree (work only here, never in ${REPO}):
 Order of work:
 1. Gates first. Write or tighten the automated checks for the owner's hard gates (tenant isolation G1, permissions G2, clean clone G3) and the CLAUDE.md rule gates as they apply to what you are about to build, so they cover your piece before your piece exists. Gates may only get stricter: never weaken, skip, delete or narrow any test, gate, ratchet minimum or scenario (CLAUDE.md rule 9). Raise the minimums in gauntlet/ratchet.json when you add coverage.
 2. Build the piece to production quality, not demo quality: real validation, real errors, English and Arabic for every string, keyboard-first dense UI, decimal money, audit on every business record, row-level security on every tenant table, a permission on every endpoint, OpenAPI for every endpoint, tests for everything.
-3. While building, run the targeted tests of what you change. When the piece is built and committed, run the whole suite once (the one command, \`./erp verify\`, through the verify slots). If it passes, return. If it fails, do not start fixing it in this session: commit any work in progress so the tree is clean and return suite_passes=false with a precise failure_summary (failing stages, each failing test or check with its error lines, the log and .verify-failed folder paths, processor time, load, and what you suspect). A new agent with fresh context then fixes it from that summary (owner decision of 2026-10-28, to keep sessions short).
+${TARGETED ? TARGETED_BUILDER_STEP : `3. While building, run the targeted tests of what you change. When the piece is built and committed, run the whole suite once (the one command, \`./erp verify\`, through the verify slots). If it passes, return. If it fails, do not start fixing it in this session: commit any work in progress so the tree is clean and return suite_passes=false with a precise failure_summary (failing stages, each failing test or check with its error lines, the log and .verify-failed folder paths, processor time, load, and what you suspect). A new agent with fresh context then fixes it from that summary (owner decision of 2026-10-28, to keep sessions short).`}
 4. Record each architectural choice and its reason in docs/decisions/${p.id}-<slug>.md (piece-prefixed names so parallel builders do not collide). Dependencies: MIT, Apache-2.0, BSD or PostgreSQL licence only (CLAUDE.md rule 6). Beware packages that turned commercial (for example MediatR 13+, AutoMapper 15+, FluentAssertions 8+, MassTransit 9+, EPPlus 5+, Hangfire is LGPL): do not use them.
 5. Commit on piece/${p.id} with factual messages (what changed, not how good it is). Commit work in progress at least every 30 to 45 minutes as well: this container can restart without warning and uncommitted work may be lost. Do not push; do not touch ${BRANCH} directly. Keep generated bulk data files (seed CSVs and the like) out of git; commit the generator instead.
 
@@ -155,10 +169,14 @@ Return: the branch, its head commit, whether the whole suite passes, the exact t
 }
 
 // A fresh, short session per failed verify (owner decision 2026-10-28): only the failure summary, the branch and the piece spec.
+// Owner decision 2026-11-09 (needs-human #41): with targetedBuilds, builders and fixers do not run the whole suite.
+const TARGETED_BUILDER_STEP = `3. While building, run the targeted tests of what you change. When the piece is built and committed, run its targeted suite once, NOT the whole \`./erp verify\` (owner decision 2026-11-09, needs-human #41: the integrator's alone run is the first full verify, so a failure you could have caught costs a whole integration): (a) the .NET test projects you added or touched, filtered to your classes where a project is large (\`dotnet test tests/<Project> --filter <your classes>\`); (b) in tests/Erp.Gates.Tests, the gate classes that reach your surface (G1 and G2 for your endpoints, tables, jobs and files; the rule gates for your strings, money, audit and dependencies) and always the source and allowlist gates (G1TenantSourceTests and every gate that reads a file under tests/Gates/), which are cheap and fail on any new reviewed use; if your code needs a new review entry there, add it yourself with its reason in your own branch (you are the code's owner) and if you are refused, list it in human_gates; (c) the web unit tests (\`npm test\` in web/) and, if you changed screens, your piece's Playwright specs against your own stack. Bring up only what these need, in your compose project b-<piece> on your ports; targeted runs do not take a verify slot, but keep to one .NET test run and one Playwright run at a time. If they pass, return suite_passes=true, with test_command naming each command and its pass counts. If they fail, do not start fixing in this session: commit any work in progress so the tree is clean and return suite_passes=false with a precise failure_summary (each failing test with its error lines, the commands, what you suspect). A new agent with fresh context then fixes it from that summary. In notes_for_integrator, list exactly which test projects and gate classes you ran and which you did not, so the integrator knows what its full run checks for the first time.`
+
 function fixerPrompt(p, round, prev, attempt) {
   const ports = portBlock(p.num)
   const wt = `${ROOT}/wt/${p.id}`
-  return `You are a FIXER for piece ${p.id}, round ${round}, wave ${WAVE} (fix ${attempt} of at most ${MAX_FIXES} this round), of a multi-tenant ERP platform core. A builder built this round on branch piece/${p.id} in the worktree ${wt} (head ${prev.head_commit}), and its full verify failed. Your job: make the full verify pass, without weakening anything.
+  const which = typeof attempt === 'number' ? `fix ${attempt} of at most ${MAX_FIXES} this round` : attempt
+  return `You are a FIXER for piece ${p.id}, round ${round}, wave ${WAVE} (${which}), of a multi-tenant ERP platform core. A builder built this round on branch piece/${p.id} in the worktree ${wt} (head ${prev.head_commit}), and ${TARGETED ? 'its tests failed. Your job: make them pass' : 'its full verify failed. Your job: make the full verify pass'}, without weakening anything.
 
 Read: ${REPO}/gauntlet/pieces/${p.id}.md (the piece spec). Read other files only as the failure needs them; the piece's decision records are docs/decisions/${p.id}-*.md in the worktree.
 
@@ -168,9 +186,9 @@ ${prev.failure_summary || prev.notes_for_integrator || '(none given: run the ful
 Rules:
 - Work only in ${wt}, on piece/${p.id}. Do not push; never touch ${BRANCH} or ${REPO} directly. Your port block is ${ports.builder} (compose project \`b-${p.id}\`).
 - Fix the cause. Never weaken, skip, delete or narrow a test, gate, ratchet minimum or scenario, and never add timeout increases or test re-runs to get a pass (CLAUDE.md rule 9). If the cause is outside this piece, fix it minimally and say so. If a fix would need a human gate in CLAUDE.md, do not do it: list it in human_gates.
-- Run the failing tests on their own first, then the whole suite once through the verify slots (\`ERP_VERIFY_LOG=<scratch>/verify-fixer-${p.id}-r${round}-f${attempt}.log ${REPO}/gauntlet/tools/verify-slot.sh ./erp verify\` with your ports and compose project).
+${TARGETED ? `- Run the failing tests on their own first, then the piece's targeted suite as the builder's step 3 defines it (owner decision 2026-11-09, needs-human #41): the .NET test projects the piece touched, filtered to its classes where large; the gate classes that reach its surface and always the source and allowlist gates (G1TenantSourceTests and every gate reading tests/Gates/: a new review entry for the piece's own code is the piece's to add, with its reason; if refused, list it in human_gates); the web unit tests; and the piece's Playwright specs if it has screens. Do NOT run the whole \`./erp verify\`: the integrator's alone run does that. Use your own compose project and ports; one .NET test run and one Playwright run at a time.` : `- Run the failing tests on their own first, then the whole suite once through the verify slots (\`ERP_VERIFY_LOG=<scratch>/verify-fixer-${p.id}-r${round}-f${attempt}.log ${REPO}/gauntlet/tools/verify-slot.sh ./erp verify\` with your ports and compose project).`}
 - Commit with factual messages; record anything architectural in the piece's decision record, with the verify run, its result and processor time.
-- If the full verify passes, return suite_passes=true. If it fails again, commit what you have so the tree is clean and return suite_passes=false with a precise failure_summary for the next fixer (failing stages, each failing test or check with its error lines, the log and .verify-failed folder paths, processor time, load, what you tried and what you suspect). Do not start a second round of fixes in this session.
+- If ${TARGETED ? 'the targeted suite passes' : 'the full verify passes'}, return suite_passes=true. If it fails again, commit what you have so the tree is clean and return suite_passes=false with a precise failure_summary for the next fixer (failing stages, each failing test or check with its error lines, the log and .verify-failed folder paths, processor time, load, what you tried and what you suspect). Do not start a second round of fixes in this session.
 - Before you finish, stop and remove your own containers (compose project b-${p.id}); never the shared Odoo rig.
 ${p.leadNote ? `\nConstraints from the lead for this piece:\n${p.leadNote}\n` : ''}${ENV_NOTES}
 
@@ -222,6 +240,11 @@ ${ENV_NOTES}
 Return whether it merged, the integration commit SHA now at the tip of ${BRANCH} (the commit the critic will judge), whether it is pushed, whether the whole suite passes, and the problem if it did not merge.`
 }
 
+// Owner decision 2026-11-09 (needs-human #41): a LOSS whose every gap is minor is accepted for now.
+const MINOR_RULE = `Minor gaps (owner decision 2026-11-09, needs-human #41). This does not change the verdict: judge BLOCKED, LOSS or WIN exactly as above. Then, only for a LOSS, set minor_only. minor_only is true only if ALL of these hold: (1) no hard gate fails and every test passes; (2) ours wins every compared Odoo task (or it is tie-accepted or known-loss): a loss, an unaccepted tie or a known-loss-candidate is never minor; (3) every main job in the piece's spec works end to end in English and Arabic by keyboard; (4) no gap is a crash or server error (any 5xx, an unhandled exception, a broken screen), lost or wrong data, a wrong number or amount, a tenant, permission or security weakness, a money, ledger or audit fault (CLAUDE.md rules 1 to 4), a missing Arabic text on a main path, or a licence or Odoo-copying issue; (5) there are at most 5 gaps, each small enough for one short builder session (a label, a default, an edge case of a secondary path, a polish of layout or wording). If any one fails, minor_only is false. When minor_only is true, list every gap in followups (the biggest gap too), each with how to reproduce it. A piece accepted this way gets no more rounds this wave; its follow-ups are worked in a later follow-up round, never dropped, and the verdict stays LOSS in the record.
+
+`
+
 function criticPrompt(p, round, commit) {
   const ports = portBlock(p.num)
   const clone = `${ROOT}/critic/${p.id}-r${round}`
@@ -244,7 +267,7 @@ Judge the real thing:
 
 Verdict: BLOCKED if there is a product fault (a hard gate fails on the real product, any test fails, the product does not build or run from the clean clone) or a surface this piece added is not reached by the isolation or permission gates at all; gate gaps alone do not block. LOSS if gates hold but the piece misses scope or loses or ties Odoo on any task (other than a tie-accepted or known-loss one; a known-loss-candidate still counts as a loss); WIN only if gates hold, the scope is complete and it beats Odoo on every task compared, a tie-accepted or known-loss task counting as beaten. Whatever the verdict, name the single biggest gap (the one thing that most holds this piece back from beating Odoo for a UAE trading or manufacturing company), with evidence a builder can reproduce. List other findings briefly. List any human gate from CLAUDE.md the piece has reached.
 
-When done: \`docker compose -p c-${p.id}-r${round} down -v --rmi local\` (or the product's equivalent) and delete ${clone} except nothing you still need; keep ${staging}. Never stop the odoo-reference containers or anyone else's.
+${ACCEPT_MINOR ? MINOR_RULE : ''}When done: \`docker compose -p c-${p.id}-r${round} down -v --rmi local\` (or the product's equivalent) and delete ${clone} except nothing you still need; keep ${staging}. Never stop the odoo-reference containers or anyone else's.
 ${ENV_NOTES}
 
 Return the verdict object. judged_at comes from \`date -u +%Y-%m-%dT%H:%M:%SZ\`. critic is "fresh critic, ${p.id} round ${round}". evidence_staging is ${staging}; evidence_dir is ${evdir}.`
@@ -259,7 +282,8 @@ function recorderPrompt(v, humanGates) {
 2. Write the verdict JSON below to /tmp/verdict-${v.piece}-r${v.round}.json exactly (after any screenshot renames) and run \`node ${REPO}/gauntlet/tools/record.mjs /tmp/verdict-${v.piece}-r${v.round}.json\`. If it reports a validation error, fix only the formatting (never the content) and rerun.
 3. Human gates to add to ${REPO}/gauntlet/needs-human.md as new table rows (skip any already listed, number them after the last row, Raised = today's date, Status = Open): ${JSON.stringify(humanGates)}
 3b. Gate gaps to append to ${REPO}/gauntlet/gate-backlog.md as new table rows (number them after the last row; Added = today's date; Owner = the gap's owner; From verdict = "${v.piece} r${v.round} (${String(v.commit).slice(0, 8)})"; Kind = planted variant; Gap = gate, what was planted and the evidence in one or two sentences; Status = Open): ${JSON.stringify(v.gate_gaps || [])}
-4. \`git add gauntlet/verdicts gauntlet/ledger.md gauntlet/progress.html gauntlet/needs-human.md gauntlet/gate-backlog.md ${v.evidence_dir}\` and commit with message "Record verdict: ${v.piece} round ${v.round} ${v.verdict}" ending with:
+${ACCEPT_MINOR && v.verdict === 'LOSS' && v.minor_only === true && (v.followups || []).length ? `3c. Follow-ups to append to ${REPO}/gauntlet/followups.md (owner decision 2026-11-09, needs-human #41; if the file does not exist, create it with the heading "# Follow-ups of pieces accepted with minor gaps", one line saying they are worked in a later follow-up round and never dropped, and a table header | # | Added | Piece | From verdict | Follow-up | Status |). Number rows after the last; Added = today's date; From verdict = "${v.piece} r${v.round} (${String(v.commit).slice(0, 8)})"; Follow-up = title, detail and evidence in one or two sentences; Status = Open: ${JSON.stringify(v.followups)}
+` : ''}4. \`git add gauntlet/verdicts gauntlet/ledger.md gauntlet/progress.html gauntlet/needs-human.md gauntlet/gate-backlog.md ${v.evidence_dir}${ACCEPT_MINOR && v.minor_only === true ? ' gauntlet/followups.md' : ''}\` and commit with message "Record verdict: ${v.piece} round ${v.round} ${v.verdict}" ending with:
 ${TRAILER}
 5. \`git push -u origin ${BRANCH}\`; on a network failure retry up to 4 times waiting 2, 4, 8, 16 seconds. If the push is rejected because the remote moved, \`git pull --no-rebase origin ${BRANCH}\` and push again.
 
@@ -331,6 +355,12 @@ async function judgeStep(s, step) {
   s.last = verdict
   // Owner decision 2026-10-23 (needs-human #27): a piece that wins is done for now.
   if (verdict.verdict === 'WIN') { log(`${p.id}: WIN in round ${round}; done for now, no more rounds`); s.done = true }
+  // Owner decision 2026-11-09 (needs-human #41): a LOSS with only minor gaps is accepted for now; its gaps go to gauntlet/followups.md.
+  if (ACCEPT_MINOR && verdict.verdict === 'LOSS' && verdict.minor_only === true && (verdict.followups || []).length) {
+    log(`${p.id}: LOSS in round ${round} with only minor gaps; accepted for now, ${verdict.followups.length} follow-ups recorded`)
+    s.results[s.results.length - 1].accepted_minor = true
+    s.done = true
+  }
 }
 
 const states = args.pieces.map(p => ({ p, last: p.lastVerdict || null, results: [], done: false }))
@@ -340,7 +370,22 @@ for (let i = 0; i < ROUNDS; i++) {
   const steps = await parallel(active.map(s => () => buildStep(s, i)))
   const ready = active.map((s, k) => ({ s, step: steps[k] })).filter(x => x.step)
   for (const x of ready) {
-    if (!x.step.integ) x.step.integ = await integrate(x.s.p, x.step.round, x.step.build)
+    if (!x.step.integ) {
+      x.step.integ = await integrate(x.s.p, x.step.round, x.step.build)
+      // Owner decision 2026-11-09 (needs-human #41): with targeted builds the integrator's run is the first
+      // full verify, so a failed integration gets one fixer and one more integration before the round is lost.
+      for (let r = 1; r <= INTEG_RETRIES && !(x.step.integ && x.step.integ.merged && x.step.integ.pushed); r++) {
+        const p = x.s.p, round = x.step.round, b = x.step.build
+        const problem = x.step.integ ? (x.step.integ.problem || 'merged/pushed false without detail') : 'the integrator died'
+        log(`${p.id}: round ${round} integration failed; integration fixer ${r}`)
+        const prev = { head_commit: `piece/${p.id} as it is in ${ROOT}/wt/${p.id}`, failure_summary: `The integrator merged piece/${p.id} into ${BRANCH} and its ALONE FULL VERIFY failed, then reset ${BRANCH} (no merge of yours is on it). First, in the worktree, merge the integration branch (\`git merge --no-edit ${BRANCH}\`) so you see what the integrator saw, then fix the cause. The integrator's report:\n${problem}`, notes_for_integrator: b.notes_for_integrator || '' }
+        const fixed = await retrying(`${p.id} r${round} integration fix ${r}`, () => agent(fixerPrompt(p, round, prev, `integration fix ${r} of at most ${INTEG_RETRIES} this round, after a failed full verify of the merge`), { label: `fix:${p.id}:r${round}:integ${r}`, phase: 'Fix', schema: BUILD_SCHEMA, model: BUILDER_MODEL, effort: BUILDER_EFFORT }))
+        if (!fixed) break
+        x.step.build = { ...fixed, human_gates: [...(b.human_gates || []), ...(fixed.human_gates || [])], notes_for_integrator: `${fixed.notes_for_integrator || ''}\nA previous integration of this round failed; its report: ${problem}` }
+        if (!fixed.suite_passes) { log(`${p.id}: round ${round} integration fixer ${r} could not make the targeted suite pass`); break }
+        x.step.integ = await integrate(p, round, x.step.build)
+      }
+    }
   }
   await parallel(ready.map(x => () => judgeStep(x.s, x.step)))
 }

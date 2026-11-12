@@ -398,11 +398,14 @@ internal static class SequenceEndpoints
     }
 
     /// <summary>
-    /// A number already given that the changed pattern could give again (null: none). For every
-    /// period the new pattern counts in (today's, and each period the sequence already has a counter
-    /// for, in the new reset's shape), every date and branch code it can print there, the numbers
-    /// given whose text is the printed prefix, digits at a value not below the period's next value,
-    /// and the printed suffix.
+    /// A number already given that the changed pattern could give again (null: none). Three reads
+    /// whatever the number of branches or periods (the counters, the branches, the company's issued
+    /// numbers of the type); the rest is compared in memory. The periods the new pattern counts in are
+    /// today's, each period the sequence has a counter for in the new reset's shape, and each period
+    /// a number was already given in (read in the new reset's shape: a counter that does not exist
+    /// there yet starts at 1). For each period, every date and branch code the pattern can print
+    /// there gives a printed prefix and suffix; a number given whose text is such a prefix, digits at
+    /// a value not below the period's next value, and such a suffix, would be given again.
     /// </summary>
     internal static async Task<string?> RepeatedNumberAsync(
         NumberingDbContext db, HttpContext http, NumberSequence sequence, string prefix, string suffix, int padding, string reset, bool perBranch, DateOnly today, CancellationToken cancellationToken)
@@ -412,9 +415,17 @@ internal static class SequenceEndpoints
         var branches = perBranch || (prefix + suffix).Contains(NumberPattern.Branch, StringComparison.Ordinal)
             ? await BranchesAsync(http, sequence.CompanyId, cancellationToken)
             : [];
+        // Only numbers that start with the pattern's fixed beginning can be given again.
+        var head = prefix.IndexOf('{', StringComparison.Ordinal) is var open and >= 0 ? prefix[..open] : prefix;
+        var issued = await db.Issued.AsNoTracking()
+            .Where(i => i.CompanyId == sequence.CompanyId && i.DocumentType == sequence.DocumentType && (head == "" || i.Number.StartsWith(head)))
+            .Select(i => new { i.Number, i.DocumentDate, i.BranchId }).ToListAsync(cancellationToken);
+        if (issued.Count == 0)
+        {
+            return null;
+        }
         var (todayYear, todayMonth) = NumberPattern.PeriodPartsOf(reset, today);
         var carried = counters.Where(c => (c.PeriodYear, c.PeriodMonth) == NumberPattern.PeriodPartsOf(sequence.Reset, today) && c.BranchId == null).Select(c => (long?)c.NextValue).FirstOrDefault();
-        // The periods to look at: (year, month, branch) with the lowest next value a document there could get.
         var periods = new Dictionary<(int Year, int Month, Guid? Branch), long>();
         foreach (var c in counters.Where(c => reset switch { NumberReset.Never => c.PeriodYear == 0, NumberReset.Yearly => c.PeriodYear != 0 && c.PeriodMonth == 0, _ => c.PeriodMonth != 0 }))
         {
@@ -424,33 +435,49 @@ internal static class SequenceEndpoints
         {
             periods.TryAdd((todayYear, todayMonth, branch), branch is null ? carried ?? 1L : 1L);
         }
+        foreach (var row in issued)
+        {
+            var (y, m) = NumberPattern.PeriodPartsOf(reset, row.DocumentDate);
+            periods.TryAdd((y, m, perBranch ? row.BranchId : null), 1L);
+        }
         var issuedYears = reset == NumberReset.Never && (prefix + suffix).Contains("{Y", StringComparison.Ordinal)
-            ? await db.Issued.AsNoTracking().Where(i => i.SequenceId == sequence.Id).Select(i => i.DocumentDate.Year).Distinct().ToListAsync(cancellationToken)
-            : [];
+            ? issued.Select(i => i.DocumentDate.Year).Append(today.Year).Distinct().ToList()
+            : [today.Year];
         var codes = branches.ToDictionary(b => b.Id, b => b.Code);
+        // Printed (prefix, suffix) -> the lowest next value a document printed that way could get.
+        var printed = new Dictionary<(string Prefix, string Suffix), long>();
         foreach (var (period, threshold) in periods)
         {
             IEnumerable<DateOnly> dates = reset switch
             {
                 NumberReset.Monthly => [new DateOnly(period.Year, period.Month, 1)],
                 NumberReset.Yearly => Enumerable.Range(1, 12).Select(m => new DateOnly(period.Year, m, 1)),
-                _ => issuedYears.Append(today.Year).Distinct().SelectMany(y => Enumerable.Range(1, 12).Select(m => new DateOnly(y, m, 1))),
+                _ => issuedYears.SelectMany(y => Enumerable.Range(1, 12).Select(m => new DateOnly(y, m, 1))),
             };
             var codesHere = period.Branch is { } b ? new List<string?> { codes.GetValueOrDefault(b) } : (branches.Count > 0 ? branches.Select(x => (string?)x.Code).ToList() : [null]);
             foreach (var date in dates)
             {
                 foreach (var code in codesHere)
                 {
-                    var (printedPrefix, printedSuffix) = NumberPattern.Affixes(prefix, suffix, date, code);
-                    var candidates = await db.Issued.AsNoTracking()
-                        .Where(i => i.CompanyId == sequence.CompanyId && i.DocumentType == sequence.DocumentType && i.Number.StartsWith(printedPrefix) && i.Number.EndsWith(printedSuffix))
-                        .Select(i => i.Number).ToListAsync(cancellationToken);
-                    foreach (var number in candidates)
+                    var key = NumberPattern.Affixes(prefix, suffix, date, code);
+                    printed[key] = printed.TryGetValue(key, out var low) ? Math.Min(low, threshold) : threshold;
+                }
+            }
+        }
+        foreach (var number in issued.Select(i => i.Number))
+        {
+            for (var start = 0; start < number.Length; start++)
+            {
+                if (!char.IsAsciiDigit(number[start]))
+                {
+                    continue;
+                }
+                for (var end = start + 1; end <= number.Length && end - start <= 18 && char.IsAsciiDigit(number[end - 1]); end++)
+                {
+                    if (printed.TryGetValue((number[..start], number[end..]), out var threshold)
+                        && NumberPattern.ValueIn(number, number[..start], number[end..], padding) is { } value && value >= threshold)
                     {
-                        if (NumberPattern.ValueIn(number, printedPrefix, printedSuffix, padding) is { } value && value >= threshold)
-                        {
-                            return number;
-                        }
+                        return number;
                     }
                 }
             }

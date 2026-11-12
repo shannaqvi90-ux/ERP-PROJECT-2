@@ -1,0 +1,64 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.40]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.31]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.74]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:21:23.94]     Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks [FAIL]
+[xUnit.net 00:21:23.94]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:21:23.94]       Collection: ["tenant A administrator (cookie) → GET /api/leaky/b"···, "tenant A administrator (bearer) → GET /api/leaky/b"···, "tenant A administrator in Arabic (cookie) → GET /a"···, "tenant A administrator (cookie) → GET /api/leaky/c"···, "tenant A administrator (bearer) → GET /api/leaky/c"···, ···]
+[xUnit.net 00:21:23.94]       Stack Trace:
+[xUnit.net 00:21:23.95]         /work/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs(149,0): at Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks()
+[xUnit.net 00:21:23.95]         --- End of stack trace from previous location ---
+[xUnit.net 00:21:23.95]       Output:
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/acting: 1
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/by-header: 3
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/cached-tenant: 2570
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/combined: 8
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/company-access: 542
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/company-access-partly-checked: 542
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/export: 5140
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/find: 2
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/me: 214
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/people: 98
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/previous: 178
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/printed: 4
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/recent: 180
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/report: 3
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/spooled: 337
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/tenants: 9
+[xUnit.net 00:21:23.95]         leaks on /api/leaky/viewed: 2
+[xUnit.net 00:21:24.12]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks [20 m 40 s]
+  Error Message:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: ["tenant A administrator (cookie) → GET /api/leaky/b"···, "tenant A administrator (bearer) → GET /api/leaky/b"···, "tenant A administrator in Arabic (cookie) → GET /a"···, "tenant A administrator (cookie) → GET /api/leaky/c"···, "tenant A administrator (bearer) → GET /api/leaky/c"···, ···]
+  Stack Trace:
+     at Erp.Gates.Tests.SelfTests.GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks() in /work/tests/Erp.Gates.Tests/SelfTests/GateSelfTests.cs:line 149
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ leaks on /api/leaky/acting: 1
+ leaks on /api/leaky/by-header: 3
+ leaks on /api/leaky/cached-tenant: 2570
+ leaks on /api/leaky/combined: 8
+ leaks on /api/leaky/company-access: 542
+ leaks on /api/leaky/company-access-partly-checked: 542
+ leaks on /api/leaky/export: 5140
+ leaks on /api/leaky/find: 2
+ leaks on /api/leaky/me: 214
+ leaks on /api/leaky/people: 98
+ leaks on /api/leaky/previous: 178
+ leaks on /api/leaky/printed: 4
+ leaks on /api/leaky/recent: 180
+ leaks on /api/leaky/report: 3
+ leaks on /api/leaky/spooled: 337
+ leaks on /api/leaky/tenants: 9
+ leaks on /api/leaky/viewed: 2
+
+
+Results File: /out/trx/self-http_net10.0_20261111190740.trx
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 21.4177 Minutes

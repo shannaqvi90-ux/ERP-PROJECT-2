@@ -1,0 +1,79 @@
+Test run for /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.14)
+[xUnit.net 00:00:00.49]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:01.11]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.40]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:25.75]     Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions [FAIL]
+[xUnit.net 00:00:25.75]       contacts.contacts: reading and changing files share contacts.contacts.read; a reader must not be able to add or delete
+[xUnit.net 00:00:25.75]       Stack Trace:
+[xUnit.net 00:00:25.75]         /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/Rules/AttachmentGateTests.cs(85,0): at Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions()
+[xUnit.net 00:00:25.75]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:25.75]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:25.75]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:25.75]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions [25 ms]
+  Error Message:
+   contacts.contacts: reading and changing files share contacts.contacts.read; a reader must not be able to add or delete
+  Stack Trace:
+     at Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions() in /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/Rules/AttachmentGateTests.cs:line 85
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.Only_the_store_touches_the_file_system_and_it_builds_paths_only_from_names_it_made [27 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_database_refuses_a_file_row_that_names_another_tenants_bytes_and_a_row_without_a_checksum [18 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_source_checks_catch_a_client_name_in_a_path_a_path_API_outside_the_store_and_a_loose_key [5 ms]
+[xUnit.net 00:00:29.71]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]
+[xUnit.net 00:00:29.71]       DELETE /api/attachments/contacts.contacts/files/{id:guid} changes data but declares the read permission contacts.contacts.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:00:29.71]       POST /api/attachments/contacts.contacts/{id:guid}/files changes data but declares the read permission contacts.contacts.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:00:29.71]       Stack Trace:
+[xUnit.net 00:00:29.71]         /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(267,0): at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+[xUnit.net 00:00:29.71]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:29.71]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:29.71]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:29.71]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [13 ms]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [4 ms]
+  Error Message:
+   DELETE /api/attachments/contacts.contacts/files/{id:guid} changes data but declares the read permission contacts.contacts.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+POST /api/attachments/contacts.contacts/{id:guid}/files changes data but declares the read permission contacts.contacts.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission() in /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 267
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [8 ms]
+[xUnit.net 00:00:35.56]     Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row [FAIL]
+[xUnit.net 00:00:35.56]       {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-4f9c74439eb7783c6d61f2f7050e8721-f7d40b97b930edba-00"}
+[xUnit.net 00:00:35.56]       Stack Trace:
+[xUnit.net 00:00:35.56]         /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs(52,0): at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row()
+[xUnit.net 00:00:35.56]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row [2 s]
+  Error Message:
+   {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-4f9c74439eb7783c6d61f2f7050e8721-f7d40b97b930edba-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row() in /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs:line 52
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:36.16]     Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads [FAIL]
+[xUnit.net 00:00:36.16]       contacts.contacts.read: attaching got 201
+[xUnit.net 00:00:36.16]       Stack Trace:
+[xUnit.net 00:00:36.16]         /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs(78,0): at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads()
+[xUnit.net 00:00:36.16]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:36.43]   Finished:    Erp.Gates.Tests (ID = 'ec344aa157700c825cb92f4dc8361bbec4543a2ec04d2263b025a2302a676b96')
+  Failed Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads [605 ms]
+  Error Message:
+   contacts.contacts.read: attaching got 201
+  Stack Trace:
+     at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads() in /home/shan/critic/p11-attachments-r1-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs:line 78
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 9
+     Passed: 5
+     Failed: 4
+ Total time: 37.1164 Seconds

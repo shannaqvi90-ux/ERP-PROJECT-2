@@ -67,12 +67,8 @@ public sealed class TextShaper(PdfFonts fonts)
     /// <summary>How many shaped lines are kept now (tests).</summary>
     internal int Kept => _shaped.Count;
 
-    /// <summary>How many strings have been shaped, not counting those answered from the kept lines (tests).</summary>
-    internal int Shaped { get; private set; }
-
     private ShapedLine ShapeUncached(string text, decimal size, bool bold, bool documentRightToLeft)
     {
-        Shaped++;
         text = Clean(text);
         var rtl = Bidi.FirstStrongIsRightToLeft(text) ?? documentRightToLeft;
         var runs = new List<GlyphRun>();
@@ -118,88 +114,37 @@ public sealed class TextShaper(PdfFonts fonts)
                 lines.Add(Shape(paragraph, size, bold, documentRightToLeft));
                 continue;
             }
-            // Line breaking: each line takes as many words as fit. The words' own widths (shaped once
-            // each, and words repeat) say where a line probably ends; the line is then shaped whole
-            // (the shaping that fits is the one drawn) and corrected a word at a time, so the break is
-            // exactly where adding one word at a time would put it, with a shaping or two per line
-            // instead of one per word.
-            var words = paragraph.Split(' ');
-            var index = 0;
             var current = "";
-            while (index < words.Length && lines.Count < maxLines)
+            foreach (var word in paragraph.Split(' '))
             {
-                var first = words[index];
-                if (first.Length == 0)
+                if (lines.Count >= maxLines)
                 {
-                    // A space at the start of a line is dropped.
-                    index++;
+                    break;
+                }
+                var candidate = current.Length == 0 ? word : current + " " + word;
+                if (Shape(candidate, size, bold, documentRightToLeft).Width <= width || current.Length == 0 && Fits(word, size, bold, documentRightToLeft, width))
+                {
+                    current = candidate;
                     continue;
                 }
-                if (!Fits(first, size, bold, documentRightToLeft, width))
-                {
-                    // A word wider than the line is cut where it no longer fits.
-                    var rest = first;
-                    while (rest.Length > 0 && lines.Count < maxLines)
-                    {
-                        var cut = FittingPrefix(rest, size, bold, documentRightToLeft, width);
-                        if (cut == rest.Length)
-                        {
-                            break;
-                        }
-                        lines.Add(Shape(rest[..cut], size, bold, documentRightToLeft));
-                        rest = rest[cut..];
-                    }
-                    if (rest.Length > 0 && !Fits(rest, size, bold, documentRightToLeft, width))
-                    {
-                        // One character wider than the line: a line of its own.
-                        current = rest;
-                        index++;
-                        if (index < words.Length && lines.Count < maxLines)
-                        {
-                            lines.Add(Shape(current, size, bold, documentRightToLeft));
-                            current = "";
-                        }
-                        continue;
-                    }
-                    // What is left of the word (it fits now) starts the next line with the words that follow.
-                    words[index] = rest;
-                    if (rest.Length == 0)
-                    {
-                        index++;
-                    }
-                    continue;
-                }
-                var spaceWidth = Shape(" ", size, bold, documentRightToLeft).Width;
-                var estimate = Shape(first, size, bold, documentRightToLeft).Width;
-                var count = 1;
-                while (index + count < words.Length)
-                {
-                    var next = estimate + spaceWidth + Shape(words[index + count], size, bold, documentRightToLeft).Width;
-                    if (next > width * 1.15m)
-                    {
-                        break;
-                    }
-                    estimate = next;
-                    count++;
-                }
-                string Line(int n) => string.Join(' ', words, index, n);
-                // Too many words: drop the last until the line fits.
-                while (count > 1 && Shape(Line(count), size, bold, documentRightToLeft).Width > width)
-                {
-                    count--;
-                }
-                // Too few: take the next while it still fits.
-                while (index + count < words.Length && Shape(Line(count + 1), size, bold, documentRightToLeft).Width <= width)
-                {
-                    count++;
-                }
-                current = Line(count);
-                index += count;
-                if (index < words.Length)
+                if (current.Length > 0)
                 {
                     lines.Add(Shape(current, size, bold, documentRightToLeft));
                     current = "";
                 }
+                // A word wider than the line is cut where it no longer fits.
+                var rest = word;
+                while (rest.Length > 0 && lines.Count < maxLines)
+                {
+                    var cut = FittingPrefix(rest, size, bold, documentRightToLeft, width);
+                    if (cut == rest.Length)
+                    {
+                        break;
+                    }
+                    lines.Add(Shape(rest[..cut], size, bold, documentRightToLeft));
+                    rest = rest[cut..];
+                }
+                current = rest;
             }
             if (lines.Count < maxLines)
             {
@@ -297,46 +242,33 @@ public sealed class TextShaper(PdfFonts fonts)
         face.Font.Shape(buffer);
         var infos = buffer.GlyphInfos;
         var positions = buffer.GlyphPositions;
-        // Each cluster's characters span to the next cluster start (clusters sorted, each once).
-        var clusterOf = new int[infos.Length];
-        for (var g = 0; g < infos.Length; g++)
-        {
-            clusterOf[g] = (int)infos[g].Cluster;
-        }
-        var starts = (int[])clusterOf.Clone();
-        Array.Sort(starts);
-        var unique = 0;
-        for (var g = 0; g < starts.Length; g++)
-        {
-            if (g == 0 || starts[g] != starts[g - 1])
-            {
-                starts[unique++] = starts[g];
-            }
-        }
+        var glyphs = new List<ShapedGlyph>(infos.Length);
+        var glyphText = new List<string>(infos.Length);
+        // Clusters in glyph (visual) order; each cluster's characters span to the next cluster start.
+        var clusterStarts = infos.Select(i => (int)i.Cluster).Distinct().Order().ToList();
         // Each cluster's end, looked up once (searching the list per glyph made a long run quadratic).
-        var clusterEnd = new Dictionary<int, int>(unique);
-        for (var c = 0; c < unique; c++)
+        var clusterEnd = new Dictionary<int, int>(clusterStarts.Count);
+        for (var c = 0; c < clusterStarts.Count; c++)
         {
-            clusterEnd[starts[c]] = c + 1 < unique ? starts[c + 1] : slice.Length;
+            clusterEnd[clusterStarts[c]] = c + 1 < clusterStarts.Count ? clusterStarts[c + 1] : slice.Length;
         }
         // The characters of a cluster belong to its widest glyph (the letter); the other glyphs of
         // the cluster are marks and dots drawn on it (Noto Sans Arabic draws dots as separate glyphs).
-        var owner = new Dictionary<int, int>(unique);
+        var owner = new Dictionary<int, int>();
         for (var g = 0; g < infos.Length; g++)
         {
-            var cluster = clusterOf[g];
+            var cluster = (int)infos[g].Cluster;
             if (!owner.TryGetValue(cluster, out var current) || positions[g].XAdvance > positions[current].XAdvance)
             {
                 owner[cluster] = g;
             }
         }
-        var glyphs = new List<ShapedGlyph>(infos.Length);
-        var glyphText = new List<string>(infos.Length);
         for (var g = 0; g < infos.Length; g++)
         {
-            var cluster = clusterOf[g];
+            var cluster = (int)infos[g].Cluster;
+            var chars = slice[cluster..clusterEnd[cluster]];
             glyphs.Add(new ShapedGlyph(infos[g].Codepoint, face.Scale(positions[g].XAdvance), face.Scale(positions[g].XOffset), face.Scale(positions[g].YOffset)));
-            glyphText.Add(owner[cluster] == g ? StripControls(Piece(slice, cluster, clusterEnd[cluster])) : "");
+            glyphText.Add(owner[cluster] == g ? StripControls(chars) : "");
         }
         // A combining mark shaped as a cluster of its own (a damma over a letter) carries no text of
         // its own: its character goes with the letter it sits on (the nearest earlier cluster that
@@ -382,25 +314,9 @@ public sealed class TextShaper(PdfFonts fonts)
         return false;
     }
 
-    private static readonly System.Collections.Immutable.ImmutableArray<string> SingleCharacters = [.. Enumerable.Range(0, 0x800).Select(c => ((char)c).ToString())];
-
-    /// <summary>The characters from <paramref name="start"/> to <paramref name="end"/>; one character is a
-    /// string kept for all runs (a document shapes millions of glyphs, nearly every one a single letter).</summary>
-    private static string Piece(string text, int start, int end) =>
-        end - start == 1 && text[start] < SingleCharacters.Length ? SingleCharacters[text[start]] : text[start..end];
-
     private static string StripControls(string text)
     {
-        var any = false;
-        foreach (var c in text)
-        {
-            if (Bidi.IsInvisibleControl(c))
-            {
-                any = true;
-                break;
-            }
-        }
-        if (!any)
+        if (!text.Any(Bidi.IsInvisibleControl))
         {
             return text;
         }

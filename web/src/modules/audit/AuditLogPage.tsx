@@ -6,13 +6,10 @@ import type { Row } from "../../kernel/lists/model";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
 import { actionKey, changeLine } from "./RecordHistory";
-import { actorText, fieldName, logAddress, personAddress, type AuditEvent, type FieldChange, type RecordName, type ValueFormat } from "./model";
+import { actorText, fieldLabel, logAddress, personAddress, type AuditEvent, type FieldChange, type FieldLabel, type RecordName, type ValueFormat } from "./model";
 import "./audit.css";
 
 /** A row of the audit log (GET /api/audit/log). */
-/** How much of a change's text the list shows in a cell. */
-const changesShown = 200;
-
 type LogRow = Row & {
   occurredAt: string;
   actorId: string | null;
@@ -31,7 +28,7 @@ type LogRow = Row & {
 };
 
 /** One change with every field's stored values (GET /api/audit/log/{id}). */
-type Change = { change: LogRow; details: FieldChange[]; names: Record<string, RecordName> };
+type Change = { change: LogRow; details: FieldChange[]; names: Record<string, RecordName>; fields?: Record<string, FieldLabel> };
 
 /**
  * The audit log: every change of the records the user may read, newest first, on the list
@@ -76,9 +73,7 @@ export function AuditLogPage() {
           },
           changes: (row) => {
             const r = row as LogRow;
-            // The row carries the whole text (the export prints the same); the screen shows its start.
-            const shown = r.changes.length > changesShown ? `${r.changes.slice(0, changesShown - 1)}…` : r.changes;
-            return <bdi className="audit-change-text" title={shown === r.changes ? undefined : r.changes}>{shown}</bdi>;
+            return <bdi className="audit-change-text">{r.changes}</bdi>;
           },
         }}
       />
@@ -88,7 +83,7 @@ export function AuditLogPage() {
 
 /** The change a row of the log opens: who, when, the record, and every field's old and new value. */
 function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; onRow: (row: LogRow) => void }) {
-  const { t, language, formatDateTime, formatNumber } = useI18n();
+  const { t, language, formatDateTime, formatNumber, format } = useI18n();
   const [found, setFound] = useState<Change | null | undefined>(undefined);
   const [find, setFind] = useState("");
   useEffect(() => {
@@ -103,14 +98,17 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
     return () => abort.abort();
     // onRow only remembers the person's name; the change is read again only for another id.
   }, [id]);
-  const f = useMemo<ValueFormat>(() => ({ t, formatDateTime, formatNumber, language, names: found?.names }), [t, formatDateTime, formatNumber, language, found]);
+  const f = useMemo<ValueFormat>(
+    () => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names: found?.names, fields: found?.fields }),
+    [t, formatDateTime, formatNumber, format, language, found],
+  );
   if (found === undefined) return <p className="muted">{t("audit.history.loading")}</p>;
   if (found === null) return <p className="muted">{t("audit.log.noSelection")}</p>;
   const row = found.change;
   const event: AuditEvent = { ...row, id: String(row.id), changes: found.details };
   // A creation or a deletion lists every field: the box finds one of them by its name.
   const wanted = find.trim().toLocaleLowerCase();
-  const fields = found.details.filter((c) => c.field !== "id" && (!wanted || fieldName(c.field, t).toLocaleLowerCase().includes(wanted) || c.field.includes(wanted)));
+  const fields = found.details.filter((c) => c.field !== "id" && (!wanted || fieldLabel(c.field, f).toLocaleLowerCase().includes(wanted) || c.field.includes(wanted)));
   const name = language === "ar" && row.recordAr ? row.recordAr : row.record;
   return (
     <section className="audit-change" aria-label={t("audit.log.detail")}>

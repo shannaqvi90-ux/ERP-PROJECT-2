@@ -1,0 +1,24 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6fb562c1..cce4d8d9 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -242,9 +242,19 @@ internal static class SequenceEndpoints
+         return result;
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SequenceDto> PlantCache = new();
++
+     private static async Task<Results<Ok<SequenceDto>, ProblemHttpResult>> Get(Guid id, NumberingDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (PlantCache.TryGetValue(id, out var hit))
++        {
++            return TypedResults.Ok(hit);
++        }
+         var dto = await ToDtoAsync(db, http, id, cancellationToken);
++        if (dto is not null)
++        {
++            PlantCache[id] = dto;
++        }
+         return dto is null ? Problems.NotFound(http) : TypedResults.Ok(dto);
+     }
+ 

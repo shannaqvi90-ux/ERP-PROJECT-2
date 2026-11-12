@@ -1,0 +1,808 @@
+{
+  "schema": 1,
+  "run_id": "find-record-20261106T024628-85be",
+  "instrument": 12,
+  "task": "find-record",
+  "task_title": "Find one record among 100,000",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
+  "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
+  "started_at": "2026-11-06T02:46:28.614Z",
+  "finished_at": "2026-11-06T02:47:11.295Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 30,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 2,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.053,
+    "system_wait_seconds": 0.741,
+    "human_seconds": 17.91,
+    "human_plus_wait_seconds": 18.651,
+    "klm_operator_counts": {
+      "K": 42,
+      "P": 1,
+      "B": 2,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.011,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search /contacts",
+      "keystrokes": 9,
+      "at": 0.09,
+      "took": 0.02,
+      "text": "/contacts",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open Contacts",
+      "keystrokes": 1,
+      "at": 0.164,
+      "took": 0.007,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "at": 0.463,
+      "took": 0.097,
+      "text": "Shamma Waleed Al Romaithi",
+      "same_field": false,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "at": 0.56,
+      "took": 0.007,
+      "chord": "Enter",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "at": 0.89,
+      "took": 0.044,
+      "began": 0.851,
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.012,
+      "seconds": 0.077
+    },
+    {
+      "label": "menu found",
+      "at": 0.11,
+      "seconds": 0.053
+    },
+    {
+      "label": "Contacts loaded",
+      "at": 0.171,
+      "seconds": 0.286
+    },
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.457,
+      "seconds": 0.003
+    },
+    {
+      "label": "first page of contacts",
+      "at": 0.46,
+      "seconds": 0.001
+    },
+    {
+      "label": "one result",
+      "at": 0.568,
+      "seconds": 0.205
+    },
+    {
+      "label": "contact form",
+      "at": 0.934,
+      "seconds": 0.114
+    },
+    {
+      "label": "mobile number shown",
+      "at": 1.049,
+      "seconds": 0.001
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 1.05,
+      "seconds": 0.001
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "a1a5d7900b080078.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/a1a5d7900b080078.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "8a7a2f6230a837ca.jpg",
+      "at": 0.774,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/8a7a2f6230a837ca.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "f55b6b126c1f1155.jpg",
+      "at": 1.053,
+      "path": "../../evidence-staging/p16-contacts/r2/compare/blind/shots/f55b6b126c1f1155.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/contacts/73531",
+      "name_shown": "Shamma Waleed Al Romaithi",
+      "mobile_shown": true
+    }
+  },
+  "path_notes": "menus: Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result. | palette: Ctrl+K > type \"/contacts\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/find-record.mjs",
+    "sha256": "fb2608ec34b4b374e373db13600cf9064b2c9ba0a20687c44ad7c5388e0eba68"
+  },
+  "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.038
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "89eee2aba615ac2f",
+    "elements": 331
+  },
+  "screen_after_verify": {
+    "sha256": "89eee2aba615ac2f",
+    "elements": 331,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.003
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 125,
+    "not_caused": 4,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.114,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.179,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.884,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 0.918,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.052,
+      "by_step": 6,
+      "chain": [
+        "input of step 6",
+        "the answer to POST /web/dataset/call_kw/res.partner/web_read after 0.032 s",
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /web/image/res.partner/73531/avatar_128 after 0.01 s"
+      ]
+    }
+  },
+  "finds": {
+    "value": "Shamma Waleed Al Romaithi",
+    "on_start_screen": false,
+    "typed_at_step": 4,
+    "shown_before": false
+  },
+  "set_up_writes": [],
+  "screenshots_path": "palette",
+  "best_path_per_metric": {
+    "steps": "menus",
+    "keystrokes": "menus",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "variants": [
+    {
+      "id": "menus",
+      "path": "Apps menu > Contacts (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 5,
+        "keystrokes": 30,
+        "clicks": 3,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.068,
+        "system_wait_seconds": 0.613,
+        "human_seconds": 18.5,
+        "human_plus_wait_seconds": 19.113,
+        "klm_operator_counts": {
+          "K": 30,
+          "P": 3,
+          "B": 6,
+          "H": 2,
+          "M": 4
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.016,
+          "took": 0.035,
+          "began": 0.001,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Contacts app",
+          "keystrokes": 0,
+          "at": 0.115,
+          "took": 0.035,
+          "began": 0.051,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.496,
+          "took": 0.095,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/odoo/contacts",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 0.591,
+          "took": 0.008,
+          "chord": "Enter",
+          "screen": "/odoo/contacts",
+          "chain": true
+        },
+        {
+          "n": 5,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 0.898,
+          "took": 0.047,
+          "began": 0.861,
+          "screen": "/odoo/contacts",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Contacts loaded",
+          "at": 0.15,
+          "seconds": 0.104
+        },
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.255,
+          "seconds": 0.002
+        },
+        {
+          "label": "first page of contacts",
+          "at": 0.258,
+          "seconds": 0.202
+        },
+        {
+          "label": "one result",
+          "at": 0.599,
+          "seconds": 0.183
+        },
+        {
+          "label": "contact form",
+          "at": 0.945,
+          "seconds": 0.12
+        },
+        {
+          "label": "mobile number shown",
+          "at": 1.066,
+          "seconds": 0.001
+        },
+        {
+          "label": "the chatter's emoji data in",
+          "at": 1.067,
+          "seconds": 0.001
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/contacts/73531",
+          "name_shown": "Shamma Waleed Al Romaithi",
+          "mobile_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.038
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /web/image/res.partner/73531/avatar_128 (image)",
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "b57efc96583f1182",
+        "elements": 331
+      },
+      "screen_after_verify": {
+        "sha256": "b57efc96583f1182",
+        "elements": 331,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.003
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 115,
+        "not_caused": 3,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.162,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.651,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 0.893,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 5 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 1.07,
+          "by_step": 5,
+          "chain": [
+            "the answer to POST /web/dataset/call_kw/res.partner/web_read after 0.094 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /web/image/res.partner/73531/avatar_128 after 0.01 s"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 3,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > type \"/contacts\" > Enter (the search box has focus) > type the name > Enter > open the single result.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 6,
+        "keystrokes": 42,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.053,
+        "system_wait_seconds": 0.741,
+        "human_seconds": 17.91,
+        "human_plus_wait_seconds": 18.651,
+        "klm_operator_counts": {
+          "K": 42,
+          "P": 1,
+          "B": 2,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.011,
+          "chord": "Control+k",
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search /contacts",
+          "keystrokes": 9,
+          "at": 0.09,
+          "took": 0.02,
+          "text": "/contacts",
+          "same_field": false,
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Contacts",
+          "keystrokes": 1,
+          "at": 0.164,
+          "took": 0.007,
+          "chord": "Enter",
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.463,
+          "took": 0.097,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/odoo/contacts",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "search",
+          "keystrokes": 1,
+          "at": 0.56,
+          "took": 0.007,
+          "chord": "Enter",
+          "screen": "/odoo/contacts",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "open the result",
+          "keystrokes": 0,
+          "at": 0.89,
+          "took": 0.044,
+          "began": 0.851,
+          "screen": "/odoo/contacts",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.012,
+          "seconds": 0.077
+        },
+        {
+          "label": "menu found",
+          "at": 0.11,
+          "seconds": 0.053
+        },
+        {
+          "label": "Contacts loaded",
+          "at": 0.171,
+          "seconds": 0.286
+        },
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.457,
+          "seconds": 0.003
+        },
+        {
+          "label": "first page of contacts",
+          "at": 0.46,
+          "seconds": 0.001
+        },
+        {
+          "label": "one result",
+          "at": 0.568,
+          "seconds": 0.205
+        },
+        {
+          "label": "contact form",
+          "at": 0.934,
+          "seconds": 0.114
+        },
+        {
+          "label": "mobile number shown",
+          "at": 1.049,
+          "seconds": 0.001
+        },
+        {
+          "label": "the chatter's emoji data in",
+          "at": 1.05,
+          "seconds": 0.001
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/contacts/73531",
+          "name_shown": "Shamma Waleed Al Romaithi",
+          "mobile_shown": true
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.038
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "POST /mail/store (xhr)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "89eee2aba615ac2f",
+        "elements": 331
+      },
+      "screen_after_verify": {
+        "sha256": "89eee2aba615ac2f",
+        "elements": 331,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.003
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 125,
+        "not_caused": 4,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.114,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.179,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.884,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 0.918,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 1.052,
+          "by_step": 6,
+          "chain": [
+            "input of step 6",
+            "the answer to POST /web/dataset/call_kw/res.partner/web_read after 0.032 s",
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /web/image/res.partner/73531/avatar_128 after 0.01 s"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 4,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    }
+  ]
+}

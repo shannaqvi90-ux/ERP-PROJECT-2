@@ -23,12 +23,18 @@ Ports and the compose project come from the environment, so copies run side by s
 comparison dataset's users and exchange rates, `node gauntlet/compare/data/generate.mjs`). Behind a TLS-inspecting proxy, set
 `ERP_EXTRA_CA_CERTS` to its CA bundle (picked up from `NODE_EXTRA_CA_CERTS` or `SSL_CERT_FILE`).
 
+Contacts is the workspace's shared directory of organisations and people (100,000 in the demo,
+each found by name in English or Arabic, initials, e-mail, number, reference or TRN, with a warning
+when a new contact may already exist); contacts are archived, never deleted. With
+`ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv` (beside `ERP_SEED_USERS_CSV`, same
+folder) the demo holds exactly the comparison dataset's contacts.
+
 The demo workspace Al Noor holds four companies (Dubai, Jebel Ali free zone, Sharjah, Abu Dhabi)
 with twelve branches; Gulf Steel holds two companies. Administrators work in every company, the
 read-only user in the first company only. The working company and branch switcher sits in the
-top bar (Alt+C). Every screen is a key away: `G` then a letter (`U` Users, `R` Roles, `C`
-Companies, `B` Branches, `A` Company access, `N` Document numbering, `Y` Currencies, `X` Exchange rates, `W` Workspace, `M` My account, `H` Home) when no field
-has the focus; `Ctrl+K` finds any screen, record or action, and `?` lists every key.
+top bar (Alt+C). Every screen is a key away: `G` then a letter (`O` Contacts, `U` Users, `R` Roles, `C`
+Companies, `B` Branches, `A` Company access, `N` Document numbering, `W` Workspace, `Y` Currencies, `X` Exchange rates, `M`
+My account, `H` Home) when no field has the focus; `Ctrl+K` finds any screen, record or action, and `?` lists every key.
 
 Demo sign-ins (password `Demo-Pass-2026`): `admin@alnoor.example` (English),
 `admin.ar@alnoor.example` (Arabic), `viewer@alnoor.example` (read-only),
@@ -142,6 +148,14 @@ Open Background jobs (G then J): the list of 100,000 jobs in the demo, a job's p
    actions, each with a permission, and go-to letters for the module's navigation entries
    (`docs/decisions/p04-shell-layout-and-extension-points.md`, `p04-shell-go-to-keys.md`). Format numbers,
    amounts and dates with `useI18n().format`, never `toLocaleString`.
+
+8. Files on a record (p11). A module whose records take attachments registers the kind,
+   `module.AttachmentRecord(new AttachmentRecordType("schema.table", labelKey, readPermission, writePermission, exists, firstIds, listPath))`,
+   and shows `AttachmentsSection` (`web/src/kernel/forms/attachments.tsx`) in the record's form. The attachments
+   module then serves `/api/attachments/schema.table/{id}/files` (list, upload, content, delete) under the
+   record's own permissions; add the four lines to `tests/Gates/endpoint-permissions/attachments.txt`
+   (`docs/decisions/p11-attachments-record-permissions.md`). Bytes sit behind `IAttachmentStore` (a local volume,
+   `Erp:Attachments:Root`; `docs/decisions/p11-attachments-storage.md`).
 
 The gates then attack the new endpoints and tables automatically: every documented route, query
 and body parameter receives the other tenant's ids, e-mails, codes and names, GETs are checked for

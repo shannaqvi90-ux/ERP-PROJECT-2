@@ -1,0 +1,132 @@
+{
+  "piece": "p11-attachments",
+  "round": 1,
+  "commit": "0cb1212a",
+  "judged_at": "2026-11-12T02:43:25Z",
+  "verdict": "BLOCKED",
+  "critic": "fresh critic, p11-attachments round 1",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation, real product (critic's own attack)",
+      "status": "pass",
+      "evidence": "Demo on :21150, tenant A admin@alnoor vs tenant B admin@gulfsteel. B uploaded a canary file. With B's ids, A got: list B contact 404, content 404, content?inline 404, POST to B's contact 404, DELETE B's file 204 (idempotent, B's file still there and readable by B), X-Tenant headers 404. A file name with ../, encoded separators or B's tenant hex is stored only as a clean base name. attachments.files has RLS enabled and forced (tenant_id = erp.current_tenant_id()), erp_app has no BYPASSRLS. Bytes live in /data/attachments/<tenant hex>/<random id>. probes/ in evidence."
+    },
+    {
+      "gate": "G1 gate suites (G1AttachmentsAttackTests, G1HttpIsolationTests, G1DatabaseIsolationTests, AttachmentGateTests)",
+      "status": "pass",
+      "evidence": "All passed in both critic verifies: G1AttachmentsAttackTests 2 m 16 s and 3 m 4 s; G1HttpIsolationTests 4 h 1 m and 3 h 43 m. Every one of the 4 attachment endpoints is attacked, and the module registers an isolation probe. verify-run1/verify.log, verify-run2/verify.log"
+    },
+    {
+      "gate": "G1 other gate tests (outside p11's surface)",
+      "status": "fail",
+      "evidence": "Run 1: G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume failed (41 m 11 s). 21 GET /api/audit/log answers at volume, with deep skip and fields filters, were not 200 (load avg 12, max 22 in that window). Run 2: G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint failed on 'GET /api/audit/log?skip=20002' (items [] total 366) versus a control that returned rows. A company-Y number used as skip compared against a smaller control looks like a gate false positive. Neither test touches attachments, and the integrator's alone run of this commit passed both. verify-run1/failing-G1ListVolume.txt, verify-run2/failing-G1CompanyIsolation.txt"
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "viewer@ upload 403, noaccess@ upload 403. A viewer sees files and Download but no Add files and no Delete (browser). The reviewed map tests/Gates/endpoint-permissions/attachments.txt lists the 4 endpoints. G2PermissionTests, AttachmentsWriteSetTests and AttachmentGateTests passed in both runs. Planted P3 (write permission swapped to read, reviewed map edited too) was caught by 4 tests (plant3-gates-run.log)."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests",
+      "status": "fail",
+      "evidence": "Fresh clone of 0cb1212a. ./erp verify built, migrated and seeded, but neither run passed every test. Run 1: 10 vitest failures in src/modules/shell/clientIsolation.test.tsx (first test timed out at 30 s at load ~70, the rest cascade with happy-dom null input; the same file passes alone: 10/10 in 52 s) plus G1ListVolumeTests. Run 2, a second fresh clone: G1CompanyIsolationTests plus gauntlet/compare test/measured-part.test.mjs:139 'control C3' (the C4 sibling is in gate backlog row 8). ./erp up worked: demo seeded and served in 618 s."
+    },
+    {
+      "gate": "Rule gates (licences, decimal money, Arabic twin strings, audit of every write)",
+      "status": "pass",
+      "evidence": "No new NuGet or npm dependency in 17ba3338..0cb1212a. attachments.files carries the audit_capture trigger: audit.entries rows for each upload (insert) with actor. Every attachments string has an Arabic twin; the section reads right to left in Arabic. No money in this piece."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p11-attachments-r1b ERP_HTTP_PORT=21170 ERP_DB_PORT=21171 ERP_VERIFY_HTTP_PORT=21180 ERP_VERIFY_DB_PORT=21181 /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify (run 2, fresh clone; run 1 the same on ports 21150/21151/21160/21161)",
+    "total": 2447,
+    "passed": 2445,
+    "failed": 2,
+    "skipped": 0,
+    "duration_s": 15213
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 15213,
+    "evidence": "Run 2 (slot taken 22:29:05Z, ended 02:42:38Z, beside one other verify, load avg 15.8, max 81.1): .NET 1065 tests (1 failed: G1CompanyIsolationTests), vitest 731/731, harness 501 (1 failed: measured-part control C3), e2e 150/150 (attachments.spec.ts 4/4). Processor time 21,174 s (dotnet 18,252, web 2,311, e2e 611), over the 20,300 maximum on a busy machine. Run 1 (14:13Z-18:45Z, beside another critic's verify and my demo build; load peak 102): .NET 1065 (1 failed: G1ListVolumeTests audit log), vitest 721/731 (clientIsolation timeouts), harness tests skipped after the vitest failure, e2e 150/150, processor time 21,839 s. ./erp up from the clone: 618 s to a seeded demo."
+  },
+  "odoo": [
+    {
+      "task": "attach-file",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.359,
+        "klm_seconds": 4.15
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 0,
+        "seconds": 0.774,
+        "klm_seconds": 6.8
+      },
+      "notes": "Harness verdict win: ours better on steps, machine seconds, human seconds and human+wait (4.388 vs 6.984). Keystrokes left out (both 0, needs-human #11). Shared rig at the bar (job runs fall short about 2026-11-12T15:15Z). compare/comparisons/attach-file.json"
+    },
+    {
+      "task": "open-attached-file (critic-added: the 'find it again' half of p11's comparison)",
+      "winner": "tie",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.166,
+        "klm_seconds": 5.3
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.278,
+        "klm_seconds": 5.3
+      },
+      "notes": "Start: the contact is open with the file attached (plus one more). Goal: open the file on screen. Harness verdict 'loss': steps 2=2 and human seconds 5.3=5.3 are ties; ours wins machine seconds and human+wait (5.31 vs 5.322). Ours: scroll to the Attachments section at the bottom of the form, then Preview. Without the scroll the instrument rejects the click (a DevTools scroll), because at 1600x900 the section is below the fold. Odoo: paperclip with its count at the top of the chatter, then the file's card. With the PDF fixture, ours is 'invalid' (the PDF viewer frame's own thread) and Odoo has 2 steps / 0.486 s. No shorter ours path exists: no shortcut, and 61 Tab presses to reach Add files by keyboard. Not tie-accepted: first judged round, and no decision record names the task. Task and drivers I wrote are in critic-task/; runs are in compare-open-company-stamp-critic.png/ and compare-open-trade-licence-TL-2026-73519.pdf/."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p11-attachments/r1/01-en-three-files-attached.jpg",
+    "gauntlet/evidence/p11-attachments/r1/02-en-zip-refused.jpg",
+    "gauntlet/evidence/p11-attachments/r1/03-en-preview-image.jpg",
+    "gauntlet/evidence/p11-attachments/r1/04-en-preview-pdf.jpg",
+    "gauntlet/evidence/p11-attachments/r1/05-en-drag-over.jpg",
+    "gauntlet/evidence/p11-attachments/r1/06-en-delete-confirm.jpg",
+    "gauntlet/evidence/p11-attachments/r1/07-en-contact-top.jpg",
+    "gauntlet/evidence/p11-attachments/r1/08-ar-attachments-rtl.jpg",
+    "gauntlet/evidence/p11-attachments/r1/09-ar-preview.jpg",
+    "gauntlet/evidence/p11-attachments/r1/10-en-global-search-file-name.jpg",
+    "gauntlet/evidence/p11-attachments/r1/11-en-contact-history.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Finding a file again is no faster than Odoo: the attachments are below the fold with no sign of them at the top of the record",
+    "detail": "A contact's files live in a section at the very bottom of a long form. Nothing near the record's header (title, Print/History/Archive/Save) shows that files exist, how many there are, or a jump to them. Global search (Ctrl+K) does not find a file by its name, and the contacts list has no attachments column or filter. Opening an attached file takes scroll + Preview (2 steps, 5.3 s modelled), exactly what Odoo needs with its paperclip count at the top of the chatter (2 steps, 5.3 s), so the 'find it again' half of p11's comparison is a tie, which counts as a loss. By keyboard it is worse: 61 Tab presses from the page to 'Add files', and no shortcut. Attaching (attach-file) does beat Odoo. Fix ideas: a files count or paperclip button in the record header that jumps to and focuses the section (or a side pane), a keyboard shortcut, and file names in global search.",
+    "evidence": "Run gauntlet/compare with my task (critic-task/task-open-attached-file.mjs, ours-open-attached-file.mjs, odoo-open-attached-file.mjs copied into tasks/ and drivers/): OAF_FILE=company-stamp-critic.png COMPARE_OURS_URL=http://localhost:<demo port> node run.mjs --task open-attached-file --product both. The result: steps 2/2 tie, human 5.3/5.3 tie, verdict loss (compare-open-company-stamp-critic.png/comparisons/open-attached-file.json). Blind start shots: ours 19a1e782d04f1cdf.jpg (no sign of attachments on screen) and Odoo 2844ff49207b5d96.jpg (paperclip '3' in view), in compare-open-company-stamp-critic.png/blind/shots/. walk/walk.mjs prints 'tabs to Add files: 61'. Screenshot 07-en-contact-top.jpg."
+  },
+  "gate_gaps": [
+    {
+      "owner": "p11-attachments",
+      "gate": "G1AttachmentsAttackTests / AttachmentsIsolationProbe, and the AttachmentGateTests source checks",
+      "planted": "In AttachmentEndpoints.ContentAsync, an optional query parameter 'version' (a storage key) is opened with store.OpenAsync(<tenant parsed from the key>, version) in place of the session tenant and the row's own key. Tenant A asks for its own file with ?version=<tenant B's storage key> and receives tenant B's bytes.",
+      "evidence": "plant.diff. Proof in the planted product: PlantProofTests.P1_tenant_A_reads_tenant_B_bytes_through_a_client_supplied_key passed, so B's secret bytes came back to A (plant-proof.log, PlantProofTests.cs.txt). G1AttachmentsAttackTests (4 m 24 s), the four AttachmentGateTests (including 'Only_the_store_touches_the_file_system_and_it_builds_paths_only_from_names_it_made' and 'The_source_checks_catch_a_client_name_in_a_path...a_loose_key') and G2 all passed on the planted code (plant-gates-run.log). The probe never sends tenant B's storage keys in the file endpoints' query or header fields, and no source rule requires the store's tenant argument to be ITenantContext.TenantId. The real product shows no such fault: the key always comes from the row, under RLS."
+    }
+  ],
+  "other_findings": [
+    "Scope: only contacts take attachments. AttachmentRecord is registered only by ContactsModule, so companies (trade licence, TRN certificate), branches, users and the other records that have forms cannot hold files, while the spec says 'on any record' and Odoo attaches files to every record with a chatter.",
+    "Accepted types are only PDF, PNG, JPEG, GIF, WebP, TXT, CSV and Office files; zip, eml/msg, tiff and heic are refused with 415 (sample.zip shown in 02-en-zip-refused.jpg). The limit is 20 MB a file and 250 files a record. A UAE trading company often files scanned TIFFs, phone HEIC photos and saved e-mails.",
+    "English layout: at 1440x900 the attachments table is wider than its section and the Delete buttons are cut off ('De'); see 01-en-three-files-attached.jpg. Arabic fits.",
+    "Uploads and deletes are in the audit log (attachments.files rows, record label = the file name), but the contact's own History panel does not show them ('1 change' after several uploads and a delete; 11-en-contact-history.jpg), although the delete dialog says 'The removal stays in the audit trail'.",
+    "Text files have no preview (only images and PDF). Seeded demo files show a blank 'Added by'.",
+    "Once, Enter on the focused 'Add files' button did not open the file dialog within 5 s; a re-run opened it at once. Not reproduced.",
+    "Planted P2 (GET content?remove=true deleting the row under the read permission) did nothing: the kernel's read-only transaction for GET kept the file (plant-proof.log). So it is no gap: the kernel blocks writes on reads by construction.",
+    "[route: p00-foundation] G1CompanyIsolationTests failed in run 2 on GET /api/audit/log?skip=20002 (items [] total 366) against a 'value that exists nowhere' control that returned rows. A numeric company-Y marker placed in the skip field and compared with a smaller control looks like a gate false positive (verify-run2/failing-G1CompanyIsolation.txt).",
+    "[route: p07-audit] G1ListVolumeTests failed in run 1: 21 /api/audit/log answers at demo volume (deep skip such as 205095, fields eq filters) were not 200 at load avg 12, max 22. a6bcedcd (GIN index for the fields filter) is in this commit. The integrator's alone run passed it in 29 m 36 s; it took 41 m 11 s here (verify-run1/failing-G1ListVolume.txt).",
+    "[route: p04-shell] web/src/modules/shell/clientIsolation.test.tsx: in run 1 the first test timed out at 30 s at load ~70, and the other 9 cascaded with 'Cannot read properties of null (reading type)' in happy-dom's input setter. The file passed 10/10 alone (52 s) and in run 2.",
+    "[route: p01-odoo-rig] gauntlet/compare test/measured-part.test.mjs:139 'control C3' failed in run 2 under load (expected verified, got invalid: 'a DevTools command of the harness' timer). It is the same class as backlog row 8's control C4. The harness also marks ours 'invalid' when a PDF is previewed in a frame (open-attached-file with the PDF fixture), so PDF-viewer tasks cannot be judged for ours.",
+    "Load and processor time: run 1 had 21,839 processor seconds with load peaking at 102 (two verifies building plus my demo build). Run 2 had 21,174 s, load avg 15.8, max 81.1. Both are above the 20,300 maximum on a busy machine."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p11-attachments/r1",
+  "evidence_dir": "gauntlet/evidence/p11-attachments/r1"
+}

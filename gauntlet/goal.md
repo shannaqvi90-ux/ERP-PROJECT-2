@@ -68,6 +68,29 @@ coming back BLOCKED. The lead's wording of what was approved:
    Recorded verdicts are not changed. The decision applies from the first workflow launched
    after serial-10c.
 
+OWNER DECISION, 2026-11-09 (needs-human #41). The owner's words, choosing two of the lead's
+proposals to shorten rounds: "Builders aur fixers sirf apne hisse ke tests chalayen, poora test
+sirf integration aur critic par ho" and "Behtar ho to shamil kar lo: chhoti kami ho to piece ko
+pehle merge kar ke baad mein theek karna", "yeh 2 karo". The lead's wording of what was approved:
+   a. Builders and fixers run only the targeted tests of what they changed (their test
+      projects, the gate classes that reach their surface, the source and allowlist gates,
+      the web unit tests and their own end-to-end specs), not the whole `./erp verify`. The
+      integrator's alone full verify and the critic's clean-clone run stay as they are, and a
+      merge still needs a full passing verify. When the integrator's run fails, one fixer gets
+      its report and the integrator tries once more before the round is lost.
+   b. A LOSS whose every gap is minor is accepted for now: the verdict stays LOSS in the
+      record, the piece gets no more rounds this wave, and every gap goes to
+      `gauntlet/followups.md`, worked in a later follow-up round and never dropped. A gap is
+      minor only when all tests pass and no hard gate fails, ours wins (or ties under the
+      accepted-tie rule, or is a signed-off known loss) every compared Odoo task, every main
+      job of the piece works end to end in English and Arabic by keyboard, and no gap is a
+      crash or server error, lost or wrong data, a wrong amount, a tenant, permission or
+      security weakness, a money, ledger or audit fault, missing Arabic on a main path, or a
+      licence or Odoo-copying issue; and there are at most five gaps, each one short session
+      of work. BLOCKED, any Odoo loss and anything outside that list are unchanged.
+   Recorded verdicts are not changed. The decision applies from serial-20, the first workflow
+   launched after 2026-11-09 18:00 UTC (serial-19 was already running).
+
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not
 judge.

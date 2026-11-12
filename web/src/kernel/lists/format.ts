@@ -48,8 +48,11 @@ export function formatValue(column: ListColumn, value: unknown, f: Formatters): 
       const [y, m, d] = String(value).split("-").map(Number);
       return y && m && d ? f.formatDate(new Date(y, m - 1, d)) : String(value);
     }
-    case "number":
-      return f.formatNumber(Number(value));
+    case "number": {
+      // A custom number field keeps the decimals it was declared with (1234.50, not 1,235).
+      const text = String(value).trim();
+      return column.decimals !== undefined && column.decimals !== null && isDecimalString(text) ? f.formatDecimal(text, column.decimals) : f.formatNumber(Number(value));
+    }
     case "money": {
       const text = String(value).trim();
       return isDecimalString(text) ? f.formatDecimal(text, Math.min(6, Math.max(2, scaleOf(text)))) : text;

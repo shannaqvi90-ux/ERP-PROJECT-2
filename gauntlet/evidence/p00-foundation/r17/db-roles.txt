@@ -1,0 +1,31 @@
+role|erp_owner|f|f|t
+role|erp_app|f|f|f
+role|erp_auth|f|f|f
+memberships|erp_owner|erp_auth
+tenant tables|25|25|25|0
+tables without tenant_id|audit.__ef_migrations_history
+tables without tenant_id|tenancy.__ef_migrations_history
+tables without tenant_id|identity.__ef_migrations_history
+tables without tenant_id|identity.sign_in_secret
+tables without tenant_id|numbering.__ef_migrations_history
+tables without tenant_id|identity.sign_in_failures
+tables without tenant_id|currency.__ef_migrations_history
+tables without tenant_id|jobs.__ef_migrations_history
+tables without tenant_id|lists.__ef_migrations_history
+as erp_app, no tenant: users|0
+as erp_app, no tenant: audit|0
+BEGIN
+00000000-0000-0000-0000-000000000000
+bogus tenant users|0
+ROLLBACK
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+grants|erp_auth|identity.sign_in_failures|DELETE,SELECT,INSERT
+grants|erp_auth|identity.sign_in_secret|SELECT
+grants|erp_owner|identity.sign_in_failures|SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER
+grants|erp_owner|identity.sign_in_secret|SELECT,REFERENCES,TRIGGER,TRUNCATE,DELETE,INSERT,UPDATE
+owner of tables|erp_owner|34
+tenants|alnoor|0190a000-0000-7000-8000-000000000001
+tenants|gulfsteel|0190a000-0000-7000-8000-000000000002
+ERROR:  permission denied for table sign_in_failures
+ERROR:  permission denied for table sign_in_secret

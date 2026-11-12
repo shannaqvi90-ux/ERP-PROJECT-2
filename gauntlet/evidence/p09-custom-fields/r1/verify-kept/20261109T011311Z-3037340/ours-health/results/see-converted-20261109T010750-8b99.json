@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "run_id": "see-converted-20261109T010750-8b99",
+  "instrument": 12,
+  "task": "see-converted",
+  "task_title": "See an amount converted to the base currency",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Find out what 1250 EUR is in AED at today's rate.",
+  "done_when": "The screen shows 1250 EUR as 5,359.38 AED.",
+  "started_at": "2026-11-09T01:07:50.645Z",
+  "finished_at": "2026-11-09T01:07:55.340Z",
+  "environment": {
+    "base_url": "http://localhost:20960",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 4,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.49,
+    "system_wait_seconds": 0.125,
+    "human_seconds": 9.47,
+    "human_plus_wait_seconds": 9.595,
+    "klm_operator_counts": {
+      "K": 4,
+      "P": 3,
+      "B": 6,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Currencies (navigation)",
+      "keystrokes": 0,
+      "at": 0.014,
+      "took": 0.055,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "the EUR row",
+      "keystrokes": 0,
+      "at": 0.164,
+      "took": 0.076,
+      "began": 0.137,
+      "screen": "/currency/currencies",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "the amount",
+      "keystrokes": 0,
+      "at": 0.28,
+      "took": 0.033,
+      "began": 0.245,
+      "screen": "/currency/currencies/01a1bd21-e4e9-7c64-88a7-4fd0c341b019",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "type",
+      "label": "amount",
+      "keystrokes": 4,
+      "at": 0.317,
+      "took": 0.011,
+      "text": "1250",
+      "same_field": true,
+      "screen": "/currency/currencies/01a1bd21-e4e9-7c64-88a7-4fd0c341b019",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "currencies list",
+      "at": 0.069,
+      "seconds": 0.067
+    },
+    {
+      "label": "the converter",
+      "at": 0.239,
+      "seconds": 0.006
+    },
+    {
+      "label": "converted",
+      "at": 0.329,
+      "seconds": 0.052
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "6810613849a1190b.jpg",
+      "at": 0,
+      "path": "../out/ours-health/blind/shots/6810613849a1190b.jpg"
+    },
+    {
+      "moment": "converted amount",
+      "file": "24b9fdd9092e9ef9.jpg",
+      "at": 0.381,
+      "path": "../out/ours-health/blind/shots/24b9fdd9092e9ef9.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "ff9de82eef70dbcb.jpg",
+      "at": 0.49,
+      "path": "../out/ours-health/blind/shots/ff9de82eef70dbcb.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "shown": "EUR 1,250.00 = AED 5,359.38At 4.2875 AED per EUR, the rate of 9 Nov 2026.",
+      "baseAmount": "5359.38",
+      "rate": "4.2875",
+      "rateDate": "2026-11-09"
+    }
+  },
+  "path_notes": "Currencies (navigation) > the euro > the converter's amount > type the amount (the amount in AED shows as it is typed).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/see-converted.mjs",
+    "sha256": "c2f2ea79ff6dc0ec595649a0d08a137dd2cae54c004f0f234acd06be6f3957c1"
+  },
+  "task_notes": "An amount in a foreign currency seen in the company's base currency (1250 x 4.2875 = 5,359.375, rounded once to the fils: 5,359.38). Set-up makes today's euro rate 4.2875 AED in both products; neither product saves anything the task needs.",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.008,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.019,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.008,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.018,
+      "verified": true,
+      "gap_seconds": 0.056
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "95d5193ea3ef0c79",
+    "elements": 665
+  },
+  "screen_after_verify": {
+    "sha256": "95d5193ea3ef0c79",
+    "elements": 665,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.03
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 21,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.336,
+      "by_step": 4,
+      "chain": [
+        "input of step 4",
+        "the answer to GET /api/currency/convert after 0.01 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /api/currency/rates"
+  ]
+}

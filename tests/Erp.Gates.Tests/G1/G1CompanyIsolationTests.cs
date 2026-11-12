@@ -744,13 +744,41 @@ public static class CompanyAttack
             : char.IsDigit(c) ? (char)('0' + random[i] % 10) : c).ToArray());
     }
 
+    /// <summary>160 characters of the text, from a little before the first place it differs from the other (the start when it does not).</summary>
+    private static string AroundDifference(string text, string other)
+    {
+        var at = 0;
+        while (at < text.Length && at < other.Length && text[at] == other[at]) at++;
+        var from = Math.Max(0, at - 40);
+        return (from > 0 ? "…" : "") + text[from..Math.Min(text.Length, from + 160)];
+    }
+
     private static string Short(string text) => text.Length <= 200 ? text : text[..200] + "…";
 
+    /// <summary>
+    /// A value of the same shape that exists nowhere. Letters stay letters, digits stay digits, and a
+    /// value that is not a date does not become one: a three-letter month with a day ("LIC-2" drawn
+    /// as "jan-2") parses as a date, so the control would pass a date parameter's binding that the
+    /// value fails, and the two answers (an empty 400 and a validation problem) would differ for
+    /// that reason alone (seen once in a full verify, round 17).
+    /// </summary>
     private static string Scramble(string value)
     {
-        var random = System.Security.Cryptography.RandomNumberGenerator.GetBytes(value.Length);
-        return new string(value.Select((c, i) => char.IsLetter(c) ? (char)('a' + random[i] % 26) : char.IsDigit(c) ? (char)('0' + random[i] % 10) : c).ToArray());
+        for (var attempt = 0; ; attempt++)
+        {
+            var random = System.Security.Cryptography.RandomNumberGenerator.GetBytes(value.Length);
+            var drawn = new string(value.Select((c, i) => char.IsLetter(c) ? (char)('a' + random[i] % 26) : char.IsDigit(c) ? (char)('0' + random[i] % 10) : c).ToArray());
+            if (attempt >= 100 || ParsesAsDate(value) || !ParsesAsDate(drawn))
+            {
+                return drawn;
+            }
+        }
     }
+
+    private static bool ParsesAsDate(string text) =>
+        DateOnly.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, out _)
+        || DateTime.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, out _)
+        || TimeOnly.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, out _);
 
     private sealed class State(CompanySnapshot victim, string victimName)
     {
@@ -759,6 +787,10 @@ public static class CompanyAttack
         public List<string> ServerErrors { get; } = [];
         public int Requests => _requests;
         public int DifferentialChecks => _differentialChecks;
+
+        /// <summary>Pairs whose two answers differed only because the list moved while the pair was asked (<see cref="MovingLists"/>).</summary>
+        public int MovedLists => _movedLists;
+        private int _movedLists;
 
         public int StoredSkips { get; private set; }
 
@@ -876,17 +908,28 @@ public static class CompanyAttack
             var right = Normalize(control.Text, value, controlValue);
             if (answer.Status == control.Status && left != right && first is { } earlier && earlier.Answer.Status == answer.Status && earlier.Control.Status == control.Status)
             {
-                var nonces = Nonces.Paths(right, Normalize(earlier.Control.Text, value, controlValue));
-                nonces.UnionWith(Nonces.Paths(left, Normalize(earlier.Answer.Text, value, controlValue)));
+                var firstAnswer = Normalize(earlier.Answer.Text, value, controlValue);
+                var firstControl = Normalize(earlier.Control.Text, value, controlValue);
+                var nonces = Nonces.Paths(right, firstControl);
+                nonces.UnionWith(Nonces.Paths(left, firstAnswer));
                 if (nonces.Count > 0)
                 {
                     left = Nonces.Without(left, nonces);
                     right = Nonces.Without(right, nonces);
+                    firstAnswer = Nonces.Without(firstAnswer, nonces);
+                    firstControl = Nonces.Without(firstControl, nonces);
+                }
+                // A list that gained rows while the pair ran (the audit log, the job runs) answers
+                // differently to the same ask: judged by the order the four answers came in.
+                if (left != right && MovingLists.ExplainedByMovement(firstAnswer, firstControl, left, right))
+                {
+                    left = right;
+                    Interlocked.Increment(ref _movedLists);
                 }
             }
             if (answer.Status != control.Status || left != right)
             {
-                lock (_lock) Oracles.Add($"{attacker} → {label}: {answer.Status} {left[..Math.Min(160, left.Length)]} but for a value that exists nowhere {control.Status} {right[..Math.Min(160, right.Length)]}");
+                lock (_lock) Oracles.Add($"{attacker} → {label}: {answer.Status} {AroundDifference(left, right)} but for a value that exists nowhere {control.Status} {AroundDifference(right, left)}");
             }
         }
     }

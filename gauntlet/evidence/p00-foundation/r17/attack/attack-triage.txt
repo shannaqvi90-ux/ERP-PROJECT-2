@@ -1,0 +1,12 @@
+Critic p00 r17: triage of attack-run.log's 68 flagged lines (none is a leak).
+- 43 x "GET /api/audit/records/<B id>?type=... answered 200": the answer is {"items":[],"names":{}} for B's ids,
+  exactly the answer for a random uuid (probe-audit.txt). B's own call for the same record shows its history.
+  Not a leak: nothing of B's is returned and existence is not revealed.
+- 24 x "/api/audit/log [...] / /api/reports/lists/audit.log [...] contains B id 0190a000-...-0002" (B's tenant id):
+  exactly one row of A's audit log carries it (probe-audit.txt): the insert of a jobs.jobs row that A itself queued
+  during attack section 1, whose payload A filled with {"tenantId": "<B tenant id>"} (attack.mjs body). An echo of
+  A's own input stored in A's own record, not B's data.
+- 1 x "DELETE /api/currency/rates/<B id> answered 204": unchanged no-op since round 15 (same answer as a random id),
+  B's checksum unchanged.
+B rows unchanged by A's attack: true (b-before-attack.txt = b-after-attack.txt).
+0190a000-0000-7000-8000-000000000001|{"new": {"tenantId": "0190a000-0000-7000-8000-000000000002", "retentionDays": 30}}

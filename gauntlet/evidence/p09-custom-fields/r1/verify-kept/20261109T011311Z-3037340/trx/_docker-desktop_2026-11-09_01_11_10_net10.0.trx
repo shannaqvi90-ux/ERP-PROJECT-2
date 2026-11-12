@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ad59998b-30a0-45bd-8514-76901f51bb0f" name="@docker-desktop 2026-11-09 01:11:10" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-09T01:11:10.0720909+00:00" queuing="2026-11-09T01:11:10.0720909+00:00" start="2026-11-09T01:09:14.4505519+00:00" finish="2026-11-09T01:11:11.6746377+00:00" />
+  <TestSettings name="default" id="f34618e4-9d05-416c-ad9e-af78709fe44a">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-11-09_01_11_10" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="57279128-8e1e-4078-91d5-452e2895b305" testId="e0abaf2a-3b83-f24d-727d-c91ea64cd3af" testName="Erp.Modules.Contacts.Tests.ContactsListVolumeTests.Sorted_filtered_grouped_broad_and_deep_keyset_pages_stay_within_budget" computerName="docker-desktop" duration="00:00:06.9674140" startTime="2026-11-09T01:11:03.0798483+00:00" endTime="2026-11-09T01:11:10.0533963+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="57279128-8e1e-4078-91d5-452e2895b305">
+      <Output>
+        <StdOut>/api/contacts/contacts?take=100: median 67 ms, slowest 107 ms
+/api/contacts/contacts?take=100&amp;sort=-createdAt: median 37 ms, slowest 66 ms
+/api/contacts/contacts?take=100&amp;sort=city: median 36 ms, slowest 48 ms
+/api/contacts/contacts?take=100&amp;sort=email: median 35 ms, slowest 36 ms
+/api/contacts/contacts?take=100&amp;filter=kind%20eq%20%27organisation%27%20and%20isActive%20eq%20true%20and%20emirate%20eq%20%27dubai%27: median 38 ms, slowest 41 ms
+/api/contacts/contacts?take=100&amp;filter=tags%20contains%20%27Supplier%27: median 42 ms, slowest 45 ms
+/api/contacts/contacts?take=100&amp;filter=creditLimit%20gt%20250000: median 37 ms, slowest 38 ms
+/api/contacts/contacts?take=1&amp;groupBy=emirate: median 56 ms, slowest 58 ms
+/api/contacts/contacts?take=100&amp;search=al: median 62 ms, slowest 78 ms
+/api/contacts/contacts?take=100&amp;search=%D9%85%D8%AD%D9%85%D8%AF: median 229 ms, slowest 247 ms
+keyset page 31 by name: median 37 ms, slowest 41 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4c9a2b4b-49b9-408d-afdc-9ba4d9214b5f" testId="25891d31-813d-d13c-f605-8de92c0307b9" testName="Erp.Modules.Contacts.Tests.ContactsListVolumeTests.One_contact_is_found_among_100000_by_name_initials_e_mail_number_or_tax_number_in_well_under_a_second" computerName="docker-desktop" duration="00:00:01.2103781" startTime="2026-11-09T01:11:10.0599424+00:00" endTime="2026-11-09T01:11:11.2705022+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4c9a2b4b-49b9-408d-afdc-9ba4d9214b5f">
+      <Output>
+        <StdOut>/api/contacts/contacts?search=shamma%20romaithi: median 8 ms, slowest 10 ms
+/api/contacts/contacts?search=Romaithi: median 9 ms, slowest 10 ms
+/api/contacts/contacts?search=SHAMMA%20WALEED: median 8 ms, slowest 9 ms
+/api/contacts/contacts?search=swar: median 12 ms, slowest 13 ms
+/api/contacts/contacts?search=%D8%B4%D9%85%D8%A9%20%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%8A: median 17 ms, slowest 19 ms
+/api/contacts/contacts?search=%D8%A7%D9%84%D8%B1%D9%85%D9%8A%D8%AB%D9%89%20%D8%B4%D9%85%D9%87: median 17 ms, slowest 18 ms
+/api/contacts/contacts?search=shamma.romaithi%40: median 11 ms, slowest 11 ms
+/api/contacts/contacts?search=555%207351: median 8 ms, slowest 10 ms
+/api/contacts/contacts?search=100777666555443: median 10 ms, slowest 11 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b7c5fe31-0033-4495-81fc-c271166692d7" testId="1c73483c-dd96-b353-2fee-1018dcbe7d9e" testName="Erp.Modules.Contacts.Tests.ContactsListVolumeTests.A_duplicate_check_among_100000_answers_within_the_budget" computerName="docker-desktop" duration="00:00:00.1250924" startTime="2026-11-09T01:11:11.2715646+00:00" endTime="2026-11-09T01:11:11.3967317+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7c5fe31-0033-4495-81fc-c271166692d7" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Modules.Contacts.Tests.ContactsListVolumeTests.A_duplicate_check_among_100000_answers_within_the_budget" storage="/work/tests/erp.modules.contacts.tests/bin/release/net10.0/erp.modules.contacts.tests.dll" id="1c73483c-dd96-b353-2fee-1018dcbe7d9e">
+      <Execution id="b7c5fe31-0033-4495-81fc-c271166692d7" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Contacts.Tests/bin/Release/net10.0/Erp.Modules.Contacts.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Contacts.Tests.ContactsListVolumeTests" name="A_duplicate_check_among_100000_answers_within_the_budget" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Contacts.Tests.ContactsListVolumeTests.Sorted_filtered_grouped_broad_and_deep_keyset_pages_stay_within_budget" storage="/work/tests/erp.modules.contacts.tests/bin/release/net10.0/erp.modules.contacts.tests.dll" id="e0abaf2a-3b83-f24d-727d-c91ea64cd3af">
+      <Execution id="57279128-8e1e-4078-91d5-452e2895b305" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Contacts.Tests/bin/Release/net10.0/Erp.Modules.Contacts.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Contacts.Tests.ContactsListVolumeTests" name="Sorted_filtered_grouped_broad_and_deep_keyset_pages_stay_within_budget" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Contacts.Tests.ContactsListVolumeTests.One_contact_is_found_among_100000_by_name_initials_e_mail_number_or_tax_number_in_well_under_a_second" storage="/work/tests/erp.modules.contacts.tests/bin/release/net10.0/erp.modules.contacts.tests.dll" id="25891d31-813d-d13c-f605-8de92c0307b9">
+      <Execution id="4c9a2b4b-49b9-408d-afdc-9ba4d9214b5f" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Contacts.Tests/bin/Release/net10.0/Erp.Modules.Contacts.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Contacts.Tests.ContactsListVolumeTests" name="One_contact_is_found_among_100000_by_name_initials_e_mail_number_or_tax_number_in_well_under_a_second" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="e0abaf2a-3b83-f24d-727d-c91ea64cd3af" executionId="57279128-8e1e-4078-91d5-452e2895b305" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25891d31-813d-d13c-f605-8de92c0307b9" executionId="4c9a2b4b-49b9-408d-afdc-9ba4d9214b5f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1c73483c-dd96-b353-2fee-1018dcbe7d9e" executionId="b7c5fe31-0033-4495-81fc-c271166692d7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.16]   Discovering: Erp.Modules.Contacts.Tests
+[xUnit.net 00:00:00.42]   Discovered:  Erp.Modules.Contacts.Tests
+[xUnit.net 00:00:00.55]   Starting:    Erp.Modules.Contacts.Tests
+[xUnit.net 00:01:56.82]   Finished:    Erp.Modules.Contacts.Tests (ID = '3b8b645bb98264c857ea3d82cf703af7bde641718acc5023266be68b6158172f')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

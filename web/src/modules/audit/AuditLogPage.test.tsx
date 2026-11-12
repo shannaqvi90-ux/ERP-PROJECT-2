@@ -51,13 +51,13 @@ const row = {
 };
 const arabicRow = { ...row, changes: "البريد الإلكتروني: من a@x.example إلى b@x.example" };
 
-function serve(language: "en" | "ar" = "en", listed?: typeof row) {
+function serve(language: "en" | "ar" = "en") {
   return mockFetch((_method, url) => {
     if (url === "/api/auth/session") return { status: 200, body: { authenticated: true, user: { id: "u1", email: "a@x", displayName: "Mariam", language: "en" }, tenant: { id: "t1", code: "x", nameEn: "X", nameAr: "س" }, permissions: ["audit.log.read", "identity.users.read"], menu: [], expiresAt: null } };
     if (url.startsWith("/api/lists/audit.log/definition")) return { status: 200, body: definition };
     if (url.startsWith("/api/lists/audit.log/views")) return { status: 200, body: { items: [] } };
     if (url.startsWith("/api/audit/log/c1")) return { status: 200, body: { change: row, details: [{ field: "email", old: "a@x.example", new: "b@x.example" }], names: {} } };
-    if (url.startsWith("/api/audit/log")) return { status: 200, body: { items: [listed ?? (language === "ar" ? arabicRow : row)], total: 1, next: null } };
+    if (url.startsWith("/api/audit/log")) return { status: 200, body: { items: [language === "ar" ? arabicRow : row], total: 1, next: null } };
     return { status: 404, body: {} };
   });
 }
@@ -87,17 +87,6 @@ describe("the audit log screen", () => {
     expect(text).toContain("E-mail: from a@x.example to b@x.example");
     // The changed fields read by their names.
     expect(text).toContain("E-mail");
-  });
-
-  it("shows the start of a long change text in the cell and the whole text as its tooltip", async () => {
-    const whole = Array.from({ length: 40 }, (_, i) => `Permissions: from nothing to Permission number ${i}`).join("; ");
-    serve("en", { ...row, changes: whole });
-    const { container } = await show("en");
-    const cell = container.querySelector(".audit-change-text")!;
-    expect(cell.textContent!.length).toBe(200);
-    expect(cell.textContent!.endsWith("…")).toBe(true);
-    expect(whole.startsWith(cell.textContent!.slice(0, 199))).toBe(true);
-    expect(cell.getAttribute("title")).toBe(whole);
   });
 
   it("reads in Arabic: the person's and the record's Arabic names and the Arabic change line", async () => {

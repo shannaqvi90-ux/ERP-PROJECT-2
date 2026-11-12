@@ -75,7 +75,8 @@ public sealed record ListColumn(
     string? TrueLabelKey = null,
     string? FalseLabelKey = null,
     ListCompanyValues? InCompany = null,
-    ListColumnWidth Width = ListColumnWidth.Normal);
+    ListColumnWidth Width = ListColumnWidth.Normal,
+    int? Decimals = null);
 
 /// <summary>Values of a <see cref="ListColumn.ValuesFrom"/> column a row holds in one company each.</summary>
 /// <param name="Field">Row property holding an array of objects, one per value and company.</param>

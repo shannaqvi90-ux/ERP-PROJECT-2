@@ -1,0 +1,929 @@
+{
+  "schema": 1,
+  "run_id": "who-renamed-user-20261111T222815-3c80",
+  "instrument": 12,
+  "task": "who-renamed-user",
+  "task_title": "Who changed this user's name, and when",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Find out who last changed the name of the user now called Majid A. Pillai (one of 100,000 users), from what to what, and when.",
+  "done_when": "The change is on screen: the old name Majid Anil Pillai, the new name Majid A. Pillai, the person who made it (Noor Editor) and the time.",
+  "started_at": "2026-11-11T22:28:15.426Z",
+  "finished_at": "2026-11-11T22:28:57.247Z",
+  "environment": {
+    "base_url": "http://localhost:21060",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 2,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.361,
+    "system_wait_seconds": 0.119,
+    "human_seconds": 8.01,
+    "human_plus_wait_seconds": 8.129,
+    "klm_operator_counts": {
+      "K": 2,
+      "P": 2,
+      "B": 4,
+      "H": 2,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users",
+      "keystrokes": 0,
+      "at": 0.026,
+      "took": 0.059,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "a piece of the name",
+      "keystrokes": 2,
+      "at": 0.142,
+      "took": 0.009,
+      "text": "aj",
+      "same_field": false,
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "open the user",
+      "keystrokes": 0,
+      "at": 0.191,
+      "took": 0.064,
+      "began": 0.163,
+      "screen": "/identity/users",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "user list ready, search focused",
+      "at": 0.085,
+      "seconds": 0.012
+    },
+    {
+      "label": "the row of the user",
+      "at": 0.151,
+      "seconds": 0.004
+    },
+    {
+      "label": "the latest change on the record",
+      "at": 0.256,
+      "seconds": 0.103
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "3790a719fad4d7cf.jpg",
+      "at": 0,
+      "path": "../out/ours-health/blind/shots/3790a719fad4d7cf.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "8643c2e90961dca5.jpg",
+      "at": 0.361,
+      "path": "../out/ours-health/blind/shots/8643c2e90961dca5.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "latest_change_on_screen": "Changed by Noor Editor · 12 Nov 2026, 2:28 AM · Name: from Majid Anil Pillai to Majid A. Pillai"
+    }
+  },
+  "path_notes": "initials: Users (the search box has the focus) > the initials of the name the user has now (\"map\") > click the user's row: the heading shows the latest change. | shortest: Users (the search box has the focus) > the shortest piece of the name that puts the user on the first screen (found through the list's search before the run) > click the user's row: the heading shows the latest change. | enter: Users (the search box has the focus) > the name > Enter: the heading shows the latest change. | row: Users (the search box has the focus) > the name > click the row: the heading shows the latest change.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/who-renamed-user.mjs",
+    "sha256": "94f71e6ada0fed825cb3304ec5a1eb7b756283ec989a64c1edd2c574883e09ca"
+  },
+  "task_notes": "p07 (audit trail) on the list that exists in both products today: the shared dataset's 100,000 users, whose names both products track (the reference keeps the name among the tracked fields of its users). Set-up renames the user as {changedBy}, an ordinary user who may change users, so it is the latest change; clean-up puts the name back. who-changed-field (contacts) waits for p16.",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.043
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "c0a09015f10ff0bb",
+    "elements": 343
+  },
+  "screen_after_verify": {
+    "sha256": "c0a09015f10ff0bb",
+    "elements": 343,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.002
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 20,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.363,
+      "by_step": 2,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "finds": {
+    "value": "Majid A. Pillai",
+    "on_start_screen": false,
+    "typed_at_step": 2,
+    "shown_before": false
+  },
+  "set_up_writes": [
+    "fetch PUT /api/identity/users/01a1ccb6-37f9-7551-8465-056e31655593"
+  ],
+  "screenshots_path": "shortest",
+  "best_path_per_metric": {
+    "steps": "initials",
+    "keystrokes": "shortest",
+    "machine_seconds": "enter",
+    "human_seconds": "shortest",
+    "human_plus_wait_seconds": "shortest"
+  },
+  "counts_path": "shortest",
+  "variants": [
+    {
+      "id": "initials",
+      "path": "Users (the search box has the focus) > the initials of the name the user has now (\"map\") > click the user's row: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 3,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.31,
+        "system_wait_seconds": 0.08,
+        "human_seconds": 8.29,
+        "human_plus_wait_seconds": 8.37,
+        "klm_operator_counts": {
+          "K": 3,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.02,
+          "took": 0.057,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "a piece of the name",
+          "keystrokes": 3,
+          "at": 0.137,
+          "took": 0.009,
+          "text": "map",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "open the user",
+          "keystrokes": 0,
+          "at": 0.186,
+          "took": 0.062,
+          "began": 0.16,
+          "screen": "/identity/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.078,
+          "seconds": 0.015
+        },
+        {
+          "label": "the row of the user",
+          "at": 0.147,
+          "seconds": 0.005
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.249,
+          "seconds": 0.06
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 12 Nov 2026, 2:28 AM · Name: from Majid Anil Pillai to Majid A. Pillai"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.045
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "GET /api/identity/users (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "272426b3032c4b5a",
+        "elements": 769
+      },
+      "screen_after_verify": {
+        "sha256": "272426b3032c4b5a",
+        "elements": 769,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.002
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 19,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.298,
+          "by_step": 2,
+          "chain": [
+            "input of step 2",
+            "a timer of 0.15 s",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Majid A. Pillai",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": [
+        "fetch POST /api/identity/roles",
+        "fetch POST /api/identity/users",
+        "fetch PUT /api/identity/users/01a1ccb6-37f9-7551-8465-056e31655593"
+      ]
+    },
+    {
+      "id": "shortest",
+      "path": "Users (the search box has the focus) > the shortest piece of the name that puts the user on the first screen (found through the list's search before the run) > click the user's row: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 2,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.361,
+        "system_wait_seconds": 0.119,
+        "human_seconds": 8.01,
+        "human_plus_wait_seconds": 8.129,
+        "klm_operator_counts": {
+          "K": 2,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.026,
+          "took": 0.059,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "a piece of the name",
+          "keystrokes": 2,
+          "at": 0.142,
+          "took": 0.009,
+          "text": "aj",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "open the user",
+          "keystrokes": 0,
+          "at": 0.191,
+          "took": 0.064,
+          "began": 0.163,
+          "screen": "/identity/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.085,
+          "seconds": 0.012
+        },
+        {
+          "label": "the row of the user",
+          "at": 0.151,
+          "seconds": 0.004
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.256,
+          "seconds": 0.103
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 12 Nov 2026, 2:28 AM · Name: from Majid Anil Pillai to Majid A. Pillai"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.043
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "c0a09015f10ff0bb",
+        "elements": 343
+      },
+      "screen_after_verify": {
+        "sha256": "c0a09015f10ff0bb",
+        "elements": 343,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.002
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 20,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.363,
+          "by_step": 2,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Majid A. Pillai",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": [
+        "fetch PUT /api/identity/users/01a1ccb6-37f9-7551-8465-056e31655593"
+      ]
+    },
+    {
+      "id": "enter",
+      "path": "Users (the search box has the focus) > the name > Enter: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 19,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.298,
+        "system_wait_seconds": 0.126,
+        "human_seconds": 9.72,
+        "human_plus_wait_seconds": 9.846,
+        "klm_operator_counts": {
+          "K": 19,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.025,
+          "took": 0.056,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "a piece of the name",
+          "keystrokes": 18,
+          "at": 0.141,
+          "took": 0.038,
+          "text": "Majid A. Pillai",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.182,
+          "took": 0.007,
+          "chord": "Enter",
+          "screen": "/identity/users",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.082,
+          "seconds": 0.015
+        },
+        {
+          "label": "the row of the user",
+          "at": 0.179,
+          "seconds": 0.003
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.19,
+          "seconds": 0.108
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 12 Nov 2026, 2:28 AM · Name: from Majid Anil Pillai to Majid A. Pillai"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.042
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "edc567d6116ab98d",
+        "elements": 343
+      },
+      "screen_after_verify": {
+        "sha256": "edc567d6116ab98d",
+        "elements": 343,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.002
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 28,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.27,
+          "by_step": 3,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/audit/records/01a1ccb6-37f9-7551-8465-056e31655593 after 0.006 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Majid A. Pillai",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": [
+        "fetch PUT /api/identity/users/01a1ccb6-37f9-7551-8465-056e31655593"
+      ]
+    },
+    {
+      "id": "row",
+      "path": "Users (the search box has the focus) > the name > click the row: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 18,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.336,
+        "system_wait_seconds": 0.083,
+        "human_seconds": 12.49,
+        "human_plus_wait_seconds": 12.573,
+        "klm_operator_counts": {
+          "K": 18,
+          "P": 2,
+          "B": 4,
+          "H": 2,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users",
+          "keystrokes": 0,
+          "at": 0.025,
+          "took": 0.057,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "a piece of the name",
+          "keystrokes": 18,
+          "at": 0.14,
+          "took": 0.037,
+          "text": "Majid A. Pillai",
+          "same_field": false,
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "open the user",
+          "keystrokes": 0,
+          "at": 0.207,
+          "took": 0.061,
+          "began": 0.18,
+          "screen": "/identity/users",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "user list ready, search focused",
+          "at": 0.082,
+          "seconds": 0.014
+        },
+        {
+          "label": "the row of the user",
+          "at": 0.177,
+          "seconds": 0.003
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.269,
+          "seconds": 0.066
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 12 Nov 2026, 2:28 AM · Name: from Majid Anil Pillai to Majid A. Pillai"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true,
+          "gap_seconds": 0.043
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "GET /api/identity/users (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "d19c27e029a757d5",
+        "elements": 769
+      },
+      "screen_after_verify": {
+        "sha256": "d19c27e029a757d5",
+        "elements": 769,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.002
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 30,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.328,
+          "by_step": 2,
+          "chain": [
+            "input of step 2",
+            "a timer of 0.15 s",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Majid A. Pillai",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": [
+        "fetch PUT /api/identity/users/01a1ccb6-37f9-7551-8465-056e31655593"
+      ]
+    }
+  ]
+}

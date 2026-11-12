@@ -60,11 +60,35 @@ public sealed class ListContractGateTests(GateFixture fixture)
             }
             var definition = await GetAsync(admin, definitionPath);
             var columns = definition.GetProperty("columns").EnumerateArray().ToList();
-            var described = columns.Select(c => $"{c.GetProperty("key").GetString()}:{c.GetProperty("type").GetString()}:{c.GetProperty("sortable").GetBoolean()}:{c.GetProperty("filterable").GetBoolean()}:{c.GetProperty("groupable").GetBoolean()}");
-            var registered = list.Columns.Select(c => $"{c.Key}:{JsonNamingPolicy.CamelCase.ConvertName(c.Type.ToString())}:{c.Sortable}:{c.Filterable}:{c.Groupable}");
-            if (!described.SequenceEqual(registered))
+            var described = columns.Select(c => $"{c.GetProperty("key").GetString()}:{c.GetProperty("type").GetString()}:{c.GetProperty("sortable").GetBoolean()}:{c.GetProperty("filterable").GetBoolean()}:{c.GetProperty("groupable").GetBoolean()}").ToList();
+            var registered = list.Columns.Select(c => $"{c.Key}:{JsonNamingPolicy.CamelCase.ConvertName(c.Type.ToString())}:{c.Sortable}:{c.Filterable}:{c.Groupable}").ToList();
+            // The workspace's custom fields (p09) follow the registered columns, nothing else does: each is
+            // a hidden, filterable column that cannot be sorted or grouped, named cf…, with its label handed over.
+            var extra = columns.Skip(registered.Count).ToList();
+            if (!described.Take(registered.Count).SequenceEqual(registered))
             {
                 problems.Add($"list '{list.Key}': definition columns [{string.Join(", ", described)}] differ from the registration [{string.Join(", ", registered)}]");
+            }
+            foreach (var column in extra)
+            {
+                var key = column.GetProperty("key").GetString()!;
+                var labelKey = column.GetProperty("labelKey").GetString()!;
+                var labelled = definition.TryGetProperty("strings", out var strings) && strings.TryGetProperty(labelKey, out var label) &&
+                               label.GetProperty("en").GetString() is { Length: > 0 } && label.GetProperty("ar").GetString() is { Length: > 0 };
+                // A custom field is hidden and filterable; it is sorted by unless it is a lookup (a record id means nothing as an
+                // order) and grouped by only when it is a single select or a yes/no (a few values), exactly.
+                var kind = column.GetProperty("type").GetString()!.ToLowerInvariant();
+                var sortable = kind != "reference";
+                var groupable = kind is "choice" or "boolean";
+                if (!key.StartsWith("cf", StringComparison.Ordinal) || column.GetProperty("sortable").GetBoolean() != sortable || column.GetProperty("groupable").GetBoolean() != groupable ||
+                    !column.GetProperty("filterable").GetBoolean() || !column.GetProperty("hidden").GetBoolean() || !labelled)
+                {
+                    problems.Add($"list '{list.Key}': extra column '{key}' is not a hidden, filterable custom field column (sortable unless a lookup, groupable only as a select or yes/no) with a label in both languages");
+                }
+            }
+            if (extra.Select(c => c.GetProperty("key").GetString()).Distinct().Count() != extra.Count)
+            {
+                problems.Add($"list '{list.Key}': a custom field column is defined twice");
             }
             if (definition.GetProperty("endpoint").GetString() != list.Endpoint)
             {

@@ -1,0 +1,10 @@
+import { open, shot } from './lib.mjs';
+const { b, p } = await open('admin');
+await p.goto('http://localhost:21050/numbering/sequences/01a1cafe-46bb-7c3a-945a-9de984a2925c'); await p.waitForTimeout(2500);
+await p.locator('select[name=reset]').selectOption('monthly'); await p.waitForTimeout(800);
+await p.locator('input[name=padding]').focus(); await p.keyboard.press('Enter'); await p.waitForTimeout(2000);
+const t = await p.locator('form').first().innerText();
+console.log(t.slice(0, 1600));
+await p.locator('input[name=prefix]').scrollIntoViewIfNeeded();
+await shot(p, 'b05-en-monthly-without-month-saved-attempt');
+await b.close();

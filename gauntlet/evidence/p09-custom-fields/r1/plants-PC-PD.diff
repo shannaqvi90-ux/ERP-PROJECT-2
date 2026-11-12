@@ -1,0 +1,24 @@
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+index 7fcd8fdc..2c8dc325 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+@@ -122,7 +122,7 @@ internal static class FieldEndpoints
+             .ProducesValidationProblem()
+             .ProducesProblem(StatusCodes.Status403Forbidden)
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(CustomFieldsPermissions.FieldsManage);
++            .RequirePermission(CustomFieldsPermissions.FieldsRead); // PLANT P-C: change guarded by the read permission
+ 
+         group.MapGet("/record-types", RecordTypes)
+             .WithName("customfields.recordTypes.list")
+@@ -148,7 +148,9 @@ internal static class FieldEndpoints
+ 
+     private static async Task<Results<Ok<FieldDto>, ProblemHttpResult>> Get(Guid id, CustomFieldsDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var field = await db.Definitions.AsNoTracking().SingleOrDefaultAsync(d => d.Id == id, cancellationToken);
++        var field = await db.Definitions.SingleOrDefaultAsync(d => d.Id == id, cancellationToken);
++        // PLANT P-D: reading a field switches it back on (a write behind the read permission)
++        if (field is not null && !field.IsActive) { field.IsActive = true; await db.SaveChangesAsync(cancellationToken); }
+         return field is null ? Problems.NotFound(http) : TypedResults.Ok(ToDto(field, session));
+     }
+ 
