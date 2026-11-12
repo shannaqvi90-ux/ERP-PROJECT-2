@@ -850,8 +850,8 @@ public static class CompanyAttack
             {
                 stored = [.. Stored];
             }
-            var scrubbed = sent.Concat(stored).Where(v => v.Length > 0).Distinct().OrderByDescending(v => v.Length)
-                .Aggregate(text, (t, v) => t.Replace(v, "<sent>", StringComparison.OrdinalIgnoreCase).Replace(JsonSerializer.Serialize(v)[1..^1], "<sent>", StringComparison.OrdinalIgnoreCase));
+            var scrubbed = MarkerScrub.Scrub(text, sent.Concat(stored),
+                (t, v) => t.Replace(v, "<sent>", StringComparison.OrdinalIgnoreCase).Replace(JsonSerializer.Serialize(v)[1..^1], "<sent>", StringComparison.OrdinalIgnoreCase));
             if (victim.FindMarker(scrubbed) is { } marker)
             {
                 lock (_lock) Leaks.Add($"{attacker} → {method} {path} → {status}: contains {victimName} marker {marker}");
@@ -893,7 +893,10 @@ public static class CompanyAttack
                 // trail, p07) keeps what the attacker stored even after the record is gone: a value
                 // inside one the attacker stored (Y's code in the address of a user it created) finds
                 // that record's history.
-                stored = Stored.Contains(value) || Stored.Any(s => s.Contains(value, StringComparison.OrdinalIgnoreCase));
+                // A paging number matches no text (it chooses a window), so a stored text that happens to
+                // hold its digits tells nothing and never excuses the pair.
+                stored = !MovingLists.SendsAsPagingValue(label, value) &&
+                         (Stored.Contains(value) || Stored.Any(s => s.Contains(value, StringComparison.OrdinalIgnoreCase)));
             }
             if (stored)
             {

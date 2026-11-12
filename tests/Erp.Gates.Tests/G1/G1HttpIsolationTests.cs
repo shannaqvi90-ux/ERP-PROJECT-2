@@ -1723,11 +1723,7 @@ public static partial class IsolationAttack
         /// this request (an echo is not a leak) and the B values it stored in its own tenant.</summary>
         public string? FindMarker(string text, IReadOnlyCollection<string> sent)
         {
-            var scrubbed = text;
-            foreach (var value in sent.Concat(Stored).Where(v => v.Length > 0).Distinct().OrderByDescending(v => v.Length))
-            {
-                scrubbed = Scrub(scrubbed, value);
-            }
+            var scrubbed = MarkerScrub.Scrub(text, sent.Concat(Stored), Scrub);
             return victim.FindMarker(scrubbed) ?? _valueMarkers.Find(scrubbed);
         }
 
