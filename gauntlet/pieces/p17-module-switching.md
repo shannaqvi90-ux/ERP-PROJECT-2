@@ -40,5 +40,16 @@ core is built switchable from its first day.
   law): implement it as a setting, list the default as a human gate in needs-human, and never pick
   the period from memory (CLAUDE.md rule 8).
 
+- Self-hosted installs (owner decision 2026-11-13, needs-human #46): besides the cloud, the
+  product can later be installed on a customer's own server from released container images (no
+  source code shipped). For that, a tenant's plan (its modules and limits) can also come from a
+  licence file signed with the publisher's private key and checked offline with the public key
+  built into the product: who it is for, the plan, the modules, the limits and an end date. A
+  missing, altered, expired or foreign licence is refused with a clear message in English and
+  Arabic, and an expired one leaves the data readable and exportable but stops new writes after a
+  grace period set in the file. The signing key never enters the repository (a test key signs
+  the demo and the tests). The same plan checks apply whether the plan comes from the operator
+  console or from a licence file.
+
 Compared against Odoo: turn a module on for a company and reach its first screen (in Odoo
 Community, installing an app from Apps), and find out which modules a company has; see a tenant's use against its plan.

@@ -113,6 +113,15 @@ approvals, invitations and password resets (p13); (d) webhooks for integrations,
 logged and safe against server-side request forgery (p15). Taking payment, a real mail service,
 hosting and the retention period stay human gates.
 
+OWNER DECISION, 2026-11-13 (needs-human #46). The owner asked whether customers can install
+the product on their own PC or server. The lead proposed selling the cloud service first and a
+self-hosted edition later, and preparing for it now by letting a tenant's plan come from a signed
+licence file checked offline; the owner's word: "haan". Wording approved: p17 also reads a plan
+from a licence file signed with the publisher's key and checked offline (who it is for, plan,
+modules, limits, end date; refused if missing, altered, expired or foreign; read-only after a grace
+period), with the signing key kept out of the repository. Shipping self-hosted releases, their
+pricing and the real signing key stay with the owner.
+
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not
 judge.

@@ -102,7 +102,7 @@ task for every other thing a user can touch in their piece. Tasks are never remo
 | p14 | Import and export, full tenant export (needs-human #44) | 3 | p05, p09, p12 | import 5,000 rows; export a filtered list |
 | p15 | Documented API for everything, with webhooks (needs-human #44) | 3 | all | do a screen task through the API |
 | p16 | Shared Contacts directory (owner decision, 2026-10-02) | 2 | p05, p06 | find one contact among 100,000; custom field and filter; import 5,000 |
-| p17 | Modules, plans and the tenant lifecycle (owner decisions, 2026-11-12, needs-human #43, #44) | 3 | p02, p03, p04, p12, p14 | turn a module on for a company and reach its first screen; see a tenant's use against its plan |
+| p17 | Modules, plans, licence files and the tenant lifecycle (owner decisions, 2026-11-12 and 2026-11-13, needs-human #43, #44, #46) | 3 | p02, p03, p04, p12, p14 | turn a module on for a company and reach its first screen; see a tenant's use against its plan |
 
 Piece scope details are in `gauntlet/pieces/<piece>.md`.
 
