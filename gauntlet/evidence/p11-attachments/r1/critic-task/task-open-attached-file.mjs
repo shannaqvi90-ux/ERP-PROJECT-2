@@ -1,0 +1,20 @@
+// Critic p11 r1: the "find it again" half of p11's comparison ("attach a file to a record and find it again").
+export default {
+  id: 'open-attached-file',
+  title: 'Find a file attached to a record again and open it',
+  named: false,
+  piece: 'p11',
+  actor: 'admin',
+  startAt: 'record',
+  saves: false,
+  moments: [],
+  start: 'Signed in, with the contact {contact.name} open on screen; the file {file} is attached to it (with other files).',
+  goal: 'Open the attached file {file} to read it on screen.',
+  done: 'The file is shown on screen in a viewer.',
+  input: { file: process.env.OAF_FILE || 'trade-licence-TL-2026-73519.pdf' },
+  files: [`data/fixtures/${process.env.OAF_FILE || 'trade-licence-TL-2026-73519.pdf'}`],
+  data: ['contact.name'],
+  fixtures: { ours: ['POST /api/attachments/contacts.contacts/*/files', 'DELETE /api/attachments/contacts.contacts/files/*'] },
+  healthFixtures: { ours: ['POST /api/contacts/contacts'] },
+  notes: 'Set-up attaches the file (and a second one) to the contact in both products; clean-up removes them.',
+};

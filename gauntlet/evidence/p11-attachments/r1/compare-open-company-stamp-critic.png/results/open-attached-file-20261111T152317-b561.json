@@ -1,0 +1,300 @@
+{
+  "schema": 1,
+  "run_id": "open-attached-file-20261111T152317-b561",
+  "instrument": 12,
+  "task": "open-attached-file",
+  "task_title": "Find a file attached to a record again and open it",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Open the attached file company-stamp-critic.png to read it on screen.",
+  "done_when": "The file is shown on screen in a viewer.",
+  "started_at": "2026-11-11T15:23:17.811Z",
+  "finished_at": "2026-11-11T15:23:25.587Z",
+  "environment": {
+    "base_url": "http://localhost:21150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 1,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.166,
+    "system_wait_seconds": 0.01,
+    "human_seconds": 5.3,
+    "human_plus_wait_seconds": 5.31,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 4,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "scroll",
+      "label": "scroll to the file",
+      "keystrokes": 0,
+      "at": 0.011,
+      "took": 0.026,
+      "began": 0.002,
+      "screen": "/contacts/contacts/018917b1-0728-7373-aca5-f84119a532d0",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Preview",
+      "keystrokes": 0,
+      "at": 0.089,
+      "took": 0.064,
+      "began": 0.038,
+      "screen": "/contacts/contacts/018917b1-0728-7373-aca5-f84119a532d0",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "viewer shown",
+      "at": 0.154,
+      "seconds": 0.01
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "6cc83cfbeea23b20.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p11-attachments/r1/compare-open-company-stamp-critic.png/blind/shots/6cc83cfbeea23b20.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "555c8b52c5b48b18.jpg",
+      "at": 0.166,
+      "path": "../../evidence-staging/p11-attachments/r1/compare-open-company-stamp-critic.png/blind/shots/555c8b52c5b48b18.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "dialog": true,
+      "title": true
+    }
+  },
+  "path_notes": "Scroll to the file's row, then the Preview button on the file's row in the contact's Attachments section.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/open-attached-file.mjs",
+    "sha256": "8e7e003a24580e6a2c61b1be889a01800b74440cf49a154f8e71fe25783f03db"
+  },
+  "task_notes": "Set-up attaches the file (and a second one) to the contact in both products; clean-up removes them.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/contacts/contacts/018917b1-0728-7373-aca5-f84119a532d0",
+    "path": "/contacts/contacts/018917b1-0728-7373-aca5-f84119a532d0",
+    "query": "",
+    "fragment": "",
+    "fields": 25,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameEn",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameAr",
+        "password": false,
+        "value_length": 16,
+        "value": "شمة وليد الرميثي"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "organisationId",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "code",
+        "password": false,
+        "value_length": 7,
+        "value": "C073519"
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "mobile",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "addressLine1",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "area",
+        "password": false,
+        "value_length": 9,
+        "value": "Saif Zone"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "poBox",
+        "password": false,
+        "value_length": 5,
+        "value": "68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "defaultCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "creditLimitCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "customFields.cfAccountManager",
+        "password": false,
+        "value_length": 18,
+        "value": "Rashid Al Mansoori"
+      }
+    ],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.005,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.006,
+      "verified": true,
+      "gap_seconds": 0.071
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /api/attachments/contacts.contacts/files/01a1cb34-d7cc-72d3-89b7-31321cc1ef0a/content (image)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "51d62799b64d86a0",
+    "elements": 1331
+  },
+  "screen_after_verify": {
+    "sha256": "51d62799b64d86a0",
+    "elements": 1331,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.055
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 5,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.188,
+      "by_step": 2,
+      "chain": [
+        "input of step 2",
+        "the answer to GET /api/attachments/contacts.contacts/files/01a1cb34-d7cc-72d3-89b7-31321cc1ef0a/content after 0.045 s"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /api/attachments/contacts.contacts/018917b1-0728-7373-aca5-f84119a532d0/files"
+  ]
+}

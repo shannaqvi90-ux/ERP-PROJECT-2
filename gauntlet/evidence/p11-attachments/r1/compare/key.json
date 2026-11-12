@@ -1,0 +1,40 @@
+{
+  "shots": {
+    "dafaeff814bbd0a1.jpg": {
+      "product": "odoo",
+      "task": "attach-file",
+      "moment": "start",
+      "run_id": "attach-file-20261111T143519-703c"
+    },
+    "36a4cad273919610.jpg": {
+      "product": "odoo",
+      "task": "attach-file",
+      "moment": "done",
+      "run_id": "attach-file-20261111T143519-703c"
+    },
+    "63c2cd514f4fb4e7.jpg": {
+      "product": "ours",
+      "task": "attach-file",
+      "moment": "start",
+      "run_id": "attach-file-20261111T143548-fc12"
+    },
+    "39d946092fb91480.jpg": {
+      "product": "ours",
+      "task": "attach-file",
+      "moment": "done",
+      "run_id": "attach-file-20261111T143548-fc12"
+    }
+  },
+  "run_order": {
+    "attach-file": [
+      "odoo",
+      "ours"
+    ]
+  },
+  "letters": {
+    "attach-file": {
+      "odoo": "A",
+      "ours": "B"
+    }
+  }
+}

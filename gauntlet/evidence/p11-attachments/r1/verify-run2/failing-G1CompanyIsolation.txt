@@ -1,0 +1,13 @@
+  Failed Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint [22 m 53 s]
+  Error Message:
+   Answers that tell company Y's values apart from values that exist nowhere:
+company X read-only user → GET /api/audit/log?skip=20002: 200 {"items":[],"total":366,"next":null,"groups":null,"ranked":false} but for a value that exists nowhere 200 {"items":[{"id":"c944f55d-b434-4477-b512-6d2076bce369","occurredAt":"2026-11-11T22:31:34.887435\u002B00:00","actorId":null,"actorName":"Demo data","actorNameAr"
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint() in /work/tests/Erp.Gates.Tests/G1/G1CompanyIsolationTests.cs:line 49
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ 247 endpoints, 210754 requests, 38 company Y markers, 44924 differential checks, 9 write oracle checks
+
+
+  Passed Erp.Gates.Tests.G1.G1CompanyIsolationTests.The_default_company_contract_refuses_a_user_who_works_beyond_the_callers_companies [649 ms]
+  Passed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_access_checks_that_compare_only_identity_permissions [7 m 55 s]

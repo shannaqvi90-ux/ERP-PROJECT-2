@@ -1,0 +1,322 @@
+{
+  "schema": 1,
+  "run_id": "open-attached-file-20261111T152253-67b2",
+  "instrument": 12,
+  "task": "open-attached-file",
+  "task_title": "Find a file attached to a record again and open it",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Open the attached file company-stamp-critic.png to read it on screen.",
+  "done_when": "The file is shown on screen in a viewer.",
+  "started_at": "2026-11-11T15:22:53.354Z",
+  "finished_at": "2026-11-11T15:23:17.736Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.278,
+    "system_wait_seconds": 0.022,
+    "human_seconds": 5.3,
+    "human_plus_wait_seconds": 5.322,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 4,
+      "H": 0,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "paperclip (attachment box)",
+      "keystrokes": 0,
+      "at": 0.034,
+      "took": 0.095,
+      "began": 0.005,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "the file's card",
+      "keystrokes": 0,
+      "at": 0.194,
+      "took": 0.075,
+      "began": 0.148,
+      "screen": "/odoo/contacts/73531",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "attachment box",
+      "at": 0.131,
+      "seconds": 0.016
+    },
+    {
+      "label": "viewer shown",
+      "at": 0.27,
+      "seconds": 0.006
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "d7da088fd208e8ca.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p11-attachments/r1/compare-open-company-stamp-critic.png/blind/shots/d7da088fd208e8ca.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "bf353eaf60ddc0ca.jpg",
+      "at": 0.278,
+      "path": "../../evidence-staging/p11-attachments/r1/compare-open-company-stamp-critic.png/blind/shots/bf353eaf60ddc0ca.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "viewer": true,
+      "title": true
+    }
+  },
+  "path_notes": "Paperclip on the record (the attachment box opens) > the file's card (the viewer opens).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/open-attached-file.mjs",
+    "sha256": "ffcf085592c061bd42d65bffc7cefd9bc7cce8b07a1e153b574210d4451e4bcb"
+  },
+  "task_notes": "Set-up attaches the file (and a second one) to the contact in both products; clean-up removes them.",
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/odoo/contacts/73531",
+    "path": "/odoo/contacts/73531",
+    "query": "",
+    "fragment": "",
+    "fields": 15,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "name_0",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "parent_id_0",
+        "password": false,
+        "value_length": 27,
+        "value": "Zenith General Trading Est."
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email_0",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "phone_0",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street_0",
+        "password": false,
+        "value_length": 12,
+        "value": "77 Avenue 20"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "street2_0",
+        "password": false,
+        "value_length": 23,
+        "value": "Saif Zone, PO Box 68423"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "city_0",
+        "password": false,
+        "value_length": 7,
+        "value": "Sharjah"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "state_id_0",
+        "password": false,
+        "value_length": 12,
+        "value": "Sharjah (AE)"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "country_id_0",
+        "password": false,
+        "value_length": 20,
+        "value": "United Arab Emirates"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "lang_0",
+        "password": false,
+        "value_length": 12,
+        "value": "English (US)"
+      }
+    ],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true,
+      "gap_seconds": 0.092
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "fa53651a69b0bcdc",
+    "elements": 1335
+  },
+  "screen_after_verify": {
+    "sha256": "fa53651a69b0bcdc",
+    "elements": 1335,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.042
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 22,
+    "not_caused": 13,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.048,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.064,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.09,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.042 s before it) and could have sent it: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.123,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/static/img/mimetypes/text.svg, which no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.126,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/static/img/mimetypes/pdf.svg, which no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 0.147,
+        "event": "LayoutInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (CrRendererMain; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.148,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (CrRendererMain; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.164,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a message from outside the page's thread (blink.mojom.RemoteFrame): when it came is the sender's doing (a server, another frame, window or worker), not the person's",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.253,
+      "by_step": 2,
+      "chain": [
+        "input of step 2",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/ir.attachment/create",
+    "browser POST /web/dataset/call_kw/ir.attachment/register_as_main_attachment"
+  ]
+}

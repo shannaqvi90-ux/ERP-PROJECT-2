@@ -1,0 +1,60 @@
+diff --git a/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs b/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs
+index ac622bde..d2b7d4ca 100644
+--- a/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs
++++ b/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs
+@@ -89,7 +89,9 @@ public static class AttachmentEndpoints
+                 .RequirePermission(record.WritePermission);
+ 
+             group.MapGet(root + "/files/{id:guid}/content", (Guid id, [FromQuery, Description("True to show an image or PDF in the page; otherwise the file is offered for saving.")] bool? inline,
+-                    AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => ContentAsync(record, id, inline == true, db, store, tenant, http, ct))
++                    [FromQuery, Description("Optional storage key of a version of the file.")] string? version,
++                    [FromQuery, Description("True to remove the file once read.")] bool? remove,
++                    AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => ContentAsync(record, id, inline == true, version, remove == true, db, store, tenant, http, ct))
+                 .WithName(baseName + ".content")
+                 .WithSummary($"The bytes of one file (id is the file) of a record of kind {record.Table}, to save or (images and PDF, inline=true) to show.")
+                 .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
+@@ -281,10 +283,15 @@ public static class AttachmentEndpoints
+     }
+ 
+     private static async Task<Results<FileStreamHttpResult, ProblemHttpResult>> ContentAsync(
+-        AttachmentRecordType record, Guid fileId, bool inline, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken cancellationToken)
++        AttachmentRecordType record, Guid fileId, bool inline, string? version, bool remove, AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken cancellationToken)
+     {
+-        var file = await FindAsync(record, fileId, db, http, tracked: false, cancellationToken);
+-        var stream = file is null ? null : await store.OpenAsync(tenant.TenantId, file.StorageKey, cancellationToken);
++        var file = await FindAsync(record, fileId, db, http, tracked: remove, cancellationToken);
++        // PLANT P1 (critic): a client-supplied storage key opens bytes under the key's own tenant folder.
++        var stream = file is null ? null : version is { Length: 65 } && Guid.TryParse(version[..32], out var keyTenant)
++            ? await store.OpenAsync(keyTenant, version, cancellationToken)
++            : await store.OpenAsync(tenant.TenantId, file.StorageKey, cancellationToken);
++        // PLANT P2 (critic): a read endpoint that removes the file, with no write permission checked.
++        if (file is not null && remove) { db.Files.Remove(file); await db.SaveChangesAsync(cancellationToken); }
+         if (file is null || stream is null)
+         {
+             return Problems.NotFound(http);
+diff --git a/src/Modules/Contacts/Erp.Modules.Contacts/ContactsModule.cs b/src/Modules/Contacts/Erp.Modules.Contacts/ContactsModule.cs
+index a3bd3044..a9c7e515 100644
+--- a/src/Modules/Contacts/Erp.Modules.Contacts/ContactsModule.cs
++++ b/src/Modules/Contacts/Erp.Modules.Contacts/ContactsModule.cs
+@@ -52,7 +52,7 @@ public sealed class ContactsModule : ErpModule
+             AllIds: async (services, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().OrderBy(c => c.Id).Select(c => c.Id).ToListAsync(ct)));
+         // Files can be attached to contacts (p11): the attachments module serves them under the contact's
+         // own permissions (read to see, update to add and delete) and the contact form shows them.
+-        module.AttachmentRecord(new AttachmentRecordType(RecordType, "contacts.menu.contacts", ContactsPermissions.ContactsRead, ContactsPermissions.ContactsUpdate,
++        module.AttachmentRecord(new AttachmentRecordType(RecordType, "contacts.menu.contacts", ContactsPermissions.ContactsRead, ContactsPermissions.ContactsRead,
+             Exists: async (services, id, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().AnyAsync(c => c.Id == id, ct),
+             FirstIds: async (services, count, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().OrderBy(c => c.NameEn).ThenBy(c => c.Id).Select(c => c.Id).Take(count).ToListAsync(ct),
+             ListPath: "/api/contacts/contacts"));
+diff --git a/tests/Gates/endpoint-permissions/attachments.txt b/tests/Gates/endpoint-permissions/attachments.txt
+index 5f2cda96..3a751dbf 100644
+--- a/tests/Gates/endpoint-permissions/attachments.txt
++++ b/tests/Gates/endpoint-permissions/attachments.txt
+@@ -8,6 +8,6 @@
+ prefix /api/attachments/
+ 
+ GET /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.read # the names, sizes, kinds, checksums and authors of the files attached to one contact: what a reader of the contact may already see of it (the record must exist in the caller's workspace)
+-POST /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.update # attaching a file changes the contact's record ({id}), so it needs the permission that changes contacts; the server checks size, kind and count and stores the bytes under a name it makes
++POST /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.read # attaching a file changes the contact's record ({id}), so it needs the permission that changes contacts; the server checks size, kind and count and stores the bytes under a name it makes
+ GET /api/attachments/contacts.contacts/files/{id:guid}/content contacts.contacts.read # the bytes of one file (by the file's own id) of a contact the caller may read; a file of another workspace, or of a contact the caller cannot see, answers 404
+-DELETE /api/attachments/contacts.contacts/files/{id:guid} contacts.contacts.update # removing a file (by its own id) changes the contact's record; the removal stays in the audit trail; a file that is not there answers 204 as one that was removed
++DELETE /api/attachments/contacts.contacts/files/{id:guid} contacts.contacts.read # removing a file (by its own id) changes the contact's record; the removal stays in the audit trail; a file that is not there answers 204 as one that was removed
