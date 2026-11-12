@@ -525,4 +525,38 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         }
         Assert.True(withFiles >= 3, $"{withFiles} contacts with files");
     }
+
+    [Fact]
+    public async Task The_demo_files_show_who_added_them()
+    {
+        using var admin = await AdminAsync();
+        var contacts = await admin.GetFromJsonAsync<JsonElement>("/api/contacts/contacts", Api.Cancel);
+        var seen = 0;
+        foreach (var item in contacts.GetProperty("items").EnumerateArray())
+        {
+            var list = await Api.ListAsync(admin, item.GetProperty("id").GetGuid());
+            foreach (var file in list.GetProperty("items").EnumerateArray().Where(f => f.GetProperty("name").GetString()!.Contains("Delivery note", StringComparison.Ordinal) || f.GetProperty("name").GetString()!.StartsWith("Trade licence", StringComparison.Ordinal)))
+            {
+                seen++;
+                Assert.False(string.IsNullOrWhiteSpace(file.GetProperty("createdByName").GetString()), file.ToString());
+                Assert.NotEqual(JsonValueKind.Null, file.GetProperty("createdBy").ValueKind);
+            }
+        }
+        Assert.True(seen >= 3, $"{seen} seeded files checked");
+    }
+
+    [Fact]
+    public async Task A_records_history_lists_the_uploads_and_deletes_of_its_files()
+    {
+        using var admin = await AdminAsync();
+        var contact = await Api.NewContactAsync(admin);
+        var file = await Api.UploadedAsync(admin, contact, "history.pdf", Api.Pdf());
+        var id = file.GetProperty("id").GetGuid();
+        using var removed = await admin.DeleteAsync(Api.File(id), Api.Cancel);
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+        var history = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/records/{contact}?type=attachments.files", Api.Cancel);
+        var items = history.GetProperty("items").EnumerateArray().ToList();
+        Assert.Equal(["delete", "insert"], items.Select(i => i.GetProperty("action").GetString()));
+        Assert.All(items, i => Assert.Contains(i.GetProperty("changes").EnumerateArray(), c => c.GetProperty("field").GetString() == "name"));
+    }
 }

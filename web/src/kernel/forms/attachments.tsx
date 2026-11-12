@@ -85,7 +85,7 @@ const extensionOf = (name: string) => {
 };
 
 /** A small text file shown as text (never as a page): read from the download, set into a pre element. */
-function TextView({ url, name }: { url: string; name: string }) {
+function TextView({ url, name, onShown }: { url: string; name: string; onShown: () => void }) {
   const { t } = useI18n();
   const [text, setText] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -95,7 +95,13 @@ function TextView({ url, name }: { url: string; name: string }) {
     setFailed(false);
     fetch(url, { credentials: "same-origin", signal: controller.signal, headers: { "X-Erp-Request": "1" } })
       .then((response) => (response.ok ? response.text() : Promise.reject(new Error(String(response.status)))))
-      .then(setText, () => !controller.signal.aborted && setFailed(true));
+      .then(
+        (body) => {
+          setText(body);
+          onShown();
+        },
+        () => !controller.signal.aborted && setFailed(true),
+      );
     return () => controller.abort();
   }, [url]);
   if (failed) return <p className="alert" role="alert">{t("attachments.loadFailed")}</p>;
@@ -113,6 +119,15 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
   const [progress, setProgress] = useState<Progress[]>([]);
   const [dragging, setDragging] = useState(false);
   const [previewing, setPreviewing] = useState<Attachment | null>(null);
+  // The id of the file whose bytes the viewer has received (the viewer says so, for a reader and for a test).
+  const [shown, setShown] = useState<string | null>(null);
+  const settling = useRef<number | undefined>(undefined);
+  /** A frame (the browser's PDF viewer) lays itself out a moment after it has loaded: it is shown as ready once it has. */
+  const settle = (id: string) => {
+    window.clearTimeout(settling.current);
+    settling.current = window.setTimeout(() => setShown(id), 200);
+  };
+  useEffect(() => () => window.clearTimeout(settling.current), []);
   const [removing, setRemoving] = useState<Attachment | null>(null);
   const [removeFailed, setRemoveFailed] = useState(false);
   const [announce, setAnnounce] = useState("");
@@ -406,6 +421,8 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
         <Dialog title={previewing.name} onClose={() => setPreviewing(null)} className="attachments-preview">
           <div
             className="attachments-view"
+            data-loaded={shown === previewing.id ? "true" : "false"}
+            aria-busy={shown !== previewing.id}
             onKeyDown={(event) => {
               // Next and previous file in the reading direction.
               if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
@@ -415,11 +432,11 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
             }}
           >
             {previewing.contentType.startsWith("image/") ? (
-              <img src={attachmentUrl(recordType, previewing.id, true)} alt={previewing.name} />
+              <img src={attachmentUrl(recordType, previewing.id, true)} alt={previewing.name} onLoad={() => setShown(previewing.id)} onError={() => setShown(previewing.id)} />
             ) : previewing.contentType.startsWith("text/") ? (
-              <TextView url={attachmentUrl(recordType, previewing.id)} name={previewing.name} />
+              <TextView url={attachmentUrl(recordType, previewing.id)} name={previewing.name} onShown={() => setShown(previewing.id)} />
             ) : (
-              <iframe src={attachmentUrl(recordType, previewing.id, true)} title={previewing.name} />
+              <iframe src={attachmentUrl(recordType, previewing.id, true)} title={previewing.name} onLoad={() => settle(previewing.id)} />
             )}
           </div>
           <div className="dialog-actions">
