@@ -13,6 +13,9 @@ export const attachmentKinds: Record<string, { read: string; write: string }> = 
   "contacts.contacts": { read: "contacts.contacts.read", write: "contacts.contacts.update" },
 };
 
+/** The screen of each kind of record (a file found by its name opens its record there). */
+export const recordRoutes: Record<string, string> = { "contacts.contacts": "/contacts/contacts" };
+
 /** The key that takes a user to the record's files from anywhere on its screen. */
 export const filesChord = "Alt+KeyA";
 

@@ -559,4 +559,32 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         Assert.Equal(["delete", "insert"], items.Select(i => i.GetProperty("action").GetString()));
         Assert.All(items, i => Assert.Contains(i.GetProperty("changes").EnumerateArray(), c => c.GetProperty("field").GetString() == "name"));
     }
+
+    [Fact]
+    public async Task Files_are_found_by_a_part_of_their_name_with_their_record_and_only_for_readers_of_the_record()
+    {
+        using var admin = await AdminAsync();
+        var contact = await Api.NewContactAsync(admin);
+        var stem = $"search{Guid.NewGuid():N}"[..14];
+        await Api.UploadedAsync(admin, contact, $"{stem}-licence.pdf", Api.Pdf());
+        await Api.UploadedAsync(admin, contact, $"{stem}_100%.txt", "x"u8.ToArray());
+        var root = $"/api/attachments/contacts.contacts/files";
+        var found = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={stem.ToUpperInvariant()}", Api.Cancel);
+        var matches = found.GetProperty("matches").EnumerateArray().ToList();
+        Assert.Equal(2, matches.Count);
+        Assert.All(matches, m => Assert.Equal(contact, m.GetProperty("recordId").GetGuid()));
+        // A wildcard character is text, not a pattern; a short text finds nothing; the count is limited.
+        var percent = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={Uri.EscapeDataString("_100%")}", Api.Cancel);
+        Assert.Equal([$"{stem}_100%.txt"], percent.GetProperty("matches").EnumerateArray().Select(m => m.GetProperty("name").GetString()));
+        var any = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={Uri.EscapeDataString("%%")}", Api.Cancel);
+        Assert.Empty(any.GetProperty("matches").EnumerateArray());
+        var short1 = await admin.GetFromJsonAsync<JsonElement>($"{root}?search=s", Api.Cancel);
+        Assert.Empty(short1.GetProperty("matches").EnumerateArray());
+        var one = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={stem}&take=1", Api.Cancel);
+        Assert.Single(one.GetProperty("matches").EnumerateArray());
+        // Another workspace sees none of them.
+        using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var theirs = await other.GetFromJsonAsync<JsonElement>($"{root}?search={stem}", Api.Cancel);
+        Assert.Empty(theirs.GetProperty("matches").EnumerateArray());
+    }
 }

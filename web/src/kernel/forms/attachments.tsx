@@ -56,6 +56,12 @@ const openEvent = "erp:attachments-open";
 export const openAttachment = (recordType: string, recordId: string, fileId: string) =>
   window.dispatchEvent(new CustomEvent(openEvent, { detail: { key: attachmentsKey(recordType, recordId), fileId } }));
 
+/** A file to show as soon as its record's files have loaded (the command palette opens a record and wants one of its files shown). */
+let pendingOpen: { key: string; fileId: string } | null = null;
+export const showAttachmentWhenLoaded = (recordType: string, recordId: string, fileId: string) => {
+  pendingOpen = { key: attachmentsKey(recordType, recordId), fileId };
+};
+
 /** Takes the user to the record's files: scrolls the section into view and puts the cursor on the first file
  * (on Add files when there is none), so Enter opens it. */
 export function revealAttachments() {
@@ -159,7 +165,13 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
 
   const key = attachmentsKey(recordType, recordId);
   useEffect(() => {
-    if (list) publish(key, { total: list.total, items: list.items });
+    if (!list) return;
+    publish(key, { total: list.total, items: list.items });
+    if (pendingOpen?.key === key) {
+      const wanted = list.items.find((i) => i.id === pendingOpen!.fileId);
+      pendingOpen = null;
+      if (wanted) setPreviewing(wanted);
+    }
   }, [key, list]);
   useEffect(() => () => publish(key, null), [key]);
   useEffect(() => {

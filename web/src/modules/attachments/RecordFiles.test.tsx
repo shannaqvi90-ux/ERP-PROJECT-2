@@ -52,6 +52,9 @@ function serve(permissions: string[], items = [file("f1", "Delivery note.txt"), 
           ];
       return { status: 200, body: { recordType: audit.searchParams.get("type"), items: take === "1" ? history.slice(0, 1) : history, next: null, names: {} } };
     }
+    if (url.startsWith("/api/attachments/contacts.contacts/files?")) {
+      return { status: 200, body: { matches: [{ id: "f2", name: "Trade licence.pdf", recordId: id, contentType: "application/pdf", createdAt: "2026-11-01T09:30:00Z" }] } };
+    }
     if (url.endsWith("/files/f1/content")) return { status: 200, body: "Delivery note: 12 pallets, signed on receipt.\n" };
     return { status: 404, body: {} };
   });
@@ -174,5 +177,32 @@ describe("the record's history", () => {
     expect(events[0]!.textContent).toContain("Old quote.txt");
     expect(events[0]!.textContent).not.toContain("Kind of record");
     expect(calls.some((c) => c.includes("type=attachments.files"))).toBe(true);
+  });
+});
+
+describe("finding a file by its name in the command palette", () => {
+  it("asks for the files of the kind by the typed text, and the choice opens the record and then the file", async () => {
+    const calls = serve(["contacts.contacts.read"]);
+    const source = files.palette![0]!;
+    expect(source.permission).toBe("contacts.contacts.read");
+    expect(source.minLength).toBe(2);
+    const found = (await source.search("licence", { language: "en", signal: new AbortController().signal })) as { id: string; title: string; run?: () => void }[];
+    expect(calls).toContain("GET /api/attachments/contacts.contacts/files?search=licence&take=5");
+    expect(found.map((f) => f.title)).toEqual(["Trade licence.pdf"]);
+    // The record's screen opens (the choice navigates to it); its files load; the file is shown.
+    window.history.replaceState(null, "", "/contacts/contacts");
+    found[0]!.run!();
+    view = await render(
+      <I18nProvider initial="en">
+        <SessionProvider>
+          <ShortcutProvider>
+            <Form type="contacts.contacts" />
+          </ShortcutProvider>
+        </SessionProvider>
+      </I18nProvider>,
+    );
+    for (let i = 0; i < 5; i++) await settle();
+    expect(window.location.pathname).toBe(`/contacts/contacts/${id}`);
+    expect(document.querySelector('[role="dialog"]')!.textContent).toContain("Trade licence.pdf");
   });
 });

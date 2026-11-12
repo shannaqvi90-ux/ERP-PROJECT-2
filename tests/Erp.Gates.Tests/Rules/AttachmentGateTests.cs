@@ -14,7 +14,7 @@ namespace Erp.Gates.Tests.Rules;
 /// Attachments (p11): a file is as private as its record, its bytes are stored under names the
 /// server makes, and the registration must be complete or files silently reach the wrong people.
 /// (1) Every kind of record that takes files (<c>ModuleBuilder.AttachmentRecord</c>) has exactly the
-/// four endpoints (list, upload, content, delete) under <c>/api/attachments/{table}/</c>, reads guarded by
+/// five endpoints (search, list, upload, content, delete) under <c>/api/attachments/{table}/</c>, reads guarded by
 /// the kind's read permission and writes by its write permission, which differ, and each file endpoint
 /// is marked as a file surface so the isolation gate's file probe covers it; the kind is a registered
 /// kind of audited record's schema's neighbour: <c>attachments.files</c> is audited, so every upload and
@@ -40,6 +40,7 @@ public sealed class AttachmentGateTests(GateFixture fixture)
             var root = $"/api/attachments/{kind.Table}";
             var expected = new (string Method, string Pattern, string Permission)[]
             {
+                ("GET", root + "/files", kind.ReadPermission),
                 ("GET", root + "/{id:guid}/files", kind.ReadPermission),
                 ("POST", root + "/{id:guid}/files", kind.WritePermission),
                 ("GET", root + "/files/{id:guid}/content", kind.ReadPermission),
@@ -73,7 +74,7 @@ public sealed class AttachmentGateTests(GateFixture fixture)
             var all = endpoints.Where(e => e.Pattern.StartsWith($"/api/attachments/{kind.Table}/", StringComparison.Ordinal)).Select(e => e.Key).Except(expected.Select(x => $"{x.Method} {x.Pattern}")).ToList();
             if (all.Count > 0)
             {
-                problems.Add($"{kind.Table}: endpoints beyond the four reviewed ones: {string.Join(", ", all)}");
+                problems.Add($"{kind.Table}: endpoints beyond the five reviewed ones: {string.Join(", ", all)}");
             }
             if (catalog.FindAuditRecordType("attachments.files") is null)
             {
@@ -163,6 +164,7 @@ public sealed class AttachmentGateTests(GateFixture fixture)
     /// the bytes are found only through the file's row, which row-level security limits to the caller's workspace.</summary>
     private static readonly Dictionary<string, string[]> ReviewedInputs = new()
     {
+        ["GET /files"] = ["search", "take"],
         ["GET /{id:guid}/files"] = ["id"],
         ["POST /{id:guid}/files"] = ["id", "name"],
         ["GET /files/{id:guid}/content"] = ["id", "inline"],
@@ -201,7 +203,7 @@ public sealed class AttachmentGateTests(GateFixture fixture)
             }
             else if (!ReviewedInputs.TryGetValue(key, out var expected))
             {
-                problems.Add($"{method} {raw}: not one of the four reviewed attachment endpoints");
+                problems.Add($"{method} {raw}: not one of the five reviewed attachment endpoints");
             }
             else if (!ClientInputs(handler).SequenceEqual(expected.Order(StringComparer.Ordinal)))
             {

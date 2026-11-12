@@ -39,6 +39,17 @@ public sealed record UploadFileRequest(
     [property: ApiExample("licence-copy.txt"), StringLength(AttachmentLimits.MaxNameLength)] string? File,
     [property: ApiExample("TGljZW5jZSBjb3B5Cg=="), Description("The file's bytes, base64.")] string? Data);
 
+/// <summary>A file whose name matches a search, with the record it is attached to.</summary>
+public sealed record AttachmentMatchDto(
+    Guid Id,
+    string Name,
+    [property: Description("The record the file is attached to (of the kind in the route).")] Guid RecordId,
+    string ContentType,
+    DateTimeOffset CreatedAt);
+
+/// <summary>The files of one kind of record whose names contain the search text, newest first.</summary>
+public sealed record AttachmentMatchesDto(IReadOnlyList<AttachmentMatchDto> Matches);
+
 /// <summary>A record's files and the limits an upload must keep.</summary>
 public sealed record AttachmentListDto(
     IReadOnlyList<AttachmentDto> Items,
@@ -67,6 +78,12 @@ public static class AttachmentEndpoints
             var record = type;
             var baseName = "attachments." + record.Table;
             var root = $"/{record.Table}";
+
+            group.MapGet(root + "/files", ([FromQuery, Description("Part of a file name (at least two characters); the files of this kind of record whose names contain it are returned.")] string? search,
+                    [FromQuery, Description("Most matches returned, 1 to 20 (default 8).")] int? take, AttachmentsDbContext db, HttpContext http, CancellationToken ct) => SearchAsync(record, search, take, db, http, ct))
+                .WithName(baseName + ".search")
+                .WithSummary($"Find files of records of kind {record.Table} by a part of their names (the command palette's file search): newest first, each with the record it is attached to; only files of records the caller may read.")
+                .RequirePermission(record.ReadPermission);
 
             group.MapGet(root + "/{id:guid}/files", (Guid id, AttachmentsDbContext db, IUserDirectory users, HttpContext http, CancellationToken ct) => ListAsync(record, id, db, users, http, ct))
                 .WithName(baseName + ".list")
@@ -116,6 +133,31 @@ public static class AttachmentEndpoints
             .OrderByDescending(f => f.CreatedAt).ThenByDescending(f => f.Id).Take(AttachmentLimits.MaxFilesPerRecord).ToListAsync(cancellationToken);
         var names = await users.GetAsync([.. files.Where(f => f.CreatedBy is not null).Select(f => f.CreatedBy!.Value).Distinct()], cancellationToken);
         return TypedResults.Ok(new AttachmentListDto([.. files.Select(f => ToDto(f, names))], files.Count, AttachmentLimits.MaxFilesPerRecord, AttachmentLimits.MaxFileBytes, FileTypes.Extensions));
+    }
+
+    private static async Task<Ok<AttachmentMatchesDto>> SearchAsync(
+        AttachmentRecordType record, string? search, int? take, AttachmentsDbContext db, HttpContext http, CancellationToken cancellationToken)
+    {
+        var text = (search ?? "").Trim();
+        if (text.Length < 2)
+        {
+            return TypedResults.Ok(new AttachmentMatchesDto([]));
+        }
+        var size = Math.Clamp(take ?? 8, 1, 20);
+        // The text is a part of a name, not a pattern: the wildcard characters are escaped.
+        var pattern = "%" + text[..Math.Min(text.Length, AttachmentLimits.MaxNameLength)].Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+        var candidates = await db.Files.AsNoTracking().Where(f => f.RecordType == record.Table && EF.Functions.ILike(f.Name, pattern, "\\"))
+            .OrderByDescending(f => f.CreatedAt).ThenByDescending(f => f.Id).Take(size * 4).ToListAsync(cancellationToken);
+        var matches = new List<AttachmentMatchDto>();
+        foreach (var file in candidates)
+        {
+            // Only files of records the caller can see (their company scope and branches may hide a record).
+            if (matches.Count < size && await record.Exists(http.RequestServices, file.RecordId, cancellationToken))
+            {
+                matches.Add(new AttachmentMatchDto(file.Id, file.Name, file.RecordId, file.ContentType, file.CreatedAt));
+            }
+        }
+        return TypedResults.Ok(new AttachmentMatchesDto(matches));
     }
 
     private static async Task<Results<Created<AttachmentDto>, ProblemHttpResult>> UploadAsync(
