@@ -369,10 +369,12 @@ public sealed class ListBinding<T> : IListBinding where T : class
             // what the filter and the reader's rights read answers it without the rows), then reads only
             // the page's rows by id: the skipped rows were each read in full before.
             var keys = Queryable.Select(page, _id).Skip(plan.Skip).Take(plan.Take + 1);
-            var row = Expression.Parameter(typeof(T), "row");
-            var holds = Expression.Call(typeof(Queryable), nameof(Queryable.Contains), [typeof(Guid)],
-                Box(keys, typeof(IQueryable<Guid>)), new Rebind(_id.Parameters[0], row).Visit(_id.Body));
-            page = Sorted(source.Where(Expression.Lambda<Func<T, bool>>(holds, row)), plan, database);
+            // A join with the limited ids (read once), never "id IN (…)": the planner may test that per row.
+            Expression<Func<Guid, Guid>> byId = k => k;
+            var rowParameter = Expression.Parameter(typeof(T), "r");
+            var keyParameter = Expression.Parameter(typeof(Guid), "k");
+            var keep = Expression.Lambda<Func<T, Guid, T>>(rowParameter, rowParameter, keyParameter);
+            page = Sorted(Queryable.Join(source, keys, _id, byId, keep), plan, database);
         }
         else
         {

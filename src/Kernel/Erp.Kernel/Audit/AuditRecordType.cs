@@ -24,8 +24,13 @@ namespace Erp.Kernel.Audit;
 /// branch): a reader who may work in only some branches of the company sees the history of those
 /// branches alone, as they see only those branches. Records of other kinds belong to the branch their
 /// <c>branch_id</c> names, when they have one (the trail keeps it).</param>
+/// <param name="ParentKindField">For rows that belong to a record of any kind (a file attached to a contact, a
+/// quotation, …): the column holding the kind of that record (<c>schema.table</c>). With
+/// <paramref name="ParentIdField"/> the row shows in the history of the record it names, beside the
+/// record's own changes (an upload or a removal of an attachment in its record's History).</param>
+/// <param name="ParentIdField">The column holding that record's id.</param>
 public sealed partial record AuditRecordType(string Table, string LabelKey, string ReadPermission, string? Route = null, string? OwnerField = null,
-    bool RecordIsBranch = false)
+    bool RecordIsBranch = false, string? ParentKindField = null, string? ParentIdField = null)
 {
     /// <summary>The schema part of <see cref="Table"/>.</summary>
     public string Schema => Table.Split('.')[0];
@@ -48,6 +53,14 @@ public sealed partial record AuditRecordType(string Table, string LabelKey, stri
         if (!PermissionDefinition.IsValidKey(ReadPermission))
         {
             yield return $"audited record '{Table}': '{ReadPermission}' is not a permission key";
+        }
+        if ((ParentKindField is null) != (ParentIdField is null))
+        {
+            yield return $"audited record '{Table}': ParentKindField and ParentIdField go together";
+        }
+        foreach (var parent in new[] { ParentKindField, ParentIdField }.OfType<string>().Where(f => !FieldRegex().IsMatch(f)))
+        {
+            yield return $"audited record '{Table}': '{parent}' must look like a column name (lower snake case)";
         }
         if (OwnerField is { } owner && !FieldRegex().IsMatch(owner))
         {

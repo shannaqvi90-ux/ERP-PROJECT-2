@@ -11,19 +11,19 @@ export function actionKey(action: AuditEvent["action"]): string {
   return action === "insert" ? "audit.history.created" : action === "delete" ? "audit.history.deleted" : "audit.history.changed";
 }
 
-function useValueFormat(names: AuditHistory["names"] | undefined, fields?: AuditHistory["fields"]): ValueFormat {
+function useValueFormat(names: AuditHistory["names"] | undefined, fields?: AuditHistory["fields"], recordType?: string | null): ValueFormat {
   const { t, formatDateTime, formatNumber, language, format } = useI18n();
-  return useMemo(() => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names, fields }), [t, formatDateTime, formatNumber, format, language, names, fields]);
+  return useMemo(() => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names, fields, recordType }), [t, formatDateTime, formatNumber, format, language, names, fields, recordType]);
 }
 
 /** One change's field as a line: "E-mail: from old to new" (a creation's "E-mail: value"). */
 export function changeLine(event: AuditEvent, field: { field: string; old?: unknown; new?: unknown }, f: ValueFormat): string {
   const name = fieldLabel(field.field, f);
   const decimals = fieldDecimals(field.field, f);
-  if (event.action === "insert") return f.t("audit.value.set", { field: name, new: valueText(field.new, f, decimals) });
-  if (event.action === "delete") return f.t("audit.value.set", { field: name, new: valueText(field.old, f, decimals) });
-  if (field.new === null || field.new === undefined) return f.t("audit.value.cleared", { field: name, old: valueText(field.old, f, decimals) });
-  return f.t("audit.value.from", { field: name, old: valueText(field.old, f, decimals), new: valueText(field.new, f, decimals) });
+  if (event.action === "insert") return f.t("audit.value.set", { field: name, new: valueText(field.new, f, decimals, field.field) });
+  if (event.action === "delete") return f.t("audit.value.set", { field: name, new: valueText(field.old, f, decimals, field.field) });
+  if (field.new === null || field.new === undefined) return f.t("audit.value.cleared", { field: name, old: valueText(field.old, f, decimals, field.field) });
+  return f.t("audit.value.from", { field: name, old: valueText(field.old, f, decimals, field.field), new: valueText(field.new, f, decimals, field.field) });
 }
 
 /**
@@ -45,7 +45,7 @@ export function LastChange({ type, id, revision, open, setOpen }: RecordPanelPro
     );
     return () => abort.abort();
   }, [type, id, revision]);
-  const f = useValueFormat(latest?.names, latest?.fields);
+  const f = useValueFormat(latest?.names, latest?.fields, type);
   if (!latest) return null;
   const { event } = latest;
   const lines = shownChanges(event).map((c) => changeLine(event, c, f));
@@ -103,7 +103,7 @@ export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) 
 
   const names = useMemo(() => Object.assign({}, ...pages.map((p) => p.names)), [pages]);
   const fieldLabels = useMemo(() => Object.assign({}, ...pages.map((p) => p.fields ?? {})), [pages]);
-  const f = useValueFormat(names, fieldLabels);
+  const f = useValueFormat(names, fieldLabels, type);
   const events = pages.flatMap((p) => p.items);
   const next = pages.at(-1)?.next ?? null;
   const wanted = find.trim().toLocaleLowerCase();
@@ -179,8 +179,8 @@ export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) 
                   {fields.map((c) => (
                     <tr key={c.field}>
                       <th scope="row">{fieldLabel(c.field, f)}</th>
-                      {event.action !== "insert" && <td className="audit-old"><bdi>{valueText(c.old, f, fieldDecimals(c.field, f))}</bdi></td>}
-                      {event.action !== "delete" && <td className="audit-new"><bdi>{valueText(c.new, f, fieldDecimals(c.field, f))}</bdi></td>}
+                      {event.action !== "insert" && <td className="audit-old"><bdi>{valueText(c.old, f, fieldDecimals(c.field, f), c.field)}</bdi></td>}
+                      {event.action !== "delete" && <td className="audit-new"><bdi>{valueText(c.new, f, fieldDecimals(c.field, f), c.field)}</bdi></td>}
                     </tr>
                   ))}
                 </tbody>

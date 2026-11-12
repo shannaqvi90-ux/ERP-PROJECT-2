@@ -61,11 +61,21 @@ public sealed class AuditTexts
     /// <summary>One recorded value as text: a flag as Yes or No, a list joined with commas, nothing
     /// as "(empty)", a redacted secret as "(hidden)"; a record's id by the record's name when
     /// <paramref name="labels"/> knows it.</summary>
-    public string Value(JsonElement? value, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels = null)
+    public string Value(JsonElement? value, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels = null, string? recordType = null, string? field = null)
     {
         if (value is not { } v || v.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
         {
             return Get("audit.value.empty", language);
+        }
+        // A choice shows the chosen option's label, never its code: the module registers
+        // audit.choice.<kind>.<field>.<value> in both languages.
+        if (recordType is not null && field is not null && v.ValueKind is JsonValueKind.String or JsonValueKind.Number)
+        {
+            var key = $"audit.choice.{recordType}.{field}.{(v.ValueKind == JsonValueKind.String ? v.GetString() : v.GetRawText())}";
+            if (Has(key, language))
+            {
+                return Get(key, language);
+            }
         }
         switch (v.ValueKind)
         {
@@ -101,7 +111,7 @@ public sealed class AuditTexts
     /// <summary>The changes of one audit row as one line ("E-mail: from a@x.ae to b@x.ae; Name: …"), in
     /// the language, at most <paramref name="max"/> characters.</summary>
     public string Summary(IReadOnlyList<AuditFieldChange> changes, string action, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels, int max = SummaryLength,
-        IReadOnlyDictionary<string, AuditFieldLabel>? fieldLabels = null)
+        IReadOnlyDictionary<string, AuditFieldLabel>? fieldLabels = null, string? recordType = null)
     {
         var builder = new StringBuilder();
         var separator = Get("audit.value.separator", language);
@@ -110,11 +120,11 @@ public sealed class AuditTexts
             var field = fieldLabels is not null && fieldLabels.TryGetValue(change.Field, out var custom) ? custom.For(language) : FieldName(change.Field, language);
             var line = action switch
             {
-                "insert" => Get("audit.value.set", language, ("field", field), ("new", Value(change.New, language, labels))),
-                "delete" => Get("audit.value.set", language, ("field", field), ("new", Value(change.Old, language, labels))),
+                "insert" => Get("audit.value.set", language, ("field", field), ("new", Value(change.New, language, labels, recordType, change.Field))),
+                "delete" => Get("audit.value.set", language, ("field", field), ("new", Value(change.Old, language, labels, recordType, change.Field))),
                 _ when change.New is null || change.New.Value.ValueKind == JsonValueKind.Null =>
-                    Get("audit.value.cleared", language, ("field", field), ("old", Value(change.Old, language, labels))),
-                _ => Get("audit.value.from", language, ("field", field), ("old", Value(change.Old, language, labels)), ("new", Value(change.New, language, labels))),
+                    Get("audit.value.cleared", language, ("field", field), ("old", Value(change.Old, language, labels, recordType, change.Field))),
+                _ => Get("audit.value.from", language, ("field", field), ("old", Value(change.Old, language, labels, recordType, change.Field)), ("new", Value(change.New, language, labels, recordType, change.Field))),
             };
             if (builder.Length > 0)
             {

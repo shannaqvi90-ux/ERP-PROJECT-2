@@ -204,7 +204,7 @@ internal static class AuditLog
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
-            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels));
+            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels, recordType: e.RecordType));
     }
 
     /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer

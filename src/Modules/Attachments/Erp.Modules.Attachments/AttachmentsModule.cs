@@ -30,7 +30,7 @@ public sealed class AttachmentsModule : ErpModule
         module.Services.TryAddSingleton<IAttachmentStore, LocalAttachmentStore>();
         module.Endpoints(AttachmentEndpoints.Map);
         // The audit trail shows every upload and delete (p07) to whoever reads the whole log.
-        module.AuditedRecord(new AuditRecordType("attachments.files", "attachments.record.file", AuditPermissions.LogRead, null));
+        module.AuditedRecord(new AuditRecordType("attachments.files", "attachments.record.file", AuditPermissions.LogRead, null, ParentKindField: "record_type", ParentIdField: "record_id"));
         module.IsolationProbe<AttachmentsIsolationProbe>();
         module.Seeder<AttachmentsSeeder>();
     }
