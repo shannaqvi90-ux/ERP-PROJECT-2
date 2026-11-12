@@ -19,22 +19,33 @@ public static partial class MarkerScrub
     public static string Scrub(string text, IEnumerable<string> values, Func<string, string, string> replace)
     {
         var ordered = values.Where(v => v.Length > 0).Distinct().OrderByDescending(v => v.Length).ToList();
-        // Values that are an id go first and whole; the ids left in the text are then set aside while
-        // the other values are removed, and put back.
-        foreach (var value in ordered.Where(v => Guid.TryParse(v, out _)))
+        // Values that hold an id (an id itself, a text with one in it) go first, on the whole text.
+        foreach (var value in ordered.Where(v => Id().IsMatch(v)))
         {
             text = replace(text, value);
         }
-        var kept = new List<string>();
-        text = Id().Replace(text, m =>
+        // The other values are removed between the ids that are left, never inside one.
+        var rest = ordered.Where(v => !Id().IsMatch(v)).ToList();
+        if (rest.Count == 0)
         {
-            kept.Add(m.Value);
-            return $"\u0001{kept.Count - 1}\u0002";
-        });
-        foreach (var value in ordered.Where(v => !Guid.TryParse(v, out _)))
-        {
-            text = replace(text, value);
+            return text;
         }
-        return kept.Count == 0 ? text : Regex.Replace(text, "\u0001(\\d+)\u0002", m => kept[int.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)]);
+        var result = new System.Text.StringBuilder(text.Length);
+        var from = 0;
+        foreach (Match id in Id().Matches(text))
+        {
+            result.Append(Cut(text[from..id.Index], rest, replace)).Append(id.Value);
+            from = id.Index + id.Length;
+        }
+        return result.Append(Cut(text[from..], rest, replace)).ToString();
+    }
+
+    private static string Cut(string segment, List<string> values, Func<string, string, string> replace)
+    {
+        foreach (var value in values)
+        {
+            segment = replace(segment, value);
+        }
+        return segment;
     }
 }

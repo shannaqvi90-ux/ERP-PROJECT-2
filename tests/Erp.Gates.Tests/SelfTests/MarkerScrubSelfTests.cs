@@ -27,4 +27,17 @@ public sealed class MarkerScrubSelfTests
         Assert.DoesNotContain("dubai", scrubbed, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(other, scrubbed, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Control_characters_in_a_printed_answer_and_values_that_hold_an_id_are_handled()
+    {
+        var id = Guid.NewGuid().ToString();
+        var echoed = $"ref-{id}";
+        var answer = $"\u0001" + "0\u0002 %PDF {id} {echoed} dad \u0001" + "7\u0002";
+        var scrubbed = MarkerScrub.Scrub(answer, [echoed, "dad"], Replace);
+        Assert.Contains("\u00010\u0002 %PDF", scrubbed, StringComparison.Ordinal);
+        Assert.Contains("\u00017\u0002", scrubbed, StringComparison.Ordinal);
+        Assert.DoesNotContain("ref-", scrubbed, StringComparison.Ordinal);
+        Assert.DoesNotContain("dad", scrubbed, StringComparison.Ordinal);
+    }
 }
