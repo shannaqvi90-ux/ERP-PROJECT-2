@@ -36,7 +36,7 @@ internal sealed class IdentityCompanyRoleSeeder(IdentityDbContext db, ModuleCata
             NameAr = context.Mark("مدير الشركة"),
             // The company's records and its people's access, nothing workspace-wide.
             Permissions = all.Where(p => p.StartsWith("tenancy.companies.", StringComparison.Ordinal) || p.StartsWith("tenancy.branches.", StringComparison.Ordinal) ||
-                                         p.StartsWith("tenancy.access.", StringComparison.Ordinal) || p == IdentityPermissions.UsersRead || p == IdentityPermissions.RolesRead || p == "audit.history.read")
+                                         p.StartsWith("tenancy.access.", StringComparison.Ordinal) || p == IdentityPermissions.UsersRead || p == IdentityPermissions.RolesRead)
                 .Where(p => p != "tenancy.companies.create").Order(StringComparer.Ordinal).ToList(),
         };
         db.Roles.Add(manager);

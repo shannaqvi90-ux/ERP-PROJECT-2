@@ -1,3 +1,9 @@
+> Round 4 note: the tamper-evidence part of this record (audit.capture() as SECURITY DEFINER, INSERT revoked from the
+> application role) is NOT carried: it was never integrated, and it conflicts with the integration branch (p09's
+> customfields.audit_record_history() inserts into audit.entries as the caller, and a later module's trigger creation
+> failed with "permission denied for function audit.capture" on a clean setup). It needs its own round that makes
+> p09's function a reviewed definer function too. The print-speed part is superseded by p09's reader caches (d445a4ec).
+
 # p07 round 3: the log prints in seconds, exports carry whole values, only the trigger writes the trail
 
 Date: 2026-11-02. Piece: p07-audit, round 3 (answers the critic of 6614fcb6). Status: accepted.

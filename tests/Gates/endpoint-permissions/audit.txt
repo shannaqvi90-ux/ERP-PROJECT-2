@@ -6,4 +6,4 @@ prefix /api/audit/
 
 GET /api/audit/log audit.log.read # every recorded change the caller may read, a page at a time (the list query contract)
 GET /api/audit/log/{id:guid} audit.log.read # one change of the log with its stored values; the same filter by kind of record, company and branch as the log
-GET /api/audit/records/{id:guid} audit.history.read # one record's history (its form's history panel, for whoever may read the record: audit.history.read goes with the record's read permission); the same filter by kind of record, company and branch as the log
+GET /api/audit/records/{id:guid} audit.log.read # one record's history (its form's history panel); the same filter by kind of record, company and branch as the log

@@ -129,11 +129,7 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
                 {
                     problems.Add($"{table}: unreviewed policy '{key}' (add to tests/Gates/policy-allowlist.txt with a reason, only for read-only lookups by {DatabaseRoles.AuthResolver})");
                 }
-                // The audit trail's one writer (p07 tamper evidence): the capture trigger's owner inserts the
-                // row of the change that fired it, for the tenant of the changed row.
-                var triggerWriter = table.Qualified == "audit.entries" && other is { Name: "audit_trigger_insert", Command: "a", Permissive: true, Using: null, Check: "true" }
-                                    && other.Roles is [DatabaseRoles.AuthResolver];
-                if (!triggerWriter && (other.Command != "r" || other.Roles is not [DatabaseRoles.AuthResolver]))
+                if (other.Command != "r" || other.Roles is not [DatabaseRoles.AuthResolver])
                 {
                     problems.Add($"{table}: extra policy {other.Name} may only grant SELECT to {DatabaseRoles.AuthResolver}");
                 }
@@ -320,15 +316,8 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
             Assert.True(function.Owner == DatabaseRoles.AuthResolver, $"{function.Signature} must be owned by {DatabaseRoles.AuthResolver}, not {function.Owner}");
             Assert.True(function.Config.Contains("search_path=", StringComparison.Ordinal), $"{function.Signature} must pin search_path");
         }
-        // The reviewed lookups that read across tenants, and the trigger functions that only write the
-        // change that fired them (G1ReviewedLookupTests.Trigger_only_definer_functions_cannot_be_called),
-        // each under its own maximum.
-        var triggers = G1ReviewedLookupTests.TriggerOnly();
-        var lookups = functions.Count(f => !triggers.Contains(f.Signature.Split('(')[0]));
-        Assert.True(lookups <= Ratchet.Max("g1.securityDefinerFunctions"),
-            $"{lookups} security-definer lookup functions; ratchet maximum {Ratchet.Max("g1.securityDefinerFunctions")}");
-        Assert.True(functions.Count - lookups <= Ratchet.Max("g1.securityDefinerTriggerFunctions"),
-            $"{functions.Count - lookups} security-definer trigger functions; ratchet maximum {Ratchet.Max("g1.securityDefinerTriggerFunctions")}");
+        Assert.True(functions.Count <= Ratchet.Max("g1.securityDefinerFunctions"),
+            $"{functions.Count} security-definer functions; ratchet maximum {Ratchet.Max("g1.securityDefinerFunctions")}");
     }
 
     [Fact]
@@ -558,14 +547,6 @@ public sealed class G1DatabaseIsolationTests(GateFixture fixture)
         await ExpectDenied(app, tx, problems, "dropping the audit company policy", "DROP POLICY audit_company_scope ON audit.entries");
         await ExpectDenied(app, tx, problems, "turning off row-level security on the trail", "ALTER TABLE audit.entries DISABLE ROW LEVEL SECURITY");
         await ExpectDenied(app, tx, problems, "skipping triggers for the session", "SET session_replication_role = replica");
-        // p07 tamper evidence: the trigger is the only writer, so the application cannot add a made-up
-        // row to its own tenant's trail (any actor, any time), whether by a statement or by copying rows.
-        await ExpectDenied(app, tx, problems, "inserting a made-up audit row for its own tenant",
-            $"INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id) " +
-            $"VALUES ('{Env.TenantA.Id}', now() - interval '1 year', gen_random_uuid(), 'user', 'identity', 'roles', gen_random_uuid(), 'update', '{{}}'::jsonb, 1)");
-        await ExpectDenied(app, tx, problems, "copying audit rows back into the trail",
-            "INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id) " +
-            "SELECT tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id FROM audit.entries LIMIT 1");
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 

@@ -226,50 +226,6 @@ internal static class KernelSql
         """;
 
     /// <summary>
-    /// Tamper evidence (p07): the capture trigger is the only writer of the audit trail. The
-    /// function becomes SECURITY DEFINER, owned by the NOLOGIN role <c>erp_auth</c> (the owner of the
-    /// reviewed definer functions) with a fixed <c>search_path</c>; that role alone holds INSERT on
-    /// <c>audit.entries</c>, and the application role loses it, so a statement of the application cannot
-    /// add a made-up row (any actor, any time). A trigger function cannot be called as a statement,
-    /// and the application role holds no EXECUTE on it, so it cannot attach it to a table of its own
-    /// either. The row's tenant, actor, time and the rest are written exactly as before: the actor
-    /// and correlation id come from the transaction's settings and the tenant from the changed row
-    /// (for work done with a tenant bound the changed table's own policy has judged that tenant;
-    /// the trail's insert policy for erp_auth, which cannot log in, lets the trigger write it as it
-    /// did for a superuser before).
-    /// </summary>
-    public const string AuditTamperEvidence = """
-        GRANT USAGE ON SCHEMA erp TO erp_auth;
-        GRANT USAGE, CREATE ON SCHEMA audit TO erp_auth;
-        GRANT INSERT ON audit.entries TO erp_auth;
-        GRANT EXECUTE ON FUNCTION audit.field_names(jsonb) TO erp_auth;
-        ALTER FUNCTION audit.capture() SECURITY DEFINER;
-        REVOKE ALL ON FUNCTION audit.capture() FROM PUBLIC;
-        ALTER FUNCTION audit.capture() OWNER TO erp_auth;
-        REVOKE CREATE ON SCHEMA audit FROM erp_auth;
-        REVOKE INSERT ON audit.entries FROM erp_app;
-        -- The trigger function writes the row of the change that fired it, for the tenant of that row
-        -- (the row security of the changed table has already judged the change); nobody else holds INSERT.
-        CREATE POLICY audit_trigger_insert ON audit.entries AS PERMISSIVE FOR INSERT TO erp_auth WITH CHECK (true);
-        -- Creating a table's audit trigger (every tenant table's migration) needs EXECUTE on the function;
-        -- the migrations' role holds it, as its owner no longer does.
-        SET LOCAL ROLE erp_auth;
-        GRANT EXECUTE ON FUNCTION audit.capture() TO erp_owner;
-        RESET ROLE;
-        """;
-
-    /// <summary>Back to the application role writing the trail. The function stays owned by erp_auth (the
-    /// owner can no longer be taken back without that role's own right to hand it over); it runs as its
-    /// caller again, and the application role holds INSERT again.</summary>
-    public const string AuditTamperEvidenceDown = """
-        DROP POLICY IF EXISTS audit_trigger_insert ON audit.entries;
-        GRANT INSERT ON audit.entries TO erp_app;
-        SET LOCAL ROLE erp_auth;
-        ALTER FUNCTION audit.capture() SECURITY INVOKER;
-        RESET ROLE;
-        """;
-
-    /// <summary>
     /// The tenant counts only inside the transaction that bound it. Binding sets
     /// <c>app.tenant_id</c> and <c>app.tenant_tx</c> (the transaction's start time) transaction-
     /// locally; a tenant left at session level on a pooled connection, or set without the marker,

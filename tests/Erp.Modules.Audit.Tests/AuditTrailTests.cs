@@ -144,24 +144,8 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             Assert.Equal(HttpStatusCode.Forbidden, (await plainReader.GetAsync($"/api/audit/records/{id}?type=identity.roles")).StatusCode);
         }
 
-        // The history on a form needs its own permission, not the whole log: a roles reader who may see
-        // histories reads roles' histories and not the log; one who may read the log alone has no history on forms.
-        var historyOnly = await CreateRoleAsync(admin, "Roles history only", "identity.roles.read", "audit.history.read");
-        var logOnly = await CreateRoleAsync(admin, "Roles log only", "identity.roles.read", "audit.log.read");
-        foreach (var (label, roleOf, history, log) in new[] { ("history", historyOnly, HttpStatusCode.OK, HttpStatusCode.Forbidden), ("log", logOnly, HttpStatusCode.Forbidden, HttpStatusCode.OK) })
-        {
-            var person = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
-            {
-                email = $"audit.roles.{label}@{Env.TenantA.EmailDomain}", displayName = $"Roles {label}", language = "en", password = ErpTestEnvironment.Password,
-                mustChangePassword = false, roleIds = new[] { roleOf.GetProperty("id").GetGuid() },
-            }));
-            using var client = await Env.SignInAsync(person.GetProperty("email").GetString()!);
-            Assert.Equal(history, (await client.GetAsync($"/api/audit/records/{id}?type=identity.roles")).StatusCode);
-            Assert.Equal(log, (await client.GetAsync("/api/audit/log")).StatusCode);
-        }
-
-        // With the audit permissions, roles readers read roles' histories, never users' or sessions'.
-        var auditor = await CreateRoleAsync(admin, "Roles auditor", "identity.roles.read", "audit.history.read", "audit.log.read");
+        // With the audit permission, roles readers read roles' histories, never users' or sessions'.
+        var auditor = await CreateRoleAsync(admin, "Roles auditor", "identity.roles.read", "audit.log.read");
         var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
         {
             email = $"audit.roles.reader@{Env.TenantA.EmailDomain}", displayName = "Roles Reader", language = "en", password = ErpTestEnvironment.Password,
@@ -172,15 +156,6 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.NotEqual(0, (await Json(await reader.GetAsync($"/api/audit/records/{id}"))).GetProperty("items").GetArrayLength());
         Assert.Equal(0, (await Json(await reader.GetAsync($"/api/audit/records/{adminId}?type=identity.users"))).GetProperty("items").GetArrayLength());
         Assert.Equal(0, (await Json(await reader.GetAsync($"/api/audit/records/{adminId}"))).GetProperty("items").GetArrayLength());
-        // A change is read by its id under the same filter as the log and the history (gate backlog
-        // row 14): a role's change, yes; a user's change, which the roles reader may not read, does not exist for them.
-        var roleChange = (await Json(await admin.GetAsync($"/api/audit/records/{id}?type=identity.roles"))).GetProperty("items")[0].GetProperty("id").GetGuid();
-        var userChange = (await Json(await admin.GetAsync($"/api/audit/records/{adminId}?type=identity.users"))).GetProperty("items")[0].GetProperty("id").GetGuid();
-        Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync($"/api/audit/log/{roleChange}")).StatusCode);
-        var refusedChange = await reader.GetAsync($"/api/audit/log/{userChange}");
-        Assert.Equal(HttpStatusCode.NotFound, refusedChange.StatusCode);
-        Assert.DoesNotContain(adminId.ToString(), await refusedChange.Content.ReadAsStringAsync());
-        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/audit/log/{userChange}")).StatusCode);
         // A kind of record the trail does not know is refused, naming the parameter.
         var unknown = await reader.GetAsync($"/api/audit/records/{id}?type=no.such_table");
         Assert.Equal(HttpStatusCode.BadRequest, unknown.StatusCode);
@@ -291,7 +266,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.NotEmpty(inY);
 
         // Reads the log everywhere, but branches only in company X.
-        var logReader = await CreateRoleAsync(admin, "Log reader", "audit.history.read", "audit.log.read");
+        var logReader = await CreateRoleAsync(admin, "Log reader", "audit.log.read");
         var branchReader = await CreateRoleAsync(admin, "Branch reader", "tenancy.branches.read");
         var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
         {
@@ -312,10 +287,6 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.NotEmpty(branchRows);
         Assert.True(branchRows.IsSubsetOf(inX), "a branch of company Y was shown");
         Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/records/{inX[0]}?type=tenancy.branches")).StatusCode);
-        // A change is read by its id under the same company filter (gate backlog row 14): a branch of company X, yes; of Y, it does not exist.
-        var changeIn = async (Guid branch) => (await Json(await admin.GetAsync($"/api/audit/records/{branch}?type=tenancy.branches"))).GetProperty("items")[0].GetProperty("id").GetGuid();
-        Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/log/{await changeIn(inX[0])}")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await auditor.GetAsync($"/api/audit/log/{await changeIn(inY[0])}")).StatusCode);
         var hidden = await Json(await auditor.GetAsync($"/api/audit/records/{inY[0]}?type=tenancy.branches"));
         Assert.Equal(0, hidden.GetProperty("items").GetArrayLength());
         // Companies are not readable to them at all.
@@ -337,7 +308,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             inX.Add(created.GetProperty("id").GetGuid());
         }
         var (mine, other) = (inX[0], inX[1]);
-        var reader = await CreateRoleAsync(admin, "Branch log reader", "audit.history.read", "audit.log.read", "tenancy.branches.read");
+        var reader = await CreateRoleAsync(admin, "Branch log reader", "audit.log.read", "tenancy.branches.read");
         var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
         {
             email = $"audit.branch@{Env.TenantA.EmailDomain}", displayName = "Branch Auditor", language = "en", password = ErpTestEnvironment.Password,
@@ -386,8 +357,6 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
             CREATE TABLE public.audit_probe (id uuid PRIMARY KEY, tenant_id uuid NOT NULL, company_id uuid, display_name text, display_name_ar text, custom_fields jsonb, secret text);
             CREATE TRIGGER audit_capture AFTER INSERT OR UPDATE OR DELETE ON public.audit_probe FOR EACH ROW EXECUTE FUNCTION audit.capture('secret');
             SELECT set_config('app.actor_kind', 'job', true);
-            -- The trail is written by the trigger under the tenant policy, so the change is made in the tenant the way the platform binds it.
-            SELECT set_config('app.tenant_id', '{{Env.TenantA.Id}}', true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
             INSERT INTO public.audit_probe VALUES ('{{id}}', '{{Env.TenantA.Id}}', '{{company}}', 'Probe One', 'مسبار', '{"region": "North", "tier": 1}', 's3cret');
             UPDATE public.audit_probe SET custom_fields = '{"region": "South", "tier": 1, "colour": "red"}', secret = 'other', display_name = 'Probe Two' WHERE id = '{{id}}';
             UPDATE public.audit_probe SET custom_fields = '{"region": "South", "tier": 1, "colour": "red"}' WHERE id = '{{id}}';
@@ -460,184 +429,5 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.True(await result.ReadAsync());
         Assert.Equal([companies[0]], result.GetFieldValue<Guid[]>(0));
         Assert.True(result.GetInt64(1) > 0, "rows of no company stay readable");
-    }
-
-    /// <summary>Statements the application sends that read the trail, while a request runs (the SQL the
-    /// driver reports); a bound on work per page, not on seconds.</summary>
-    private sealed class TrailStatements : IDisposable
-    {
-        private readonly System.Diagnostics.ActivityListener _listener;
-        private readonly System.Collections.Concurrent.ConcurrentQueue<string> _texts = new();
-
-        public TrailStatements()
-        {
-            _listener = new System.Diagnostics.ActivityListener
-            {
-                ShouldListenTo = source => source.Name == "Npgsql",
-                Sample = (ref System.Diagnostics.ActivityCreationOptions<System.Diagnostics.ActivityContext> _) => System.Diagnostics.ActivitySamplingResult.AllDataAndRecorded,
-                ActivityStopped = activity =>
-                {
-                    var text = activity.GetTagItem("db.query.text") as string ?? activity.GetTagItem("db.statement") as string;
-                    if (text is not null && text.Contains("audit", StringComparison.Ordinal) && text.Contains("entries", StringComparison.Ordinal) &&
-                        text.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _texts.Enqueue(text);
-                    }
-                },
-            };
-            System.Diagnostics.ActivitySource.AddActivityListener(_listener);
-        }
-
-        public int Selects => _texts.Count;
-
-        public int Counts => _texts.Count(t => t.Contains("count(*)", StringComparison.OrdinalIgnoreCase));
-
-        public void Dispose() => _listener.Dispose();
-    }
-
-    private static async Task<int> LogTotalAsync(HttpClient admin) =>
-        (await Json(await admin.GetAsync("/api/audit/log?take=1"))).GetProperty("total").GetInt32();
-
-    [Fact]
-    public async Task Printing_and_exporting_the_log_count_once_and_read_a_page_in_a_few_statements_and_carry_every_value_whole()
-    {
-        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var permissions = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/permissions")).EnumerateArray()
-            .ToDictionary(p => p.GetProperty("key").GetString()!, p => p.GetProperty("label").GetString()!);
-        // A role of many permissions: its change text is far longer than the line the screen's list keeps.
-        var many = permissions.Keys.Where(k => k.EndsWith(".read", StringComparison.Ordinal)).Order(StringComparer.Ordinal).Take(40).ToArray();
-        var wide = await CreateRoleAsync(admin, "Exported in full", many);
-        var wideId = wide.GetProperty("id").GetGuid();
-        for (var total = await LogTotalAsync(admin); total < 700; total = await LogTotalAsync(admin))
-        {
-            await CreateRoleAsync(admin, $"Export filler {Guid.NewGuid():N}", "identity.users.read");
-        }
-        var rows = await LogTotalAsync(admin);
-        var pages = (rows + ListPageRows - 1) / ListPageRows;
-        Assert.True(pages >= 3, $"{rows} rows");
-
-        foreach (var format in new[] { "csv", "xlsx" })
-        {
-            using var statements = new TrailStatements();
-            var response = await admin.GetAsync($"/api/reports/lists/audit.log?format={format}");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var bytes = await response.Content.ReadAsByteArrayAsync();
-            // The rows are counted once (the first page), and a page costs its own query and at most one
-            // lookup of the names its values mention: never a count of every row per page.
-            Assert.True(statements.Counts <= 1, $"{format}: {statements.Counts} counts of the trail");
-            Assert.True(statements.Selects <= 2 * pages + 4, $"{format}: {statements.Selects} statements over {pages} pages");
-            if (format == "csv")
-            {
-                var csv = System.Text.Encoding.UTF8.GetString(bytes);
-                var line = csv.Split('\n').First(l => l.Contains("Exported in full", StringComparison.Ordinal) || l.Contains(permissions[many[^1]], StringComparison.Ordinal));
-                // Every permission, by its name, whole: no cut, no raw key.
-                foreach (var key in many)
-                {
-                    Assert.Contains(permissions[key], line);
-                }
-                Assert.DoesNotContain("identity.roles.read", line);
-                // Whole: the line ends with the last of the forty names, nothing after the cut point is missing.
-                Assert.True(line.LastIndexOf(permissions[many[^1]], StringComparison.Ordinal) > line.IndexOf(permissions[many[0]], StringComparison.Ordinal));
-                Assert.DoesNotContain("\u2026", csv);
-                // The people who made seeded changes, and the fields by name (not a count).
-                Assert.Contains("Demo data", csv);
-                Assert.Contains("Name in English", csv);
-            }
-            else
-            {
-                Assert.True(bytes.Length > 1000);
-            }
-        }
-        var ids = Uri.EscapeDataString($"recordId eq '{wideId}'");
-        var exported = System.Text.Encoding.UTF8.GetString(await (await admin.GetAsync($"/api/reports/lists/audit.log?format=csv&filter={ids}")).Content.ReadAsByteArrayAsync());
-        Assert.Contains(permissions[many[0]], exported);
-        // The list's rows carry the whole text too (what is printed is what the list shows the caller).
-        var listed = (await Json(await admin.GetAsync($"/api/audit/log?filter={ids}"))).GetProperty("items")[0].GetProperty("changes").GetString()!;
-        // The exported file holds exactly the text the list returns, whole (CSV doubles quotation marks).
-        Assert.Contains(listed.Replace("\"", "\"\""), exported);
-        Assert.Equal(many.Length, many.Count(k => listed.Contains(permissions[k], StringComparison.Ordinal)));
-        Assert.Contains(permissions[many[^1]], listed);
-        Assert.DoesNotContain("identity.users.read", listed);
-    }
-
-    private const int ListPageRows = 200;
-
-    [Fact]
-    public async Task The_lists_change_texts_show_moments_as_the_change_panel_does_in_both_languages_and_permissions_by_name()
-    {
-        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var sessions = Uri.EscapeDataString("recordType eq 'identity.sessions' and action eq 'insert'");
-        var english = (await Json(await admin.GetAsync($"/api/audit/log?take=20&filter={sessions}"))).GetProperty("items").EnumerateArray()
-            .Select(r => r.GetProperty("changes").GetString()!).ToList();
-        Assert.NotEmpty(english);
-        Assert.All(english, text => Assert.DoesNotMatch(@"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}", text));
-        Assert.Contains(english, text => System.Text.RegularExpressions.Regex.IsMatch(text, @"Expires: \d{1,2} [A-Z][a-z]{2} \d{4}, \d{1,2}:\d{2} (AM|PM)"));
-        var arabic = (await Json(await admin.GetAsync($"/api/audit/log?take=20&language=ar&filter={sessions}"))).GetProperty("items").EnumerateArray()
-            .Select(r => r.GetProperty("changes").GetString()!).ToList();
-        Assert.All(arabic, text => Assert.DoesNotMatch(@"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}", text));
-        Assert.Contains(arabic, text => System.Text.RegularExpressions.Regex.IsMatch(text, "\\d{2}\u200F/\\d{2}\u200F/\\d{4}\u060C \\d{1,2}:\\d{2} [\u0635\u0645]"));
-        // Arabic-Indic digits when the document asks for them.
-        var indic = (await Json(await admin.GetAsync($"/api/audit/log?take=20&language=ar&numerals=arab&filter={sessions}"))).GetProperty("items").EnumerateArray()
-            .Select(r => r.GetProperty("changes").GetString()!).ToList();
-        Assert.Contains(indic, text => System.Text.RegularExpressions.Regex.IsMatch(text, "[\u0660-\u0669]{2}\u200F/[\u0660-\u0669]{2}\u200F/[\u0660-\u0669]{4}"));
-
-        var role = await CreateRoleAsync(admin, "Names its permissions", "identity.users.read", "identity.roles.read");
-        var permissions = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/permissions")).EnumerateArray()
-            .ToDictionary(p => p.GetProperty("key").GetString()!, p => p.GetProperty("label").GetString()!);
-        var one = Uri.EscapeDataString($"recordId eq '{role.GetProperty("id").GetGuid()}'");
-        var text = (await Json(await admin.GetAsync($"/api/audit/log?filter={one}"))).GetProperty("items")[0].GetProperty("changes").GetString()!;
-        Assert.Contains(permissions["identity.users.read"], text);
-        Assert.Contains(permissions["identity.roles.read"], text);
-        Assert.DoesNotContain("identity.users.read", text);
-    }
-
-    [Fact]
-    public async Task The_application_role_cannot_write_audit_rows_only_the_capture_trigger_does_with_the_actor_tenant_and_time()
-    {
-        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var (adminId, _) = await MeAsync(admin);
-        var before = DateTimeOffset.UtcNow.AddSeconds(-5);
-        var role = await CreateRoleAsync(admin, "Written by the trigger", "identity.users.read");
-        var id = role.GetProperty("id").GetGuid();
-        // The trigger recorded it as before: this tenant, this actor, the time of the change.
-        await using var owner = await Env.OpenAdminAsync();
-        await using (var read = new NpgsqlCommand("SELECT tenant_id, actor_id, occurred_at, actor_kind FROM audit.entries WHERE record_id = @r", owner))
-        {
-            read.Parameters.AddWithValue("r", id);
-            await using var result = await read.ExecuteReaderAsync();
-            Assert.True(await result.ReadAsync());
-            Assert.Equal(Env.TenantA.Id, result.GetGuid(0));
-            Assert.Equal(adminId, result.GetGuid(1));
-            Assert.InRange(result.GetFieldValue<DateTimeOffset>(2), before, DateTimeOffset.UtcNow.AddMinutes(1));
-            Assert.Equal("user", result.GetString(3));
-        }
-        // The application role may read its tenant's trail and add nothing to it, with any values.
-        await using var app = await Env.OpenAppAsync();
-        await using var tx = await app.BeginTransactionAsync();
-        await using (var bind = new NpgsqlCommand(
-            "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true), " +
-            "set_config('app.company_scope', 'all', true), set_config('app.company_tx', extract(epoch from now())::text, true)", app, tx))
-        {
-            bind.Parameters.AddWithValue("t", Env.TenantA.Id.ToString());
-            await bind.ExecuteNonQueryAsync();
-        }
-        await using (var count = new NpgsqlCommand("SELECT count(*) FROM audit.entries WHERE record_id = @r", app, tx))
-        {
-            count.Parameters.AddWithValue("r", id);
-            Assert.Equal(1L, await count.ExecuteScalarAsync());
-        }
-        await tx.SaveAsync("forge");
-        var forged = new NpgsqlCommand(
-            "INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id) " +
-            "VALUES (@t, now() - interval '30 days', @a, 'user', 'identity', 'roles', @r, 'update', '{\"name_en\": {\"old\": \"x\", \"new\": \"y\"}}'::jsonb, 1)", app, tx);
-        forged.Parameters.AddWithValue("t", Env.TenantA.Id);
-        forged.Parameters.AddWithValue("a", adminId);
-        forged.Parameters.AddWithValue("r", id);
-        var denied = await Assert.ThrowsAsync<PostgresException>(() => forged.ExecuteNonQueryAsync());
-        Assert.Equal(PostgresErrorCodes.InsufficientPrivilege, denied.SqlState);
-        await tx.RollbackAsync("forge");
-        await tx.RollbackAsync();
-        // Nothing was added: the role's history is its one creation.
-        Assert.Equal(1, (await Json(await admin.GetAsync($"/api/audit/records/{id}?type=identity.roles"))).GetProperty("items").GetArrayLength());
     }
 }
