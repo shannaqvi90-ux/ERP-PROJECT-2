@@ -1,0 +1,17 @@
+const B='http://localhost:20950';
+const tok=(await (await fetch(B+'/api/auth/sign-in',{method:'POST',headers:{'content-type':'application/json','X-Erp-Request':'1'},body:JSON.stringify({email:'admin@alnoor.example',password:'Demo-Pass-2026',issueToken:true})})).json()).token;
+const h={Authorization:'Bearer '+tok,'content-type':'application/json','X-Erp-Request':'1'};
+const j=async(m,p,b)=>{const r=await fetch(B+p,{method:m,headers:h,body:b?JSON.stringify(b):undefined});const t=await r.text();let x;try{x=JSON.parse(t)}catch{x=t};return [r.status,x]};
+const [s,f]=await j('POST','/api/customfields/fields',{recordType:'contacts.contacts',labelEn:'Emirates ID expiry '+Date.now()%100000,labelAr:'انتهاء الهوية',type:'text',required:true,default:'unknown'});
+console.log('create required text with default',s,f.key);
+const [,ex]=await j('GET','/api/contacts/contacts?take=1&search=Ivanova');
+const id=ex.items[0].id; let [,full]=await j('GET','/api/contacts/contacts/'+id);
+console.log('existing contact value before', JSON.stringify(full.customFields?.[f.key]));
+let body={...full}; delete body.customFieldDefinitions; body.jobTitle='Critic probe 1';
+let [s1,u]=await j('PUT','/api/contacts/contacts/'+id,body);
+console.log('PUT without the key', s1, JSON.stringify(u.errors??u.customFields?.[f.key]).slice(0,250));
+[,full]=await j('GET','/api/contacts/contacts/'+id); body={...full}; delete body.customFieldDefinitions; body.customFields={...(full.customFields||{}),[f.key]:null};
+[s1,u]=await j('PUT','/api/contacts/contacts/'+id,body);
+console.log('PUT with the key null', s1, JSON.stringify(u.errors??u.customFields?.[f.key]).slice(0,250));
+const [,g]=await j('GET','/api/customfields/fields/'+f.id);
+console.log('switch off', (await j('PUT','/api/customfields/fields/'+f.id,{labelEn:g.labelEn,labelAr:g.labelAr,required:false,isActive:false,version:g.version}))[0]);

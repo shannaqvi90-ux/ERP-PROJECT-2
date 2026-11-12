@@ -1,0 +1,10 @@
+ui/ui4.mjs (critic p09 r2, demo c-p09-custom-fields-r2 on :20950, 2026-11-11 ~14:37 UTC), as admin@alnoor.example in English:
+Custom fields > Alt+N > label "Shipping line two" > Type: Single select > Options "MSC" Enter "Maersk" > focus "Default for new records" > type "Maersk" (the select shows Maersk) > Ctrl+S.
+Output:
+  default value Maersk
+  REQ POST {"recordType":"contacts.contacts","type":"select","labelEn":"Shipping line two","labelAr":"","required":false,"default":null,"decimals":null,"options":[{"value":null,"labelEn":"MSC","labelAr":""},{"value":null,"labelEn":"Maersk","labelAr":""}],"lookupTarget":null,"searchable":false,"sortOrder":null,"isActive":true,"version":null}
+The screen sends default:null although the default list shows the chosen option; the field is saved with no default (customfields.definitions.default_value NULL).
+Same with ui/ui2.mjs + ui3.mjs: "Incoterm" created with FOB chosen -> default_value NULL; "Payment terms" with "Net 30" chosen -> NULL.
+Editing the saved field afterwards and choosing FOB saves it (default_value 'fOB').
+The API itself takes a default by label on creation (api: POST select "Delivery mode" default "Air" -> 201, default "air").
+Option values made from upper-case labels: EXW -> "eXW", FOB -> "fOB", CIF -> "cIF", MSC -> "mSC" (api/r1gaps-out.txt).

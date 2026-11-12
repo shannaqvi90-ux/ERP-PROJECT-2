@@ -1,0 +1,14 @@
+-- as erp_app with tenant A (alnoor) set, read tenant B's canary value through the new value_* functions and tables
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000001|1794407668.494871
+value_text(B field, B record)=<null>
+rows of field_values with CANARY=0
+B definitions visible=0
+A definitions visible=9
+ROLLBACK
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000002|1794407668.676744
+control as B: value_text=CANARYB1794407206267
+ROLLBACK

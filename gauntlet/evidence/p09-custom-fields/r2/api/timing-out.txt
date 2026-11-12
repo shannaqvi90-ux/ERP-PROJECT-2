@@ -1,0 +1,15 @@
+active fields cfCustomerSegment:select cfAccountManager:text cfCreditReview:date cfPreferredPartner:boolean
+cf columns in definition cfCustomerSegment sort=true group=true filter=true type=choice dec=null
+  cfAccountManager sort=true group=false filter=true type=text dec=null
+  cfCreditReview sort=true group=false filter=true type=date dec=null
+  cfPreferredPartner sort=true group=true filter=true type=boolean dec=null
+200 1438 ms /api/contacts/contacts?sort=cfCustomerSegment&take=50 100007 first="distributor"
+200 1349 ms /api/contacts/contacts?sort=-cfCustomerSegment&take=50 100007 first=""
+200 1545 ms /api/contacts/contacts?groupBy=cfCustomerSegment 100007 first="distributor"
+200 1527 ms /api/contacts/contacts?sort=cfAccountManager&take=50 100007 first="Aisha Al Nuaimi"
+200 1513 ms /api/contacts/contacts?sort=-cfAccountManager&take=50 100007 first=""
+200 1812 ms /api/contacts/contacts?sort=cfCreditReview&take=50 100007 first="2025-01-01"
+200 1560 ms /api/contacts/contacts?sort=-cfCreditReview&take=50 100007 first=""
+200 1519 ms /api/contacts/contacts?sort=cfPreferredPartner&take=50 100007 first=true
+200 1773 ms /api/contacts/contacts?sort=-cfPreferredPartner&take=50 100007 first=""
+200 1804 ms /api/contacts/contacts?groupBy=cfPreferredPartner 100007 first={"key":true,"count":10068,"totals":null,"moneyTotals":null}

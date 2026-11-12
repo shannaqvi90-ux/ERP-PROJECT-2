@@ -1,0 +1,13 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-11-12T15:15:40.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing;
+                                                     the lead or the owner runs it there, needs-human #13: never stop, recreate or reset the shared rig)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig, for a builder or critic; then COMPARE_ODOO_URL=http://localhost:<port>)
+    tools/odoo-reference/up.sh --status             (what is running and the recorded volume; changes nothing)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+custom-field-filter      odoo  verified  steps 17  keys 61  machine 9.026s  human 53.48s  human+wait 55.725s  -> ../../evidence-staging/p09-custom-fields/r2/compare/results/custom-field-filter-20261111T144310-ef28.json
+custom-field-filter      ours  verified  steps 11  keys 39  machine 2.571s  human 28.92s  human+wait 29.69s  -> ../../evidence-staging/p09-custom-fields/r2/compare/results/custom-field-filter-20261111T144353-3901.json
+custom-field-filter      verdict win
+blind review page: ../../../../evidence-staging/p09-custom-fields/r2/compare/blind/review.html
+output: ../../../../evidence-staging/p09-custom-fields/r2/compare
