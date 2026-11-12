@@ -44,8 +44,9 @@ replacing it there broke B's id, so the leak was not seen in the runs where the 
 `MarkerScrub.Scrub` now replaces the values that are whole ids first, sets the ids left in the text
 aside, removes the other values and puts the ids back (used by the HTTP and the company gate).
 Strictly stricter: an id in an answer is found unless the request sent that id or the attacker stored it.
-Unit self-tests in `MarkerScrubSelfTests`. The self-test was run ten times in a row, results in the
-round's notes.
+Unit self-tests in `MarkerScrubSelfTests`. The self-test was run ten times in a row on the final code with no failure (12 to 13 minutes each).
+An earlier version of the scrub (placeholders) failed one of its runs with an index error when a printed
+answer held the placeholder's control characters; replaced by scrubbing between ids.
 
 ## 4. G1ListVolumeTests, answers that are not 200
 
