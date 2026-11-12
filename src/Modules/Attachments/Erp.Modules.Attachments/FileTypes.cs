@@ -8,8 +8,8 @@ namespace Erp.Modules.Attachments;
 /// The kinds of file the server accepts (p11). A file is accepted when its extension is on the list
 /// and its own bytes are of that kind (the signature at its start; a Word, Excel or PowerPoint
 /// package must hold the parts such a package holds; text must be text). The type the server hands
-/// back is the one listed here, never what the browser claimed. Scripts, pages, vector images and
-/// archives are not on the list.
+/// back is the one listed here, never what the browser claimed. Scripts, pages and vector images are not on the list;
+/// a zip archive and a mail message (eml, msg) are, kept and served as downloads, never opened.
 /// </summary>
 internal static class FileTypes
 {
@@ -31,7 +31,17 @@ internal static class FileTypes
         new("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", false, "word"),
         new("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", false, "excel"),
         new("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation", false, "powerpoint"),
+        new("zip", "application/zip", false, "zip"),
+        new("eml", "message/rfc822", false, "mail"),
+        new("msg", "application/vnd.ms-outlook", false, "ole"),
     ];
+
+    /// <summary>The largest text file the screen shows as text (bigger ones are downloaded).</summary>
+    public const long TextPreviewBytes = 512 * 1024;
+
+    /// <summary>Whether a file of this name and size can be shown in the page: images and PDF inline, small text as text.</summary>
+    public static bool Previewable(string name, long sizeBytes) =>
+        ForName(name) is { } kind && (kind.Inline || (kind.Family == "text" && sizeBytes <= TextPreviewBytes));
 
     /// <summary>The extensions accepted, for messages and the API description.</summary>
     public static ImmutableArray<string> Extensions { get; } = [.. Kinds.Select(k => k.Extension)];
@@ -69,6 +79,10 @@ internal static class FileTypes
                 return Starts(head, 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1);
             case "text":
                 return IsText(head);
+            case "mail":
+                return IsMessage(head);
+            case "zip":
+                return await IsZipAsync(head, open);
             default:
                 if (!Starts(head, 0x50, 0x4B, 0x03, 0x04))
                 {
@@ -107,6 +121,50 @@ internal static class FileTypes
             }
         }
         return false;
+    }
+
+    /// <summary>A mail message (.eml) is text that opens with header lines, among them one a message always
+    /// carries; no NUL bytes (a binary file renamed .eml is refused).</summary>
+    private static bool IsMessage(byte[] head)
+    {
+        if (head.Any(b => b == 0))
+        {
+            return false;
+        }
+        var text = Encoding.Latin1.GetString(head);
+        var first = text.AsSpan(0, Math.Min(text.Length, 200));
+        var colon = first.IndexOf(':');
+        if (colon <= 0 || first[..colon].ToString().Any(c => c <= ' ' || c > '~'))
+        {
+            return false;
+        }
+        string[] headers = ["from:", "to:", "date:", "subject:", "message-id:", "received:", "mime-version:", "return-path:", "delivered-to:", "x-"];
+        return text.Split('\n').Take(60).Any(line => headers.Any(h => line.StartsWith(h, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>A zip archive (never unpacked here): it starts with a local file header (or is an empty archive) and its
+    /// directory reads.</summary>
+    private static async Task<bool> IsZipAsync(byte[] head, Func<Task<Stream?>> open)
+    {
+        if (!Starts(head, 0x50, 0x4B, 0x03, 0x04) && !Starts(head, 0x50, 0x4B, 0x05, 0x06))
+        {
+            return false;
+        }
+        await using var stream = await open();
+        if (stream is null)
+        {
+            return false;
+        }
+        try
+        {
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+            _ = archive.Entries.Count;
+            return true;
+        }
+        catch (InvalidDataException)
+        {
+            return false;
+        }
     }
 
     private static async Task<bool> IsPackageAsync(string family, Func<Task<Stream?>> open)

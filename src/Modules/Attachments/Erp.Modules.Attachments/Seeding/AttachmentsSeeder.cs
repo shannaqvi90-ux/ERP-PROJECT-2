@@ -2,6 +2,7 @@ using System.Text;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Seeding;
 using Erp.Modules.Attachments.Contracts;
+using Erp.Modules.Identity.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Erp.Modules.Attachments.Seeding;
@@ -13,7 +14,7 @@ namespace Erp.Modules.Attachments.Seeding;
 /// recognised. Runs after the contacts seeder and finds the contacts through the contacts module's
 /// registration, never its tables. A minimal or newly provisioned workspace has none.
 /// </summary>
-internal sealed class AttachmentsSeeder(AttachmentsDbContext db, ModuleCatalog catalog, IAttachmentStore store) : ITenantSeeder
+internal sealed class AttachmentsSeeder(AttachmentsDbContext db, ModuleCatalog catalog, IAttachmentStore store, IUserDirectory users) : ITenantSeeder
 {
     public const string ContactsTable = "contacts.contacts";
 
@@ -32,21 +33,27 @@ internal sealed class AttachmentsSeeder(AttachmentsDbContext db, ModuleCatalog c
         var demo = context.Plan.Profile == SeedProfile.Demo;
         var contacts = await record.FirstIds(context.Services, demo ? 5 : 3, cancellationToken);
         var at = new DateTimeOffset(2024, 2, 1, 9, 0, 0, TimeSpan.Zero);
+        // The demo's people added them: the administrator the licence and the picture, the accountant the delivery note
+        // (found through the identity module's public contract; a workspace without them leaves the adder empty).
+        var domain = context.Tenant.EmailDomain;
+        var administrator = (await users.FindByEmailAsync($"admin@{domain}", cancellationToken))?.Id;
+        var accountant = (await users.FindByEmailAsync($"accountant@{domain}", cancellationToken))?.Id ?? administrator;
+        var adders = new List<Guid?>();
         var number = 0;
         foreach (var contact in contacts)
         {
             number++;
             var licence = $"TL-2026-{70000 + number}";
-            var files = new List<(string Name, string ContentType, byte[] Bytes)>
+            var files = new List<(string Name, string ContentType, byte[] Bytes, Guid? By)>
             {
-                (context.Mark($"Trade licence {licence}") + ".pdf", "application/pdf", Pdf(context.Mark($"Trade licence {licence}"))),
-                (context.Mark("Delivery note") + ".txt", "text/plain; charset=utf-8", Encoding.UTF8.GetBytes(context.Mark("Delivery note: 12 pallets, signed on receipt.") + "\n")),
+                (context.Mark($"Trade licence {licence}") + ".pdf", "application/pdf", Pdf(context.Mark($"Trade licence {licence}")), administrator),
+                (context.Mark("Delivery note") + ".txt", "text/plain; charset=utf-8", Encoding.UTF8.GetBytes(context.Mark("Delivery note: 12 pallets, signed on receipt.") + "\n"), accountant),
             };
             if (demo)
             {
-                files.Add(("company-seal-" + number + ".png", "image/png", Convert.FromBase64String(PngBase64)));
+                files.Add(("company-seal-" + number + ".png", "image/png", Convert.FromBase64String(PngBase64), administrator));
             }
-            foreach (var (name, contentType, bytes) in files)
+            foreach (var (name, contentType, bytes, by) in files)
             {
                 using var stream = new MemoryStream(bytes);
                 var blob = await store.SaveAsync(context.Tenant.Id, stream, AttachmentLimits.MaxFileBytes, cancellationToken);
@@ -59,12 +66,19 @@ internal sealed class AttachmentsSeeder(AttachmentsDbContext db, ModuleCatalog c
                     SizeBytes = blob.Size,
                     Sha256 = blob.Sha256,
                     StorageKey = blob.Key,
-                    CreatedAt = at,
-                    UpdatedAt = at,
                 });
+                adders.Add(by);
             }
         }
         await db.SaveChangesAsync(cancellationToken);
+        // The context stamps new rows with the seeding run (no person, now): the demo's files carry who added them and when.
+        var index = 0;
+        foreach (var file in db.Files.Local.ToList())
+        {
+            var by = adders[index++];
+            var stamp = at.AddMinutes(index * 7);
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE attachments.files SET created_by = {by}::uuid, updated_by = {by}::uuid, created_at = {stamp}, updated_at = {stamp} WHERE id = {file.Id}", cancellationToken);
+        }
     }
 
     /// <summary>A one-page PDF holding a line of text (ASCII only: the text of an Arabic or accented name is left out).</summary>

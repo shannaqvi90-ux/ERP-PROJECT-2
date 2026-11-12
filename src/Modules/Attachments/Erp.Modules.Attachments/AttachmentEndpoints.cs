@@ -28,7 +28,7 @@ public sealed record AttachmentDto(
     [property: Description("The type the server decided from the extension and the bytes.")] string ContentType,
     long SizeBytes,
     [property: Description("Lower-case hex SHA-256 of the bytes.")] string Sha256,
-    [property: Description("True for images and PDF: the content endpoint can show them in the page (inline=true).")] bool Previewable,
+    [property: Description("True for images, PDF and small text files: the screen can show them (images and PDF in the page with inline=true on the content endpoint, text from the download).")] bool Previewable,
     DateTimeOffset CreatedAt,
     Guid? CreatedBy,
     string? CreatedByName,
@@ -339,6 +339,6 @@ public static class AttachmentEndpoints
     internal static AttachmentDto ToDto(AttachedFile f, IReadOnlyDictionary<Guid, UserSummary> names)
     {
         var by = f.CreatedBy is { } id && names.TryGetValue(id, out var user) ? user : null;
-        return new AttachmentDto(f.Id, f.Name, f.ContentType, f.SizeBytes, f.Sha256, FileTypes.ForName(f.Name)?.Inline == true, f.CreatedAt, f.CreatedBy, by?.DisplayName, by?.DisplayNameAr);
+        return new AttachmentDto(f.Id, f.Name, f.ContentType, f.SizeBytes, f.Sha256, FileTypes.Previewable(f.Name, f.SizeBytes), f.CreatedAt, f.CreatedBy, by?.DisplayName, by?.DisplayNameAr);
     }
 }

@@ -194,6 +194,18 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         Assert.Equal(HttpStatusCode.Created, docx.StatusCode);
         using var csv = await Api.UploadAsync(admin, contact, "rates.csv", Encoding.UTF8.GetBytes("﻿code,اسم\nAED,درهم\n"));
         Assert.Equal(HttpStatusCode.Created, csv.StatusCode);
+        // A zip archive and a mail message are kept and offered as downloads; a program renamed .zip is refused.
+        using var zipped = await Api.UploadAsync(admin, contact, "scans.zip", Docx());
+        Assert.Equal(HttpStatusCode.Created, zipped.StatusCode);
+        using var mail = await Api.UploadAsync(admin, contact, "quote.eml", "From: a@b.example\r\nSubject: Quote\r\n\r\nHello"u8.ToArray());
+        Assert.Equal(HttpStatusCode.Created, mail.StatusCode);
+        using var fakeZip = await Api.UploadAsync(admin, contact, "tool.zip", "MZ this is a program"u8.ToArray());
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, fakeZip.StatusCode);
+        Assert.Equal("attachmentsContent", await Api.ProblemCodeAsync(fakeZip));
+        var listed = (await Api.ListAsync(admin, contact)).GetProperty("items").EnumerateArray().ToDictionary(i => i.GetProperty("name").GetString()!, i => i.GetProperty("previewable").GetBoolean());
+        Assert.False(listed["scans.zip"]);
+        Assert.False(listed["quote.eml"]);
+        Assert.True(listed["rates.csv"]);
     }
 
     private static byte[] Docx()
