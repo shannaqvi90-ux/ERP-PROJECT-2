@@ -113,7 +113,7 @@ internal static class AuditLog
             .Column("recordAr", e => e.RecordLabelAr)
             .Column("recordCode", e => e.RecordCode)
             .Column("recordId", e => e.RecordId)
-            .Column("fields", e => e.Fields);
+            .Column("fields", e => e.Fields, e => e.FieldList, Erp.Kernel.Audit.AuditFieldCodes.Of);
 
     /// <summary>One page of the audit log exactly as its endpoint serves it (reports print it too).</summary>
     public static async Task<ListResult<AuditLogRow>> PageAsync(AuditReader reader, ModuleCatalog catalog, AuditTexts texts, ListRequest request,

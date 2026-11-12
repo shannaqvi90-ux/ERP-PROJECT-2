@@ -59,6 +59,12 @@ namespace Erp.Kernel.Data.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("correlation_id");
 
+                    b.Property<string>("FieldList")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("text")
+                        .HasColumnName("field_list")
+                        .HasComputedColumnSql("audit.field_list(changes)", true);
+
                     b.PrimitiveCollection<string[]>("Fields")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("text[]")
@@ -135,6 +141,12 @@ namespace Erp.Kernel.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_entries");
 
+                    b.HasIndex("FieldList")
+                        .HasDatabaseName("ix_entries_field_list");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("FieldList"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("FieldList"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex("Fields")
                         .HasDatabaseName("ix_entries_fields");
 
@@ -167,6 +179,8 @@ namespace Erp.Kernel.Data.Migrations
 
                     b.HasIndex("TenantId", "OccurredAt", "Uid")
                         .HasDatabaseName("ix_entries_tenant_id_occurred_at_uid");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("TenantId", "OccurredAt", "Uid"), new[] { "RecordType", "RecordCompanyId", "RecordBranchId" });
 
                     b.HasIndex("TenantId", "RecordType", "RecordId", "OccurredAt")
                         .HasDatabaseName("ix_entries_tenant_id_record_type_record_id_occurred_at");

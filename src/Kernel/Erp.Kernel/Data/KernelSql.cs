@@ -112,6 +112,22 @@ internal static class KernelSql
         GRANT EXECUTE ON FUNCTION audit.field_names(jsonb) TO erp_app;
         """;
 
+    /// <summary>The recorded field names as one string of short codes (the first ten hex digits of each name's SHA-256),
+    /// <c>|c1|c2|</c>, for a trigram-indexed filter: the names share their letters (every trigram of "name" is in
+    /// "display_name"), the codes do not. See <see cref="Erp.Kernel.Audit.AuditFieldCodes"/>.</summary>
+    public const string FieldListFunction = """
+        CREATE OR REPLACE FUNCTION audit.field_list(p_changes jsonb) RETURNS text
+            LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
+            SET search_path = pg_catalog, pg_temp
+            AS $$ SELECT '|' || coalesce(string_agg(substr(encode(sha256(convert_to(k, 'UTF8')), 'hex'), 1, 10), '|' ORDER BY k), '') || '|' FROM jsonb_object_keys(p_changes) AS k $$;
+        REVOKE ALL ON FUNCTION audit.field_list(jsonb) FROM PUBLIC;
+        GRANT EXECUTE ON FUNCTION audit.field_list(jsonb) TO erp_app;
+        """;
+
+    public const string FieldListFunctionDown = """
+        DROP FUNCTION IF EXISTS audit.field_list(jsonb);
+        """;
+
     public const string FieldNamesFunctionDown = """
         DROP FUNCTION IF EXISTS audit.field_names(jsonb);
         """;
