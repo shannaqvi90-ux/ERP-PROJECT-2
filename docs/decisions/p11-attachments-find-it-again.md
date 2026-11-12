@@ -59,3 +59,12 @@ The section's table no longer cuts the buttons ("De"): the name column takes wha
 and on a section narrower than 640 px (the details pane beside a list) each file is two lines, its name above and, below, who added it with the
 buttons; size and date are left to wider sections (container query, logical properties only, so Arabic mirrors). Checked at 1440 x 900 in the
 end-to-end suite (every button whole and inside the section).
+
+## Round 2 fix: role form 3 px wider than its panel (audit.spec.ts:54)
+
+The builder's e2e run failed audit.spec.ts:54 (and, by a value left behind, navigation.spec.ts:93 and print-paper.spec.ts:297 ar). The
+cause was not this round: in the Roles form at 1280 px, long "Other" permission labels of the Background jobs block ("Cancel
+background jobs", "Download what background jobs ...", "Start and re-run background jobs") sat 3 px past the form's edge (matrix
+cells are fixed-width). Fix: identity.css lets an "Other" label take its cell's width and wrap (max-inline-size 100%, no end margin,
+overflow-wrap anywhere). Re-run on a fresh stack (volume 2000): whole Playwright suite 156 passed in 10.0 min; web identity tests 114 passed.
+No full verify run (owner decision #41); no processor time added by this fix (CSS only).
