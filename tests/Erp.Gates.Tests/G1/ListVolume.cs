@@ -411,11 +411,11 @@ public static partial class ListVolume
             // B, A, B, A: every answer but the first comes right after the other tenant's identical request.
             foreach (var (who, client) in new[] { ("B", b), ("A", a), ("B", b), ("A", a) })
             {
-                var answer = await ListAnswers.GetAsync(client, uri);
+                var (answer, why) = await ListAnswers.GetWithReasonAsync(client, uri);
                 Interlocked.Increment(ref tally.Answers);
                 if (answer is null)
                 {
-                    tally.Wrong.Enqueue($"tenant {who}: GET {uri} was not answered with 200");
+                    tally.Wrong.Enqueue($"tenant {who}: GET {uri} was not answered with 200: {why}");
                     continue;
                 }
                 if (skip > ListSearch.MaxRankedRows)
@@ -491,11 +491,11 @@ public static partial class ListVolume
                 var uri = $"{list.Endpoint}?take={Take}&after={Uri.EscapeDataString(truth.Cursors[at]!)}";
                 foreach (var who in new[] { other, owner, other })
                 {
-                    var answer = await ListAnswers.GetAsync(who == "A" ? a : b, uri);
+                    var (answer, why) = await ListAnswers.GetWithReasonAsync(who == "A" ? a : b, uri);
                     Interlocked.Increment(ref tally.Answers);
                     if (answer is null)
                     {
-                        tally.Wrong.Enqueue($"tenant {who}: GET {uri} (tenant {owner}'s cursor after row {(at + 1) * truth.WalkTake}) was not answered with 200");
+                        tally.Wrong.Enqueue($"tenant {who}: GET {uri} (tenant {owner}'s cursor after row {(at + 1) * truth.WalkTake}) was not answered with 200: {why}");
                         continue;
                     }
                     var mine = truths[who];

@@ -89,6 +89,94 @@ public static class MovingLists
         return true;
     }
 
+    /// <summary>Query parameters that choose a window of a list, not which rows it holds.</summary>
+    private static readonly HashSet<string> PagingNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "take", "skip", "limit", "offset", "top", "size", "page", "pageSize", "page_size", "perPage", "per_page", "count", "first",
+    };
+
+    /// <summary>Whether the request (<paramref name="label"/> holds its path and query) sends
+    /// <paramref name="value"/> as a paging parameter: a window of the list, which on a list that is
+    /// longer than the window answers other rows for another number, so two numbers are not compared
+    /// row by row (the rows are judged for company Y's markers all the same).</summary>
+    public static bool SendsAsPagingValue(string label, string value)
+    {
+        var at = label.IndexOf('?', StringComparison.Ordinal);
+        if (at < 0) return false;
+        foreach (var pair in label[(at + 1)..].Split('&'))
+        {
+            var eq = pair.IndexOf('=', StringComparison.Ordinal);
+            if (eq <= 0) continue;
+            if (PagingNames.Contains(Uri.UnescapeDataString(pair[..eq])) && Uri.UnescapeDataString(pair[(eq + 1)..]) == value) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// The four answers (answer, control, answer, control, in time order) of a paging parameter differ
+    /// by the window and the movement of the list alone: every answer has the same shape (the same
+    /// properties; a list may be empty in one), and a number outside the lists (a total) only grows
+    /// or only shrinks over the four. Rows are not compared, so a number that selects other rows is not
+    /// an oracle, but a number that changes a total with the side (a count of 1 for the value of Y,
+    /// 0 for the control, 1, 0), another status, a property that appears for one side, or a text that
+    /// is not JSON still is.
+    /// </summary>
+    public static bool PagingExplainedByMovement(string answer1, string control1, string answer2, string control2)
+    {
+        var parsed = new List<JsonNode>();
+        foreach (var text in new[] { answer1, control1, answer2, control2 })
+        {
+            try
+            {
+                if (JsonNode.Parse(text) is not { } root) return false;
+                parsed.Add(root);
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+        for (var i = 1; i < parsed.Count; i++)
+        {
+            if (!ShapesAgree(parsed[0], parsed[i])) return false;
+        }
+        var samples = parsed.Select(root =>
+        {
+            var sample = new Sample();
+            Collect(root, "", sample);
+            return sample;
+        }).ToList();
+        foreach (var path in samples.SelectMany(p => p.Scalars.Keys).Distinct(StringComparer.Ordinal))
+        {
+            var series = samples.Select(p => p.Scalars.GetValueOrDefault(path)).ToArray();
+            if (!series.All(v => v is not null && double.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out _)))
+            {
+                continue;
+            }
+            var numbers = series.Select(v => double.Parse(v!, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+            var up = numbers.Zip(numbers.Skip(1), (a, b) => b >= a).All(x => x);
+            var down = numbers.Zip(numbers.Skip(1), (a, b) => b <= a).All(x => x);
+            if (!up && !down) return false;
+        }
+        return true;
+    }
+
+    private static bool ShapesAgree(JsonNode? a, JsonNode? b)
+    {
+        switch (a, b)
+        {
+            case (JsonObject x, JsonObject y):
+                return x.Select(kv => kv.Key).Order(StringComparer.Ordinal).SequenceEqual(y.Select(kv => kv.Key).Order(StringComparer.Ordinal), StringComparer.Ordinal)
+                    && x.All(kv => ShapesAgree(kv.Value, y[kv.Key]));
+            case (JsonArray x, JsonArray y):
+                return x.Count == 0 || y.Count == 0 || ShapesAgree(x[0], y[0]);
+            case (JsonObject, _) or (_, JsonObject) or (JsonArray, _) or (_, JsonArray):
+                return (a is null || b is null) && !(a is JsonObject or JsonArray && b is JsonObject or JsonArray);
+            default:
+                return true;
+        }
+    }
+
     private sealed class Sample
     {
         /// <summary>Every list row, by the list's path and the row's text (and its occurrence).</summary>

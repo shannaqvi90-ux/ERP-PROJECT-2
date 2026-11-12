@@ -620,6 +620,22 @@ public static class ListAnswers
         return JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.Clone();
     }
 
+    /// <summary>Like <see cref="GetAsync"/>, and when the answer is not a success it also says what came back:
+    /// the status code, the seconds the request took and the start of the server's error, so a slow answer
+    /// (a request near its time limit) and a refused one (a 400 or a 500) can be told apart.</summary>
+    internal static async Task<(JsonElement? Answer, string? Why)> GetWithReasonAsync(HttpClient client, string uri)
+    {
+        var started = System.Diagnostics.Stopwatch.StartNew();
+        using var response = await client.GetTimedAsync(uri, "list answer");
+        var seconds = started.Elapsed.TotalSeconds;
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            return (null, $"status {(int)response.StatusCode} {response.ReasonPhrase} after {seconds:0.0} s, server's error: {(body.Length > 300 ? body[..300] + "..." : body)}");
+        }
+        return (JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.Clone(), null);
+    }
+
     /// <summary>One tenant's keyset walk: every row, and every page as answered.</summary>
     internal sealed record Walk(List<JsonElement> Rows, List<JsonElement> Pages)
     {

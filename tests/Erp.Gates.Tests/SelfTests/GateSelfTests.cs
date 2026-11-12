@@ -372,6 +372,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(report.Leaks, l => !Planted(l));
         // Critic p02 round 6: the workspace every company shares, renamed by an administrator of one company.
         var shared = report.Shared!;
+        // Round 19, plant P1: a paging number (skip) looked up among every company's PO box. The company
+        // attack does not take paging numbers for company markers, and still tells this one apart by its
+        // total (1 for company Y's PO box, 0 for a number that exists nowhere).
+        Assert.Contains(report.Oracles, o => o.Contains("GET /api/leaky/paged-companies?skip=", StringComparison.Ordinal) && o.StartsWith("company X administrator", StringComparison.Ordinal));
         Assert.Contains("PUT /api/leaky/workspace-name [nameEn]", shared.Sources);
         Assert.Contains(shared.Failures, f => f.StartsWith("company X administrator → PUT /api/leaky/workspace-name [nameEn] on the workspace every company shares", StringComparison.Ordinal) &&
                                               f.Contains("answered 200", StringComparison.Ordinal));

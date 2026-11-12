@@ -926,6 +926,14 @@ public static class CompanyAttack
                     left = right;
                     Interlocked.Increment(ref _movedLists);
                 }
+                // A paging number (take, skip) chooses a window of a list, not its rows: on the audit log,
+                // which grows while the gate writes and is longer than any window, another number shows
+                // other rows. Judged by shape and by the totals (and the rows for markers, in Judge).
+                else if (left != right && MovingLists.SendsAsPagingValue(label, value) && MovingLists.PagingExplainedByMovement(firstAnswer, firstControl, left, right))
+                {
+                    left = right;
+                    Interlocked.Increment(ref _movedLists);
+                }
             }
             if (answer.Status != control.Status || left != right)
             {

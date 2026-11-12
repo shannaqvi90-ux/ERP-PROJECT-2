@@ -62,4 +62,26 @@ public sealed class MovingListsSelfTests
         Assert.DoesNotContain(shipped, kept);
         Assert.Contains("Tenant A private note about " + shipped, kept);
     }
+
+    [Fact]
+    public void A_paging_number_is_a_window_not_a_marker_but_a_total_that_follows_the_side_is_still_caught()
+    {
+        Assert.True(MovingLists.SendsAsPagingValue("GET /api/audit/log?take=20002", "20002"));
+        Assert.True(MovingLists.SendsAsPagingValue("GET /api/audit/log?filter=x&skip=20002", "20002"));
+        Assert.False(MovingLists.SendsAsPagingValue("GET /api/audit/log?search=20002", "20002"));
+        Assert.False(MovingLists.SendsAsPagingValue("GET /api/audit/log?take=20002", "20003"));
+        Assert.False(MovingLists.SendsAsPagingValue("GET /api/audit/log", "20002"));
+
+        // Two windows of a log that grew by a row between asks: other rows, one total that only grows.
+        string Log(int total, params int[] rows) =>
+            $"{{\"total\":{total},\"next\":\"c{total}\",\"items\":[{string.Join(",", rows.Select(i => $"{{\"id\":\"r{i}\",\"what\":\"w\"}}"))}]}}";
+        Assert.True(MovingLists.PagingExplainedByMovement(Log(300, 1, 2), Log(301, 3, 4), Log(301, 5, 6), Log(302, 7, 8)));
+        Assert.True(MovingLists.PagingExplainedByMovement(Log(0), Log(0, 1), Log(0), Log(0, 1)));
+        // A total that is higher for the value and lower for the control, twice: the value selects rows.
+        Assert.False(MovingLists.PagingExplainedByMovement(Log(301, 1), Log(300, 1), Log(301, 1), Log(300, 1)));
+        // A property only the value's answers hold, another kind of answer, a text that is not JSON.
+        Assert.False(MovingLists.PagingExplainedByMovement(Log(300, 1).Replace("\"next\"", "\"other\""), Log(300, 1), Log(300, 1).Replace("\"next\"", "\"other\""), Log(300, 1)));
+        Assert.False(MovingLists.PagingExplainedByMovement("[]", Log(300, 1), "[]", Log(300, 1)));
+        Assert.False(MovingLists.PagingExplainedByMovement("a", "b", "a", "b"));
+    }
 }
