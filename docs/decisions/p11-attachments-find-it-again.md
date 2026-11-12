@@ -31,7 +31,11 @@ permission map and one to the reviewed client-input list (below); it answers `ma
 ## Measured: open-attached-file (gauntlet/compare, the critic's task of round 1, now in tasks/ and drivers/)
 
 Start: the contact is open with the file attached (and a second one). Goal: the file is open on screen in a viewer. Odoo: paperclip, then the
-file's card (2 steps). Ours: the file's name under the heading (1 step). RESULTS_PLACEHOLDER
+file's card (2 steps). Ours: the file's name under the heading (1 step). Median of three runs each, the shared Odoo rig and a local stack of this branch (`--product both --repeat 3`):
+steps 1 against 2; human seconds 2.65 against 5.3; machine seconds 0.073 against 0.252; keystrokes 0 against 0 (left out by the owner's zero rule).
+Harness verdict: win. `attach-file`, measured beside it: steps 2 against 3, human seconds 4.15 against 6.8, verdict win (unchanged by this round).
+Processor time this round adds to the full verify: one endpoint (the file search) in the gates, three gate tests, no new data volume; the builder
+did not run a full verify (owner decision #41).
 
 **The task's file is a picture, not a PDF.** The harness marks a run invalid when the page changes without a counted step causing it. A PDF
 shown in the browser's own PDF viewer lays itself out in its own frame after it loads (a `LayoutInvalidationTracking` task of no traceable origin
