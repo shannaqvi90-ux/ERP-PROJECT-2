@@ -99,7 +99,7 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
     // onRow only remembers the person's name; the change is read again only for another id.
   }, [id]);
   const f = useMemo<ValueFormat>(
-    () => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names: found?.names, fields: found?.fields }),
+    () => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names: found?.names, fields: found?.fields, recordType: found?.change.recordType }),
     [t, formatDateTime, formatNumber, format, language, found],
   );
   if (found === undefined) return <p className="muted">{t("audit.history.loading")}</p>;

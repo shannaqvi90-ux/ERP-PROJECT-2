@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Erp.Testing;
 using Npgsql;
+using Erp.Modules.Audit;
+using Erp.Modules.Audit.Contracts;
 
 namespace Erp.Modules.Audit.Tests;
 
@@ -145,7 +147,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         }
 
         // With the audit permission, roles readers read roles' histories, never users' or sessions'.
-        var auditor = await CreateRoleAsync(admin, "Roles auditor", "identity.roles.read", "audit.log.read");
+        var auditor = await CreateRoleAsync(admin, "Roles auditor " + Guid.NewGuid().ToString("N")[..6], "identity.roles.read", "audit.log.read");
         var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
         {
             email = $"audit.roles.reader@{Env.TenantA.EmailDomain}", displayName = "Roles Reader", language = "en", password = ErpTestEnvironment.Password,
@@ -429,5 +431,104 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.True(await result.ReadAsync());
         Assert.Equal([companies[0]], result.GetFieldValue<Guid[]>(0));
         Assert.True(result.GetInt64(1) > 0, "rows of no company stay readable");
+    }
+
+    [Fact]
+    public async Task The_field_filter_is_exact_and_the_coded_field_text_matches_the_names_the_row_records()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var role = await CreateRoleAsync(admin, "Coded Courier", "identity.users.read");
+        await RenameRoleAsync(admin, role, "Coded Dispatcher", "identity.users.read");
+        var id = role.GetProperty("id").GetGuid();
+
+        await using var db = await Env.OpenAdminAsync();
+        await using var read = new Npgsql.NpgsqlCommand("SELECT fields, field_list FROM audit.entries WHERE record_id = @id AND action = 'update'", db);
+        read.Parameters.AddWithValue("id", id);
+        await using var reader = await read.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+        var fields = (string[])reader.GetValue(0);
+        Assert.Equal("|" + string.Join("|", fields.Select(Erp.Kernel.Audit.AuditFieldCodes.Of)) + "|", reader.GetString(1));
+        await reader.DisposeAsync();
+
+        // A choice filter on one field, on several, and on a field the row does not record.
+        string Filter(string text) => Uri.EscapeDataString($"recordId eq '{id}' and {text}");
+        async Task<int> CountAsync(string text) => (await Json(await admin.GetAsync($"/api/audit/log?filter={Filter(text)}"))).GetProperty("total").GetInt32();
+        // The role's creation and its renaming both record name_en.
+        Assert.Equal(2, await CountAsync("fields eq 'name_en'"));
+        Assert.Equal(2, await CountAsync("fields in ('email', 'name_en')"));
+        Assert.Equal(0, await CountAsync("fields eq 'email'"));
+        Assert.Equal(0, await CountAsync("not (fields eq 'name_en')"));
+    }
+
+    [Fact]
+    public async Task A_page_far_down_the_log_is_the_same_rows_the_pages_before_it_walk_past()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        await using (var db = await Env.OpenAdminAsync())
+        {
+            // 1,300 changes of an old day (so the newest-first tests above are not disturbed).
+            await using var insert = new Npgsql.NpgsqlCommand(
+                "INSERT INTO audit.entries (tenant_id, occurred_at, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id, record_label) " +
+                "SELECT @tenant, '2020-01-01T00:00:00Z'::timestamptz + (g || ' seconds')::interval, 'system', 'identity', 'roles', gen_random_uuid(), 'update', " +
+                "'{\"name_en\":{\"old\":\"a\",\"new\":\"b\"}}'::jsonb, g, 'Deep ' || g FROM generate_series(1, 1300) g", db);
+            insert.Parameters.AddWithValue("tenant", Env.TenantA.Id);
+            await insert.ExecuteNonQueryAsync();
+        }
+        async Task<List<string>> Ids(string query) =>
+            (await Json(await admin.GetAsync($"/api/audit/log?{query}"))).GetProperty("items").EnumerateArray().Select(r => r.GetProperty("id").GetString()!).ToList();
+        foreach (var sort in new[] { "", "&sort=occurredAt", "&sort=-occurredAt" })
+        {
+            var all = await Ids($"take=200{sort}&filter={Uri.EscapeDataString("record contains 'Deep'")}");
+            Assert.Equal(200, all.Count);
+            var deep = await Ids($"take=50&skip=1200{sort}&filter={Uri.EscapeDataString("record contains 'Deep'")}");
+            Assert.Equal(50, deep.Count);
+            var walked = new List<string>();
+            var page = await Json(await admin.GetAsync($"/api/audit/log?take=200{sort}&filter={Uri.EscapeDataString("record contains 'Deep'")}"));
+            for (var n = 0; n < 6 && page.GetProperty("next").ValueKind == JsonValueKind.String; n++)
+            {
+                page = await Json(await admin.GetAsync($"/api/audit/log?take=200{sort}&filter={Uri.EscapeDataString("record contains 'Deep'")}&after={Uri.EscapeDataString(page.GetProperty("next").GetString()!)}"));
+                walked.AddRange(page.GetProperty("items").EnumerateArray().Select(r => r.GetProperty("id").GetString()!));
+            }
+            Assert.Equal(walked.Skip(1000).Take(50), deep);
+        }
+    }
+
+    [Fact]
+    public void A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code()
+    {
+        var texts = new AuditTexts();
+        var change = new[] { new AuditFieldChange("reset", JsonDocument.Parse("\"yearly\"").RootElement, JsonDocument.Parse("\"monthly\"").RootElement) };
+        var english = texts.Summary(change, "update", "en", null, recordType: "numbering.sequences");
+        Assert.Contains("Every year", english);
+        Assert.Contains("Every month", english);
+        Assert.DoesNotContain("yearly", english);
+        var arabic = texts.Summary(change, "update", "ar", null, recordType: "numbering.sequences");
+        Assert.Contains("كل سنة", arabic);
+        Assert.Contains("كل شهر", arabic);
+        // Another kind of record, or no kind: the stored value as before.
+        Assert.Contains("yearly", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
+        Assert.Contains("yearly", texts.Summary(change, "update", "en", null));
+    }
+
+    [Fact]
+    public async Task A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var role = await CreateRoleAsync(admin, "Roles auditor " + Guid.NewGuid().ToString("N")[..6], "identity.roles.read", "audit.log.read");
+        var email = $"auditor-{Guid.NewGuid().ToString("N")[..6]}@{Env.TenantA.EmailDomain}";
+        var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Roles auditor", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var auditor = await Env.SignInAsync(email);
+
+        async Task<string> FirstOfAsync(string kind) => (await Json(await admin.GetAsync($"/api/audit/log?take=1&filter={Uri.EscapeDataString($"recordType eq '{kind}'")}")))
+            .GetProperty("items")[0].GetProperty("id").GetString()!;
+        var users = await FirstOfAsync("identity.users");
+        var roles = await FirstOfAsync("identity.roles");
+        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/audit/log/{users}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await auditor.GetAsync($"/api/audit/log/{users}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/log/{roles}")).StatusCode);
+        var listed = (await Json(await auditor.GetAsync($"/api/audit/log?groupBy=recordType&take=1"))).GetProperty("groups").EnumerateArray().Select(g => g.GetProperty("key").GetString()).ToList();
+        Assert.DoesNotContain("identity.users", listed);
+        Assert.Contains("identity.roles", listed);
     }
 }

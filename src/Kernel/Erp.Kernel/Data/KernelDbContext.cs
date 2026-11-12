@@ -57,6 +57,11 @@ public sealed class AuditEntry : ITenantOwned
     /// <summary>The names of the fields the row records (the keys of <see cref="Changes"/>, sorted;
     /// stored, generated from them).</summary>
     public string[]? Fields { get; private set; }
+
+    /// <summary>The same names as one string, <c>|a|b|c|</c> (stored, generated). A text filter that is
+    /// leakproof (ILIKE) can use a trigram index under row-level security; an array overlap cannot
+    /// (see docs/decisions/p07-audit-log-speed.md).</summary>
+    public string? FieldList { get; private set; }
 }
 
 /// <summary>Kernel-owned database objects: the <c>erp</c> helper functions row-level security
@@ -91,11 +96,15 @@ public sealed class KernelDbContext(DbContextOptions<KernelDbContext> options, I
             e.Property(x => x.RecordCode).HasMaxLength(200);
             e.Property(x => x.Fields).HasComputedColumnSql("audit.field_names(changes)", stored: true);
             e.HasIndex(x => new { x.TenantId, x.TableName, x.RecordId, x.OccurredAt });
-            e.HasIndex(x => new { x.TenantId, x.OccurredAt, x.Uid });
+            e.Property(x => x.FieldList).HasComputedColumnSql("audit.field_list(changes)", stored: true);
+            // Covering: a page far down the list skips rows on the index alone (the kind of record and the
+            // company are what the reader's rights are judged by), and the heap is read for the page only.
+            e.HasIndex(x => new { x.TenantId, x.OccurredAt, x.Uid }).IncludeProperties(x => new { x.RecordType, x.RecordCompanyId, x.RecordBranchId });
             e.HasIndex(x => new { x.TenantId, x.ActorId, x.OccurredAt });
             e.HasIndex(x => new { x.TenantId, x.RecordType, x.RecordId, x.OccurredAt });
             e.HasIndex(x => new { x.TenantId, x.Uid }).IsUnique();
             e.HasIndex(x => x.Fields).HasMethod("gin");
+            e.HasIndex(x => x.FieldList).HasMethod("gin").HasOperators("gin_trgm_ops");
             e.HasIndex(x => x.RecordLabel).HasMethod("gin").HasOperators("gin_trgm_ops");
             e.HasIndex(x => x.RecordLabelAr).HasMethod("gin").HasOperators("gin_trgm_ops");
             e.HasIndex(x => x.RecordCode).HasMethod("gin").HasOperators("gin_trgm_ops");

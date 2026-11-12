@@ -113,7 +113,7 @@ internal static class AuditLog
             .Column("recordAr", e => e.RecordLabelAr)
             .Column("recordCode", e => e.RecordCode)
             .Column("recordId", e => e.RecordId)
-            .Column("fields", e => e.Fields);
+            .Column("fields", e => e.Fields, e => e.FieldList, Erp.Kernel.Audit.AuditFieldCodes.Of);
 
     /// <summary>One page of the audit log exactly as its endpoint serves it (reports print it too).</summary>
     public static async Task<ListResult<AuditLogRow>> PageAsync(AuditReader reader, ModuleCatalog catalog, AuditTexts texts, ListRequest request,
@@ -204,7 +204,7 @@ internal static class AuditLog
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
-            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels));
+            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels, recordType: e.RecordType));
     }
 
     /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer

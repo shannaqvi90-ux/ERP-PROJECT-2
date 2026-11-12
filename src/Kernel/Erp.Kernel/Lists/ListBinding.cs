@@ -159,7 +159,16 @@ public sealed class ListBinding<T> : IListBinding where T : class
 
     /// <summary>A binding with one more column bound to a value of the row (the binding itself
     /// does not change).</summary>
-    public ListBinding<T> Column<TValue>(string key, Expression<Func<T, TValue>> value)
+    /// <param name="key">The column.</param>
+    /// <param name="value">What the column holds.</param>
+    /// <param name="tokenOf">How a value is written in <paramref name="tokens"/> (a short code makes the trigram
+    /// index selective where the names share their letters); the value itself when null.</param>
+    /// <param name="tokens">For a column of many values (<c>string[]</c>): the same values as one text,
+    /// <c>|a|b|</c>, stored with a trigram index. A choice filter on the column then also asks the text
+    /// (<c>ILIKE '%|a|%'</c>), which the planner may use as an index condition where it may not use the
+    /// array's own (array overlap is not leakproof, so under row-level security it reads every row);
+    /// the array test still decides, so the answer is exact whatever the text's case.</param>
+    public ListBinding<T> Column<TValue>(string key, Expression<Func<T, TValue>> value, Expression<Func<T, string?>>? tokens = null, Func<string, string>? tokenOf = null)
     {
         if (_columns.ContainsKey(key))
         {
@@ -168,7 +177,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var member = value.Body is MemberExpression { Member: PropertyInfo property } access && access.Expression == value.Parameters[0] ? property.Name : null;
         var columns = new Dictionary<string, Bound>(_columns, StringComparer.Ordinal)
         {
-            [key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value), _columns.Count),
+            [key] = new Bound(key, typeof(TValue), value, member, CompileGetter(value), _columns.Count, tokens, tokenOf),
         };
         return new ListBinding<T>(Definition, _id, _idOf, columns.ToFrozenDictionary(StringComparer.Ordinal), InMemoryReason, _initials);
     }
@@ -354,11 +363,27 @@ public sealed class ListBinding<T> : IListBinding where T : class
             page = page.Where(Keyset(plan, after.Values, after.Id, database));
         }
         page = Sorted(page, plan, database);
-        if (plan.Skip > 0)
+        if (database && plan.Skip >= DeepSkip && !plan.Relevance && _extra.Count == 0)
         {
-            page = page.Skip(plan.Skip);
+            // A page far down skips the rows by their ids alone (an index that holds the sort keys and
+            // what the filter and the reader's rights read answers it without the rows), then reads only
+            // the page's rows by id: the skipped rows were each read in full before.
+            var keys = Queryable.Select(page, _id).Skip(plan.Skip).Take(plan.Take + 1);
+            // A join with the limited ids (read once), never "id IN (…)": the planner may test that per row.
+            Expression<Func<Guid, Guid>> byId = k => k;
+            var rowParameter = Expression.Parameter(typeof(T), "r");
+            var keyParameter = Expression.Parameter(typeof(Guid), "k");
+            var keep = Expression.Lambda<Func<T, Guid, T>>(rowParameter, rowParameter, keyParameter);
+            page = Sorted(Queryable.Join(source, keys, _id, byId, keep), plan, database);
         }
-        page = page.Take(plan.Take + 1);
+        else
+        {
+            if (plan.Skip > 0)
+            {
+                page = page.Skip(plan.Skip);
+            }
+            page = page.Take(plan.Take + 1);
+        }
         List<T> rows;
         List<int>? ranks = null;
         if (plan.Relevance)
@@ -699,7 +724,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
         }
         if (member.Type == typeof(string[]))
         {
-            return Holds(condition, member, column);
+            var tokens = _columns[column.Key].Tokens is { } t ? new Rebind(t.Parameters[0], row).Visit(t.Body) : null;
+            return Holds(condition, member, column, tokens, _columns[column.Key].TokenOf, database);
         }
         var text = column.Type == ListColumnType.Text;
         var values = condition.Values.Select(v => ToClr(v, member.Type, column)).ToList();
@@ -745,15 +771,25 @@ public sealed class ListBinding<T> : IListBinding where T : class
     /// <summary>A filter on a choice column holding several values per row (an array): <c>eq</c>
     /// holds that value, <c>ne</c> does not, <c>in</c> holds at least one of them (translated to
     /// PostgreSQL's array membership; the null tests are handled by the caller).</summary>
-    private static Expression Holds(FilterCondition condition, Expression member, ListColumn column)
+    private static Expression Holds(FilterCondition condition, Expression member, ListColumn column, Expression? tokens, Func<string, string>? tokenOf, bool database)
     {
         var values = condition.Values.Select(v => (string)ToClr(v, typeof(string), column)!).ToList();
         // Array overlap (&&), not "value = ANY(column)": the first can use the column's GIN index, the second
         // reads every row (the audit log's field filter over hundreds of thousands of rows).
-        Expression HoldsAny(IReadOnlyList<string> wanted) => Expression.AndAlso(
-            Expression.NotEqual(member, Expression.Constant(null, typeof(string[]))),
-            Expression.Call(typeof(Enumerable), nameof(Enumerable.Any), [typeof(string)],
-                Expression.Call(typeof(Enumerable), nameof(Enumerable.Intersect), [typeof(string)], member, Box(wanted.ToArray(), typeof(string[])))));
+        Expression HoldsAny(IReadOnlyList<string> wanted)
+        {
+            Expression exact = Expression.AndAlso(
+                Expression.NotEqual(member, Expression.Constant(null, typeof(string[]))),
+                Expression.Call(typeof(Enumerable), nameof(Enumerable.Any), [typeof(string)],
+                    Expression.Call(typeof(Enumerable), nameof(Enumerable.Intersect), [typeof(string)], member, Box(wanted.ToArray(), typeof(string[])))));
+            if (tokens is null || !database)
+            {
+                return exact;
+            }
+            // The leakproof text first (it can be an index condition), the exact array test after it.
+            var any = wanted.Select(w => Like(tokens, "%|" + EscapeLike(tokenOf is null ? w : tokenOf(w)) + "|%", database)).Aggregate(Expression.OrElse);
+            return Expression.AndAlso(any, exact);
+        }
         return condition.Operator switch
         {
             FilterOperator.Eq => HoldsAny([values[0]]),
@@ -787,6 +823,9 @@ public sealed class ListBinding<T> : IListBinding where T : class
         }
         throw new ListQueryException("filter", column.Type is ListColumnType.Number or ListColumnType.Money ? "list.valueNumber" : "list.valueText", column.Key);
     }
+
+    /// <summary>From this many skipped rows on, a page is found by id (see <see cref="QueryAsync"/>).</summary>
+    private const int DeepSkip = 1000;
 
     private static readonly MethodInfo ILike = typeof(NpgsqlDbFunctionsExtensions).GetMethod(
         nameof(NpgsqlDbFunctionsExtensions.ILike), [typeof(DbFunctions), typeof(string), typeof(string), typeof(string)])!;
@@ -1052,7 +1091,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return row => compiled(row);
     }
 
-    private sealed record Bound(string Key, Type ValueType, LambdaExpression Expression, string? Member, Func<T, object?> Getter, int Order);
+    private sealed record Bound(string Key, Type ValueType, LambdaExpression Expression, string? Member, Func<T, object?> Getter, int Order,
+        LambdaExpression? Tokens = null, Func<string, string>? TokenOf = null);
 
     /// <summary>Replaces a lambda's parameter with another, to combine column expressions.</summary>
     private sealed class Rebind(ParameterExpression from, ParameterExpression to) : ExpressionVisitor

@@ -131,6 +131,23 @@ internal static class AuditEndpoints
             var table = kind.Table;
             rows = visible.Where(e => e.RecordType == table && e.RecordId == id);
         }
+        if (kind is not null)
+        {
+            // Rows of kinds that name a parent record (an attachment names the record it is attached to):
+            // those that name this record belong to its history too.
+            foreach (var child in catalog.AuditRecordTypes.Where(c => c.ParentKindField is not null && c.ParentIdField is not null && c.Table != kind.Table))
+            {
+                string Pattern(string state) => System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>
+                {
+                    [child.ParentKindField!] = new Dictionary<string, object> { [state] = kind.Table },
+                    [child.ParentIdField!] = new Dictionary<string, object> { [state] = id },
+                });
+                var added = Pattern("new");
+                var removed = Pattern("old");
+                var table = child.Table;
+                rows = rows.Concat(visible.Where(e => e.RecordType == table && (EF.Functions.JsonContains(e.Changes, added) || EF.Functions.JsonContains(e.Changes, removed))));
+            }
+        }
         if (before is { } cursor)
         {
             // Only a change of this very record the caller may read continues its history; any other

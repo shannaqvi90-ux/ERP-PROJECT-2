@@ -58,11 +58,20 @@ export type ValueFormat = {
   names?: Record<string, RecordName>;
   /** The custom fields the changes mention, by stored name (custom_fields.key). */
   fields?: Record<string, FieldLabel>;
+  /** The kind of record the values belong to (schema.table): a choice's option is named by audit.choice.<kind>.<field>.<value>. */
+  recordType?: string | null;
 };
 
 /** A stored value as the screen shows it: a flag as Yes or No, a list joined, nothing as
  * "(empty)", a secret as "(hidden)", a time in the user's format, a record's id by its name. */
-export function valueText(value: unknown, f: ValueFormat, decimals?: number): string {
+export function valueText(value: unknown, f: ValueFormat, decimals?: number, field?: string): string {
+  // A choice shows the chosen option's label (the module registers it as audit.choice.<kind>.<field>.<value>),
+  // never its code.
+  if (field && f.recordType && (typeof value === "string" || typeof value === "number") && value !== "") {
+    const key = `audit.choice.${f.recordType}.${field}.${value}`;
+    const text = f.t(key);
+    if (text !== key) return text;
+  }
   if (value === null || value === undefined || value === "") return f.t("audit.value.empty");
   if (value === true) return f.t("audit.value.yes");
   if (value === false) return f.t("audit.value.no");
