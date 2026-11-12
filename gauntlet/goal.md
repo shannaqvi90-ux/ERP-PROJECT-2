@@ -91,6 +91,17 @@ pehle merge kar ke baad mein theek karna", "yeh 2 karo". The lead's wording of w
    Recorded verdicts are not changed. The decision applies from serial-20, the first workflow
    launched after 2026-11-09 18:00 UTC (serial-19 was already running).
 
+OWNER DECISION, 2026-11-12 (needs-human #43). The owner asked whether the modules will be
+standalone ("agar kisi ko sirf HR module chahiye, to kya hoga"); the lead proposed adding to the
+platform core a piece that switches modules on and off per tenant, so every later business module
+is built switchable from its first day; the owner's word: "haan". The lead's wording of what was
+approved: the platform core also includes per-tenant module switching (piece p17,
+gauntlet/pieces/p17-module-switching.md, wave 3): each module declares whether it is core or
+switchable and what it needs; the platform operator turns switchable modules on and off per tenant;
+a module that is off is gone for that tenant everywhere (menu, screens, routes, API, jobs,
+permissions, search) without losing its data; the isolation and permission gates attack every
+switchable endpoint with the module off. The platform core pieces stay always on.
+
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not
 judge.
