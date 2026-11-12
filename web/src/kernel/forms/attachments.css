@@ -88,3 +88,52 @@
   block-size: 70vh;
   border: 0;
 }
+
+/* A small text file shown as text. */
+.attachments-text {
+  margin: 0;
+  padding: 12px;
+  inline-size: 100%;
+  max-block-size: 70vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  text-align: start;
+}
+
+/* The table fits its section whatever the section's width: the name takes what is left (and ends in an ellipsis), the
+   actions keep their words, and the size and date columns give way on a narrow section. */
+.attachments {
+  container-type: inline-size;
+  min-inline-size: 0;
+}
+
+.attachments table {
+  table-layout: auto;
+}
+
+.attachments td.attachments-file {
+  max-inline-size: 0;
+  inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachments td.attachments-file .button.link,
+.attachments td.attachments-file a {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+@container (max-inline-size: 640px) {
+  .attachments .attachments-extra {
+    display: none;
+  }
+}

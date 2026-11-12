@@ -1,0 +1,32 @@
+/* The record's files away from their section (p11): the toolbar's paperclip and the line of names under the heading. Logical properties only. */
+.attachments-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.attachments-count {
+  font-variant-numeric: tabular-nums;
+  min-inline-size: 1ch;
+}
+
+.attachments-names {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-block-start: 2px;
+  font-size: 12px;
+}
+
+.attachments-names-icon {
+  color: var(--muted, currentColor);
+}
+
+.attachments-names .button.link,
+.attachments-names a {
+  max-inline-size: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

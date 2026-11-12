@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore, type DragEvent } from "react";
 import { api, ApiError, sessionEndedEvent } from "../api";
 import { Dialog } from "../dialog";
 import { requestLanguage, useI18n } from "../i18n";
@@ -29,6 +29,42 @@ type AttachmentList = { items: Attachment[]; total: number; maxFiles: number; ma
 
 type Progress = { key: number; name: string; state: "uploading" | "failed"; message?: string };
 
+/** What the record's screen knows of its files, kept for the parts of the screen that show them away from the section (the toolbar's
+ * paperclip with the count, the line of file names under the heading). The section is the one that reads them. */
+type StoredFiles = { total: number; items: Attachment[] };
+const stored = new Map<string, StoredFiles>();
+const watchers = new Set<() => void>();
+export const attachmentsKey = (recordType: string, recordId: string) => `${recordType}/${recordId}`;
+function publish(key: string, value: StoredFiles | null) {
+  if (value) stored.set(key, value);
+  else stored.delete(key);
+  watchers.forEach((w) => w());
+}
+export function useStoredAttachments(recordType: string, recordId: string): StoredFiles | null {
+  const key = attachmentsKey(recordType, recordId);
+  return useSyncExternalStore(
+    (notify) => {
+      watchers.add(notify);
+      return () => void watchers.delete(notify);
+    },
+    () => stored.get(key) ?? null,
+  );
+}
+
+/** Shows one of the record's files in the viewer (the section opens it), from the line of names under the heading. */
+const openEvent = "erp:attachments-open";
+export const openAttachment = (recordType: string, recordId: string, fileId: string) =>
+  window.dispatchEvent(new CustomEvent(openEvent, { detail: { key: attachmentsKey(recordType, recordId), fileId } }));
+
+/** Takes the user to the record's files: scrolls the section into view and puts the cursor on the first file
+ * (on Add files when there is none), so Enter opens it. */
+export function revealAttachments() {
+  const section = document.querySelector<HTMLElement>('[data-testid="attachments"]');
+  if (!section) return;
+  section.scrollIntoView?.({ block: "start" });
+  (section.querySelector<HTMLElement>("tbody tr .button.link, tbody tr a") ?? section.querySelector<HTMLElement>("button.button"))?.focus();
+}
+
 const base = (recordType: string, recordId: string) => `/api/attachments/${recordType}/${recordId}/files`;
 
 /** A file is addressed by its own id: the file knows its record. */
@@ -47,6 +83,28 @@ const extensionOf = (name: string) => {
   const dot = name.lastIndexOf(".");
   return dot > 0 && dot < name.length - 1 ? name.slice(dot + 1).toLowerCase() : "";
 };
+
+/** A small text file shown as text (never as a page): read from the download, set into a pre element. */
+function TextView({ url, name }: { url: string; name: string }) {
+  const { t } = useI18n();
+  const [text, setText] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setText(null);
+    setFailed(false);
+    fetch(url, { credentials: "same-origin", signal: controller.signal, headers: { "X-Erp-Request": "1" } })
+      .then((response) => (response.ok ? response.text() : Promise.reject(new Error(String(response.status)))))
+      .then(setText, () => !controller.signal.aborted && setFailed(true));
+    return () => controller.abort();
+  }, [url]);
+  if (failed) return <p className="alert" role="alert">{t("attachments.loadFailed")}</p>;
+  return (
+    <pre className="attachments-text" dir="auto" tabIndex={0} aria-label={name} aria-busy={text === null}>
+      {text ?? t("attachments.loading")}
+    </pre>
+  );
+}
 
 export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: { recordType: string; recordId: string; canRead: boolean; canWrite: boolean }) {
   const { t, language, format } = useI18n();
@@ -83,6 +141,21 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
     void load(controller.signal);
     return () => controller.abort();
   }, [canRead, load]);
+
+  const key = attachmentsKey(recordType, recordId);
+  useEffect(() => {
+    if (list) publish(key, { total: list.total, items: list.items });
+  }, [key, list]);
+  useEffect(() => () => publish(key, null), [key]);
+  useEffect(() => {
+    const open = (event: Event) => {
+      const { key: wanted, fileId } = (event as CustomEvent<{ key: string; fileId: string }>).detail;
+      const file = wanted === key ? stored.get(key)?.items.find((i) => i.id === fileId) : undefined;
+      if (file) setPreviewing(file);
+    };
+    window.addEventListener(openEvent, open);
+    return () => window.removeEventListener(openEvent, open);
+  }, [key]);
 
   if (!canRead) return null;
 
@@ -276,9 +349,9 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
           <thead>
             <tr>
               <th scope="col">{t("attachments.name")}</th>
-              <th scope="col">{t("attachments.size")}</th>
+              <th scope="col" className="attachments-extra">{t("attachments.size")}</th>
               <th scope="col">{t("attachments.addedBy")}</th>
-              <th scope="col">{t("attachments.addedOn")}</th>
+              <th scope="col" className="attachments-extra">{t("attachments.addedOn")}</th>
               <th scope="col">
                 <span className="visually-hidden">{t("attachments.actions")}</span>
               </th>
@@ -287,7 +360,7 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
           <tbody>
             {items.map((file) => (
               <tr key={file.id}>
-                <td>
+                <td className="attachments-file">
                   {file.previewable ? (
                     <button type="button" className="button link" onClick={() => setPreviewing(file)} aria-label={t("attachments.previewFile", { name: file.name })}>
                       <bdi>{file.name}</bdi>
@@ -298,9 +371,9 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
                     </a>
                   )}
                 </td>
-                <td>{size(file.sizeBytes)}</td>
+                <td className="attachments-extra">{size(file.sizeBytes)}</td>
                 <td>{who(file)}</td>
-                <td>{format.dateTime(file.createdAt)}</td>
+                <td className="attachments-extra">{format.dateTime(file.createdAt)}</td>
                 <td className="attachments-actions">
                   {file.previewable && (
                     <button type="button" className="button" onClick={() => setPreviewing(file)} aria-label={t("attachments.previewFile", { name: file.name })}>
@@ -343,6 +416,8 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
           >
             {previewing.contentType.startsWith("image/") ? (
               <img src={attachmentUrl(recordType, previewing.id, true)} alt={previewing.name} />
+            ) : previewing.contentType.startsWith("text/") ? (
+              <TextView url={attachmentUrl(recordType, previewing.id)} name={previewing.name} />
             ) : (
               <iframe src={attachmentUrl(recordType, previewing.id, true)} title={previewing.name} />
             )}
