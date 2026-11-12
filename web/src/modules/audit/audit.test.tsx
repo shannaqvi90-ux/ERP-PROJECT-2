@@ -218,6 +218,16 @@ describe("recorded values", () => {
     expect(fieldName("custom_fields.region", t)).toBe("custom_fields.region");
   });
 
+  it("a choice shows the chosen option's label, never its code, only for the kind and field that name it", () => {
+    const texts: Record<string, string> = { "audit.choice.numbering.sequences.reset.yearly": "Every year", "audit.choice.numbering.sequences.reset.monthly": "Every month" };
+    const g: ValueFormat = { ...f, t: (key) => texts[key] ?? key, recordType: "numbering.sequences" };
+    expect(valueText("yearly", g, undefined, "reset")).toBe("Every year");
+    expect(valueText("monthly", g, undefined, "reset")).toBe("Every month");
+    expect(valueText("yearly", g, undefined, "prefix")).toBe("yearly");
+    expect(valueText("yearly", { ...g, recordType: "contacts.contacts" }, undefined, "reset")).toBe("yearly");
+    expect(valueText("yearly", g)).toBe("yearly");
+  });
+
   it("a list cell holding several of its column's values shows their labels; ids of other records are counted", () => {
     const column = { key: "fields", labelKey: "x", type: "choice", sortable: false, filterable: true, groupable: false, aggregate: false, hidden: false, operators: [],
       choices: [{ value: "email", labelKey: "audit.field.email" }, { value: "phone", labelKey: "audit.field.phone" }] } as ListColumn;

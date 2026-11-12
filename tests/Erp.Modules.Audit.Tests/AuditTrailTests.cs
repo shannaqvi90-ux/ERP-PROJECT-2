@@ -453,11 +453,12 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         // A choice filter on one field, on several, and on a field the row does not record.
         string Filter(string text) => Uri.EscapeDataString($"recordId eq '{id}' and {text}");
         async Task<int> CountAsync(string text) => (await Json(await admin.GetAsync($"/api/audit/log?filter={Filter(text)}"))).GetProperty("total").GetInt32();
-        Assert.Equal(1, await CountAsync("fields eq 'name_en'"));
-        Assert.Equal(1, await CountAsync("fields in ('permissions', 'name_en')"));
+        // The role's creation and its renaming both record name_en.
+        Assert.Equal(2, await CountAsync("fields eq 'name_en'"));
+        Assert.Equal(2, await CountAsync("fields in ('permissions', 'name_en')"));
         Assert.Equal(0, await CountAsync("fields eq 'name'"));
         Assert.Equal(0, await CountAsync("fields eq 'NAME_EN'"));
-        Assert.True(await CountAsync("not (fields eq 'name_en')") >= 1);
+        Assert.Equal(0, await CountAsync("not (fields eq 'name_en')"));
     }
 
     [Fact]
@@ -508,5 +509,27 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         // Another kind of record, or no kind: the stored value as before.
         Assert.Contains("yearly", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
         Assert.Contains("yearly", texts.Summary(change, "update", "en", null));
+    }
+
+    [Fact]
+    public async Task A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var role = await CreateRoleAsync(admin, "Roles auditor", "identity.roles.read", "audit.log.read");
+        var email = $"auditor-{Guid.NewGuid().ToString("N")[..6]}@{Env.TenantA.EmailDomain}";
+        var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Roles auditor", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        using var auditor = await Env.SignInAsync(email);
+
+        async Task<string> FirstOfAsync(string kind) => (await Json(await admin.GetAsync($"/api/audit/log?take=1&filter={Uri.EscapeDataString($"recordType eq '{kind}'")}")))
+            .GetProperty("items")[0].GetProperty("id").GetString()!;
+        var users = await FirstOfAsync("identity.users");
+        var roles = await FirstOfAsync("identity.roles");
+        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/audit/log/{users}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await auditor.GetAsync($"/api/audit/log/{users}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await auditor.GetAsync($"/api/audit/log/{roles}")).StatusCode);
+        var listed = (await Json(await auditor.GetAsync($"/api/audit/log?groupBy=recordType&take=1"))).GetProperty("groups").EnumerateArray().Select(g => g.GetProperty("key").GetString()).ToList();
+        Assert.DoesNotContain("identity.users", listed);
+        Assert.Contains("identity.roles", listed);
     }
 }
