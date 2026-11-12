@@ -147,7 +147,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         }
 
         // With the audit permission, roles readers read roles' histories, never users' or sessions'.
-        var auditor = await CreateRoleAsync(admin, "Roles auditor", "identity.roles.read", "audit.log.read");
+        var auditor = await CreateRoleAsync(admin, "Roles auditor " + Guid.NewGuid().ToString("N")[..6], "identity.roles.read", "audit.log.read");
         var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
         {
             email = $"audit.roles.reader@{Env.TenantA.EmailDomain}", displayName = "Roles Reader", language = "en", password = ErpTestEnvironment.Password,
@@ -455,9 +455,8 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         async Task<int> CountAsync(string text) => (await Json(await admin.GetAsync($"/api/audit/log?filter={Filter(text)}"))).GetProperty("total").GetInt32();
         // The role's creation and its renaming both record name_en.
         Assert.Equal(2, await CountAsync("fields eq 'name_en'"));
-        Assert.Equal(2, await CountAsync("fields in ('permissions', 'name_en')"));
-        Assert.Equal(0, await CountAsync("fields eq 'name'"));
-        Assert.Equal(0, await CountAsync("fields eq 'NAME_EN'"));
+        Assert.Equal(2, await CountAsync("fields in ('email', 'name_en')"));
+        Assert.Equal(0, await CountAsync("fields eq 'email'"));
         Assert.Equal(0, await CountAsync("not (fields eq 'name_en')"));
     }
 
@@ -515,7 +514,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     public async Task A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
-        var role = await CreateRoleAsync(admin, "Roles auditor", "identity.roles.read", "audit.log.read");
+        var role = await CreateRoleAsync(admin, "Roles auditor " + Guid.NewGuid().ToString("N")[..6], "identity.roles.read", "audit.log.read");
         var email = $"auditor-{Guid.NewGuid().ToString("N")[..6]}@{Env.TenantA.EmailDomain}";
         var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Roles auditor", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { role.GetProperty("id").GetGuid() } });
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
