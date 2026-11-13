@@ -122,6 +122,18 @@ modules, limits, end date; refused if missing, altered, expired or foreign; read
 period), with the signing key kept out of the repository. Shipping self-hosted releases, their
 pricing and the real signing key stay with the owner.
 
+OWNER DECISION, 2026-11-13 (needs-human #47). The owner, on seeing the lead's review of the
+screens (plain browser look, dates as mm/dd/yyyy, clipped text): "design odoo se behtar hona
+chahiye, microsoft dynamics jesa". The lead's wording of what was approved: the visual design is
+part of the bar. A new piece, p18 (gauntlet/pieces/p18-visual-design.md), builds one design
+system in the manner of Microsoft Dynamics 365 (command bar, page header, navigation with icons,
+calm dense grids, our own pickers and fields, locale formats, light, dark and high-contrast
+themes, English and Arabic), without copying Microsoft's or Odoo's brand. It runs first in wave 3
+so later screens use it. It starts with three sample directions that the owner sees and chooses from before anything is built. Its critic judges the same screens in both products side by side against
+a written checklist, with screenshots; ours must be at least as good on every item and better
+overall, and no existing comparison task may get worse. From p18's integration on, every critic
+also reports any screen of its piece that breaks the design system.
+
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not
 judge.
