@@ -88,3 +88,74 @@
   block-size: 70vh;
   border: 0;
 }
+
+/* A small text file shown as text. */
+.attachments-text {
+  margin: 0;
+  padding: 12px;
+  inline-size: 100%;
+  max-block-size: 70vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  text-align: start;
+}
+
+/* The table fits its section whatever the section's width: the name takes what is left (and ends in an ellipsis), the
+   actions keep their words, and the size and date columns give way on a narrow section. */
+.attachments {
+  container-type: inline-size;
+  min-inline-size: 0;
+}
+
+.attachments table {
+  table-layout: auto;
+}
+
+.attachments td.attachments-file {
+  max-inline-size: 0;
+  inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachments td.attachments-file .button.link,
+.attachments td.attachments-file a {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+/* A narrow section (the details pane beside a list): each file is two lines, its name on the first and, on the second, who added
+   it with the buttons; the size and date are left to the wider screens. */
+@container (max-inline-size: 640px) {
+  .attachments .attachments-extra,
+  .attachments thead {
+    display: none;
+  }
+
+  .attachments tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .attachments tbody td {
+    height: auto;
+    border: 0;
+    padding-block: 2px;
+  }
+
+  .attachments td.attachments-file {
+    grid-column: 1 / -1;
+    max-inline-size: none;
+    inline-size: auto;
+  }
+}

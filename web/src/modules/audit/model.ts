@@ -14,6 +14,10 @@ export type AuditEvent = {
   actorKind: string;
   action: "insert" | "update" | "delete";
   changes: FieldChange[];
+  /** Set on an entry of a record that belongs to the shown one (a file of the record): the string key of what it is called,
+   * and the fields of it that only link it to the record. */
+  childLabelKey?: string;
+  hiddenFields?: string[];
 };
 
 /** A record's name in English and, when it has one, in Arabic. */
@@ -121,5 +125,5 @@ export function actorText(event: Pick<AuditEvent, "actorName" | "actorNameAr">, 
 
 /** The fields a change shows (the record's own id is the record, not one of its fields). */
 export function shownChanges(event: AuditEvent): FieldChange[] {
-  return event.changes.filter((c) => c.field !== "id");
+  return event.changes.filter((c) => c.field !== "id" && !event.hiddenFields?.includes(c.field));
 }

@@ -194,6 +194,18 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
         Assert.Equal(HttpStatusCode.Created, docx.StatusCode);
         using var csv = await Api.UploadAsync(admin, contact, "rates.csv", Encoding.UTF8.GetBytes("﻿code,اسم\nAED,درهم\n"));
         Assert.Equal(HttpStatusCode.Created, csv.StatusCode);
+        // A zip archive and a mail message are kept and offered as downloads; a program renamed .zip is refused.
+        using var zipped = await Api.UploadAsync(admin, contact, "scans.zip", Docx());
+        Assert.Equal(HttpStatusCode.Created, zipped.StatusCode);
+        using var mail = await Api.UploadAsync(admin, contact, "quote.eml", "From: a@b.example\r\nSubject: Quote\r\n\r\nHello"u8.ToArray());
+        Assert.Equal(HttpStatusCode.Created, mail.StatusCode);
+        using var fakeZip = await Api.UploadAsync(admin, contact, "tool.zip", "MZ this is a program"u8.ToArray());
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, fakeZip.StatusCode);
+        Assert.Equal("attachmentsContent", await Api.ProblemCodeAsync(fakeZip));
+        var listed = (await Api.ListAsync(admin, contact)).GetProperty("items").EnumerateArray().ToDictionary(i => i.GetProperty("name").GetString()!, i => i.GetProperty("previewable").GetBoolean());
+        Assert.False(listed["scans.zip"]);
+        Assert.False(listed["quote.eml"]);
+        Assert.True(listed["rates.csv"]);
     }
 
     private static byte[] Docx()
@@ -512,5 +524,67 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
             }
         }
         Assert.True(withFiles >= 3, $"{withFiles} contacts with files");
+    }
+
+    [Fact]
+    public async Task The_demo_files_show_who_added_them()
+    {
+        using var admin = await AdminAsync();
+        var contacts = await admin.GetFromJsonAsync<JsonElement>("/api/contacts/contacts", Api.Cancel);
+        var seen = 0;
+        foreach (var item in contacts.GetProperty("items").EnumerateArray())
+        {
+            var list = await Api.ListAsync(admin, item.GetProperty("id").GetGuid());
+            foreach (var file in list.GetProperty("items").EnumerateArray().Where(f => f.GetProperty("name").GetString()!.Contains("Delivery note", StringComparison.Ordinal) || f.GetProperty("name").GetString()!.StartsWith("Trade licence", StringComparison.Ordinal)))
+            {
+                seen++;
+                Assert.False(string.IsNullOrWhiteSpace(file.GetProperty("createdByName").GetString()), file.ToString());
+                Assert.NotEqual(JsonValueKind.Null, file.GetProperty("createdBy").ValueKind);
+            }
+        }
+        Assert.True(seen >= 3, $"{seen} seeded files checked");
+    }
+
+    [Fact]
+    public async Task A_records_history_lists_the_uploads_and_deletes_of_its_files()
+    {
+        using var admin = await AdminAsync();
+        var contact = await Api.NewContactAsync(admin);
+        var file = await Api.UploadedAsync(admin, contact, "history.pdf", Api.Pdf());
+        var id = file.GetProperty("id").GetGuid();
+        using var removed = await admin.DeleteAsync(Api.File(id), Api.Cancel);
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+        var history = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/records/{contact}?type=attachments.files", Api.Cancel);
+        var items = history.GetProperty("items").EnumerateArray().ToList();
+        Assert.Equal(["delete", "insert"], items.Select(i => i.GetProperty("action").GetString()));
+        Assert.All(items, i => Assert.Contains(i.GetProperty("changes").EnumerateArray(), c => c.GetProperty("field").GetString() == "name"));
+    }
+
+    [Fact]
+    public async Task Files_are_found_by_a_part_of_their_name_with_their_record_and_only_for_readers_of_the_record()
+    {
+        using var admin = await AdminAsync();
+        var contact = await Api.NewContactAsync(admin);
+        var stem = $"search{Guid.NewGuid():N}"[..14];
+        await Api.UploadedAsync(admin, contact, $"{stem}-licence.pdf", Api.Pdf());
+        await Api.UploadedAsync(admin, contact, $"{stem}_100%.txt", "x"u8.ToArray());
+        var root = $"/api/attachments/contacts.contacts/files";
+        var found = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={stem.ToUpperInvariant()}", Api.Cancel);
+        var matches = found.GetProperty("matches").EnumerateArray().ToList();
+        Assert.Equal(2, matches.Count);
+        Assert.All(matches, m => Assert.Equal(contact, m.GetProperty("recordId").GetGuid()));
+        // A wildcard character is text, not a pattern; a short text finds nothing; the count is limited.
+        var percent = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={Uri.EscapeDataString("_100%")}", Api.Cancel);
+        Assert.Equal([$"{stem}_100%.txt"], percent.GetProperty("matches").EnumerateArray().Select(m => m.GetProperty("name").GetString()));
+        var any = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={Uri.EscapeDataString("%%")}", Api.Cancel);
+        Assert.Empty(any.GetProperty("matches").EnumerateArray());
+        var short1 = await admin.GetFromJsonAsync<JsonElement>($"{root}?search=s", Api.Cancel);
+        Assert.Empty(short1.GetProperty("matches").EnumerateArray());
+        var one = await admin.GetFromJsonAsync<JsonElement>($"{root}?search={stem}&take=1", Api.Cancel);
+        Assert.Single(one.GetProperty("matches").EnumerateArray());
+        // Another workspace sees none of them.
+        using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var theirs = await other.GetFromJsonAsync<JsonElement>($"{root}?search={stem}", Api.Cancel);
+        Assert.Empty(theirs.GetProperty("matches").EnumerateArray());
     }
 }
