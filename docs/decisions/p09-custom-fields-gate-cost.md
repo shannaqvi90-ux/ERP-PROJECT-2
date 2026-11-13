@@ -63,6 +63,14 @@ first; `QueryAsync` then leaves the count out of a cursor page (Total 0). Screen
 it, so their totals are unchanged. This is kernel (p05) and reports code, changed minimally because it is
 the cause; the first page of a document still counts and the document's total is unchanged.
 
+Note (2026-11-13, integration of p12-jobs round 5): p12 made the same change in its own way,
+`ListRequest.ForLaterPage(after, total)` with an internal `KnownTotal`, which the later pages carry
+instead of recounting (kernel test
+`ListEngineTests.A_later_page_of_an_export_keeps_the_total_the_first_page_counted` covers it).
+`SkipTotalItem` had no test of its own and gave the same behaviour (only the first page counts), so the
+merge keeps p12's `ForLaterPage` and removes `SkipTotalItem`; the reports framework still sets
+`ListRequest.WalkItem` for every page. The same resolution was made in serial-19's integration (7b5d1fc5).
+
 ### Round 1, fixer 3: the audit log's field filter could not use its index
 
 Verify of 249c4dc9 (log verify-fixer-p09-custom-fields-r1-f3.log, kept folder

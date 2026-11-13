@@ -10,8 +10,8 @@ namespace Erp.Modules.Jobs.Engine;
 /// It polls, takes up to <c>Erp:Jobs:Concurrency</c> (default 4) jobs at a time and starts each on its
 /// own task, so a long job never holds up the next one. <c>Erp:Jobs:PollSeconds</c> (default 2) is the
 /// wait when there was nothing to do. When the process is stopped, running jobs are asked to stop and go
-/// back to the queue without losing a try. It needs the owner role's connection string (to learn which
-/// workspaces have work, see <see cref="JobsSql"/>) and the application role's (to run the work).
+/// back to the queue without losing a try. It holds the application role's connection string (to run the work) and the lookup role's (to learn which
+/// workspaces have work, see <see cref="JobsSql"/>); never the owner's.
 /// </summary>
 internal static class JobWorkerCommand
 {

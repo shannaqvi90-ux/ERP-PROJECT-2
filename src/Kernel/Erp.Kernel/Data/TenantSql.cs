@@ -17,6 +17,12 @@ public static class DatabaseRoles
     /// <summary>NOLOGIN role that owns the reviewed security-definer lookups which resolve a tenant
     /// before one is known (sign-in by e-mail, session by token hash).</summary>
     public const string AuthResolver = "erp_auth";
+
+    /// <summary>The login role of the background job worker's one cross-workspace lookup (which workspaces have
+    /// work): not superuser, no BYPASSRLS, owns nothing, member of nothing, and granted only the few columns and
+    /// SELECT-only policies the jobs migration gives it. Created by the bootstrap step; it can log in only when
+    /// the worker's connection string gives it a password.</summary>
+    public const string Worker = "erp_worker";
 }
 
 /// <summary>Migration helpers every module uses for its tables.</summary>

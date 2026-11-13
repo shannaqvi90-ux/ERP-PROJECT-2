@@ -48,22 +48,25 @@ internal sealed class JobQueue(JobsDbContext db, IJobTypes types, StringCatalog 
         return new JobTicket(job.Id, job.Type, job.Status, job.RunAt);
     }
 
+    /// <summary>
+    /// One atomic statement, never a read followed by a save: a progress report or a lease renewal of the worker
+    /// landing between the two cannot make it fail, and the worker's final write looks at the same column in its
+    /// own locking read, so a request accepted while the job runs ends it as cancelled. A queued job ends now. False:
+    /// no such job of this workspace, or it has already finished.
+    /// </summary>
     public async Task<bool> CancelAsync(Guid jobId, CancellationToken cancellationToken = default)
     {
-        var job = await db.Jobs.SingleOrDefaultAsync(j => j.Id == jobId, cancellationToken);
-        if (job is null || JobStatus.IsFinished(job.Status))
-        {
-            return false;
-        }
-        job.CancelRequested = true;
-        if (job.Status == JobStatus.Queued)
-        {
-            // Nothing runs it: it ends now.
-            job.Status = JobStatus.Cancelled;
-            job.FinishedAt = clock.GetUtcNow();
-        }
-        await db.SaveChangesAsync(cancellationToken);
-        return true;
+        var now = clock.GetUtcNow();
+        var changed = await db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE jobs.jobs
+               SET cancel_requested = true,
+                   status = CASE WHEN status = 'queued' THEN 'cancelled' ELSE status END,
+                   finished_at = CASE WHEN status = 'queued' THEN {now} ELSE finished_at END,
+                   updated_at = {now},
+                   updated_by = NULLIF(current_setting('app.actor_id', true), '')::uuid
+             WHERE id = {jobId} AND status IN ('queued', 'running')
+            """, cancellationToken);
+        return changed > 0;
     }
 
     public async Task<JobTicket?> RerunAsync(Guid jobId, CancellationToken cancellationToken = default)

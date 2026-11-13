@@ -128,7 +128,7 @@ internal static class JobEndpoints
 
         group.MapPost("/jobs/{id:guid}/cancel", Cancel)
             .WithName("jobs.jobs.cancel")
-            .WithSummary("Cancel a job: a queued one ends at once, a running one is asked to stop and ends when it does. A job that has finished is answered as it is (nothing to stop).")
+            .WithSummary("Cancel a job: a queued one ends at once, a running one is asked to stop and ends when it does. A job that has finished is answered as it is (nothing to stop; its status says whether it ended on its own first).")
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .RequirePermission(JobsPermissions.JobsCancel);

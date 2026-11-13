@@ -28,11 +28,6 @@ public sealed class ListRequest
     public const int MaxSearchLength = 200;
     public const int MaxSearchWords = 8;
 
-    /// <summary>The <c>HttpContext.Items</c> key a caller sets to <c>true</c> for one request of a page
-    /// after the first (one with a cursor) to have the list leave out the count of matching rows: the
-    /// page then carries Total 0. Not a query parameter: no client can ask for it.</summary>
-    public const string SkipTotalItem = "erp.list.skipTotal";
-
     [FromQuery(Name = "search")]
     [Description("Free text. Every word must occur (anywhere, any case) in at least one of the list's search fields; Arabic words also match the letter variants people type for one another (ا أ إ آ, ي ى, ه ة, و ؤ). Without a sort, rows come best match first (when at most 10,000 rows match; the page says ranked): words at the start of a field or of a word in it, the whole search equal to or starting a field, the words in the typed order; then shorter values, then the list's default sort.")]
     public string? Search { get; init; }
@@ -60,6 +55,20 @@ public sealed class ListRequest
     [FromQuery(Name = "groupBy")]
     [Description("A groupable column key: the page also carries the groups of the filtered list with their counts and totals.")]
     public string? GroupBy { get; init; }
+
+    private int? _knownTotal;
+
+    /// <summary>The total an earlier page of this same selection already counted, when a caller
+    /// reads the selection page after page (an export): the later pages do not count it again. Not
+    /// public, so it is no query parameter of the API.</summary>
+    internal int? KnownTotal => _knownTotal;
+
+    /// <summary>This request for a later page of a selection whose total is already known: the
+    /// reader skips the count (one scan of the whole selection per page, 500 times for 100,000 rows).</summary>
+    public ListRequest ForLaterPage(string? after, int total) => new()
+    {
+        Search = Search, Filter = Filter, Sort = Sort, After = after, Skip = Skip, Take = Take, GroupBy = GroupBy, _knownTotal = total,
+    };
 }
 
 /// <summary>One page of a registered list.</summary>

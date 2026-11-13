@@ -335,12 +335,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
             source = InMemoryQuery.Over(source);
         }
         var filtered = Filtered(source, plan, database);
-        // A reader that walks the whole list page by page (a print or an export) knows the total from
-        // the first page and says so; a count of the matching rows on every following page of a
-        // large list (the audit log's hundreds of thousands) was most of what such a walk cost.
-        var total = plan.After is not null && http.Items.TryGetValue(ListRequest.SkipTotalItem, out var skip) && skip is true
-            ? 0
-            : database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
+        var total = request.KnownTotal ?? (database ? await filtered.CountAsync(cancellationToken) : filtered.Count());
         IReadOnlyList<ListGroup>? groups;
         try
         {

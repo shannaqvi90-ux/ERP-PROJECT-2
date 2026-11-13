@@ -275,8 +275,11 @@ internal static class ReportEndpoints
                 After = after,
                 Take = Math.Min(ListRequest.MaxWalkTake, limit - rows.Count),
             };
-            // The first page counts the matching rows; the pages after it do not count again.
-            http.Items[ListRequest.SkipTotalItem] = after is not null;
+            if (after is not null)
+            {
+                // Later pages of the same selection: the first page's count stands (no recount per page).
+                request = request.ForLaterPage(after, total);
+            }
             http.Items[ListRequest.WalkItem] = true;
             ListResult<object> page;
             try
@@ -285,7 +288,6 @@ internal static class ReportEndpoints
             }
             finally
             {
-                http.Items.Remove(ListRequest.SkipTotalItem);
                 http.Items.Remove(ListRequest.WalkItem);
             }
             if (page.Problem is { } problem)

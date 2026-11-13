@@ -24,6 +24,7 @@ public sealed class TestDatabaseServer
     private readonly string _adminPassword;
     private readonly string _ownerPassword;
     private readonly string _appPassword;
+    private readonly string _workerPassword;
 
     private TestDatabaseServer(PostgreSqlContainer container, string adminPassword)
     {
@@ -31,6 +32,7 @@ public sealed class TestDatabaseServer
         _adminPassword = adminPassword;
         _ownerPassword = Secret();
         _appPassword = Secret();
+        _workerPassword = Secret();
         // ./erp verify runs the tests on the Docker host's network, where the server's own address
         // is reachable: connecting there skips Docker's port-forwarding proxy, which costs a
         // process hop on every round trip. Elsewhere (a developer's machine) the published port.
@@ -128,6 +130,7 @@ public sealed class TestDatabaseServer
             ["ConnectionStrings:Admin"] = ConnectionString("postgres", _adminPassword, "postgres"),
             ["ConnectionStrings:Owner"] = ConnectionString(DatabaseRoles.Owner, _ownerPassword, database),
             ["ConnectionStrings:App"] = ConnectionString(DatabaseRoles.App, _appPassword, database),
+            ["ConnectionStrings:Worker"] = ConnectionString(DatabaseRoles.Worker, _workerPassword, database),
             ["Erp:RateLimits:SignInPerMinute"] = "100000",
             ["Logging:LogLevel:Default"] = "Warning",
             ["Logging:LogLevel:Erp"] = "Warning",

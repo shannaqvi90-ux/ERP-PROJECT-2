@@ -38,6 +38,7 @@ services:
       ConnectionStrings__Admin: "Host=db;Username=postgres;Password=${ERP_DB_ADMIN_PASSWORD:-erp-local-admin};Database=postgres"
       ConnectionStrings__Owner: "Host=db;Username=erp_owner;Password=${ERP_DB_OWNER_PASSWORD:-erp-local-owner};Database=erp"
       ConnectionStrings__App: "Host=db;Username=erp_app;Password=${ERP_DB_APP_PASSWORD:-erp-local-app};Database=erp"
+      ConnectionStrings__Worker: "Host=db;Username=erp_worker;Password=${ERP_DB_WORKER_PASSWORD:-erp-local-worker};Database=erp"
       Erp__Seed__Profile: ${ERP_SEED_PROFILE:-demo}
       Erp__Seed__Volume: ${ERP_SEED_VOLUME:-100000}
       Erp__Seed__DemoPassword: ${ERP_DEMO_PASSWORD:-Demo-Pass-2026}
@@ -81,16 +82,16 @@ services:
     restart: unless-stopped
 
   # Runs the background jobs (docs/decisions/p12-jobs-worker-process.md): the same image, the command
-  # `jobs work`. It learns which workspaces have work with the owner role (no BYPASSRLS; for that one
-  # lookup it switches to a role that reads only workspace ids and due times) and runs every job
-  # under the application role bound to the job's workspace. The web app never holds the owner role.
+  # `jobs work`. It holds the application role (every job runs under it, bound to the job's workspace) and the
+  # lookup role erp_worker (seven columns, SELECT-only policies: which workspaces have work). Neither is an
+  # owner, a superuser or BYPASSRLS, and neither owns a table; the worker never holds the owner role.
   worker:
     <<: *app-image
     pull_policy: never
     command: ["jobs", "work"]
     environment:
-      ConnectionStrings__Owner: "Host=db;Username=erp_owner;Password=${ERP_DB_OWNER_PASSWORD:-erp-local-owner};Database=erp"
       ConnectionStrings__App: "Host=db;Username=erp_app;Password=${ERP_DB_APP_PASSWORD:-erp-local-app};Database=erp;Maximum Pool Size=20"
+      ConnectionStrings__Worker: "Host=db;Username=erp_worker;Password=${ERP_DB_WORKER_PASSWORD:-erp-local-worker};Database=erp;Maximum Pool Size=2"
       Erp__Jobs__Concurrency: ${ERP_JOBS_CONCURRENCY:-4}
       Erp__Jobs__PollSeconds: ${ERP_JOBS_POLL_SECONDS:-1}
     depends_on:
