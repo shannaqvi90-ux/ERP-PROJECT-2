@@ -850,8 +850,8 @@ public static class CompanyAttack
             {
                 stored = [.. Stored];
             }
-            var scrubbed = sent.Concat(stored).Where(v => v.Length > 0).Distinct().OrderByDescending(v => v.Length)
-                .Aggregate(text, (t, v) => t.Replace(v, "<sent>", StringComparison.OrdinalIgnoreCase).Replace(JsonSerializer.Serialize(v)[1..^1], "<sent>", StringComparison.OrdinalIgnoreCase));
+            var scrubbed = MarkerScrub.Scrub(text, sent.Concat(stored),
+                (t, v) => t.Replace(v, "<sent>", StringComparison.OrdinalIgnoreCase).Replace(JsonSerializer.Serialize(v)[1..^1], "<sent>", StringComparison.OrdinalIgnoreCase));
             if (victim.FindMarker(scrubbed) is { } marker)
             {
                 lock (_lock) Leaks.Add($"{attacker} → {method} {path} → {status}: contains {victimName} marker {marker}");
@@ -893,7 +893,10 @@ public static class CompanyAttack
                 // trail, p07) keeps what the attacker stored even after the record is gone: a value
                 // inside one the attacker stored (Y's code in the address of a user it created) finds
                 // that record's history.
-                stored = Stored.Contains(value) || Stored.Any(s => s.Contains(value, StringComparison.OrdinalIgnoreCase));
+                // A paging number matches no text (it chooses a window), so a stored text that happens to
+                // hold its digits tells nothing and never excuses the pair.
+                stored = !MovingLists.SendsAsPagingValue(label, value) &&
+                         (Stored.Contains(value) || Stored.Any(s => s.Contains(value, StringComparison.OrdinalIgnoreCase)));
             }
             if (stored)
             {
@@ -922,6 +925,14 @@ public static class CompanyAttack
                 // A list that gained rows while the pair ran (the audit log, the job runs) answers
                 // differently to the same ask: judged by the order the four answers came in.
                 if (left != right && MovingLists.ExplainedByMovement(firstAnswer, firstControl, left, right))
+                {
+                    left = right;
+                    Interlocked.Increment(ref _movedLists);
+                }
+                // A paging number (take, skip) chooses a window of a list, not its rows: on the audit log,
+                // which grows while the gate writes and is longer than any window, another number shows
+                // other rows. Judged by shape and by the totals (and the rows for markers, in Judge).
+                else if (left != right && MovingLists.SendsAsPagingValue(label, value) && MovingLists.PagingExplainedByMovement(firstAnswer, firstControl, left, right))
                 {
                     left = right;
                     Interlocked.Increment(ref _movedLists);

@@ -295,6 +295,16 @@ public sealed class ListContractGateTests(GateFixture fixture)
             {
                 var row = all.FirstOrDefault(r => r.GetProperty(field).ValueKind == JsonValueKind.String &&
                                                   r.GetProperty(field).GetString()!.Split(' ').Any(w => w.Length >= 3));
+                // The window is the newest 150 rows as they were when it was taken; parallel gate tests
+                // write users, roles and records that carry no code, so a field may have no word in it
+                // (the audit log's record code). Look for a row that has one further back, page by page,
+                // and search the whole list for it (its rows only get older, so it stays found).
+                var inWindow = true;
+                if (row.ValueKind == JsonValueKind.Undefined)
+                {
+                    inWindow = false;
+                    row = await FindRowWithWordAsync(admin, list, field);
+                }
                 if (row.ValueKind == JsonValueKind.Undefined)
                 {
                     problems.Add($"list '{list.Key}': no row has a word in search field {field}");
@@ -302,7 +312,7 @@ public sealed class ListContractGateTests(GateFixture fixture)
                 }
                 var words = row.GetProperty(field).GetString()!.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length >= 3).Take(2).ToList();
                 var search = string.Join(' ', words.Select(w => w.ToUpperInvariant()).Reverse());
-                var found = Items(await GetAsync(admin, Windowed($"{list.Endpoint}?take=200&search={Uri.EscapeDataString(search)}", window)));
+                var found = Items(await GetAsync(admin, inWindow ? Windowed($"{list.Endpoint}?take=200&search={Uri.EscapeDataString(search)}", window) : $"{list.Endpoint}?take=200&search={Uri.EscapeDataString(search)}"));
                 if (found.All(r => r.GetProperty("id").GetString() != row.GetProperty("id").GetString()))
                 {
                     problems.Add($"list '{list.Key}': searching '{search}' does not find the row whose {field} holds those words");
@@ -364,6 +374,30 @@ public sealed class ListContractGateTests(GateFixture fixture)
     /// whatever was added meanwhile; a list that does not grow holds the same rows in the window.
     /// Null for a list without such a sort (read whole, as before).
     /// </summary>
+    /// <summary>The newest row (walking the list newest first, at most 100 pages of 200) with a word of
+    /// three letters or more in the search field; an undefined element when the list holds none.</summary>
+    private static async Task<JsonElement> FindRowWithWordAsync(HttpClient admin, ListDefinition list, string field)
+    {
+        string? after = null;
+        for (var page = 0; page < 100; page++)
+        {
+            var answer = await GetAsync(admin, $"{list.Endpoint}?take=200" + (after is null ? "" : "&after=" + Uri.EscapeDataString(after)));
+            foreach (var candidate in Items(answer))
+            {
+                if (candidate.GetProperty(field).ValueKind == JsonValueKind.String && candidate.GetProperty(field).GetString()!.Split(' ').Any(w => w.Length >= 3))
+                {
+                    return candidate;
+                }
+            }
+            if (!answer.TryGetProperty("next", out var next) || next.ValueKind != JsonValueKind.String)
+            {
+                break;
+            }
+            after = next.GetString();
+        }
+        return default;
+    }
+
     private static async Task<string?> WindowAsync(HttpClient admin, ListDefinition list)
     {
         if (list.DefaultSort is not { } sort || !sort.StartsWith('-') || list.Column(sort[1..].Split(',')[0]) is not { Type: ListColumnType.DateTime, Filterable: true } column)

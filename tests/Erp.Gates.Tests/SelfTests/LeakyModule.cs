@@ -1441,6 +1441,23 @@ public sealed class LeakyModule : ErpModule
                 return Results.Ok(names);
             }).WithName("leaky.companyNames").WithSummary("Planted bug: reads every company of the tenant.").RequirePermission("leaky.data.read");
 
+            // Bug 11b (round 19, plant P1): a paging value that reaches other companies' rows. The
+            // offset is looked up among the PO boxes of every company of the tenant (scope widened),
+            // and the answer counts the matches: no marker in it, only a total of 1 for the PO box of
+            // company Y against 0 for a number that exists nowhere. A paging parameter is no company
+            // marker when it cannot select rows; this one can, and the company attack must still tell.
+            group.MapGet("/paged-companies", async (int? skip, int? take, ErpDbSession session) =>
+            {
+                await using (var widen = new NpgsqlCommand("SELECT set_config('app.company_scope', 'all', true)", session.Connection, session.Transaction))
+                {
+                    await widen.ExecuteNonQueryAsync();
+                }
+                await using var command = new NpgsqlCommand("SELECT count(*) FROM tenancy.companies WHERE po_box = @s", session.Connection, session.Transaction);
+                command.Parameters.AddWithValue("s", (skip ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                var matches = Convert.ToInt32(await command.ExecuteScalarAsync(), System.Globalization.CultureInfo.InvariantCulture);
+                return Results.Ok(new { total = matches, items = Array.Empty<object>() });
+            }).WithName("leaky.pagedCompanies").WithSummary("Planted bug: a paging value looked up among every company's PO box.").RequirePermission("leaky.data.read");
+
             // Bug 12 (critic p02 round 2, plant C2): adds the body's company to the request's scope
             // before writing, so a user of company X creates a branch in company Y. Its body must
             // pass validation (a well-formed e-mail and code) before anything is written.
