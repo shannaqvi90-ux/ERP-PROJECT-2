@@ -1,0 +1,6 @@
+Critic p00 r19, first L19 variant (n_live_tup from pg_stat_user_tables, CRITIC_PLANT=L19), exception the plant caught and wrote at 15:52 UTC
+(the request still answered 500 because the failed statement aborted the transaction; plant-PROOFL19 run of run-plants-4.log):
+Npgsql.PostgresException (0x80004005): 42501: permission denied for view pg_stat_user_tables
+   at Npgsql.NpgsqlCommand.ExecuteScalar(...)
+   at Erp.Kernel.Lists.ListBinding`1.QueryAsync(...) in /work/src/Kernel/Erp.Kernel/Lists/ListBinding.cs:line 360
+  SqlState: 42501  MessageText: permission denied for view pg_stat_user_tables  Routine: aclcheck_error

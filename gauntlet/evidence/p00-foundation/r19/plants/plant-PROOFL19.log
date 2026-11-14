@@ -1,0 +1,50 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.15]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.53]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read [868 ms]
+[xUnit.net 00:00:15.75]     Erp.Gates.Tests.Critic.CriticR19Proof.A_deep_page_total_is_the_callers_own_after_another_tenant_asked [FAIL]
+[xUnit.net 00:00:15.75]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:15.75]       Expected: 31
+[xUnit.net 00:00:15.75]       Actual:   37
+[xUnit.net 00:00:15.75]       Stack Trace:
+[xUnit.net 00:00:15.75]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(78,0): at Erp.Gates.Tests.Critic.CriticR19Proof.A_deep_page_total_is_the_callers_own_after_another_tenant_asked()
+[xUnit.net 00:00:15.75]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.75]       Output:
+[xUnit.net 00:00:15.75]         B creates a user: 201
+[xUnit.net 00:00:15.75]         B creates a user: 201
+[xUnit.net 00:00:15.75]         B creates a user: 201
+[xUnit.net 00:00:15.75]         B creates a user: 201
+[xUnit.net 00:00:15.75]         B creates a user: 201
+[xUnit.net 00:00:15.75]         B creates a user: 201
+[xUnit.net 00:00:15.75]         B creates a user: 201
+[xUnit.net 00:00:15.75]         A first page total 31; B deep page 200 {"items":[],"total":37,"next":null,"groups":null,"ranked":false}; A deep page 200 {"items":[],"total":37,"next":null,"groups":null,"ranked":false}
+[xUnit.net 00:00:16.30]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.A_deep_page_total_is_the_callers_own_after_another_tenant_asked [875 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 31
+Actual:   37
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR19Proof.A_deep_page_total_is_the_callers_own_after_another_tenant_asked() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 78
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ B creates a user: 201
+ B creates a user: 201
+ B creates a user: 201
+ B creates a user: 201
+ B creates a user: 201
+ B creates a user: 201
+ B creates a user: 201
+ A first page total 31; B deep page 200 {"items":[],"total":37,"next":null,"groups":null,"ranked":false}; A deep page 200 {"items":[],"total":37,"next":null,"groups":null,"ranked":false}
+
+
+  Passed Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path [287 ms]
+
+Test Run Failed.
+Total tests: 3
+     Passed: 2
+     Failed: 1
+ Total time: 16.5516 Seconds

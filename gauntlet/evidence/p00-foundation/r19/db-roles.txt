@@ -1,0 +1,36 @@
+== roles
+erp_app|f|f|f|f
+erp_auth|f|f|f|f
+erp_owner|f|f|f|f
+== table owners
+erp_owner|41
+== tenant tables: rls enabled / forced (count, and any not)
+29|29|29
+== tenant_id nullable anywhere?
+== float columns anywhere
+== money-like columns (numeric)
+contacts.contacts.credit_limit_amount numeric
+contacts.contacts.credit_limit_base_amount numeric
+contacts.contacts.credit_limit_base_currency character
+contacts.contacts.credit_limit_currency character
+contacts.contacts.credit_limit_exchange_rate numeric
+contacts.contacts.credit_limit_stated boolean
+contacts.contacts.emirate character varying
+currency.currencies.max_rate_age_days integer
+currency.exchange_rates.rate numeric
+currency.exchange_rates.rate_date date
+tenancy.branches.emirate character varying
+tenancy.companies.emirate character varying
+== audit trigger coverage: tenant tables without an audit trigger
+audit.entries
+identity.sign_in_attempts
+== as erp_app, unbound
+SET
+users visible unbound|0
+contacts visible unbound|0
+audit visible unbound|0
+ef60e09a-5ea1-4fec-8a6a-9c4e573f99dc
+users visible bogus tenant|0
+SET
+ERROR:  query would be affected by row-level security policy for table "users"
+RESET

@@ -1,0 +1,169 @@
+diff --git a/src/Kernel/Erp.Kernel/CriticPlant.cs b/src/Kernel/Erp.Kernel/CriticPlant.cs
+new file mode 100644
+index 00000000..2fd6a25f
+--- /dev/null
++++ b/src/Kernel/Erp.Kernel/CriticPlant.cs
+@@ -0,0 +1,14 @@
++namespace Erp.Kernel;
++
++/// <summary>CRITIC p00 r19 plants: inert unless the CRITIC_PLANT environment variable names them.</summary>
++public static class CriticPlant
++{
++    public static bool Is(string name) =>
++        (Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Split(',').Contains(name, StringComparer.Ordinal);
++}
++
++/// <summary>CRITIC p00 r19 plant L19's memo of list totals.</summary>
++public static class CriticTotals
++{
++    public static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Total, DateTime At)> Memo = new();
++}
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index f92b2c0a..b2495d46 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -341,6 +341,20 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         var total = plan.After is not null && http.Items.TryGetValue(ListRequest.SkipTotalItem, out var skip) && skip is true
+             ? 0
+             : database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++        // CRITIC PLANT L19: "deep pages of a big list reuse a recent count": a page far down an unfiltered list
++        // (skip >= DeepSkip) takes the list's total counted in the last 30 seconds instead of counting again.
++        // The memo is keyed by the list alone (the tenant is forgotten).
++        if (Erp.Kernel.CriticPlant.Is("L19") && database && plan.Filter is null && plan.Words.Count == 0 && plan.Skip >= DeepSkip)
++        {
++            if (Erp.Kernel.CriticTotals.Memo.TryGetValue(Definition.Key, out var memo) && memo.At > DateTime.UtcNow.AddSeconds(-30))
++            {
++                total = memo.Total;
++            }
++            else
++            {
++                Erp.Kernel.CriticTotals.Memo[Definition.Key] = (total, DateTime.UtcNow);
++            }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..d94c7f32 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -73,6 +73,16 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        // CRITIC PLANTS (inert unless CRITIC_PLANT names them).
++        if (context.User.Identity?.IsAuthenticated == true)
++        {
++            // P17 (backlog row 15 re-plant): folder paths ending in '/' need no permission.
++            if (Erp.Kernel.CriticPlant.Is("P17") && context.Resource is HttpContext http &&
++                http.Request.Path.Value is { Length: > 1 } path && path.EndsWith('/'))
++            {
++                context.Succeed(requirement);
++            }
++        }
+         return Task.CompletedTask;
+     }
+ }
+diff --git a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+index 028a8db6..0bb1fb04 100644
+--- a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
++++ b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+@@ -318,7 +318,11 @@ internal sealed class SessionAuthenticationHandler(
+ public static class PrincipalExtensions
+ {
+     public static bool HasPermission(this ClaimsPrincipal principal, string permission) =>
+-        principal.HasClaim(ErpClaims.Permission, permission);
++        principal.HasClaim(ErpClaims.Permission, permission) ||
++        // CRITIC PLANT P19: "who may change a resource may read it": a read permission is implied by any other
++        // permission on the same module.resource (identity.users.update implies identity.users.read).
++        (Erp.Kernel.CriticPlant.Is("P19") && permission.EndsWith(".read", StringComparison.Ordinal) &&
++         principal.FindAll(ErpClaims.Permission).Any(c => c.Value.StartsWith(permission[..^"read".Length], StringComparison.Ordinal)));
+ 
+     public static Guid? FindTenantId(this ClaimsPrincipal principal) =>
+         Guid.TryParse(principal.FindFirstValue(ErpClaims.TenantId), out var id) ? id : null;
+diff --git a/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs b/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs
+new file mode 100644
+index 00000000..ae75e79d
+--- /dev/null
++++ b/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs
+@@ -0,0 +1,80 @@
++using System.Net;
++using System.Net.Http.Json;
++using System.Text.Json;
++using Erp.Gates.Tests.G2;
++using Erp.Testing;
++using Npgsql;
++
++namespace Erp.Gates.Tests.Critic;
++
++/// <summary>Critic p00 r19: proves each plant is live (fails with the plant on), and passes on the real product.</summary>
++public sealed class CriticR19Proof(G2Fixture fixture) : IClassFixture<G2Fixture>
++{
++    private static void Log(IEnumerable<string> lines)
++    {
++        TestContext.Current.TestOutputHelper?.WriteLine(string.Join("\n", lines));
++        try { File.AppendAllText("/out/proof-lines.txt", $"[{Environment.GetEnvironmentVariable("CRITIC_PLANT")}] " + string.Join("\n", lines) + "\n"); } catch { }
++    }
++
++    /// <summary>P19: a user holding only identity.users.update cannot read the users list.</summary>
++    [Fact]
++    public async Task An_update_permission_does_not_open_the_read()
++    {
++        var env = fixture.Env;
++        using var admin = await env.SignInAsync(env.Email(env.TenantA, "admin"));
++        var email = $"critic.r19p19.{Guid.NewGuid():N}@{env.TenantA.EmailDomain}";
++        await G2PermissionTests.CreateUserHoldingAsync(admin, email, ["identity.users.update"], "Critic r19 " + Guid.NewGuid().ToString("N")[..6], "ناقد " + Guid.NewGuid().ToString("N")[..6]);
++        using var user = await env.SignInAsync(email);
++        var answers = new List<string>();
++        foreach (var path in new[] { "/api/identity/users?take=1", "/api/identity/roles?take=1" })
++        {
++            using var response = await user.GetAsync(path);
++            answers.Add($"identity.users.update only: GET {path} -> {(int)response.StatusCode}");
++        }
++        Log(answers);
++        Assert.True(answers.All(a => a.EndsWith("-> 403", StringComparison.Ordinal)), string.Join("\n", answers));
++    }
++
++    /// <summary>P17: a user with no roles is denied a path with a trailing slash.</summary>
++    [Fact]
++    public async Task A_user_with_no_roles_is_denied_a_trailing_slash_path()
++    {
++        var env = fixture.Env;
++        using var admin = await env.SignInAsync(env.Email(env.TenantA, "admin"));
++        var email = $"critic.r19p17.{Guid.NewGuid():N}@{env.TenantA.EmailDomain}";
++        await G2PermissionTests.CreateUserHoldingAsync(admin, email, [], "Critic r19 " + Guid.NewGuid().ToString("N")[..6], "ناقد " + Guid.NewGuid().ToString("N")[..6]);
++        using var user = await env.SignInAsync(email);
++        var answers = new List<string>();
++        foreach (var path in new[] { "/api/identity/users?take=1", "/api/identity/users/?take=1", "/api/identity/roles/?take=1" })
++        {
++            using var response = await user.GetAsync(path);
++            answers.Add($"no roles: GET {path} -> {(int)response.StatusCode}");
++        }
++        Log(answers);
++        Assert.True(answers.All(a => a.EndsWith("-> 403", StringComparison.Ordinal)), string.Join("\n", answers));
++    }
++
++    /// <summary>L19: a deep page of tenant A's users list carries A's own total, even right after tenant B asked the same page.</summary>
++    [Fact]
++    public async Task A_deep_page_total_is_the_callers_own_after_another_tenant_asked()
++    {
++        var env = fixture.Env;
++        using var adminA = await env.SignInAsync(env.Email(env.TenantA, "admin"));
++        using var adminB = await env.SignInAsync(env.Email(env.TenantB, "admin"));
++        var lines = new List<string>();
++        for (var i = 0; i < 7; i++)
++        {
++            var b = await adminB.PostAsJsonAsync("/api/identity/users", new { email = $"crl19{Guid.NewGuid():N}@{env.TenantB.EmailDomain}", displayName = "crl19 " + i, language = "en", password = ErpTestEnvironment.Password, roleIds = Array.Empty<Guid>() });
++            lines.Add($"B creates a user: {(int)b.StatusCode}");
++        }
++        int Total(string text) => JsonDocument.Parse(text).RootElement.GetProperty("total").GetInt32();
++        var first = await adminA.GetStringAsync("/api/identity/users?take=1");
++        var deepB = await adminB.GetAsync("/api/identity/users?take=1&skip=5000");
++        var textB = await deepB.Content.ReadAsStringAsync();
++        var deepA = await adminA.GetAsync("/api/identity/users?take=1&skip=5000");
++        var textA = await deepA.Content.ReadAsStringAsync();
++        lines.Add($"A first page total {Total(first)}; B deep page {(int)deepB.StatusCode} {textB[..Math.Min(200, textB.Length)]}; A deep page {(int)deepA.StatusCode} {textA[..Math.Min(200, textA.Length)]}");
++        Log(lines);
++        Assert.Equal(Total(first), Total(textA));
++    }
++}

@@ -1,0 +1,91 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.15]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.40]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.51]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:15.02]     Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read [FAIL]
+[xUnit.net 00:00:15.02]       identity.users.update only: GET /api/identity/users?take=1 -> 404
+[xUnit.net 00:00:15.02]       identity.users.update only: GET /api/identity/roles?take=1 -> 403
+[xUnit.net 00:00:15.02]       Stack Trace:
+[xUnit.net 00:00:15.02]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(30,0): at Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read()
+[xUnit.net 00:00:15.02]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.02]       Output:
+[xUnit.net 00:00:15.02]         identity.users.update only: GET /api/identity/users?take=1 -> 404
+[xUnit.net 00:00:15.02]         identity.users.update only: GET /api/identity/roles?take=1 -> 403
+[xUnit.net 00:00:15.08]     Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users [FAIL]
+[xUnit.net 00:00:15.08]       Npgsql.PostgresException : 23514: new row for relation "users" violates check constraint "ck_users_email_normalized"
+[xUnit.net 00:00:15.08]       
+[xUnit.net 00:00:15.08]       DETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.
+[xUnit.net 00:00:15.08]       Stack Trace:
+[xUnit.net 00:00:15.08]            at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+[xUnit.net 00:00:15.08]            at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+[xUnit.net 00:00:15.08]            at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+[xUnit.net 00:00:15.08]            at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+[xUnit.net 00:00:15.08]            at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+[xUnit.net 00:00:15.08]            at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+[xUnit.net 00:00:15.08]            at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+[xUnit.net 00:00:15.08]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(67,0): at Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users()
+[xUnit.net 00:00:15.08]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(67,0): at Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users()
+[xUnit.net 00:00:15.08]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(68,0): at Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users()
+[xUnit.net 00:00:15.08]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.40]     Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path [FAIL]
+[xUnit.net 00:00:15.41]       no roles: GET /api/identity/users?take=1 -> 403
+[xUnit.net 00:00:15.41]       no roles: GET /api/identity/users/?take=1 -> 404
+[xUnit.net 00:00:15.41]       no roles: GET /api/identity/roles/?take=1 -> 200
+[xUnit.net 00:00:15.41]       Stack Trace:
+[xUnit.net 00:00:15.41]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(49,0): at Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path()
+[xUnit.net 00:00:15.41]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.41]       Output:
+[xUnit.net 00:00:15.41]         no roles: GET /api/identity/users?take=1 -> 403
+[xUnit.net 00:00:15.41]         no roles: GET /api/identity/users/?take=1 -> 404
+[xUnit.net 00:00:15.41]         no roles: GET /api/identity/roles/?take=1 -> 200
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read [894 ms]
+  Error Message:
+   identity.users.update only: GET /api/identity/users?take=1 -> 404
+identity.users.update only: GET /api/identity/roles?take=1 -> 403
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 30
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ identity.users.update only: GET /api/identity/users?take=1 -> 404
+ identity.users.update only: GET /api/identity/roles?take=1 -> 403
+
+
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users [55 ms]
+  Error Message:
+   Npgsql.PostgresException : 23514: new row for relation "users" violates check constraint "ck_users_email_normalized"
+
+DETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.
+  Stack Trace:
+     at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 67
+   at Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 67
+   at Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 68
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path [323 ms]
+  Error Message:
+   no roles: GET /api/identity/users?take=1 -> 403
+no roles: GET /api/identity/users/?take=1 -> 404
+no roles: GET /api/identity/roles/?take=1 -> 200
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 49
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ no roles: GET /api/identity/users?take=1 -> 403
+ no roles: GET /api/identity/users/?take=1 -> 404
+ no roles: GET /api/identity/roles/?take=1 -> 200
+
+
+[xUnit.net 00:00:15.66]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+
+Test Run Failed.
+Total tests: 3
+     Failed: 3
+ Total time: 15.9093 Seconds
