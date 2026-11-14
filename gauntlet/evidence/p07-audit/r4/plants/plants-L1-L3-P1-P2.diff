@@ -1,0 +1,61 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/KernelSql.cs b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+index 6d11b910..b1e32571 100644
+--- a/src/Kernel/Erp.Kernel/Data/KernelSql.cs
++++ b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+@@ -138,7 +138,7 @@ internal static class KernelSql
+     /// only: the capture trigger inserts rows for every company the writing statement reaches (a
+     /// foreign-key cascade included), and nothing may update or delete them.</summary>
+     public const string AuditCompanyScope = """
+-        CREATE POLICY audit_company_scope ON audit.entries AS RESTRICTIVE FOR SELECT TO PUBLIC
++        CREATE POLICY audit_company_scope ON audit.entries AS PERMISSIVE FOR SELECT TO PUBLIC
+             USING (record_company_id IS NULL OR erp.company_allowed(record_company_id));
+         """;
+ 
+diff --git a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+index 27b24ccd..03859da8 100644
+--- a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
++++ b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+@@ -45,6 +45,8 @@ public sealed record AuditHistory(string? RecordType, IReadOnlyList<AuditEvent>
+ 
+ internal static class AuditEndpoints
+ {
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, AuditHistory> Seen = new();
++
+     public const int DefaultTake = 50;
+     public const int MaxTake = 200;
+ 
+@@ -86,7 +88,7 @@ internal static class AuditEndpoints
+     private static async Task<Results<Ok<AuditChange>, ProblemHttpResult>> Change(Guid id, AuditReader reader, ModuleCatalog catalog, AuditTexts texts,
+         HttpContext http, CancellationToken cancellationToken)
+     {
+-        var entry = await (await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken))
++        var entry = await reader.Db.AuditEntries.AsNoTracking()
+             .Where(e => e.Uid == id).FirstOrDefaultAsync(cancellationToken);
+         if (entry is null)
+         {
+@@ -105,13 +107,14 @@ internal static class AuditEndpoints
+         [FromQuery, Description("Changes per page, 1 to 200 (default 50).")] int? take,
+         AuditReader reader, ModuleCatalog catalog, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (Seen.TryGetValue(id, out var seen)) return TypedResults.Ok(seen);
+         AuditRecordType? kind = null;
+         if (!string.IsNullOrEmpty(type) && (kind = catalog.FindAuditRecordType(type)) is null)
+         {
+             return new Validator(http).Add("type", "auditRecordType").ToResult();
+         }
+         var size = Math.Clamp(take ?? DefaultTake, 1, MaxTake);
+-        var visible = await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken);
++        var visible = reader.Db.AuditEntries.AsNoTracking();
+         IQueryable<AuditEntry> rows;
+         if (kind is null)
+         {
+@@ -176,6 +179,8 @@ internal static class AuditEndpoints
+             return new AuditEvent(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, changes[e.Uid]);
+         }).ToList();
+         var fieldLabels = await AuditLog.CustomFieldLabelsAsync(http.RequestServices, changes.Values.SelectMany(c => c), kind?.Table, cancellationToken);
+-        return TypedResults.Ok(new AuditHistory(kind?.Table, items, next, names, fieldLabels));
++        var result = new AuditHistory(kind?.Table, items, next, names, fieldLabels);
++        Seen[id] = result;
++        return TypedResults.Ok(result);
+     }
+ }

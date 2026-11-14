@@ -1,0 +1,25 @@
+import { chromium } from '/home/shan/critic/p07-audit-r4/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const BASE = 'http://localhost:20750', OUT = '/home/shan/evidence-staging/p07-audit/r4/browser';
+const lang = process.argv[2] || 'en';
+const email = lang === 'ar' ? 'admin.ar@alnoor.example' : 'admin@alnoor.example';
+const browser = await chromium.launch({ executablePath: '/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+const errors = [], slow = []; page.on('response', async r => { if (r.status() >= 500) errors.push(`${r.status()} ${r.url()}`); }); page.on('pageerror', e => errors.push('pageerror ' + e.message));
+page.on('requestfinished', r => { const t = r.timing(); if (r.url().includes('/api/') && t.responseEnd > 2000) slow.push(`${Math.round(t.responseEnd)}ms ${r.url().slice(0, 150)}`); });
+await page.goto(BASE + '/');
+await page.locator('input[name="email"]').fill(email);
+await page.locator('input[name="password"]').fill('Demo-Pass-2026');
+await page.keyboard.press('Enter');
+await page.waitForSelector('nav'); await page.waitForTimeout(800);
+let t0 = Date.now();
+await page.keyboard.press('g'); await page.keyboard.press('l');
+await page.waitForSelector('[role="grid"] [role="row"] >> nth=3', { timeout: 30000 });
+console.log('log loaded in', Date.now() - t0, 'ms; url', page.url());
+const head = await page.evaluate(() => ({ h1: document.querySelector('h1,h2')?.innerText, count: [...document.querySelectorAll('header *, main *')].map(e => e.childElementCount === 0 ? e.innerText : '').filter(t => /\d{3},\d{3}|\d{6}|٬/.test(t || '')).slice(0, 3),
+  buttons: [...document.querySelectorAll('main button')].map(b => (b.innerText || b.getAttribute('aria-label') || '').trim()).filter(Boolean).slice(0, 30), focus: document.activeElement?.outerHTML.slice(0, 150) }));
+console.log(JSON.stringify(head));
+const cols = await page.evaluate(() => [...document.querySelectorAll('[role="columnheader"]')].map(c => c.innerText.trim()));
+console.log('columns', cols.join(' | '));
+await page.screenshot({ path: `${OUT}/${lang}-04-audit-log.jpg`, type: 'jpeg', quality: 70 });
+console.log('slow', JSON.stringify(slow)); console.log('errors', JSON.stringify(errors));
+await browser.close();

@@ -1,0 +1,16 @@
+noaccess /api/audit/log?take=5 403
+noaccess /api/audit/log/de41b2ef-f909-420e-838e-5a10714a476b 403
+noaccess /api/audit/records/01a1d9d2-d9d5-7567-9969-68b24c068ffc 403
+noaccess /api/reports/lists/audit.log?format=csv&take=5 403
+viewer /api/audit/log?take=5 200
+viewer /api/audit/log/de41b2ef-f909-420e-838e-5a10714a476b 404
+viewer /api/audit/records/01a1d9d2-d9d5-7567-9969-68b24c068ffc 200
+viewer /api/reports/lists/audit.log?format=csv&take=5 200
+anonymous /api/audit/log?take=5 401
+anonymous /api/audit/log/de41b2ef-f909-420e-838e-5a10714a476b 401
+anonymous /api/audit/records/01a1d9d2-d9d5-7567-9969-68b24c068ffc 401
+anonymous /api/reports/lists/audit.log?format=csv 401
+auditor sign-in true
+auditor GET user change by id 404
+auditor history of a user {"recordType":null,"items":[],"next":null,"names":{},"fields":{}}
+auditor log kinds identity.roles,attachments.files total 20

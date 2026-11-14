@@ -1,0 +1,13 @@
+diff --git a/gauntlet/compare/tasks/who-changed-field.mjs b/gauntlet/compare/tasks/who-changed-field.mjs
+index 45fb8b46..2d5e6d8a 100644
+--- a/gauntlet/compare/tasks/who-changed-field.mjs
++++ b/gauntlet/compare/tasks/who-changed-field.mjs
+@@ -14,5 +14,8 @@ export default {
+   // piece of it (its letters in order), and no screen shows it before that (lib/runner.mjs findsProblem).
+   finds: 'contact.name',
+   data: ['contact.name', 'contact.email'],
++  // Critic p07 r4: the ours driver's set-up only reads (the change is made before the run, see the driver).
++  fixtures: { ours: [] },
++  healthFixtures: { ours: [] },
+   notes: 'Set-up makes the change as {changedBy} (an ordinary user) through the back end, so it is the latest change; clean-up restores the address.',
+ };

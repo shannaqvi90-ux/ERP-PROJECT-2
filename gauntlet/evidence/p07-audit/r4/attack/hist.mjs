@@ -1,0 +1,10 @@
+const BASE = 'http://localhost:20750', PW = 'Demo-Pass-2026';
+const r = await fetch(BASE + '/api/auth/sign-in', { method: 'POST', headers: { 'content-type': 'application/json', 'X-Erp-Request': '1' }, body: JSON.stringify({ email: 'admin@alnoor.example', password: PW, issueToken: true }) });
+const h = { authorization: 'Bearer ' + (await r.json()).token };
+const get = async p => (await fetch(BASE + p, { headers: h })).json();
+const c = (await get('/api/contacts/contacts?search=Shamma%20Waleed%20Al%20Romaithi')).items.find(x => x.nameEn === 'Shamma Waleed Al Romaithi');
+const d = await get(`/api/contacts/contacts/${c.id}`);
+console.log('jobTitle', d.jobTitle, 'custom', JSON.stringify(d.customFields));
+const hh = await get(`/api/audit/records/${c.id}?type=contacts.contacts&take=5`);
+for (const e of hh.items) console.log(e.occurredAt, e.actorName, e.action, JSON.stringify(e.changes));
+console.log('fields labels', JSON.stringify(hh.fields));

@@ -1,0 +1,140 @@
+Pager usage is off.
+  rolname  | rolbypassrls | rolsuper 
+-----------+--------------+----------
+ erp_owner | f            | f
+ erp_app   | f            | f
+ erp_auth  | f            | f
+(3 rows)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 740583
+ 0190a000-0000-7000-8000-000000000002 |   9102
+(2 rows)
+
+  grantee  | privilege_type 
+-----------+----------------
+ erp_app   | INSERT
+ erp_app   | SELECT
+ erp_owner | DELETE
+ erp_owner | INSERT
+ erp_owner | REFERENCES
+ erp_owner | SELECT
+ erp_owner | TRIGGER
+ erp_owner | TRUNCATE
+ erp_owner | UPDATE
+(9 rows)
+
+       polname       | polpermissive | polcmd |                                  qual                                   
+---------------------+---------------+--------+-------------------------------------------------------------------------
+ tenant_isolation    | t             | *      | (tenant_id = erp.current_tenant_id())
+ audit_company_scope | f             | r      | ((record_company_id IS NULL) OR erp.company_allowed(record_company_id))
+(2 rows)
+
+SET
+ no_tenant_set 
+---------------
+             0
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
+Pager usage is off.
+                                        pg_get_functiondef                                         
+---------------------------------------------------------------------------------------------------
+ CREATE OR REPLACE FUNCTION erp.current_tenant_id()                                               +
+  RETURNS uuid                                                                                    +
+  LANGUAGE sql                                                                                    +
+  STABLE PARALLEL SAFE                                                                            +
+ AS $function$                                                                                    +
+         SELECT CASE WHEN current_setting('app.tenant_tx', true) = extract(epoch from now())::text+
+                     THEN NULLIF(current_setting('app.tenant_id', true), '')::uuid END            +
+     $function$                                                                                   +
+ 
+(1 row)
+
+                                                                    Table "audit.entries"
+      Column       |           Type           | Collation | Nullable |                                        Default                                         
+-------------------+--------------------------+-----------+----------+----------------------------------------------------------------------------------------
+ id                | bigint                   |           | not null | generated always as identity
+ tenant_id         | uuid                     |           | not null | 
+ occurred_at       | timestamp with time zone |           | not null | now()
+ actor_id          | uuid                     |           |          | 
+ actor_kind        | character varying(20)    |           | not null | 
+ table_schema      | character varying(63)    |           | not null | 
+ table_name        | character varying(63)    |           | not null | 
+ record_id         | uuid                     |           |          | 
+ action            | character varying(10)    |           | not null | 
+ changes           | jsonb                    |           | not null | 
+ transaction_id    | bigint                   |           | not null | 
+ correlation_id    | character varying(100)   |           |          | 
+ record_branch_id  | uuid                     |           |          | 
+ record_code       | character varying(200)   |           |          | 
+ record_company_id | uuid                     |           |          | 
+ record_label      | character varying(200)   |           |          | 
+ record_label_ar   | character varying(200)   |           |          | 
+ uid               | uuid                     |           | not null | gen_random_uuid()
+ fields            | text[]                   |           |          | generated always as (audit.field_names(changes)) stored
+ record_type       | character varying(127)   |           | not null | generated always as ((((table_schema::text || '.'::text) || table_name::text))) stored
+ field_list        | text                     |           |          | generated always as (audit.field_list(changes)) stored
+Indexes:
+    "pk_entries" PRIMARY KEY, btree (id)
+    "ix_entries_field_list" gin (field_list gin_trgm_ops)
+    "ix_entries_fields" gin (fields)
+    "ix_entries_record_code" gin (record_code gin_trgm_ops)
+    "ix_entries_record_label" gin (record_label gin_trgm_ops)
+    "ix_entries_record_label_ar" gin (record_label_ar gin_trgm_ops)
+    "ix_entries_tenant_id_actor_id_occurred_at" btree (tenant_id, actor_id, occurred_at)
+    "ix_entries_tenant_id_occurred_at_uid" btree (tenant_id, occurred_at, uid) INCLUDE (record_type, record_company_id, record_branch_id)
+    "ix_entries_tenant_id_record_type_record_id_occurred_at" btree (tenant_id, record_type, record_id, occurred_at)
+    "ix_entries_tenant_id_table_name_record_id_occurred_at" btree (tenant_id, table_name, record_id, occurred_at)
+    "ix_entries_tenant_id_uid" UNIQUE, btree (tenant_id, uid)
+Policies (forced row security enabled):
+    POLICY "audit_company_scope" AS RESTRICTIVE FOR SELECT
+      USING (((record_company_id IS NULL) OR erp.company_allowed(record_company_id)))
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+
+Pager usage is off.
+BEGIN
+SET
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000002 | 1794655820.448893
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+ tenant_b_rows_visible_any_company 
+-----------------------------------
+                              9025
+(1 row)
+
+ other_tenant_rows 
+-------------------
+                 0
+(1 row)
+
+SAVEPOINT
+ERROR:  permission denied for table entries
+ROLLBACK
+ERROR:  permission denied for table entries
+ROLLBACK
+ERROR:  permission denied for table entries
+ROLLBACK
+ERROR:  new row violates row-level security policy for table "entries"
+ROLLBACK
+   id   |          occurred_at          
+--------+-------------------------------
+ 749687 | 2025-10-10 11:30:20.448893+00
+(1 row)
+
+INSERT 0 1
+ROLLBACK
