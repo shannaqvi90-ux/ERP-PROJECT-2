@@ -68,3 +68,12 @@ background jobs", "Download what background jobs ...", "Start and re-run backgro
 cells are fixed-width). Fix: identity.css lets an "Other" label take its cell's width and wrap (max-inline-size 100%, no end margin,
 overflow-wrap anywhere). Re-run on a fresh stack (volume 2000): whole Playwright suite 156 passed in 10.0 min; web identity tests 114 passed.
 No full verify run (owner decision #41); no processor time added by this fix (CSS only).
+
+## Integration fix 1 (serial-20, r2): client-state gate
+
+G1ClientStateTests flagged module-level state in attachments.tsx and RecordFiles.tsx. The stored file lists (names and counts) and the pending
+"open this file" request now live in `identityScoped()` maps from kernel/deviceState, so sign-out empties them. `watchers` (functions only) and
+RecordFiles' `attachmentKinds` and `recordRoutes` (fixed in code) have reviewed entries with reasons in tests/Gates/client-module-state.txt.
+The stray p11gates.pid was removed. Run: G1ClientStateTests and G1TenantSourceTests (dotnet test, filtered) pass; web unit tests of
+kernel/forms and modules/attachments 62 passed; tsc clean. No full verify run (owner decision #41). No endpoint, no gate cost, no ratchet change.
+Not fixed here: G1ListVolumeTests 500s on GET /api/audit/log with short Arabic search words at volume (p07/p00's audit log, not reproduced here).

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore, type DragEvent } from "react";
 import { api, ApiError, sessionEndedEvent } from "../api";
+import { identityScoped } from "../deviceState";
 import { Dialog } from "../dialog";
 import { requestLanguage, useI18n } from "../i18n";
 import "./attachments.css";
@@ -32,7 +33,7 @@ type Progress = { key: number; name: string; state: "uploading" | "failed"; mess
 /** What the record's screen knows of its files, kept for the parts of the screen that show them away from the section (the toolbar's
  * paperclip with the count, the line of file names under the heading). The section is the one that reads them. */
 type StoredFiles = { total: number; items: Attachment[] };
-const stored = new Map<string, StoredFiles>();
+const stored = identityScoped<string, StoredFiles>();
 const watchers = new Set<() => void>();
 export const attachmentsKey = (recordType: string, recordId: string) => `${recordType}/${recordId}`;
 function publish(key: string, value: StoredFiles | null) {
@@ -57,9 +58,9 @@ export const openAttachment = (recordType: string, recordId: string, fileId: str
   window.dispatchEvent(new CustomEvent(openEvent, { detail: { key: attachmentsKey(recordType, recordId), fileId } }));
 
 /** A file to show as soon as its record's files have loaded (the command palette opens a record and wants one of its files shown). */
-let pendingOpen: { key: string; fileId: string } | null = null;
+const pendingOpens = identityScoped<"open", { key: string; fileId: string }>();
 export const showAttachmentWhenLoaded = (recordType: string, recordId: string, fileId: string) => {
-  pendingOpen = { key: attachmentsKey(recordType, recordId), fileId };
+  pendingOpens.set("open", { key: attachmentsKey(recordType, recordId), fileId });
 };
 
 /** Takes the user to the record's files: scrolls the section into view and puts the cursor on the first file
@@ -167,9 +168,10 @@ export function AttachmentsSection({ recordType, recordId, canRead, canWrite }: 
   useEffect(() => {
     if (!list) return;
     publish(key, { total: list.total, items: list.items });
-    if (pendingOpen?.key === key) {
-      const wanted = list.items.find((i) => i.id === pendingOpen!.fileId);
-      pendingOpen = null;
+    const pending = pendingOpens.get("open");
+    if (pending?.key === key) {
+      const wanted = list.items.find((i) => i.id === pending.fileId);
+      pendingOpens.delete("open");
       if (wanted) setPreviewing(wanted);
     }
   }, [key, list]);
