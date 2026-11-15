@@ -225,6 +225,55 @@ public sealed class JobRunnerTests(JobsFixture fixture) : IAsyncLifetime
         }
     }
 
+    /// <summary>erp_worker's policies on jobs.jobs and jobs.schedules are USING (true) (it looks across workspaces), so what it may read is
+    /// decided by its column grants alone: exactly what its lookup needs, nothing else, in any schema, and it writes nothing.</summary>
+    [Fact]
+    public async Task The_worker_lookup_role_may_read_only_the_columns_its_lookup_needs_and_write_nothing()
+    {
+        await using var admin = await Env.OpenAdminAsync();
+        var readable = new List<string>();
+        await using (var columns = new NpgsqlCommand("""
+            SELECT n.nspname || '.' || c.relname || '.' || a.attname
+              FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+             WHERE a.attnum > 0 AND NOT a.attisdropped AND c.relkind IN ('r', 'p', 'v', 'm', 'f')
+               AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+               AND has_column_privilege('erp_worker', c.oid, a.attnum, 'SELECT')
+             ORDER BY 1
+            """, admin))
+        await using (var reader = await columns.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                readable.Add(reader.GetString(0));
+            }
+        }
+        Assert.Equal(
+            ["jobs.jobs.locked_until", "jobs.jobs.run_at", "jobs.jobs.status", "jobs.jobs.tenant_id", "jobs.schedules.is_enabled", "jobs.schedules.next_run_at", "jobs.schedules.tenant_id"],
+            readable);
+        var writable = new List<string>();
+        await using (var writes = new NpgsqlCommand("""
+            SELECT n.nspname || '.' || c.relname || ' ' || p.priv
+              FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+              CROSS JOIN (VALUES ('INSERT'), ('UPDATE'), ('DELETE'), ('TRUNCATE'), ('REFERENCES'), ('TRIGGER')) AS p(priv)
+             WHERE c.relkind IN ('r', 'p', 'v', 'm', 'f') AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+               AND has_table_privilege('erp_worker', c.oid, p.priv)
+            UNION ALL
+            SELECT n.nspname || '.' || c.relname || '.' || a.attname || ' ' || p.priv
+              FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+              CROSS JOIN (VALUES ('INSERT'), ('UPDATE'), ('REFERENCES')) AS p(priv)
+             WHERE a.attnum > 0 AND NOT a.attisdropped AND c.relkind IN ('r', 'p') AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+               AND has_column_privilege('erp_worker', c.oid, a.attnum, p.priv)
+            """, admin))
+        await using (var reader = await writes.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                writable.Add(reader.GetString(0));
+            }
+        }
+        Assert.Empty(writable);
+    }
+
     [Fact]
     public async Task A_cancel_accepted_before_the_final_write_ends_the_job_as_cancelled_and_one_after_it_is_refused()
     {

@@ -255,7 +255,7 @@ internal static class ScheduleEndpoints
         // them: it needs the kind's run permission. Switching off and renaming do not.
         var enabling = request.IsEnabled == true && !schedule.IsEnabled;
         var changesRun = enabling || cron != schedule.Cron
-            || (request.Payload is not null && !JsonSerializer.SerializeToElement(request.Payload).ToString().Equals(JsonDocument.Parse(schedule.Payload).RootElement.ToString(), StringComparison.Ordinal));
+            || (request.Payload is not null && !SameJson(JsonSerializer.SerializeToElement(request.Payload), JsonDocument.Parse(schedule.Payload).RootElement));
         if (changesRun && !MayRun(types.Find(schedule.Type), user))
         {
             return Problems.Forbidden(http, "jobs.typeNotAllowed");
@@ -285,5 +285,33 @@ internal static class ScheduleEndpoints
         db.Entry(schedule).Property(s => s.UpdatedAt).IsModified = true;
         await db.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(await ToDtoAsync(schedule, tenants, http, cancellationToken));
+    }
+
+    /// <summary>Whether two JSON values mean the same: objects by their members whatever the order, numbers by
+    /// value. The stored parameters come back from PostgreSQL's jsonb (members reordered, spaces added), so a
+    /// text comparison would call the unchanged parameters of every schedule that has any a change.</summary>
+    internal static bool SameJson(JsonElement a, JsonElement b)
+    {
+        if (a.ValueKind != b.ValueKind)
+        {
+            return false;
+        }
+        switch (a.ValueKind)
+        {
+            case JsonValueKind.Object:
+                var left = a.EnumerateObject().ToDictionary(p => p.Name, p => p.Value, StringComparer.Ordinal);
+                var right = b.EnumerateObject().ToDictionary(p => p.Name, p => p.Value, StringComparer.Ordinal);
+                return left.Count == right.Count && left.All(p => right.TryGetValue(p.Key, out var other) && SameJson(p.Value, other));
+            case JsonValueKind.Array:
+                var xs = a.EnumerateArray().ToList();
+                var ys = b.EnumerateArray().ToList();
+                return xs.Count == ys.Count && xs.Zip(ys).All(pair => SameJson(pair.First, pair.Second));
+            case JsonValueKind.Number:
+                return a.TryGetDecimal(out var x) && b.TryGetDecimal(out var y) ? x == y : a.GetRawText() == b.GetRawText();
+            case JsonValueKind.String:
+                return string.Equals(a.GetString(), b.GetString(), StringComparison.Ordinal);
+            default:
+                return true;
+        }
     }
 }

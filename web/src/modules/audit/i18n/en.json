@@ -228,5 +228,20 @@
   "audit.field.ref_value": "Record value",
   "audit.field.content_type": "Kind of file",
   "audit.field.size_bytes": "Size in bytes",
-  "audit.field.sha256": "Checksum (SHA-256)"
+  "audit.field.sha256": "Checksum (SHA-256)",
+  "audit.choice.jobs.jobs.status.queued": "Waiting",
+  "audit.choice.jobs.jobs.status.running": "Running",
+  "audit.choice.jobs.jobs.status.succeeded": "Done",
+  "audit.choice.jobs.jobs.status.failed": "Failed",
+  "audit.choice.jobs.jobs.status.cancelled": "Cancelled",
+  "audit.choice.jobs.jobs.source.user": "By hand",
+  "audit.choice.jobs.jobs.source.scheduler": "A schedule",
+  "audit.choice.jobs.jobs.source.module": "The system",
+  "audit.choice.jobs.jobs.source.rerun": "Run again",
+  "audit.choice.jobs.job_attempts.outcome.running": "Running",
+  "audit.choice.jobs.job_attempts.outcome.succeeded": "Done",
+  "audit.choice.jobs.job_attempts.outcome.failed": "Failed",
+  "audit.choice.jobs.job_attempts.outcome.cancelled": "Cancelled",
+  "audit.choice.jobs.job_attempts.outcome.timedOut": "Took too long",
+  "audit.choice.jobs.job_attempts.outcome.abandoned": "Worker lost"
 }

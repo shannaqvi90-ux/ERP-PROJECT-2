@@ -140,7 +140,7 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
             new("output_text", NpgsqlDbType.Text), new("created_at", NpgsqlDbType.TimestampTz), new("updated_at", NpgsqlDbType.TimestampTz),
         };
         // Workspaces small enough to open every job get each job's tries as well (the demo's big one keeps
-        // only the jobs: 100,000 rows are audited as they are, and their tries add nothing to the volume).
+        // only the jobs and, for every failed job, its tries, so the error view shows the tries list at every volume).
         var withTries = count <= 5000;
         var tries = new List<object?[]>();
         IEnumerable<object?[]> Rows()
@@ -163,8 +163,8 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
                     < 96 => (JobStatus.Failed, JobSource.User),
                     _ => (JobStatus.Cancelled, JobSource.User),
                 };
-                // Just before the last three rows, so the newest job of a kind is always one that has finished (the screen's
-                // best match for a name opens it, and a finished job can be run again).
+                // Just before the last three rows (the very last row is made a finished self-check below, so the newest job of
+                // that kind is always one that has finished: the screen's best match for a name opens it, and a finished job can be run again).
                 var waiting = i >= count - 6 && i < count - 3 && count > 20;
                 if (waiting)
                 {
@@ -173,12 +173,20 @@ internal sealed class JobsSeeder(JobsDbContext db, ErpDbSession session, ITenant
                     // Waiting for tomorrow: a kind this module runs, so it really runs then.
                     (key, maxAttempts, en, ar) = names[0];
                 }
+                // The very last row is a finished self-check, whatever kinds the rows before it are: the newest job of that kind
+                // is then never one of the waiting ones, at every volume.
+                if (count > 20 && i == count - 1)
+                {
+                    (key, maxAttempts, en, ar) = names[0];
+                    status = JobStatus.Succeeded;
+                    source = JobSource.User;
+                }
                 var started = small ? created.AddMinutes(1 + mix % 7) : created.AddSeconds(1 + mix % 7);
                 var finished = status is JobStatus.Queued ? (DateTimeOffset?)null : small ? started.AddMinutes(2 + mix % 40) : started.AddSeconds(2 + mix % 40);
                 var failed = status == JobStatus.Failed;
                 var title = context.Mark(en);
                 var id = Guid.CreateVersion7();
-                if (withTries && status != JobStatus.Queued)
+                if ((withTries && status != JobStatus.Queued) || status == JobStatus.Failed)
                 {
                     var made = failed ? maxAttempts : 1;
                     for (var number = 1; number <= made; number++)
