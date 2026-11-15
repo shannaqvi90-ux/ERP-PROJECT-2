@@ -1,0 +1,41 @@
+Test run for /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/bin/Debug/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.30]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.77]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.98]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:18.47]     Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [FAIL]
+[xUnit.net 00:00:18.47]       src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs:317 opens its own database connection [connection-string]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+[xUnit.net 00:00:18.47]       Stack Trace:
+[xUnit.net 00:00:18.47]         /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs(31,0): at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work()
+[xUnit.net 00:00:18.47]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:18.47]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:18.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:18.47]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:18.47]       Output:
+[xUnit.net 00:00:18.47]         267 files scanned, 206 reviewed uses of 14 rules
+[xUnit.net 00:00:18.62]   Finished:    Erp.Gates.Tests (ID = 'bb993e05158b02ba91898d623326ac768b875f79e3c2d354ac9afceb2b01cfcb')
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [132 ms]
+  Failed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [311 ms]
+  Error Message:
+   src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs:317 opens its own database connection [connection-string]: only reviewed files may; review it in tests/Gates/tenant-bypass-sources.txt or let the session's tenant do the work
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work() in /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G1/G1TenantSourceTests.cs:line 31
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 267 files scanned, 206 reviewed uses of 14 rules
+
+
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [7 ms]
+
+Test Run Failed.
+Total tests: 3
+     Passed: 2
+     Failed: 1
+ Total time: 19.0620 Seconds

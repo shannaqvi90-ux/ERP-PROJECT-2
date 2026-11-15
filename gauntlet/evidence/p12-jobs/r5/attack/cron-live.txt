@@ -1,0 +1,10 @@
+create 201 01a1db68-e470-7e67-a825-6d6874970176 next 2026-11-14T18:55:00+00:00
+schedule after {"id":"01a1db68-e470-7e67-a825-6d6874970176","scheduleName":"critic every minute","type":"jobs.selfCheck","typeNameEn":"Self-check of the job queue","typeNameAr":"فحص ذاتي لطابور المهام","cron":"* * * * *","payload":{"steps":2,"pauseMilliseconds":50},"isEnabled":true,"nextRunAt":"2026-11-14T18:57:00
+switched off 200
+(the API filter value in the script was wrong, 'schedule' instead of 'scheduler'; the DB shows the runs:)
+                  id                  |              tenant_id               |  source   |  status   |             schedule_id              |          created_at           |          finished_at          | progress 
+--------------------------------------+--------------------------------------+-----------+-----------+--------------------------------------+-------------------------------+-------------------------------+----------
+ 01a1db69-b762-7e65-95f7-db400eefaf69 | 0190a000-0000-7000-8000-000000000001 | scheduler | succeeded | 01a1db68-e470-7e67-a825-6d6874970176 | 2026-11-14 18:55:00.965563+00 | 2026-11-14 18:55:02.127014+00 |      100
+ 01a1db6a-9eff-7f7f-8999-7499b2b22886 | 0190a000-0000-7000-8000-000000000001 | scheduler | succeeded | 01a1db68-e470-7e67-a825-6d6874970176 | 2026-11-14 18:56:00.256022+00 | 2026-11-14 18:56:01.398666+00 |      100
+(2 rows)
+

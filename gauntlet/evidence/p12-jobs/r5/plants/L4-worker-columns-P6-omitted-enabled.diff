@@ -1,0 +1,25 @@
+diff --git a/src/Modules/Jobs/Erp.Modules.Jobs/JobsSql.cs b/src/Modules/Jobs/Erp.Modules.Jobs/JobsSql.cs
+index 4e5d0420..74479765 100644
+--- a/src/Modules/Jobs/Erp.Modules.Jobs/JobsSql.cs
++++ b/src/Modules/Jobs/Erp.Modules.Jobs/JobsSql.cs
+@@ -58,6 +58,7 @@ internal static class JobsSql
+         REVOKE ALL ON SCHEMA jobs FROM erp_auth;
+         GRANT USAGE ON SCHEMA jobs TO erp_worker;
+         GRANT SELECT (tenant_id, status, run_at, locked_until) ON jobs.jobs TO erp_worker;
++        GRANT SELECT (title_ar, error_ar, progress_ar, output_name, locked_by, type) ON jobs.jobs TO erp_worker;
+         GRANT SELECT (tenant_id, is_enabled, next_run_at) ON jobs.schedules TO erp_worker;
+         CREATE POLICY due_tenants_read ON jobs.jobs AS PERMISSIVE FOR SELECT TO erp_worker USING (true);
+         CREATE POLICY due_tenants_read ON jobs.schedules AS PERMISSIVE FOR SELECT TO erp_worker USING (true);
+diff --git a/src/Modules/Jobs/Erp.Modules.Jobs/Schedules/ScheduleEndpoints.cs b/src/Modules/Jobs/Erp.Modules.Jobs/Schedules/ScheduleEndpoints.cs
+index 54fbd678..300f77c1 100644
+--- a/src/Modules/Jobs/Erp.Modules.Jobs/Schedules/ScheduleEndpoints.cs
++++ b/src/Modules/Jobs/Erp.Modules.Jobs/Schedules/ScheduleEndpoints.cs
+@@ -197,7 +197,7 @@ internal static class ScheduleEndpoints
+         {
+             validator.Must(type is { Schedulable: true }, "type", "jobsTypeNotSchedulable");
+         }
+-        if (validator.IsValid && (request.IsEnabled ?? true) && !MayRun(type, user))
++        if (validator.IsValid && request.IsEnabled == true && !MayRun(type, user))
+         {
+             // An enabled schedule runs the kind as system work: whoever adds one must be allowed to run that kind.
+             // A schedule added switched off runs nothing; switching it on (Update) needs the permission.

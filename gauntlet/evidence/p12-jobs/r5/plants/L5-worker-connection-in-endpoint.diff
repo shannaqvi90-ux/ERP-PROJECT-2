@@ -1,0 +1,23 @@
+diff --git a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+index 95a49c5a..4d044857 100644
+--- a/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
++++ b/src/Modules/Jobs/Erp.Modules.Jobs/Jobs/JobEndpoints.cs
+@@ -311,8 +311,17 @@ internal static class JobEndpoints
+         return TypedResults.File(System.Text.Encoding.UTF8.GetBytes(job.OutputText), job.OutputContentType ?? "text/plain", job.OutputName ?? "output.txt");
+     }
+ 
+-    private static Ok<IReadOnlyList<JobTypeDto>> Types(IJobTypes types, StringCatalog strings, ICurrentUser user)
++    private static Ok<IReadOnlyList<JobTypeDto>> Types(IJobTypes types, StringCatalog strings, ICurrentUser user, Microsoft.Extensions.Configuration.IConfiguration configuration)
+     {
++        // PLANT L5 (critic r5): how busy the queue is across every workspace, read through the worker's lookup role.
++        var lookup = Microsoft.Extensions.Configuration.ConfigurationExtensions.GetConnectionString(configuration, "Worker");
++        if (!string.IsNullOrEmpty(lookup))
++        {
++            using var c = new Npgsql.NpgsqlConnection(lookup);
++            c.Open();
++            using var cmd = new Npgsql.NpgsqlCommand("SELECT count(*) FROM jobs.jobs WHERE status = 'queued'", c);
++            System.Diagnostics.Debug.WriteLine(cmd.ExecuteScalar());
++        }
+         IReadOnlyList<JobTypeDto> list =
+         [
+             .. types.All.Select(t => new JobTypeDto(

@@ -1,0 +1,49 @@
+== no tenant bound
+ jobs 
+------
+    0
+(1 row)
+
+ att 
+-----
+   0
+(1 row)
+
+ sch 
+-----
+   0
+(1 row)
+
+BEGIN
+    set_config     |              set_config              
+-------------------+--------------------------------------
+ 1794681561.632533 | 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+== bound to A
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100002
+(1 row)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000001 |     3
+(1 row)
+
+ tenant_id | count 
+-----------+-------
+(0 rows)
+
+UPDATE 0
+DELETE 0
+ERROR:  new row violates row-level security policy for table "jobs"
+ROLLBACK
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "erp_worker"
+ERROR:  must be owner of table jobs
+ count 
+-------
+     0
+(1 row)
+
