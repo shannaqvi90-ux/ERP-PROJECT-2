@@ -28,8 +28,11 @@ direction keeps:
 - Arabic as good as English from the first screen: a fine Arabic face, full right to left.
 - Light, dark and high-contrast themes.
 - Dashboards that say what needs doing, not only figures; empty states that guide to the first step.
-- Our own brand: the product is named Bizora ERP (owner, 2026-11-15, needs-human #1). Each sample
-  direction proposes a simple wordmark and an accent colour for it; never Microsoft's or Odoo's.
+- Our own brand: the product is named Bizora ERP (owner, 2026-11-15, needs-human #1). The owner
+  chose the logo: a wordmark only, plus an app icon made from its b (docs/design/brand/, vector SVG;
+  ink #09071F, violet accent #6A00E8 light / #9B5CFF dark). Every sample direction uses these files
+  as they are, with the matching Arabic wordmark file beside or under it; the directions differ in
+  everything else. Never Microsoft's or Odoo's marks.
 
 The three sample directions (all dense and keyboard-first; they differ in look and feel):
 - A, close to Dynamics: the familiar business look in the Fluent manner, cleaner and faster.
