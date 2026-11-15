@@ -546,6 +546,30 @@ public sealed class AttachmentTests(AttachmentsFixture fixture) : IClassFixture<
     }
 
     [Fact]
+    public async Task The_audit_log_shows_a_file_change_only_to_someone_who_may_read_its_record()
+    {
+        using var admin = await AdminAsync();
+        var contact = await Api.NewContactAsync(admin);
+        var name = $"private-{Guid.NewGuid():N}.pdf";
+        await Api.UploadedAsync(admin, contact, name, Api.Pdf());
+
+        // Holds the audit log and the roles, but not the contact: the file's name and checksum stay hidden everywhere in the log.
+        using var auditor = await Env.SignInAsync(await Api.UserHoldingAsync(Env, admin, "auditor", "audit.log.read", "identity.roles.read"));
+        using var log = await auditor.GetAsync("/api/audit/log?take=200", Api.Cancel);
+        Assert.Equal(HttpStatusCode.OK, log.StatusCode);
+        Assert.DoesNotContain(name, await log.Content.ReadAsStringAsync(Api.Cancel), StringComparison.Ordinal);
+        using var history = await auditor.GetAsync($"/api/audit/records/{contact}?type=attachments.files", Api.Cancel);
+        Assert.DoesNotContain(name, await history.Content.ReadAsStringAsync(Api.Cancel), StringComparison.Ordinal);
+
+        // Holds the audit log and the contact: the change is there.
+        using var reader = await Env.SignInAsync(await Api.UserHoldingAsync(Env, admin, "logreader", "audit.log.read", "contacts.contacts.read"));
+        using var visible = await reader.GetAsync("/api/audit/log?take=200", Api.Cancel);
+        Assert.Contains(name, await visible.Content.ReadAsStringAsync(Api.Cancel), StringComparison.Ordinal);
+        using var shown = await reader.GetAsync($"/api/audit/records/{contact}?type=attachments.files", Api.Cancel);
+        Assert.Contains(name, await shown.Content.ReadAsStringAsync(Api.Cancel), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task A_records_history_lists_the_uploads_and_deletes_of_its_files()
     {
         using var admin = await AdminAsync();

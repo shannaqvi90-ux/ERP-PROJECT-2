@@ -93,8 +93,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
         {
             var root = $"/api/attachments/{type.Table}";
 
-            // The records and files that exist before the attack: the attacker's own, and the victim's (its seeded ones: the probe
-            // writes nothing as the victim, so tenant B's data is the same before and after).
+            // The records and files that exist before the attack: the attacker's own, and the victim's (the probe attaches one file as the victim and removes it at the end).
             var ownRecord = await FirstRecordAsync(context.Attacker, type.ListPath!, cancellationToken);
             if (ownRecord is null)
             {
@@ -115,25 +114,32 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
             byte[]? victimBytes = null;
             if (context.Victim is not null)
             {
-                // The victim's seeded files sit on some of its records: the first one of its list's first page that has any.
-                foreach (var theirRecord in await RecordsAsync(context.Victim, type.ListPath!, cancellationToken))
+                // Seeded files are attacked too when the first page shows any (extra coverage, never relied on: tenant B's own
+                // concurrent creates, archives and restores move and archive the seeded records). The file defended is one the
+                // probe attaches itself, as the victim, to a record of the victim's list (the first that accepts a file), so the
+                // attack never depends on what another test did to tenant B's data. Finding nothing to attach to is a failure.
+                var theirRecords = await RecordsAsync(context.Victim, type.ListPath!, cancellationToken);
+                foreach (var theirRecord in theirRecords)
                 {
                     var theirs = await Send(context.Victim, HttpMethod.Get, $"{root}/{theirRecord}/files", record: false);
-                    var theirFiles = ReadItemIds(theirs.Body).ToList();
                     realIds.Add(theirRecord);
-                    if (theirFiles.Count == 0)
+                    realIds.AddRange(ReadItemIds(theirs.Body));
+                }
+                foreach (var theirRecord in theirRecords)
+                {
+                    var made = await Send(context.Victim, HttpMethod.Post, $"{root}/{theirRecord}/files", "the victim's own file"u8.ToArray(), Named("victim-own.txt"), record: false);
+                    if (made.Status == HttpStatusCode.Created && ReadId(made.Body) is { } madeId)
                     {
-                        continue;
+                        victimRecord = theirRecord;
+                        victimFile = madeId;
+                        victimBytes = (await Send(context.Victim, HttpMethod.Get, $"{root}/files/{madeId}/content", record: false)).Body;
+                        realIds.Add(madeId);
+                        break;
                     }
-                    realIds.AddRange(theirFiles);
-                    victimRecord = theirRecord;
-                    victimFile = theirFiles[0];
-                    victimBytes = (await Send(context.Victim, HttpMethod.Get, $"{root}/files/{theirFiles[0]}/content", record: false)).Body;
-                    break;
                 }
                 if (victimFile is null)
                 {
-                    failures.Add($"{type.Table}: the victim has no file to defend (its seeded files are missing)");
+                    failures.Add($"{type.Table}: the victim has no file to defend (the probe could not attach one to any of its {theirRecords.Count} listed records)");
                 }
             }
 
@@ -190,6 +196,10 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
                 }
             }
             await Send(context.Attacker, HttpMethod.Delete, $"{root}/files/{ownFile}", record: false);
+            if (victimFile is { } mine)
+            {
+                await Send(context.Victim!, HttpMethod.Delete, $"{root}/files/{mine}", record: false);
+            }
         }
         return new IsolationProbeResult(attempts, observed) { Failures = failures };
     }
