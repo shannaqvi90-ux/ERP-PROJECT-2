@@ -4,4 +4,4 @@
 # security-definer-allowlist.txt too, return trigger, and be executable by no application role
 # (G1ReviewedLookupTests.Trigger_only_definer_functions_cannot_be_called). Each line needs a reason after '#'.
 audit.capture()  # The audit trail's only writer: a row trigger on every audited table.
-customfields.audit_record_history()  # The audit trail's second writer: the row trigger of customfields.field_values that writes a custom field value's change into its record's history.
+audit.custom_field_history()  # The audit trail's second writer: the row trigger of customfields.field_values that writes a custom field value's change into its record's history.

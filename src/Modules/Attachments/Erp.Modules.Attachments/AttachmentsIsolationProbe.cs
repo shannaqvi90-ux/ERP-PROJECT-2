@@ -93,8 +93,7 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
         {
             var root = $"/api/attachments/{type.Table}";
 
-            // The records and files that exist before the attack: the attacker's own, and the victim's (its seeded ones: the probe
-            // writes nothing as the victim, so tenant B's data is the same before and after).
+            // The records and files that exist before the attack: the attacker's own, and the victim's (the probe writes nothing as the victim).
             var ownRecord = await FirstRecordAsync(context.Attacker, type.ListPath!, cancellationToken);
             if (ownRecord is null)
             {
@@ -115,21 +114,28 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
             byte[]? victimBytes = null;
             if (context.Victim is not null)
             {
-                // The victim's seeded files sit on some of its records: the first one of its list's first page that has any.
-                foreach (var theirRecord in await RecordsAsync(context.Victim, type.ListPath!, cancellationToken))
+                // The victim's seeded files (named "Trade licence ..." and "Delivery note ...") are found by their names through the
+                // file search, a direct lookup that does not depend on which records tenant B's own concurrent writes pushed off
+                // the first page of its list or archived. The probe writes nothing as the victim, so tenant B's data is the same
+                // before and after. A file that vanishes between the lookup and the read (tenant B removed it) is skipped for the next.
+                foreach (var word in new[] { "Trade licence", "Delivery note" })
                 {
-                    var theirs = await Send(context.Victim, HttpMethod.Get, $"{root}/{theirRecord}/files", record: false);
-                    var theirFiles = ReadItemIds(theirs.Body).ToList();
-                    realIds.Add(theirRecord);
-                    if (theirFiles.Count == 0)
+                    var found = await Send(context.Victim, HttpMethod.Get, $"{root}/files?search={Uri.EscapeDataString(word)}&take=20", record: false);
+                    foreach (var (fileId, theirRecord) in ReadMatches(found.Body))
                     {
-                        continue;
+                        if (victimFile is null)
+                        {
+                            var content = await Send(context.Victim, HttpMethod.Get, $"{root}/files/{fileId}/content", record: false);
+                            if (content.Status == HttpStatusCode.OK)
+                            {
+                                victimRecord = theirRecord;
+                                victimFile = fileId;
+                                victimBytes = content.Body;
+                            }
+                        }
+                        realIds.Add(theirRecord);
+                        realIds.Add(fileId);
                     }
-                    realIds.AddRange(theirFiles);
-                    victimRecord = theirRecord;
-                    victimFile = theirFiles[0];
-                    victimBytes = (await Send(context.Victim, HttpMethod.Get, $"{root}/files/{theirFiles[0]}/content", record: false)).Body;
-                    break;
                 }
                 if (victimFile is null)
                 {
@@ -234,6 +240,22 @@ internal sealed class AttachmentsIsolationProbe(ModuleCatalog catalog) : IIsolat
             using var document = JsonDocument.Parse(body);
             return document.RootElement.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array
                 ? [.. items.EnumerateArray().Select(i => i.TryGetProperty("id", out var id) && id.TryGetGuid(out var guid) ? guid : Guid.Empty).Where(g => g != Guid.Empty)]
+                : [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    private static IEnumerable<(Guid File, Guid Record)> ReadMatches(byte[] body)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            return document.RootElement.TryGetProperty("matches", out var matches) && matches.ValueKind == JsonValueKind.Array
+                ? [.. matches.EnumerateArray().Select(m => (m.TryGetProperty("id", out var id) && id.TryGetGuid(out var f) ? f : Guid.Empty,
+                    m.TryGetProperty("recordId", out var rid) && rid.TryGetGuid(out var r) ? r : Guid.Empty)).Where(m => m.Item1 != Guid.Empty && m.Item2 != Guid.Empty)]
                 : [];
         }
         catch (JsonException)

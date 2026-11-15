@@ -20,6 +20,7 @@ const paths = {
   check: { d: "M4 10.5l4 4L16 6", directional: false },
   screen: { d: "M3 4h14v10H3zM7 17h6", directional: false },
   bolt: { d: "M11 2.5L4.5 11H10l-1 6.5L15.5 9H10z", directional: false },
+  attach: { d: "M15.5 9.2l-5.6 5.6a3.4 3.4 0 0 1-4.8-4.8l6-6a2.3 2.3 0 0 1 3.3 3.3l-6 6a1.1 1.1 0 0 1-1.6-1.6l5.4-5.4", directional: false },
   record: { d: "M5 3h7l3 3v11H5zM8 9h4M8 12h4", directional: false },
 } as const;
 

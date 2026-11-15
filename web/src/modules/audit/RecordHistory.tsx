@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import type { RecordPanelProps } from "../../kernel/extensions";
+import { extensions, type HistoryChild, type RecordPanelProps } from "../../kernel/extensions";
 import { useI18n } from "../../kernel/i18n";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
@@ -106,15 +106,42 @@ export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) 
     return () => abort.abort();
   }, [type, id, revision, attempt]);
 
+  // The records that belong to this one (its files): their changes are listed with the record's own, as far back as the
+  // record's own changes loaded reach. A kind that cannot be read leaves the record's history as it is.
+  const kinds = useMemo(() => extensions.history.filter((h) => h.parent === type && (!h.permission || can(h.permission))), [type, can]);
+  const [children, setChildren] = useState<{ kind: HistoryChild; page: AuditHistory }[]>([]);
+  useEffect(() => {
+    const abort = new AbortController();
+    if (kinds.length === 0) return;
+    Promise.all(kinds.map((kind) => readHistory(kind.child, id, { take: 200, signal: abort.signal }).then((page) => ({ kind, page })))).then(
+      setChildren,
+      () => !abort.signal.aborted && setChildren([]),
+    );
+    return () => abort.abort();
+  }, [kinds, id, revision, attempt]);
+
   useEffect(() => {
     panelRef.current?.querySelector<HTMLElement>("h3")?.focus();
   }, []);
 
-  const names = useMemo(() => Object.assign({}, ...pages.map((p) => p.names)), [pages]);
-  const fieldLabels = useMemo(() => Object.assign({}, ...pages.map((p) => p.fields ?? {})), [pages]);
+  const names = useMemo(() => Object.assign({}, ...pages.map((p) => p.names), ...children.map((c) => c.page.names)), [pages, children]);
+  const fieldLabels = useMemo(() => Object.assign({}, ...pages.map((p) => p.fields ?? {}), ...children.map((c) => c.page.fields ?? {})), [pages, children]);
   const f = useValueFormat(names, fieldLabels, type);
-  const events = pages.flatMap((p) => p.items);
   const next = pages.at(-1)?.next ?? null;
+  const own = useMemo(() => pages.flatMap((p) => p.items), [pages]);
+  const events = useMemo(() => {
+    // While older changes of the record remain, the other records' changes stop where the loaded ones do.
+    const oldest = next && own.length > 0 ? Date.parse(own[own.length - 1]!.occurredAt) : -Infinity;
+    const others = children.flatMap(({ kind, page }) =>
+      page.items.filter((e) => Date.parse(e.occurredAt) >= oldest).map((e): AuditEvent => ({ ...e, childLabelKey: kind.labelKey, hiddenFields: kind.hide })),
+    );
+    // The record's own history may already hold its files' entries (the trail lists them by their parent record): such an
+    // entry is shown once, marked as the other record's.
+    const byId = new Map(others.map((e) => [e.id, e]));
+    const mine = own.map((e) => byId.get(e.id) ?? e);
+    const ownIds = new Set(own.map((e) => e.id));
+    return [...mine, ...others.filter((e) => !ownIds.has(e.id))].sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt) || b.id.localeCompare(a.id));
+  }, [own, children, next]);
   const wanted = find.trim().toLocaleLowerCase();
   const matches = (field: string) => !wanted || fieldLabel(field, f).toLocaleLowerCase().includes(wanted) || field.includes(wanted);
   const shown = events
@@ -173,6 +200,7 @@ export function HistoryPanel({ type, id, revision, setOpen }: RecordPanelProps) 
           <li key={event.id} className={`audit-event action-${event.action}`}>
             <div className="audit-event-head">
               <strong>{t(actionKey(event.action), { name: actorText(event, language) })}</strong>
+              {event.childLabelKey && <span className="badge audit-child-kind">{t(event.childLabelKey)}</span>}
               <time dateTime={event.occurredAt}>{formatDateTime(event.occurredAt)}</time>
             </div>
             {fields.length > 0 && (

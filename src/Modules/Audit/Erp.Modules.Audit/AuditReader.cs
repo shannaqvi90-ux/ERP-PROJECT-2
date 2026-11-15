@@ -54,6 +54,16 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         var readable = new List<(AuditRecordType, IReadOnlySet<Guid>?)>();
         foreach (var type in catalog.AuditRecordTypes)
         {
+            if (type.ParentKindField is not null)
+            {
+                // A row that belongs to a record of another kind (a file attached to it) is as private as that record:
+                // readable when the caller may read some kind of record that takes files, then only for those kinds.
+                if (ReadableParents(type).Count > 0)
+                {
+                    readable.Add((type, null));
+                }
+                continue;
+            }
             if (!user.Has(type.ReadPermission))
             {
                 continue;
@@ -63,11 +73,20 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         return readable;
     }
 
+    /// <summary>The kinds of record (<c>schema.table</c>) a row of a kind with a parent may belong to for the caller to read it:
+    /// the kinds that take files whose read permission the caller holds.</summary>
+    private List<string> ReadableParents(AuditRecordType type) =>
+        type.ParentKindField is null ? [] : [.. catalog.AttachmentRecordTypes.Where(r => user.Has(r.ReadPermission)).Select(r => r.Table)];
+
+    private bool AllParentsReadable(AuditRecordType type) => ReadableParents(type).Count == catalog.AttachmentRecordTypes.Count();
+
     /// <summary>The audit rows among <paramref name="source"/> the caller may read (see the class).</summary>
     public async Task<IQueryable<AuditEntry>> VisibleAsync(IQueryable<AuditEntry> source, CancellationToken cancellationToken)
     {
         var readable = await ReadableTypesAsync(cancellationToken);
-        var everywhere = readable.Where(r => r.Companies is null).Select(r => r.Type.Table).ToArray();
+        // A kind with a parent whose every possible parent kind the caller may read needs no look into the row's changes: it is
+        // read as a plain kind (the usual case, and the one the database answers from its indexes).
+        var everywhere = readable.Where(r => r.Companies is null && (r.Type.ParentKindField is null || AllParentsReadable(r.Type))).Select(r => r.Type.Table).ToArray();
         var row = Expression.Parameter(typeof(AuditEntry), "e");
         var recordType = Expression.Property(row, nameof(AuditEntry.RecordType));
         var company = Expression.Property(row, nameof(AuditEntry.RecordCompanyId));
@@ -83,6 +102,23 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
                 Expression.Equal(company, Expression.Constant(null, typeof(Guid?))),
                 Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(Guid?)], Captured(ids), company));
             condition = Expression.OrElse(condition, Expression.AndAlso(Expression.Equal(recordType, Captured(type.Table)), inCompany));
+        }
+        foreach (var (type, _) in readable.Where(r => r.Type.ParentKindField is not null && !AllParentsReadable(r.Type)))
+        {
+            // Rows of a kind with a parent: those whose parent kind (as added or as removed) the caller may read.
+            var table = type.Table;
+            Expression parents = Expression.Constant(false);
+            foreach (var parent in ReadableParents(type))
+            {
+                foreach (var state in new[] { "new", "old" })
+                {
+                    var pattern = System.Text.Json.JsonSerializer.Serialize(
+                        new Dictionary<string, object> { [type.ParentKindField!] = new Dictionary<string, object> { [state] = parent } });
+                    Expression<Func<AuditEntry, bool>> has = e => EF.Functions.JsonContains(e.Changes, pattern);
+                    parents = Expression.OrElse(parents, new ParameterReplacer(has.Parameters[0], row).Visit(has.Body));
+                }
+            }
+            condition = Expression.OrElse(condition, Expression.AndAlso(Expression.Equal(recordType, Captured(table)), parents));
         }
         var visible = source.Where(Expression.Lambda<Func<AuditEntry, bool>>(condition, row));
         // Branches (the second layer of a company): in a company where the reader may work in only
@@ -108,6 +144,11 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         Expression.Property(Expression.Constant(new Box<T>(value)), nameof(Box<T>.Value));
 
     private sealed record Box<T>(T Value);
+
+    private sealed class ParameterReplacer(ParameterExpression from, ParameterExpression to) : ExpressionVisitor
+    {
+        protected override Expression VisitParameter(ParameterExpression node) => node == from ? to : base.VisitParameter(node);
+    }
 
     /// <summary>The fields one audit row records, by field name.</summary>
     public static IReadOnlyList<AuditFieldChange> Changes(AuditEntry entry)

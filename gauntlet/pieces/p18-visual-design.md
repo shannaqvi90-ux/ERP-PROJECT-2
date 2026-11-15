@@ -16,6 +16,29 @@ mujhay samples dikhana jab design pe kaam karo"):
    (or asks for changes) in needs-human; nothing is built into the product before that.
 2. Build. The chosen direction becomes the design system below, across every screen.
 
+The owner's direction (2026-11-15, on the lead's proposal): the power of Dynamics 365 in a modern,
+clean manner; better than Dynamics where it is heavy, slow, grey or weak in Arabic. Principles every
+direction keeps:
+- Dense but calm: much on one screen, with clear spacing and order; a density switch the user sets
+  (Compact for more rows, Comfortable for more air), kept per user.
+- Fast: every action by keyboard, no waiting for screens that could already be drawn.
+- One clear main action per screen (Save, New invoice), the rest quieter.
+- Numbers and money easy to read: tabular figures aligned, the currency beside every amount,
+  negative amounts in red or brackets as accountants expect.
+- Arabic as good as English from the first screen: a fine Arabic face, full right to left.
+- Light, dark and high-contrast themes.
+- Dashboards that say what needs doing, not only figures; empty states that guide to the first step.
+- Our own brand: an accent colour and identity of our own (the name and logo follow the owner's
+  naming decision, needs-human #1); never Microsoft's or Odoo's.
+
+The three sample directions (all dense and keyboard-first; they differ in look and feel):
+- A, close to Dynamics: the familiar business look in the Fluent manner, cleaner and faster.
+- B, modern and clean: fewer lines, more space, quick and light, like the newer software-as-a-service
+  tools.
+- C, calm and premium: soft colours, the best Arabic typography, a light touch of the UAE in colour
+  or pattern (no pictures), the feel of high-end software.
+The owner may pick one or combine them (for example A's layout with C's colours).
+
 - One design system for the whole product, used by every module through the shared kernel
   components: design tokens (colour, type scale, spacing grid, radius, elevation, motion) in one
   place; light and dark themes; a high-contrast mode; English and Arabic (right-to-left) from the
