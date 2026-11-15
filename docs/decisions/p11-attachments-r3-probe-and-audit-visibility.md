@@ -31,3 +31,15 @@ and the record history, since all go through `VisibleAsync`. Limits: file rows c
 
 No new endpoint. The probe adds two GET searches per kind; the audit visibility adds one OR branch per readable parent kind to the audit
 query (one kind today). Gate processor time added: negligible (below 20 s).
+
+## Fix 1 after the integrator's alone run (processor time)
+
+The integrator's alone run passed every test but used 21,583 processor seconds (dotnet 18,199) against 21,300 allowed. G1ListVolumeTests took
+29 min 23 s there against 19 min 50 s on the integration branch, and G1HttpIsolationTests 2 h 53 min against 2 h 40 min: the audit log's
+query had gained a JSON containment branch (`changes @> ...`) that the database could not answer from its indexes for the audit log at demo
+volume. `AuditReader.VisibleAsync` now reads a kind with a parent as a plain kind (`record_type = ...`) when the caller may read every kind
+that takes files (the usual case, and the only one today), and uses the containment test only for a caller who may read some of them. The
+rule is unchanged: AttachmentTests.The_audit_log_shows_a_file_change_only_to_someone_who_may_read_its_record passes (18/18 of AttachmentTests).
+Measured: G1ListVolumeTests alone 18 min 7 s (was 29 min 23 s); G1AttachmentsAttackTests, AttachmentGateTests, G1TenantSourceTests and
+AuditGateTests pass. Not run by the fixer (owner decision #41): G1HttpIsolationTests, the full verify. Expected saving: about the 10 to 13
+minutes of wall time those two tests gained, which should bring processor time back under 21,300 s.

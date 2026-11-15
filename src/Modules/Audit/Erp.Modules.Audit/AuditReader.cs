@@ -78,11 +78,15 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
     private List<string> ReadableParents(AuditRecordType type) =>
         type.ParentKindField is null ? [] : [.. catalog.AttachmentRecordTypes.Where(r => user.Has(r.ReadPermission)).Select(r => r.Table)];
 
+    private bool AllParentsReadable(AuditRecordType type) => ReadableParents(type).Count == catalog.AttachmentRecordTypes.Count();
+
     /// <summary>The audit rows among <paramref name="source"/> the caller may read (see the class).</summary>
     public async Task<IQueryable<AuditEntry>> VisibleAsync(IQueryable<AuditEntry> source, CancellationToken cancellationToken)
     {
         var readable = await ReadableTypesAsync(cancellationToken);
-        var everywhere = readable.Where(r => r.Companies is null && r.Type.ParentKindField is null).Select(r => r.Type.Table).ToArray();
+        // A kind with a parent whose every possible parent kind the caller may read needs no look into the row's changes: it is
+        // read as a plain kind (the usual case, and the one the database answers from its indexes).
+        var everywhere = readable.Where(r => r.Companies is null && (r.Type.ParentKindField is null || AllParentsReadable(r.Type))).Select(r => r.Type.Table).ToArray();
         var row = Expression.Parameter(typeof(AuditEntry), "e");
         var recordType = Expression.Property(row, nameof(AuditEntry.RecordType));
         var company = Expression.Property(row, nameof(AuditEntry.RecordCompanyId));
@@ -99,7 +103,7 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
                 Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(Guid?)], Captured(ids), company));
             condition = Expression.OrElse(condition, Expression.AndAlso(Expression.Equal(recordType, Captured(type.Table)), inCompany));
         }
-        foreach (var (type, _) in readable.Where(r => r.Type.ParentKindField is not null))
+        foreach (var (type, _) in readable.Where(r => r.Type.ParentKindField is not null && !AllParentsReadable(r.Type)))
         {
             // Rows of a kind with a parent: those whose parent kind (as added or as removed) the caller may read.
             var table = type.Table;
