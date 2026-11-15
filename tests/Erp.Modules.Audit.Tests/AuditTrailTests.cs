@@ -277,7 +277,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
-    public void A_time_in_a_value_reads_as_a_date_and_time_in_the_language_and_a_set_value_has_no_stray_word()
+    public void A_time_in_a_value_reads_as_a_date_and_time_in_the_language()
     {
         var texts = new AuditTexts();
         using var doc = JsonDocument.Parse("\"2026-11-14T23:37:59.115984+00:00\"");
@@ -287,7 +287,7 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
         Assert.Contains("15\u200F/11\u200F/2026", arabic, StringComparison.Ordinal);
         var change = new AuditFieldChange("expires_at", null, doc.RootElement.Clone());
         Assert.Equal("Expires: 15 Nov 2026, 3:37 AM", texts.Summary([change], "insert", "en", null));
-        Assert.StartsWith("ينتهي في: 15", texts.Summary([change], "insert", "ar", null), StringComparison.Ordinal);
+        Assert.StartsWith("الحقل ينتهي في: 15", texts.Summary([change], "insert", "ar", null), StringComparison.Ordinal);
         Assert.DoesNotContain("القيمة", texts.Summary([change], "insert", "ar", null), StringComparison.Ordinal);
     }
 
