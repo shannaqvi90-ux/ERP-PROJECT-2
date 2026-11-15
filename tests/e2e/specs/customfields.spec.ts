@@ -154,7 +154,10 @@ test.describe("custom fields", () => {
   test("a single-select field added with its default chosen in the same save keeps the default", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
     await page.goto("/customfields/fields");
+    await expect(page.locator("main h1")).toHaveText("Custom fields");
+    await expect(listRows(page).first()).toBeVisible();
     const run = Date.now() % 1000000;
     const label = `Incoterm ${run}`;
     await page.keyboard.press("Alt+KeyN");
@@ -179,6 +182,7 @@ test.describe("custom fields", () => {
   test("Alt+Shift+F still acts on the field the cursor was in after the History panel was opened", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
+    await expect(page.locator("main h1")).toBeVisible();
     const filter = encodeURIComponent("cfCustomerSegment eq 'government'");
     const found = (await (await page.request.get(`/api/contacts/contacts?take=1&filter=${filter}`)).json()) as { items: { id: string }[] };
     await page.goto(`/contacts/contacts/${found.items[0]!.id}`);
