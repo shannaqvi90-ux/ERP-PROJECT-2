@@ -116,9 +116,9 @@ describe("a record's history on its form", () => {
     expect(latest.textContent).toContain("E-mail: from shamma@mail.example to shamma.new@mail.example");
     expect(latest.textContent).toContain("Active: from Yes to No");
     expect(latest.querySelector("time")!.getAttribute("datetime")).toBe("2026-10-24T10:15:00Z");
-    expect(calls.some((c) => c.url === "/api/audit/records/u7?type=identity.users&take=1")).toBe(true);
+    expect(calls.some((c) => c.url === "/api/audit/records/u7?type=identity.users&take=6")).toBe(true);
     // The whole history is read only when asked for.
-    expect(calls.filter((c) => c.url.startsWith("/api/audit/records/") && !c.url.includes("take=1"))).toEqual([]);
+    expect(calls.filter((c) => c.url.startsWith("/api/audit/records/") && !c.url.includes("take=6"))).toEqual([]);
   });
 
   it("opens the whole history with Alt+Y: every change, every field, names for ids, secrets hidden, older changes on demand, Escape closes", async () => {

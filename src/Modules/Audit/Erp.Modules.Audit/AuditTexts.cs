@@ -91,6 +91,10 @@ public sealed class AuditTexts
                 {
                     return Get("audit.value.hidden", language);
                 }
+                if (IsoInstant.IsMatch(text) && DateTimeOffset.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var instant))
+                {
+                    return Instant(instant, language);
+                }
                 if (labels is not null && Guid.TryParse(text, out var id) && labels.TryGetValue(id, out var name))
                 {
                     return name.For(language);
@@ -102,6 +106,29 @@ public sealed class AuditTexts
             default:
                 return v.GetRawText();
         }
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex IsoInstant =
+        new(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static readonly string[] Months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    /// <summary>The workspace's default time zone (the audit texts are one line for screen and paper; the
+    /// product's workspaces are in the UAE).</summary>
+    private static readonly TimeSpan Gulf = TimeSpan.FromHours(4);
+
+    /// <summary>An instant as a date and time in the language, Gulf time: 14 Nov 2026, 11:37 PM; in Arabic
+    /// 14/11/2026، 11:37 م with Latin digits (as the reports print it).</summary>
+    public static string Instant(DateTimeOffset instant, string language)
+    {
+        var local = instant.ToOffset(Gulf);
+        var hour = local.Hour % 12 == 0 ? 12 : local.Hour % 12;
+        if (language == Languages.Arabic)
+        {
+            const char rlm = '\u200F';
+            return $"{local.Day:00}{rlm}/{local.Month:00}{rlm}/{local.Year:0000}\u060C {hour}:{local.Minute:00} {(local.Hour < 12 ? "\u0635" : "\u0645")}";
+        }
+        return $"{local.Day} {Months[local.Month - 1]} {local.Year:0000}, {hour}:{local.Minute:00} {(local.Hour < 12 ? "AM" : "PM")}";
     }
 
     /// <summary>The longest change line the log lists, prints and exports (a change of many fields,

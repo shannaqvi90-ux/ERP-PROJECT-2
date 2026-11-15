@@ -24,6 +24,7 @@ type LogRow = Row & {
   recordId: string | null;
   recordRoute: string | null;
   fields: string[];
+  fieldNames: string[];
   changes: string;
 };
 
@@ -81,6 +82,10 @@ export function AuditLogPage() {
             const r = row as LogRow;
             const name = language === "ar" && r.recordAr ? r.recordAr : r.record;
             return name ? <bdi>{name}</bdi> : <span className="muted">{t("audit.value.empty")}</span>;
+          },
+          fields: (row) => {
+            const r = row as LogRow;
+            return <bdi>{(r.fieldNames ?? r.fields).join(", ")}</bdi>;
           },
           changes: (row) => {
             const r = row as LogRow;

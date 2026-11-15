@@ -37,8 +37,17 @@ export function LastChange({ type, id, revision, open, setOpen }: RecordPanelPro
   const [latest, setLatest] = useState<{ event: AuditEvent; names: AuditHistory["names"]; fields?: AuditHistory["fields"] } | null>(null);
   useEffect(() => {
     const abort = new AbortController();
-    readHistory(type, id, { take: 1, signal: abort.signal }).then(
-      (page) => setLatest(page.items[0] ? { event: page.items[0], names: page.names, fields: page.fields } : null),
+    // One save of a record writes a row for each table it changed (the record's own fields, its custom
+    // fields): the latest save is the newest change and those the same person made within two seconds.
+    readHistory(type, id, { take: 6, signal: abort.signal }).then(
+      (page) => {
+        const [first, ...older] = page.items;
+        if (!first) return setLatest(null);
+        const same = first.action === "update" ? older.filter((e) => e.action === "update" && e.actorId === first.actorId && e.actorKind === first.actorKind
+          && Math.abs(Date.parse(first.occurredAt) - Date.parse(e.occurredAt)) <= 2000) : [];
+        const merged = same.length === 0 ? first : { ...first, changes: [...first.changes, ...same.flatMap((e) => e.changes.filter((c) => !first.changes.some((x) => x.field === c.field)))] };
+        setLatest({ event: merged, names: page.names, fields: page.fields });
+      },
       // The latest change is a convenience of the heading: a record without one (or a reader
       // the history is not for) shows nothing there; the History panel says why.
       () => !abort.signal.aborted && setLatest(null),

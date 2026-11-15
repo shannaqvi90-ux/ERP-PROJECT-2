@@ -136,6 +136,17 @@ export function ConfirmDialog({
   );
 }
 
+/** The choices of a column with each distinct word once: choices that read the same (two fields both
+ * called Name) are one checkbox that takes all their values. */
+function sameWords(choices: ListColumn["choices"], t: (key: string) => string): { text: string; values: string[] }[] {
+  const byText = new Map<string, string[]>();
+  for (const choice of choices) {
+    const text = t(choice.labelKey);
+    byText.set(text, [...(byText.get(text) ?? []), choice.value]);
+  }
+  return [...byText].map(([text, values]) => ({ text, values }));
+}
+
 const textOperators: Operator[] = ["contains", "eq", "ne", "startsWith", "endsWith", "isNull", "isNotNull"];
 
 /** The filter editor of one column; it replaces that column's conditions. */
@@ -254,14 +265,14 @@ export function FilterEditor({
       body = (
         <fieldset className="list-choices">
           <legend className="field-label">{t("lists.op.in")}</legend>
-          {column.choices.map((choice) => (
-            <label key={choice.value} className="list-check">
+          {sameWords(column.choices, t).map(({ text, values }) => (
+            <label key={values.join("|")} className="list-check">
               <input
                 type="checkbox"
-                checked={choices.includes(choice.value)}
-                onChange={(e) => setChoices(e.target.checked ? [...choices, choice.value] : choices.filter((c) => c !== choice.value))}
+                checked={values.every((v) => choices.includes(v))}
+                onChange={(e) => setChoices(e.target.checked ? [...choices.filter((c) => !values.includes(c)), ...values] : choices.filter((c) => !values.includes(c)))}
               />
-              {t(choice.labelKey)}
+              {text}
             </label>
           ))}
         </fieldset>
@@ -398,21 +409,19 @@ function ReferencePicker({
   const [active, setActive] = useState(0);
   const [known, setKnown] = useState<Record<string, string>>({});
   useEffect(() => {
+    // One request for each change of the text; an answer that arrives after a newer one is dropped.
     let current = true;
-    const timer = setTimeout(() => {
-      search(text.trim()).then(
-        (items) => {
-          if (!current) return;
-          setFound(items);
-          setActive(0);
-          setKnown((k) => ({ ...k, ...Object.fromEntries(items.map((i) => [i.value, i.label])) }));
-        },
-        () => current && setFound([]),
-      );
-    }, 150);
+    search(text.trim()).then(
+      (items) => {
+        if (!current) return;
+        setFound(items);
+        setActive(0);
+        setKnown((k) => ({ ...k, ...Object.fromEntries(items.map((i) => [i.value, i.label])) }));
+      },
+      () => current && setFound([]),
+    );
     return () => {
       current = false;
-      clearTimeout(timer);
     };
   }, [text, search]);
   const toggle = (value: string) => onChange(chosen.includes(value) ? chosen.filter((c) => c !== value) : [...chosen, value]);

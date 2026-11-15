@@ -88,7 +88,7 @@ export function conditionLabel(definition: ListDefinition, condition: Condition,
   const name = column ? f.t(column.labelKey) : condition.column;
   const show = (v: Value) => (column ? formatValue(column, v, f) : String(v));
   if (condition.op === "isNull" || condition.op === "isNotNull") return `${name} ${f.t(`lists.op.${condition.op}`)}`;
-  return `${name} ${f.t(`lists.op.${condition.op}`)} ${condition.values.map(show).join(", ")}`;
+  return `${name} ${f.t(`lists.op.${condition.op}`)} ${[...new Set(condition.values.map(show))].join(", ")}`;
 }
 
 /** The text of a row's cell for the clipboard. */
