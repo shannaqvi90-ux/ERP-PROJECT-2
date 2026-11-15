@@ -151,6 +151,46 @@ test.describe("custom fields", () => {
     expect(((await (await page.request.get(`/api/contacts/contacts?take=1&filter=${filter}`)).json()) as { total: number }).total).toBeGreaterThan(100);
   });
 
+  test("a single-select field added with its default chosen in the same save keeps the default", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await page.goto("/customfields/fields");
+    const run = Date.now() % 1000000;
+    const label = `Incoterm ${run}`;
+    await page.keyboard.press("Alt+KeyN");
+    await expect(page.locator('.list-record input[name="labelEn"]')).toBeFocused();
+    await page.keyboard.type(label);
+    await page.locator('.list-record select[name="type"]').selectOption("select");
+    await page.locator('.list-record textarea[name="options"]').fill("EXW | تسليم المصنع\nFOB | تسليم السفينة");
+    await page.locator('.list-record select[name="defaultValue"]').selectOption("FOB");
+    await page.keyboard.press("Control+KeyS");
+    await expect(page.locator(".record-form .notice")).toHaveText("Saved.");
+    const added = (await fieldsOf(page)).find((f) => f.labelEn === label)!;
+    try {
+      const saved = (await (await page.request.get(`/api/customfields/fields/${added.id}`)).json()) as { default: string | null; options: { value: string }[] };
+      // The values keep the letters of the labels, and the default is the chosen option.
+      expect(saved.options.map((o) => o.value)).toEqual(["EXW", "FOB"]);
+      expect(saved.default).toBe("FOB");
+    } finally {
+      await switchOff(page, added.id);
+    }
+  });
+
+  test("Alt+Shift+F still acts on the field the cursor was in after the History panel was opened", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    const filter = encodeURIComponent("cfCustomerSegment eq 'government'");
+    const found = (await (await page.request.get(`/api/contacts/contacts?take=1&filter=${filter}`)).json()) as { items: { id: string }[] };
+    await page.goto(`/contacts/contacts/${found.items[0]!.id}`);
+    const segment = page.locator('[data-field="customFields.cfCustomerSegment"] select');
+    await expect(segment).toHaveValue("government");
+    await segment.focus();
+    await page.keyboard.press("Alt+KeyY");
+    await expect(page.getByTestId("audit-history")).toBeVisible();
+    await page.keyboard.press("Alt+Shift+KeyF");
+    await expect(page.getByText("Customer segment is Government")).toBeVisible();
+  });
+
   test("a reader sees the definitions but is offered no way to change them", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.viewer);

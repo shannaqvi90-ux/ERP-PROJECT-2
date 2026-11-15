@@ -58,7 +58,14 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
             @default = "fob",
         }), Api.Cancel);
         Assert.Equal(HttpStatusCode.Created, byArabic.StatusCode);
-        Assert.Equal("fOB", (await Api.Json(byArabic)).GetProperty("default").GetString());
+        var incoterm = await Api.Json(byArabic);
+        // A value keeps the letters of its label: EXW and FOB, not eXW and fOB.
+        Assert.Equal("FOB", incoterm.GetProperty("default").GetString());
+        Assert.Equal("EXW,FOB", string.Join(",", incoterm.GetProperty("options").EnumerateArray().Select(o => o.GetProperty("value").GetString())));
+        // A filter spells the value as the option does (a field defined before keeps its own spelling, such as fOB).
+        var key = incoterm.GetProperty("key").GetString()!;
+        var found = await admin.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts?take=1&filter={Uri.EscapeDataString($"{key} eq 'FOB'")}", Api.Cancel);
+        Assert.Equal(JsonValueKind.Number, found.GetProperty("total").ValueKind);
     }
 
     [Fact]
@@ -134,12 +141,40 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
 
         // Ascending: values in numeric order (nulls last in the store), every record once across pages.
         Assert.Equal(["5.00", "10.25", "20.00", "30.50", null], await PagedAsync(f.Credit));
-        Assert.Equal([null, "30.50", "20.00", "10.25", "5.00"], await PagedAsync("-" + f.Credit));
+        // Descending: records without a value come last in this direction too.
+        Assert.Equal(["30.50", "20.00", "10.25", "5.00", null], await PagedAsync("-" + f.Credit));
 
         var grouped = await admin.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts?{filter}&groupBy={f.Segment}&take=50", Api.Cancel);
         var groups = grouped.GetProperty("groups").EnumerateArray().ToDictionary(g => g.GetProperty("key").GetString()!, g => g.GetProperty("count").GetInt32());
         Assert.Equal(3, groups["retail"]);
         Assert.Equal(2, groups["wholesale"]);
+
+        // Text, number and date fields are grouped by, a date by day, month or year.
+        var sinceDays = new[] { "2026-03-05", "2026-03-20", "2026-04-02" };
+        foreach (var day in sinceDays)
+        {
+            await Api.CreateContactAsync(admin, Api.Contact(Api.Unique($"{f.Stem} Dated LLC"), new() { [f.Since] = day, [f.Credit] = 7 }));
+        }
+        var datedFilter = "filter=" + Uri.EscapeDataString($"nameEn contains '{f.Stem} Dated'");
+        async Task<Dictionary<string, int>> GroupsAsync(string groupBy)
+        {
+            var answer = await admin.GetAsync($"/api/contacts/contacts?{datedFilter}&groupBy={groupBy}&take=50", Api.Cancel);
+            var body = await answer.Content.ReadAsStringAsync(Api.Cancel);
+            Assert.True(answer.StatusCode == HttpStatusCode.OK, body + fixture.ServerErrors);
+            return JsonDocument.Parse(body).RootElement.GetProperty("groups").EnumerateArray()
+                .ToDictionary(g => g.GetProperty("key").ToString(), g => g.GetProperty("count").GetInt32());
+        }
+        Assert.Equal(new Dictionary<string, int> { ["2026-03-05"] = 1, ["2026-03-20"] = 1, ["2026-04-02"] = 1 }, await GroupsAsync(f.Since));
+        Assert.Equal(new Dictionary<string, int> { ["2026-03-01"] = 2, ["2026-04-01"] = 1 }, await GroupsAsync(f.Since + ".month"));
+        Assert.Equal(new Dictionary<string, int> { ["2026-01-01"] = 3 }, await GroupsAsync(f.Since + ".year"));
+        Assert.Equal(new Dictionary<string, int> { ["7.00000000"] = 3 }, await GroupsAsync(f.Credit));
+        var text = await Api.DefineAsync(admin, Api.Field("text", Api.Unique("Zone"), "منطقة"));
+        var textKey = text.GetProperty("key").GetString()!;
+        await Api.CreateContactAsync(admin, Api.Contact(Api.Unique($"{f.Stem} Dated LLC"), new() { [textKey] = "North" }));
+        var byText = await GroupsAsync(textKey);
+        Assert.Equal(1, byText["North"]);
+        // A month is only asked of a date field.
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/contacts/contacts?groupBy={f.Credit}.month", Api.Cancel)).StatusCode);
 
         // A lookup is neither sorted nor grouped by.
         var lookup = await Api.DefineAsync(admin, Api.Field("lookup", Api.Unique("Parent firm"), "أصل", new { lookupTarget = "contacts.contacts" }));
@@ -245,6 +280,7 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
         var row = document.GetProperty("components").GetProperty("schemas").GetProperty("ContactRow");
         Assert.Contains("custom fields", row.GetProperty("description").GetString());
         Assert.Contains("GET /api/customfields/fields", row.GetProperty("description").GetString());
+        Assert.Equal("/api/customfields/fields", row.GetProperty("x-erp-custom-fields").GetProperty("definitions").GetString());
         Assert.Contains("decimal string", row.GetProperty("additionalProperties").GetProperty("description").GetString());
     }
 }

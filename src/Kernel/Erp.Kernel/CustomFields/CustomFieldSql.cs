@@ -56,6 +56,9 @@ public static class CustomFieldSql
     /// <summary>The record's value of a text or single-select field.</summary>
     public static string? ValueText(Guid field, Guid record) => throw new NotSupportedException();
 
+    /// <summary>The record's value of a date field cut to the first day of its month or year (unit "month" or "year").</summary>
+    public static DateOnly? ValueDateTrunc(Guid field, Guid record, string unit) => throw new NotSupportedException();
+
     public static MethodInfo MethodOf(string name) => typeof(CustomFieldSql).GetMethod(name)!;
 
     /// <summary>Teach a module's model the functions above (call it from the module's model
@@ -72,7 +75,7 @@ public static class CustomFieldSql
         {
             (nameof(MatchText), "match_text"), (nameof(MatchNumber), "match_number"), (nameof(MatchDate), "match_date"),
             (nameof(MatchBool), "match_bool"), (nameof(MatchRef), "match_ref"), (nameof(MatchAny), "match_any"), (nameof(SearchText), "search_text"),
-            (nameof(ValueNumber), "value_number"), (nameof(ValueDate), "value_date"), (nameof(ValueBool), "value_bool"), (nameof(ValueText), "value_text"),
+            (nameof(ValueNumber), "value_number"), (nameof(ValueDate), "value_date"), (nameof(ValueBool), "value_bool"), (nameof(ValueText), "value_text"), (nameof(ValueDateTrunc), "value_date_trunc"),
         })
         {
             modelBuilder.HasDbFunction(MethodOf(method)).HasSchema(Schema).HasName(name);
