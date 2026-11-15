@@ -75,6 +75,55 @@ public sealed class AuditGateTests(AuditFixture fixture) : IClassFixture<AuditFi
     /// Arabic (<c>audit.field.&lt;column&gt;</c> in the audit screens' strings), so a history never
     /// shows a column name. A new table, or a new column, fails here until it can be read.
     /// </summary>
+    /// <summary>A recorded choice (a column whose CHECK names its values) is shown by its label, never its code: every value of every
+    /// choice column of the jobs tables has audit.choice.&lt;schema.table&gt;.&lt;column&gt;.&lt;value&gt; in both languages of the audit strings
+    /// (the job panel's change line and History tab, and the printed audit log, read them).</summary>
+    [Fact]
+    public async Task Every_recorded_choice_value_of_the_jobs_tables_has_a_label_in_both_languages()
+    {
+        await using var admin = await Env.OpenAdminAsync();
+        var checks = await DbCatalog.ReadAsync(admin, """
+            SELECT n.nspname || '.' || c.relname, pg_get_constraintdef(k.oid)
+              FROM pg_constraint k JOIN pg_class c ON c.oid = k.conrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+             WHERE k.contype = 'c' AND n.nspname = 'jobs'
+            """, r => (Table: r.GetString(0), Definition: r.GetString(1)));
+        var choices = new List<(string Table, string Column, string Value)>();
+        foreach (var (table, definition) in checks)
+        {
+            var column = System.Text.RegularExpressions.Regex.Match(definition, @"^CHECK \(+\(?(\w+)\)?(::text)? = ANY");
+            if (!column.Success)
+            {
+                continue;
+            }
+            foreach (System.Text.RegularExpressions.Match value in System.Text.RegularExpressions.Regex.Matches(definition, @"'([^']+)'::"))
+            {
+                choices.Add((table, column.Groups[1].Value, value.Groups[1].Value));
+            }
+        }
+        foreach (var expected in new[] { "jobs.jobs.status", "jobs.jobs.source", "jobs.job_attempts.outcome" })
+        {
+            Assert.Contains(choices, c => $"{c.Table}.{c.Column}" == expected);
+        }
+        var problems = new List<string>();
+        foreach (var language in new[] { "en", "ar" })
+        {
+            var strings = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(Repo.PathOf("web", "src", "modules", "audit", "i18n", $"{language}.json")))!;
+            foreach (var (table, column, value) in choices)
+            {
+                var key = $"audit.choice.{table}.{column}.{value}";
+                if (!strings.TryGetValue(key, out var label) || string.IsNullOrWhiteSpace(label) || label == value)
+                {
+                    problems.Add($"{key} has no label in {language} (web/src/modules/audit/i18n/{language}.json)");
+                }
+                else if (language == "ar" && !System.Text.RegularExpressions.Regex.IsMatch(label, @"\p{IsArabic}"))
+                {
+                    problems.Add($"{key}: the Arabic label '{label}' has no Arabic letters");
+                }
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
     [Fact]
     public async Task Every_audited_table_is_a_registered_kind_of_record_and_every_recorded_field_has_a_name_in_both_languages()
     {
