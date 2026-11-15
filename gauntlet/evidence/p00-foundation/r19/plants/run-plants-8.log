@@ -1,0 +1,28 @@
+build start 15:57:56
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:19.72
+build end 15:58:19
+=== VOLL19 (CRITIC_PLANT=L19) filter FullyQualifiedName~G1ListVolumeTests|FullyQualifiedName~G1NonInterferenceTests|FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1OutsideProcessStateTests start 15:58:19
+=== VOLL19 exit 1 end 16:35:45
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [597 ms]
+  Failed Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [17 m 23 s]
+Total tests: 6
+ Total time: 37.4363 Minutes
+=== G2P19 (CRITIC_PLANT=P19) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules|FullyQualifiedName~Erp.Gates.Tests.SelfTests start 16:35:45
+=== G2P19 exit 1 end 17:04:57
+  Failed Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads [1 s]
+  Failed Erp.Gates.Tests.G2.G2ClientOriginTests.Granting_exactly_one_permission_opens_exactly_its_endpoints_from_every_client_address [1 m 12 s]
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 13 s]
+  Failed Erp.Gates.Tests.SelfTests.GateSelfTests.The_grant_bearing_record_check_catches_an_edit_that_skips_the_access_check_when_only_the_email_changes [2 ms]
+Total tests: 192
+ Total time: 29.1897 Minutes
+=== G2P17 (CRITIC_PLANT=P17) filter FullyQualifiedName~Erp.Gates.Tests.G2|FullyQualifiedName~Erp.Gates.Tests.Rules|FullyQualifiedName~Erp.Gates.Tests.SelfTests start 17:04:57
+=== G2P17 exit 1 end 17:32:07
+  Failed Erp.Gates.Tests.G2.G2PathCaseTests.The_varied_case_deny_catches_a_permission_check_that_reads_the_path_case_sensitively [5 s]
+  Failed Erp.Gates.Tests.G2.G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case [1 s]
+Total tests: 192
+ Total time: 27.1542 Minutes

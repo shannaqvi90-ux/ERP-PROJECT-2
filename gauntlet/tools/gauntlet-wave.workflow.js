@@ -387,7 +387,11 @@ for (let i = 0; i < ROUNDS; i++) {
       }
     }
   }
-  await parallel(ready.map(x => () => judgeStep(x.s, x.step)))
+  // serialJudges (lead, 2026-11-14): on a machine short of memory, critics run one at a time, so no two
+  // critics' demo stacks, browsers and private Odoo rigs are up at once (the WSL VM died of memory
+  // pressure with three critics running on 2026-11-14). Off by default, so earlier runs resume unchanged.
+  if (args.serialJudges) { for (const x of ready) await judgeStep(x.s, x.step) }
+  else await parallel(ready.map(x => () => judgeStep(x.s, x.step)))
 }
 const pieceResults = states.map(s => ({ piece: s.p.id, nextRound: s.p.startRound + s.results.length, lastVerdict: s.last, results: s.results }))
 

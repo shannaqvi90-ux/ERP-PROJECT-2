@@ -1,0 +1,88 @@
+== erp_worker role attributes
+  rolname   | rolsuper | rolinherit | rolcreaterole | rolcreatedb | rolcanlogin | rolbypassrls 
+------------+----------+------------+---------------+-------------+-------------+--------------
+ erp_owner  | f        | t          | f             | f           | t           | f
+ erp_app    | f        | f          | f             | f           | t           | f
+ erp_worker | f        | f          | f             | f           | t           | f
+ erp_auth   | f        | f          | f             | f           | f           | f
+(4 rows)
+
+   role   |  member   
+----------+-----------
+ erp_auth | erp_owner
+(1 row)
+
+ grantee | table_schema | table_name | privilege_type 
+---------+--------------+------------+----------------
+(0 rows)
+
+  grantee   | table_schema | table_name | column_name  | privilege_type 
+------------+--------------+------------+--------------+----------------
+ erp_worker | jobs         | jobs       | run_at       | SELECT
+ erp_worker | jobs         | jobs       | tenant_id    | SELECT
+ erp_worker | jobs         | schedules  | next_run_at  | SELECT
+ erp_worker | jobs         | jobs       | status       | SELECT
+ erp_worker | jobs         | jobs       | locked_until | SELECT
+ erp_worker | jobs         | schedules  | tenant_id    | SELECT
+ erp_worker | jobs         | schedules  | is_enabled   | SELECT
+(7 rows)
+
+ schemaname | tablename |    policyname    |    roles     |  cmd   | qual 
+------------+-----------+------------------+--------------+--------+------
+ jobs       | jobs      | due_tenants_read | {erp_worker} | SELECT | true
+ jobs       | schedules | due_tenants_read | {erp_worker} | SELECT | true
+(2 rows)
+
+ nspname | proname 
+---------+---------
+(0 rows)
+
+== as erp_worker
+ count  | count 
+--------+-------
+ 101004 |     2
+(1 row)
+
+ERROR:  permission denied for table jobs
+ERROR:  permission denied for table jobs
+ERROR:  permission denied for table jobs
+ERROR:  permission denied for table job_attempts
+ERROR:  permission denied for schema identity
+LINE 1: select count(*) from identity.users
+                             ^
+ERROR:  permission denied for schema tenancy
+LINE 1: select count(*) from tenancy.tenants
+                             ^
+ERROR:  permission denied for table jobs
+ERROR:  permission denied for table jobs
+ERROR:  permission denied to set role "erp_app"
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "erp_auth"
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+ count 
+-------
+     5
+(1 row)
+
+ERROR:  permission denied for table schedules
+ERROR:  permission denied for schema public
+LINE 1: create table public.x(i int)
+                     ^
+ERROR:  permission denied to create temporary tables in database "erp"
+LINE 1: create temp table x(i int)
+                          ^
+ERROR:  function jobs.due_tenants() does not exist
+LINE 1: select jobs.due_tenants()
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+              tenant_id               | status |           run_at           
+--------------------------------------+--------+----------------------------
+ 0190a000-0000-7000-8000-000000000002 | queued | 2026-11-14 19:38:21.183+00
+ 0190a000-0000-7000-8000-000000000002 | queued | 2026-11-15 00:00:00+00
+ 0190a000-0000-7000-8000-000000000002 | queued | 2026-11-15 00:00:00+00
+(3 rows)
+

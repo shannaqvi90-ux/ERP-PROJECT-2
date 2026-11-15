@@ -1,0 +1,19 @@
+build start 15:47:45
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:19.96
+build end 15:48:08
+=== PROOFNONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~CriticR19Proof start 15:48:08
+=== PROOFNONE exit 0 end 15:48:38
+Total tests: 3
+ Total time: 29.2910 Seconds
+=== PROOFALL (CRITIC_PLANT=P17,P19,L19) filter FullyQualifiedName~CriticR19Proof start 15:48:38
+=== PROOFALL exit 1 end 15:49:07
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read [917 ms]
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.Tenant_A_users_total_stays_its_own_when_tenant_B_has_many_users [12 s]
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path [300 ms]
+Total tests: 3
+ Total time: 28.2671 Seconds

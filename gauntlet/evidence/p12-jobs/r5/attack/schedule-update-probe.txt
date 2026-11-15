@@ -1,0 +1,9 @@
+role 201 user 201 changer sign-in 200
+schedule with parameters {}: created 201, canUpdate for changer: true
+  rename with the same parameters: 200 jobs.selfCheck
+  rename with no parameters sent: 200
+  switch off with the same parameters: 200 jobs.selfCheck
+schedule with parameters {"steps":3}: created 201, canUpdate for changer: true
+  rename with the same parameters: 403 urn:erp:problem:jobs.typeNotAllowed
+  rename with no parameters sent: 200
+  switch off with the same parameters: 403 urn:erp:problem:jobs.typeNotAllowed

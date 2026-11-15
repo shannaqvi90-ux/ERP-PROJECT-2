@@ -1,0 +1,26 @@
+[NONE] identity.users.update only: GET /api/identity/users?take=1 -> 403
+identity.users.update only: GET /api/identity/roles?take=1 -> 403
+[NONE] B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+A first page total 31; B deep page 200 {"items":[],"total":37,"next":null,"groups":null,"ranked":false}; A deep page 200 {"items":[],"total":31,"next":null,"groups":null,"ranked":false}
+[NONE] no roles: GET /api/identity/users?take=1 -> 403
+no roles: GET /api/identity/users/?take=1 -> 403
+no roles: GET /api/identity/roles/?take=1 -> 403
+[L19] identity.users.update only: GET /api/identity/users?take=1 -> 403
+identity.users.update only: GET /api/identity/roles?take=1 -> 403
+[L19] B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+B creates a user: 201
+A first page total 31; B deep page 200 {"items":[],"total":37,"next":null,"groups":null,"ranked":false}; A deep page 200 {"items":[],"total":37,"next":null,"groups":null,"ranked":false}
+[L19] no roles: GET /api/identity/users?take=1 -> 403
+no roles: GET /api/identity/users/?take=1 -> 403
+no roles: GET /api/identity/roles/?take=1 -> 403

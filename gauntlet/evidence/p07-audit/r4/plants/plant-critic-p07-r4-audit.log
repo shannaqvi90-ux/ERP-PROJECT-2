@@ -1,0 +1,131 @@
+Test run for /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.14]   Discovering: Erp.Modules.Audit.Tests
+[xUnit.net 00:00:00.28]   Discovered:  Erp.Modules.Audit.Tests
+[xUnit.net 00:00:00.41]   Starting:    Erp.Modules.Audit.Tests
+[xUnit.net 00:00:14.92]     Erp.Modules.Audit.Tests.AuditTrailTests.A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it [FAIL]
+[xUnit.net 00:00:14.92]       Assert.Equal() Failure: Collections differ at index 0
+[xUnit.net 00:00:14.92]                        ↓ (pos 6)
+[xUnit.net 00:00:14.92]       Expected: "Paged 2"
+[xUnit.net 00:00:14.92]       Actual:   "Paged 4"
+[xUnit.net 00:00:14.92]                        ↑ (pos 6)
+[xUnit.net 00:00:14.92]       Stack Trace:
+[xUnit.net 00:00:14.92]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(105,0): at Erp.Modules.Audit.Tests.AuditTrailTests.A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it()
+[xUnit.net 00:00:14.92]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.18]     Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only [FAIL]
+[xUnit.net 00:00:15.18]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:15.18]       Expected: 0
+[xUnit.net 00:00:15.18]       Actual:   1
+[xUnit.net 00:00:15.18]       Stack Trace:
+[xUnit.net 00:00:15.18]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(331,0): at Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only()
+[xUnit.net 00:00:15.18]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.Readers_see_only_the_kinds_of_records_their_roles_let_them_read [949 ms]
+  Failed Erp.Modules.Audit.Tests.AuditTrailTests.A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it [185 ms]
+  Error Message:
+   Assert.Equal() Failure: Collections differ at index 0
+                 ↓ (pos 6)
+Expected: "Paged 2"
+Actual:   "Paged 4"
+                 ↑ (pos 6)
+  Stack Trace:
+     at Erp.Modules.Audit.Tests.AuditTrailTests.A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 105
+--- End of stack trace from previous location ---
+  Failed Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only [267 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1
+  Stack Trace:
+     at Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 331
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:15.33]     Erp.Modules.Audit.Tests.AuditTrailTests.A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read [FAIL]
+[xUnit.net 00:00:15.33]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:15.33]       Expected: 0
+[xUnit.net 00:00:15.33]       Actual:   1
+[xUnit.net 00:00:15.33]       Stack Trace:
+[xUnit.net 00:00:15.33]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(159,0): at Erp.Modules.Audit.Tests.AuditTrailTests.A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read()
+[xUnit.net 00:00:15.33]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.43]     Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope [FAIL]
+[xUnit.net 00:00:15.43]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:15.43]       Expected: [0191260e-f481-779d-99ac-57e5b1e6efc8]
+[xUnit.net 00:00:15.43]       Actual:   [0191260e-f481-779d-99ac-57e5b1e6efc8, 0191260e-f484-78e1-a51b-b8d3ef0bcd6f]
+[xUnit.net 00:00:15.43]                                                        ↑ (pos 1)
+[xUnit.net 00:00:15.43]       Stack Trace:
+[xUnit.net 00:00:15.43]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(432,0): at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope()
+[xUnit.net 00:00:15.43]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(433,0): at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope()
+[xUnit.net 00:00:15.43]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(433,0): at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope()
+[xUnit.net 00:00:15.43]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(433,0): at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope()
+[xUnit.net 00:00:15.43]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(433,0): at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope()
+[xUnit.net 00:00:15.43]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(433,0): at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope()
+[xUnit.net 00:00:15.43]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.86]     Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records [FAIL]
+[xUnit.net 00:00:15.86]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:15.86]       Expected: 0
+[xUnit.net 00:00:15.86]       Actual:   1
+[xUnit.net 00:00:15.86]       Stack Trace:
+[xUnit.net 00:00:15.86]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(293,0): at Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records()
+[xUnit.net 00:00:15.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.93]     Erp.Modules.Audit.Tests.AuditTrailTests.A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served [FAIL]
+[xUnit.net 00:00:15.93]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:15.93]       Expected: NotFound
+[xUnit.net 00:00:15.93]       Actual:   OK
+[xUnit.net 00:00:15.93]       Stack Trace:
+[xUnit.net 00:00:15.93]         /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs(528,0): at Erp.Modules.Audit.Tests.AuditTrailTests.A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served()
+[xUnit.net 00:00:15.93]         --- End of stack trace from previous location ---
+  Failed Erp.Modules.Audit.Tests.AuditTrailTests.A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read [147 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1
+  Stack Trace:
+     at Erp.Modules.Audit.Tests.AuditTrailTests.A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 159
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_records_history_shows_each_change_field_by_field_newest_first_with_who_and_when [57 ms]
+  Failed Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope [36 ms]
+  Error Message:
+   Assert.Equal() Failure: Collections differ
+Expected: [0191260e-f481-779d-99ac-57e5b1e6efc8]
+Actual:   [0191260e-f481-779d-99ac-57e5b1e6efc8, 0191260e-f484-78e1-a51b-b8d3ef0bcd6f]
+                                                 ↑ (pos 1)
+  Stack Trace:
+     at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 432
+   at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 433
+   at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 433
+   at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 433
+   at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 433
+   at Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 433
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_log_prints_and_exports_through_the_report_framework_in_both_languages [171 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.Ids_in_values_read_as_the_names_of_the_records_they_name [110 ms]
+  Failed Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records [152 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   1
+  Stack Trace:
+     at Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 293
+--- End of stack trace from previous location ---
+  Failed Erp.Modules.Audit.Tests.AuditTrailTests.A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served [66 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Stack Trace:
+     at Erp.Modules.Audit.Tests.AuditTrailTests.A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served() in /home/shan/critic/p07-audit-r4/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs:line 528
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_page_far_down_the_log_is_the_same_rows_the_pages_before_it_walk_past [509 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code [< 1 ms]
+[xUnit.net 00:00:16.79]   Finished:    Erp.Modules.Audit.Tests (ID = '88c4e5d39c7096dd9ee6269447fc435a971e05781137bc1e1aa00dc86b408a19')
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_field_filter_is_exact_and_the_coded_field_text_matches_the_names_the_row_records [67 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_log_lists_changes_newest_first_with_filters_by_field_record_type_person_and_change_and_a_search_by_name [122 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_database_keeps_custom_fields_field_by_field_and_names_the_record_and_its_company [17 ms]
+
+Test Run Failed.
+Total tests: 15
+     Passed: 9
+     Failed: 6
+ Total time: 17.0871 Seconds

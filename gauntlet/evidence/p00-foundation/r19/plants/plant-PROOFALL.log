@@ -1,0 +1,60 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.16]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.53]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:14.70]     Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read [FAIL]
+[xUnit.net 00:00:14.70]       identity.users.update only: GET /api/identity/users?take=1 -> 200
+[xUnit.net 00:00:14.70]       identity.users.update only: GET /api/identity/roles?take=1 -> 403
+[xUnit.net 00:00:14.70]       Stack Trace:
+[xUnit.net 00:00:14.70]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(31,0): at Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read()
+[xUnit.net 00:00:14.70]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:14.70]       Output:
+[xUnit.net 00:00:14.70]         identity.users.update only: GET /api/identity/users?take=1 -> 200
+[xUnit.net 00:00:14.70]         identity.users.update only: GET /api/identity/roles?take=1 -> 403
+[xUnit.net 00:00:15.30]     Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path [FAIL]
+[xUnit.net 00:00:15.30]       no roles: GET /api/identity/users?take=1 -> 403
+[xUnit.net 00:00:15.30]       no roles: GET /api/identity/users/?take=1 -> 200
+[xUnit.net 00:00:15.30]       no roles: GET /api/identity/roles/?take=1 -> 200
+[xUnit.net 00:00:15.30]       Stack Trace:
+[xUnit.net 00:00:15.30]         /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs(50,0): at Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path()
+[xUnit.net 00:00:15.30]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:15.30]       Output:
+[xUnit.net 00:00:15.30]         no roles: GET /api/identity/users?take=1 -> 403
+[xUnit.net 00:00:15.30]         no roles: GET /api/identity/users/?take=1 -> 200
+[xUnit.net 00:00:15.30]         no roles: GET /api/identity/roles/?take=1 -> 200
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read [880 ms]
+  Error Message:
+   identity.users.update only: GET /api/identity/users?take=1 -> 200
+identity.users.update only: GET /api/identity/roles?take=1 -> 403
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR19Proof.An_update_permission_does_not_open_the_read() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 31
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ identity.users.update only: GET /api/identity/users?take=1 -> 200
+ identity.users.update only: GET /api/identity/roles?take=1 -> 403
+
+
+  Passed Erp.Gates.Tests.Critic.CriticR19Proof.A_deep_page_total_is_the_callers_own_after_another_tenant_asked [294 ms]
+  Failed Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path [300 ms]
+  Error Message:
+   no roles: GET /api/identity/users?take=1 -> 403
+no roles: GET /api/identity/users/?take=1 -> 200
+no roles: GET /api/identity/roles/?take=1 -> 200
+  Stack Trace:
+     at Erp.Gates.Tests.Critic.CriticR19Proof.A_user_with_no_roles_is_denied_a_trailing_slash_path() in /work/tests/Erp.Gates.Tests/Critic/CriticR19Proof.cs:line 50
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ no roles: GET /api/identity/users?take=1 -> 403
+ no roles: GET /api/identity/users/?take=1 -> 200
+ no roles: GET /api/identity/roles/?take=1 -> 200
+
+
+[xUnit.net 00:00:15.56]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+
+Test Run Failed.
+Total tests: 3
+     Passed: 1
+     Failed: 2
+ Total time: 15.8002 Seconds

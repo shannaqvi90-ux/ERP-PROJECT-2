@@ -1,0 +1,101 @@
+Test run for /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Modules.Jobs.Tests/bin/Debug/net10.0/Erp.Modules.Jobs.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.15]   Discovering: Erp.Modules.Jobs.Tests
+[xUnit.net 00:00:00.35]   Discovered:  Erp.Modules.Jobs.Tests
+[xUnit.net 00:00:00.50]   Starting:    Erp.Modules.Jobs.Tests
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "0 12 * * sun", after: "2026-10-29T00:00:00+04:00", expected: "2026-11-01T12:00:00+04:00") [23 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "*/15 * * * *", after: "2026-10-29T10:07:00+04:00", expected: "2026-10-29T10:15:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "0 8 13 * fri", after: "2026-10-29T00:00:00+04:00", expected: "2026-10-30T08:00:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "0 9 * * 1-5", after: "2026-10-30T10:00:00+04:00", expected: "2026-11-02T09:00:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "0 0 1 * *", after: "2026-12-15T00:00:00+04:00", expected: "2027-01-01T00:00:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "0 0 29 2 *", after: "2026-10-29T00:00:00+04:00", expected: "2028-02-29T00:00:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "30 3 * * *", after: "2026-10-29T03:30:00+04:00", expected: "2026-10-30T03:30:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "30 3 * * *", after: "2026-10-29T10:00:00+00:00", expected: "2026-10-30T03:30:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "30 3 * * *", after: "2026-10-29T03:29:59+04:00", expected: "2026-10-29T03:30:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_next_moment_is_the_first_one_after_the_given_time_in_the_workspaces_zone(timing: "0 0 * * 7", after: "2026-10-29T00:00:00+04:00", expected: "2026-11-01T00:00:00+04:00") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "", code: "cronFields") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "5-1 * * * *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "60 * * * *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* 24 * * *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* * 32 * *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* * * 13 *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "*/0 * * * *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* * * * * *", code: "cronFields") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "0 0 30 feb *", code: "cronNever") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* * * * 8", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "0 0 31 2 *", code: "cronNever") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "a * * * *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* * * foo *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* * 0 * *", code: "cronField") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Invalid_timings_are_refused_with_a_code(text: "* * * *", code: "cronFields") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.A_time_skipped_when_clocks_go_forward_does_not_run_that_day_and_a_repeated_one_runs_once [1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.The_backoff_doubles_from_thirty_seconds_up_to_an_hour_and_spreads_by_at_most_ten_percent [4 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "*/15 * * * *") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "0 0 * jan,jul mon") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "0 9-17 * * 1-5") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "5/10 * * * *") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "30 3 * * *") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "0 0 * * 7") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "  0   0 * * 0  ") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "* * * * *") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "0 0 1,15 * *") [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.CronScheduleTests.A_timing_longer_than_the_limit_is_refused [< 1 ms]
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.The_kinds_endpoint_names_each_kind_in_both_languages_and_says_what_the_caller_may_start [1 s]
+[xUnit.net 00:00:16.00]     Erp.Modules.Jobs.Tests.JobsApiTests.The_best_match_for_a_kind_of_jobs_name_is_one_that_has_finished_and_so_can_be_run_again [FAIL]
+[xUnit.net 00:00:16.00]       Assert.NotEqual() Failure: Strings are equal
+[xUnit.net 00:00:16.00]       Expected: Not "queued"
+[xUnit.net 00:00:16.00]       Actual:       "queued"
+[xUnit.net 00:00:16.00]       Stack Trace:
+[xUnit.net 00:00:16.00]         /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Modules.Jobs.Tests/JobsApiTests.cs(137,0): at Erp.Modules.Jobs.Tests.JobsApiTests.The_best_match_for_a_kind_of_jobs_name_is_one_that_has_finished_and_so_can_be_run_again()
+[xUnit.net 00:00:16.00]         --- End of stack trace from previous location ---
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.Tenant_B_cannot_see_or_touch_tenant_As_jobs_and_schedules [499 ms]
+  Failed Erp.Modules.Jobs.Tests.JobsApiTests.The_best_match_for_a_kind_of_jobs_name_is_one_that_has_finished_and_so_can_be_run_again [155 ms]
+  Error Message:
+   Assert.NotEqual() Failure: Strings are equal
+Expected: Not "queued"
+Actual:       "queued"
+  Stack Trace:
+     at Erp.Modules.Jobs.Tests.JobsApiTests.The_best_match_for_a_kind_of_jobs_name_is_one_that_has_finished_and_so_can_be_run_again() in /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Modules.Jobs.Tests/JobsApiTests.cs:line 137
+--- End of stack trace from previous location ---
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.A_reader_may_look_but_not_start_cancel_rerun_or_download [301 ms]
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.Starting_a_job_queues_it_and_the_worker_runs_it_with_its_output_and_a_second_run_follows_a_rerun [170 ms]
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.Cancelling_and_re_running_answer_the_state_the_job_is_in_and_unknown_ids_are_not_found [161 ms]
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.A_schedule_must_have_a_valid_timing_a_free_name_and_a_kind_that_can_be_scheduled [119 ms]
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.Starting_checks_the_kind_the_parameters_and_the_time_and_says_so_in_the_readers_language [190 ms]
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.Schedules_are_added_changed_switched_off_and_checked [194 ms]
+  Passed Erp.Modules.Jobs.Tests.JobsApiTests.The_list_holds_the_workspaces_jobs_newest_first_with_search_filters_and_what_the_caller_may_do [260 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_job_that_runs_longer_than_its_kind_allows_is_stopped_and_tried_again [1 s]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.Cancel_never_fails_while_the_worker_writes_progress_and_always_reaches_the_job [595 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.Jobs_never_run_twice_when_workers_overlap [258 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_job_whose_worker_disappeared_is_taken_back_and_the_lost_try_is_recorded [75 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_finished_job_is_run_again_as_a_new_job_with_the_same_kind_and_parameters [80 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.The_worker_holds_the_application_role_only_which_owns_no_table_and_bypasses_no_policy [42 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_failure_the_handler_says_cannot_be_retried_fails_at_once_with_its_own_message [37 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_running_job_shows_its_progress_and_stops_when_cancelled [945 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.The_clean_up_job_removes_old_finished_jobs_and_nothing_else [153 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_cancel_accepted_before_the_final_write_ends_the_job_as_cancelled_and_one_after_it_is_refused [76 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_job_that_lost_its_lease_to_another_worker_changes_nothing_when_it_finishes [37 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.What_a_job_writes_is_saved_with_its_success_and_undone_with_its_failure [42 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_failing_job_is_tried_again_with_a_growing_wait_and_succeeds_when_the_cause_goes [90 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.The_self_check_job_reports_each_step_in_both_languages_and_keeps_an_output_file [68 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.Higher_priority_and_earlier_jobs_are_taken_first_and_future_jobs_wait [60 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_schedule_of_a_kind_that_is_gone_switches_itself_off [24 ms]
+[xUnit.net 00:00:21.99]   Finished:    Erp.Modules.Jobs.Tests (ID = 'a961ad6fbf71a05799483caefa307d25d4d4150ddebe0051a65e7d6dff4ba550')
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.Queuing_checks_the_request_and_a_rolled_back_unit_leaves_no_job [17 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.Each_job_runs_inside_its_own_workspace_and_sees_only_its_rows [58 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_queued_job_cancels_at_once_and_a_finished_one_cannot_be_cancelled [15 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_job_runs_to_success_and_keeps_its_progress_result_output_and_try [35 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_due_schedule_queues_one_job_moves_on_and_waits_while_its_last_job_is_unfinished [102 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.The_due_workspaces_lookup_names_workspaces_with_work_and_sees_nothing_else [64 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.The_worker_loop_runs_what_is_queued_and_stops_when_asked_without_losing_a_running_job [434 ms]
+  Passed Erp.Modules.Jobs.Tests.JobRunnerTests.A_job_that_keeps_failing_ends_failed_after_its_last_try_with_the_error_in_both_languages [52 ms]
+
+Test Run Failed.
+Total tests: 71
+     Passed: 70
+     Failed: 1
+ Total time: 22.3635 Seconds

@@ -1,0 +1,174 @@
+A tenant 0190a000-0000-7000-8000-000000000001 B tenant 0190a000-0000-7000-8000-000000000002
+row versions: A1 201 3211683823 B 4082896071,3033102172,197330830,2717355855,1533186213 A2 201 4003747847
+A totals before B writes {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":4,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+A totals after B writes  {"/api/identity/users?take=1":100005,"/api/identity/roles?take=1":6,"/api/tenancy/companies?take=1":4,"/api/tenancy/branches?take=1":12,"/api/tenancy/access?take=1":100005}
+B seq 01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59 rate 01a1daad-a44b-745d-bd86-bc4297c859c6 currency 01a1daad-a40e-7a48-ab9e-ad498ac35bd2
+B job 01a1daad-a5a6-77df-bda3-6b45a0971873 schedule 01a1daad-a59d-7cfe-a28a-8faac10eca12
+B audit entry b16634c7-d579-4139-902d-ed013c2eba38
+B custom field create 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-42113ddb407547ea05fd2abe1c60d586-5c4819d3206375f2-00","errors":{"type":[{"code
+B attachment upload 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-499959efd19529c7886ab2c2f09b00a9-dd8587dcc39fbaad-00","errors":{"name":[{"code
+B contact 018876f9-9c50-7fb2-add5-041666688532 field 01a1daad-a8d4-7d4a-bcd8-baefeb3744ef file 01a1daad-abae-788b-a4f2-503ad4ca2d5a
+B create canary user 201
+lists: tenancy.companies,tenancy.branches,tenancy.access,identity.users,identity.roles,numbering.sequences,currency.currencies,currency.rates,jobs.jobs,jobs.schedules,contacts.contacts,customfields.fields,audit.log
+B views tenancy.companies 201 201
+B views tenancy.branches 201 201
+B views tenancy.access 201 201
+B views identity.users 201 201
+B views identity.roles 201 201
+B views numbering.sequences 201 201
+B views currency.currencies 201 201
+B views currency.rates 201 201
+B views jobs.jobs 201 201
+B views jobs.schedules 201 201
+B views contacts.contacts 201 201
+B views customfields.fields 201 201
+B views audit.log 201 201
+B logo put 200
+B logo get 200 image/png
+ids shared by A and B answers: 0 
+B-only ids collected: 872
+operations attacked: 245
+documented query-parameter requests: 1648
+switch-input requests: 1050
+export requests: 190
+filter requests: 77
+path-variant and audit requests: 328
+B rows unchanged by A attack: true
+LEAKS: 137
+   DELETE /api/currency/rates/01a1daad-a44b-745d-bd86-bc4297c859c6 with B id answered 204
+   DELETE /api/attachments/contacts.contacts/files/01a1daad-abae-788b-a4f2-503ad4ca2d5a with B id answered 204
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=identity.users with B id answered 200
+   GET /api/contacts/contacts [X-Tenant-Id] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [X-Tenant] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [Tenant] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [X-Workspace] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [X-Company-Id] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [X-Erp-Tenant] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [X-Forwarded-Host] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [Host] -> 200 contains 'الخليج'
+   GET /api/contacts/contacts?tenant -> 200 contains 'الخليج'
+   GET /api/contacts/contacts?tenantId -> 200 contains 'الخليج'
+   GET /api/contacts/contacts?tenant_id -> 200 contains 'الخليج'
+   GET /api/contacts/contacts?workspace -> 200 contains 'الخليج'
+   GET /api/contacts/contacts?companyId -> 200 contains 'الخليج'
+   GET /api/contacts/contacts?company -> 200 contains 'الخليج'
+   GET /api/contacts/contacts [cookies] -> 200 contains 'الخليج'
+   GET /api/audit/log [X-Tenant-Id] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Workspace] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Company-Id] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Erp-Tenant] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [X-Forwarded-Host] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [Host] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/audit/log [cookies] -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/contacts.contacts [X-Tenant-Id] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [X-Tenant] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [Tenant] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [X-Workspace] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [X-Company-Id] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [X-Erp-Tenant] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [X-Forwarded-Host] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [Host] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?tenant -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?tenantId -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?tenant_id -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?workspace -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?companyId -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?company -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts [cookies] -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?format=csv&language=en -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?format=csv&language=ar -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?format=csv&language=ar -> 200 contains 'الخليج'
+   GET /api/reports/lists/contacts.contacts?format=json&language=en -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/contacts.contacts?format=json&language=ar -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/audit.log?format=csv&language=en -> 200 contains 'Gulf Steel'
+   GET /api/reports/lists/audit.log?format=csv&language=en -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/reports/lists/audit.log?format=csv&language=ar -> 200 contains 'الخليج'
+   GET /api/reports/lists/audit.log?format=csv&language=ar -> 200 contains B id 0190a000-0000-7000-8000-000000000002
+   GET /api/contacts/contacts/ [switch headers] -> 200 contains 'الخليج'
+   GET /API/CONTACTS/CONTACTS [switch headers] -> 200 contains 'الخليج'
+   GET /Api/contacts/contacts [switch headers] -> 200 contains 'الخليج'
+   GET /api/reports/lists/contacts.contacts/ [switch headers] -> 200 contains 'Gulf Steel'
+   GET /API/REPORTS/LISTS/CONTACTS.CONTACTS [switch headers] -> 200 contains 'Gulf Steel'
+   GET /Api/reports/lists/contacts.contacts [switch headers] -> 200 contains 'Gulf Steel'
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=identity.users with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=identity.users with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=identity.users with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=identity.users with B id answered 200
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=identity.roles with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=identity.roles with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=identity.roles with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=identity.roles with B id answered 200
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=tenancy.companies with B id answered 200
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=tenancy.branches with B id answered 200
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=jobs.jobs with B id answered 200
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=numbering.sequences with B id answered 200
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=contacts.contacts with B id answered 200
+   GET /api/audit/records/01a1daae-1c73-73a1-9d46-565645170f3f?type=attachments.files with B id answered 200
+   GET /api/audit/records/01a1daad-9fa3-703d-bed8-d740d5900068?type=attachments.files with B id answered 200
+   GET /api/audit/records/018f6605-b084-7e7f-bcf7-2c27415f6d91?type=attachments.files with B id answered 200
+   GET /api/audit/records/018f6605-b085-7203-8dd8-2871c6b8c69d?type=attachments.files with B id answered 200
+   GET /api/audit/records/01a1daad-a5a6-77df-bda3-6b45a0971873?type=attachments.files with B id answered 200
+   GET /api/audit/records/01a1daad-a44b-745d-bd86-bc4297c859c6?type=attachments.files with B id answered 200
+   GET /api/audit/records/01a1daad-a585-7bc2-b4b7-3ae4bf5ebd59?type=attachments.files with B id answered 200
+   GET /api/audit/records/018876f9-9c50-7fb2-add5-041666688532?type=attachments.files with B id answered 200
+   GET /api/audit/records/01a1daad-a8d4-7d4a-bcd8-baefeb3744ef?type=attachments.files with B id answered 200
+   GET /api/audit/records/01a1daad-abae-788b-a4f2-503ad4ca2d5a?type=attachments.files with B id answered 200

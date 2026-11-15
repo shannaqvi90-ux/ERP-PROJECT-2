@@ -1,0 +1,31 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+see-and-rerun-job        odoo  verified  steps 11  keys 31  machine 7.046s  human 34.68s  human+wait 38.283s  -> ../../evidence-staging/p12-jobs/r5/compare/results/see-and-rerun-job-20261114T184000-f381.json
+see-and-rerun-job        odoo  verified  steps 11  keys 31  machine 5.473s  human 34.68s  human+wait 36.282s  -> ../../evidence-staging/p12-jobs/r5/compare/results/see-and-rerun-job-20261114T184035-1df1.json
+see-and-rerun-job        odoo  verified  steps 11  keys 31  machine 5.623s  human 34.68s  human+wait 36.549s  -> ../../evidence-staging/p12-jobs/r5/compare/results/see-and-rerun-job-20261114T184107-5261.json
+see-and-rerun-job        ours  error     steps 4  keys 31  machine 120.728s  human 13.13s  human+wait 13.621s  (Error: waitForFunction: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p12-jobs/r5/compare/results/see-and-rerun-job-20261114T184138-7d6b.json
+    Error: waitForFunction: Timeout 120000ms exceeded.
+        (in the driver process)
+        at PageWorld.waitFor (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/page-script.mjs:547:47)
+        at async Operator.waitFor (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/operator.mjs:581:7)
+        at async #op (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/sandbox/bridge.mjs:541:19)
+        at async DriverSession.handle (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/sandbox/bridge.mjs:464:43)
+    page: {"url":"/jobs/jobs?q=Self-check+of+the+job+queue","ready_state":"complete","title":"Background jobs · ERP","focused":{"tag":"table","name":null,"type":null,"label":"Background jobs: 24,623 rows"},"navigation":true,"busy":[],"messages":[]}
+see-and-rerun-job        ours  error     steps 4  keys 31  machine 121.137s  human 13.13s  human+wait 13.979s  (Error: waitForFunction: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p12-jobs/r5/compare/results/see-and-rerun-job-20261114T184349-4c7a.json
+    Error: waitForFunction: Timeout 120000ms exceeded.
+        (in the driver process)
+        at PageWorld.waitFor (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/page-script.mjs:547:47)
+        at async Operator.waitFor (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/operator.mjs:581:7)
+        at async #op (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/sandbox/bridge.mjs:541:19)
+        at async DriverSession.handle (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/sandbox/bridge.mjs:464:43)
+    page: {"url":"/jobs/jobs?q=Self-check+of+the+job+queue","ready_state":"complete","title":"Background jobs · ERP","focused":{"tag":"table","name":null,"type":null,"label":"Background jobs: 24,623 rows"},"navigation":true,"busy":[],"messages":[]}
+see-and-rerun-job        ours  error     steps 4  keys 31  machine 121.208s  human 13.13s  human+wait 14.01s  (Error: waitForFunction: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p12-jobs/r5/compare/results/see-and-rerun-job-20261114T184600-3329.json
+    Error: waitForFunction: Timeout 120000ms exceeded.
+        (in the driver process)
+        at PageWorld.waitFor (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/page-script.mjs:547:47)
+        at async Operator.waitFor (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/operator.mjs:581:7)
+        at async #op (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/sandbox/bridge.mjs:541:19)
+        at async DriverSession.handle (file:///home/shan/critic/p12-jobs-r5/gauntlet/compare/lib/sandbox/bridge.mjs:464:43)
+    page: {"url":"/jobs/jobs?q=Self-check+of+the+job+queue","ready_state":"complete","title":"Background jobs · ERP","focused":{"tag":"table","name":null,"type":null,"label":"Background jobs: 24,623 rows"},"navigation":true,"busy":[],"messages":[]}
+see-and-rerun-job        verdict ours error
+blind review page: ../../../../evidence-staging/p12-jobs/r5/compare/blind/review.html
+output: ../../../../evidence-staging/p12-jobs/r5/compare

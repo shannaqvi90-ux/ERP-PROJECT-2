@@ -1,0 +1,141 @@
+{
+  "piece": "p12-jobs",
+  "round": 5,
+  "commit": "03a520d17e626ce2571c37e6a99201f6c7f35cbe",
+  "judged_at": "2026-11-15T01:07:34Z",
+  "critic": "fresh critic, p12-jobs round 5",
+  "verdict": "LOSS",
+  "minor_only": false,
+  "evidence_staging": "/home/shan/evidence-staging/p12-jobs/r5",
+  "evidence_dir": "gauntlet/evidence/p12-jobs/r5",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation: critic's live attack on the 100,000-job demo (API by cookie and bearer, tenant-switch headers and query, body and payload tenant ids, job outputs, list and report exports in json/csv/xlsx/pdf, en and ar)",
+      "status": "pass",
+      "evidence": "attack/jobs-attack.mjs (the r3 critic's script, run again here): alnoor admin (A) against gulfsteel (B). 1,622 requests: B's job ids (finished with an output, and queued) and schedule ids sent to job get, output, cancel and rerun, and to schedule get and put. Also list search and filter on B's canary text and id, jobs.jobs and jobs.schedules reports in 4 formats and 2 languages, headers X-Tenant-Id, X-Tenant, X-Company-Id and X-Workspace, and ?tenantId= and ?workspace=. Result: 0 leaks or suspicious answers (attack/jobs-attack.txt). B's superuser md5 (b-before.txt, b-after.txt) changed only by B's own 2 canary jobs, 1 attempt and 1 schedule. B's queued canary is still queued with cancel_requested false, and B's canary schedule is unchanged (b-canary-rows.txt). Jobs that A started with B's tenantId in the body and payload were created in alnoor."
+    },
+    {
+      "gate": "G1 database: application role and the new worker lookup role erp_worker",
+      "status": "pass",
+      "evidence": "db-app-role-attack.txt: as erp_app with no tenant bound, 0 rows in jobs, job_attempts and schedules. Bound to A it sees only A's rows. UPDATE and DELETE of B's rows touched 0. INSERT for B was refused by RLS. SET ROLE erp_owner or erp_worker was denied, and ALTER TABLE was refused. db-worker-role-attack.txt: erp_worker is LOGIN, not superuser, no BYPASSRLS, member of nothing, owns nothing. It holds exactly 7 column grants (jobs: tenant_id, status, run_at, locked_until; schedules: tenant_id, is_enabled, next_run_at) through SELECT-only USING(true) policies. title_en, payload, job_attempts, identity and tenancy are all denied. It cannot write, create tables or switch role. Only the worker service in compose.yaml gets its connection string; the app service has the application role only."
+    },
+    {
+      "gate": "G2 permissions: real product",
+      "status": "pass",
+      "evidence": "attack/jobs-attack.txt: a user with only jobs.schedules.create and read gets 403 jobs.typeNotAllowed adding an enabled schedule (also with isEnabled omitted). Adding a disabled one gives 201, and starting either kind gives 403. A user with only jobs.jobs.run and read gets 403 on starting or rerunning a clean-up, on cancel and on output. noaccess gets 403 on every jobs route and report. viewer gets 200 on the list and 403 on rerun, cancel and start; the screen shows no Start or row actions."
+    },
+    {
+      "gate": "Gate self-test on p12's surface: plant L5 (GET /api/jobs/types opens the worker's lookup connection and counts queued jobs across every workspace)",
+      "status": "pass",
+      "evidence": "plants/L5-worker-connection-in-endpoint.diff caught by G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work: 'JobEndpoints.cs:317 opens its own database connection [connection-string]' (plants/L5-tenant-source.log)."
+    },
+    {
+      "gate": "Gate self-test: plant L4 (erp_worker also granted title_ar, error_ar, progress_ar, output_name, locked_by, type of every workspace's jobs)",
+      "status": "fail",
+      "evidence": "Gate gap (listed in gate_gaps). plants/L4-worker-columns-P6-omitted-enabled.diff passed G1DatabaseIsolationTests, G1CredentialTests and G1TenantSourceTests (planted-gates.log, 57 of 57 existing tests in those classes plus G2PermissionTests and JobsWriteSetTests passed). It also passed all 70 Jobs module tests other than the order-dependent one (planted-jobs-module.log; JobRunnerTests checks only a fixed list of 7 forbidden columns). The plant is live: CriticProofR5.L4 shows 'erp_worker may read: type, title_ar, status, run_at, locked_until, locked_by, progress_ar, error_ar, output_name, tenant_id'. The real product holds exactly the 7 reviewed columns."
+    },
+    {
+      "gate": "Gate self-test: plant P6 (POST /api/jobs/schedules checks the kind's run permission only when isEnabled is sent as true; an omitted isEnabled still adds an enabled schedule)",
+      "status": "fail",
+      "evidence": "Gate gap (listed in gate_gaps). It was missed by JobsWriteSetTests (it sends isEnabled true or false, never omitted), G2PermissionTests and every Jobs module test. It is live: CriticProofR5.P6 got 201 with isEnabled:true for a jobs.cleanup schedule ('* * * * *') added by a user who holds only jobs.schedules.create and read (planted-gates.log). The real product answers 403 to the same request (attack/jobs-attack.txt, 'isEnabled omitted 403')."
+    },
+    {
+      "gate": "Surfaces reached by the gates",
+      "status": "pass",
+      "evidence": "Same 11 job endpoints as round 3, all in the reviewed G2 map tests/Gates/endpoint-permissions/jobs.txt (G2PermissionTests passed). The G1 HTTP attack's cost line names GET /api/jobs/jobs (17,746 requests) and GET /api/jobs/schedules (15,459). JobsIsolationProbe registers the job output. JobsWriteSetTests sends rerun, schedule create and schedule update. The new erp_worker role is reached by G1DatabaseIsolationTests (policy allowlist) and JobRunnerTests (but see L4)."
+    },
+    {
+      "gate": "G3 clean clone: ./erp verify (every test passes)",
+      "status": "pass",
+      "evidence": "Run 2 PASSED: ERP_VERIFY_ALONE=1, slot taken 2026-11-14T21:53:10Z, 'verify passed in 11511 s'. Counts: 2,494 tests, 0 failed, 0 skipped (dotnet 1,098, web 741, e2e 154, compare 488, build 13), plus the 7 Load=Timing tests. 'Ratchet check passed'. Processor time 19,564 s against the 20,800 maximum (dotnet 16,526, web 2,320, e2e 633, timing 85); load peaked at 33.3 on 16 CPUs; I ran nothing beside it. Run 1 (slot 18:27:21Z) FAILED. 3 gate tests failed: G1AttachmentsAttackTests and G1HttpIsolationTests, both on p11's probe line 'contacts.contacts: the victim has no file to defend (its seeded files are missing)' (the same intermittent failure p07 r4's critic saw), and G2ReportDataTests on audit.log XLSX 'prints 8800'. All 3 passed in run 2. Run 1 also failed the see-and-rerun-job health check, but that was my fault: I had patched the ours driver in the clone while the run was going and its e2e stage picked the patch up; I reverted it before run 2. Run 1 had my demo stack, comparison and plant runs beside it (processor 20,818 s, load peak 32.7). Kept: verify/run1-kept, run1-verify.log, run2-verify.log."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p12-jobs-r5 ERP_HTTP_PORT=21250 ERP_DB_PORT=21251 ./erp up took 569 s from empty volumes, beside a running verify. It served :21250 with the sign-ins printed, and a restart took 24 s. The demo holds 100,000 alnoor jobs and 1,000 gulfsteel jobs. The project and port overrides work as documented."
+    },
+    {
+      "gate": "Rules: money, audit, licences, Odoo copying",
+      "status": "pass",
+      "evidence": "No money columns in the jobs schema. The audit trail records job, attempt and schedule changes, including the worker's own as 'Background job' (08-job-history-ar-raw-status.jpg). No new dependency; the cron parser is the repository's own. The licence and string gates pass in verify."
+    }
+  ],
+  "tests": {
+    "command": "ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p12-jobs-r5 ERP_HTTP_PORT=21250 ERP_DB_PORT=21251 ERP_VERIFY_HTTP_PORT=21260 ERP_VERIFY_DB_PORT=21261 ERP_VERIFY_LOG=<scratch>/verify-critic-p12-jobs-r5-run2.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 2494,
+    "passed": 2494,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 11511
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 11511,
+    "evidence": "Fresh clone of 03a520d1. Run 2 of ./erp verify passed in 11,511 s with 2,494 of 2,494 tests. Run 1 failed on 3 intermittent gate tests outside p12, all of which passed in run 2. ./erp up from empty volumes took 569 s. Logs are in verify/."
+  },
+  "odoo": [
+    {
+      "task": "see-and-rerun-job",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 10,
+        "seconds": 2.439,
+        "klm_seconds": 9.95
+      },
+      "odoo": {
+        "steps": 11,
+        "keystrokes": 31,
+        "seconds": 4.895,
+        "klm_seconds": 34.68
+      },
+      "notes": "Shared rig on :8069 (run.mjs accepted it: at least 100,000 rows in each of 7 main lists) against our 100,000-job demo. Odoo verified 6 of 6 runs at 11 steps, 31 keys, 4.87 to 7.05 s machine and 34.68 s human (compare/, compare-fixed/). The builder's ours driver failed 3 of 3 runs at bar volume, as it did in rounds 2 and 3, and is unchanged since round 3 (compare-run1.log). After the full name is typed and Enter is pressed, focus lands on 'Background jobs: 24,623 rows' and no job opens. The newest rows for that name are also 3 waiting self-checks that cannot be run again (seeded after the last finished self-check). I re-applied the round-3 critic's fix in my clone (compare-ours-driver-critic-fix.mjs and .diff): G J, type 'self', Enter, Down past the unfinished rows, Enter, Alt+R. Ours then verified 3 of 3. The first run took 10 steps, 14 keys, 2.43 s machine and 11.07 s human; the next two took 6 steps, 10 keys, 2.44 and 2.46 s machine and 9.95 s human. Harness verdict: win on every metric (compare-fixed/comparisons/see-and-rerun-job.json). Even ours' worst run beats Odoo's best."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p12-jobs/r5/01-jobs-list-en.jpg",
+    "gauntlet/evidence/p12-jobs/r5/02-start-dialog-en.jpg",
+    "gauntlet/evidence/p12-jobs/r5/03-job-running-en.jpg",
+    "gauntlet/evidence/p12-jobs/r5/03-job-running-ar.jpg",
+    "gauntlet/evidence/p12-jobs/r5/04-job-cancelled-en.jpg",
+    "gauntlet/evidence/p12-jobs/r5/05-rerun-done-output-en.jpg",
+    "gauntlet/evidence/p12-jobs/r5/05-rerun-done-output-ar.jpg",
+    "gauntlet/evidence/p12-jobs/r5/06-failed-job-error-en.jpg",
+    "gauntlet/evidence/p12-jobs/r5/07-schedule-saved-en.jpg",
+    "gauntlet/evidence/p12-jobs/r5/07-schedule-saved-ar.jpg",
+    "gauntlet/evidence/p12-jobs/r5/08-job-history-ar-raw-status.jpg",
+    "gauntlet/evidence/p12-jobs/r5/09-switch-off-refused-en.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The job panel shows raw status and source codes ('queued', 'running', 'cancelled', 'user') in its change line and history, in English words even on the Arabic screen",
+    "detail": "After any change to a job (cancel, run, finish), the line under the job's title and the History tab name the changed state by its stored code, not its label. Arabic shows 'الحالة: من running إلى cancelled' and the History tab lists 'queued', 'running', 'cancelled', 'user'. English shows 'Status: from running to cancelled' in lower-case codes, while the same panel's status badge reads 'Cancelled' or 'أُلغيت'. This is the piece's main screen (see a job's state and run it again), and CLAUDE.md rule 5 asks for Arabic from the first screen. p07's record history already turns a choice code into its label from audit.choice.<schema.table>.<field>.<value>, as numbering does for its reset choices. p12 registers none for jobs.jobs.status, jobs.jobs.source, job_attempts.outcome or the schedule fields (grep audit.choice in web/src/modules/jobs/i18n: 0 entries). The fix: add those keys in English and Arabic, using the labels the jobs list already has (jobs.status.*, jobs.source.*).",
+    "evidence": "On the demo, sign in as admin.ar@alnoor.example. Press G J, then Alt+N, choose the self-check with {\"steps\":12,\"pauseMilliseconds\":900}, press Ctrl+Enter, then Alt+K and Enter. The panel's change line reads 'الحالة: من running إلى cancelled', and History shows the codes queued, running, cancelled and user (08-job-history-ar-raw-status.jpg, browser/ar-history.txt, browser/ui.txt 'after cancel status'). For a WIN, also see other_findings 1 to 3."
+  },
+  "gate_gaps": [
+    {
+      "owner": "p12-jobs",
+      "gate": "JobRunnerTests (the gate named for erp_worker in tests/Gates/tenant-bypass-sources.txt) and G1DatabaseIsolationTests (policy allowlist)",
+      "planted": "L4: in JobsSql.WorkerRoleUp, also GRANT SELECT (title_ar, error_ar, progress_ar, output_name, locked_by, type) ON jobs.jobs TO erp_worker. Because its policy is USING (true), the worker's lookup role then reads those columns from every workspace's jobs.",
+      "evidence": "plants/L4-worker-columns-P6-omitted-enabled.diff and planted-gates.log: every existing test in G1DatabaseIsolationTests, G1CredentialTests, G1TenantSourceTests, G2PermissionTests and JobsWriteSetTests passed. planted-jobs-module.log: JobRunnerTests passed, because it checks only the fixed columns title_en, payload, result, output_text, error_en, created_by and id. CriticProofR5.L4 (plants/CriticProofR5.cs) shows the plant is live. The fix: compare erp_worker's column privileges (has_column_privilege over every column of every table) with exactly the reviewed 7, so that any other column fails."
+    },
+    {
+      "owner": "p12-jobs",
+      "gate": "G2 JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack",
+      "planted": "P6: in ScheduleEndpoints.Create, '(request.IsEnabled ?? true) && !MayRun' changed to 'request.IsEnabled == true && !MayRun'. A schedule added with isEnabled omitted then skips the run-permission check but is still saved enabled (enabled = request.IsEnabled ?? true).",
+      "evidence": "planted-gates.log: JobsWriteSetTests and G2PermissionTests passed, and so did every Jobs module test in planted-jobs-module.log. CriticProofR5.P6 got 201 with isEnabled:true for a jobs.cleanup '* * * * *' schedule added by a user holding only jobs.schedules.create and read. The gate sends isEnabled true or false but never leaves it out; it should add an omitted-isEnabled request that expects 403."
+    }
+  ],
+  "other_findings": [
+    "1. Switching off or renaming a schedule that has parameters is refused to a user who holds jobs.schedules.update but not the kind's run permission. That contradicts the code's own rule ('Switching off and renaming do not' need it). Root cause, ScheduleEndpoints.Update: the request's parameters (SerializeToElement(...).ToString(), '{\"steps\":3}') are compared as text with the stored jsonb ('{\"steps\": 3}', with a space). They are never equal, so every save that sends parameters counts as changing what runs, and the schedule form always sends them. The API reproduces it (attack/schedule-update-probe.txt): on a self-check schedule with {\"steps\":3}, renaming with the same parameters gives 403 jobs.typeNotAllowed, switching off with the same parameters gives 403, and with no parameters sent both give 200. With {} parameters everything gives 200. It also happens in the screen: as that user, open the enabled schedule, untick On, press Ctrl+S, and the form shows 'You do not have the permission this kind of job needs.' while the schedule stays on (09-switch-off-refused-en.jpg, browser/changer-ui.txt). Switching a runaway schedule off is a safety action. The fix: compare the two JSON values by meaning, not by text.",
+    "2. The builder's comparison path does not work at bar volume, for the third judged round running (r2, r3, r5; the driver is unchanged since r3). docs/decisions/p12-jobs-compare.md says 'Enter opens the best match'. On the 100,000-job demo, typing 'Self-check of the job queue' and pressing Enter moves the focus into the list ('Background jobs: 24,623 rows') and opens nothing. The first rows for that name are also 3 waiting self-checks that cannot be run again. JobsSeeder puts the 3 waiting rows just before the last three rows, and its comment says this keeps a finished job newest. That holds only if one of the last three rows happens to be a self-check: false on the demo, and false whenever count % 4 == 0 for a small workspace. Ours still wins with a critic's path (Down past the waiting rows), but an expert following the product's own documented path fails.",
+    "3. Order-dependent test that hides finding 2: Erp.Modules.Jobs.Tests.JobsApiTests.The_best_match_for_a_kind_of_jobs_name_is_one_that_has_finished_and_so_can_be_run_again passed in both verifies, but failed 3 of 3 when the Jobs test project was run alone on the host (`dotnet test tests/Erp.Modules.Jobs.Tests`, plants/unplanted-jobs-module-run1..3.log: 'Expected: Not \"queued\" Actual: \"queued\"'). It passes only when Starting_a_job_queues_it... runs just before it and leaves a fresh finished self-check. In the host's order it runs right after Tenant_B_cannot_see_or_touch_tenant_As_jobs_and_schedules, which leaves a queued self-check due in 4 hours. Builders and fixers run exactly this targeted command under decision #41.",
+    "4. On the 100,000-job demo the seeded failed jobs show 'Tries 2 of 2' with the error text, but no tries list: the seeder writes job_attempts only for workspaces of 5,000 jobs or fewer, and alnoor has 0 attempt rows (06-failed-job-error-en.jpg). A demo-data inconsistency on the error view.",
+    "5. Starting a job and editing a schedule's parameters means typing raw JSON ('Parameters (JSON)'), and the timing is a bare five-field cron string. The cron error is clear in both languages, but there is no picker or preview beyond 'Next run'. This is acceptable for an administrator; it is not friendly for a UAE SME office user.",
+    "6. The cron schedules work live: an every-minute self-check schedule queued and finished a job at 18:55:00.9 and 18:56:00.3 in its own workspace (attack/cron-live.txt). Cancel, progress (16%, 'Step 4 of 12'), output download, rerun, filter presets, start by Alt+N and Ctrl+Enter, add a schedule by Alt+N and Ctrl+S, and the validation messages all work by keyboard in English and Arabic, right to left, with no 5xx or page errors (browser/ui.txt).",
+    "[route: p11-attachments] Run 1 of the full verify failed G1AttachmentsAttackTests and G1HttpIsolationTests on AttachmentsIsolationProbe's 'contacts.contacts: the victim has no file to defend (its seeded files are missing)' (verify/run1-verify.log), the same intermittent failure p07 r4's critic reported. Both passed in run 2. That run was alone, but my demo, plant tests and comparison runs were going beside it (load peak 32.7).",
+    "[route: p07-audit] Run 1 also failed G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere: 'audit.log ... as a user holding exactly [audit.log.read, identity.roles.read] /api/reports/lists/audit.log?...format=xlsx: the XLSX prints 8800, which the list does not show that caller' (verify/run1-verify.log line ~2,960 of the dotnet section). It passed in run 2. This looks like a time-dependent number in the audit log XLSX (the class of the earlier '28913' moment-digits issue), so it is intermittent.",
+    "[route: p18-visual-design] Dates read '14 Nov 2026, 10:49 PM' in English and '14/11/2026، 10:52 م' in Arabic on the jobs screens. The owner asked for dd/mm/yyyy (owner decision #47).",
+    "Processor time: run 2 used 19,564 s, 1,236 s under the 20,800 s maximum, while the ratchet reports 'other work beside the verify 33,894 s (63.4%)' even though I ran nothing. Run 1 used 20,818 s with my demo, plants and comparisons beside it."
+  ],
+  "human_gates": []
+}

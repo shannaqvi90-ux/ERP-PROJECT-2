@@ -1,0 +1,41 @@
+== en: dir ltr lang en
+en heading: Background jobs | grid: Background jobs: 100,005 rows | focus: INPUT  Search by title or kind 
+en columns:  | Job▾ | Status▾ | Started▾ | Finished▾ | Progress▾
+en first rows: Self-check of the job queueDone14 Nov 2026, 10:49 PM14 Nov 2026, 10:49 PM100% || Self-check of the job queueDone14 Nov 2026, 10:49 PM14 Nov 2026, 10:49 PM100% || Self-check of the job queueDone14 Nov 2026, 10:48 PM14 Nov 2026, 10:48 PM100%
+shot 01-jobs-list-en.jpg
+en start dialog: true | focus: SELECT type  Clean up finished jobsSelf-check of the  | text: Start a jobKindClean up finished jobsSelf-check of the job queueRemoves finished jobs older than the number of days kept (180 unless the parameters say otherwise).Parameters (JSON)A JSON object such as {"steps": 5}. Leave empty when the job reads none.StartClose
+shot 02-start-dialog-en.jpg
+en after Ctrl+Enter url http://localhost:21250/jobs/jobs/01a1db66-d4bc-7c16-9660-51877374be64 | status: Running | progress: 16%
+shot 03-job-running-en.jpg
+en after cancel status: Cancelled | panel: Self-check of the job queueCancelledChanged by Background job · 14 Nov 2026, 10:51 PM · Finished: from (empty) to 14 Nov 2026, 10:51 PM; Status: from running to cancelled‹1 of 100,006›HistoryRun againCloseRead only Jobs cannot be edited. Use Run again or Cancel.State33%Step 4 of 12KindSelf-check of the job queue (jobs.selfCheck)Started byBy handDue14 Nov 2026, 10:51 PMStarted14 Nov 2026, 10:51 PMF
+shot 04-job-cancelled-en.jpg
+en rerun url http://localhost:21250/jobs/jobs/01a1db66-f5a3-7106-bf42-e4d834bc8c5f | status: Done | finished: 14 Nov 2026, 10:52 PM
+en output downloaded self-check.txt step 1/12 ok | step 2/12 ok | step 3/12 ok
+shot 05-rerun-done-output-en.jpg
+en failed job panel: Clean up finished jobsFailedCreated by Demo data · 14 Nov 2026, 10:34 PM‹9 of 100,007›HistoryRun againCloseRead only Jobs cannot be edited. Use Run again or Cancel.State3%KindClean up finished jobs (jobs.cleanup)Started byBy handDue14 Nov 2026, 10:32 PMStarted14 Nov 2026, 10:32 PMFinished14 Nov 2026, 10:32 PMTook15 sTries2 of 2The job stopped with an error. (jobs.seed)Parameters{}
+shot 06-failed-job-error-en.jpg
+en schedules rows: Clean up finished jobsClean up finished jobs30 3 * * *On15 Nov 2026, 3:30 AM13 Nov 2026, 10:33 PM || crit off jobs.cleanup 1794681515170Clean up finished jobs* * * * *Off || crit off jobs.selfCheck 1794681515198Self-check of the job queue* * * * *Off
+en new schedule focus: INPUT scheduleName  
+en after save: url http://localhost:21250/jobs/schedules/01a1db67-4668-77c9-b5a4-cd7d040d1b42 | form: Critic en nightly self-check15 2 * * *Created by Mariam Al Mansoori · 14 Nov 2026, 10:52 PM‹2 of 4›HistorySaveCloseSaved.ScheduleNameKindChoose a kind of jobClean up finished jobsSelf-check of the job queueTimingMinute, hour, day of month, month, day of week; for example 30 3 * * * is 03:30 every day. Read in the workspace's time zone Asia/Dubai.Parameters (JSON)A JSON object such as {"steps": 5}. Leave empty when the job reads none.OnNext run15 Nov 2026, 2:15 AMLast runNot yet
+shot 07-schedule-saved-en.jpg
+en bad cron messages: Some fields need attention. | Write the timing as five fields: minute, hour, day of month, month and day of week (for example 30 3 * * *).
+== ar: dir rtl lang ar
+ar heading: المهام الخلفية | grid: المهام الخلفية: 100,007 صفوف | focus: INPUT  بحث بالعنوان أو النوع 
+ar columns:  | المهمة▾ | الحالة▾ | بدأت▾ | انتهت▾ | التقدم▾
+ar first rows: فحص ذاتي لطابور المهامتمت14‏/11‏/2026، 10:52 م14‏/11‏/2026، 10:52 م100% || فحص ذاتي لطابور المهامأُلغيت14‏/11‏/2026، 10:51 م14‏/11‏/2026، 10:51 م33% || فحص ذاتي لطابور المهامتمت14‏/11‏/2026، 10:49 م14‏/11‏/2026، 10:49 م100%
+ar start dialog: true | focus: SELECT type  تنظيف المهام المنتهيةفحص ذاتي لطابور الم | text: تشغيل مهمةالنوعتنظيف المهام المنتهيةفحص ذاتي لطابور المهاميحذف المهام المنتهية الأقدم من عدد الأيام المحفوظ (180 يومًا ما لم تحدد المعاملات غير ذلك).المعاملات (JSON)كائن JSON مثل {"steps": 5}. اتركه فارغًا إذا كانت المهمة لا تقرأ معاملات.تشغيلإغلاق
+ar after Ctrl+Enter url http://localhost:21250/jobs/jobs/01a1db67-6343-7a2c-833f-ddfa5ba2e631 | status: قيد التشغيل | progress: 16%
+shot 03-job-running-ar.jpg
+ar after cancel status: أُلغيت | panel: فحص ذاتي لطابور المهامأُلغيتعدّله مهمة في الخلفية · 14‏/11‏/2026، 10:52 م · الانتهاء: من (فارغ) إلى 14‏/11‏/2026، 10:52 م؛ الحالة: من running إلى cancelled‹1 من 100,008›السجلإعادة التشغيلإغلاقللعرض فقط لا يمكن تعديل المهام. استخدم إعادة التشغيل أو الإلغاء.الحالة33%الخطوة 4 من 12النوعفحص ذاتي لطابور المهام (jobs.selfCheck)بدأهاشخصموعدها14‏/11‏/2026، 10:52 مبدأت14‏/11‏/2026، 10:52 مانتهت14‏/11‏/2026
+ar rerun url http://localhost:21250/jobs/jobs/01a1db67-83e7-7f79-9b2f-d1db32f272a8 | status: تمت | finished: 14‏/11‏/2026، 10:52 م
+ar output downloaded self-check.txt step 1/12 ok | step 2/12 ok | step 3/12 ok
+shot 05-rerun-done-output-ar.jpg
+ar failed job panel: تنظيف المهام المنتهيةفشلتأنشأه بيانات تجريبية · 14‏/11‏/2026، 10:34 م‹11 من 100,009›السجلإعادة التشغيلإغلاقللعرض فقط لا يمكن تعديل المهام. استخدم إعادة التشغيل أو الإلغاء.الحالة3%النوعتنظيف المهام المنتهية (jobs.cleanup)بدأهاشخصموعدها14‏/11‏/2026، 10:32 مبدأت14‏/11‏/2026، 10:32 مانتهت14‏/11‏/2026، 10:32 ماستغرقت15 ثانيةالمحاولات2 من 2توقفت المهمة بسبب خطأ. (jobs.seed)المعاملات{}
+ar schedules rows: Clean up finished jobsتنظيف المهام المنتهية30 3 * * *مفعّل15‏/11‏/2026، 3:30 ص13‏/11‏/2026، 10:33 م || Critic en nightly self-checkفحص ذاتي لطابور المهام15 2 * * *مفعّل15‏/11‏/2026، 2:15 ص || crit off jobs.cleanup 1794681515170تنظيف المهام المنتهية* * * * *معطّل || crit off jobs.selfCheck 1794681515198فحص ذاتي لطابور المهام* * * * *معطّل
+ar new schedule focus: INPUT scheduleName  
+ar after save: url http://localhost:21250/jobs/schedules/01a1db67-d493-7f59-a4ad-c778cea567ec | form: Critic ar nightly self-check15 2 * * *أنشأه فاطمة الزعابي · 14‏/11‏/2026، 10:52 م‹2 من 5›السجلحفظإغلاقتم الحفظ.الجدولالاسمالنوعاختر نوع المهمةتنظيف المهام المنتهيةفحص ذاتي لطابور المهامالتوقيتالدقيقة والساعة ويوم الشهر والشهر ويوم الأسبوع؛ مثلًا 30 3 * * * تعني 03:30 كل يوم. يُقرأ بالمنطقة الزمنية لمساحة العمل Asia/Dubai.المعاملات (JSON)كائن JSON مثل {"steps": 5}. اتركه فارغًا إذا كانت المهمة لا تقرأ معاملات.مفعّلالتشغيل القادم15‏/11‏/2026، 2:15 صآخر تشغيلليس بعد
+shot 07-schedule-saved-ar.jpg
+ar bad cron messages: بعض الحقول تحتاج إلى مراجعة. | اكتب التوقيت في خمسة حقول: الدقيقة والساعة ويوم الشهر والشهر ويوم الأسبوع (مثل 30 3 * * *).
+viewer heading: Background jobs | buttons: View: Standard | Columns | Print or export | Job | ▾ | Status | ▾ | Started | ▾ | Finished | ▾ | Progress | ▾
+viewer schedules heading: Job schedules
+5xx / page errors: 0 

@@ -1,0 +1,30 @@
+Critic p00 r19 plants (plants.diff + CriticPlant.cs + CriticR19Proof.cs; inert unless CRITIC_PLANT names them), run in the toolbox
+(run-in-toolbox.sh / run-plants.sh) on a copy of 494c5e27 (/home/shan/critic/p00-foundation-r19-plant). Logs: plant-*.log, run-plants-*.log,
+proof-lines.txt (what each proof saw).
+
+Control: CriticR19Proof with CRITIC_PLANT=NONE passes 3/3 (plant-PROOFNONE.log, proof-lines.txt [NONE]).
+
+PERMISSION PLANT P19 (kernel, src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs, PrincipalExtensions.HasPermission):
+  "who may change a resource may read it": any permission on module.resource implies module.resource.read.
+  Live (plant-PROOFALL.log): a user holding only identity.users.update gets 200 on GET /api/identity/users (403 unplanted).
+  (A first version planted only in PermissionAuthorizationHandler answered 404, then 500: the endpoints check the permission again.)
+  CAUGHT (plant-G2P19.log, 192 tests, 29.2 min): G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it
+  ("[bearer] contacts.contacts.archive: GET /api/contacts/contacts answered 200 (expected 403)"), G2ClientOriginTests, AttachmentsWriteSetTests.
+
+PERMISSION RE-PLANT P17 (backlog row 15; kernel PermissionAuthorizationHandler): a path ending in '/' needs no permission.
+  Live (plant-PROOFALL.log): no-roles user gets 200 on GET /api/identity/roles/?take=1 and /api/identity/users/?take=1.
+  CAUGHT now (plant-G2P17.log, 192 tests, 27.2 min): G2PathCaseTests.A_user_whose_roles_grant_nothing_is_denied_every_endpoint_in_varied_case
+  ("GET /api/audit/log as http://localhost/api/audit/log/: 200"). Row 15 was missed in r17 (168/168 passed); it now holds.
+
+TENANT-LEAK PLANT L19 (kernel list machinery, src/Kernel/Erp.Kernel/Lists/ListBinding.cs QueryAsync): a deep page (skip >= 1000) of an
+  unfiltered list reuses a total counted in the last 30 s, memo keyed by the list only (tenant forgotten).
+  Live (proof-lines.txt [L19]): after B asks /api/identity/users?take=1&skip=5000 (total 37), A's same request answers total 37; A's own is 31.
+  CAUGHT (plant-VOLL19.log, 37.4 min): G1ProcessStateTests (static: "static Erp.Kernel.CriticTotals.Memo ... key it by tenant") and
+  G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume ("tenant A: GET /api/tenancy/access?take=100&skip=10001
+  answered total 102505, but the tenant's own rows matching it are 100005"). G1NonInterferenceTests passed (it asks no deep page).
+
+ABANDONED VARIANT (a strength, not a gate result): L19 first read pg_stat_user_tables.n_live_tup; the app role is refused
+  ("42501: permission denied for view pg_stat_user_tables", l19 diagnostics in run-plants-4.log): the product revokes statistics views
+  and pg_class estimate columns from PUBLIC (src/Kernel/Erp.Kernel/Data/KernelSql.cs RevokeCrossTenantStatistics).
+
+Result: no gate gap this round. Every live plant was caught.

@@ -1,0 +1,98 @@
+Test run for /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/bin/Debug/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.26]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.61]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.79]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Leakproof_functions_are_postgres_defaults_or_reviewed [82 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Every_table_is_tenant_owned_or_a_reviewed_platform_table [10 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [144 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_bypass_row_level_security_or_become_a_role_that_can [68 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [25 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_cannot_read_statistics_that_count_every_tenant [57 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Foreign_keys_between_tenant_tables_include_the_tenant [6 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_enforce_row_level_security_with_the_standard_policy [72 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [242 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [4 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table [565 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Security_definer_functions_are_exactly_the_reviewed_ones [8 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Tenant_tables_have_an_id_primary_key [23 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Product_code_never_reads_statistics_that_count_every_tenant [69 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.A_tenant_set_for_the_whole_connection_or_left_by_an_earlier_transaction_is_ignored [18 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [1 s]
+[xUnit.net 00:00:25.55]     Erp.Gates.Tests.G2.CriticProofR5.P6_a_schedule_added_without_isEnabled_needs_the_run_permission [FAIL]
+[xUnit.net 00:00:25.56]       isEnabled omitted: got 201 {"id":"01a1db6e-c485-7b4f-851a-d931df690d83","scheduleName":"crit omit f3b9a9b020034fba9c7e8c0a94c75f11","type":"jobs.cleanup","typeNameEn":"Clean up finished jobs","typeNameAr":"تنظيف المهام المنتهية","cron":"* * * * *","payload":{"retentionDays":1},"isEnabled":true,"nextRunAt":"2026-11-14T19:01:00+00:00","lastRunAt":null,"lastJobId":null,"timeZone":"Asia/Dubai","createdAt":"2026-11-14T19:00:32.01133+00:00","updatedAt":"2026-11-14T19:00:32.01133+00:00","version":3115879560,"canUpdate":false}
+[xUnit.net 00:00:25.56]       Stack Trace:
+[xUnit.net 00:00:25.56]         /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G2/CriticProofR5.cs(31,0): at Erp.Gates.Tests.G2.CriticProofR5.P6_a_schedule_added_without_isEnabled_needs_the_run_permission()
+[xUnit.net 00:00:25.56]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:25.58]     Erp.Gates.Tests.G2.CriticProofR5.L4_the_worker_lookup_role_reads_no_other_column_of_any_workspace_job [FAIL]
+[xUnit.net 00:00:25.58]       erp_worker may read: type, title_ar, status, run_at, locked_until, locked_by, progress_ar, error_ar, output_name, tenant_id
+[xUnit.net 00:00:25.58]       Stack Trace:
+[xUnit.net 00:00:25.58]         /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G2/CriticProofR5.cs(46,0): at Erp.Gates.Tests.G2.CriticProofR5.L4_the_worker_lookup_role_reads_no_other_column_of_any_workspace_job()
+[xUnit.net 00:00:25.58]         /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G2/CriticProofR5.cs(46,0): at Erp.Gates.Tests.G2.CriticProofR5.L4_the_worker_lookup_role_reads_no_other_column_of_any_workspace_job()
+[xUnit.net 00:00:25.58]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.CriticProofR5.P6_a_schedule_added_without_isEnabled_needs_the_run_permission [1 s]
+  Error Message:
+   isEnabled omitted: got 201 {"id":"01a1db6e-c485-7b4f-851a-d931df690d83","scheduleName":"crit omit f3b9a9b020034fba9c7e8c0a94c75f11","type":"jobs.cleanup","typeNameEn":"Clean up finished jobs","typeNameAr":"تنظيف المهام المنتهية","cron":"* * * * *","payload":{"retentionDays":1},"isEnabled":true,"nextRunAt":"2026-11-14T19:01:00+00:00","lastRunAt":null,"lastJobId":null,"timeZone":"Asia/Dubai","createdAt":"2026-11-14T19:00:32.01133+00:00","updatedAt":"2026-11-14T19:00:32.01133+00:00","version":3115879560,"canUpdate":false}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.CriticProofR5.P6_a_schedule_added_without_isEnabled_needs_the_run_permission() in /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G2/CriticProofR5.cs:line 31
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.CriticProofR5.L4_the_worker_lookup_role_reads_no_other_column_of_any_workspace_job [33 ms]
+  Error Message:
+   erp_worker may read: type, title_ar, status, run_at, locked_until, locked_by, progress_ar, error_ar, output_name, tenant_id
+  Stack Trace:
+     at Erp.Gates.Tests.G2.CriticProofR5.L4_the_worker_lookup_role_reads_no_other_column_of_any_workspace_job() in /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G2/CriticProofR5.cs:line 46
+   at Erp.Gates.Tests.G2.CriticProofR5.L4_the_worker_lookup_role_reads_no_other_column_of_any_workspace_job() in /home/shan/critic/p12-jobs-r5-plant/tests/Erp.Gates.Tests/G2/CriticProofR5.cs:line 46
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_application_role_can_read_no_stored_credential [33 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.No_reviewed_function_returns_a_credential_column_or_a_whole_row [9 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_sign_in_lookup_reveals_no_hash_and_no_account_before_the_password_is_proven [70 ms]
+  Passed Erp.Gates.Tests.G1.G1CredentialTests.The_function_owner_writes_only_where_reviewed [71 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack [1 s]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind [540 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.With_the_run_permission_of_the_kind_a_schedule_is_added_switched_on_and_retimed_writing_only_the_schedule [683 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_reader_and_a_user_who_may_only_cancel_cannot_run_a_finished_job_again [647 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Running_a_finished_job_again_writes_one_new_job_and_changes_nothing_else [384 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [28 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [25 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [16 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [545 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [447 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [115 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [18 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [13 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [758 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [4 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [32 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [13 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [11 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [11 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [14 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 34 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [29 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [11 s]
+[xUnit.net 00:04:02.79]   Finished:    Erp.Gates.Tests (ID = 'bb993e05158b02ba91898d623326ac768b875f79e3c2d354ac9afceb2b01cfcb')
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [26 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [13 ms]
+
+Test Run Failed.
+Total tests: 59
+     Passed: 57
+     Failed: 2
+ Total time: 4.0542 Minutes
+exit 1
