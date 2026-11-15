@@ -134,6 +134,18 @@ a written checklist, with screenshots; ours must be at least as good on every it
 overall, and no existing comparison task may get worse. From p18's integration on, every critic
 also reports any screen of its piece that breaks the design system.
 
+OWNER DECISION, 2026-11-15 (needs-human #50), after the 96 GB memory upgrade. The owner's
+words, relayed by the Windows-side session: "tez tests ki ijazat hay", "5 pieces ek saath",
+"Teesra test slot". Approved: (1) p00 may cut the alone integration verify's wall time by running
+test groups in parallel, each with its own database (in-memory databases allowed), without
+removing or weakening any test or gate; integration still runs alone and one at a time; if
+parallel running changes verify.cpuSeconds, the numbers go to the owner before any ratchet change.
+(2) Up to 5 pieces per workflow (was 4), still one workflow at a time. (3) A third verify slot for
+builder, fixer and critic verifies (cap 3 instead of 2, needs-human #22's two slots); the
+integrator's alone run still takes every slot. Not approved, kept as now: critics still run their
+own full verify, and builders keep targeted tests (#41). Applies from the first workflow launched
+after serial-21.
+
 HOW TO WORK
 You are the lead. You plan, delegate and keep the record. You do not build and you do not
 judge.
