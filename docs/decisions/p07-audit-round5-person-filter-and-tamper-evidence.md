@@ -59,3 +59,20 @@ Not done: one row per save in the database (it would change the capture contract
 
 Processor time added: negligible at runtime (one definer call per audit row as before; the picker reads at most 20 users
 per keystroke). Tests added: 4 module tests, 3 web tests, 1 e2e spec. No new package.
+
+## Integration fix (round 5, after the integrator's alone verify)
+
+The alone verify failed in `CustomFieldGateTests` (customfields.audit_record_history, security definer): the
+custom-field gate lets no function of the `customfields` schema run as its owner. The gate is unchanged. The
+history trigger of a custom field value now lives in the audit schema as `audit.custom_field_history()`, a
+trigger-only definer function owned by erp_auth (listed in security-definer-allowlist.txt and
+security-definer-trigger-only.txt, like audit.capture()); `customfields.audit_record_history()` is replaced by
+the caller-rights, pure `customfields.history_change()`, so the schema keeps its 12 functions and none is a
+definer. Migration 20261116000100_AuditHistoryDefiner was rewritten in place (it was never integrated); its
+Down is not supported (the writers do not go back to the application role).
+
+Targeted runs (toolbox container, own containers removed): CustomFieldGateTests, G1ReviewedLookupTests,
+G1DatabaseIsolationTests, G1TenantSourceTests, AuditGateTests and the other Rules gates, 69 passed; Audit module
+tests 20 passed; CustomFields module tests 28 passed. The full verify was not run (the integrator's alone run).
+Processor time of this fix: a few hundred seconds; it adds none to the full verify. The 22,612 s total of the
+failed alone run was over the 21,300 s limit; this fix does not reduce it.
