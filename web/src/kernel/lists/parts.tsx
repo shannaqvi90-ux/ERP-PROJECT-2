@@ -142,11 +142,18 @@ const textOperators: Operator[] = ["contains", "eq", "ne", "startsWith", "endsWi
 export function FilterEditor({
   column,
   options,
+  search,
+  labelOf,
   current,
   onApply,
   onClose,
 }: {
   column: ListColumn;
+  /** Finds the records of a reference column by what the user types (a person by name); the filter
+   * then offers a picker and never takes free text. */
+  search?: (text: string) => Promise<{ value: string; label: string }[]>;
+  /** The label of a record already chosen. */
+  labelOf?: (id: string) => string | undefined;
   /** Choices for a reference column whose records the screen knows (ids with labels). */
   options?: { value: string; label: string }[];
   current: Condition[];
@@ -183,7 +190,7 @@ export function FilterEditor({
         return text.trim() ? [{ column: key, op, values: [text.trim()] }] : [];
       case "choice":
       case "reference":
-        if (column.type === "reference" && !options) return text.trim() ? [{ column: key, op: "eq", values: [text.trim()] }] : [];
+        if (column.type === "reference" && !options && !search) return text.trim() ? [{ column: key, op: "eq", values: [text.trim()] }] : [];
         if (choices.length === 0) return [];
         return choices.length === 1 ? [{ column: key, op: "eq", values: [choices[0]!] }] : [{ column: key, op: "in", values: choices }];
       case "boolean":
@@ -261,6 +268,10 @@ export function FilterEditor({
       );
       break;
     case "reference":
+      if (search) {
+        body = <ReferencePicker search={search} labelOf={labelOf} chosen={choices} onChange={setChoices} />;
+        break;
+      }
       if (!options) {
         body = (
           <label className="field">
@@ -363,6 +374,108 @@ export function FilterEditor({
         </div>
       </form>
     </Popover>
+  );
+}
+
+/** Picks records of a reference column by typing (for example people by name): the matches show
+ * as options of a list, the Arrow keys move through them, Enter or a click chooses one, and the
+ * chosen ones stay listed as checkboxes to remove. Never takes text the server did not offer. */
+function ReferencePicker({
+  search,
+  labelOf,
+  chosen,
+  onChange,
+}: {
+  search: (text: string) => Promise<{ value: string; label: string }[]>;
+  labelOf?: (id: string) => string | undefined;
+  chosen: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const { t } = useI18n();
+  const id = useId();
+  const [text, setText] = useState("");
+  const [found, setFound] = useState<{ value: string; label: string }[] | null>(null);
+  const [active, setActive] = useState(0);
+  const [known, setKnown] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let current = true;
+    const timer = setTimeout(() => {
+      search(text.trim()).then(
+        (items) => {
+          if (!current) return;
+          setFound(items);
+          setActive(0);
+          setKnown((k) => ({ ...k, ...Object.fromEntries(items.map((i) => [i.value, i.label])) }));
+        },
+        () => current && setFound([]),
+      );
+    }, 150);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [text, search]);
+  const toggle = (value: string) => onChange(chosen.includes(value) ? chosen.filter((c) => c !== value) : [...chosen, value]);
+  const shown = found ?? [];
+  const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown" && shown.length > 0) {
+      e.preventDefault();
+      setActive((a) => (a + 1) % shown.length);
+    } else if (e.key === "ArrowUp" && shown.length > 0) {
+      e.preventDefault();
+      setActive((a) => (a - 1 + shown.length) % shown.length);
+    } else if (e.key === "Enter" && text.trim() && shown[active]) {
+      // Enter chooses the highlighted person while a name is typed; with nothing typed it applies.
+      e.preventDefault();
+      toggle(shown[active]!.value);
+      setText("");
+    }
+  };
+  return (
+    <>
+      <label className="field">
+        <span className="field-label">{t("lists.filter.person")}</span>
+        <input
+          type="search"
+          role="combobox"
+          aria-expanded={shown.length > 0}
+          aria-controls={`${id}-list`}
+          aria-activedescendant={shown[active] ? `${id}-${shown[active]!.value}` : undefined}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={onKey}
+          placeholder={t("lists.filter.personHint")}
+          autoComplete="off"
+        />
+      </label>
+      <ul id={`${id}-list`} role="listbox" aria-label={t("lists.filter.person")} className="list-picker">
+        {found !== null && shown.length === 0 && <li className="muted">{t("lists.filter.noMatch")}</li>}
+        {shown.map((item, index) => (
+          <li
+            key={item.value}
+            id={`${id}-${item.value}`}
+            role="option"
+            aria-selected={chosen.includes(item.value)}
+            className={index === active ? "is-active" : undefined}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => toggle(item.value)}
+          >
+            <bdi>{item.label}</bdi>
+          </li>
+        ))}
+      </ul>
+      {chosen.length > 0 && (
+        <fieldset className="list-choices">
+          <legend className="field-label">{t("lists.op.in")}</legend>
+          {chosen.map((value) => (
+            <label key={value} className="list-check">
+              <input type="checkbox" checked onChange={() => toggle(value)} />
+              <bdi>{known[value] ?? labelOf?.(value) ?? value}</bdi>
+            </label>
+          ))}
+        </fieldset>
+      )}
+    </>
   );
 }
 
