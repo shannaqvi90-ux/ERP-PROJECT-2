@@ -267,9 +267,9 @@ export function RecordForm<R, D>({
               </span>
             )}
             {document && !form.isNew && <PrintMenu document={document} open={printing} setOpen={setPrinting} />}
-            {panels.map((item) => (
-              <PanelToggle key={item.key} item={item} open={Boolean(openPanels[item.key])} setOpen={setPanelOpen(item.key)} />
-            ))}
+            {panels.map((item) =>
+              item.toolbar ? <item.toolbar key={item.key} {...panelProps(item)} /> : <PanelToggle key={item.key} item={item} open={Boolean(openPanels[item.key])} setOpen={setPanelOpen(item.key)} />,
+            )}
             {editable && form.dirty && (
               <button type="button" className="button" onClick={form.discard} title={keyHint(formChords.discard)} aria-keyshortcuts={chordForAria(formChords.discard)}>
                 {t("forms.discard")}
@@ -320,7 +320,7 @@ export function RecordForm<R, D>({
           <div className="record-body">{children}</div>
         </FormContext.Provider>
       </form>
-      {panels.map((item) => openPanels[item.key] && <item.panel key={item.key} {...panelProps(item)} />)}
+      {panels.map((item) => (item.always || openPanels[item.key]) && <item.panel key={item.key} {...panelProps(item)} />)}
       {after}
       {asking && (
         <Dialog
@@ -412,11 +412,11 @@ export function RecordPanels({ record, copy, panels: panelItems = extensions.rec
     <div className="record-panels">
       {panels.map((item) => item.summary && <item.summary key={item.key} {...panelProps(item)} />)}
       <div className="record-actions" role="toolbar" aria-label={t("forms.toolbar")}>
-        {panels.map((item) => (
-          <PanelToggle key={item.key} item={item} open={Boolean(openPanels[item.key])} setOpen={setPanelOpen(item.key)} />
-        ))}
+        {panels.map((item) =>
+          item.toolbar ? <item.toolbar key={item.key} {...panelProps(item)} /> : <PanelToggle key={item.key} item={item} open={Boolean(openPanels[item.key])} setOpen={setPanelOpen(item.key)} />,
+        )}
       </div>
-      {panels.map((item) => openPanels[item.key] && <item.panel key={item.key} {...panelProps(item)} />)}
+      {panels.map((item) => (item.always || openPanels[item.key]) && <item.panel key={item.key} {...panelProps(item)} />)}
     </div>
   );
 }

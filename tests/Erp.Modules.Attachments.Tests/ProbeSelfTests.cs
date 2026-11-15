@@ -52,6 +52,12 @@ public sealed class ProbeSelfTests
             var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             // api attachments contacts.contacts {record} files            (list, upload)
             // api attachments contacts.contacts files {file} [content]    (content, delete)
+            if (parts.Length == 4 && parts[1] == "attachments" && parts[3] == "files")
+            {
+                // The file search: files of the caller's tenant whose names contain the text.
+                var text = Uri.UnescapeDataString((request.RequestUri.Query.TrimStart('?').Split('&').FirstOrDefault(q => q.StartsWith("search=", StringComparison.Ordinal)) ?? "search=")[7..]);
+                return Json(HttpStatusCode.OK, new { matches = world.Files.Where(f => f.Tenant == tenant && text.Length >= 2 && f.Name.Contains(text, StringComparison.OrdinalIgnoreCase)).Select(f => new { id = f.Id, name = f.Name, recordId = f.Record }) });
+            }
             if (parts.Length < 5 || parts[1] != "attachments")
             {
                 return Json(HttpStatusCode.NotFound, new { code = "notFound" });
@@ -97,11 +103,20 @@ public sealed class ProbeSelfTests
 
     private static readonly AttachmentRecordType Contacts = new("contacts.contacts", "contacts.menu.contacts", "contacts.contacts.read", "contacts.contacts.update", (_, _, _) => Task.FromResult(true), ListPath: "/api/contacts/contacts");
 
-    private static async Task<(IsolationProbeResult Result, World World)> RunAsync(Fault fault)
+    private static async Task<(IsolationProbeResult Result, World World)> RunAsync(Fault fault, bool fileOnALaterRecord = false)
     {
         var world = new World(fault);
-        // Tenant B's seeded file, carrying its canary.
-        world.Files.Add(new Stored(Guid.NewGuid(), TenantB, world.RecordOf(TenantB), $"Trade licence {Canary}.pdf", Encoding.UTF8.GetBytes($"%PDF- tenant B {Canary}")));
+        // Tenant B's seeded file, carrying its canary (on a record that is not the first of its list when asked: its concurrent
+        // writes push records off the first page, and the probe must still find the file).
+        var theirs = world.RecordOf(TenantB);
+        if (fileOnALaterRecord)
+        {
+            var first = Guid.NewGuid();
+            world.Records.Remove(theirs);
+            world.Records[first] = TenantB;
+            world.Records[theirs] = TenantB;
+        }
+        world.Files.Add(new Stored(Guid.NewGuid(), TenantB, theirs, $"Trade licence {Canary}.pdf", Encoding.UTF8.GetBytes($"%PDF- tenant B {Canary}")));
         var context = new IsolationProbeContext(world.Client(TenantA), TenantA, TenantB, [.. world.Records.Where(r => r.Value == TenantB).Select(r => r.Key), .. world.Files.Select(f => f.Id)], [Canary], world.Client(TenantB));
         return (await AttachmentsIsolationProbe.RunAsync([Contacts], context, TestContext.Current.CancellationToken), world);
     }
@@ -115,6 +130,22 @@ public sealed class ProbeSelfTests
         Assert.Empty(result.Failures);
         Assert.False(Leaks(result), string.Join("\n", result.Observed.Where(o => o.Contains(Canary))));
         Assert.True(result.Attempts > 50, $"{result.Attempts} attempts");
+    }
+
+    [Fact]
+    public async Task The_victims_file_is_found_by_its_name_wherever_its_record_sits_in_the_list()
+    {
+        var (result, _) = await RunAsync(Fault.None, fileOnALaterRecord: true);
+        Assert.Empty(result.Failures);
+    }
+
+    [Fact]
+    public async Task A_victim_without_any_file_is_a_failure_never_a_skipped_attack()
+    {
+        var world = new World(Fault.None);
+        var context = new IsolationProbeContext(world.Client(TenantA), TenantA, TenantB, [.. world.Records.Where(r => r.Value == TenantB).Select(r => r.Key)], [Canary], world.Client(TenantB));
+        var result = await AttachmentsIsolationProbe.RunAsync([Contacts], context, TestContext.Current.CancellationToken);
+        Assert.Contains(result.Failures, f => f.Contains("no file to defend"));
     }
 
     [Fact]

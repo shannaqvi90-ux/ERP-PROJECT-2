@@ -60,7 +60,9 @@ public sealed class FileTypeTests
     [InlineData("a.html")]
     [InlineData("a.exe")]
     [InlineData("a.js")]
-    [InlineData("a.zip")]
+    [InlineData("a.rar")]
+    [InlineData("a.7z")]
+    [InlineData("a.dll")]
     [InlineData("a.")]
     [InlineData("a")]
     public void Anything_else_is_refused(string name) => Assert.Null(FileTypes.ForName(name));
@@ -84,4 +86,38 @@ public sealed class FileTypeTests
         var cut = Encoding.UTF8.GetBytes(new string('a', 8191) + "س")[..8192];
         Assert.True(await Matches("a.txt", cut));
     }
+
+    [Fact]
+    public async Task Zip_archives_and_mail_messages_are_accepted_by_their_bytes_and_kept_as_downloads()
+    {
+        Task<bool> Matches(string name, byte[] bytes) => FileTypes.MatchesAsync(FileTypes.ForName(name)!, bytes, () => Task.FromResult<Stream?>(new MemoryStream(bytes)));
+        using var stream = new MemoryStream();
+        using (var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+        {
+            using var writer = new StreamWriter(zip.CreateEntry("scan.txt").Open());
+            writer.Write("x");
+        }
+        Assert.True(await Matches("scans.zip", stream.ToArray()));
+        Assert.True(await Matches("empty.zip", [0x50, 0x4B, 0x05, 0x06, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]));
+        Assert.False(await Matches("fake.zip", "MZ this is a program"u8.ToArray()));
+        Assert.False(await Matches("cut.zip", [0x50, 0x4B, 0x03, 0x04, 0, 0, 0, 0]));
+        Assert.True(await Matches("mail.eml", "From: a@b.example\r\nTo: c@d.example\r\nSubject: Hello\r\n\r\nBody"u8.ToArray()));
+        Assert.False(await Matches("mail.eml", "just some text, no headers"u8.ToArray()));
+        Assert.False(await Matches("mail.eml", [0x46, 0x72, 0x6F, 0x6D, 0x3A, 0x20, 0x00, 0x01]));
+        Assert.True(await Matches("mail.msg", [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1, 0]));
+        Assert.False(await Matches("mail.msg", "From: x"u8.ToArray()));
+        Assert.False(FileTypes.ForName("a.zip")!.Inline);
+        Assert.False(FileTypes.ForName("a.eml")!.Inline);
+    }
+
+    [Theory]
+    [InlineData("a.pdf", 1_000_000, true)]
+    [InlineData("a.png", 5, true)]
+    [InlineData("notes.txt", 1_000, true)]
+    [InlineData("rates.csv", 524_288, true)]
+    [InlineData("notes.txt", 524_289, false)]
+    [InlineData("a.docx", 100, false)]
+    [InlineData("a.zip", 100, false)]
+    [InlineData("a.eml", 100, false)]
+    public void Images_pdf_and_small_text_can_be_shown_in_the_page(string name, long size, bool shown) => Assert.Equal(shown, FileTypes.Previewable(name, size));
 }

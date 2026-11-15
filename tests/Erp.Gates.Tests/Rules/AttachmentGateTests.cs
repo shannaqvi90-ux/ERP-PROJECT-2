@@ -1,8 +1,11 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Erp.Gates.Tests.Infrastructure;
 using Erp.Kernel.Modules;
 using Erp.Kernel.Security;
 using Erp.Testing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Gates.Tests.Rules;
@@ -11,7 +14,7 @@ namespace Erp.Gates.Tests.Rules;
 /// Attachments (p11): a file is as private as its record, its bytes are stored under names the
 /// server makes, and the registration must be complete or files silently reach the wrong people.
 /// (1) Every kind of record that takes files (<c>ModuleBuilder.AttachmentRecord</c>) has exactly the
-/// four endpoints (list, upload, content, delete) under <c>/api/attachments/{table}/</c>, reads guarded by
+/// five endpoints (search, list, upload, content, delete) under <c>/api/attachments/{table}/</c>, reads guarded by
 /// the kind's read permission and writes by its write permission, which differ, and each file endpoint
 /// is marked as a file surface so the isolation gate's file probe covers it; the kind is a registered
 /// kind of audited record's schema's neighbour: <c>attachments.files</c> is audited, so every upload and
@@ -37,6 +40,7 @@ public sealed class AttachmentGateTests(GateFixture fixture)
             var root = $"/api/attachments/{kind.Table}";
             var expected = new (string Method, string Pattern, string Permission)[]
             {
+                ("GET", root + "/files", kind.ReadPermission),
                 ("GET", root + "/{id:guid}/files", kind.ReadPermission),
                 ("POST", root + "/{id:guid}/files", kind.WritePermission),
                 ("GET", root + "/files/{id:guid}/content", kind.ReadPermission),
@@ -70,7 +74,7 @@ public sealed class AttachmentGateTests(GateFixture fixture)
             var all = endpoints.Where(e => e.Pattern.StartsWith($"/api/attachments/{kind.Table}/", StringComparison.Ordinal)).Select(e => e.Key).Except(expected.Select(x => $"{x.Method} {x.Pattern}")).ToList();
             if (all.Count > 0)
             {
-                problems.Add($"{kind.Table}: endpoints beyond the four reviewed ones: {string.Join(", ", all)}");
+                problems.Add($"{kind.Table}: endpoints beyond the five reviewed ones: {string.Join(", ", all)}");
             }
             if (catalog.FindAuditRecordType("attachments.files") is null)
             {
@@ -154,6 +158,168 @@ public sealed class AttachmentGateTests(GateFixture fixture)
         Assert.NotEmpty(StoreProblems(good.Replace("\\z", "$")));
         Assert.NotEmpty(StoreProblems(good.Replace("FileMode.CreateNew", "FileMode.Create")));
     }
+
+    /// <summary>The client inputs each attachment endpoint may read (round 2, gate backlog row 18): the record or file id from the route, the
+    /// file's name from a header, and inline on the bytes endpoint. A storage key, a tenant, a version or a path from a client is never an input:
+    /// the bytes are found only through the file's row, which row-level security limits to the caller's workspace.</summary>
+    private static readonly Dictionary<string, string[]> ReviewedInputs = new()
+    {
+        ["GET /files"] = ["search", "take"],
+        ["GET /{id:guid}/files"] = ["id"],
+        ["POST /{id:guid}/files"] = ["id", "name"],
+        ["GET /files/{id:guid}/content"] = ["id", "inline"],
+        ["DELETE /files/{id:guid}"] = ["id"],
+    };
+
+    /// <summary>The parameters of a handler that carry something a client sent (route, query, header and body values), by name.</summary>
+    internal static IReadOnlyList<string> ClientInputs(MethodInfo handler) =>
+        [.. handler.GetParameters().Where(p => IsClientValue(p.ParameterType) || p.GetCustomAttributes().Any(a => a.GetType().Name is "FromQueryAttribute" or "FromHeaderAttribute" or "FromBodyAttribute" or "FromRouteAttribute" or "FromFormAttribute"))
+            .Select(p => p.Name!).Order(StringComparer.Ordinal)];
+
+    private static bool IsClientValue(Type type)
+    {
+        type = Nullable.GetUnderlyingType(type) ?? type;
+        return type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(Guid) || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(decimal)
+            || type == typeof(Uri) || type == typeof(byte[]);
+    }
+
+    [Fact]
+    public void Attachment_endpoints_read_only_the_reviewed_client_inputs_and_no_storage_key()
+    {
+        var endpoints = fixture.Env.Factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+            .Where(e => (e.RoutePattern.RawText ?? "").StartsWith("/api/attachments/", StringComparison.Ordinal)).ToList();
+        Assert.NotEmpty(endpoints);
+        var problems = new List<string>();
+        foreach (var endpoint in endpoints)
+        {
+            var raw = endpoint.RoutePattern.RawText!;
+            var method = endpoint.Metadata.GetMetadata<Microsoft.AspNetCore.Routing.IHttpMethodMetadata>()!.HttpMethods.Single();
+            var shape = raw[(raw.IndexOf('/', "/api/attachments/".Length) < 0 ? raw.Length : raw.IndexOf('/', "/api/attachments/".Length))..];
+            var key = $"{method} {shape}";
+            var handler = endpoint.Metadata.GetMetadata<MethodInfo>();
+            if (handler is null)
+            {
+                problems.Add($"{method} {raw}: the handler cannot be inspected");
+            }
+            else if (!ReviewedInputs.TryGetValue(key, out var expected))
+            {
+                problems.Add($"{method} {raw}: not one of the five reviewed attachment endpoints");
+            }
+            else if (!ClientInputs(handler).SequenceEqual(expected.Order(StringComparer.Ordinal)))
+            {
+                problems.Add($"{method} {raw} reads {string.Join(", ", ClientInputs(handler))} from the client; the reviewed inputs are {string.Join(", ", expected)}");
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
+    /// <summary>Calls of the store outside the store: the tenant is the caller's (<c>tenant.TenantId</c>, or the seeded tenant), and a key is one read from
+    /// the file's row (found under row-level security) or the one the store just made; never a value from the request.</summary>
+    internal static IEnumerable<string> StoreCallProblems(string name, IReadOnlyList<string> lines)
+    {
+        string[] tenants = ["tenant.TenantId", "tenantId", "context.Tenant.Id"];
+        string[] keys = ["file.StorageKey", "blob.Key", "key"];
+        for (var i = 0; i < lines.Count; i++)
+        {
+            var code = Regex.Replace(lines[i], "//.*$", "");
+            foreach (Match call in Regex.Matches(code, @"\bstore\.(OpenAsync|DeleteAsync|SaveAsync)\("))
+            {
+                var op = call.Groups[1].Value;
+                var args = Arguments(code[(call.Index + call.Length)..]);
+                var tenantArg = args.ElementAtOrDefault(0)?.Trim() ?? "";
+                var keyArg = args.ElementAtOrDefault(1)?.Trim() ?? "";
+                if (!tenants.Contains(tenantArg))
+                {
+                    yield return $"{name}:{i + 1}: store.{op} takes the tenant from '{tenantArg}'; it must be the caller's (tenant.TenantId)";
+                }
+                if (op != "SaveAsync" && !keys.Contains(keyArg))
+                {
+                    yield return $"{name}:{i + 1}: store.{op} takes the key from '{keyArg}'; it must come from the file's row or the store's own answer";
+                }
+            }
+            foreach (Match assignment in Regex.Matches(code, @"\b(?:var|Guid|string)\s+(tenantId|key|file)\s*=\s*(.+?);"))
+            {
+                var value = assignment.Groups[2].Value.Trim();
+                var fine = assignment.Groups[1].Value switch
+                {
+                    "tenantId" => value == "tenant.TenantId",
+                    "key" => value == "file.StorageKey",
+                    _ => value.StartsWith("await FindAsync(", StringComparison.Ordinal) || value.StartsWith("await query.SingleOrDefaultAsync(", StringComparison.Ordinal) || value.StartsWith("new AttachedFile", StringComparison.Ordinal),
+                };
+                if (!fine)
+                {
+                    yield return $"{name}:{i + 1}: '{assignment.Groups[1].Value}' is set from '{value}'; the tenant is the caller's, the key and the file are the file row's";
+                }
+            }
+        }
+    }
+
+    /// <summary>The top-level arguments of a call whose text starts just after its opening parenthesis.</summary>
+    private static List<string> Arguments(string text)
+    {
+        var args = new List<string>();
+        var depth = 0;
+        var start = 0;
+        for (var i = 0; i < text.Length; i++)
+        {
+            switch (text[i])
+            {
+                case '(' or '[' or '{':
+                    depth++;
+                    break;
+                case ')' or ']' or '}' when depth == 0:
+                    args.Add(text[start..i]);
+                    return args;
+                case ')' or ']' or '}':
+                    depth--;
+                    break;
+                case ',' when depth == 0:
+                    args.Add(text[start..i]);
+                    start = i + 1;
+                    break;
+            }
+        }
+        args.Add(text[start..]);
+        return args;
+    }
+
+    [Fact]
+    public void The_store_is_called_with_the_callers_tenant_and_a_key_from_the_files_row()
+    {
+        var problems = new List<string>();
+        var files = MoneyGateTests.SourceFiles("src/Modules/Attachments", "*.cs").Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Migrations{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+            && Path.GetFileName(f) != "LocalAttachmentStore.cs").ToList();
+        Assert.True(files.Count >= 4, $"{files.Count} source files of the attachments module");
+        var calls = 0;
+        foreach (var file in files)
+        {
+            var lines = File.ReadAllLines(file);
+            calls += lines.Sum(l => Regex.Matches(l, @"\bstore\.(OpenAsync|DeleteAsync|SaveAsync)\(").Count);
+            problems.AddRange(StoreCallProblems(Path.GetRelativePath(Repo.Root, file), lines));
+        }
+        Assert.True(calls >= 6, $"{calls} calls of the store found; the scan is not reading the endpoints");
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
+    [Fact]
+    public void The_input_and_store_call_checks_catch_a_client_supplied_storage_key_a_version_parameter_and_a_foreign_tenant()
+    {
+        // The plant of round 1's critic: an optional 'version' query value opened as a storage key, its tenant parsed from the key.
+        static Task<object> Plant(Guid id, bool? inline, string? version) => Task.FromResult<object>(new());
+        static Task<object> Fine(Guid id, bool? inline, AttachmentsDbContextStub db, HttpContext http) => Task.FromResult<object>(new());
+        Assert.Equal(["id", "inline", "version"], ClientInputs(((Delegate)Plant).Method));
+        Assert.Equal(["id", "inline"], ClientInputs(((Delegate)Fine).Method));
+        Assert.NotEmpty(StoreCallProblems("Evil.cs", ["var stream = await store.OpenAsync(tenant.TenantId, version, ct);"]));
+        Assert.NotEmpty(StoreCallProblems("Evil.cs", ["var stream = await store.OpenAsync(ParseTenant(version), file.StorageKey, ct);"]));
+        Assert.NotEmpty(StoreCallProblems("Evil.cs", ["var key = http.Request.Query[\"version\"];"]));
+        Assert.NotEmpty(StoreCallProblems("Evil.cs", ["var tenantId = Guid.Parse(key.Split('/')[0]);"]));
+        Assert.NotEmpty(StoreCallProblems("Evil.cs", ["var file = await db.Files.IgnoreQueryFilters().FirstAsync(ct);"]));
+        Assert.Empty(StoreCallProblems("Fine.cs", ["var file = await FindAsync(record, fileId, db, http, tracked: false, ct);", "var stream = await store.OpenAsync(tenant.TenantId, file.StorageKey, ct);",
+            "var key = file.StorageKey;", "var tenantId = tenant.TenantId;", "await store.DeleteAsync(tenantId, key, CancellationToken.None);", "blob = await store.SaveAsync(tenantId, body, max, ct);",
+            "// store.OpenAsync(x, y, z) in a comment"]));
+    }
+
+    private sealed class AttachmentsDbContextStub;
 
     [Fact]
     public async Task The_database_refuses_a_file_row_that_names_another_tenants_bytes_and_a_row_without_a_checksum()
