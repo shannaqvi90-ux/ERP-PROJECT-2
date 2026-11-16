@@ -1,0 +1,185 @@
+[1mClean stack: build, migrate, seed, serve (project c-p11-attachments-r3-verify, port 21160)[0m
+[1mBuilding the application image[0m
+ Image erp-app:c-p11-attachments-r3-verify Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 684B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.35kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 1.3s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#5 DONE 0.2s
+
+#6 [internal] load metadata for docker.io/library/node:22-alpine
+#6 ...
+
+#7 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#7 DONE 0.2s
+
+#6 [internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 1.1s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.0s
+
+#9 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:fe0fd4e93bd2fbb47c883b7a6369e5c8d3db8bf01cdc5981f6ee35fbdf3ff4fb
+#9 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:fe0fd4e93bd2fbb47c883b7a6369e5c8d3db8bf01cdc5981f6ee35fbdf3ff4fb 0.1s done
+#9 DONE 0.1s
+
+#10 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+#10 resolve docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a 0.1s done
+#10 DONE 0.1s
+
+#11 [stage-3 1/5] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:bfd912c83295ce66d4b706ebb8541b9f14259b0e76fbb88b2751f58ce2399d2e
+#11 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:bfd912c83295ce66d4b706ebb8541b9f14259b0e76fbb88b2751f58ce2399d2e 0.1s done
+#11 DONE 0.1s
+
+#12 [internal] load build context
+#12 transferring context: 49.82kB 0.1s done
+#12 DONE 0.1s
+
+#13 [stage-3 3/5] COPY --from=build /app ./
+#13 CACHED
+
+#14 [strings 2/3] COPY web/src/modules/ /modules/
+#14 CACHED
+
+#15 [web 5/6] COPY web/ ./
+#15 CACHED
+
+#16 [stage-3 4/5] COPY --from=web /web/dist ./wwwroot
+#16 CACHED
+
+#17 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#17 CACHED
+
+#18 [build 4/7] COPY src/ src/
+#18 CACHED
+
+#19 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#19 CACHED
+
+#20 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#20 CACHED
+
+#21 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#21 CACHED
+
+#22 [web 6/6] RUN npm run check && npm run build
+#22 CACHED
+
+#23 [stage-3 2/5] WORKDIR /app
+#23 CACHED
+
+#24 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#24 CACHED
+
+#25 [web 2/6] WORKDIR /web
+#25 CACHED
+
+#26 [web 3/6] COPY web/package.json web/package-lock.json ./
+#26 CACHED
+
+#27 [build 2/7] WORKDIR /src
+#27 CACHED
+
+#28 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#28 CACHED
+
+#29 [stage-3 5/5] RUN mkdir -p /data/attachments && chown app:app /data/attachments
+#29 CACHED
+
+#30 exporting to image
+#30 exporting layers done
+#30 exporting manifest sha256:af3910d392017e24f50e19ad9a0e5d0a6efa7e353a82b8bfba1543d4adcfe2ef done
+#30 exporting config sha256:7d6885455bde4e28dc3b3e244e5b6b98153bef26c4011ccb53c9617b32b15fd7 done
+#30 exporting attestation manifest sha256:b524891af34cf419d5c4c898d976525f157623c56fc88cf29274d5188dc43cf4 0.1s done
+#30 exporting manifest list sha256:f8cc3d6d08ed7fcd72c2de158a62ac54e37a4aa0afd1e3b7fb29fc73f93bac92
+#30 exporting manifest list sha256:f8cc3d6d08ed7fcd72c2de158a62ac54e37a4aa0afd1e3b7fb29fc73f93bac92 0.0s done
+#30 naming to docker.io/library/erp-app:c-p11-attachments-r3-verify done
+#30 unpacking to docker.io/library/erp-app:c-p11-attachments-r3-verify 0.0s done
+#30 DONE 0.2s
+
+#31 resolving provenance for metadata file
+#31 DONE 0.0s
+ Image erp-app:c-p11-attachments-r3-verify Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+ Network c-p11-attachments-r3-verify_default Creating 
+ Network c-p11-attachments-r3-verify_default Created 
+ Volume c-p11-attachments-r3-verify_db-data Creating 
+ Volume c-p11-attachments-r3-verify_db-data Created 
+ Container c-p11-attachments-r3-verify-db-1 Creating 
+ Container c-p11-attachments-r3-verify-db-1 Created 
+ Container c-p11-attachments-r3-verify-db-1 Starting 
+ Container c-p11-attachments-r3-verify-db-1 Started 
+ Container c-p11-attachments-r3-verify-db-1 Waiting 
+ Container c-p11-attachments-r3-verify-db-1 Healthy 
+ Volume c-p11-attachments-r3-verify_attachments-data Creating 
+ Volume c-p11-attachments-r3-verify_attachments-data Created 
+ Container c-p11-attachments-r3-verify-db-1 Running 
+ Container c-p11-attachments-r3-verify-setup-1 Creating 
+ Container c-p11-attachments-r3-verify-setup-1 Created 
+Attaching to setup-1
+ Container c-p11-attachments-r3-verify-db-1 Waiting 
+ Container c-p11-attachments-r3-verify-db-1 Healthy 
+ Container c-p11-attachments-r3-verify-setup-1 Starting 
+ Container c-p11-attachments-r3-verify-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 7 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 9 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 15 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating NumberingDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CurrencyDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating JobsDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ContactsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CustomFieldsDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating AttachmentsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 15106 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 7162 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 2061 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p11-attachments-r3-verify-setup-1 Stopping 
+ Container c-p11-attachments-r3-verify-setup-1 Stopped 
+ Container c-p11-attachments-r3-verify-db-1 Running 
+ Container c-p11-attachments-r3-verify-worker-1 Creating 
+ Container c-p11-attachments-r3-verify-app-1 Creating 
+ Container c-p11-attachments-r3-verify-app-1 Created 
+ Container c-p11-attachments-r3-verify-worker-1 Created 
+ Container c-p11-attachments-r3-verify-db-1 Waiting 
+ Container c-p11-attachments-r3-verify-db-1 Healthy 
+ Container c-p11-attachments-r3-verify-setup-1 Starting 
+ Container c-p11-attachments-r3-verify-setup-1 Started 
+ Container c-p11-attachments-r3-verify-setup-1 Waiting 
+ Container c-p11-attachments-r3-verify-setup-1 Waiting 
+ Container c-p11-attachments-r3-verify-setup-1 Exited 
+ Container c-p11-attachments-r3-verify-worker-1 Starting 
+ Container c-p11-attachments-r3-verify-setup-1 Exited 
+ Container c-p11-attachments-r3-verify-app-1 Starting 
+ Container c-p11-attachments-r3-verify-app-1 Started 
+ Container c-p11-attachments-r3-verify-worker-1 Started 

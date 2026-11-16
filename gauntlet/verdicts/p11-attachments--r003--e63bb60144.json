@@ -1,0 +1,123 @@
+{
+  "piece": "p11-attachments",
+  "round": 3,
+  "commit": "e63bb60144d02fda1a138740877f5211107fcd7d",
+  "judged_at": "2026-11-16T19:54:18Z",
+  "critic": "fresh critic, p11-attachments round 3",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation, real product (critic's own attack)",
+      "status": "pass",
+      "evidence": "Seeded demo on :21150, tenant A admin@alnoor against tenant B admin@gulfsteel. B uploaded a canary file (b-secret-canary-Q7Z.txt). With B's ids, A got 404 on: list of B's contact files (also with X-Tenant-Id), upload to B's contact (bytes and JSON), content and content?inline of B's file, a traversal path, and B's file id under another kind. A's file search for 'b-secret' and 'Q7Z' returned []. DELETE of B's file answered 204 (it is idempotent by design) and B's file was still there and readable by B afterwards. The 'Trade licence' and 'Delivery note' searches give 5 matches per tenant with no shared ids, and B cannot read any of A's seeded files. Traversal names ('../../etc/passwd.txt', '..\\\\x.txt', '../<B hex>/evil.txt', 'a/b/c.txt', RLO) are stored as clean base names. DB: attachments.files has RLS enabled and forced (tenant_id = erp.current_tenant_id()). erp_app, erp_worker, erp_owner and erp_auth have no BYPASSRLS and are not superusers. erp_app with no tenant set sees 0 rows; erp_worker has no access to the schema. Bytes are kept in /data/attachments/<tenant hex>/<random id>. A CHECK ties storage_key to tenant_id. No export or job reads attachments. Files: probes/attack.mjs, probes/attack-output.txt, probes/db-checks.txt"
+    },
+    {
+      "gate": "G1 gate suites (G1AttachmentsAttackTests, G1HttpIsolationTests, G1DatabaseIsolationTests, G1ListVolumeTests, G1CompanyIsolationTests, GateSelfTests)",
+      "status": "pass",
+      "evidence": "Verify run 2 (trx): G1AttachmentsAttackTests passed (2 m 31 s), G1HttpIsolationTests passed (4 h 14 m), G1DatabaseIsolationTests 12/12, G1ListVolumeTests 2/2 (27 m), G1CompanyIsolationTests 3/3, GateSelfTests 24/24. All five attachment endpoints are attacked, and the new file search is among them. verify-run2/kept/*/trx"
+    },
+    {
+      "gate": "Planted faults on p11's surface (gate test)",
+      "status": "pass",
+      "evidence": "plant.diff and plant-gates-run.log. Plant A: the file search caches results by kind and text with no tenant in the key (a cross-tenant leak). Caught by G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed and by G1AttachmentsAttackTests, which found 4 leaks: tenant A's search for B's seeded file names returned B's file ids. Plant B1: RequirePermission removed from the search endpoint. The kernel refuses to start ('Endpoint authorisation is incomplete: GET /api/attachments/contacts.contacts/files: declares no permission'; see plant-B1-note.txt). Plant B2: upload put under the read permission, with the reviewed map edited to match. Caught by 4 tests: AttachmentsWriteSetTests (2), AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions, and G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission. No new gate gap."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "API: viewer@ can list (200) and search (200), but upload and delete answer 403. noaccess@ gets 403 on list, search, content, upload and delete. Anonymous content gets 401. Browser: the viewer sees the paperclip, the names line and Download, with 0 Add files and 0 Delete buttons (browser/notes-en.txt from the viewer run). In run 2, G2PermissionTests 33/33, AttachmentsWriteSetTests 2/2 and AttachmentGateTests 7/7 passed."
+    },
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and passes all tests",
+      "status": "fail",
+      "evidence": "Four ./erp verify runs of a fresh clone through the slot script (two-slot cap, not alone). None passed end to end, and every failure is outside p11's code and tied to load. Run 1 (10:20Z, stopped 10:50Z): vitest web/src/modules/shell/clientIsolation.test.tsx 10 failed (first timed out at 30 s, the rest cascaded with happy-dom null 'type'); load avg 71, max 95 (my demo seeding plus another verify). Run 2 (slot 11:19:47Z, ended 16:09:34Z, 17,387 s): every test passed, 2,513 of 2,513 (.NET 1,106, vitest 749, build 13, comparison harness 489, Playwright 156). The e2e stage still failed, because the harness health check of the built ours drivers marked configure-sequence (p10) and see-converted (p08) 'invalid' ('a StyleRecalcInvalidationTracking of no traceable origin after ... a DevTools command of the harness during step 2/3'); load in that window avg 16.5, max 29.2. Run 3 (slot 16:37Z, stopped 16:47Z): 83 vitest failures (paletteActions 58, CompaniesPage 14, clientIsolation 10, navigationReopen 1) at load avg 80, max 106, with another agent's parallel gate measurement running. Run 4 (slot 19:04Z, stopped 19:53Z): vitest 749/749 passed, but harness tests 'control C3', 'plant P3' and 'plant N2d' failed at load avg 45, max 66. Logs: verify-run1-stopped/, verify-run2/, verify-run3/, verify-run4/ (each with kept/ stage logs and load samples). ./erp up from the clone: 684 s to a seeded demo (653 s with the comparison dataset)."
+    },
+    {
+      "gate": "Rule gates (audit, money, strings, licences) on p11's surface",
+      "status": "pass",
+      "evidence": "Every upload and delete leaves an audit.entries row (attachments.files) with actor_id, actor_kind 'user', the file name as label and old/new values, and the storage key excluded (probes/audit-rows.txt). There are no money fields. The string check passed in run 2 ('1547 keys in English and Arabic'). Licence gate and AuditGateTests passed in run 2."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p11-attachments-r3 ERP_HTTP_PORT=21150 ERP_DB_PORT=21151 ERP_VERIFY_HTTP_PORT=21160 ERP_VERIFY_DB_PORT=21161 ERP_VERIFY_LOG=<scratch>/verify-critic-p11-attachments-r3-run2.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify (run 2 of 4; fresh clone of e63bb601)",
+    "total": 2513,
+    "passed": 2513,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 17387
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 17387,
+    "evidence": "Run 2 is the best of four. All 2,513 tests passed, but ./erp verify exited 1: the e2e stage's comparison-harness health check marked two non-p11 ours drivers (configure-sequence, see-converted) 'invalid' through the harness's own DevTools timing, at load avg 16.5, max 29.2. The other runs failed on load-sensitive web unit tests (load 71 to 106) or harness self-tests (load 45 to 66), all outside p11. Processor time of run 2 was 26,198 s (dotnet 21,791, web 2,993, e2e 1,415) on a busy machine, against the 20,800 maximum; another verify and the lead's parallel gate measurements ran beside it. ./erp up from the clean clone: 684 s to a running seeded demo."
+  },
+  "odoo": [
+    {
+      "task": "attach-file",
+      "winner": "ours",
+      "ours": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.177,
+        "klm_seconds": 4.15
+      },
+      "odoo": {
+        "steps": 3,
+        "keystrokes": 0,
+        "seconds": 0.294,
+        "klm_seconds": 6.8
+      },
+      "notes": "--product both --repeat 3, medians. The harness verdict is win: ours is better on steps, machine seconds, human seconds and human+wait (4.235 vs 6.876). Keystrokes are left out because both are 0 (needs-human #11). Ours ran on a demo with ERP_SEED_CONTACTS_CSV and ERP_SEED_USERS_CSV (the comparison dataset); Odoo ran on the shared rig at :8069. See compare/comparisons/attach-file.json."
+    },
+    {
+      "task": "open-attached-file",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.089,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 0.259,
+        "klm_seconds": 5.3
+      },
+      "notes": "Round 1 had this as a tie. Now the harness verdict is win: ours opens the file with one click on its name under the record's heading, while Odoo needs the paperclip and then the card. Ours is better on steps, machine seconds, human seconds and human+wait (2.655 vs 5.307). Keystrokes are left out because both are 0. The task's file is the PNG fixture. Unmeasured: a file older than the newest three is behind 'N more' and then Preview, which is 2 clicks, the same as Odoo. See compare/comparisons/open-attached-file.json."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p11-attachments/r3/en-01-contact-top.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-02-altA-enter-viewer.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-03-three-uploaded-keyboard.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-04-drag-over.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-05-drop-result-refusal.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-06-text-preview.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-07-palette-file-search.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-08-delete-confirm.jpg",
+    "gauntlet/evidence/p11-attachments/r3/en-10-record-history-files.jpg",
+    "gauntlet/evidence/p11-attachments/r3/ar-01-contact-top.jpg",
+    "gauntlet/evidence/p11-attachments/r3/ar-03-three-uploaded-keyboard.jpg",
+    "gauntlet/evidence/p11-attachments/r3/ar-06-text-preview.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Files can be attached only to contacts, not to any record",
+    "detail": "The spec says 'upload, download, preview and delete files on any record'. Only the contacts module registers a kind of record that takes files. Companies, branches, users, roles, currencies and every other record with a form have no attachments section, no paperclip and no file endpoints. A UAE trading or manufacturing company keeps its trade licence, TRN certificate and tenancy contract on the company or branch, and staff documents on the user, so it would still go to Odoo, where every record with a chatter takes files. Round 1's critic listed this, and round 3 did not extend it. Everything else in p11 now beats Odoo on its two compared tasks.",
+    "evidence": "curl -s localhost:<port>/api/openapi/v1.json | grep -o '\"/api/attachments/[^\"]*\"' lists only /api/attachments/contacts.contacts/... (5 routes). GET /api/attachments/identity.users/files/<id>/content answers 404 (no such kind; probes/attack-output.txt). Source: the only AttachmentRecord registration is src/Modules/Contacts/Erp.Modules.Contacts/ContactsModule.cs:55. web/src/modules/attachments/RecordFiles.tsx:12-17 lists only 'contacts.contacts' in attachmentKinds and recordRoutes. Open any company or branch form in the demo: there is no paperclip and no attachments section."
+  },
+  "gate_gaps": [],
+  "other_findings": [
+    "Audit display: the record header's last-change line shows a file change as if it were a change to the contact itself. After a file is removed, a contact that is not deleted reads 'Deleted by Mariam Al Mansoori · 16 Nov 2026, 2:59 PM' under its title. In Arabic it reads 'حذفه فاطمة الزعابي'. After an upload it reads 'Created by ...', with the upload time as if the contact were created then. The History panel does tag the same row 'Attachment', but the header does not. Repro: delete any file of a contact, reopen it, and read the line under the names. Screenshots en-01-contact-top.jpg, ar-01-contact-top.jpg, en-10-record-history-files.jpg. Likely cause: round 3 links the attachments.files audit rows to the parent record (OwnerField/ParentKindField), and the header's verb is taken from the file row's action.",
+    "File types: TIFF (scanned documents) and HEIC (phone photos) are refused with 415. zip, eml and msg are now accepted (probes/types-output.txt). Arabic file names are stored and found by the file search ('رخصة تجارية.pdf').",
+    "Fixed since round 1 and confirmed in the browser in English and Arabic by keyboard: a paperclip with a count in the toolbar, Alt+A to the files, the newest three names under the heading (one click opens a file), Ctrl+K file search that opens the record and shows the file, text preview (RTL text shown in its own direction), a table that no longer cuts Delete, file changes in the History panel, and 'Added by' filled for seeded files. Several files at once through the chooser, drag and drop with a refused .exe explained in place, delete confirm (focus starts on Cancel: Enter, Tab, Enter), and keyboard download all work. No 5xx and no page errors in any run.",
+    "Keyboard note, not a product fault: in a fresh headless page, Enter on an 'Add files' button that only had programmatic focus did not open the file chooser (Space and click did). After a real gesture, Alt+A then Enter opened it every time (browser/fc.mjs, browser/fc2.mjs).",
+    "Gate backlog row 18 (round 1's planted client-supplied storage key that G1AttachmentsAttackTests missed) is still Open in gauntlet/gate-backlog.md. I did not plant it again.",
+    "[route: p01-odoo-rig] Verify run 2 failed only because the e2e stage's harness health check marked configure-sequence and see-converted 'invalid' ('a StyleRecalcInvalidationTracking of no traceable origin ... a DevTools command of the harness during step 2/3') at load avg 16.5, max 29.2. In run 4, harness tests 'control C3', 'plant P3' and 'plant N2d' failed at load avg 45, max 66. Same class as gate backlog row 8. verify-run2/verify.log lines ~3034-3049, verify-run4/verify.log.",
+    "[route: p04-shell] web/src/modules/shell/clientIsolation.test.tsx failed 10/10 in run 1 (load avg 71: first test timed out at 30 s, the rest cascaded with happy-dom 'Cannot read properties of null (reading type)'). In run 3, at load avg 80 and max 106, paletteActions.test.tsx failed 58 and navigationReopen 1, together with [route: p02-tenancy] CompaniesPage.test.tsx 14 and clientIsolation 10. The same files passed 749/749 in runs 2 and 4.",
+    "Load and processor time: run 2 used 26,198 processor seconds (dotnet 21,791, web 2,993, e2e 1,415) beside another verify and the lead's parallel gate measurements (run load avg 17.4, max 58.8), against the 20,800 maximum. This is not an integrator's alone measurement. Total tests rose from 2,447 in round 1 to 2,513.",
+    "None of the failures looks random. Each repeats a known load-sensitive class, so I see no sign of a memory fault."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p11-attachments/r3",
+  "evidence_dir": "gauntlet/evidence/p11-attachments/r3"
+}

@@ -1,0 +1,6 @@
+Plant B1 (first plant run, 2026-11-16 ~11:13Z): RequirePermission removed from GET /api/attachments/{kind}/files (the file search).
+Result: every test of the run failed at start-up, because the kernel refuses to start (fail-fast):
+  System.InvalidOperationException : Endpoint authorisation is incomplete:
+  HTTP: GET /api/attachments/contacts.contacts/files: declares no permission
+  at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints (ErpPlatform.cs:296)
+So an endpoint with no permission at all cannot ship: caught by construction. Plant B2 (upload under the read permission, reviewed map edited to match) replaced it.
