@@ -157,4 +157,64 @@ Nothing is removed, narrowed, sampled down, retried or given a longer timeout, a
   against the risk, and it needs the same set of fixes the HTTP attack needed.
 - Steadier processor time: see the last section.
 
-(Measurements, processor time and notes for the integrator follow in the sections below.)
+## Measured
+
+All numbers are from this machine (16 threads, 64 GB), the dotnet stage alone.
+
+**Before**: the round-19 critic's alone verify of 494c5e27 (`ERP_VERIFY_ALONE=1`, load 0.1 at the start;
+`verify-critic-p00-foundation-r19.log` and `ratchet-check.txt`): stage dotnet 10,374 s wall, 16,534 s
+of processor time (the toolbox container, what `verify.cpuSeconds` counts); the whole verify 11,655 s
+wall and 19,648 s (dotnet 16,534, web 2,346, e2e 646, timing 122); the machine's busy time over the
+run 55,057 s, of which 64.3 % was other work beside the verify (the PostgreSQL containers).
+
+**After**: `build/verify-inside.sh dotnet` of this branch (4f22209d, the commit before the last fixes
+below), run as `./erp` runs it (same toolbox image, volumes and variables) through
+`ERP_VERIFY_ALONE=1 verify-slot.sh`; slot taken 2026-11-16T17:43:12Z, load 3.7 at the start, mean 37.6
+and highest 99 over 325 readings (16 threads), at most 22 GB of memory in use.
+
+| | Before (r19, alone) | After |
+|---|---|---|
+| Stage dotnet, wall | 10,374 s | **4,871 s (-53 %)** |
+| Stage dotnet, processor time (counted by the ratchet) | 16,534 s | **23,302 s (+6,768 s, +41 %)** |
+| Machine's busy time over the stage | about 52,000 s | 59,028 s |
+
+The groups (seconds from the slot taken; all in parallel):
+
+| Group | Ended after | Tests |
+|---|---|---|
+| projects (every other test project) | 350 | 823 |
+| self-noninterference | 876 | 8 |
+| self-company | 1,358 | 2 |
+| self-http | 2,631 | 1 |
+| gates-rest | 2,970 | 287 |
+| listvolume | 3,142 | 2 (one failed, below) |
+| http-1 | 3,624 | 1 |
+| http-3 | 3,829 | 1 |
+| http-0 | 3,939 | 1 |
+| http-2 | 4,454 | 1 |
+| noninterference | 4,858 | 1 |
+| http-judge | 4,871 | 1 |
+
+The longest group is now `G1NonInterferenceTests` (80 min with everything else running; 55 min in the
+round-19 run), then the shares (60 to 74 min; 34 to 44 min each when run alone on a quiet machine, 56 to
+65 min when the four ran together). The stage is bound by the machine, not by one test: 59,028 s of
+busy time over 16 threads is 3,690 s at the very best, and the stage took 4,871 s.
+
+**Processor time.** The work is the same, the counted time is not: the four shards run one after the
+other on this machine used 11,020 s of processor time together (user + system, `time -v`) against the
+10,894 s the one unsharded test used in the p09 fixer's alone run; the same four shards run together
+used 13,959 s (load 15 to 20 from other agents' work); the whole stage with twelve groups at once, 23,302 s
+(load 37 on average). The processor time of one piece of work rises with the number of threads competing
+for the 8 cores behind the 16 threads (hyper-threads sharing a core, context switches, caches), so
+running more processes at once shortens the wall time and lengthens the counted processor time. **`verify.cpuSeconds`
+would measure 23,302 s for the dotnet stage on this tree where it measured 16,534 s: the whole verify
+would be about 26,400 s against the maximum of 20,800 s. The ratchet is untouched; these numbers are for the owner before any change.**
+Ways to bring the counted time down are a cap on how many groups run at once (a knob not built: no run of
+the in-between settings was measured), fewer, larger shares, or the owner raising the maximum.
+
+**One test failed in the measured run**: `G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume`,
+one answer: tenant B `GET /api/audit/log?take=100&search=%D8%A7&skip=119380` answered 500 after
+0.9 s (no trace id in the report: the test did not annotate it; it does now). That group is unchanged
+by this round except that it runs in a process of its own. See "Run again" below.
+
+
