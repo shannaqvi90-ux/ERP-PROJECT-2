@@ -75,7 +75,6 @@ public static class SelfTestProcess
     public const string Http = "self-http";
     public const string Company = "self-company";
     public const string NonInterference = "self-noninterference";
-    public const string Shards = "self-shards";
 }
 
 [Collection(LeakyModuleCollection.Name)]

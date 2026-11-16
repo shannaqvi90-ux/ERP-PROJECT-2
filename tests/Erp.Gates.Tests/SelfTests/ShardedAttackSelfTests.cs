@@ -13,11 +13,10 @@ namespace Erp.Gates.Tests.SelfTests;
 /// array handed to the next writer, an Arabic-only greeting naming the previous caller, a static
 /// cache, a singleton holding the last list) are all found by the two shares together, from the
 /// share that attacks the endpoint and in both directions. The shares' own checks (disjoint, every
-/// scoped endpoint attacked once) are asserted too. Process-wide planted state is static, so this runs
-/// in a test process of its own (trait Process), like the other long self-tests.
+/// scoped endpoint attacked once) are asserted too. Process-wide planted state is static, so it takes turns with the other planted-module tests
+/// (<see cref="LeakyModuleCollection"/>); ./erp verify runs it in the gates-rest group.
 /// </summary>
 [Collection(LeakyModuleCollection.Name)]
-[Trait(SelfTestProcess.Trait, SelfTestProcess.Shards)]
 public sealed class ShardedAttackSelfTests
 {
     // Method, then the path (a path ending in a slash stands for every route under it).

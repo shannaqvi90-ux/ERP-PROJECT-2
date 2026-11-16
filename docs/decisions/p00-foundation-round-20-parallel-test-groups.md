@@ -105,7 +105,7 @@ shares' set-up. In `./erp verify` `ERP_GATE_SHARD_DIR` is set and the judge neve
 Testcontainers PostgreSQL server (the test library has always started one server per process) and its
 own databases, longest first: `http-0` to `http-3` (the shares), `noninterference`
 (G1NonInterferenceTests), the three planted-module self-tests as before (`self-http`, `self-company`,
-`self-noninterference`), `self-shards` (new, below), `listvolume` (G1ListVolumeTests), `gates-rest` (every
+`self-noninterference`), `listvolume` (G1ListVolumeTests), `gates-rest` (every
 other gate test) and `projects` (every other test project). After they have all ended `http-judge` runs.
 Row-level security and tenant isolation tests run against real PostgreSQL with row-level security in
 every group; nothing is in memory.
@@ -131,7 +131,7 @@ Reports: one TRX per group in `trx/` (`http-0_...trx`, `projects_...trx`, ...), 
   list in any one share, a number below its ratchet minimum when added up, one share below the minimum of
   a number every share must reach, header names below the minimum, workspace writes that do not equal
   their refusals.
-- `ShardedAttackSelfTests` (new process `self-shards`): the planted module's leaks, filled through an
+- `ShardedAttackSelfTests` (new; in `gates-rest`, where it takes turns with the other planted-module tests): the planted module's leaks, filled through an
   endpoint of one share and read through an endpoint of the other, each share in an environment of its
   own, are all found: the captured array handed to the next writer in both directions, the Arabic-only
   greeting, the static cache, the singleton holding the last list, the tenant header and the route id.
