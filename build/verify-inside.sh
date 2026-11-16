@@ -116,10 +116,29 @@ case "$stage" in
     # cost, and the decoy of an unknown address keeps the production cost.
     export ERP_TEST_PASSWORD_ITERATIONS=10000
     rm -rf "$out/trx"
-    # Four test processes side by side: every test project (the gate self-tests below excepted),
-    # and the three long self-tests of the planted module, each in a process of its own. Their
-    # planted state is static, so in one process they would have to take turns (they do, in a
-    # plain dotnet test); separate processes keep it apart. Every test still runs exactly once.
+    # Test groups side by side, each in a test process of its own, so each has a PostgreSQL server
+    # (Testcontainers) and databases of its own (round 20, owner decision #50: the alone verify's
+    # wall time was one test, the G1 HTTP attack, 2 h 40 min of a 2 h 53 min stage). Every test still
+    # runs exactly once: the groups' filters partition the tests (checked below, before anything runs).
+    #   projects          every test project but the gates
+    #   gates-rest        the gate tests that are in none of the groups below
+    #   noninterference   G1NonInterferenceTests
+    #   listvolume        G1ListVolumeTests
+    #   http-0 .. http-3  the G1 HTTP attack, one share of the endpoints each (AttackShard.GateCount);
+    #                     each leaves its result in $ERP_GATE_SHARD_DIR
+    #   http-judge        the verdict on the shares' results, after the four shares are done
+    #   self-http, self-company, self-noninterference
+    #                     the three long self-tests of the planted module, each in a process of its
+    #                     own: their planted state is static, so in one process they would have to
+    #                     take turns (they do, in a plain dotnet test); separate processes keep it apart
+    gates=tests/Erp.Gates.Tests/Erp.Gates.Tests.csproj
+    http_shards=4
+    selftests=(self-http self-company self-noninterference)
+    in_groups="FullyQualifiedName!~G1HttpIsolation&FullyQualifiedName!~G1NonInterferenceTests&FullyQualifiedName!~G1ListVolumeTests"
+    for p in "${selftests[@]}"; do in_groups="$in_groups&Process!=$p"; done
+    export ERP_GATE_SHARD_DIR="$out/g1-http-shards"
+    rm -rf "$ERP_GATE_SHARD_DIR"
+    mkdir -p "$ERP_GATE_SHARD_DIR"
     dotnet_test() {
       local name="$1"
       shift
@@ -127,16 +146,45 @@ case "$stage" in
           --logger "trx;LogFilePrefix=$name" --logger "console;verbosity=normal" --results-directory "$out/trx" \
           >"$out/dotnet-$name.log" 2>&1
     }
-    selftests=(self-http self-company self-noninterference)
-    exclude="Load!=Timing"
-    for p in "${selftests[@]}"; do exclude="$exclude&Process!=$p"; done
+    list_tests() {
+      dotnet test "$@" -c Release --no-build --verbosity quiet --list-tests 2>&1 | grep '^    ' | sort
+    }
+    step ".NET: the test groups are every test exactly once"
+    list_tests Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
+    {
+      list_tests Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
+      list_tests "$gates" --filter "Load!=Timing&$in_groups"
+      list_tests "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
+      list_tests "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
+      for ((k = 0; k < http_shards; k++)); do list_tests "$gates" --filter "Shard=$k"; done
+      list_tests "$gates" --filter "Judge=http-attack"
+      for p in "${selftests[@]}"; do list_tests "$gates" --filter "Process=$p"; done
+    } | sort >"$out/tests-groups.txt"
+    if ! diff -q "$out/tests-all.txt" "$out/tests-groups.txt" >/dev/null; then
+      echo "The test groups are not every test exactly once:"
+      diff "$out/tests-all.txt" "$out/tests-groups.txt" | head -40
+      exit 1
+    fi
+    echo "$(wc -l <"$out/tests-all.txt") tests, each in exactly one group"
+    step ".NET: unit, integration (Testcontainers PostgreSQL) and gate tests"
+    rm -rf "$out/trx"
+    names=()
     pids=()
-    dotnet_test suite Erp.slnx --filter "$exclude" & pids+=($!)
-    for p in "${selftests[@]}"; do
-      dotnet_test "$p" tests/Erp.Gates.Tests/Erp.Gates.Tests.csproj --filter "Process=$p" & pids+=($!)
-    done
+    start() {
+      local name="$1"
+      shift
+      names+=("$name")
+      dotnet_test "$name" "$@" &
+      pids+=($!)
+    }
+    # The longest first.
+    for ((k = 0; k < http_shards; k++)); do start "http-$k" "$gates" --filter "Shard=$k"; done
+    start noninterference "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
+    for p in "${selftests[@]}"; do start "$p" "$gates" --filter "Process=$p"; done
+    start listvolume "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
+    start gates-rest "$gates" --filter "Load!=Timing&$in_groups"
+    start projects Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
     failed=0
-    names=(suite "${selftests[@]}")
     for i in "${!pids[@]}"; do
       if wait "${pids[$i]}"; then
         echo "== ${names[$i]}: passed"
@@ -145,6 +193,14 @@ case "$stage" in
         failed=1
       fi
     done
+    # The verdict on the HTTP attack's shares runs when every share has left its result (or failed).
+    names+=(http-judge)
+    if dotnet_test http-judge "$gates" --filter "Judge=http-attack"; then
+      echo "== http-judge: passed"
+    else
+      echo "== http-judge: FAILED"
+      failed=1
+    fi
     for name in "${names[@]}"; do
       printf '\n\033[1m-- .NET tests: %s\033[0m\n' "$name"
       cat "$out/dotnet-$name.log"

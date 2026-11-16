@@ -39,158 +39,83 @@ public sealed class G1AttackFixture : IAsyncLifetime
 /// a leak through process-wide state (static fields, singletons, caches) is caught in both
 /// directions.
 /// </summary>
-public sealed class G1HttpIsolationTests(G1AttackFixture fixture) : IClassFixture<G1AttackFixture>
+[Collection(HttpAttackCollection.Name)]
+public sealed class G1HttpIsolationTests
 {
-    private ErpTestEnvironment Env => fixture.Env;
-
+    /// <summary>
+    /// The verdict on the whole attack, which ./erp verify runs in <see cref="AttackShard.GateCount"/>
+    /// test processes side by side (<see cref="G1HttpIsolationShardTests"/>, one share each, each in
+    /// an environment of its own): every share ran, the shares together are every endpoint, nothing was
+    /// found in any share, and the shares' numbers added up reach every ratchet minimum
+    /// (<see cref="HttpAttackJudge"/>). Run by a plain <c>dotnet test</c> (no
+    /// <see cref="HttpAttackShards.DirectoryVariable"/>), a share nobody has run yet runs here.
+    /// </summary>
     [Fact]
+    [Trait("Judge", "http-attack")]
     public async Task Tenant_A_cannot_reach_tenant_B_through_any_endpoint()
     {
-        IsolationReport report;
-        try
+        var (results, missing) = await HttpAttackShards.AllAsync();
+        foreach (var result in results)
         {
-            report = await IsolationAttack.RunAsync(Env);
-        }
-        catch (Exception e) when (e is not TimeoutException)
-        {
-            // A failure without a named request still lists the slowest requests seen before it.
-            throw new InvalidOperationException($"{e.Message}\nSlowest requests seen before the failure:\n{RequestLog.Describe(20)}", e);
-        }
-        TestContext.Current.TestOutputHelper?.WriteLine($"Slowest 20 requests of the attack (seconds, label, method, path):\n{RequestLog.Describe(20)}");
-        foreach (var phase in report.Phases)
-        {
-            TestContext.Current.TestOutputHelper?.WriteLine(phase);
-        }
-        TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{report.BindsJudged} tenant bindings and {report.SettingStatementsJudged} setting statements judged among {report.RequestStatementsTraced} statements; " +
-            $"{report.TenantValuesJudged} tenant values judged, {report.StatementsObserved} statements observed with their parameters; " +
-            $"{report.SwitchInputAttacks} tenant switch inputs over {report.SwitchHeaderNames} header names; {report.ResponsesHeaderJudged} responses judged on every header");
-        TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{report.VictimRouteValuesReplayed} tenant B route values replayed, {report.VictimPreTouches} tenant B opens of the routes A was about to attack");
-        TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{report.EnumValuesAttacked.Count} documented enumeration values sent, {report.EnumVariantPairs} enumeration-variant write pairs; " +
-            $"{report.PartialWriteVariants} partial bodies, {report.PartialWritePairs} accepted on both sides over {report.PartialWriteEndpoints} endpoints");
-        TestContext.Current.TestOutputHelper?.WriteLine(
-            $"{report.EndpointsAttacked} endpoints, {report.Requests} requests, {report.VictimValues} tenant B values, {report.ParameterAttacks} parameter attacks, " +
-            $"{report.BodyValueAttacks} body value attacks, {report.DifferentialChecks} differential checks ({report.AttackerHeldSkips} values tenant A holds itself not compared), {report.TracedLookups} traced lookups");
-        TestContext.Current.TestOutputHelper?.WriteLine(
-            $"in Arabic: {report.ArabicAttackRequests} tenant A requests, {report.VictimArabicRequests} tenant B requests, {report.ArabicWritePairs} write pairs, " +
-            $"{report.ArabicWorkspaceWrites} of {report.ArabicWorkspaceRefusals} workspace-wide writes refused to the branch-limited Arabic administrator made by the workspace-wide one");
-
-        // Every check runs and every failing one is reported together: a plant caught by one
-        // check must not hide whether the others (list answers, process state) caught it too.
-        var failures = new List<string>();
-        void Check(bool condition, string message)
-        {
-            if (!condition)
+            TestContext.Current.TestOutputHelper?.WriteLine($"Share {result.Index + 1} of {result.Count}:");
+            foreach (var phase in result.Phases)
             {
-                failures.Add(message);
+                TestContext.Current.TestOutputHelper?.WriteLine(phase);
             }
         }
-        void CheckAtLeast(int value, string key)
-        {
-            if (value < Ratchet.Min(key))
-            {
-                failures.Add($"{key}: {value}; ratchet minimum {Ratchet.Min(key)}");
-            }
-        }
-        Check(report.Leaks.Count == 0, $"{report.Leaks.Count} leaks:\n" + string.Join("\n", report.Leaks.Take(50)));
-        Check(report.Oracles.Count == 0, $"{report.Oracles.Count} answers that tell tenant B's values apart from values that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
-        Check(report.LookupMisuse.Count == 0, "Reviewed cross-tenant lookups ran from unreviewed callers:\n" + string.Join("\n", report.LookupMisuse));
-        Check(report.ChangedTables.Count == 0, "Tenant B rows changed during the attack in: " + string.Join(", ", report.ChangedTables));
-        Check(report.ServerErrors.Count == 0, $"{report.ServerErrors.Count} server errors:\n" + string.Join("\n", report.ServerErrors.Take(20)));
-        Check(report.UncoveredSurfaces.Count == 0, "Endpoint families without an isolation probe: " + string.Join(", ", report.UncoveredSurfaces));
-        Check(report.UntracedFunctions.Count == 0, "The SQL trace never saw these reviewed functions run from their reviewed caller, so it may be blind: " + string.Join(", ", report.UntracedFunctions));
-        Check(report.BindViolations.Count == 0, "Requests bound a tenant other than the signed-in session's:\n" + string.Join("\n", report.BindViolations.Take(30)));
-        Check(report.SettingViolations.Count == 0, "Session settings changed by code other than the kernel's session:\n" + string.Join("\n", report.SettingViolations.Take(30)));
-        Check(report.WritableReads.Count == 0, "Requests that only read ran in a writable transaction:\n" + string.Join("\n", report.WritableReads.Take(30)));
-        Check(report.TraceBlindSpots.Count == 0, "The tenant binding trace may be blind: " + string.Join("; ", report.TraceBlindSpots));
-        Check(report.TenantValueViolations.Count == 0, "Requests whose SQL ran under a tenant other than the signed-in session's (judged by the value each statement set):\n" +
-                                                             string.Join("\n", report.TenantValueViolations.Take(30)));
-        Check(report.UnobservedStatements.Count == 0, "Statements sent inside requests on a pool the platform did not build, whose tenant the gate cannot judge:\n" +
-                                                            string.Join("\n", report.UnobservedStatements.Take(30)));
-        Check(report.InputEnumerations.Count == 0, "Product code read request inputs by enumerating them (a name the attack cannot learn and send tenant B's id in):\n" +
-                                                         string.Join("\n", report.InputEnumerations.Take(30)));
-        Check(report.EnvironmentChanges.Count == 0, "Process-wide environment variables changed during the attack:\n" + string.Join("\n", report.EnvironmentChanges));
-        // No request reads figures that describe whole tables, every tenant's rows together
-        // (statistics, pg_class estimates, EXPLAIN): critic p05 round 9, plant L12.
-        var wholeTableReads = SqlTrace.WholeTableReadsFor(Env);
-        Check(wholeTableReads.Count == 0, "Requests read figures that describe whole tables (every tenant's rows):\n" + string.Join("\n", wholeTableReads.Take(20)));
-        CheckAtLeast(report.TenantValuesJudged, "g1.tenantValuesJudged");
-        CheckAtLeast(report.StatementsObserved, "g1.statementsObserved");
-        CheckAtLeast(report.BindsJudged, "g1.tenantBindsJudged");
-        CheckAtLeast(report.SwitchInputAttacks, "g1.switchInputAttacks");
-        CheckAtLeast(report.SwitchHeaderNames, "g1.switchHeaderNames");
-        CheckAtLeast(report.ResponsesHeaderJudged, "g1.responsesHeaderJudged");
-        CheckAtLeast(report.EndpointsAttacked, "g1.endpointsAttacked");
-        CheckAtLeast(report.VictimRouteValuesReplayed, "g1.victimRouteValuesReplayed");
-        CheckAtLeast(report.VictimPreTouches, "g1.victimPreTouches");
-        CheckAtLeast(report.Requests, "g1.attackRequests");
-        CheckAtLeast(report.ProbesRun, "g1.isolationProbes");
-        CheckAtLeast(report.VictimValues, "g1.victimValues");
-        CheckAtLeast(report.ParameterAttacks, "g1.parameterAttacks");
-        CheckAtLeast(report.BodyValueAttacks, "g1.bodyValueAttacks");
-        CheckAtLeast(report.DifferentialChecks, "g1.differentialChecks");
-        CheckAtLeast(report.TracedLookups, "g1.tracedLookups");
-        Check(report.VictimBlindSpots.Count == 0, "Tenant B's concurrent activity may have been blind:\n" + string.Join("\n", report.VictimBlindSpots));
-        CheckAtLeast(report.VictimRequests, "g1.victimRequests");
-        CheckAtLeast(report.VictimConcurrentRequests, "g1.victimConcurrentRequests");
-        CheckAtLeast(report.VictimWrites, "g1.victimWrites");
-        CheckAtLeast(report.ReverseChecks, "g1.reverseChecks");
-        // Every endpoint that changes data (other than signing in and out) succeeded for tenant B.
-        Check(report.VictimUnsuccessfulWrites.Count == 0,
-            "Tenant B's own writes must succeed so their handlers run to the end; these did not:\n" + string.Join("\n", report.VictimUnsuccessfulWrites));
-        CheckAtLeast(report.VictimWriteEndpoints, "g1.victimWriteEndpoints");
-        // Write after write: tenant A's own valid writes, each right after tenant B's, succeeded
-        // (a refused write never reaches the code that could hand on tenant B's state).
-        Check(report.AttackerUnsuccessfulWrites.Count == 0,
-            "Tenant A's own writes in the write-after-write phase must succeed; these did not:\n" + string.Join("\n", report.AttackerUnsuccessfulWrites));
-        Check(report.WritePairBlindSpots.Count == 0, "The write-after-write phase may have been blind:\n" + string.Join("\n", report.WritePairBlindSpots));
-        CheckAtLeast(report.WritePairs, "g1.writePairs");
-        CheckAtLeast(report.WritePairEndpoints, "g1.writePairEndpoints");
-        // Every documented value of every enumerated body field (language ar, numerals arab, ...)
-        // was sent by both tenants back to back, not only the first one.
-        CheckAtLeast(report.EnumValuesAttacked.Count, "g1.enumValuesAttacked");
-        CheckAtLeast(report.EnumVariantPairs, "g1.enumVariantWritePairs");
-        // Partial bodies (critic p04 round 11): every field a client may leave out was left out by
-        // both tenants, right after the other wrote the whole body.
-        CheckAtLeast(report.PartialWriteVariants, "g1.partialWriteVariants");
-        CheckAtLeast(report.PartialWritePairs, "g1.partialWritePairs");
-        CheckAtLeast(report.PartialWriteEndpoints, "g1.partialWriteEndpoints");
-        // The Arabic side of every session (critic p04 round 4): tenant A attacks and tenant B
-        // uses the app in Arabic with Arabic-Indic digits too, and both stayed Arabic throughout.
-        Check(report.ArabicBlindSpots.Count == 0, "The Arabic sessions may have been blind:\n" + string.Join("\n", report.ArabicBlindSpots));
-        CheckAtLeast(report.ArabicAttackRequests, "g1.arabicAttackRequests");
-        CheckAtLeast(report.VictimArabicRequests, "g1.victimArabicRequests");
-        CheckAtLeast(report.ArabicWritePairs, "g1.arabicWritePairs");
-        // A write of a record every company shares, refused by design to the Arabic administrator
-        // (limited to one branch in the gate seed), is made in Arabic by an administrator who works
-        // in every company and branch, and every such write succeeded (p04 round 7, after p02
-        // round 7's workspace-wide guard): its success path ran in Arabic for both tenants.
-        Check(report.ArabicWorkspaceWrites == report.ArabicWorkspaceRefusals,
-            $"Of {report.ArabicWorkspaceRefusals} writes refused to the branch-limited Arabic administrator because they need the whole workspace, " +
-            $"only {report.ArabicWorkspaceWrites} succeeded for the workspace-wide Arabic administrator");
-        CheckAtLeast(report.ArabicWorkspaceWrites, "g1.arabicWorkspaceWideWrites");
-        Check(report.ListRefusals.Count == 0, $"{report.ListRefusals.Count} list attacks were refused, so the query never ran:\n" + string.Join("\n", report.ListRefusals.Take(20)));
-        CheckAtLeast(report.ListQueryAttacks, "g1.listQueryAttacks");
-        Check(report.ListAnswersWrong.Count == 0, $"{report.ListAnswersWrong.Count} list answers that are not the asking tenant's own:\n" + string.Join("\n", report.ListAnswersWrong.Take(30)));
-        Check(report.ListAnswersBlind.Count == 0, "The list answer check may be blind:\n" + string.Join("\n", report.ListAnswersBlind));
-        CheckAtLeast(report.ListAnswerQueries, "g1.listAnswerQueries");
-        CheckAtLeast(report.ListAnswersDiscriminating, "g1.listAnswersDiscriminating");
-        CheckAtLeast(report.ListAnswerPagesJudged, "g1.listAnswerPagesJudged");
-        CheckAtLeast(report.ListAnswerOffsetPagesJudged, "g1.listAnswerOffsetPagesJudged");
-        CheckAtLeast(report.ListAnswerSortedQueries, "g1.listAnswerSortedQueries");
-        CheckAtLeast(report.ListAnswerSortedDiscriminating, "g1.listAnswerSortedDiscriminating");
-        Check(report.StateChanges.Count == 0, $"Process-wide state changed while the tenants used the app ({report.StateChanges.Count} lines):\n" + string.Join("\n", report.StateChanges.Take(30)));
-        CheckAtLeast(report.StateLinesFingerprinted, "g1.stateLinesFingerprinted");
-        CheckAtLeast(report.ShapeEndpoints, "g1.shapeEndpoints");
-        CheckAtLeast(report.ShapeAttacks, "g1.shapeAttacks");
-        CheckAtLeast(report.ShapeVictimRequests, "g1.shapeVictimRequests");
-        CheckAtLeast(report.ShapeDocumentedValues, "g1.shapeDocumentedValues");
-        CheckAtLeast(report.ShapeReplays, "g1.shapeReplays");
-        CheckAtLeast(report.ShapeCombinedRows, "g1.shapeCombinedRows");
+        var counted = (string name) => results.Sum(r => r.Counters.GetValueOrDefault(name));
+        TestContext.Current.TestOutputHelper?.WriteLine(
+            $"{results.Count} shares: {counted(nameof(IsolationReport.EndpointsAttacked))} endpoints, {counted(nameof(IsolationReport.Requests))} requests, " +
+            $"{counted(nameof(IsolationReport.ParameterAttacks))} parameter attacks, {counted(nameof(IsolationReport.BodyValueAttacks))} body value attacks, " +
+            $"{counted(nameof(IsolationReport.DifferentialChecks))} differential checks, {counted(nameof(IsolationReport.TracedLookups))} traced lookups, " +
+            $"{counted(nameof(IsolationReport.VictimRequests))} tenant B requests ({counted(nameof(IsolationReport.VictimConcurrentRequests))} concurrent with the attack)");
+        var failures = HttpAttackJudge.Failures(results, missing);
         Assert.True(failures.Count == 0, $"{failures.Count} isolation checks failed:\n\n" + string.Join("\n\n", failures));
     }
+}
+
+/// <summary>
+/// One share of the G1 HTTP attack each (<see cref="AttackShard"/>): tenant A attacks the share's
+/// endpoints in an environment of its own, tenant B uses every endpoint beside it. ./erp verify runs
+/// each share in a test process of its own (filter on the trait) and
+/// <see cref="G1HttpIsolationTests"/> judges them together. A share's own test fails on anything its
+/// attack found.
+/// </summary>
+[Collection(HttpAttackCollection.Name)]
+public sealed class G1HttpIsolationShardTests
+{
+    [Fact]
+    [Trait("Shard", "0")]
+    public Task Tenant_A_attacks_its_first_share_of_the_endpoints() => RunAsync(0);
+
+    [Fact]
+    [Trait("Shard", "1")]
+    public Task Tenant_A_attacks_its_second_share_of_the_endpoints() => RunAsync(1);
+
+    [Fact]
+    [Trait("Shard", "2")]
+    public Task Tenant_A_attacks_its_third_share_of_the_endpoints() => RunAsync(2);
+
+    [Fact]
+    [Trait("Shard", "3")]
+    public Task Tenant_A_attacks_its_fourth_share_of_the_endpoints() => RunAsync(3);
+
+    private static async Task RunAsync(int index)
+    {
+        Assert.Equal(AttackShard.GateCount, 4);
+        var result = await HttpAttackShards.RunAsync(index);
+        var failures = HttpAttackJudge.ShareFailures([result]);
+        Assert.True(failures.Count == 0, $"{failures.Count} isolation checks failed in share {index + 1} of {AttackShard.GateCount}:\n\n" + string.Join("\n\n", failures));
+    }
+}
+
+/// <summary>The shares and the judge of the HTTP attack share one process's statics (the SQL trace,
+/// the app's own static state) when a plain <c>dotnet test</c> runs them in one process: they take
+/// turns. ./erp verify gives each share a process of its own.</summary>
+[CollectionDefinition(Name)]
+public sealed class HttpAttackCollection
+{
+    public const string Name = "G1 HTTP attack shares (one process's statics)";
 }
 
 /// <summary>
@@ -221,7 +146,7 @@ public static partial class IsolationAttack
     /// could not show the plant (p12 round 1: the planted sorted-search total went unreported in
     /// one direction in three verifies). The gate itself passes nothing.</param>
     public static async Task<IsolationReport> RunAsync(ErpTestEnvironment Env, Func<Erp.Kernel.Lists.ListDefinition, bool>? sortedLists = null,
-        Func<ApiEndpoint, bool>? only = null, Action? beforeEachListRun = null)
+        Func<ApiEndpoint, bool>? only = null, Action? beforeEachListRun = null, AttackShard? shard = null)
     {
         SqlTrace.EnsureStarted();
         // Environment variables are process-wide state outside any field (critic p00 round 4: the
@@ -234,16 +159,20 @@ public static partial class IsolationAttack
 
         using var anonymousForDocs = Env.CreateClient();
         var openApi = await OpenApiDocument.LoadAsync(anonymousForDocs);
-        var endpoints = EndpointInventory.From(Env.Factory.Services).Where(e => only?.Invoke(e) ?? true).ToList();
+        // Every endpoint in the attack's scope: tenant B uses all of them in every shard (what the
+        // process holds when tenant A attacks is the same whatever the shard). Tenant A attacks the
+        // endpoints of its shard (all of them when the attack is not sharded).
+        var allEndpoints = EndpointInventory.From(Env.Factory.Services).Where(e => only?.Invoke(e) ?? true).ToList();
+        var endpoints = allEndpoints.Where(e => shard?.Owns(e) ?? true).ToList();
         Assert.True(endpoints.Count > 0, "no endpoint in the attack's scope");
-        bool ListInScope(Erp.Kernel.Lists.ListDefinition list) => only is null || endpoints.Any(e => e.Method == "GET" && e.Pattern == list.Endpoint);
+        bool ListInScope(Erp.Kernel.Lists.ListDefinition list) => (only is null && shard is null) || endpoints.Any(e => e.Method == "GET" && e.Pattern == list.Endpoint);
 
         // Tenant B uses the product first: every write on its own records, then (below) every
         // read, so its data sits in whatever process-wide state the app keeps before A attacks.
         var own = await TenantSnapshot.TakeAsync(Env, a.Id, null, a.Code);
         var examples = openApi.ExampleValues();
         var ownValues = await VictimValues.ReadAsync(Env, own, b.Id, examples);
-        var activity = await TenantActivity.StartAsync(Env, b, endpoints, openApi);
+        var activity = await TenantActivity.StartAsync(Env, b, allEndpoints, openApi);
         activity.Watch(new MarkerSet(own, ownValues));
         await activity.WriteAsync(await TenantSnapshot.TakeAsync(Env, b.Id, b.Canary, b.Code));
 
@@ -427,7 +356,7 @@ public static partial class IsolationAttack
         // bearer), and again right after; tenant A then reads everything, and so does tenant B
         // after tenant A's next write. Both tenants' writes must succeed, so every handler runs to
         // the end, and every answer (body and every header) is judged for the other tenant's markers.
-        var pairs = await WritePairsPhaseAsync(Env, endpoints, openApi, activity, victim, values);
+        var pairs = await WritePairsPhaseAsync(Env, allEndpoints, openApi, activity, victim, values, e => shard?.Owns(e) ?? true);
         Phase($"write after write: {pairs.Pairs} pairs over {pairs.Endpoints} endpoints, {pairs.VariantPairs} pairs with {pairs.EnumValuesAttacked?.Count ?? 0} documented values, {pairs.AttackerRequests} tenant A requests");
 
         // Phase 1d: every shape of every answer. A GET whose API document enumerates how it answers
@@ -447,16 +376,24 @@ public static partial class IsolationAttack
         var probesRun = 0;
         await using (var scope = Env.Factory.Services.CreateAsyncScope())
         {
+            var probeNumber = -1;
             foreach (var probeType in catalog.Modules.SelectMany(m => m.IsolationProbes))
             {
                 var probe = (IIsolationProbe)scope.ServiceProvider.GetRequiredService(probeType);
                 // A scoped attack runs the probes of the surface kinds its endpoints have (the gate,
                 // unscoped, runs every probe and fails on a surface kind without one).
-                if (only is not null && !endpoints.Any(e => e.Surface == probe.Kind))
+                if (only is not null && !allEndpoints.Any(e => e.Surface == probe.Kind))
                 {
                     continue;
                 }
                 probeKinds.Add(probe.Kind);
+                // A shard runs every probe whose number falls to it (each probe runs in exactly one
+                // shard); the surface kinds every registered probe covers count in every shard.
+                probeNumber++;
+                if (shard is not null && probeNumber % shard.Count != shard.Index)
+                {
+                    continue;
+                }
                 // Tenant B's administrator goes with the probe: it uses the surface on its own
                 // records right before tenant A does (prints and exports every report and list).
                 var result = await probe.RunAsync(new IsolationProbeContext(attackers[0].Client, a.Id, b.Id, victim.AllIds.ToList(),
@@ -481,7 +418,7 @@ public static partial class IsolationAttack
                 }
             }
         }
-        var uncovered = endpoints.Where(e => e.Surface != SurfaceKind.Data && !probeKinds.Contains(e.Surface))
+        var uncovered = allEndpoints.Where(e => e.Surface != SurfaceKind.Data && !probeKinds.Contains(e.Surface))
             .Select(e => $"{e.Key} ({e.Surface})").ToList();
 
         // Phase 2: every tenant B value through every documented (and guessed) query parameter and
@@ -677,7 +614,8 @@ public static partial class IsolationAttack
                 }
             }
         }
-        Assert.True(listsAttacked >= (only is null ? Ratchet.Min("rules.listsChecked") : 1), $"{listsAttacked} lists attacked through their query contract");
+        // A shard attacks the lists of its endpoints; the judge adds them up against the minimum.
+        Assert.True(shard is not null || listsAttacked >= (only is null ? Ratchet.Min("rules.listsChecked") : 1), $"{listsAttacked} lists attacked through their query contract");
         var listAttacksBefore = state.Requests;
         await Parallel.ForEachAsync(listWork, new ParallelOptions { MaxDegreeOfParallelism = AttackParallelism.Requests }, async (item, _) => await item());
         var listQueryAttacks = listWork.Count;
@@ -914,6 +852,10 @@ public static partial class IsolationAttack
             ListAnswerSortedDiscriminating = listAnswers.Sum(r => r.SortedDiscriminating),
             StateChanges = stateChanges,
             StateLinesFingerprinted = stateBefore.Count,
+            ListsAttacked = listsAttacked,
+            AllEndpointKeys = allEndpoints.Select(e => e.Key).Order(StringComparer.Ordinal).ToList(),
+            OwnedEndpointKeys = endpoints.Select(e => e.Key).Order(StringComparer.Ordinal).ToList(),
+            SwitchHeaderNameList = switchInputs.Headers,
             Phases = [.. phases, .. state.BreakdownLines(), $"tenant B: {values.Ids.Count} ids ({values.IdSample.Count} sampled), {values.Strings.Count} text values, {values.Markers.Count} extra markers ({values.ProductTextMarkersLeftOut} product texts left out), {values.Probe.Count} probe values"],
         };
     }
@@ -949,7 +891,7 @@ public static partial class IsolationAttack
     /// once, or the phase reports itself blind.
     /// </summary>
     private static async Task<WritePairResult> WritePairsPhaseAsync(ErpTestEnvironment env, IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi,
-        TenantActivity victimActivity, TenantSnapshot victimBefore, VictimValues values)
+        TenantActivity victimActivity, TenantSnapshot victimBefore, VictimValues values, Func<ApiEndpoint, bool> owns)
     {
         var a = env.TenantA;
         var b = env.TenantB;
@@ -965,7 +907,7 @@ public static partial class IsolationAttack
         var workspaceWrites = 0;
         var enumValues = new SortedSet<string>(StringComparer.Ordinal);
         var blind = new List<string>();
-        var writes = victimActivity.Writes;
+        var writes = victimActivity.Writes.Where(owns).ToList();
         var partialVariants = 0;
         var partialPairs = 0;
         var partialEndpoints = new HashSet<string>(StringComparer.Ordinal);
@@ -2106,6 +2048,18 @@ public sealed record IsolationReport(
 
     /// <summary>Environment variables of the process that changed while the attack ran.</summary>
     public IReadOnlyList<string> EnvironmentChanges { get; init; } = [];
+
+    /// <summary>Lists attacked through their query contract (the lists of the attacked endpoints).</summary>
+    public int ListsAttacked { get; init; }
+
+    /// <summary>Every endpoint in the attack's scope (tenant B uses all of them).</summary>
+    public IReadOnlyList<string> AllEndpointKeys { get; init; } = [];
+
+    /// <summary>The endpoints tenant A attacked (a shard's share; all of them when not sharded).</summary>
+    public IReadOnlyList<string> OwnedEndpointKeys { get; init; } = [];
+
+    /// <summary>The header names that carried tenant B's id and code (their count is SwitchHeaderNames).</summary>
+    public IReadOnlyList<string> SwitchHeaderNameList { get; init; } = [];
 
     /// <summary>Requests and elapsed time after each phase.</summary>
     public IReadOnlyList<string> Phases { get; init; } = [];
