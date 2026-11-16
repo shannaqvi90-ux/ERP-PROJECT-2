@@ -43,6 +43,25 @@ public sealed class HttpAttackShardTests
     }
 
     [Fact]
+    public void Endpoints_of_one_family_are_in_one_share()
+    {
+        ApiEndpoint E(string method, string pattern) => new(method, pattern, null, ["m.write"], null, SurfaceKind.Data, true);
+        var jobs = new[]
+        {
+            E("GET", "/api/jobs/jobs"), E("POST", "/api/jobs/jobs"), E("GET", "/api/jobs/jobs/{id:guid}"),
+            E("POST", "/api/jobs/jobs/{id:guid}/cancel"), E("POST", "/api/jobs/jobs/{id:guid}/rerun"), E("GET", "/api/jobs/jobs/{id:guid}/output"),
+        };
+        var others = Endpoints(60);
+        var all = jobs.Concat(others).ToList();
+        Assert.Single(jobs.Select(AttackShard.FamilyOf).Distinct());
+        Assert.NotEqual(AttackShard.FamilyOf(E("GET", "/api/lists/a.b/views")), AttackShard.FamilyOf(E("GET", "/api/lists/a.b/shared-views")));
+        var shares = Enumerable.Range(0, AttackShard.GateCount).Select(i => AttackShard.For(i, AttackShard.GateCount, all)).ToList();
+        Assert.Single(shares, s => jobs.Any(s.Owns));
+        Assert.All(shares.Where(s => jobs.Any(s.Owns)), s => Assert.All(jobs, j => Assert.True(s.Owns(j))));
+        Assert.Equal(all.Count, shares.Sum(s => s.OwnedKeys.Count));
+    }
+
+    [Fact]
     public void Every_counter_of_the_report_is_added_up_or_named_as_holding_in_every_share()
     {
         // A new counter on the report is added up across the shares unless it is named here; one

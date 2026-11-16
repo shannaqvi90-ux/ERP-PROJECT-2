@@ -895,7 +895,6 @@ public static partial class IsolationAttack
     {
         var a = env.TenantA;
         var b = env.TenantB;
-        await JobsIdleAsync(env, [a.Id, b.Id]);
         var ownA = await TenantSnapshot.TakeAsync(env, a.Id, a.Canary, a.Code);
         var victimNow = await TenantSnapshot.TakeAsync(env, b.Id, b.Canary, b.Code);
         var attacker = await TenantActivity.StartAsync(env, a, endpoints, openApi);
@@ -1043,36 +1042,6 @@ public static partial class IsolationAttack
             PartialPairs = partialPairs,
             PartialEndpoints = partialEndpoints.Count,
         };
-    }
-
-    /// <summary>
-    /// Waits until neither tenant has a job that is running or queued and due. A write that runs a job again
-    /// is refused while the job it names has not finished, so the pairs of that write need the jobs
-    /// the tenants' earlier writes started (an export, a report) to be done. The whole attack came
-    /// to this phase after every endpoint's first phase, a quarter of an hour on, and they were; a
-    /// share comes to it after its own endpoints' (a few minutes), so it waits for the jobs, here,
-    /// the way a person would before running one again. Nothing is repeated and nothing is skipped:
-    /// the wait ends when the jobs have finished, or after half an hour, when the write pairs run
-    /// and fail as they would have.
-    /// </summary>
-    private static async Task JobsIdleAsync(ErpTestEnvironment env, Guid[] tenants)
-    {
-        await using var admin = await env.OpenAdminAsync();
-        if (await DbCatalog.ReadAsync(admin, "SELECT to_regclass('jobs.jobs') IS NOT NULL", r => r.GetBoolean(0)) is not [true])
-        {
-            return;
-        }
-        var clock = System.Diagnostics.Stopwatch.StartNew();
-        while (clock.Elapsed < TimeSpan.FromMinutes(30))
-        {
-            var open = await DbCatalog.ReadAsync(admin, "SELECT count(*) FROM jobs.jobs WHERE tenant_id = ANY(@t) AND (status = 'running' OR (status = 'queued' AND run_at <= now()))",
-                r => r.GetInt64(0), ("t", tenants));
-            if (open[0] == 0)
-            {
-                return;
-            }
-            await Task.Delay(TimeSpan.FromSeconds(2));
-        }
     }
 
     /// <summary>Who writes in each write pair: the administrator's cookie, its bearer token, and the

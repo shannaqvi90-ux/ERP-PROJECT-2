@@ -38,17 +38,35 @@ public sealed class AttackShard
     public bool Owns(ApiEndpoint endpoint) => OwnedKeys.Contains(endpoint.Key);
 
     /// <summary>
-    /// The share <paramref name="index"/> of <paramref name="count"/>: endpoints are dealt out,
+    /// The endpoints that go together: those of one family are in one share, because the write pairs
+    /// of one depend on the pairs of another (a job is cancelled by one before another may run it
+    /// again; a record is created by one for another to save or delete, in the order the inventory
+    /// lists them). A family is the endpoints under the path before the first route parameter:
+    /// <c>/api/jobs/jobs</c> for the jobs, a job's route and its cancel, rerun and output;
+    /// <c>/api/lists/contacts.contacts/views</c> for a list's saved views.
+    /// </summary>
+    public static string FamilyOf(ApiEndpoint endpoint)
+    {
+        var path = endpoint.Pattern;
+        var parameter = path.IndexOf("/{", StringComparison.Ordinal);
+        return parameter < 0 ? path.TrimEnd('/') : path[..parameter];
+    }
+
+    /// <summary>
+    /// The share <paramref name="index"/> of <paramref name="count"/>: families are dealt out,
     /// heaviest first, to the share with the least weight so far (ties: the lower share), so the same
-    /// inventory gives the same shares in every process. The weight is a rough guess of the requests
-    /// an endpoint costs (<see cref="Weight"/>); a bad guess makes one share slower, never a request
+    /// inventory gives the same shares in every process. The weight is a rough guess of the time an
+    /// endpoint costs (<see cref="Weight"/>); a bad guess makes one share slower, never a request
     /// missing.
     /// </summary>
     public static AttackShard For(int index, int count, IReadOnlyList<ApiEndpoint> endpoints, Func<ApiEndpoint, int>? weight = null)
     {
         var load = new int[count];
         var owned = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var endpoint in endpoints.OrderByDescending(e => (weight ?? Weight)(e)).ThenBy(e => e.Key, StringComparer.Ordinal))
+        var families = endpoints.GroupBy(FamilyOf, StringComparer.Ordinal)
+            .Select(g => (Family: g.Key, Weight: g.Sum(e => (weight ?? Weight)(e)), Keys: g.Select(e => e.Key).ToList()))
+            .OrderByDescending(f => f.Weight).ThenBy(f => f.Family, StringComparer.Ordinal);
+        foreach (var family in families)
         {
             var target = 0;
             for (var i = 1; i < count; i++)
@@ -58,10 +76,10 @@ public sealed class AttackShard
                     target = i;
                 }
             }
-            load[target] += (weight ?? Weight)(endpoint);
+            load[target] += family.Weight;
             if (target == index)
             {
-                owned.Add(endpoint.Key);
+                owned.UnionWith(family.Keys);
             }
         }
         return new AttackShard(index, count, owned);
