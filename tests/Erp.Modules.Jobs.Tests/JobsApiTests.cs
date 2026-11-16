@@ -1,4 +1,5 @@
 using System.Net;
+using Npgsql;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Erp.Testing;
@@ -132,8 +133,25 @@ public sealed class JobsApiTests(JobsFixture fixture) : IAsyncLifetime
     public async Task The_best_match_for_a_kind_of_jobs_name_is_one_that_has_finished_and_so_can_be_run_again()
     {
         using var admin = await AdminAsync();
+        // The seeded history on its own (made by no user): its newest job of the kind has finished, whatever the count of jobs and
+        // whichever kinds the last rows are, so the screen's best match for the name opens a job that can be run again.
+        await using (var db = await Env.OpenAdminAsync())
+        await using (var newest = new NpgsqlCommand("""
+            SELECT status FROM jobs.jobs WHERE tenant_id = @t AND type = 'jobs.selfCheck' AND created_by IS NULL AND schedule_id IS NULL
+             ORDER BY created_at DESC, id DESC LIMIT 1
+            """, db))
+        {
+            newest.Parameters.AddWithValue("t", Env.TenantA.Id);
+            var status = (string?)await newest.ExecuteScalarAsync();
+            Assert.NotNull(status);
+            Assert.NotEqual("queued", status);
+        }
+        // And independent of what other tests left behind (jobs waiting for later): a self-check that has just finished is the best match.
+        var done = (await StartAsync(admin, new { type = "jobs.selfCheck", payload = new { steps = 1, pauseMilliseconds = 0 } })).GetProperty("id").GetGuid();
+        await fixture.Runner.RunOnceAsync();
         var rows = await RowsAsync(admin, "/api/jobs/jobs?take=1&search=" + Uri.EscapeDataString("Self-check of the job queue"));
         var first = Assert.Single(rows);
+        Assert.Equal(done, first.GetProperty("id").GetGuid());
         Assert.NotEqual("queued", first.GetProperty("jobStatus").GetString());
         Assert.True(first.GetProperty("canRerun").GetBoolean());
         // Waiting jobs exist, they are just not the newest of their kind.

@@ -335,6 +335,19 @@
   white-space: normal !important;
 }
 
+/* A long "Other" permission label ("Cancel background jobs") never reaches past its cell and the form
+   around the matrix: the label takes the cell's width and wraps inside it (p11 round 2: the form of a
+   role was 3 px wider than the panel at 1280 px). */
+.id-other .id-cell {
+  max-inline-size: 100%;
+  margin-inline-end: 0;
+  box-sizing: border-box;
+}
+
+.id-other .id-cell span {
+  overflow-wrap: anywhere;
+}
+
 .id-me {
   max-width: 560px;
 }

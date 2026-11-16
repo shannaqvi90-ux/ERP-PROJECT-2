@@ -27,7 +27,11 @@ namespace Erp.Kernel.Audit;
 /// <param name="ParentKindField">For rows that belong to a record of any kind (a file attached to a contact, a
 /// quotation, …): the column holding the kind of that record (<c>schema.table</c>). With
 /// <paramref name="ParentIdField"/> the row shows in the history of the record it names, beside the
-/// record's own changes (an upload or a removal of an attachment in its record's History).</param>
+/// record's own changes (an upload or a removal of an attachment in its record's History). A row of such a
+/// kind is as private as the record it names: the audit trail shows it to a reader who holds the read
+/// permission of that record's kind (its <c>AttachmentRecordType.ReadPermission</c>), never by
+/// <paramref name="ReadPermission"/> alone, which for these kinds only names the permission the kind falls back to
+/// in listings of kinds.</param>
 /// <param name="ParentIdField">The column holding that record's id.</param>
 public sealed partial record AuditRecordType(string Table, string LabelKey, string ReadPermission, string? Route = null, string? OwnerField = null,
     bool RecordIsBranch = false, string? ParentKindField = null, string? ParentIdField = null)

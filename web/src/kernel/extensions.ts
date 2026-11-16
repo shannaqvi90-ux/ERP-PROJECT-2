@@ -144,9 +144,22 @@ export type RecordPanelItem = {
   chord?: string;
   summary?: ComponentType<RecordPanelProps>;
   panel: ComponentType<RecordPanelProps>;
+  /** Draws the panel below the form whether or not it was opened (a panel that is part of the record's screen, such as its
+   * files); the toolbar button then does something of its own (`toolbar`) instead of opening and closing it. */
+  always?: boolean;
+  /** Replaces the toolbar's open/close button (it registers its own key and command). */
+  toolbar?: ComponentType<RecordPanelProps>;
 };
 
+/**
+ * Records of another kind that a kind of record's history also lists (p11: the uploads and deletes of a record's files in the
+ * record's own history). `child` is the audited kind (`schema.table`) the audit trail serves by the parent's id (the kind's owner column),
+ * `labelKey` names it on each of its entries, `hide` lists fields of it that are the link, not news.
+ */
+export type HistoryChild = { key: string; parent: string; child: string; labelKey: string; permission?: string; hide?: string[] };
+
 export type ModuleExtensions = {
+  history?: HistoryChild[];
   topbar?: SlotItem[];
   status?: SlotItem[];
   palette?: PaletteSource[];
@@ -160,7 +173,7 @@ type ExtensionModule = { extensions?: ModuleExtensions };
 const found = import.meta.glob<ExtensionModule>("../modules/*/extensions.{ts,tsx}", { eager: true });
 
 export function collectExtensions(sources: Record<string, ExtensionModule>): Required<ModuleExtensions> {
-  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [], goTo: [], record: [] };
+  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [], goTo: [], record: [], history: [] };
   const goToCodes = new Map<string, string>();
   const seen = new Set<string>();
   for (const [path, module] of Object.entries(sources).sort(([a], [b]) => a.localeCompare(b))) {
@@ -179,6 +192,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     all.status.push(...(ext.status ?? []));
     all.palette.push(...(ext.palette ?? []));
     all.record.push(...(ext.record ?? []));
+    all.history.push(...(ext.history ?? []));
     for (const action of ext.actions ?? []) {
       if (!action.permission) throw new Error(`Action "${action.key}" of module ${name} names no permission`);
       if ((action.pick || action.then) && !action.command) throw new Error(`Action "${action.key}" of module ${name} asks for a record or a second command but runs no command`);

@@ -29,8 +29,10 @@ public sealed class AttachmentsModule : ErpModule
         module.DbContext<AttachmentsDbContext>();
         module.Services.TryAddSingleton<IAttachmentStore, LocalAttachmentStore>();
         module.Endpoints(AttachmentEndpoints.Map);
-        // The audit trail shows every upload and delete (p07) to whoever reads the whole log.
-        module.AuditedRecord(new AuditRecordType("attachments.files", "attachments.record.file", AuditPermissions.LogRead, null, ParentKindField: "record_type", ParentIdField: "record_id"));
+        // The audit trail shows every upload and delete (p07) to whoever reads the whole log; they show in the history of the
+        // record the file is attached to (p07, by the parent kind and id columns), and by the owner column the kind's own history
+        // (GET /api/audit/records/{recordId}?type=attachments.files, p11) lists the uploads and deletes of a record's files.
+        module.AuditedRecord(new AuditRecordType("attachments.files", "attachments.record.file", AuditPermissions.LogRead, null, OwnerField: "record_id", ParentKindField: "record_type", ParentIdField: "record_id"));
         module.IsolationProbe<AttachmentsIsolationProbe>();
         module.Seeder<AttachmentsSeeder>();
     }
