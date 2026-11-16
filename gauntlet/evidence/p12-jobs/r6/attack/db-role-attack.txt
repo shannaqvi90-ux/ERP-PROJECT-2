@@ -1,0 +1,159 @@
+== erp_app, no tenant bound
+SET ROLE erp_app;
+SET
+SELECT 'jobs' t, count(*) FROM jobs.jobs UNION ALL SELECT 'attempts', count(*) FROM jobs.job_attempts UNION ALL SELECT 'schedules', count(*) FROM jobs.schedules;
+     t     | count 
+-----------+-------
+ jobs      |     0
+ attempts  |     0
+ schedules |     0
+(3 rows)
+
+RESET ROLE;
+RESET
+== erp_app bound to A (alnoor)
+BEGIN;
+BEGIN
+SET LOCAL ROLE erp_app;
+SET
+SELECT set_config('app.tenant_id','0190a000-0000-7000-8000-000000000001',true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1794825252.862277
+(1 row)
+
+SELECT tenant_id, count(*) FROM jobs.jobs GROUP BY 1;
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100002
+(1 row)
+
+SELECT tenant_id, count(*) FROM jobs.job_attempts GROUP BY 1;
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000001 | 19583
+(1 row)
+
+SELECT tenant_id, count(*) FROM jobs.schedules GROUP BY 1;
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000001 |     3
+(1 row)
+
+== UPDATE / DELETE B rows as A
+UPDATE jobs.jobs SET cancel_requested = true WHERE tenant_id = '0190a000-0000-7000-8000-000000000002';
+UPDATE 0
+DELETE FROM jobs.schedules WHERE tenant_id = '0190a000-0000-7000-8000-000000000002';
+DELETE 0
+DELETE FROM jobs.job_attempts WHERE tenant_id = '0190a000-0000-7000-8000-000000000002';
+DELETE 0
+== INSERT a schedule for B as A
+INSERT INTO jobs.schedules (id, tenant_id, name, type, cron, payload, is_enabled) VALUES (gen_random_uuid(), '0190a000-0000-7000-8000-000000000002', 'critic-r6', 'jobs.cleanup', '* * * * *', '{}', true);
+ERROR:  new row violates row-level security policy for table "schedules"
+ROLLBACK;
+ROLLBACK
+== switch role from erp_app to erp_worker
+BEGIN;
+BEGIN
+SET LOCAL ROLE erp_app;
+SET
+SET LOCAL ROLE erp_worker;
+SET
+SELECT current_user;
+ current_user 
+--------------
+ erp_worker
+(1 row)
+
+ROLLBACK;
+ROLLBACK
+== erp_app to erp_owner
+BEGIN;
+BEGIN
+SET LOCAL ROLE erp_app;
+SET
+SET LOCAL ROLE erp_owner;
+SET
+SELECT current_user;
+ current_user 
+--------------
+ erp_owner
+(1 row)
+
+ROLLBACK;
+ROLLBACK
+== erp_app alter table
+BEGIN;
+BEGIN
+SET LOCAL ROLE erp_app;
+SET
+ALTER TABLE jobs.jobs DISABLE ROW LEVEL SECURITY;
+ROLLBACK;
+ERROR:  must be owner of table jobs
+ROLLBACK
+== erp_worker: column grants and attempts at other columns
+SELECT rolname, rolsuper, rolbypassrls, rolcanlogin FROM pg_roles WHERE rolname IN ('erp_app','erp_worker','erp_owner');
+  rolname   | rolsuper | rolbypassrls | rolcanlogin 
+------------+----------+--------------+-------------
+ erp_owner  | f        | f            | t
+ erp_app    | f        | f            | t
+ erp_worker | f        | f            | t
+(3 rows)
+
+SELECT relname, relrowsecurity, relforcerowsecurity FROM pg_class WHERE relnamespace='jobs'::regnamespace AND relkind='r';
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ __ef_migrations_history | f              | f
+ schedules               | t              | t
+ jobs                    | t              | t
+ job_attempts            | t              | t
+(4 rows)
+
+BEGIN;
+BEGIN
+SET LOCAL ROLE erp_worker;
+SET
+SELECT count(*), count(DISTINCT tenant_id) FROM jobs.jobs;
+ count  | count 
+--------+-------
+ 101004 |     2
+(1 row)
+
+SAVEPOINT a;
+SAVEPOINT
+SELECT title_en FROM jobs.jobs LIMIT 1;
+ERROR:  permission denied for table jobs
+ROLLBACK TO a;
+ROLLBACK
+SELECT payload FROM jobs.schedules LIMIT 1;
+ERROR:  permission denied for table schedules
+ROLLBACK;
+ROLLBACK
+BEGIN;
+BEGIN
+SET LOCAL ROLE erp_worker;
+SET
+SELECT count(*) FROM jobs.job_attempts;
+ERROR:  permission denied for table job_attempts
+ROLLBACK;
+ROLLBACK
+BEGIN;
+BEGIN
+SET LOCAL ROLE erp_worker;
+SET
+UPDATE jobs.jobs SET status='queued' WHERE false;
+ERROR:  permission denied for table jobs
+ROLLBACK;
+ROLLBACK
+SELECT n.nspname||'.'||c.relname||'.'||a.attname FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE a.attnum>0 AND NOT a.attisdropped AND c.relkind IN ('r','v','m','p','f') AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast') AND has_column_privilege('erp_worker',c.oid,a.attnum,'SELECT') ORDER BY 1;
+          ?column?          
+----------------------------
+ jobs.jobs.locked_until
+ jobs.jobs.run_at
+ jobs.jobs.status
+ jobs.jobs.tenant_id
+ jobs.schedules.is_enabled
+ jobs.schedules.next_run_at
+ jobs.schedules.tenant_id
+(7 rows)
+
