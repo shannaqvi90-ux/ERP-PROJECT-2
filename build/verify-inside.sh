@@ -146,8 +146,9 @@ case "$stage" in
           --logger "trx;LogFilePrefix=$name" --logger "console;verbosity=normal" --results-directory "$out/trx" \
           >"$out/dotnet-$name.log" 2>&1
     }
+    # (--list-tests ends with 1 when a project of the solution has no test that matches the filter.)
     list_tests() {
-      dotnet test "$@" -c Release --no-build --verbosity quiet --list-tests 2>&1 | grep '^    ' | sort
+      { dotnet test "$@" -c Release --no-build --verbosity quiet --list-tests 2>&1 || true; } | { grep '^    ' || true; } | sort
     }
     step ".NET: the test groups are every test exactly once"
     list_tests Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
@@ -160,7 +161,7 @@ case "$stage" in
       list_tests "$gates" --filter "Judge=http-attack"
       for p in "${selftests[@]}"; do list_tests "$gates" --filter "Process=$p"; done
     } | sort >"$out/tests-groups.txt"
-    if ! diff -q "$out/tests-all.txt" "$out/tests-groups.txt" >/dev/null; then
+    if [[ ! -s "$out/tests-all.txt" ]] || ! diff -q "$out/tests-all.txt" "$out/tests-groups.txt" >/dev/null; then
       echo "The test groups are not every test exactly once:"
       diff "$out/tests-all.txt" "$out/tests-groups.txt" | head -40
       exit 1

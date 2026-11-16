@@ -356,7 +356,7 @@ public static partial class IsolationAttack
         // bearer), and again right after; tenant A then reads everything, and so does tenant B
         // after tenant A's next write. Both tenants' writes must succeed, so every handler runs to
         // the end, and every answer (body and every header) is judged for the other tenant's markers.
-        var pairs = await WritePairsPhaseAsync(Env, allEndpoints, openApi, activity, victim, values, e => shard?.Owns(e) ?? true);
+        var pairs = await WritePairsPhaseAsync(Env, allEndpoints, openApi, activity, victim, values, e => shard?.Owns(e) ?? true, prime: shard is not null);
         Phase($"write after write: {pairs.Pairs} pairs over {pairs.Endpoints} endpoints, {pairs.VariantPairs} pairs with {pairs.EnumValuesAttacked?.Count ?? 0} documented values, {pairs.AttackerRequests} tenant A requests");
 
         // Phase 1d: every shape of every answer. A GET whose API document enumerates how it answers
@@ -891,14 +891,24 @@ public static partial class IsolationAttack
     /// once, or the phase reports itself blind.
     /// </summary>
     private static async Task<WritePairResult> WritePairsPhaseAsync(ErpTestEnvironment env, IReadOnlyList<ApiEndpoint> endpoints, OpenApiDocument openApi,
-        TenantActivity victimActivity, TenantSnapshot victimBefore, VictimValues values, Func<ApiEndpoint, bool> owns)
+        TenantActivity victimActivity, TenantSnapshot victimBefore, VictimValues values, Func<ApiEndpoint, bool> owns, bool prime)
     {
         var a = env.TenantA;
         var b = env.TenantB;
+        await JobsIdleAsync(env, [a.Id, b.Id]);
         var ownA = await TenantSnapshot.TakeAsync(env, a.Id, a.Canary, a.Code);
         var victimNow = await TenantSnapshot.TakeAsync(env, b.Id, b.Canary, b.Code);
         var attacker = await TenantActivity.StartAsync(env, a, endpoints, openApi);
         attacker.Watch(new MarkerSet(victimNow, values));
+        if (prime)
+        {
+            // A share's write pairs cover its own write endpoints only. What tenant A has when its
+            // turn comes in the whole attack (the records an endpoint creates for another to save or
+            // run again: a saved view, a job; the values its writes leave in its own tables) is
+            // made here the way tenant B made its own before the attack: every write endpoint once,
+            // creates first. Every write must succeed, as tenant B's must.
+            await attacker.WriteAsync(ownA);
+        }
         var pairs = 0;
         var variantPairs = 0;
         var arabicPairs = 0;
@@ -1033,6 +1043,36 @@ public static partial class IsolationAttack
             PartialPairs = partialPairs,
             PartialEndpoints = partialEndpoints.Count,
         };
+    }
+
+    /// <summary>
+    /// Waits until neither tenant has a job that is running or queued and due. A write that runs a job again
+    /// is refused while the job it names has not finished, so the pairs of that write need the jobs
+    /// the tenants' earlier writes started (an export, a report) to be done. The whole attack came
+    /// to this phase after every endpoint's first phase, a quarter of an hour on, and they were; a
+    /// share comes to it after its own endpoints' (a few minutes), so it waits for the jobs, here,
+    /// the way a person would before running one again. Nothing is repeated and nothing is skipped:
+    /// the wait ends when the jobs have finished, or after half an hour, when the write pairs run
+    /// and fail as they would have.
+    /// </summary>
+    private static async Task JobsIdleAsync(ErpTestEnvironment env, Guid[] tenants)
+    {
+        await using var admin = await env.OpenAdminAsync();
+        if (await DbCatalog.ReadAsync(admin, "SELECT to_regclass('jobs.jobs') IS NOT NULL", r => r.GetBoolean(0)) is not [true])
+        {
+            return;
+        }
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        while (clock.Elapsed < TimeSpan.FromMinutes(30))
+        {
+            var open = await DbCatalog.ReadAsync(admin, "SELECT count(*) FROM jobs.jobs WHERE tenant_id = ANY(@t) AND (status = 'running' OR (status = 'queued' AND run_at <= now()))",
+                r => r.GetInt64(0), ("t", tenants));
+            if (open[0] == 0)
+            {
+                return;
+            }
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
     }
 
     /// <summary>Who writes in each write pair: the administrator's cookie, its bearer token, and the

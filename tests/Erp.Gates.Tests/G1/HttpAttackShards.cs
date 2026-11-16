@@ -67,25 +67,28 @@ public sealed class AttackShard
         return new AttackShard(index, count, owned);
     }
 
-    /// <summary>Requests an endpoint costs, roughly, in hundreds (round 15's table: a GET without a
-    /// route about 13,000, with a route about 1,600 to 4,500; a write adds its write pairs and its body
-    /// fields).</summary>
+    /// <summary>Tenths of a second an endpoint costs, roughly. Measured on one share of the attack
+    /// (round 20, 65 endpoints, 3,989 s): the write-after-write phase took 1,456 s for 33 write
+    /// endpoints (44 s each: tenant A and tenant B read everything after each of its variants),
+    /// the list answers 1,343 s for 3 lists (450 s each: <see cref="ListWeight"/>), everything else
+    /// about 1,200 s for the other 29 endpoints and the fixed part, the parameter attacks of a GET
+    /// without a route being the larger part of it.</summary>
     public static int Weight(ApiEndpoint endpoint)
     {
         var get = endpoint.Method == "GET";
-        var weight = get ? (endpoint.RouteParameters.Count == 0 ? 130 : 40) : 30;
+        var weight = get ? (endpoint.RouteParameters.Count == 0 ? 60 : 25) : 450;
         if (endpoint.HasBody)
         {
-            weight += 40;
+            weight += 60;
         }
         return weight;
     }
 
-    /// <summary>The weight of an endpoint that is a registered list: its filters (330 values by six
-    /// operators for a text column, the id sample for a reference column), sorts with forged cursors
-    /// and the list answers that walk it.</summary>
+    /// <summary>What a registered list adds to the weight of its endpoint: the list answers judged
+    /// for it (four runs, both tenants), its filters (330 values by six operators for a text column,
+    /// the id sample for a reference column) and sorts with forged cursors.</summary>
     public static int ListWeight(Erp.Kernel.Lists.ListDefinition list) =>
-        100 + list.Columns.Sum(c => (c.Filterable ? (c.Type == Erp.Kernel.Lists.ListColumnType.Text ? 15 : 3) : 0) + (c.Sortable ? 2 : 0) + (c.Groupable ? 1 : 0));
+        4000 + list.Columns.Sum(c => (c.Filterable ? (c.Type == Erp.Kernel.Lists.ListColumnType.Text ? 15 : 3) : 0) + (c.Sortable ? 2 : 0) + (c.Groupable ? 1 : 0));
 }
 
 /// <summary>What one share of the attack found, as plain numbers and lines (so it can be written to
