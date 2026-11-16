@@ -58,16 +58,20 @@ none changes a request the attack sent:
    without it: 354 of tenant A's writes answered 404 (no saved view, no job to save) and the
    differential oracle fired on `GET /api/audit/log?sort=action` (a value tenant A holds itself once
    its saved view exists; the oracle skips such values).
-2. **Time.** A write that runs a job again is refused while its job has not finished (409
-   `jobs.notFinished`). The whole attack reached the write pairs a quarter of an hour in, after every
-   endpoint's first phase, and the jobs the warm-up started (exports, reports) were done; a share
-   reaches them after about two minutes. Before the pairs the attack now waits until neither tenant has
-   a running job or a queued one that is due (`JobsIdleAsync`, poll every 2 s, at most 30 min, then the
-   pairs run and fail as before). Nothing is repeated or skipped and no existing timeout is longer.
+2. **Endpoints that depend on each other's pairs stay in one share.** The whole attack passed the write
+   pair of `POST /api/jobs/jobs/{id}/rerun` only because the pair of `.../cancel`, which the inventory
+   lists before it, had cancelled the queued job both tenants then re-ran (a job that has not finished
+   cannot be run again, 409 `jobs.notFinished`, and the test host runs no job worker, so a queued job
+   never finishes). With cancel and rerun in different shares, both tenants' rerun answered 409 (found
+   first on the first full run of the share that owned rerun, reproduced in 3 minutes with the jobs
+   endpoints alone). A share therefore takes whole **families** of endpoints (`AttackShard.FamilyOf`:
+   the path before the first route parameter: a job's list, create, route, cancel, rerun and output;
+   a list's saved views), in the inventory's order, the order the pairs depended on. A wait for the jobs
+   to finish was tried first and removed: nothing finishes, so it waited half an hour for nothing.
 3. **Probes.** Every module's isolation probe runs in exactly one share (probe number modulo the share
    count); every share checks that every surface kind has a probe (`uncovered`), as the whole attack did.
 
-The shares are dealt out by weight, heaviest endpoint first to the lightest share (`AttackShard.For`),
+The families are dealt out by weight, heaviest first to the lightest share (`AttackShard.For`),
 the same in every process from the same inventory. Weights are tenths of a second calibrated on the
 first run: write endpoint 450, list +4,000, GET without a route 60, with a route 25. A bad guess makes
 one share slower, never a request missing: the judge below checks that the shares are the whole
@@ -143,8 +147,7 @@ Reports: one TRX per group in `trx/` (`http-0_...trx`, `projects_...trx`, ...), 
 | G1NonInterference, G1ListVolume, G1CompanyIsolation, G1ShellAnswers, G2*, source gates | each as before | unchanged, in the group processes above |
 | GateSelfTests, NonInterferenceSelfTests | each as before, three processes | unchanged |
 
-Nothing is removed, narrowed, sampled down, retried or given a longer timeout (the one new wait is a
-precondition with a cap, stated above).
+Nothing is removed, narrowed, sampled down, retried or given a longer timeout, and no wait is added.
 
 ## Not done
 
