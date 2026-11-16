@@ -215,6 +215,54 @@ the in-between settings was measured), fewer, larger shares, or the owner raisin
 **One test failed in the measured run**: `G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume`,
 one answer: tenant B `GET /api/audit/log?take=100&search=%D8%A7&skip=119380` answered 500 after
 0.9 s (no trace id in the report: the test did not annotate it; it does now). That group is unchanged
-by this round except that it runs in a process of its own. See "Run again" below.
+by this round except that it runs in a process of its own. Run again alone on the final commit
+(load 10 to 55 from other agents, 32 min 40 s) it passed, so the 500 is one intermittent answer under
+twelve groups at once, cause unknown; a 500 of this kind now carries the server's log entry. The integrator
+should treat a repeat as a real failure (CLAUDE.md rule 9), not retry it.
 
 
+
+## Steadier processor time (goal 2): what was found
+
+Not reached; stated plainly. With one alone measurement of each way there is no spread to show for the
+new way. What the runs of this round show about where the variance comes from:
+
+- **Which work is counted.** Four shards run one after the other cost 11,020 s of processor time in
+  total, twelve groups at once 23,302 s: the same tests cost 2.1 times as much when the machine is
+  oversubscribed. Variation in how much of the machine other work takes (the critics' verifies, load 5 to 90
+  during this round) moves the counted time by thousands of seconds, which is the 3,000 s of run-to-run
+  noise seen between alone runs (16,077 to 19,067 s): the alone runs share the machine with their own
+  PostgreSQL containers (64 % of its busy time) and any stage that overlaps.
+- **Tenant B's concurrent reader** reads every GET over and over for as long as tenant A's phases 2 to 3 run, so
+  its request count follows the wall time of those phases: 50,900 to 161,908 requests per share (339,664 in all) at
+  about 3 ms each, 150 to 500 processor seconds per share. It is the one part of the attack whose size is
+  decided by speed and not by the request list. Not changed: a fixed count would be a lower rate in the slow
+  list-answer phase (2c, 1,343 s of one share, with no counted tenant A request), which the gate's
+  interleaving needs.
+- **Random draws** (`ControlFor`, scrambles): a few thousand draws that cost microseconds; not a source.
+  The one `Random` in the attack (answer shapes) already has a fixed seed. The shares are dealt out
+  by a fixed rule from the inventory, so the same code gives the same shares in every process.
+- **JIT and tiered compilation**: already tuned in rounds 8 and 9 (TieredPGO off); each of the twelve
+  processes JIT-compiles the test assembly again (about one minute of processor time each, not measured
+  separately).
+
+Candidates left for the owner's decision with the numbers above: a cap on the groups at once (fewer
+processes, less oversubscription, longer wall time), or measuring the counted time on a machine with the
+hyper-threads off.
+
+## Notes for the integrator
+
+- `build/verify-inside.sh dotnet` has changed (groups, the partition check, the judge). `./erp` is unchanged;
+  the stage's log is `dotnet.log` and per group `dotnet-<group>.log`; the old `dotnet-suite.log` is gone.
+  A kept failed folder has `trx/<group>_*.trx`, `tests-all.txt`, `tests-groups.txt` and
+  `g1-http-shards/*.json` (each share's numbers).
+- The stage needs about 22 GB of memory at its peak and 14 PostgreSQL containers at once.
+- A critic's plant run with `--filter FullyQualifiedName~G1HttpIsolationTests` still runs the whole
+  attack in its process (share after share); a plant run that sets `ERP_GATE_SHARD_DIR` needs the four
+  shares' tests (`--filter Shard=k`) first.
+- Tests run in this round, by hand, on the branch: `HttpAttackShardTests` (16), each of the four
+  shares alone (passed), the four shares together and the judge over their results (passed), the whole dotnet
+  stage once (alone, through the slot script: every group passed but `G1ListVolumeTests`, which passed on its own
+  rerun), `ShardedAttackSelfTests`, the source gates and `Process=self-http` only inside that stage run
+  (passed there; run before the last two small changes, which touch `ListVolume.cs`'s message
+  and the diagnostics of a failed write).
