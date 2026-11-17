@@ -1,6 +1,6 @@
 // Screenshots every page of a direction in English and Arabic, light and dark, at 1440x900 with
 // headless Chromium, plus the high-contrast contacts views and each direction's extra views.
-// Usage: node shoot.mjs [a|b|c|d|e|f ...]   ONLY=contacts,dashboard limits the pages.
+// Usage: node shoot.mjs [a|b|c|d|e|f|g ...]   ONLY=contacts,dashboard limits the pages.
 // (needs playwright-core; set PW to its path if not resolvable)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -12,10 +12,10 @@ const want = process.argv.slice(2);
 const only = process.env.ONLY ? process.env.ONLY.split(',') : null;
 const pages = ['dashboard', 'contacts', 'contact-form', 'settings', 'sign-in'];
 // Extra views: [page, query, screenshot name]; the theme and language are appended.
-const extra = { d: [['contacts', 'palette=open', 'command-palette']] };
+const extra = { d: [['contacts', 'palette=open', 'command-palette']], g: [['contacts', 'palette=open', 'command-palette']] };
 const browser = await pw.chromium.launch({ executablePath: exe, args: ['--allow-file-access-from-files'] });
 try {
-  for (const d of ['a', 'b', 'c', 'd', 'e', 'f']) {
+  for (const d of ['a', 'b', 'c', 'd', 'e', 'f', 'g']) {
     if (want.length && !want.includes(d)) continue;
     if (!fs.existsSync(`${root}${d}`)) continue;
     fs.mkdirSync(`${root}${d}/screenshots`, { recursive: true });

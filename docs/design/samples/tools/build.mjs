@@ -1,9 +1,9 @@
-// Generates the static pages of every direction. Usage: node build.mjs [a|b|c|d|e|f ...]
+// Generates the static pages of every direction. Usage: node build.mjs [a|b|c|d|e|f|g ...]
 import fs from 'node:fs';
 const root = new URL('../', import.meta.url).pathname;
 const want = process.argv.slice(2);
 const names = { dashboard: 'dashboard', contacts: 'contacts', form: 'contact-form', settings: 'settings', signin: 'sign-in' };
-for (const d of ['a', 'b', 'c', 'd', 'e', 'f']) {
+for (const d of ['a', 'b', 'c', 'd', 'e', 'f', 'g']) {
   if (want.length && !want.includes(d)) continue;
   let mod;
   try { mod = await import(`./dir-${d}.mjs`); } catch (e) { if (e.code === 'ERR_MODULE_NOT_FOUND' && e.message.includes(`dir-${d}.mjs`)) { console.log('skip', d); continue; } throw e; }

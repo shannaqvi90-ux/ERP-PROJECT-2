@@ -1,0 +1,104 @@
+/* Direction G: "Command centre, best of all". Copied from D's tokens.css (dark-first, light and
+   high contrast, Geist, Geist Mono and Readex Pro, restrained glow); the only changes are the
+   "G additions" blocks, which add the tokens F's components need and D lacks (sidebar width and
+   ground, group header rows, the next-best-action note, details pane and form aside widths).
+   Design tokens: the only source of colour, type, spacing, radius, elevation, glow and motion. */
+@font-face{font-family:"Bz Geist";src:url("../fonts/geist-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Geist Mono";src:url("../fonts/geist-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Readex";src:url("../fonts/readex-pro-arabic-wght-normal.woff2") format("woff2");font-weight:160 700;font-display:block}
+
+:root{
+  /* G additions: F's frame and components */
+  --side-w:232px;--pane-w:376px;--aside-w:296px;--roles-w:356px;
+  --side:#0B0A11;--group-bg:#12111B;--nba-bg:#1D170C;--nba-line:#4A3A16;
+  /* type: Geist for Latin, Readex Pro for Arabic (one stack, so mixed lines share a baseline) */
+  --font-ui:"Bz Geist","Bz Readex",system-ui,sans-serif;
+  --font-mono:"Bz Geist Mono","Bz Readex",ui-monospace,monospace;
+  --fs-code:12px;--fs-2xs:10.5px;--fs-xs:11px;--fs-sm:12px;--fs-md:13px;--fs-lg:14px;--fs-xl:16px;--fs-2xl:20px;--fs-3xl:26px;--fs-hero:30px;
+  --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;
+  --lh-tight:1.2;--lh-body:1.45;--ls-tight:-.012em;--ls-caps:.06em;
+  /* space: 4 px grid */
+  --sp-1:2px;--sp-2:4px;--sp-3:6px;--sp-4:8px;--sp-5:12px;--sp-6:16px;--sp-7:20px;--sp-8:24px;--sp-9:32px;--sp-10:48px;
+  --radius-1:4px;--radius-2:6px;--radius-3:8px;--radius-4:12px;--radius-pill:999px;
+  --focus-w:2px;
+  /* motion: short and decisive */
+  --dur-fast:80ms;--dur:140ms;--ease:cubic-bezier(.2,0,0,1);
+  /* frame */
+  --rail-w:66px;--top-h:46px;--status-h:26px;--pane-w:432px;--subnav-w:216px;--inspector-w:316px;
+  /* colour: dark (the default theme) */
+  --bg:#08070D;--surface:#0F0E17;--surface-2:#14131E;--surface-3:#1A1926;--raised:#1E1C2C;--sunken:#0B0A11;
+  --line:#22202F;--line-soft:#1A1925;--line-strong:#34314A;--grid-line:#1B1A26;
+  --fg:#EEECF6;--fg-muted:#AAA6BF;--fg-subtle:#8E8AA6;--fg-disabled:#5C5973;
+  --hover:#181725;--selected:#1F1736;--selected-edge:#9B5CFF;--header-bg:#0F0E17;
+  --accent:#9B5CFF;--accent-hover:#AD79FF;--on-accent:#0B0814;--accent-soft:#21173D;--accent-text:#BE9BFF;--accent-line:#5B3BA6;
+  --positive:#5EDDA3;--positive-soft:#0F2A1F;--warning:#F4BC5A;--warning-soft:#2E220D;--danger:#FF7D8A;--danger-soft:#33141B;--info:#79B8FF;--info-soft:#102438;
+  --neg:#FF7D8A;--focus:#BE9BFF;
+  --spark:#BE9BFF;--spark-area:rgba(155,92,255,.16);--spark-zero:#34314A;--bar:#3A3654;--bar-last:#9B5CFF;
+  --ag0:#3E3A5A;--ag1:#8B6BD6;--ag2:#F4BC5A;--ag3:#FF7D8A;
+  --avatar-company-bg:#251D42;--avatar-company-fg:#CDB6FF;--avatar-person-bg:#0F2E2B;--avatar-person-fg:#8FE6D6;
+  --kbd-bg:#1A1926;--kbd-line:#34314A;--kbd-fg:#C9C5DC;
+  --scrim:rgba(4,3,9,.62);
+  /* depth and glow: used on the command field, the primary action, the focused row and the palette only */
+  --shadow-1:0 1px 0 rgba(255,255,255,.03) inset,0 1px 2px rgba(0,0,0,.4);
+  --shadow-2:0 8px 24px rgba(0,0,0,.45);
+  --shadow-3:0 24px 64px rgba(0,0,0,.6),0 0 0 1px #34314A;
+  --glow:0 0 0 1px rgba(155,92,255,.55),0 0 18px rgba(155,92,255,.28);
+  --glow-soft:0 0 0 1px rgba(155,92,255,.32),0 0 28px rgba(155,92,255,.14);
+  --halo:radial-gradient(600px 300px at 50% 0%,rgba(155,92,255,.14),transparent 70%);
+  --dots:radial-gradient(circle at 1px 1px,rgba(255,255,255,.06) 1px,transparent 0) 0 0/20px 20px;
+  --halo-signin:radial-gradient(closest-side,rgba(155,92,255,.18),transparent);
+  --logo-ink:none;--logo-white:block;
+  color-scheme:dark;
+}
+[data-theme="light"]{
+  /* G additions */
+  --side:#F8F8FB;--group-bg:#F6F5FA;--nba-bg:#FFF8EA;--nba-line:#EED9AE;
+  --bg:#F3F3F7;--surface:#FFFFFF;--surface-2:#F8F8FB;--surface-3:#F1F0F6;--raised:#FFFFFF;--sunken:#ECEBF2;
+  --line:#E4E3EC;--line-soft:#EFEEF4;--line-strong:#CBC9D8;--grid-line:#EEEDF3;
+  --fg:#14121F;--fg-muted:#55526A;--fg-subtle:#6B6882;--fg-disabled:#A9A6BA;
+  --hover:#F4F3F9;--selected:#F0E8FE;--selected-edge:#6A00E8;--header-bg:#FFFFFF;
+  --accent:#6A00E8;--accent-hover:#5A00C6;--on-accent:#FFFFFF;--accent-soft:#F1E8FE;--accent-text:#5A00C6;--accent-line:#C7A6F7;
+  --positive:#08794A;--positive-soft:#E0F4EA;--warning:#8C5000;--warning-soft:#FDF0D8;--danger:#B4232F;--danger-soft:#FCE7E9;--info:#0B5CAD;--info-soft:#E4EFFB;
+  --neg:#B4232F;--focus:#6A00E8;
+  --spark:#6A00E8;--spark-area:rgba(106,0,232,.10);--spark-zero:#CBC9D8;--bar:#D8D5E6;--bar-last:#6A00E8;
+  --ag0:#CFCBE0;--ag1:#8B5CE0;--ag2:#D99421;--ag3:#C83A47;
+  --avatar-company-bg:#EEE6FD;--avatar-company-fg:#4C1D9E;--avatar-person-bg:#DDF2EE;--avatar-person-fg:#0C5A50;
+  --kbd-bg:#FFFFFF;--kbd-line:#D5D3E1;--kbd-fg:#4A475E;
+  --scrim:rgba(20,18,31,.32);
+  --shadow-1:0 1px 2px rgba(20,18,31,.06);
+  --shadow-2:0 8px 24px rgba(20,18,31,.10);
+  --shadow-3:0 24px 64px rgba(20,18,31,.22),0 0 0 1px #E4E3EC;
+  --glow:0 0 0 1px rgba(106,0,232,.45),0 0 16px rgba(106,0,232,.18);
+  --glow-soft:0 0 0 1px rgba(106,0,232,.22),0 0 22px rgba(106,0,232,.08);
+  --halo:radial-gradient(600px 300px at 50% 0%,rgba(106,0,232,.07),transparent 70%);
+  --dots:radial-gradient(circle at 1px 1px,rgba(20,18,31,.07) 1px,transparent 0) 0 0/20px 20px;
+  --halo-signin:radial-gradient(closest-side,rgba(106,0,232,.09),transparent);
+  --logo-ink:block;--logo-white:none;
+  color-scheme:light;
+}
+[data-theme="hc"]{
+  /* G additions */
+  --side:#000000;--group-bg:#141414;--nba-bg:#000000;--nba-line:#FFE600;
+  --bg:#000000;--surface:#000000;--surface-2:#000000;--surface-3:#0A0A0A;--raised:#000000;--sunken:#000000;
+  --line:#FFFFFF;--line-soft:#8A8A8A;--line-strong:#FFFFFF;--grid-line:#6E6E6E;
+  --fg:#FFFFFF;--fg-muted:#FFFFFF;--fg-subtle:#E6E6E6;--fg-disabled:#A6A6A6;
+  --hover:#1F1F1F;--selected:#2A1D5C;--selected-edge:#FFE600;--header-bg:#000000;
+  --accent:#D2B4FF;--accent-hover:#E4D2FF;--on-accent:#000000;--accent-soft:#1C1238;--accent-text:#DCC4FF;--accent-line:#FFFFFF;
+  --positive:#5CFFAA;--positive-soft:#002E16;--warning:#FFE600;--warning-soft:#332E00;--danger:#FF9AA3;--danger-soft:#3D0A12;--info:#9AD6FF;--info-soft:#00243D;
+  --neg:#FF9AA3;--focus:#FFE600;
+  --spark:#FFFFFF;--spark-area:transparent;--spark-zero:#8A8A8A;--bar:#8A8A8A;--bar-last:#FFE600;
+  --ag0:#FFFFFF;--ag1:#D2B4FF;--ag2:#FFE600;--ag3:#FF9AA3;
+  --avatar-company-bg:#000000;--avatar-company-fg:#FFFFFF;--avatar-person-bg:#000000;--avatar-person-fg:#FFFFFF;
+  --kbd-bg:#000000;--kbd-line:#FFFFFF;--kbd-fg:#FFFFFF;
+  --scrim:rgba(0,0,0,.85);
+  --shadow-1:none;--shadow-2:none;--shadow-3:0 0 0 2px #FFFFFF;
+  --glow:0 0 0 2px #FFE600;--glow-soft:0 0 0 1px #FFFFFF;
+  --halo:none;--dots:none;--halo-signin:none;
+  --logo-ink:none;--logo-white:block;
+  color-scheme:dark;
+}
+/* density: Compact (default) for more rows, Comfortable for more air */
+[data-density="compact"]{--row-h:30px;--ctl-h:28px;--cell-px:10px;--fld-gap:var(--sp-5);--sec-pad:var(--sp-6);--card-pad:var(--sp-5)}
+[data-density="comfortable"]{--row-h:40px;--ctl-h:34px;--cell-px:14px;--fld-gap:var(--sp-6);--sec-pad:var(--sp-8);--card-pad:var(--sp-6)}
+/* Arabic: same stack, one step larger, looser leading, no letter-spacing (Arabic letters join) */
+:lang(ar){--fs-2xs:11.5px;--fs-xs:12px;--fs-sm:13px;--fs-md:14px;--fs-lg:15px;--fs-xl:17px;--fs-2xl:22px;--fs-3xl:28px;--fs-hero:32px;--lh-body:1.7;--lh-tight:1.45;--ls-tight:0;--ls-caps:0}
