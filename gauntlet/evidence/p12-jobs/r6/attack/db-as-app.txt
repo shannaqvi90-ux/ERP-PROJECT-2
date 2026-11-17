@@ -1,0 +1,29 @@
+== as erp_app (its own login): role switches and DDL
+SELECT current_user, session_user;
+ current_user | session_user 
+--------------+--------------
+ erp_app      | erp_app
+(1 row)
+
+SET ROLE erp_owner;
+ERROR:  permission denied to set role "erp_owner"
+SET ROLE erp_worker;
+ERROR:  permission denied to set role "erp_worker"
+SET ROLE postgres;
+ERROR:  permission denied to set role "postgres"
+ALTER TABLE jobs.jobs DISABLE ROW LEVEL SECURITY;
+ERROR:  must be owner of table jobs
+ALTER TABLE jobs.jobs NO FORCE ROW LEVEL SECURITY;
+ERROR:  must be owner of table jobs
+SET row_security = off;
+SET
+SELECT count(*) FROM jobs.jobs;
+ERROR:  query would be affected by row-level security policy for table "jobs"
+RESET row_security;
+RESET
+SELECT count(*) AS unbound_jobs FROM jobs.jobs;
+ unbound_jobs 
+--------------
+            0
+(1 row)
+

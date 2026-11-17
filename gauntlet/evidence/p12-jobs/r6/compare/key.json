@@ -1,0 +1,46 @@
+{
+  "shots": {
+    "40f085ecbb3389ee.jpg": {
+      "product": "ours",
+      "task": "see-and-rerun-job",
+      "moment": "start",
+      "run_id": "see-and-rerun-job-20261116T103803-dd8e"
+    },
+    "4039201bfeec42e5.jpg": {
+      "product": "ours",
+      "task": "see-and-rerun-job",
+      "moment": "error",
+      "run_id": "see-and-rerun-job-20261116T103803-dd8e"
+    },
+    "2540079ca7b94122.jpg": {
+      "product": "odoo",
+      "task": "see-and-rerun-job",
+      "moment": "start",
+      "run_id": "see-and-rerun-job-20261116T104017-cb53"
+    },
+    "2b643524826ce860.jpg": {
+      "product": "odoo",
+      "task": "see-and-rerun-job",
+      "moment": "job opened",
+      "run_id": "see-and-rerun-job-20261116T104017-cb53"
+    },
+    "2b6400747676d7f1.jpg": {
+      "product": "odoo",
+      "task": "see-and-rerun-job",
+      "moment": "done",
+      "run_id": "see-and-rerun-job-20261116T104017-cb53"
+    }
+  },
+  "run_order": {
+    "see-and-rerun-job": [
+      "ours",
+      "odoo"
+    ]
+  },
+  "letters": {
+    "see-and-rerun-job": {
+      "ours": "A",
+      "odoo": "B"
+    }
+  }
+}

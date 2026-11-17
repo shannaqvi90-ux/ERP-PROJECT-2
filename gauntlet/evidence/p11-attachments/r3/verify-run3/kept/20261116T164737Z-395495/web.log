@@ -1,0 +1,1422 @@
+
+[1m== Copying sources (without build output)[0m
+
+[1m== Web: install, type-check, string gate, unit tests, build[0m
+
+added 59 packages in 5s
+String check passed: 121 source files, 1547 keys in English and Arabic, 120 plural messages.
+Accessibility check passed: 1688 JSX elements checked.
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/work/web[39m
+
+ [32m✓[39m src/modules/identity/model.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/model.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2mtracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/kernel/forms/forms.test.tsx[2m > [22m[2mthe record form[2m > [22m[2masks in the same dialog whichever way the user leaves: a menu link saves and then leaves, or discards and leaves
+[22m[39mAn update to RecordForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/reports/ReportsPage.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 628[2mms[22m[39m
+ [32m✓[39m src/modules/audit/audit.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 787[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the whole history with Alt+Y: every change, every field, names for ids, secrets hidden, older changes on demand, Escape closes [33m 308[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/modules/shell/SignInPage.test.tsx[2m > [22m[2msign-in screen[2m > [22m[2mafter moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/currency/screens.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 4141[2mms[22m[39m
+     [33m[2m✓[22m[39m shows each currency's latest rate in the base currency, and the base currency as such [33m 1445[2mms[22m[39m
+     [33m[2m✓[22m[39m opens a currency with today's rate field focused: typing a rate and Enter saves it, dated by the server [33m 938[2mms[22m[39m
+     [33m[2m✓[22m[39m converts an amount as it is typed, with the rate and its date [33m 328[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no rate entry, from the row or the record, to someone who does not work in every company [33m 398[2mms[22m[39m
+     [33m[2m✓[22m[39m enters a new rate with today's date and the working company's base currency [33m 407[2mms[22m[39m
+ [32m✓[39m src/modules/shell/SignInPage.test.tsx [2m([22m[2m23 tests[22m[2m)[22m[33m 5283[2mms[22m[39m
+     [33m[2m✓[22m[39m focuses the password when this device remembers the e-mail, then signs in to the shell [33m 425[2mms[22m[39m
+     [33m[2m✓[22m[39m on the team's sign-in address fills in the domain: the local part signs in [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m on the team's sign-in address, typing the whole e-mail moves on to the password, and the note says so first [33m 311[2mms[22m[39m
+     [33m[2m✓[22m[39m after moving on, a Tab or Enter pressed by habit is absorbed once, so it neither skips the password nor sends the form [33m 480[2mms[22m[39m
+     [33m[2m✓[22m[39m does not move on while the password already holds text, nor for another domain, nor without the team's address [33m 301[2mms[22m[39m
+     [33m[2m✓[22m[39m on the plain address, a device that signed in before moves on once a whole address of that workspace is typed, and says so first [33m 414[2mms[22m[39m
+     [33m[2m✓[22m[39m offers only granted screens and refuses an address the roles do not allow [33m 507[2mms[22m[39m
+[90mstderr[2m | src/modules/tenancy/CompaniesPage.test.tsx[2m > [22m[2mcompanies screen[2m > [22m[2mon an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/tenancy/CompaniesPage.test.tsx[2m > [22m[2mcompanies screen[2m > [22m[2mon an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+ [31m❯[39m src/modules/tenancy/CompaniesPage.test.tsx [2m([22m[2m15 tests[22m[2m | [22m[31m14 failed[39m[2m)[22m[33m 7201[2mms[22m[39m
+[31m     [31m×[31m creates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter[39m[33m 5528[2mms[22m[39m
+[31m     [31m×[31m on an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus[39m[33m 1117[2mms[22m[39m
+     [32m✓[39m names a branch from its typed names: the head office keeps the company's name, a branch typed in Arabic only has no English name[32m 28[2mms[22m[39m
+[31m     [31m×[31m names a new branch after its company: the typed part follows the company's name, and the name alone is the company's[39m[32m 164[2mms[22m[39m
+[31m     [31m×[31m keeps the new company's branch line, and what is typed in it, right after the save: the saved answer is the record, not read again (p01 round 6 health check)[39m[32m 104[2mms[22m[39m
+[31m     [31m×[31m shows a branch added from the keyboard in the company's branch table, even when the first read of the table answers last (lead, p06 round 2)[39m[32m 11[2mms[22m[39m
+[31m     [31m×[31m keeps a branch just added when the branches read on opening the form answers after it (a busy server)[39m[32m 11[2mms[22m[39m
+[31m     [31m×[31m saves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces them and Enter (in a one-line field) on the save button[39m[32m 30[2mms[22m[39m
+[31m     [31m×[31m shows the company under its Arabic name on Arabic screens and starts a new branch in the company's emirate[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m adds the typed branch with Ctrl+S or Ctrl+Enter on the branch line, as Enter does, and leaves an untouched line's Ctrl+S to the company form[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m on an Arabic screen, shows a TRN typed in Arabic-Indic digits as 0 to 9 and offers the country by its Arabic name (owner 2026-10-17; p06 round 6)[39m[32m 35[2mms[22m[39m
+[31m     [31m×[31m marks a branch saved with its Arabic name only as having no English name on an English screen (critic p02 round 10)[39m[32m 102[2mms[22m[39m
+[31m     [31m×[31m offers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule[39m[32m 24[2mms[22m[39m
+[31m     [31m×[31m opens a company where the user's roles only read as read-only, with the reason, no Save, no logo change and no branch line (critic p02 round 11)[39m[32m 19[2mms[22m[39m
+[31m     [31m×[31m refreshes the companies list (its branch count) when a branch is added from the open company's form (critic p02 round 11)[39m[32m 17[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/forms.test.tsx [2m([22m[2m26 tests[22m[2m)[22m[33m 7765[2mms[22m[39m
+     [33m[2m✓[22m[39m tracks unsaved changes, guards leaving, saves with Ctrl+S and maps the server's field errors to their fields [33m 326[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a record it has just created on screen when the screen points it at the new id (no re-read, no Loading); another record or a reload is read [33m 491[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the new values and holds the new version, with nothing to save [33m 420[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps what the user typed in a field they changed, and the next save sends it with the new version [33m 519[2mms[22m[39m
+     [33m[2m✓[22m[39m works the base amount out at the base currency's own decimals: three for a dinar, none for the yen [33m 466[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps +971, selects the number after it on entry, and saves when the last digit of a UAE number is typed [33m 956[2mms[22m[39m
+     [33m[2m✓[22m[39m does not save on its own while another field has unsaved changes, for a pasted number, or on a new record [33m 1407[2mms[22m[39m
+     [33m[2m✓[22m[39m offers countries by name in the screen's language, the UAE and the Gulf first, and keeps the code [33m 1192[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcontacts.contacts.print: shown in the palette only to a user whose roles grant contacts.contacts.read and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcontacts.contacts.print: shown in the palette only to a user whose roles grant contacts.contacts.read and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcontacts.contacts.print: shown in the palette only to a user whose roles grant contacts.contacts.read and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcontacts.contacts.print: shown in the palette only to a user whose roles grant contacts.contacts.read and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcontacts.contacts.print: shown in the palette only to a user whose roles grant contacts.contacts.read and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcurrency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcurrency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcurrency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcurrency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/paletteActions.test.tsx[2m > [22m[2mmodule actions in the command palette[2m > [22m[2mcurrency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+AggregateError: 
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:3000
+        at createConnectionError (node:net:2058:14)
+        at afterConnectMultiple (node:net:2088:16) {
+      errno: -111,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 3000
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:3000
+        at createConnectionError (node:net:2058:14)
+        at afterConnectMultiple (node:net:2088:16) {
+      errno: -111,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 3000
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:3000/api/attachments/contacts.contacts/files/f2/content?inline=true": 
+    at Fetch.onError (file:///work/web/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:514:28)
+    at emitErrorEvent (node:_http_client:114:11)
+    at Socket.socketErrorListener (node:_http_client:766:5)
+    at Socket.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+ [32m✓[39m src/modules/tenancy/WorkplaceSwitcher.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 1801[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the working company and branch, and switches by keyboard: Alt+C, type, Enter [33m 976[2mms[22m[39m
+     [33m[2m✓[22m[39m with more than six companies, keeps the ones switched between most recently one click away (critic p02 round 4) [33m 437[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/browserReach.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32m✓[39m src/modules/jobs/screens.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 11709[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the jobs with their state and a progress bar [33m 741[2mms[22m[39m
+     [33m[2m✓[22m[39m opens a job with when it finished, its tries, parameters, result and output [33m 609[2mms[22m[39m
+     [33m[2m✓[22m[39m shows a failed job's error in the screen's language with its tries [33m 1585[2mms[22m[39m
+     [33m[2m✓[22m[39m speaks Arabic: the job, its state and its error in Arabic [33m 1096[2mms[22m[39m
+     [33m[2m✓[22m[39m runs a finished job again with one click and opens the new run [33m 837[2mms[22m[39m
+     [33m[2m✓[22m[39m starts a job of a chosen kind with its parameters [33m 1569[2mms[22m[39m
+     [33m[2m✓[22m[39m starts the job with Ctrl+Enter from the parameters box [33m 1050[2mms[22m[39m
+     [33m[2m✓[22m[39m cancels a running job and keeps it open [33m 438[2mms[22m[39m
+     [33m[2m✓[22m[39m says plainly when the job finished on its own before the cancel reached it [33m 579[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the schedules and shows one with its timing and next run [33m 885[2mms[22m[39m
+     [33m[2m✓[22m[39m adds a schedule: its name, kind, timing and parameters are sent [33m 1028[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no new schedule to a reader [33m 391[2mms[22m[39m
+AggregateError: 
+    at internalConnectMultiple (node:net:1426:18)
+    at afterConnectMultiple (node:net:2095:7) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:3000
+        at createConnectionError (node:net:2058:14)
+        at afterConnectMultiple (node:net:2088:16) {
+      errno: -111,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 3000
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:3000
+        at createConnectionError (node:net:2058:14)
+        at afterConnectMultiple (node:net:2088:16) {
+      errno: -111,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 3000
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:3000/api/attachments/contacts.contacts/files/f2/content?inline=true": 
+    at Fetch.onError (file:///work/web/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:514:28)
+    at emitErrorEvent (node:_http_client:114:11)
+    at Socket.socketErrorListener (node:_http_client:766:5)
+    at Socket.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+ [32m✓[39m src/modules/attachments/RecordFiles.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 3121[2mms[22m[39m
+     [33m[2m✓[22m[39m shows a paperclip with the count on the toolbar, beside the history button, with its key in the tooltip [33m 750[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the newest names under the heading: a click opens a file in the viewer, other kinds are saved, the rest are behind 'more' [33m 543[2mms[22m[39m
+     [33m[2m✓[22m[39m Alt+A puts the cursor on the first file of the section, and Enter opens it; a text file is shown as text [33m 442[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the uploads and deletes of its files with the record's own changes, newest first [33m 577[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/SignInPasskey.test.tsx[2m > [22m[2msign-in with a passkey[2m > [22m[2msending the form while the device is asked withdraws the request and signs in with the password
+[22m[39mAn update to SignInPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/modules/shell/SignInPasskey.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 1433[2mms[22m[39m
+ [32m✓[39m src/modules/shell/AppShell.test.tsx [2m([22m[2m23 tests[22m[2m)[22m[33m 15228[2mms[22m[39m
+     [33m[2m✓[22m[39m opens with Ctrl+K, finds a screen as the user types, and opens it with Enter [33m 2028[2mms[22m[39m
+     [33m[2m✓[22m[39m finds an English screen by its Arabic name and records through module sources [33m 1198[2mms[22m[39m
+     [33m[2m✓[22m[39m ends a source's records with 'show all matches', which opens the list narrowed to the query [33m 1048[2mms[22m[39m
+     [33m[2m✓[22m[39m finds a role by its English or Arabic name and opens it in the roles list (critic p04 round 4) [33m 690[2mms[22m[39m
+     [33m[2m✓[22m[39m never asks the roles, companies or branches sources without their read permissions [33m 334[2mms[22m[39m
+     [33m[2m✓[22m[39m finds companies and branches by code and opens the record in its list, in Arabic too [33m 1408[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no 'show all matches' when every match is already shown [33m 1406[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user with no roles no screens and never asks a record source they may not use [33m 488[2mms[22m[39m
+     [33m[2m✓[22m[39m shows Arabic-Indic digits on Arabic screens when the user chooses them [33m 1160[2mms[22m[39m
+     [33m[2m✓[22m[39m changes digits from the preferences dialog and saves them to the profile [33m 415[2mms[22m[39m
+     [33m[2m✓[22m[39m switches language and digits on screen, keeps them on this device, and never asks the server to save them [33m 781[2mms[22m[39m
+     [33m[2m✓[22m[39m lists every active shortcut in the help sheet [33m 642[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the record form's keys (save, discard, next and previous record, print, close, the role filter) with no record open, in English and Arabic [33m 663[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the list grid's own keys in the help sheet, in English and in Arabic [33m 1466[2mms[22m[39m
+     [33m[2m✓[22m[39m moves to the navigation with Alt+M and through it with the arrow keys [33m 415[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the focus where it is when the language changes [33m 338[2mms[22m[39m
+ [31m❯[39m src/modules/shell/paletteActions.test.tsx [2m([22m[2m61 tests[22m[2m | [22m[31m58 failed[39m[2m)[22m[33m 18410[2mms[22m[39m
+     [32m✓[39m every action is declared whole: a permission, one of its module's screens, its name and words in English and Arabic[32m 78[2mms[22m[39m
+     [32m✓[39m offers an action only with its permission and its screen's: the filter, for every action[32m 27[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow sign-in again is not offered to a user who may change users but not see the sign-in history, in English or Arabic (critic p04 round 9, plant P4) [33m 2903[2mms[22m[39m
+[31m     [31m×[31m contacts.contacts.new: shown in the palette only to a user whose roles grant contacts.contacts.create and its screen[39m[33m 5049[2mms[22m[39m
+[31m     [31m×[31m contacts.contacts.print: shown in the palette only to a user whose roles grant contacts.contacts.read and its screen[39m[32m 174[2mms[22m[39m
+[31m     [31m×[31m currency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen[39m[32m 111[2mms[22m[39m
+[31m     [31m×[31m currency.rates.print: shown in the palette only to a user whose roles grant currency.rates.read and its screen[39m[32m 95[2mms[22m[39m
+[31m     [31m×[31m currency.currencies.print: shown in the palette only to a user whose roles grant currency.currencies.read and its screen[39m[32m 73[2mms[22m[39m
+[31m     [31m×[31m customfields.fields.new: shown in the palette only to a user whose roles grant customfields.fields.manage and its screen[39m[32m 92[2mms[22m[39m
+[31m     [31m×[31m customfields.fields.print: shown in the palette only to a user whose roles grant customfields.fields.read and its screen[39m[32m 165[2mms[22m[39m
+[31m     [31m×[31m identity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen[39m[32m 98[2mms[22m[39m
+[31m     [31m×[31m identity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen[39m[32m 71[2mms[22m[39m
+[31m     [31m×[31m identity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen[39m[32m 115[2mms[22m[39m
+[31m     [31m×[31m identity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen[39m[32m 129[2mms[22m[39m
+[31m     [31m×[31m identity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen[39m[32m 140[2mms[22m[39m
+[31m     [31m×[31m identity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen[39m[32m 213[2mms[22m[39m
+[31m     [31m×[31m identity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen[39m[32m 170[2mms[22m[39m
+[31m     [31m×[31m jobs.jobs.print: shown in the palette only to a user whose roles grant jobs.jobs.read and its screen[39m[32m 164[2mms[22m[39m
+[31m     [31m×[31m jobs.schedules.new: shown in the palette only to a user whose roles grant jobs.schedules.create and its screen[39m[32m 162[2mms[22m[39m
+[31m     [31m×[31m numbering.sequences.print: shown in the palette only to a user whose roles grant numbering.sequences.read and its screen[39m[32m 220[2mms[22m[39m
+[31m     [31m×[31m tenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen[39m[32m 267[2mms[22m[39m
+[31m     [31m×[31m tenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen[39m[32m 169[2mms[22m[39m
+[31m     [31m×[31m tenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen[39m[32m 254[2mms[22m[39m
+[31m     [31m×[31m tenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen[39m[32m 190[2mms[22m[39m
+[31m     [31m×[31m contacts.contacts.new: started from home, it opens /contacts/contacts and runs the screen's own command there[39m[33m 310[2mms[22m[39m
+[31m     [31m×[31m contacts.contacts.print: started from home, it opens /contacts/contacts and runs the screen's own command there[39m[32m 143[2mms[22m[39m
+[31m     [31m×[31m currency.rates.new: started from home, it opens /currency/rates and runs the screen's own command there[39m[32m 153[2mms[22m[39m
+[31m     [31m×[31m currency.rates.print: started from home, it opens /currency/rates and runs the screen's own command there[39m[32m 128[2mms[22m[39m
+[31m     [31m×[31m currency.currencies.print: started from home, it opens /currency/currencies and runs the screen's own command there[39m[33m 354[2mms[22m[39m
+[31m     [31m×[31m customfields.fields.new: started from home, it opens /customfields/fields and runs the screen's own command there[39m[32m 250[2mms[22m[39m
+[31m     [31m×[31m customfields.fields.print: started from home, it opens /customfields/fields and runs the screen's own command there[39m[33m 327[2mms[22m[39m
+[31m     [31m×[31m identity.users.new: started from home, it opens /identity/users and runs the screen's own command there[39m[32m 184[2mms[22m[39m
+[31m     [31m×[31m identity.roles.new: started from home, it opens /identity/roles and runs the screen's own command there[39m[32m 166[2mms[22m[39m
+[31m     [31m×[31m identity.users.print: started from home, it opens /identity/users and runs the screen's own command there[39m[32m 181[2mms[22m[39m
+[31m     [31m×[31m identity.roles.print: started from home, it opens /identity/roles and runs the screen's own command there[39m[32m 257[2mms[22m[39m
+[31m     [31m×[31m jobs.jobs.print: started from home, it opens /jobs/jobs and runs the screen's own command there[39m[32m 82[2mms[22m[39m
+[31m     [31m×[31m jobs.schedules.new: started from home, it opens /jobs/schedules and runs the screen's own command there[39m[32m 109[2mms[22m[39m
+[31m     [31m×[31m numbering.sequences.print: started from home, it opens /numbering/sequences and runs the screen's own command there[39m[32m 120[2mms[22m[39m
+[31m     [31m×[31m tenancy.companies.new: started from home, it opens /tenancy/companies and runs the screen's own command there[39m[32m 114[2mms[22m[39m
+[31m     [31m×[31m tenancy.branches.new: started from home, it opens /tenancy/branches and runs the screen's own command there[39m[32m 114[2mms[22m[39m
+[31m     [31m×[31m tenancy.companies.print: started from home, it opens /tenancy/companies and runs the screen's own command there[39m[32m 120[2mms[22m[39m
+[31m     [31m×[31m tenancy.branches.print: started from home, it opens /tenancy/branches and runs the screen's own command there[39m[32m 143[2mms[22m[39m
+[31m     [31m×[31m every action that asks for a record says what to choose, in English and Arabic, and runs no command before[39m[32m 176[2mms[22m[39m
+[31m     [31m×[31m an action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need[39m[32m 183[2mms[22m[39m
+[31m     [31m×[31m Copy a role from home: the roles list asks for the role, and the role chosen opens its copy[39m[32m 174[2mms[22m[39m
+[31m     [31m×[31m Show the sign-in history from home, in Arabic: the user chosen opens on the history tab[39m[32m 192[2mms[22m[39m
+[31m     [31m×[31m Allow a user to sign in again from home: the history opens and the user chosen is allowed again[39m[32m 164[2mms[22m[39m
+[31m     [31m×[31m an action that asks for a record is dropped, without a word, when the user leaves its screen[39m[32m 297[2mms[22m[39m
+[31m     [31m×[31m New user from home keeps its new record open when the list arrives after the command ran[39m[32m 232[2mms[22m[39m
+[31m     [31m×[31m a user who may add a branch but to no company (only some branches of it) is not offered New branch[39m[32m 181[2mms[22m[39m
+[31m     [31m×[31m a user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9)[39m[32m 176[2mms[22m[39m
+[31m     [31m×[31m is found by its words in either language, on an Arabic screen too[39m[33m 360[2mms[22m[39m
+[31m     [31m×[31m come first, once each: on the users screen New user, the list's own controls and Print or export[39m[33m 446[2mms[22m[39m
+[31m     [31m×[31m are found by the words of the module action they stand for: "print compan" on the companies screen (critic p02 round 10)[39m[32m 260[2mms[22m[39m
+[31m     [31m×[31m follow the open record: a role's Copy, a user's sign-in history and Allow sign-in again[39m[32m 275[2mms[22m[39m
+[31m     [31m×[31m the palette offers a user's account actions exactly when the record shows their buttons[39m[32m 206[2mms[22m[39m
+[31m     [31m×[31m offers a user's account actions from every tab, exactly as on Details, and to a reader none[39m[32m 249[2mms[22m[39m
+[31m     [31m×[31m Reset password from "What they can do" opens Details with the reset's first choice focused; Delete user from the history asks first[39m[32m 172[2mms[22m[39m
+[31m     [31m×[31m runs nothing and says so, after a few seconds; a command the screen offers runs at once[39m[32m 76[2mms[22m[39m
+[31m     [31m×[31m sends nothing but reads (and the user's own settings), and opens no new record, on every screen[39m[32m 117[2mms[22m[39m
+[31m     [31m×[31m the control: the same sweep for a user who may change everything finds the writes the entries make[39m[32m 82[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/goTo.test.tsx[2m > [22m[2mgo to a screen with G and a letter[2m > [22m[2mtakes the second key before the screen's own keys see it
+[22m[39mAn update to AppShell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AppShell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///work/web/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///work/web/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///work/web/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///work/web/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///work/web/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at BrowserFrameFactory.destroyFrame (file:///work/web/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///work/web/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///work/web/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///work/web/node_modules/happy-dom/lib/nodes/node/Node.js:804:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:3000/api/attachments/contacts.contacts/files/f1/content?inline=true": The operation was aborted.
+    at Fetch.onError (file:///work/web/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:514:28)
+    at emitErrorEvent (node:_http_client:114:11)
+    at Socket.socketErrorListener (node:_http_client:766:5)
+    at Socket.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+ [32m✓[39m src/kernel/forms/attachments.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 3452[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the files with their size, who added them and when [33m 312[2mms[22m[39m
+     [33m[2m✓[22m[39m does not send a file the server would refuse, and says why [33m 787[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the server's reason when it refuses a file [33m 332[2mms[22m[39m
+     [33m[2m✓[22m[39m deletes a file after asking [33m 367[2mms[22m[39m
+     [33m[2m✓[22m[39m previews a picture and a PDF in the page and steps between them from the keyboard [33m 773[2mms[22m[39m
+ [32m✓[39m src/modules/numbering/screens.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 7294[2mms[22m[39m
+     [33m[2m✓[22m[39m lists each company's sequences with the number the next document gets [33m 988[2mms[22m[39m
+     [33m[2m✓[22m[39m opens a sequence with its prefix chosen: typing replaces it, the preview follows, Tab reaches the digits and Enter saves [33m 1046[2mms[22m[39m
+     [33m[2m✓[22m[39m previews the next year's first number of a yearly sequence and its counters and last numbers [33m 567[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a yearly pattern with no year before sending, in the screen's language, and a typed next number is previewed [33m 888[2mms[22m[39m
+     [33m[2m✓[22m[39m a tax document's sequence shows gapless fixed on, says why, and fixes the next number once a number of the period is given [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m any other sequence keeps its gapless choice and its next number open [33m 750[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the server's refusal on its field [33m 732[2mms[22m[39m
+     [33m[2m✓[22m[39m is read-only, with the reason, for an administrator who works in only some branches of the company [33m 1316[2mms[22m[39m
+     [33m[2m✓[22m[39m speaks Arabic, numbers kept left to right [33m 647[2mms[22m[39m
+ [32m✓[39m src/modules/shell/goTo.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 7836[2mms[22m[39m
+     [33m[2m✓[22m[39m opens Users with G then U from Home, showing what G offers while it waits [33m 2535[2mms[22m[39m
+     [33m[2m✓[22m[39m works by key position with an Arabic layout and in Arabic [33m 1478[2mms[22m[39m
+     [33m[2m✓[22m[39m types G into a field instead, and leaves alone a G with a modifier [33m 431[2mms[22m[39m
+     [33m[2m✓[22m[39m lets Escape, another key or the time running out end the wait [33m 706[2mms[22m[39m
+     [33m[2m✓[22m[39m offers only the screens the user's navigation lists [33m 313[2mms[22m[39m
+     [33m[2m✓[22m[39m does nothing while a dialog is open [33m 565[2mms[22m[39m
+     [33m[2m✓[22m[39m takes the second key before the screen's own keys see it [33m 1586[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/AccessPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 5144[2mms[22m[39m
+     [33m[2m✓[22m[39m says why a stronger user's access is read-only and offers no way to change it [33m 2235[2mms[22m[39m
+     [33m[2m✓[22m[39m lets a branch-limited manager give only their own branch [33m 1424[2mms[22m[39m
+     [33m[2m✓[22m[39m says when another administrator saved first and reloads their change on request [33m 989[2mms[22m[39m
+     [33m[2m✓[22m[39m leaves a company where the caller's roles only read access as it is: shown, not changeable, and not sent (critic p02 round 11) [33m 494[2mms[22m[39m
+ [32m✓[39m src/modules/contacts/customFields.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 7218[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the contact's fields in the screen's language with their values [33m 2167[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the Arabic labels on an Arabic screen [33m 1654[2mms[22m[39m
+     [33m[2m✓[22m[39m sends the values with the contact, a cleared one as null and the version read [33m 2298[2mms[22m[39m
+     [33m[2m✓[22m[39m starts a new contact with the fields' defaults [33m 818[2mms[22m[39m
+ [32m✓[39m src/kernel/signInAddress.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 133[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/ListView.test.tsx [2m([22m[2m30 tests[22m[2m)[22m[33m 27048[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the first rows with their count and puts the cursor in the search box [33m 654[2mms[22m[39m
+     [33m[2m✓[22m[39m gives each column room for its header and keeps the full label as the sort button's title [33m 884[2mms[22m[39m
+     [33m[2m✓[22m[39m gives a column marked wide more room and one marked narrow less than its type would (a legal name, a code) [33m 690[2mms[22m[39m
+     [33m[2m✓[22m[39m gives every text value a box of its own direction, so a value that does not fit is cut at its own end [33m 726[2mms[22m[39m
+     [33m[2m✓[22m[39m searches as the user types and opens the only match with Enter [33m 1132[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the cursor in the search box on '/', the status bar's search key, instead of typing it first [33m 927[2mms[22m[39m
+     [33m[2m✓[22m[39m closes an open record with Escape wherever the focus is on the page [33m 1043[2mms[22m[39m
+     [33m[2m✓[22m[39m lists a search best match first and opens the best match with Enter [33m 1119[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for a just-applied search's own rows before Enter opens the best match [33m 1443[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the default order and Enter's usual meaning when the server did not rank a broad search [33m 648[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a sort chosen from the header while searching [33m 1527[2mms[22m[39m
+     [33m[2m✓[22m[39m leaves Enter and Space on a column header's buttons to the buttons [33m 977[2mms[22m[39m
+     [33m[2m✓[22m[39m gives every row and the header the same columns whatever their content [33m 704[2mms[22m[39m
+     [33m[2m✓[22m[39m moves through rows with the keyboard, selects with Space and copies the selection [33m 1682[2mms[22m[39m
+     [33m[2m✓[22m[39m leaves Alt+PageDown and Alt+PageUp to the open record's next and previous [33m 551[2mms[22m[39m
+     [33m[2m✓[22m[39m selects every row that matches, not only the loaded ones, and copies them page by page [33m 899[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts from the header and filters from the column menu [33m 1582[2mms[22m[39m
+     [33m[2m✓[22m[39m switches header filters on different columns between every and any [33m 1414[2mms[22m[39m
+     [33m[2m✓[22m[39m groups with counts and drills into a group with Enter [33m 1220[2mms[22m[39m
+     [33m[2m✓[22m[39m applies a built-in view and saves the current state as a personal view [33m 2447[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a reader who may not share no change to the workspace's shared view [33m 614[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a reader who may not share the changes to its own view [33m 1547[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a user who may share the changes to the workspace's shared view [33m 376[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no share box to a reader who may not share, and one to a user who may [33m 706[2mms[22m[39m
+     [33m[2m✓[22m[39m puts a keyboard splitter between the list and the form, which opens at the standard width [33m 416[2mms[22m[39m
+     [33m[2m✓[22m[39m widens and narrows from the keyboard and keeps the choice for the list [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m switches the form between standard and widest with Alt+W from anywhere on the screen [33m 429[2mms[22m[39m
+ [32m✓[39m src/modules/contacts/screens.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 27231[2mms[22m[39m
+     [33m[2m✓[22m[39m with every contacts permission, every action is offered [33m 2427[2mms[22m[39m
+     [33m[2m✓[22m[39m without contacts.contacts.archive, exactly the actions that need it disappear [33m 3589[2mms[22m[39m
+     [33m[2m✓[22m[39m without contacts.contacts.create, exactly the actions that need it disappear [33m 3510[2mms[22m[39m
+     [33m[2m✓[22m[39m without contacts.contacts.read, exactly the actions that need it disappear [33m 889[2mms[22m[39m
+     [33m[2m✓[22m[39m without contacts.contacts.update, exactly the actions that need it disappear [33m 3388[2mms[22m[39m
+     [33m[2m✓[22m[39m an archived contact offers Restore, not Archive, and says it is archived [33m 3142[2mms[22m[39m
+     [33m[2m✓[22m[39m Alt+N opens a new contact only with the create permission [33m 3032[2mms[22m[39m
+     [33m[2m✓[22m[39m a person's form names their organisation and offers no people of its own [33m 2768[2mms[22m[39m
+     [33m[2m✓[22m[39m names possible duplicates while the name is typed, as a warning that does not stop the save [33m 1497[2mms[22m[39m
+     [33m[2m✓[22m[39m a saved contact opened as it is asks no duplicate check; changing its name asks [33m 2233[2mms[22m[39m
+     [33m[2m✓[22m[39m on an Arabic screen the Arabic name comes first and has the focus, and the labels are Arabic [33m 691[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/BranchesPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1353[2mms[22m[39m
+     [33m[2m✓[22m[39m shows each branch's company by code and name, groups by company with those labels and offers the companies as filter choices [33m 965[2mms[22m[39m
+[90mstderr[2m | src/modules/shell/clientIsolation.test.tsx[2m > [22m[2mG1 in the browser: one tab, tenant B then tenant A[2m > [22m[2min Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+[90mstderr[2m | src/modules/shell/clientIsolation.test.tsx[2m > [22m[2mG1 in the browser: one tab, tenant B then tenant A[2m > [22m[2min Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out
+[22m[39mYou seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+ [32m✓[39m src/kernel/lists/deviceStores.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 37275[2mms[22m[39m
+     [33m[2m✓[22m[39m puts no row value or id in any store that outlives the document, and asks only the product's /api [33m 18820[2mms[22m[39m
+     [33m[2m✓[22m[39m never shows another tenant's rows that a poisoned device hands back for every key, while its own page is slow [33m 12287[2mms[22m[39m
+     [33m[2m✓[22m[39m self-test: catches plant L14 on the device (the first page written to the origin private file system) [33m 936[2mms[22m[39m
+     [33m[2m✓[22m[39m self-test: catches plant L14 on screen (another tenant's kept page shown while the server is slow) [33m 1729[2mms[22m[39m
+     [33m[2m✓[22m[39m self-test: catches a list that keeps its rows in sessionStorage, a cookie or window.name [33m 3472[2mms[22m[39m
+ [32m✓[39m src/modules/customfields/screens.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 9159[2mms[22m[39m
+     [33m[2m✓[22m[39m lists the workspace's fields with their type and whether a value is required [33m 1898[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the fields' Arabic labels on an Arabic screen [33m 687[2mms[22m[39m
+     [33m[2m✓[22m[39m adds a single select: the options appear when the type is chosen and Enter saves what the API is sent [33m 2136[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses options with a missing English label before sending anything [33m 2051[2mms[22m[39m
+     [33m[2m✓[22m[39m opens a field with its type fixed and saves a change with the version read [33m 2019[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no New button to someone who may only read [33m 365[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/recordWidth.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/kernel/preferences.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 440[2mms[22m[39m
+ [31m❯[39m src/modules/shell/navigationReopen.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 13878[2mms[22m[39m
+[31m     [31m×[31m opens the second user from the first user's record, with its own search[39m[33m 5179[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the second role from the first role's record [33m 2211[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the second user from the first user's record, with its own search [33m 3751[2mms[22m[39m
+     [33m[2m✓[22m[39m opens the second role from the first role's record [33m 1326[2mms[22m[39m
+   [33m[2m✓[22m[39m a record closed before its list's definition arrives stays closed when it does [33m 1408[2mms[22m[39m
+ [32m✓[39m src/kernel/historyGuard.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/modules/audit/AuditLogPage.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1317[2mms[22m[39m
+     [33m[2m✓[22m[39m lists changes on the list framework: who, the record, the change in the screen's language [33m 473[2mms[22m[39m
+     [33m[2m✓[22m[39m reads in Arabic: the person's and the record's Arabic names and the Arabic change line [33m 352[2mms[22m[39m
+     [33m[2m✓[22m[39m opens a change in the side panel: every field, the record and its history [33m 491[2mms[22m[39m
+ [32m✓[39m src/modules/contacts/model.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/kernel/shortcuts.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 766[2mms[22m[39m
+     [33m[2m✓[22m[39m runs shortcuts, lists them, and keeps plain keys out of text fields [33m 502[2mms[22m[39m
+ [32m✓[39m src/kernel/focusCycle.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m src/kernel/deviceState.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/phone.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/kernel/format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 400[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/customFields.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32m✓[39m src/kernel/print.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 351[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/format.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/kernel/i18n.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 217[2mms[22m[39m
+ [32m✓[39m src/test/keySweepCoverage.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 110[2mms[22m[39m
+ [32m✓[39m src/kernel/router.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m src/modules/numbering/pattern.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/modules/audit/fieldLabels.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 119[2mms[22m[39m
+ [32m✓[39m src/kernel/extensions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+ [31m❯[39m src/modules/shell/clientIsolation.test.tsx [2m([22m[2m10 tests[22m[2m | [22m[31m10 failed[39m[2m)[22m[33m 50605[2mms[22m[39m
+[31m     [31m×[31m tenant A sees, and the tab keeps, nothing of tenant B after B signs out[39m[33m 30159[2mms[22m[39m
+[31m     [31m×[31m in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out[39m[33m 481[2mms[22m[39m
+[31m     [31m×[31m an address someone types or follows is kept, and stamped for the person in the tab[39m[33m 2356[2mms[22m[39m
+[31m     [31m×[31m signing out forgets every cookie the document can read, whatever its path, and the tab's window name[39m[33m 2434[2mms[22m[39m
+[31m     [31m×[31m with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B[39m[33m 2476[2mms[22m[39m
+[31m     [31m×[31m in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B[39m[33m 2683[2mms[22m[39m
+[31m     [31m×[31m the device-key judge refuses a setting with anything beside it, and signing out drops such a key (CL3b's shape)[39m[33m 2954[2mms[22m[39m
+[31m     [31m×[31m signing out forgets what the tab stored for the person and keeps only the device's settings[39m[33m 2391[2mms[22m[39m
+[31m     [31m×[31m a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail[39m[33m 2377[2mms[22m[39m
+[31m     [31m×[31m another tab signing in as someone else ends this tab's identity too[39m[33m 2290[2mms[22m[39m
+[90mstderr[2m | src/kernel/recordEvents.test.tsx[2m > [22m[2mrecord changed announcements[2m > [22m[2mreach the screens listening for that kind of record, with its id, and no other
+[22m[39mThe current testing environment is not configured to support act(...)
+
+[90mstderr[2m | src/kernel/recordEvents.test.tsx[2m > [22m[2mrecord changed announcements[2m > [22m[2mreach the screens listening for that kind of record, with its id, and no other
+[22m[39mThe current testing environment is not configured to support act(...)
+
+ [32m✓[39m src/kernel/recordEvents.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 152[2mms[22m[39m
+ [32m✓[39m src/kernel/messageFormat.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 372[2mms[22m[39m
+ [32m✓[39m src/modules/customfields/model.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/modules/shell/paletteSearch.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/columnFit.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/trn.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/kernel/api.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/kernel/lists/numberDecimals.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 86[2mms[22m[39m
+ [32m✓[39m src/kernel/session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/kernel/forms/keyboardPermissions.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 31538[2mms[22m[39m
+     [33m[2m✓[22m[39m an existing record: no key sends anything but reads [33m 14045[2mms[22m[39m
+     [33m[2m✓[22m[39m a new record the user may not create: no key sends anything [33m 11035[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep on an editable form finds the save keys' writes [33m 6210[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/screens.test.tsx [2m([22m[2m68 tests[22m[2m)[22m[33m 57433[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user's roles only read (a role given in another company), the form offers no change and no branch line, even with every permission (critic p02 round 11) [33m 3123[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: a branch of a company where the user's roles only read offers no change, and no company to add a branch to means no New (critic p02 round 11) [33m 1589[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user works in no company, New is absent and Alt+N and ?open=new open nothing, with every permission [33m 741[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user is on rows that do not say they work in every company, New is absent and Alt+N and ?open=new open nothing, with every permission [33m 387[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: with every tenancy permission, every action is offered [33m 957[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.read, exactly the actions that need it disappear [33m 2652[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.access.update, exactly the actions that need it disappear [33m 2162[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.create, exactly the actions that need it disappear [33m 2773[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.read, exactly the actions that need it disappear [33m 2772[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.branches.update, exactly the actions that need it disappear [33m 624[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.companies.create, exactly the actions that need it disappear [33m 2102[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.companies.read, exactly the actions that need it disappear [33m 1155[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.companies.update, exactly the actions that need it disappear [33m 2696[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.tenant.read, exactly the actions that need it disappear [33m 653[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.tenant.update, exactly the actions that need it disappear [33m 1312[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.workplace.read, exactly the actions that need it disappear [33m 545[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: without tenancy.workplace.switch, exactly the actions that need it disappear [33m 724[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: with every tenancy permission, every action is offered [33m 482[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.access.read, exactly the actions that need it disappear [33m 472[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.access.update, exactly the actions that need it disappear [33m 1282[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.branches.create, exactly the actions that need it disappear [33m 1787[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.branches.read, exactly the actions that need it disappear [33m 515[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.branches.update, exactly the actions that need it disappear [33m 1095[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.companies.create, exactly the actions that need it disappear [33m 1007[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.companies.read, exactly the actions that need it disappear [33m 542[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.companies.update, exactly the actions that need it disappear [33m 776[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.tenant.read, exactly the actions that need it disappear [33m 691[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.tenant.update, exactly the actions that need it disappear [33m 2112[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.workplace.read, exactly the actions that need it disappear [33m 305[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: without tenancy.workplace.switch, exactly the actions that need it disappear [33m 1125[2mms[22m[39m
+     [33m[2m✓[22m[39m access: without tenancy.branches.update, exactly the actions that need it disappear [33m 329[2mms[22m[39m
+     [33m[2m✓[22m[39m access: without tenancy.companies.create, exactly the actions that need it disappear [33m 1218[2mms[22m[39m
+     [33m[2m✓[22m[39m access: without tenancy.companies.read, exactly the actions that need it disappear [33m 659[2mms[22m[39m
+     [33m[2m✓[22m[39m access: without tenancy.companies.update, exactly the actions that need it disappear [33m 1163[2mms[22m[39m
+     [33m[2m✓[22m[39m access: without tenancy.tenant.read, exactly the actions that need it disappear [33m 673[2mms[22m[39m
+     [33m[2m✓[22m[39m access: without tenancy.workplace.read, exactly the actions that need it disappear [33m 735[2mms[22m[39m
+     [33m[2m✓[22m[39m access: without tenancy.workplace.switch, exactly the actions that need it disappear [33m 795[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant: without tenancy.access.read, exactly the actions that need it disappear [33m 388[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant: without tenancy.branches.update, exactly the actions that need it disappear [33m 411[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant: without tenancy.companies.read, exactly the actions that need it disappear [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant: without tenancy.companies.update, exactly the actions that need it disappear [33m 459[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant: without tenancy.tenant.read, exactly the actions that need it disappear [33m 384[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant: without tenancy.tenant.update, exactly the actions that need it disappear [33m 485[2mms[22m[39m
+     [33m[2m✓[22m[39m tenant: without tenancy.workplace.switch, exactly the actions that need it disappear [33m 359[2mms[22m[39m
+     [33m[2m✓[22m[39m companies and branches: the new-record key opens nothing without the create permission [33m 1331[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user works in only some branches of the company, exactly what every branch shares disappears [33m 1760[2mms[22m[39m
+     [33m[2m✓[22m[39m branches: where the user works in only some branches of the company, exactly what every branch shares disappears [33m 1522[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: a company where the user works in only some branches says why it cannot be changed [33m 380[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: where the user works in only some companies, exactly New and the company code disappear [33m 1726[2mms[22m[39m
+     [33m[2m✓[22m[39m companies: Alt+N and ?open=new open nothing where the user works in only some companies [33m 399[2mms[22m[39m
+ [32m✓[39m src/modules/identity/screens.test.tsx [2m([22m[2m92 tests[22m[2m)[22m[33m 61775[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an invited user from the keyboard: n, local part only, a role by filter, Ctrl+Enter, and shows the set-up code once [33m 1953[2mms[22m[39m
+     [33m[2m✓[22m[39m names in the Roles column the roles held in every company, those held in one company with its code, and roles elsewhere [33m 334[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start [33m 1796[2mms[22m[39m
+     [33m[2m✓[22m[39m creates a user with a role in one company, the companies they work in and where they start, and says so when the access is refused [33m 769[2mms[22m[39m
+     [33m[2m✓[22m[39m ticks the company the signed-in user works in for a new user until companies are chosen by hand (critic p03 round 7) [33m 1129[2mms[22m[39m
+     [33m[2m✓[22m[39m hides creation and account actions from a read-only user [33m 934[2mms[22m[39m
+     [33m[2m✓[22m[39m deactivates the chosen users from the keyboard selection, skips those already inactive and reports what the API refused [33m 1580[2mms[22m[39m
+     [33m[2m✓[22m[39m activates only inactive users [33m 567[2mms[22m[39m
+     [33m[2m✓[22m[39m changes nothing and keeps the chosen rows when the confirmation is cancelled with Escape [33m 388[2mms[22m[39m
+     [33m[2m✓[22m[39m asks in Arabic, right to left, with Arabic buttons, on an Arabic screen [33m 826[2mms[22m[39m
+       [33m[2m✓[22m[39m deactivates every matching user in one request with the list's search, filter and count, after a confirmation [33m 500[2mms[22m[39m
+       [33m[2m✓[22m[39m changes nothing and keeps the selection when the confirmation is cancelled [33m 906[2mms[22m[39m
+       [33m[2m✓[22m[39m shows the API's reason when the matching rows changed meanwhile [33m 2138[2mms[22m[39m
+     [33m[2m✓[22m[39m offers no state change to a user who may not update users [33m 1094[2mms[22m[39m
+     [33m[2m✓[22m[39m Alt+L shows the new language in the user's own row and open record at once, and the record's next save is not refused [33m 2724[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a Language the user is changing in the open record when the switch comes in, and saves it with the row's new version [33m 896[2mms[22m[39m
+     [33m[2m✓[22m[39m edits a role's permissions with search and bulk toggles, and never offers a permission the caller lacks [33m 2135[2mms[22m[39m
+     [33m[2m✓[22m[39m ticks only the permissions a search matches: 'view' then Select all shown gives a view-only role [33m 1750[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the Administrator system role read-only, with copy offered [33m 1819[2mms[22m[39m
+     [33m[2m✓[22m[39m names a copy in English and in Arabic, each in its own language, on an English screen [33m 994[2mms[22m[39m
+     [33m[2m✓[22m[39m a role whose grants the user holds only through a role in the working company is shown read-only (critic p03 round 7) [33m 1394[2mms[22m[39m
+     [33m[2m✓[22m[39m Delete role moves the focus to the question; Escape keeps the role and gives the focus back to Delete role [33m 2460[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.delete there is no "Delete role", and the other role actions remain [33m 341[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.update there is no "Save", and the other role actions remain [33m 470[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.create there is no "Copy role", and the other role actions remain [33m 410[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting a permission the user lacks is shown read-only, with no copy or delete [33m 748[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.update there is no "Save" [33m 523[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.update there is no "Sign out everywhere" [33m 561[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.resetPassword there is no "Reset password…" [33m 888[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.delete there is no "Delete user" [33m 460[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.signIns.read there is no "Sign-in history" [33m 440[2mms[22m[39m
+     [33m[2m✓[22m[39m users: a user who may not read roles gets someone holding roles read-only, and someone holding none editable [33m 963[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants tenancy.tenant.read is read-only to a user holding every identity permission [33m 1369[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting tenancy.tenant.read is read-only to a user holding every identity permission [33m 1822[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants tenancy.tenant.update is read-only to a user holding every identity permission [33m 949[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting tenancy.tenant.update is read-only to a user holding every identity permission [33m 1201[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants tenancy.access.update is read-only to a user holding every identity permission [33m 1673[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting tenancy.access.update is read-only to a user holding every identity permission [33m 1182[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants lists.views.share is read-only to a user holding every identity permission [33m 421[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting lists.views.share is read-only to a user holding every identity permission [33m 1827[2mms[22m[39m
+     [33m[2m✓[22m[39m users: someone whose role grants ledger.entries.post is read-only to a user holding every identity permission [33m 575[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a role granting ledger.entries.post is read-only to a user holding every identity permission [33m 714[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.profile.update, exactly the toolbar actions needing it are gone [33m 329[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.roles.delete, exactly the toolbar actions needing it are gone [33m 322[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.delete, exactly the toolbar actions needing it are gone [33m 356[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.resetPassword, exactly the toolbar actions needing it are gone [33m 503[2mms[22m[39m
+     [33m[2m✓[22m[39m users: without identity.users.update, exactly the toolbar actions needing it are gone [33m 489[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.profile.update, exactly the toolbar actions needing it are gone [33m 606[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.create, exactly the toolbar actions needing it are gone [33m 661[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.delete, exactly the toolbar actions needing it are gone [33m 595[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.roles.update, exactly the toolbar actions needing it are gone [33m 887[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.signIns.read, exactly the toolbar actions needing it are gone [33m 353[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.users.delete, exactly the toolbar actions needing it are gone [33m 515[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: without identity.users.read, exactly the toolbar actions needing it are gone [33m 463[2mms[22m[39m
+     [33m[2m✓[22m[39m roles: a read-only user sees no New role, and n or Alt+N opens nothing [33m 322[2mms[22m[39m
+     [33m[2m✓[22m[39m lists, adds and saves roles in one company, and the company the person starts in [33m 401[2mms[22m[39m
+     [33m[2m✓[22m[39m chooses no role in one company until the person picks one: Add and Enter grant nothing, not even the first role by name [33m 333[2mms[22m[39m
+     [33m[2m✓[22m[39m the sign-in history says which sign-ins used a passkey, in English and Arabic [33m 319[2mms[22m[39m
+     [33m[2m✓[22m[39m Allow sign-in again, then untick Active and save: saved, with the version the unblock left [33m 528[2mms[22m[39m
+     [33m[2m✓[22m[39m the sign-in history names a shared gateway and a known device, and says how to let one person in, in English and Arabic [33m 897[2mms[22m[39m
+     [33m[2m✓[22m[39m lets one device in with the code its paused sign-in screen shows, from the sign-in history, in English and Arabic [33m 914[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: when someone else changed a field meanwhile, the save is still refused as changed elsewhere [33m 550[2mms[22m[39m
+ [32m✓[39m src/modules/numbering/keyboard.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 41720[2mms[22m[39m
+     [33m[2m✓[22m[39m /numbering/sequences?open=s1: no key, and no control the keyboard reaches, sends anything but reads [33m 14107[2mms[22m[39m
+     [33m[2m✓[22m[39m /numbering/sequences?open=s2: no key, and no control the keyboard reaches, sends anything but reads [33m 12469[2mms[22m[39m
+     [33m[2m✓[22m[39m /numbering/sequences: no key, and no control the keyboard reaches, sends anything but reads [33m 7025[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change sequences finds the save keys' writes [33m 8118[2mms[22m[39m
+ [32m✓[39m src/modules/currency/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 43478[2mms[22m[39m
+     [33m[2m✓[22m[39m /currency/currencies?open=c1: no key, and no control the keyboard reaches, sends anything but reads or opens a new rate [33m 14575[2mms[22m[39m
+     [33m[2m✓[22m[39m /currency/rates?open=r1: no key, and no control the keyboard reaches, sends anything but reads or opens a new rate [33m 9347[2mms[22m[39m
+     [33m[2m✓[22m[39m /currency/currencies: no key, and no control the keyboard reaches, sends anything but reads or opens a new rate [33m 7612[2mms[22m[39m
+     [33m[2m✓[22m[39m /currency/rates: no key, and no control the keyboard reaches, sends anything but reads or opens a new rate [33m 6362[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change currencies finds the save keys' writes [33m 5581[2mms[22m[39m
+ [32m✓[39m src/modules/customfields/keyboard.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 42831[2mms[22m[39m
+     [33m[2m✓[22m[39m /customfields/fields?open=f1: no key, and no control the keyboard reaches, sends anything but reads [33m 16033[2mms[22m[39m
+     [33m[2m✓[22m[39m /customfields/fields?open=f2: no key, and no control the keyboard reaches, sends anything but reads [33m 10007[2mms[22m[39m
+     [33m[2m✓[22m[39m /customfields/fields: no key, and no control the keyboard reaches, sends anything but reads [33m 9300[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may manage fields finds the save keys' writes [33m 7489[2mms[22m[39m
+ [32m✓[39m src/modules/contacts/keyboard.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 48910[2mms[22m[39m
+     [33m[2m✓[22m[39m /contacts/contacts/0190a000-0000-7000-8000-0000000000c1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 24417[2mms[22m[39m
+     [33m[2m✓[22m[39m /contacts/contacts: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 9343[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change and archive contacts finds the save keys' and Archive's writes [33m 15129[2mms[22m[39m
+ [32m✓[39m src/modules/jobs/keyboard.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 60560[2mms[22m[39m
+     [33m[2m✓[22m[39m /jobs/jobs?open=j1: no key, and no control the keyboard reaches, sends anything but reads [33m 17462[2mms[22m[39m
+     [33m[2m✓[22m[39m /jobs/jobs?open=j2: no key, and no control the keyboard reaches, sends anything but reads [33m 9753[2mms[22m[39m
+     [33m[2m✓[22m[39m /jobs/schedules?open=s1: no key, and no control the keyboard reaches, sends anything but reads [33m 8043[2mms[22m[39m
+     [33m[2m✓[22m[39m /jobs/jobs: no key, and no control the keyboard reaches, sends anything but reads [33m 8448[2mms[22m[39m
+     [33m[2m✓[22m[39m /jobs/schedules: no key, and no control the keyboard reaches, sends anything but reads [33m 7088[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may run jobs finds the run-again key's write [33m 9758[2mms[22m[39m
+ [32m✓[39m src/modules/tenancy/keyboard.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 86847[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies?open=c9: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 30981[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches?open=b1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 12685[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 6785[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/tenant: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 1431[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/companies: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 11276[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/branches: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 9873[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: the same sweep for a user who may change companies finds the save keys' writes [33m 9982[2mms[22m[39m
+     [33m[2m✓[22m[39m /tenancy/access?open=u2 for a user who may change access, on a user the server marks read-only (one holding more): no key writes [33m 3831[2mms[22m[39m
+ [32m✓[39m src/modules/identity/keyboard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 81974[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users?open=u1: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 32035[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles?open=r-clerk: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 11407[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/users: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 17408[2mms[22m[39m
+     [33m[2m✓[22m[39m /identity/roles: no key, and no control the keyboard reaches, sends anything but reads or opens a new record [33m 13425[2mms[22m[39m
+     [33m[2m✓[22m[39m the control: every row chosen shows the selection bar, and an editor's sweep finds the bulk deactivation [33m 7687[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 83 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mtenant A sees, and the tab keeps, nothing of tenant B after B signs out
+[31m[1mError[22m: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m621:3[22m[39m
+    [90m619| [39m
+    [90m620| [39mdescribe("G1 in the browser: one tab, tenant B then tenant A", { timeo…
+    [90m621| [39m  it("tenant A sees, and the tab keeps, nothing of tenant B after B si…
+    [90m   | [39m  [31m^[39m
+    [90m622| [39m    [35mawait[39m [34mbThenAInOneTab[39m()[33m;[39m
+    [90m623| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22min Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out
+[31m[1mAssertionError[22m: expected null not to be null[39m
+[36m [2m❯[22m journey src/modules/shell/clientIsolation.test.tsx:[2m346:23[22m[39m
+    [90m344| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m345| [39m    const input = document.querySelector<HTMLInputElement>('[role="dia…
+    [90m346| [39m    [34mexpect[39m(input)[33m.[39mnot[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m   | [39m                      [31m^[39m
+    [90m347| [39m    [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m348| [39m    [35mawait[39m [34mwait[39m([34m300[39m)[33m;[39m
+[90m [2m❯[22m bThenAInOneTab src/modules/shell/clientIsolation.test.tsx:[2m493:18[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m627:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22man address someone types or follows is kept, and stamped for the person in the tab
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m634:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22msigning out forgets every cookie the document can read, whatever its path, and the tab's window name
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m644:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mwith B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m settingsOnRecordThenA src/modules/shell/clientIsolation.test.tsx:[2m587:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m664:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22min Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m settingsOnRecordThenA src/modules/shell/clientIsolation.test.tsx:[2m587:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m669:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mthe device-key judge refuses a setting with anything beside it, and signing out drops such a key (CL3b's shape)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m696:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22msigning out forgets what the tab stored for the person and keeps only the device's settings
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m710:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22ma session that ends by itself (401) starts over and forgets the person, keeping only the e-mail
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m735:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22manother tab signing in as someone else ends this tab's identity too
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m signInAs src/modules/shell/clientIsolation.test.tsx:[2m321:3[22m[39m
+[90m [2m❯[22m src/modules/shell/clientIsolation.test.tsx:[2m755:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/navigationReopen.test.tsx[2m > [22ma navigation to the screen on show opens it on the new address (en)[2m > [22mopens the second user from the first user's record, with its own search
+[31m[1mError[22m: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/modules/shell/navigationReopen.test.tsx:[2m100:3[22m[39m
+    [90m 98| [39m
+    [90m 99| [39mdescribe.each(["en", "ar"] as const)("a navigation to the screen on sh…
+    [90m100| [39m  it("opens the second user from the first user's record, with its own…
+    [90m   | [39m  [31m^[39m
+    [90m101| [39m    [34mserve[39m(language)[33m;[39m
+    [90m102| [39m    view [33m=[39m [35mawait[39m [34mrender[39m([33m<[39m[33mApp[39m [33mlanguage[39m[33m=[39m[33m{[39mlanguage[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcontacts.contacts.new: shown in the palette only to a user whose roles grant contacts.contacts.create and its screen
+[31m[1mError[22m: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m326:5[22m[39m
+    [90m324| [39m
+    [90m325| [39m  [35mfor[39m ([35mconst[39m action [35mof[39m extensions[33m.[39mactions) {
+    [90m326| [39m    it(`${action.key}: shown in the palette only to a user whose roles…
+    [90m   | [39m    [31m^[39m
+    [90m327| [39m      [35mconst[39m title [33m=[39m [34men[39m(action[33m.[39mlabelKey)[33m;[39m
+    [90m328| [39m      [35mconst[39m screen [33m=[39m [34mmatchRoute[39m(action[33m.[39mpath)[33m![39m[33m.[39mpermission[33m![39m[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcontacts.contacts.print: shown in the palette only to a user whose roles grant contacts.contacts.read and its screen
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m335:9[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcurrency.rates.new: shown in the palette only to a user whose roles grant currency.rates.create and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcurrency.rates.print: shown in the palette only to a user whose roles grant currency.rates.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcurrency.currencies.print: shown in the palette only to a user whose roles grant currency.currencies.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcustomfields.fields.new: shown in the palette only to a user whose roles grant customfields.fields.manage and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcustomfields.fields.print: shown in the palette only to a user whose roles grant customfields.fields.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.users.new: shown in the palette only to a user whose roles grant identity.users.create and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.roles.new: shown in the palette only to a user whose roles grant identity.roles.create and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.users.print: shown in the palette only to a user whose roles grant identity.users.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.roles.copy: shown in the palette only to a user whose roles grant identity.roles.create and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.users.history: shown in the palette only to a user whose roles grant identity.signIns.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.users.unblock: shown in the palette only to a user whose roles grant identity.users.update and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.roles.print: shown in the palette only to a user whose roles grant identity.roles.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mjobs.jobs.print: shown in the palette only to a user whose roles grant jobs.jobs.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mjobs.schedules.new: shown in the palette only to a user whose roles grant jobs.schedules.create and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mnumbering.sequences.print: shown in the palette only to a user whose roles grant numbering.sequences.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.companies.new: shown in the palette only to a user whose roles grant tenancy.companies.create and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.branches.new: shown in the palette only to a user whose roles grant tenancy.branches.create and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.companies.print: shown in the palette only to a user whose roles grant tenancy.companies.read and its screen
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.branches.print: shown in the palette only to a user whose roles grant tenancy.branches.read and its screen
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m335:9[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcontacts.contacts.new: started from home, it opens /contacts/contacts and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcontacts.contacts.print: started from home, it opens /contacts/contacts and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcurrency.rates.new: started from home, it opens /currency/rates and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcurrency.rates.print: started from home, it opens /currency/rates and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcurrency.currencies.print: started from home, it opens /currency/currencies and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcustomfields.fields.new: started from home, it opens /customfields/fields and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mcustomfields.fields.print: started from home, it opens /customfields/fields and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.users.new: started from home, it opens /identity/users and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.roles.new: started from home, it opens /identity/roles and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.users.print: started from home, it opens /identity/users and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22midentity.roles.print: started from home, it opens /identity/roles and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mjobs.jobs.print: started from home, it opens /jobs/jobs and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mjobs.schedules.new: started from home, it opens /jobs/schedules and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mnumbering.sequences.print: started from home, it opens /numbering/sequences and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.companies.new: started from home, it opens /tenancy/companies and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.branches.new: started from home, it opens /tenancy/branches and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.companies.print: started from home, it opens /tenancy/companies and runs the screen's own command there
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mtenancy.branches.print: started from home, it opens /tenancy/branches and runs the screen's own command there
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m347:7[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mevery action that asks for a record says what to choose, in English and Arabic, and runs no command before
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m368:7[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22man action that asks for a record runs to its end for every user it is offered to: its requires name what the record's commands need
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m398:9[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mCopy a role from home: the roles list asks for the role, and the role chosen opens its copy
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m418:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mShow the sign-in history from home, in Arabic: the user chosen opens on the history tab
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m431:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mAllow a user to sign in again from home: the history opens and the user chosen is allowed again
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m443:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22man action that asks for a record is dropped, without a word, when the user leaves its screen
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m457:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mNew user from home keeps its new record open when the list arrives after the command ran
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m470:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22ma user who may add a branch but to no company (only some branches of it) is not offered New branch
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m483:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22ma user who may create a company but works in only some companies, or in none, is not offered New company (critic p02 round 9)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m493:7[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mmodule actions in the command palette[2m > [22mis found by its words in either language, on an Arabic screen too
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m503:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mthe commands of the screen on show[2m > [22mcome first, once each: on the users screen New user, the list's own controls and Print or export
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m519:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mthe commands of the screen on show[2m > [22mare found by the words of the module action they stand for: "print compan" on the companies screen (critic p02 round 10)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m539:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mthe commands of the screen on show[2m > [22mfollow the open record: a role's Copy, a user's sign-in history and Allow sign-in again
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m553:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22ma record's commands and its buttons[2m > [22mthe palette offers a user's account actions exactly when the record shows their buttons
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m582:7[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22ma record's commands on every tab[2m > [22moffers a user's account actions from every tab, exactly as on Details, and to a reader none
+[31m[1mAssertionError[22m: identity.tab.access: expected undefined to be defined[39m
+[36m [2m❯[22m showTab src/modules/shell/paletteActions.test.tsx:[2m600:22[22m[39m
+    [90m598| [39m  [35mconst[39m showTab [33m=[39m [35masync[39m (key[33m:[39m string) [33m=>[39m {
+    [90m599| [39m    const tab = [...document.querySelectorAll<HTMLButtonElement>('[rol…
+    [90m600| [39m    [34mexpect[39m(tab[33m,[39m key)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m   | [39m                     [31m^[39m
+    [90m601| [39m    [34mact[39m(() [33m=>[39m tab[33m![39m[33m.[39m[34mclick[39m())[33m;[39m
+    [90m602| [39m    [35mawait[39m [34msettleUntilQuiet[39m(() [33m=>[39m calls)[33m;[39m
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m610:15[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22ma record's commands on every tab[2m > [22mReset password from "What they can do" opens Details with the reset's first choice focused; Delete user from the history asks first
+[31m[1mAssertionError[22m: identity.tab.access: expected undefined to be defined[39m
+[36m [2m❯[22m showTab src/modules/shell/paletteActions.test.tsx:[2m600:22[22m[39m
+    [90m598| [39m  [35mconst[39m showTab [33m=[39m [35masync[39m (key[33m:[39m string) [33m=>[39m {
+    [90m599| [39m    const tab = [...document.querySelectorAll<HTMLButtonElement>('[rol…
+    [90m600| [39m    [34mexpect[39m(tab[33m,[39m key)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m   | [39m                     [31m^[39m
+    [90m601| [39m    [34mact[39m(() [33m=>[39m tab[33m![39m[33m.[39m[34mclick[39m())[33m;[39m
+    [90m602| [39m    [35mawait[39m [34msettleUntilQuiet[39m(() [33m=>[39m calls)[33m;[39m
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m622:11[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22ma module action whose screen does not offer its command[2m > [22mruns nothing and says so, after a few seconds; a command the screen offers runs at once
+[31m[1mAssertionError[22m: expected [] to deeply equal [ 'identity.test.offered' ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "identity.test.offered",[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m670:17[22m[39m
+    [90m668| [39m      vi[33m.[39m[34madvanceTimersByTime[39m([34m10[39m)[33m;[39m
+    [90m669| [39m    })[33m;[39m
+    [90m670| [39m    [34mexpect[39m(ran)[33m.[39m[34mtoEqual[39m([[32m"identity.test.offered"[39m])[33m;[39m
+    [90m   | [39m                [31m^[39m
+    [90m671| [39m    [34mexpect[39m(results)[33m.[39m[34mtoEqual[39m([[35mtrue[39m])[33m;[39m
+    [90m672| [39m    [35mawait[39m [34mact[39m([35masync[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mevery palette entry, run by a user who may only read[2m > [22msends nothing but reads (and the user's own settings), and opens no new record, on every screen
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m entriesOn src/modules/shell/paletteActions.test.tsx:[2m744:3[22m[39m
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m757:38[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/shell/paletteActions.test.tsx[2m > [22mevery palette entry, run by a user who may only read[2m > [22mthe control: the same sweep for a user who may change everything finds the writes the entries make
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'querySelector')[39m
+[36m [2m❯[22m openPalette src/modules/shell/paletteActions.test.tsx:[2m229:25[22m[39m
+    [90m227| [39m  [34mpress[39m({ code[33m:[39m [32m"KeyK"[39m[33m,[39m key[33m:[39m [32m"k"[39m[33m,[39m ctrlKey[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m228| [39m  [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m229| [39m  const input = palette()!.querySelector<HTMLInputElement>('input[role…
+    [90m   | [39m                        [31m^[39m
+    [90m230| [39m  [35mif[39m (query) [34msetInput[39m(input[33m,[39m query)[33m;[39m
+    [90m231| [39m  // Availability checks and record sources answer (after the palette'…
+[90m [2m❯[22m entriesOn src/modules/shell/paletteActions.test.tsx:[2m744:3[22m[39m
+[90m [2m❯[22m src/modules/shell/paletteActions.test.tsx:[2m774:38[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mcreates a company from the keyboard (Alt+N, type, Ctrl+S), shows server validation, then adds its first branch with Enter
+[31m[1mError[22m: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m55:3[22m[39m
+    [90m 53| [39m
+    [90m 54| [39m[34mdescribe[39m([32m"companies screen"[39m[33m,[39m () [33m=>[39m {
+    [90m 55| [39m  it("creates a company from the keyboard (Alt+N, type, Ctrl+S), shows…
+    [90m   | [39m  [31m^[39m
+    [90m 56| [39m    [35mlet[39m posts [33m=[39m [34m0[39m[33m;[39m
+    [90m 57| [39m    [35mconst[39m calls [33m=[39m [34mmockFetch[39m((method[33m,[39m url[33m,[39m body) [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mon an Arabic screen, the new company's branch line starts with the Arabic name, after the company's Arabic name, and has the focus
+[31m[1mAssertionError[22m: expected undefined to be 'legalNameAr' // Object.is equality[39m
+
+[32m- Expected:[39m 
+"legalNameAr"
+
+[31m+ Received:[39m 
+undefined
+
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m146:110[22m[39m
+    [90m144| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m145| [39m    // In Arabic a new company starts at its Arabic legal name, which …
+    [90m146| [39m    expect((document.activeElement as HTMLInputElement).closest("[data…
+    [90m   | [39m                                                                                                             [31m^[39m
+    [90m147| [39m    const order = [...view.container.querySelectorAll(".record-form [d…
+    [90m148| [39m    expect(order.indexOf("legalNameAr")).toBeLessThan(order.indexOf("l…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mnames a new branch after its company: the typed part follows the company's name, and the name alone is the company's
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'value')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m207:17[22m[39m
+    [90m205| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m206| [39m    const line = () => view!.container.querySelector<HTMLInputElement>…
+    [90m207| [39m    [34mexpect[39m([34mline[39m()[33m.[39mvalue)[33m.[39m[34mtoBe[39m([32m"Al Noor Ajman LLC - "[39m)[33m;[39m
+    [90m   | [39m                [31m^[39m
+    [90m208| [39m    [34msetInput[39m([34mline[39m()[33m,[39m [34mline[39m()[33m.[39mvalue [33m+[39m [32m"Jebel Ali Branch"[39m)[33m;[39m
+    [90m209| [39m    [35mawait[39m [34mact[39m([35masync[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mkeeps the new company's branch line, and what is typed in it, right after the save: the saved answer is the record, not read again (p01 round 6 health check)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m250:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mshows a branch added from the keyboard in the company's branch table, even when the first read of the table answers last (lead, p06 round 2)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'focus')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m305:12[22m[39m
+    [90m303| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m304| [39m    const nameEn = view.container.querySelector<HTMLInputElement>('inp…
+    [90m305| [39m    nameEn[33m.[39m[34mfocus[39m()[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m306| [39m    [34msetInput[39m(nameEn[33m,[39m [32m"Head office"[39m)[33m;[39m
+    [90m307| [39m    setInput(view.container.querySelector<HTMLInputElement>('input[nam…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mkeeps a branch just added when the branches read on opening the form answers after it (a busy server)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'value')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m362:27[22m[39m
+    [90m360| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m361| [39m    const line = () => view!.container.querySelector<HTMLInputElement>…
+    [90m362| [39m    [34msetInput[39m([34mline[39m()[33m,[39m [34mline[39m()[33m.[39mvalue [33m+[39m [32m"Jebel Ali Branch"[39m)[33m;[39m
+    [90m   | [39m                          [31m^[39m
+    [90m363| [39m    [35mawait[39m [34mact[39m([35masync[39m () [33m=>[39m {
+    [90m364| [39m      view!.container.querySelector<HTMLFormElement>(".quick-add")!.re…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22msaves with Ctrl+Enter as well as Ctrl+S, the save keys of every identity form, and announces them and Enter (in a one-line field) on the save button
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m394:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mshows the company under its Arabic name on Arabic screens and starts a new branch in the company's emirate
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'textContent')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m422:60[22m[39m
+    [90m420| [39m    view [33m=[39m [35mawait[39m [34mrender[39m([33m<[39m[33mApp[39m [33mlanguage[39m[33m=[39m[32m"ar"[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m421| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m422| [39m    expect(view.container.querySelector(".record-header h2")!.textCont…
+    [90m   | [39m                                                           [31m^[39m
+    [90m423| [39m    const emirate = view.container.querySelector<HTMLSelectElement>('s…
+    [90m424| [39m    [34mexpect[39m(emirate[33m.[39mvalue)[33m.[39m[34mtoBe[39m([32m"dubai"[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22madds the typed branch with Ctrl+S or Ctrl+Enter on the branch line, as Enter does, and leaves an untouched line's Ctrl+S to the company form
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'focus')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m463:20[22m[39m
+    [90m461| [39m
+    [90m462| [39m    // Untouched (only the company's name the line starts with): Ctrl+…
+    [90m463| [39m    [34mact[39m(() [33m=>[39m [34mline[39m()[33m.[39m[34mfocus[39m())[33m;[39m
+    [90m   | [39m                   [31m^[39m
+    [90m464| [39m    [34mpress[39m({ ctrlKey[33m:[39m [35mtrue[39m[33m,[39m key[33m:[39m [32m"s"[39m[33m,[39m code[33m:[39m [32m"KeyS"[39m })[33m;[39m
+    [90m465| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m463:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mon an Arabic screen, shows a TRN typed in Arabic-Indic digits as 0 to 9 and offers the country by its Arabic name (owner 2026-10-17; p06 round 6)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m515:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mmarks a branch saved with its Arabic name only as having no English name on an English screen (critic p02 round 10)
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'cells')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m556:16[22m[39m
+    [90m554| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m555| [39m    const row = [...view.container.querySelectorAll<HTMLTableRowElemen…
+    [90m556| [39m    [34mexpect[39m(row[33m.[39mcells[[34m1[39m][33m![39m[33m.[39mtextContent)[33m.[39m[34mtoBe[39m([32m"No English name"[39m)[33m;[39m
+    [90m   | [39m               [31m^[39m
+    [90m557| [39m    [34mexpect[39m(row[33m.[39mcells[[34m2[39m][33m![39m[33m.[39mtextContent)[33m.[39m[34mtoBe[39m([32m"فرع المصفح"[39m)[33m;[39m
+    [90m558| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22moffers the company's Arabic-name setting and says when a stored tax number does not meet the 15-digit rule
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'textContent')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m577:16[22m[39m
+    [90m575| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m576| [39m    const trn = view.container.querySelector('[data-field="taxRegistra…
+    [90m577| [39m    [34mexpect[39m(trn[33m.[39mtextContent)[33m.[39m[34mtoContain[39m([32m"12345"[39m)[33m;[39m
+    [90m   | [39m               [31m^[39m
+    [90m578| [39m    [34mexpect[39m(trn[33m.[39mtextContent)[33m.[39m[34mtoContain[39m([32m"not 15 digits"[39m)[33m;[39m
+    [90m579| [39m    [35mconst[39m arabic [33m=[39m [34mfield[39m(view[33m.[39mcontainer[33m,[39m [32m"legalNameAr"[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mopens a company where the user's roles only read as read-only, with the reason, no Save, no logo change and no branch line (critic p02 round 11)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'textContent')[39m
+[36m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m612:19[22m[39m
+    [90m610| [39m    [35mawait[39m [34msettle[39m()[33m;[39m
+    [90m611| [39m    const notice = view.container.querySelector('[data-testid="record-…
+    [90m612| [39m    expect(notice.textContent).toContain("Your roles let you read this…
+    [90m   | [39m                  [31m^[39m
+    [90m613| [39m    expect(field(view.container, "legalNameEn").readOnly || field(view…
+    [90m614| [39m    expect([...view.container.querySelectorAll("button")].some((b) => …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/83]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/modules/tenancy/CompaniesPage.test.tsx[2m > [22mcompanies screen[2m > [22mrefreshes the companies list (its branch count) when a branch is added from the open company's form (critic p02 round 11)
+[31m[1mTypeError[22m: Cannot read properties of null (reading 'type')[39m
+[90m [2m❯[22m set value node_modules/happy-dom/lib/nodes/html-input-element/HTMLInputElement.js:[2m750:22[22m[39m
+[36m [2m❯[22m src/test/render.tsx:[2m55:12[22m[39m
+    [90m 53| [39m  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prot…
+    [90m 54| [39m  [34mact[39m(() [33m=>[39m {
+    [90m 55| [39m    setter[33m.[39m[34mcall[39m(input[33m,[39m value)[33m;[39m
+    [90m   | [39m           [31m^[39m
+    [90m 56| [39m    input[33m.[39m[34mdispatchEvent[39m([35mnew[39m [33mEvent[39m([32m"input"[39m[33m,[39m { bubbles[33m:[39m [35mtrue[39m }))[33m;[39m
+    [90m 57| [39m  })[33m;[39m
+[90m [2m❯[22m process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:[2m890:22[22m[39m
+[90m [2m❯[22m setInput src/test/render.tsx:[2m54:3[22m[39m
+[90m [2m❯[22m src/modules/tenancy/CompaniesPage.test.tsx:[2m644:5[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/83]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m62 passed[39m[22m[90m (66)[39m
+[2m      Tests [22m [1m[31m83 failed[39m[22m[2m | [22m[1m[32m666 passed[39m[22m[90m (749)[39m
+[2m   Start at [22m 16:37:49
+[2m   Duration [22m 115.21s[2m (transform 61.95s, setup 5.85s, import 158.70s, tests 837.27s, environment 116.42s)[22m
+
+JSON report written to /out/vitest.json

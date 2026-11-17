@@ -1,0 +1,58 @@
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ __ef_migrations_history | f              | f
+ files                   | t              | t
+(2 rows)
+
+     polname      |              pg_get_expr              |              pg_get_expr              
+------------------+---------------------------------------+---------------------------------------
+ tenant_isolation | (tenant_id = erp.current_tenant_id()) | (tenant_id = erp.current_tenant_id())
+(1 row)
+
+  rolname   | rolsuper | rolbypassrls 
+------------+----------+--------------
+ erp_owner  | f        | f
+ erp_app    | f        | f
+ erp_worker | f        | f
+ erp_auth   | f        | f
+(4 rows)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000002 |    15
+ 0190a000-0000-7000-8000-000000000001 |    14
+(2 rows)
+
+                        Table "attachments.files"
+    Column    |           Type           | Collation | Nullable | Default 
+--------------+--------------------------+-----------+----------+---------
+ id           | uuid                     |           | not null | 
+ record_type  | character varying(100)   |           | not null | 
+ record_id    | uuid                     |           | not null | 
+ name         | character varying(150)   |           | not null | 
+ content_type | character varying(100)   |           | not null | 
+ size_bytes   | bigint                   |           | not null | 
+ sha256       | character(64)            |           | not null | 
+ storage_key  | character varying(65)    |           | not null | 
+ tenant_id    | uuid                     |           | not null | 
+ created_at   | timestamp with time zone |           | not null | now()
+ created_by   | uuid                     |           |          | 
+ updated_at   | timestamp with time zone |           | not null | now()
+ updated_by   | uuid                     |           |          | 
+Indexes:
+    "pk_files" PRIMARY KEY, btree (id)
+    "ak_files_tenant_id_id" UNIQUE CONSTRAINT, btree (tenant_id, id)
+    "ix_files_tenant_id_record_type_record_id_created_at" btree (tenant_id, record_type, record_id, created_at)
+    "ix_files_tenant_id_storage_key" UNIQUE, btree (tenant_id, storage_key)
+Check constraints:
+    "ck_files_name" CHECK (btrim(name::text) <> ''::text)
+    "ck_files_sha256" CHECK (sha256 ~ '^[0-9a-f]{64}$'::text)
+    "ck_files_size" CHECK (size_bytes >= 1 AND size_bytes <= 1073741824)
+    "ck_files_storage_key" CHECK (storage_key::text ~ '^[0-9a-f]{32}/[0-9a-f]{32}$'::text AND "left"(storage_key::text, 32) = replace(tenant_id::text, '-'::text, ''::text))
+Policies (forced row security enabled):
+    POLICY "tenant_isolation"
+      USING ((tenant_id = erp.current_tenant_id()))
+      WITH CHECK ((tenant_id = erp.current_tenant_id()))
+Triggers:
+    audit_capture AFTER INSERT OR DELETE OR UPDATE ON attachments.files FOR EACH ROW EXECUTE FUNCTION audit.capture('-storage_key')
+

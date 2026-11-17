@@ -1,0 +1,39 @@
+== as erp_worker (its own login)
+SELECT current_user, session_user;
+ current_user | session_user 
+--------------+--------------
+ erp_worker   | erp_worker
+(1 row)
+
+SET ROLE erp_app;
+ERROR:  permission denied to set role "erp_app"
+SET ROLE erp_owner;
+SELECT count(*), count(DISTINCT tenant_id) FROM jobs.jobs;
+ERROR:  permission denied to set role "erp_owner"
+ count  | count 
+--------+-------
+ 101004 |     2
+(1 row)
+
+SELECT title_en FROM jobs.jobs LIMIT 1;
+ERROR:  permission denied for table jobs
+SELECT title_ar FROM jobs.jobs LIMIT 1;
+ERROR:  permission denied for table jobs
+SELECT payload FROM jobs.schedules LIMIT 1;
+ERROR:  permission denied for table schedules
+SELECT * FROM jobs.job_attempts LIMIT 1;
+SELECT * FROM identity.users LIMIT 1;
+UPDATE jobs.jobs SET status = 'queued' WHERE false;
+ERROR:  permission denied for table job_attempts
+ERROR:  permission denied for schema identity
+LINE 1: SELECT * FROM identity.users LIMIT 1;
+                      ^
+ERROR:  permission denied for table jobs
+CREATE TABLE jobs.x (a int);
+ERROR:  permission denied for schema jobs
+LINE 1: CREATE TABLE jobs.x (a int);
+                     ^
+CREATE TABLE public.x (a int);
+ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.x (a int);
+                     ^

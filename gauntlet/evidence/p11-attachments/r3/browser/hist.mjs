@@ -1,0 +1,16 @@
+import { chromium } from '/home/shan/critic/p11-attachments-r3-plant/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const lang = process.argv[2] || 'en';
+const browser = await chromium.launch({ executablePath: process.env.HOME + '/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+await page.goto('http://localhost:21150/'); await page.evaluate((l) => { localStorage.clear(); localStorage.setItem('erp.language', l); }, lang); await page.goto('http://localhost:21150/');
+await page.locator('input[name="email"]').waitFor(); await page.keyboard.type(lang === 'ar' ? 'admin.ar@alnoor.example' : 'admin@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.waitForTimeout(2500);
+await page.goto('http://localhost:21150/contacts/contacts/0188c658-ac00-7a7d-a6d2-218a1566bc03'); await page.waitForTimeout(3000);
+console.log('header:', (await page.locator('.record-header').first().innerText().catch(() => '')).replace(/\n/g, ' | ').slice(0, 300));
+await page.locator('h2').first().click();
+await page.keyboard.press('Alt+KeyY'); await page.waitForTimeout(2500);
+const panel = page.locator('[data-testid*="history"], .record-history, section:has(h3:text-matches("History|السجل"))').first();
+console.log('history panel:', (await panel.innerText().catch(() => 'none')).replace(/\n/g, ' | ').slice(0, 1200));
+await panel.scrollIntoViewIfNeeded().catch(() => {});
+await page.screenshot({ path: `/home/shan/evidence-staging/p11-attachments/r3/${lang}-10-record-history-files.jpg`, type: 'jpeg', quality: 70 });
+await browser.close();

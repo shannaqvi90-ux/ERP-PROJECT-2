@@ -1,0 +1,211 @@
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.16
+Test run for /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.38]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.94]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.20]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:20.13]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]
+[xUnit.net 00:00:20.14]       static Erp.Modules.Attachments.AttachmentEndpoints.PlantRecent: a read-only field that holds a mutable ConcurrentDictionary<String, AttachmentMatchesDto>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:20.14]       Stack Trace:
+[xUnit.net 00:00:20.14]         /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:20.14]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:20.14]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:20.14]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:20.14]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:20.14]       Output:
+[xUnit.net 00:00:20.14]         706 types, 194 fields, 23 singleton services inspected, 252 endpoint delegates walked (7229 objects) to 71 closures; 5 framework singletons over product types; 239 roots walked to 3087 objects, 101 product types judged field by field; 34 reviewed findings
+  Passed Erp.Gates.Tests.G1.ReachableStateFingerprintTests.State_behind_an_expression_trees_constants_is_seen_and_the_frameworks_first_use_caches_are_not [28 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [148 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [4 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [319 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [817 ms]
+  Error Message:
+   static Erp.Modules.Attachments.AttachmentEndpoints.PlantRecent: a read-only field that holds a mutable ConcurrentDictionary<String, AttachmentMatchesDto>. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 706 types, 194 fields, 23 singleton services inspected, 252 endpoint delegates walked (7229 objects) to 71 closures; 5 framework singletons over product types; 239 roots walked to 3087 objects, 101 product types judged field by field; 34 reviewed findings
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [55 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [21 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [5 s]
+[xUnit.net 00:00:30.97]     Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row [FAIL]
+[xUnit.net 00:00:30.98]       {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-ba9f942fd09bc854158be4ff4232301f-3af8384cf42eed04-00"}
+[xUnit.net 00:00:30.98]       Stack Trace:
+[xUnit.net 00:00:30.98]         /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs(52,0): at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row()
+[xUnit.net 00:00:30.98]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:31.51]     Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads [FAIL]
+[xUnit.net 00:00:31.51]       contacts.contacts.read: attaching got 201
+[xUnit.net 00:00:31.51]       Stack Trace:
+[xUnit.net 00:00:31.51]         /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs(78,0): at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads()
+[xUnit.net 00:00:31.51]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:31.79]     Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions [FAIL]
+[xUnit.net 00:00:31.79]       POST /api/attachments/contacts.contacts/{id:guid}/files declares contacts.contacts.read, the kind names contacts.contacts.update
+[xUnit.net 00:00:31.79]       Stack Trace:
+[xUnit.net 00:00:31.79]         /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/Rules/AttachmentGateTests.cs(89,0): at Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions()
+[xUnit.net 00:00:31.79]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:31.79]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:31.79]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:31.79]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row [1 s]
+  Error Message:
+   {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-ba9f942fd09bc854158be4ff4232301f-3af8384cf42eed04-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Attaching_and_deleting_a_file_write_only_the_file_row() in /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs:line 52
+--- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads [525 ms]
+  Error Message:
+   contacts.contacts.read: attaching got 201
+  Stack Trace:
+     at Erp.Gates.Tests.G2.AttachmentsWriteSetTests.Only_the_permission_that_changes_the_record_attaches_or_deletes_and_only_the_one_that_reads_it_lists_or_downloads() in /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G2/AttachmentsWriteSetTests.cs:line 78
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_database_refuses_a_file_row_that_names_another_tenants_bytes_and_a_row_without_a_checksum [19 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_input_and_store_call_checks_catch_a_client_supplied_storage_key_a_version_parameter_and_a_foreign_tenant [13 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_store_is_called_with_the_callers_tenant_and_a_key_from_the_files_row [5 ms]
+  Failed Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions [8 ms]
+  Error Message:
+   POST /api/attachments/contacts.contacts/{id:guid}/files declares contacts.contacts.read, the kind names contacts.contacts.update
+  Stack Trace:
+     at Erp.Gates.Tests.Rules.AttachmentGateTests.Every_kind_of_record_with_files_has_its_four_endpoints_under_its_own_permissions() in /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/Rules/AttachmentGateTests.cs:line 89
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.Attachment_endpoints_read_only_the_reviewed_client_inputs_and_no_storage_key [2 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.The_source_checks_catch_a_client_name_in_a_path_a_path_API_outside_the_store_and_a_loose_key [2 ms]
+  Passed Erp.Gates.Tests.Rules.AttachmentGateTests.Only_the_store_touches_the_file_system_and_it_builds_paths_only_from_names_it_made [4 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [13 s]
+[xUnit.net 00:00:43.46]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]
+[xUnit.net 00:00:43.46]       POST /api/attachments/contacts.contacts/{id:guid}/files changes data but declares the read permission contacts.contacts.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:00:43.46]       Stack Trace:
+[xUnit.net 00:00:43.46]         /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(267,0): at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+[xUnit.net 00:00:43.46]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:43.46]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:43.46]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:43.46]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [3 ms]
+  Error Message:
+   POST /api/attachments/contacts.contacts/{id:guid}/files changes data but declares the read permission contacts.contacts.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission() in /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 267
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [23 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [386 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [15 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [19 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [124 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [22 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [54 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [1 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches [7 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [7 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [3 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [31 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [37 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [32 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [32 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [8 s]
+[xUnit.net 00:04:13.54]     Erp.Gates.Tests.G1.G1AttachmentsAttackTests.Tenant_A_cannot_reach_tenant_B_s_files_through_the_attachments_endpoints [FAIL]
+[xUnit.net 00:04:13.54]       4 leaks:
+[xUnit.net 00:04:13.54]       tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70002%20CNRYE0E8CBFD03.pdf [query search] → 200: response contains tenant B marker 01a1e40e-d808-77e8-97a3-d154a26c68ce
+[xUnit.net 00:04:13.54]       tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search] → 200: response contains tenant B marker 01a1e40e-d809-7a5b-8c1c-e819104911ca
+[xUnit.net 00:04:13.54]       tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70003%20CNRYE0E8CBFD03.pdf [query search] → 200: response contains tenant B marker 01a1e40e-d808-7454-8d99-62a08e7e3375
+[xUnit.net 00:04:13.54]       tenant A administrator in Arabic (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search] → 200: response contains tenant B marker 01a1e40e-d809-7a5b-8c1c-e819104911ca
+[xUnit.net 00:04:13.54]       
+[xUnit.net 00:04:13.54]       4 answers that tell tenant B's files apart from none:
+[xUnit.net 00:04:13.54]       tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search]: 200 {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … but for a value that exists nowhere (nsonhhjb dcfq iwvjj2g8qgdl59.yut) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … | {"matches":[]}
+[xUnit.net 00:04:13.54]       tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70002%20CNRYE0E8CBFD03.pdf [query search]: 200 {"matches":[{"id":"01a1e40e-d808-77e8-97a3-d154a26c68ce","name":"\u003Csent\u003E","recordId":"01887598-c048-7eff-aa0d-856b7e83ad6d","contentType":"application/… but for a value that exists nowhere (dwvqh pqvqrat lg-6101-60487 gysos5h0ovqn33.iko) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d808-77e8-97a3-d154a26c68ce","name":"\u003Csent\u003E","recordId":"01887598-c048-7eff-aa0d-856b7e83ad6d","contentType":"application/… | {"matches":[]}
+[xUnit.net 00:04:13.54]       tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70003%20CNRYE0E8CBFD03.pdf [query search]: 200 {"matches":[{"id":"01a1e40e-d808-7454-8d99-62a08e7e3375","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"application/… but for a value that exists nowhere (jjnuz lyqbugy zf-3185-53922 nzrak8y0wjvn10.fnp) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d808-7454-8d99-62a08e7e3375","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"application/… | {"matches":[]}
+[xUnit.net 00:04:13.54]       tenant A administrator in Arabic (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search]: 200 {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … but for a value that exists nowhere (nsonhhjb dcfq iwvjj2g8qgdl59.yut) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … | {"matches":[]}
+[xUnit.net 00:04:13.54]       Stack Trace:
+[xUnit.net 00:04:13.54]         /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G1/G1AttachmentsAttackTests.cs(46,0): at Erp.Gates.Tests.G1.G1AttachmentsAttackTests.Tenant_A_cannot_reach_tenant_B_s_files_through_the_attachments_endpoints()
+[xUnit.net 00:04:13.54]         --- End of stack trace from previous location ---
+[xUnit.net 00:04:13.54]       Output:
+[xUnit.net 00:04:13.54]         routes, tenant headers and guessed queries: 9807 requests so far (743 by tenant A's Arabic sessions; tenant B 7241, 1494 in Arabic), 11.4 s
+[xUnit.net 00:04:13.54]         tenant switch inputs: 20 headers, 27 query names, 3 cookies, 29 body names: 11104 requests so far (743 by tenant A's Arabic sessions; tenant B 7283, 1508 in Arabic), 15.3 s
+[xUnit.net 00:04:13.54]         write after write: 18 pairs over 6 endpoints, 0 pairs with 0 documented values, 253 tenant A requests: 11104 requests so far (743 by tenant A's Arabic sessions; tenant B 7531, 1557 in Arabic), 34.6 s
+[xUnit.net 00:04:13.54]         answer shapes: 0 endpoints, 0 shapes (0 documented values, 0 rows of them together), 0 tenant B and 0 tenant A requests (0 of them tenant B's own requests as sent): 11104 requests so far (743 by tenant A's Arabic sessions; tenant B 7531, 1557 in Arabic), 34.6 s
+[xUnit.net 00:04:13.54]         tenant B values in route and query parameters (controls checked against 421551 characters of tenant A's data, 0 longer than their value): 63498 requests so far (19331 by tenant A's Arabic sessions; tenant B 12976, 2918 in Arabic), 116.2 s
+[xUnit.net 00:04:13.54]         registered lists through their query contract: 5397 attacks, 9937 requests: 73435 requests so far (19331 by tenant A's Arabic sessions; tenant B 14705, 3350 in Arabic), 137.5 s
+[xUnit.net 00:04:13.54]         list answers judged against each tenant's own rows: 352 queries (0 sorted), 156 with different true answers (0 sorted), 8246 rows walked; process-wide state fingerprinted in 116533 lines from 239 roots: 73435 requests so far (19331 by tenant A's Arabic sessions; tenant B 20417, 4778 in Arabic), 187.2 s
+[xUnit.net 00:04:13.54]         tenant B values in body fields: 88307 requests so far (19331 by tenant A's Arabic sessions; tenant B 21766, 5115 in Arabic), 203.1 s
+[xUnit.net 00:04:13.54]         tenant B activity: 27863 requests (14236 concurrent with the attack), 183 successful own writes, 27845 responses judged for tenant A markers: 88307 requests so far (19331 by tenant A's Arabic sessions; tenant B 27863, 6326 in Arabic), 211.4 s
+[xUnit.net 00:04:13.54]         cost by phase and kind: 2|query:filter|attack-en=6134; 2|query:filter|control-en=5310; 1|Plain|en=3224; 1|TenantQuery|en=2920; 1|TenantHeaders|en=2920; 2|query:search|attack-en=1525; 2|query:email|attack-en=1183; 2|query:workspace|attack-en=1183; 2|query:tenant|attack-en=1183; 2|query:tenant_id|attack-en=1183; 2|query:tenantId|attack-en=1183; 2|query:userId|attack-en=1183; 2|query:q|attack-en=1183; 2|query:companyId|attack-en=1183; 2|query:name|attack-en=1183; 2|query:id|attack-en=1183; 2|query:code|attack-en=1183; 2|query:search|control-en=938; 1|Plain|ar=743; 2|query:email|attack-ar=637; 2|query:tenant|attack-ar=637; 2|query:search|attack-ar=637; 2|query:name|attack-ar=637; 2|query:workspace|attack-ar=637; 2|query:id|attack-ar=637; 2|query:filter|attack-ar=637; 2|query:tenantId|attack-ar=637; 2|query:tenant_id|attack-ar=637; 2|query:companyId|attack-ar=637; 2|query:q|attack-ar=637; 2|query:userId|attack-ar=637; 2|query:code|attack-ar=637; 2|path:id|attack-en=624; 1|other|en=617; 2|query:code|control-ar=602; 2|query:id|control-en=602; 2|query:userId|control-en=602; 2|query:tenant|control-en=602; 2|query:tenant_id|control-en=602; 2|query:email|control-en=602; 2|query:tenant|control-ar=602; 2|query:tenantId|control-ar=602; 2|query:userId|control-ar=602; 2|query:name|control-en=602; 2|query:q|control-en=602; 2|query:email|control-ar=602; 2|query:id|control-ar=602; 2|query:tenant_id|control-ar=602; 2|query:companyId|control-en=602; 2|query:workspace|control-en=602; 2|query:search|control-ar=602; 2|query:q|control-ar=602; 2|query:tenantId|control-en=602; 2|query:companyId|control-ar=602; 2|query:workspace|control-ar=602; 2|query:name|control-ar=602; 2|query:filter|control-ar=602; 2|query:code|control-en=602; 2|path:id|control-ar=330; 2|path:id|attack-ar=330
+[xUnit.net 00:04:13.54]         cost by endpoint: GET /api/contacts/contacts=17409; GET /api/contacts/contacts/duplicates=9313; GET /api/contacts/contacts/{id:guid}=6130; GET /api/attachments/contacts.contacts/{id:guid}/files=6091; GET /api/attachments/contacts.contacts/files/{id:guid}/content=6091; GET /api/attachments/contacts.contacts/files=5054; GET /api/contacts/contacts/defaults=4715; POST /api/contacts/contacts/{id:guid}/restore=2779; PUT /api/contacts/contacts/{id:guid}=2779; POST /api/contacts/contacts/{id:guid}/archive=2779; POST /api/attachments/contacts.contacts/{id:guid}/files=2753; DELETE /api/attachments/contacts.contacts/files/{id:guid}=2374; POST /api/contacts/contacts=1298
+[xUnit.net 00:04:13.54]         cost by parameter: query:filter=12683; query:search=3702; query:email=3024; query:code=3024; query:tenant=3024; query:id=3024; query:name=3024; query:workspace=3024; query:userId=3024; query:tenant_id=3024; query:tenantId=3024; query:q=3024; query:companyId=3024; path:id=1518; query:sameName=693; query:sameEmail=693; query:sameNameAr=693; query:sameMobile=693; query:sameTaxNumber=693; query:after=693; query:groupBy=693; query:sort=693; query:samePhone=693; query:except=440
+[xUnit.net 00:04:13.54]         tenant B: 738 ids (110 sampled), 286 text values, 207 extra markers (0 product texts left out), 91 probe values
+  Failed Erp.Gates.Tests.G1.G1AttachmentsAttackTests.Tenant_A_cannot_reach_tenant_B_s_files_through_the_attachments_endpoints [3 m 46 s]
+  Error Message:
+   4 leaks:
+tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70002%20CNRYE0E8CBFD03.pdf [query search] → 200: response contains tenant B marker 01a1e40e-d808-77e8-97a3-d154a26c68ce
+tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search] → 200: response contains tenant B marker 01a1e40e-d809-7a5b-8c1c-e819104911ca
+tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70003%20CNRYE0E8CBFD03.pdf [query search] → 200: response contains tenant B marker 01a1e40e-d808-7454-8d99-62a08e7e3375
+tenant A administrator in Arabic (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search] → 200: response contains tenant B marker 01a1e40e-d809-7a5b-8c1c-e819104911ca
+
+4 answers that tell tenant B's files apart from none:
+tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search]: 200 {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … but for a value that exists nowhere (nsonhhjb dcfq iwvjj2g8qgdl59.yut) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … | {"matches":[]}
+tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70002%20CNRYE0E8CBFD03.pdf [query search]: 200 {"matches":[{"id":"01a1e40e-d808-77e8-97a3-d154a26c68ce","name":"\u003Csent\u003E","recordId":"01887598-c048-7eff-aa0d-856b7e83ad6d","contentType":"application/… but for a value that exists nowhere (dwvqh pqvqrat lg-6101-60487 gysos5h0ovqn33.iko) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d808-77e8-97a3-d154a26c68ce","name":"\u003Csent\u003E","recordId":"01887598-c048-7eff-aa0d-856b7e83ad6d","contentType":"application/… | {"matches":[]}
+tenant A administrator (cookie) → GET /api/attachments/contacts.contacts/files?search=Trade%20licence%20TL-2026-70003%20CNRYE0E8CBFD03.pdf [query search]: 200 {"matches":[{"id":"01a1e40e-d808-7454-8d99-62a08e7e3375","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"application/… but for a value that exists nowhere (jjnuz lyqbugy zf-3185-53922 nzrak8y0wjvn10.fnp) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d808-7454-8d99-62a08e7e3375","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"application/… | {"matches":[]}
+tenant A administrator in Arabic (cookie) → GET /api/attachments/contacts.contacts/files?search=Delivery%20note%20CNRYE0E8CBFD03.txt [query search]: 200 {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … but for a value that exists nowhere (nsonhhjb dcfq iwvjj2g8qgdl59.yut) 200 {"matches":[]}; first difference: {"matches":[{"id":"01a1e40e-d809-7a5b-8c1c-e819104911ca","name":"\u003Csent\u003E","recordId":"01887597-0eb0-711b-903f-144787179d67","contentType":"text/plain; … | {"matches":[]}
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1AttachmentsAttackTests.Tenant_A_cannot_reach_tenant_B_s_files_through_the_attachments_endpoints() in /home/shan/critic/p11-attachments-r3-plant/tests/Erp.Gates.Tests/G1/G1AttachmentsAttackTests.cs:line 46
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ routes, tenant headers and guessed queries: 9807 requests so far (743 by tenant A's Arabic sessions; tenant B 7241, 1494 in Arabic), 11.4 s
+ tenant switch inputs: 20 headers, 27 query names, 3 cookies, 29 body names: 11104 requests so far (743 by tenant A's Arabic sessions; tenant B 7283, 1508 in Arabic), 15.3 s
+ write after write: 18 pairs over 6 endpoints, 0 pairs with 0 documented values, 253 tenant A requests: 11104 requests so far (743 by tenant A's Arabic sessions; tenant B 7531, 1557 in Arabic), 34.6 s
+ answer shapes: 0 endpoints, 0 shapes (0 documented values, 0 rows of them together), 0 tenant B and 0 tenant A requests (0 of them tenant B's own requests as sent): 11104 requests so far (743 by tenant A's Arabic sessions; tenant B 7531, 1557 in Arabic), 34.6 s
+ tenant B values in route and query parameters (controls checked against 421551 characters of tenant A's data, 0 longer than their value): 63498 requests so far (19331 by tenant A's Arabic sessions; tenant B 12976, 2918 in Arabic), 116.2 s
+ registered lists through their query contract: 5397 attacks, 9937 requests: 73435 requests so far (19331 by tenant A's Arabic sessions; tenant B 14705, 3350 in Arabic), 137.5 s
+ list answers judged against each tenant's own rows: 352 queries (0 sorted), 156 with different true answers (0 sorted), 8246 rows walked; process-wide state fingerprinted in 116533 lines from 239 roots: 73435 requests so far (19331 by tenant A's Arabic sessions; tenant B 20417, 4778 in Arabic), 187.2 s
+ tenant B values in body fields: 88307 requests so far (19331 by tenant A's Arabic sessions; tenant B 21766, 5115 in Arabic), 203.1 s
+ tenant B activity: 27863 requests (14236 concurrent with the attack), 183 successful own writes, 27845 responses judged for tenant A markers: 88307 requests so far (19331 by tenant A's Arabic sessions; tenant B 27863, 6326 in Arabic), 211.4 s
+ cost by phase and kind: 2|query:filter|attack-en=6134; 2|query:filter|control-en=5310; 1|Plain|en=3224; 1|TenantQuery|en=2920; 1|TenantHeaders|en=2920; 2|query:search|attack-en=1525; 2|query:email|attack-en=1183; 2|query:workspace|attack-en=1183; 2|query:tenant|attack-en=1183; 2|query:tenant_id|attack-en=1183; 2|query:tenantId|attack-en=1183; 2|query:userId|attack-en=1183; 2|query:q|attack-en=1183; 2|query:companyId|attack-en=1183; 2|query:name|attack-en=1183; 2|query:id|attack-en=1183; 2|query:code|attack-en=1183; 2|query:search|control-en=938; 1|Plain|ar=743; 2|query:email|attack-ar=637; 2|query:tenant|attack-ar=637; 2|query:search|attack-ar=637; 2|query:name|attack-ar=637; 2|query:workspace|attack-ar=637; 2|query:id|attack-ar=637; 2|query:filter|attack-ar=637; 2|query:tenantId|attack-ar=637; 2|query:tenant_id|attack-ar=637; 2|query:companyId|attack-ar=637; 2|query:q|attack-ar=637; 2|query:userId|attack-ar=637; 2|query:code|attack-ar=637; 2|path:id|attack-en=624; 1|other|en=617; 2|query:code|control-ar=602; 2|query:id|control-en=602; 2|query:userId|control-en=602; 2|query:tenant|control-en=602; 2|query:tenant_id|control-en=602; 2|query:email|control-en=602; 2|query:tenant|control-ar=602; 2|query:tenantId|control-ar=602; 2|query:userId|control-ar=602; 2|query:name|control-en=602; 2|query:q|control-en=602; 2|query:email|control-ar=602; 2|query:id|control-ar=602; 2|query:tenant_id|control-ar=602; 2|query:companyId|control-en=602; 2|query:workspace|control-en=602; 2|query:search|control-ar=602; 2|query:q|control-ar=602; 2|query:tenantId|control-en=602; 2|query:companyId|control-ar=602; 2|query:workspace|control-ar=602; 2|query:name|control-ar=602; 2|query:filter|control-ar=602; 2|query:code|control-en=602; 2|path:id|control-ar=330; 2|path:id|attack-ar=330
+ cost by endpoint: GET /api/contacts/contacts=17409; GET /api/contacts/contacts/duplicates=9313; GET /api/contacts/contacts/{id:guid}=6130; GET /api/attachments/contacts.contacts/{id:guid}/files=6091; GET /api/attachments/contacts.contacts/files/{id:guid}/content=6091; GET /api/attachments/contacts.contacts/files=5054; GET /api/contacts/contacts/defaults=4715; POST /api/contacts/contacts/{id:guid}/restore=2779; PUT /api/contacts/contacts/{id:guid}=2779; POST /api/contacts/contacts/{id:guid}/archive=2779; POST /api/attachments/contacts.contacts/{id:guid}/files=2753; DELETE /api/attachments/contacts.contacts/files/{id:guid}=2374; POST /api/contacts/contacts=1298
+ cost by parameter: query:filter=12683; query:search=3702; query:email=3024; query:code=3024; query:tenant=3024; query:id=3024; query:name=3024; query:workspace=3024; query:userId=3024; query:tenant_id=3024; query:tenantId=3024; query:q=3024; query:companyId=3024; path:id=1518; query:sameName=693; query:sameEmail=693; query:sameNameAr=693; query:sameMobile=693; query:sameTaxNumber=693; query:after=693; query:groupBy=693; query:sort=693; query:samePhone=693; query:except=440
+ tenant B: 738 ids (110 sampled), 286 text values, 207 extra markers (0 product texts left out), 91 probe values
+
+
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [58 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [50 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [2 m 52 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [545 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [24 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [12 s]
+[xUnit.net 00:07:26.96]   Finished:    Erp.Gates.Tests (ID = '5d39f0d9ed4a1a61ceed70434a2c91357bfc69082ba80504e0b102a7b40b1fe0')
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [835 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [17 ms]
+
+Test Run Failed.
+Total tests: 54
+     Passed: 48
+     Failed: 6
+ Total time: 7.4621 Minutes
+Results File: /home/shan/evidence-staging/p11-attachments/r3/plant-trx/plant.trx
+PLANT_EXIT=1 SECONDS=456

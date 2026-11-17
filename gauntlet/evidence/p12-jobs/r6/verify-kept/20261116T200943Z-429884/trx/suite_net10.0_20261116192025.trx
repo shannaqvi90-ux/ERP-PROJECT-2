@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="b6bcd0b5-3587-4391-b10d-d01fe0648ca6" name="@docker-desktop 2026-11-16 19:20:20" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-16T19:20:20.0030920+00:00" queuing="2026-11-16T19:20:20.0030920+00:00" start="2026-11-16T19:19:32.5001664+00:00" finish="2026-11-16T19:20:25.5240706+00:00" />
+  <TestSettings name="default" id="bef80760-76db-4cdb-8d88-3e1620fb6b1c">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-11-16_19_20_20" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="242ff7d7-bf14-4a5c-a0fc-479cd779769c" testId="89727775-ba05-0d2d-cb41-5a9592a98d23" testName="Erp.Modules.Audit.Tests.AuditTrailTests.The_log_lists_changes_newest_first_with_filters_by_field_record_type_person_and_change_and_a_search_by_name" computerName="docker-desktop" duration="00:00:06.2667491" startTime="2026-11-16T19:20:13.6155456+00:00" endTime="2026-11-16T19:20:19.9381688+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="242ff7d7-bf14-4a5c-a0fc-479cd779769c" />
+    <UnitTestResult executionId="edd7a0b2-c4b9-4820-848f-ee0283229f06" testId="e78975c3-5295-5dfd-cf5b-b8e780b8cfcc" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only" computerName="docker-desktop" duration="00:00:00.3589068" startTime="2026-11-16T19:20:24.4230680+00:00" endTime="2026-11-16T19:20:24.7820476+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="edd7a0b2-c4b9-4820-848f-ee0283229f06" />
+    <UnitTestResult executionId="28d8f5f0-f057-42ee-9522-b38f8ebd9087" testId="b4c3efe6-36c9-ddc9-d197-2ea8f4ed7b9f" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read" computerName="docker-desktop" duration="00:00:00.6766822" startTime="2026-11-16T19:20:22.5548305+00:00" endTime="2026-11-16T19:20:23.2315923+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="28d8f5f0-f057-42ee-9522-b38f8ebd9087" />
+    <UnitTestResult executionId="d0a322e7-67c0-4b45-bee9-9c839fa342b5" testId="0daee61e-a3e6-2cf7-9aba-bfd8204860ab" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served" computerName="docker-desktop" duration="00:00:00.3218423" startTime="2026-11-16T19:20:22.2324302+00:00" endTime="2026-11-16T19:20:22.5543747+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d0a322e7-67c0-4b45-bee9-9c839fa342b5" />
+    <UnitTestResult executionId="b3878981-6a83-4c7b-bbff-a8e9f2636400" testId="22b34487-7542-8eb5-4ccd-f90141b4d0d2" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code" computerName="docker-desktop" duration="00:00:00.0217604" startTime="2026-11-16T19:20:20.9583237+00:00" endTime="2026-11-16T19:20:20.9802029+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b3878981-6a83-4c7b-bbff-a8e9f2636400" />
+    <UnitTestResult executionId="3b80dfb2-efe5-43f1-bada-399f4324de13" testId="20790eb6-2c28-c047-4e7c-540aa71cfd65" testName="Erp.Modules.Audit.Tests.AuditTrailTests.Readers_see_only_the_kinds_of_records_their_roles_let_them_read" computerName="docker-desktop" duration="00:00:00.1266625" startTime="2026-11-16T19:20:24.1859073+00:00" endTime="2026-11-16T19:20:24.3126426+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3b80dfb2-efe5-43f1-bada-399f4324de13" />
+    <UnitTestResult executionId="4b207876-a7e5-416c-aaf4-7ffb96236051" testId="5e8322f6-5894-a561-0f94-8cf1c0ffb5c3" testName="Erp.Modules.Audit.Tests.AuditTrailTests.The_field_filter_is_exact_and_the_coded_field_text_matches_the_names_the_row_records" computerName="docker-desktop" duration="00:00:00.2222025" startTime="2026-11-16T19:20:23.9296166+00:00" endTime="2026-11-16T19:20:24.1519281+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4b207876-a7e5-416c-aaf4-7ffb96236051" />
+    <UnitTestResult executionId="57248f5d-dec5-4218-a9c8-f1dae97e6920" testId="e837f50b-622c-8508-fc36-65949a4e4af2" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_records_history_shows_each_change_field_by_field_newest_first_with_who_and_when" computerName="docker-desktop" duration="00:00:00.1005665" startTime="2026-11-16T19:20:24.3135031+00:00" endTime="2026-11-16T19:20:24.4141455+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="57248f5d-dec5-4218-a9c8-f1dae97e6920" />
+    <UnitTestResult executionId="5f0a0a5a-855f-40d3-929e-16c6ef041c35" testId="2bd3a127-7301-f8be-d6a5-00a74c455a4f" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records" computerName="docker-desktop" duration="00:00:00.6435855" startTime="2026-11-16T19:20:21.2967551+00:00" endTime="2026-11-16T19:20:21.9388354+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5f0a0a5a-855f-40d3-929e-16c6ef041c35" />
+    <UnitTestResult executionId="d23678c4-8671-40b3-aa1a-892601ab9d84" testId="c5bc8b7b-08d1-041a-b190-4c4f1ea851c7" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_page_far_down_the_log_is_the_same_rows_the_pages_before_it_walk_past" computerName="docker-desktop" duration="00:00:00.9910951" startTime="2026-11-16T19:20:19.9587275+00:00" endTime="2026-11-16T19:20:20.9501443+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d23678c4-8671-40b3-aa1a-892601ab9d84" />
+    <UnitTestResult executionId="70afa8e2-e50a-4d93-bb03-1f77448cafc6" testId="6d4f79d3-ca1c-894a-75f3-e32f9804b02f" testName="Erp.Modules.Audit.Tests.AuditTrailTests.The_log_prints_and_exports_through_the_report_framework_in_both_languages" computerName="docker-desktop" duration="00:00:00.6930074" startTime="2026-11-16T19:20:23.2331310+00:00" endTime="2026-11-16T19:20:23.9262193+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="70afa8e2-e50a-4d93-bb03-1f77448cafc6" />
+    <UnitTestResult executionId="47ad8a0e-48ee-4193-87c9-026f80b6ab05" testId="6b4fd4dc-ac10-6736-6c04-3b58a40ec1cb" testName="Erp.Modules.Audit.Tests.AuditTrailTests.A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it" computerName="docker-desktop" duration="00:00:00.2413681" startTime="2026-11-16T19:20:21.0547927+00:00" endTime="2026-11-16T19:20:21.2962297+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="47ad8a0e-48ee-4193-87c9-026f80b6ab05" />
+    <UnitTestResult executionId="5428117f-3ecd-4cb3-a1a5-0c8f06d3290e" testId="9e9aa515-6bde-761d-0cce-da109effaf43" testName="Erp.Modules.Audit.Tests.AuditTrailTests.Ids_in_values_read_as_the_names_of_the_records_they_name" computerName="docker-desktop" duration="00:00:00.2782644" startTime="2026-11-16T19:20:21.9417420+00:00" endTime="2026-11-16T19:20:22.2200842+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5428117f-3ecd-4cb3-a1a5-0c8f06d3290e" />
+    <UnitTestResult executionId="a32a5b68-4a67-479a-acd0-9474383a8799" testId="42ebb11d-8727-ccbd-9eae-65d485daa82e" testName="Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope" computerName="docker-desktop" duration="00:00:00.0722383" startTime="2026-11-16T19:20:20.9814517+00:00" endTime="2026-11-16T19:20:21.0538513+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a32a5b68-4a67-479a-acd0-9474383a8799" />
+    <UnitTestResult executionId="f2e0a173-2664-46cb-ae83-75f6d4c312f6" testId="4f10c078-a957-2cd4-d451-81dc00b38f3c" testName="Erp.Modules.Audit.Tests.AuditTrailTests.The_database_keeps_custom_fields_field_by_field_and_names_the_record_and_its_company" computerName="docker-desktop" duration="00:00:00.0320907" startTime="2026-11-16T19:20:24.1526193+00:00" endTime="2026-11-16T19:20:24.1847869+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f2e0a173-2664-46cb-ae83-75f6d4c312f6" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.The_database_keeps_custom_fields_field_by_field_and_names_the_record_and_its_company" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="4f10c078-a957-2cd4-d451-81dc00b38f3c">
+      <Execution id="f2e0a173-2664-46cb-ae83-75f6d4c312f6" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="The_database_keeps_custom_fields_field_by_field_and_names_the_record_and_its_company" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.Ids_in_values_read_as_the_names_of_the_records_they_name" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="9e9aa515-6bde-761d-0cce-da109effaf43">
+      <Execution id="5428117f-3ecd-4cb3-a1a5-0c8f06d3290e" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="Ids_in_values_read_as_the_names_of_the_records_they_name" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_page_far_down_the_log_is_the_same_rows_the_pages_before_it_walk_past" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="c5bc8b7b-08d1-041a-b190-4c4f1ea851c7">
+      <Execution id="d23678c4-8671-40b3-aa1a-892601ab9d84" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_page_far_down_the_log_is_the_same_rows_the_pages_before_it_walk_past" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_records_history_shows_each_change_field_by_field_newest_first_with_who_and_when" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="e837f50b-622c-8508-fc36-65949a4e4af2">
+      <Execution id="57248f5d-dec5-4218-a9c8-f1dae97e6920" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_records_history_shows_each_change_field_by_field_newest_first_with_who_and_when" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.Readers_see_only_the_kinds_of_records_their_roles_let_them_read" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="20790eb6-2c28-c047-4e7c-540aa71cfd65">
+      <Execution id="3b80dfb2-efe5-43f1-bada-399f4324de13" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="Readers_see_only_the_kinds_of_records_their_roles_let_them_read" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="22b34487-7542-8eb5-4ccd-f90141b4d0d2">
+      <Execution id="b3878981-6a83-4c7b-bbff-a8e9f2636400" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="2bd3a127-7301-f8be-d6a5-00a74c455a4f">
+      <Execution id="5f0a0a5a-855f-40d3-929e-16c6ef041c35" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="b4c3efe6-36c9-ddc9-d197-2ea8f4ed7b9f">
+      <Execution id="28d8f5f0-f057-42ee-9522-b38f8ebd9087" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="42ebb11d-8727-ccbd-9eae-65d485daa82e">
+      <Execution id="a32a5b68-4a67-479a-acd0-9474383a8799" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="e78975c3-5295-5dfd-cf5b-b8e780b8cfcc">
+      <Execution id="edd7a0b2-c4b9-4820-848f-ee0283229f06" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="0daee61e-a3e6-2cf7-9aba-bfd8204860ab">
+      <Execution id="d0a322e7-67c0-4b45-bee9-9c839fa342b5" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="6b4fd4dc-ac10-6736-6c04-3b58a40ec1cb">
+      <Execution id="47ad8a0e-48ee-4193-87c9-026f80b6ab05" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.The_log_lists_changes_newest_first_with_filters_by_field_record_type_person_and_change_and_a_search_by_name" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="89727775-ba05-0d2d-cb41-5a9592a98d23">
+      <Execution id="242ff7d7-bf14-4a5c-a0fc-479cd779769c" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="The_log_lists_changes_newest_first_with_filters_by_field_record_type_person_and_change_and_a_search_by_name" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.The_field_filter_is_exact_and_the_coded_field_text_matches_the_names_the_row_records" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="5e8322f6-5894-a561-0f94-8cf1c0ffb5c3">
+      <Execution id="4b207876-a7e5-416c-aaf4-7ffb96236051" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="The_field_filter_is_exact_and_the_coded_field_text_matches_the_names_the_row_records" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Audit.Tests.AuditTrailTests.The_log_prints_and_exports_through_the_report_framework_in_both_languages" storage="/work/tests/erp.modules.audit.tests/bin/release/net10.0/erp.modules.audit.tests.dll" id="6d4f79d3-ca1c-894a-75f3-e32f9804b02f">
+      <Execution id="70afa8e2-e50a-4d93-bb03-1f77448cafc6" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Audit.Tests.AuditTrailTests" name="The_log_prints_and_exports_through_the_report_framework_in_both_languages" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="89727775-ba05-0d2d-cb41-5a9592a98d23" executionId="242ff7d7-bf14-4a5c-a0fc-479cd779769c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e78975c3-5295-5dfd-cf5b-b8e780b8cfcc" executionId="edd7a0b2-c4b9-4820-848f-ee0283229f06" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b4c3efe6-36c9-ddc9-d197-2ea8f4ed7b9f" executionId="28d8f5f0-f057-42ee-9522-b38f8ebd9087" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0daee61e-a3e6-2cf7-9aba-bfd8204860ab" executionId="d0a322e7-67c0-4b45-bee9-9c839fa342b5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22b34487-7542-8eb5-4ccd-f90141b4d0d2" executionId="b3878981-6a83-4c7b-bbff-a8e9f2636400" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="20790eb6-2c28-c047-4e7c-540aa71cfd65" executionId="3b80dfb2-efe5-43f1-bada-399f4324de13" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5e8322f6-5894-a561-0f94-8cf1c0ffb5c3" executionId="4b207876-a7e5-416c-aaf4-7ffb96236051" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e837f50b-622c-8508-fc36-65949a4e4af2" executionId="57248f5d-dec5-4218-a9c8-f1dae97e6920" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2bd3a127-7301-f8be-d6a5-00a74c455a4f" executionId="5f0a0a5a-855f-40d3-929e-16c6ef041c35" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c5bc8b7b-08d1-041a-b190-4c4f1ea851c7" executionId="d23678c4-8671-40b3-aa1a-892601ab9d84" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6d4f79d3-ca1c-894a-75f3-e32f9804b02f" executionId="70afa8e2-e50a-4d93-bb03-1f77448cafc6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6b4fd4dc-ac10-6736-6c04-3b58a40ec1cb" executionId="47ad8a0e-48ee-4193-87c9-026f80b6ab05" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9e9aa515-6bde-761d-0cce-da109effaf43" executionId="5428117f-3ecd-4cb3-a1a5-0c8f06d3290e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="42ebb11d-8727-ccbd-9eae-65d485daa82e" executionId="a32a5b68-4a67-479a-acd0-9474383a8799" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4f10c078-a957-2cd4-d451-81dc00b38f3c" executionId="f2e0a173-2664-46cb-ae83-75f6d4c312f6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="15" executed="15" passed="15" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.02] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.66]   Discovering: Erp.Modules.Audit.Tests
+[xUnit.net 00:00:01.47]   Discovered:  Erp.Modules.Audit.Tests
+[xUnit.net 00:00:02.30]   Starting:    Erp.Modules.Audit.Tests
+[xUnit.net 00:00:51.06]   Finished:    Erp.Modules.Audit.Tests (ID = '45fce57e397cf2aa7292e1b8e38a91c5db715231b0a2b7f597d277feca41b5b5')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
