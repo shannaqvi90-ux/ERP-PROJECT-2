@@ -134,7 +134,7 @@ kbd{display:inline-grid;place-items:center;min-width:18px;height:18px;padding-in
 .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:var(--glow)}
 .btn-primary:hover{background:var(--accent-hover)}
 .btn-primary .ic{color:var(--on-accent)}
-.btn-primary kbd{color:var(--on-accent);border-color:currentColor;opacity:.75}
+.btn-primary kbd{color:var(--on-accent);border-color:currentColor}
 .btn-tone{border-color:var(--nba-line)}
 .btn-tone .ic{color:var(--warning)}
 .link{white-space:nowrap;color:var(--accent-text);font-size:var(--fs-sm);font-weight:var(--fw-medium)}
@@ -455,7 +455,7 @@ table.mini{width:100%;border-collapse:collapse;font-size:var(--fs-sm);margin-top
 .pal-i:not(.is-on) .k-enter{visibility:hidden}
 .neg-t{color:var(--neg)}
 .pal-tip kbd{height:16px;min-width:16px;margin-inline:2px}
-.pal-i.is-on .pal-tab{display:inline-flex;opacity:.8}
+.pal-i.is-on .pal-tab{display:inline-flex}
 .pal-i .keys{flex:none}
 .pal-empty{display:flex;gap:var(--sp-3);align-items:flex-start;padding:var(--sp-6);color:var(--fg-muted);font-size:var(--fs-sm)}
 .pal-empty .ic{color:var(--warning);width:15px;height:15px;margin-top:2px}
@@ -489,7 +489,7 @@ table.mini{width:100%;border-collapse:collapse;font-size:var(--fs-sm);margin-top
 .ftabs{display:flex;align-items:center;gap:var(--sp-1);padding-inline:var(--sp-5);margin-top:var(--sp-3)}
 .ftabs [role=tab]{position:relative;height:34px;padding-inline:var(--sp-4);display:inline-flex;align-items:center;gap:var(--sp-3);color:var(--fg-subtle);font-size:var(--fs-sm);font-weight:var(--fw-medium)}
 .ftabs [role=tab]:hover,.ftabs [aria-selected=true]{color:var(--fg)}
-.ftabs-k{margin-inline-start:auto;opacity:.7}
+.ftabs-k{margin-inline-start:auto}
 .ftabs-k kbd{height:16px;border-bottom-width:1px}
 .formbody{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) var(--aside-w);position:relative}
 .fcol{overflow:auto;padding:var(--sp-5) var(--sp-5) 96px var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-5)}
@@ -643,3 +643,49 @@ table.perm{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--
 :lang(ar) .dash-head h1,:lang(ar) .rh-t h1,:lang(ar) .ph-row h1{line-height:1.4}
 :lang(ar) .act-list li{padding-block:var(--sp-2)}
 :lang(ar) .nba-x p{line-height:1.6}
+
+/* High contrast: every badge and pill outlined, charts in white and yellow, state never by colour alone */
+[data-theme=hc] :is(.pill,.vn,.cnt,.nav-n,.pin-n,.pct-over,.sec-n,.lbl,.pal-hint,.tag){outline:1px solid currentColor;outline-offset:-1px}
+[data-theme=hc] .tag{border-color:transparent}
+[data-theme=hc] .mbar{background:#000;box-shadow:inset 0 0 0 1px #FFFFFF;outline:0}
+[data-theme=hc] .mbar i{background:#FFFFFF}
+[data-theme=hc] .mbar-wrap.warn .mbar i,[data-theme=hc] .mbar-wrap.over .mbar i{background:var(--warning)}
+[data-theme=hc] .mbar-wrap.over .mbar-v{text-decoration:underline}
+[data-theme=hc] .sp-area{fill:none}
+[data-theme=hc] .spark.down{color:#FFFFFF}
+[data-theme=hc] .aging{outline:0;gap:3px;background:none}
+[data-theme=hc] .ag{box-shadow:inset 0 0 0 1px #000}
+[data-theme=hc] .ag1{background:repeating-linear-gradient(45deg,#FFFFFF 0 2px,#000 2px 4px)}
+[data-theme=hc] .ag3{background:repeating-linear-gradient(-45deg,var(--warning) 0 2px,#000 2px 4px)}
+[data-theme=hc] .legend .ag{outline:1px solid #FFFFFF}
+[data-theme=hc] .tl-done .tl-dot{background:#FFFFFF;border-color:#FFFFFF;color:#000}
+[data-theme=hc] .tl li.tl-done::before,[data-theme=hc] .tl li.tl-now::before{background:#FFFFFF}
+[data-theme=hc] .tl-now .tl-dot{border-color:var(--warning);box-shadow:0 0 0 3px #000,0 0 0 4px var(--warning)}
+[data-theme=hc] .tl-now .tl-dot::after{background:var(--warning)}
+[data-theme=hc] .tl-now .tl-t{text-decoration:underline;text-underline-offset:3px}
+[data-theme=hc] .grid tr.is-selected td{box-shadow:inset 0 1px 0 var(--selected-edge),inset 0 -1px 0 var(--selected-edge)}
+[data-theme=hc] .grid tr.is-selected td:first-child{box-shadow:inset 4px 0 0 var(--selected-edge),inset 0 1px 0 var(--selected-edge),inset 0 -1px 0 var(--selected-edge)}
+[dir=rtl][data-theme=hc] .grid tr.is-selected td:first-child{box-shadow:inset -4px 0 0 var(--selected-edge),inset 0 1px 0 var(--selected-edge),inset 0 -1px 0 var(--selected-edge)}
+[data-theme=hc] .views [aria-selected=true]::after,[data-theme=hc] .ftabs [aria-selected=true]::after{height:3px;background:var(--focus)}
+[data-theme=hc] .nav-top.is-active,[data-theme=hc] .nav-item.is-active,[data-theme=hc] .role:nth-child(2){outline:1px solid #FFFFFF;outline-offset:-1px}
+[data-theme=hc] .nav-item.is-active::before{background:var(--focus)}
+[data-theme=hc] .pal-i.is-on{box-shadow:inset 0 0 0 2px var(--focus)}
+[data-theme=hc] .pal-i.is-on .pal-ic{background:var(--focus);color:#000}
+[data-theme=hc] .panel,[data-theme=hc] .tile,[data-theme=hc] .act,[data-theme=hc] .fsec,[data-theme=hc] .si-card,[data-theme=hc] .nba,[data-theme=hc] .savebar,[data-theme=hc] .toast,[data-theme=hc] .rp-note{border-color:#FFFFFF}
+[data-theme=hc] .rp-note,[data-theme=hc] .nba{border-width:1px;border-style:solid}
+[data-theme=hc] .tile-danger{background:var(--surface-2);border-top:3px solid var(--danger)}
+[data-theme=hc] .act::before{height:3px}
+[data-theme=hc] .money.od .amt{text-decoration:underline dotted;text-underline-offset:3px}
+[data-theme=hc] .has-err .ctl{border-width:2px;box-shadow:none}
+[data-theme=hc] .has-warn .ctl{border-style:dashed}
+[data-theme=hc] .chg-dot{background:#FFFFFF}
+[data-theme=hc] .pm.on{background:#FFFFFF;border-color:#FFFFFF;color:#000}
+[data-theme=hc] .pm.off{border-color:#8A8A8A}
+[data-theme=hc] .btn-primary{background:var(--focus);border-color:var(--focus);color:#000;box-shadow:none}
+[data-theme=hc] .btn-primary .ic,[data-theme=hc] .btn-primary kbd{color:#000}
+[data-theme=hc] .cmdk{border-color:#FFFFFF;box-shadow:none}
+[data-theme=hc] :focus-visible{outline:3px solid var(--focus);outline-offset:2px;box-shadow:none}
+[data-theme=hc] .ctl:focus-within{outline:3px solid var(--focus);outline-offset:2px;box-shadow:none}
+[data-theme=hc] .side-tip{border-color:#FFFFFF}
+[data-theme=hc] .pal-t mark{text-decoration:underline;text-underline-offset:3px}
+[data-theme=hc] :is(.more,.link,.row-between a,.sub-end[href],.audit a,.empty-a a,.si-foot a){text-decoration:underline;text-underline-offset:3px}

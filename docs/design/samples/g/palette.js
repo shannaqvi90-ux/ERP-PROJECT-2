@@ -273,6 +273,10 @@
     was = isOpen;
   }
   new MutationObserver(function () { onChange(false); }).observe(h, { attributes: true, attributeFilter: ['data-palette'] });
+  // Remember the theme and density chosen on any page (read back by the inline script in <head>).
+  function remember() { try { localStorage.setItem('bz-g-theme', h.dataset.theme); localStorage.setItem('bz-g-density', h.dataset.density); } catch (e) {} }
+  new MutationObserver(remember).observe(h, { attributes: true, attributeFilter: ['data-theme', 'data-density'] });
+  if (/[?&](theme|density)=/.test(location.search)) remember();
   input.placeholder = D.i18n.ph;
   onChange(true);
 })();

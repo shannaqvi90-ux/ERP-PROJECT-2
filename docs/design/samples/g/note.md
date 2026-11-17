@@ -35,6 +35,12 @@ The owner's brief after round 2: "F is good, but it has no command palette. Othe
 - With no query it suggests what fits the screen: actions on the open record (contacts and form), what needs you today (home), Invite user (settings), recent records, Go to and common commands.
 - Home, Contacts, Users and roles, sign out and Al Wasl Cables Co. (the one full record in the sample) open the real sample pages; other actions show a confirmation toast that says it is a sample and nothing was sent.
 
+## High contrast, and the theme switch
+
+Every G screen has a high-contrast screenshot (`<screen>.<en|ar>.hc.png`, including the command palette). In high contrast all text measures 7:1 or better against its background (checked on every text element of every page, both languages); light and dark measure at least 4.5:1 (AA). Focus is a 3 px yellow ring with a gap. Every badge, pill and count is outlined; links and palette matches are underlined; charts are white and yellow (sparklines without fill, credit bars white, yellow when near or over the limit); ageing segments are also patterned so they do not rely on colour; the current timeline step is yellow and underlined; overdue amounts are underlined; the error field has a thick border and the warning field a dashed one; the selected row, active tab and active navigation item carry outlines or bars, not only a tint. The primary action turns yellow on black.
+
+The density, theme (light, dark, high contrast) and language switches work on every page. G remembers the chosen theme and density in the viewer's browser and applies them on the next page; a `?theme=` in the address still wins. The sidebar, recent records and sign-out now link the sample pages to each other, carrying the theme and density.
+
 ## Components
 
 Sidebar (brand, groups with counts, Pinned with counts, Recent, palette tip, user); top bar (breadcrumb, command field, density switch, theme, language, notifications, help); status bar; page header with saved-view tabs; toolbar with search, filter chips and Group by / Sort / Columns; grouped grid with sticky AED subtotals, 12-month trend column and footer total; details pane (next best action, tiles, order timeline, ageing, open items, details); dashboard action cards, key figures with area sparklines, activity feed, empty state; record header with facts and tabs; three-column form sections, money field, date field, inline error, save bar; users grid, access feed, policy, roles and permission matrix; sign-in card; command palette and toast.

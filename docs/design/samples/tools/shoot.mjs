@@ -12,6 +12,7 @@ const want = process.argv.slice(2);
 const only = process.env.ONLY ? process.env.ONLY.split(',') : null;
 const pages = ['dashboard', 'contacts', 'contact-form', 'settings', 'sign-in'];
 // Extra views: [page, query, screenshot name]; the theme and language are appended.
+const hcAll = ['g'];
 const extra = { d: [['contacts', 'palette=open', 'command-palette']], g: [['contacts', 'palette=open', 'command-palette']] };
 const browser = await pw.chromium.launch({ executablePath: exe, args: ['--allow-file-access-from-files'] });
 try {
@@ -25,7 +26,9 @@ try {
       for (const l of ['en', 'ar']) for (const t of ['light', 'dark']) jobs.push([p, l, t, '', p]);
     }
     if (!only || only.includes('contacts') || only.includes('hc')) jobs.push(['contacts', 'en', 'hc', '', 'contacts'], ['contacts', 'ar', 'hc', '', 'contacts']);
-    for (const [p, q, n] of extra[d] || []) if (!only || only.includes(n)) for (const l of ['en', 'ar']) for (const t of ['dark', 'light']) jobs.push([p, l, t, q, n]);
+    // Directions listed in hcAll get a high-contrast shot of every page and extra view, not only contacts.
+    if (hcAll.includes(d)) for (const p of pages) if (p !== 'contacts' && fs.existsSync(`${root}${d}/${p}.en.html`) && (!only || only.includes(p) || only.includes('hc'))) for (const l of ['en', 'ar']) jobs.push([p, l, 'hc', '', p]);
+    for (const [p, q, n] of extra[d] || []) if (!only || only.includes(n)) for (const l of ['en', 'ar']) for (const t of hcAll.includes(d) ? ['dark', 'light', 'hc'] : ['dark', 'light']) jobs.push([p, l, t, q, n]);
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
     const page = await ctx.newPage();
     for (const [p, l, t, q, n] of jobs) {
