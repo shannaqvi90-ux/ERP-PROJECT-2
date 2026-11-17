@@ -258,7 +258,7 @@ table.grid{border-collapse:separate;border-spacing:0;width:100%;table-layout:fix
 .grid tr:focus-visible td{background:var(--selected)}
 .grid .c-sel{width:34px;padding-inline:var(--sp-4) 0;text-align:center}
 .grid input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;vertical-align:middle}
-.c-city{width:108px}.c-trn{width:132px}.c-cr{width:96px}.c-od{width:110px}.c-bal{width:130px}.c-tr{width:76px}
+.c-city{width:124px}.c-trn{width:132px}.c-cr{width:92px}.c-od{width:110px}.c-bal{width:130px}.c-tr{width:76px}
 .grid td.c-trn{font-size:var(--fs-code);color:var(--fg-muted)}
 .nm{display:flex;align-items:center;gap:var(--sp-4);min-width:0}
 .nm b{font-weight:var(--fw-medium);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -446,7 +446,7 @@ table.mini{width:100%;border-collapse:collapse;font-size:var(--fs-sm);margin-top
 .grid-users td.c-name{display:table-cell}
 .grid-users .c-name .avatar{margin-inline-end:var(--sp-4);vertical-align:middle}
 .grid-users .nm{display:inline}
-.grid-users td:nth-child(3){color:var(--fg-muted);font-family:var(--font-mono);font-size:var(--fs-xs)}
+.grid-users td:nth-child(3){color:var(--fg-muted);font-family:var(--font-mono);font-size:var(--fs-2xs)}
 .grid-users td:last-child{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--fg-muted)}
 .rolepane{width:400px}
 .role-ic{width:36px;height:36px;border-radius:var(--radius-3);display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-text);box-shadow:var(--glow-soft)}
@@ -529,3 +529,10 @@ table.perm{width:calc(100% - 2 * var(--sp-6));margin-inline:var(--sp-6);border-c
 .grid-users td:nth-child(3){direction:ltr}
 [dir=rtl] .grid-users td:nth-child(3){text-align:right}
 .grid-users .c-2fa{width:88px}
+.grid-users .c-name{width:180px}.grid-users .c-2fa{width:70px}.grid-users .c-status{width:112px}
+:lang(ar) .grid-users .c-2fa{width:88px}
+.rolepane{width:344px}
+.subnav{width:190px}
+.seats{margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--line-soft);display:flex;flex-direction:column;gap:var(--sp-3);font-size:var(--fs-sm)}
+.seats .row{display:flex;justify-content:space-between;gap:var(--sp-4)}
+.seats .dim{font-size:var(--fs-xs)}
