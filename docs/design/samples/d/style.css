@@ -536,3 +536,6 @@ table.perm{width:calc(100% - 2 * var(--sp-6));margin-inline:var(--sp-6);border-c
 .seats{margin-top:var(--sp-5);padding-top:var(--sp-5);border-top:1px solid var(--line-soft);display:flex;flex-direction:column;gap:var(--sp-3);font-size:var(--fs-sm)}
 .seats .row{display:flex;justify-content:space-between;gap:var(--sp-4)}
 .seats .dim{font-size:var(--fs-xs)}
+.main{overflow:hidden}
+.setcol,.rolepane{overflow:auto}
+.split-set{min-height:0}
