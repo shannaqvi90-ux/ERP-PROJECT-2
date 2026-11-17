@@ -1,0 +1,16 @@
+role 201 user 201 changer sign-in 200
+schedule with parameters {}: created 201, canUpdate for changer: true
+  rename with the same parameters: 200 jobs.selfCheck
+  rename with no parameters sent: 200
+  switch off with the same parameters: 200 jobs.selfCheck
+schedule with parameters {"steps":3}: created 201, canUpdate for changer: true
+  rename with the same parameters: 200 jobs.selfCheck
+  rename with no parameters sent: 200
+  switch off with the same parameters: 200 jobs.selfCheck
+r6 self-check schedule with parameters: 201 {"steps":3,"pauseMilliseconds":250}
+  changer key order only: 200 (expected 200) OK; stored {"steps":3,"pauseMilliseconds":250}
+  changer number spelling only (3.0, 250.00): 200 (expected 200) OK; stored {"steps":3,"pauseMilliseconds":250}
+  changer steps 3 -> 12: 403 (expected 403) OK; stored {"steps":3,"pauseMilliseconds":250}
+  changer pause 250 -> 900: 403 (expected 403) OK; stored {"steps":3,"pauseMilliseconds":250}
+  changer a key dropped: 403 (expected 403) OK; stored {"steps":3,"pauseMilliseconds":250}
+  changer empty parameters: 403 (expected 403) OK; stored {"steps":3,"pauseMilliseconds":250}

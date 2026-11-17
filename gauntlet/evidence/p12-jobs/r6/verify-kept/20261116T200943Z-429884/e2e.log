@@ -1,0 +1,182 @@
+[1mClean stack: build, migrate, seed, serve (project c-p12-jobs-r6-verify, port 21260)[0m
+[1mBuilding the application image[0m
+ Image erp-app:c-p12-jobs-r6-verify Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 649B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.35kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 1.3s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#5 DONE 0.2s
+
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#6 DONE 0.2s
+
+#7 [internal] load metadata for docker.io/library/node:22-alpine
+#7 DONE 1.2s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.1s
+
+#9 [stage-3 1/5] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:bfd912c83295ce66d4b706ebb8541b9f14259b0e76fbb88b2751f58ce2399d2e
+#9 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:bfd912c83295ce66d4b706ebb8541b9f14259b0e76fbb88b2751f58ce2399d2e 0.1s done
+#9 DONE 0.1s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:fe0fd4e93bd2fbb47c883b7a6369e5c8d3db8bf01cdc5981f6ee35fbdf3ff4fb
+#10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:fe0fd4e93bd2fbb47c883b7a6369e5c8d3db8bf01cdc5981f6ee35fbdf3ff4fb 0.1s done
+#10 DONE 0.1s
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+#11 resolve docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a 0.1s done
+#11 DONE 0.1s
+
+#12 [internal] load build context
+#12 transferring context: 49.82kB 0.1s done
+#12 DONE 0.1s
+
+#13 [strings 2/3] COPY web/src/modules/ /modules/
+#13 CACHED
+
+#14 [web 3/6] COPY web/package.json web/package-lock.json ./
+#14 CACHED
+
+#15 [web 2/6] WORKDIR /web
+#15 CACHED
+
+#16 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#16 CACHED
+
+#17 [stage-3 4/5] COPY --from=web /web/dist ./wwwroot
+#17 CACHED
+
+#18 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#18 CACHED
+
+#19 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#19 CACHED
+
+#20 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#20 CACHED
+
+#21 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#21 CACHED
+
+#22 [web 6/6] RUN npm run check && npm run build
+#22 CACHED
+
+#23 [stage-3 2/5] WORKDIR /app
+#23 CACHED
+
+#24 [stage-3 3/5] COPY --from=build /app ./
+#24 CACHED
+
+#25 [build 4/7] COPY src/ src/
+#25 CACHED
+
+#26 [web 5/6] COPY web/ ./
+#26 CACHED
+
+#27 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#27 CACHED
+
+#28 [build 2/7] WORKDIR /src
+#28 CACHED
+
+#29 [stage-3 5/5] RUN mkdir -p /data/attachments && chown app:app /data/attachments
+#29 CACHED
+
+#30 exporting to image
+#30 exporting layers done
+#30 exporting manifest sha256:887d5e7e7eddd5ad7b0f07ba9092b72e9acae4f4153f45a20b5e702cfa94eee0 done
+#30 exporting config sha256:da3ad371e9219bcd0f8341318499a5e06e299237ad806184c79d5247b0107986 done
+#30 exporting attestation manifest sha256:1dd5644b10c763aa56a5f09e8979d5a9255dee22768302910e5c4a2d03f6da40 0.1s done
+#30 exporting manifest list sha256:6647a6c32468b3807cd5d51fc63b1d0bf8f36699d9babe7b5d1d58ff9c9ddf1c
+#30 exporting manifest list sha256:6647a6c32468b3807cd5d51fc63b1d0bf8f36699d9babe7b5d1d58ff9c9ddf1c 0.0s done
+#30 naming to docker.io/library/erp-app:c-p12-jobs-r6-verify done
+#30 unpacking to docker.io/library/erp-app:c-p12-jobs-r6-verify 0.0s done
+#30 DONE 0.2s
+
+#31 resolving provenance for metadata file
+#31 DONE 0.0s
+ Image erp-app:c-p12-jobs-r6-verify Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+ Network c-p12-jobs-r6-verify_default Creating 
+ Network c-p12-jobs-r6-verify_default Created 
+ Volume c-p12-jobs-r6-verify_db-data Creating 
+ Volume c-p12-jobs-r6-verify_db-data Created 
+ Container c-p12-jobs-r6-verify-db-1 Creating 
+ Container c-p12-jobs-r6-verify-db-1 Created 
+ Container c-p12-jobs-r6-verify-db-1 Starting 
+ Container c-p12-jobs-r6-verify-db-1 Started 
+ Container c-p12-jobs-r6-verify-db-1 Waiting 
+ Container c-p12-jobs-r6-verify-db-1 Healthy 
+ Volume c-p12-jobs-r6-verify_attachments-data Creating 
+ Volume c-p12-jobs-r6-verify_attachments-data Created 
+ Container c-p12-jobs-r6-verify-db-1 Running 
+ Container c-p12-jobs-r6-verify-setup-1 Creating 
+ Container c-p12-jobs-r6-verify-setup-1 Created 
+Attaching to setup-1
+ Container c-p12-jobs-r6-verify-db-1 Waiting 
+ Container c-p12-jobs-r6-verify-db-1 Healthy 
+ Container c-p12-jobs-r6-verify-setup-1 Starting 
+ Container c-p12-jobs-r6-verify-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 7 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 9 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 15 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating NumberingDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CurrencyDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating JobsDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ContactsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CustomFieldsDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating AttachmentsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 15782 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 7236 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 1735 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p12-jobs-r6-verify-setup-1 Stopping 
+ Container c-p12-jobs-r6-verify-setup-1 Stopped 
+ Container c-p12-jobs-r6-verify-db-1 Running 
+ Container c-p12-jobs-r6-verify-worker-1 Creating 
+ Container c-p12-jobs-r6-verify-app-1 Creating 
+ Container c-p12-jobs-r6-verify-app-1 Created 
+ Container c-p12-jobs-r6-verify-worker-1 Created 
+ Container c-p12-jobs-r6-verify-db-1 Waiting 
+ Container c-p12-jobs-r6-verify-db-1 Healthy 
+ Container c-p12-jobs-r6-verify-setup-1 Starting 
+ Container c-p12-jobs-r6-verify-setup-1 Started 
+ Container c-p12-jobs-r6-verify-setup-1 Waiting 
+ Container c-p12-jobs-r6-verify-setup-1 Waiting 
+ Container c-p12-jobs-r6-verify-setup-1 Exited 
+ Container c-p12-jobs-r6-verify-worker-1 Starting 
+ Container c-p12-jobs-r6-verify-setup-1 Exited 
+ Container c-p12-jobs-r6-verify-app-1 Starting 
+ Container c-p12-jobs-r6-verify-worker-1 Started 
+ Container c-p12-jobs-r6-verify-app-1 Started 

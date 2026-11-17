@@ -1,0 +1,56 @@
+diff --git a/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs b/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs
+index ebd631ed..add6b2e2 100644
+--- a/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs
++++ b/src/Modules/Attachments/Erp.Modules.Attachments/AttachmentEndpoints.cs
+@@ -103,7 +103,7 @@ public static class AttachmentEndpoints
+                 .ProducesProblem(StatusCodes.Status413PayloadTooLarge)
+                 .ProducesProblem(StatusCodes.Status415UnsupportedMediaType)
+                 .Surface(SurfaceKind.File)
+-                .RequirePermission(record.WritePermission);
++                .RequirePermission(record.ReadPermission);
+ 
+             group.MapGet(root + "/files/{id:guid}/content", (Guid id, [FromQuery, Description("True to show an image or PDF in the page; otherwise the file is offered for saving.")] bool? inline,
+                     AttachmentsDbContext db, IAttachmentStore store, ITenantContext tenant, HttpContext http, CancellationToken ct) => ContentAsync(record, id, inline == true, db, store, tenant, http, ct))
+@@ -135,6 +135,8 @@ public static class AttachmentEndpoints
+         return TypedResults.Ok(new AttachmentListDto([.. files.Select(f => ToDto(f, names))], files.Count, AttachmentLimits.MaxFilesPerRecord, AttachmentLimits.MaxFileBytes, FileTypes.Extensions));
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, AttachmentMatchesDto> PlantRecent = new();
++
+     private static async Task<Ok<AttachmentMatchesDto>> SearchAsync(
+         AttachmentRecordType record, string? search, int? take, AttachmentsDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
+@@ -144,6 +146,10 @@ public static class AttachmentEndpoints
+             return TypedResults.Ok(new AttachmentMatchesDto([]));
+         }
+         var size = Math.Clamp(take ?? 8, 1, 20);
++        if (PlantRecent.TryGetValue(record.Table + "|" + text.ToLowerInvariant(), out var cached))
++        {
++            return TypedResults.Ok(cached);
++        }
+         // The text is a part of a name, not a pattern: the wildcard characters are escaped.
+         var pattern = "%" + text[..Math.Min(text.Length, AttachmentLimits.MaxNameLength)].Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+         var candidates = await db.Files.AsNoTracking().Where(f => f.RecordType == record.Table && EF.Functions.ILike(f.Name, pattern, "\\"))
+@@ -157,7 +163,9 @@ public static class AttachmentEndpoints
+                 matches.Add(new AttachmentMatchDto(file.Id, file.Name, file.RecordId, file.ContentType, file.CreatedAt));
+             }
+         }
+-        return TypedResults.Ok(new AttachmentMatchesDto(matches));
++        var result = new AttachmentMatchesDto(matches);
++        PlantRecent[record.Table + "|" + text.ToLowerInvariant()] = result;
++        return TypedResults.Ok(result);
+     }
+ 
+     private static async Task<Results<Created<AttachmentDto>, ProblemHttpResult>> UploadAsync(
+diff --git a/tests/Gates/endpoint-permissions/attachments.txt b/tests/Gates/endpoint-permissions/attachments.txt
+index 3e9d4e67..e976b4fe 100644
+--- a/tests/Gates/endpoint-permissions/attachments.txt
++++ b/tests/Gates/endpoint-permissions/attachments.txt
+@@ -9,6 +9,6 @@ prefix /api/attachments/
+ 
+ GET /api/attachments/contacts.contacts/files contacts.contacts.read # the command palette's file search: files of contacts whose names contain a text, each with its contact, only for contacts the caller may read (the record check is repeated per match); it reveals no more than the contact's own files list
+ GET /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.read # the names, sizes, kinds, checksums and authors of the files attached to one contact: what a reader of the contact may already see of it (the record must exist in the caller's workspace)
+-POST /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.update # attaching a file changes the contact's record ({id}), so it needs the permission that changes contacts; the server checks size, kind and count and stores the bytes under a name it makes
++POST /api/attachments/contacts.contacts/{id:guid}/files contacts.contacts.read # attaching a file changes the contact's record ({id}), so it needs the permission that changes contacts; the server checks size, kind and count and stores the bytes under a name it makes
+ GET /api/attachments/contacts.contacts/files/{id:guid}/content contacts.contacts.read # the bytes of one file (by the file's own id) of a contact the caller may read; a file of another workspace, or of a contact the caller cannot see, answers 404
+ DELETE /api/attachments/contacts.contacts/files/{id:guid} contacts.contacts.update # removing a file (by its own id) changes the contact's record; the removal stays in the audit trail; a file that is not there answers 204 as one that was removed

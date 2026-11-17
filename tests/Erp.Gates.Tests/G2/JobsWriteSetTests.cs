@@ -89,6 +89,12 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
             using var made = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = true });
             Assert.True(made.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.create (not {needed}) got {(int)made.StatusCode}");
             Assert.Contains("jobs.typeNotAllowed", await made.Content.ReadAsStringAsync());
+            // isEnabled left out is the same as true (the schedule is saved enabled): the run permission is checked just as well.
+            using var omitted = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws omitted {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { } });
+            Assert.True(omitted.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.create (not {needed}) adding a schedule with isEnabled left out got {(int)omitted.StatusCode}");
+            Assert.Contains("jobs.typeNotAllowed", await omitted.Content.ReadAsStringAsync());
+            using var omittedNull = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws null {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", isEnabled = (bool?)null });
+            Assert.True(omittedNull.StatusCode == HttpStatusCode.Forbidden, $"{kind}: isEnabled null got {(int)omittedNull.StatusCode}");
             // Added switched off it runs nothing, so it is accepted (and the generic write-set gate reaches the endpoint this way).
             using var off = await adder.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws off {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { }, isEnabled = false });
             Assert.True(off.StatusCode == HttpStatusCode.Created, $"{kind}: a schedule added switched off by a user with only jobs.schedules.create got {(int)off.StatusCode}");
@@ -119,6 +125,20 @@ public sealed class JobsWriteSetTests(JobsWriteSetFixture fixture) : IClassFixtu
                 else
                 {
                     Assert.True(put.StatusCode == HttpStatusCode.Forbidden, $"{kind}: a user with only jobs.schedules.update (not {needed}) got {(int)put.StatusCode} {body}");
+                }
+            }
+            if (!holds)
+            {
+                // A schedule that has parameters is switched off and renamed by someone who may not run its kind: sending its own
+                // parameters back unchanged (the stored copy is reordered by jsonb) is no change of them.
+                using var withParameters = await admin.PostAsJsonAsync("/api/jobs/schedules", new { scheduleName = $"jws params {kind} {Guid.NewGuid():N}", type = kind, cron = "30 3 * * *", payload = new { zeta = 1, alpha = new { b = 2.50, a = "x" }, list = new[] { 3, 1 } }, isEnabled = true });
+                Assert.Equal(HttpStatusCode.Created, withParameters.StatusCode);
+                {
+                    var created = await withParameters.Content.ReadFromJsonAsync<JsonElement>();
+                    var newName = created.GetProperty("scheduleName").GetString() + " renamed";
+                    using var switchedOff = await changer.PutAsJsonAsync($"/api/jobs/schedules/{created.GetProperty("id").GetGuid()}",
+                        new { scheduleName = newName, cron = "30 3 * * *", payload = new { zeta = 1, alpha = new { b = 2.50, a = "x" }, list = new[] { 3, 1 } }, isEnabled = false, version = created.GetProperty("version").GetUInt32() });
+                    Assert.True(switchedOff.IsSuccessStatusCode, $"{kind}: switching off and renaming a schedule with its parameters unchanged got {(int)switchedOff.StatusCode} {await switchedOff.Content.ReadAsStringAsync()}");
                 }
             }
         }

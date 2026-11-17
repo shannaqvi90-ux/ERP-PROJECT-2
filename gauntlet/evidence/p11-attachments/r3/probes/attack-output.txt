@@ -1,0 +1,44 @@
+A contact 0188c33d-2f78-7469-af90-ade1133a91be B contact 018876f9-9c50-7777-964e-a3e3d654e5e2
+B upload 201 {"id":"01a1e3eb-934e-7a8c-8d6a-ae0b8e4bc073","name":"b-secret-canary-Q7Z.txt","contentType":"text/plain; charset=utf-8","sizeBytes":41,"sha256":"c2359ea6e424bf89b325bf7961e8fc784272262194151b582d33d59
+A upload own 201
+A list B contact files 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-6c2e2463b5c52e1d3adddd37d6769663-08d3b0223bc
+A list B contact files X-Tenant-Id 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-15c47131ef4ba30702be9c8298cb3ecc-3b93c9a60d9
+A upload to B contact 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-7b3aba5ab03b10d1c6db5330af10892f-d4b0052ca86
+A content B file 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-3230e69b6216c9b77fcf26dd8da5315d-d0621f5e5ff
+A content B file inline 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-66fc7d1455df46566949f2869bde422b-1e0498ca5b2
+A search B file name 200 {"matches":[]}
+A search canary text Q7Z 200 {"matches":[]}
+A json upload to B contact 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-93dcea7238b1c80dbc6607db008416a2-de10db42718
+A delete B file 204 
+A traversal content 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-4d8f5a8161a2a06ef3cd033477f338ad-90e5a040d57
+A content B file via other kind 404 {"type":"urn:erp:problem:notFound","title":"The record was not found.","status":404,"code":"notFound","traceId":"00-c6be6a1517f90f6a02d104e80b98bea5-741aa0fd67a
+B reads own file after A attack 200 B-SECRET-CANARY-Q7Z tenant gulfsteel only
+B list contains planted? false
+search 'Trade licence': A 5 matches, B 5, shared ids 0
+search 'Delivery note': A 5 matches, B 5, shared ids 0
+traversal name "../../etc/passwd.txt" 201 passwd.txt
+traversal name "..\\..\\x.txt" 201 x.txt
+traversal name "../0190a0000000700080000000000000002/evil.txt" 201 evil.txt
+traversal name "a/b/c.txt" 201 c.txt
+traversal name "%2e%2e%2fx.txt" 201 %2e%2e%2fx.txt
+traversal name "con.txt" 201 con.txt
+traversal name "‮gnp.txt" 201 _gnp.txt
+viewer list 200
+viewer search 200
+viewer upload 403
+viewer delete 403
+noaccess list 403
+noaccess search 403
+noaccess content 403
+noaccess upload 403
+noaccess delete 403
+anonymous content 401
+21MB upload 413
+text as pdf 415
+exe 415
+html as txt 201
+svg 415
+empty 400
+own content headers 200 text/plain; charset=utf-8 attachment; filename=a-own-file.txt; filename*=UTF-8''a-own-file.txt default-src 'none'; sandbox nosniff
+A own delete 204 then content 404
+B delete canary 204

@@ -1,4 +1,4 @@
-# [PROJECT NAME] — project rules
+# Bizora ERP — project rules
 
 Multi-tenant cloud ERP for UAE small and mid-sized trading and manufacturing companies.
 Target: do each job in scope better than Odoo does it for this market.
