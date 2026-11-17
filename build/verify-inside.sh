@@ -171,11 +171,23 @@ case "$stage" in
     rm -rf "$out/trx"
     names=()
     pids=()
+    # At most ERP_VERIFY_TEST_GROUPS groups run at once (round 20, owner decision #51): twelve at
+    # once on 16 threads oversubscribe the cores and the counted processor time rose 41 %. A group
+    # that is waiting for a place starts when another ends; the longest start first. Unset or not
+    # a positive number takes the default (documented in ./erp). A group's result goes to a file
+    # of its own, so the wait below needs no pid bookkeeping.
+    cap="${ERP_VERIFY_TEST_GROUPS:-5}"
+    if ! [[ "$cap" =~ ^[0-9]+$ ]] || ((cap < 1)); then cap=5; fi
+    echo "test groups at once: $cap"
+    rm -f "$out"/dotnet-*.status
     start() {
       local name="$1"
       shift
+      while (($(jobs -rp | wc -l) >= cap)); do wait -n || true; done
       names+=("$name")
-      dotnet_test "$name" "$@" &
+      (
+        if dotnet_test "$name" "$@"; then echo passed >"$out/dotnet-$name.status"; else echo FAILED >"$out/dotnet-$name.status"; fi
+      ) &
       pids+=($!)
     }
     # The longest first.
@@ -187,7 +199,8 @@ case "$stage" in
     start projects Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
     failed=0
     for i in "${!pids[@]}"; do
-      if wait "${pids[$i]}"; then
+      wait "${pids[$i]}" || true
+      if [[ "$(cat "$out/dotnet-${names[$i]}.status" 2>/dev/null)" == passed ]]; then
         echo "== ${names[$i]}: passed"
       else
         echo "== ${names[$i]}: FAILED"
