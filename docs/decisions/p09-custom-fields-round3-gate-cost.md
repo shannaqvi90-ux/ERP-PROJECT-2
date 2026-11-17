@@ -40,3 +40,7 @@ piece's own tests: CustomFields.Tests project 28 tests, 37 CPU s; Rules namespac
 For the integrator: the limit decision belongs to the owner (needs-human #34). The run is 1,351 s
 over the re-integration limit with every test passing; re-run when the machine is quiet (the new 96 GB
 RAM, wall 12,980 s vs 18,495 s) or ask the owner to widen the allowance.
+
+## Re-integration 3 (serial-22): third alone run over the limit
+
+The serial-22 alone run (merge 5fb842e2) passed every test (dotnet 1141, web 749, e2e 158, compare 489, build 13) and used 26,059 s against 25,300 s (decision #54 limit). Dotnet was 22,184 s, about 3,700 s above the previous p09 run. It was the first alone run under the default of 3 concurrent dotnet test groups (11589157), which p00 r20 measured as raising counted processor time. p09 changed no product code, test or gate in this round; its own classes take 7 to 11 s each and add no gate request (no gate tenant has a custom field). Fixer re-merged the integration branch (c4321812): CustomFields.Tests 28 passed; Gates Rules namespace plus G1TenantSourceTests 54 passed. No full verify run by the fixer. The remaining cost is in p00's parallel-group counting, outside this piece.
