@@ -235,7 +235,7 @@ ${TRAILER}
 6. Stop and remove your compose project \`integ\` and its images when done.
 
 Notes from the builder (for merging only): ${build.notes_for_integrator || 'none'}
-${ENV_NOTES}
+${p.integNote ? `\nNOTE FROM THE LEAD FOR THIS INTEGRATION (an owner decision recorded in gauntlet/needs-human.md; where it says so, it replaces the processor-time allowance in the environment notes for this merge only):\n${p.integNote}\n` : ''}${ENV_NOTES}
 
 Return whether it merged, the integration commit SHA now at the tip of ${BRANCH} (the commit the critic will judge), whether it is pushed, whether the whole suite passes, and the problem if it did not merge.`
 }

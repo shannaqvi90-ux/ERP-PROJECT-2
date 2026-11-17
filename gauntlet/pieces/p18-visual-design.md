@@ -16,6 +16,22 @@ mujhay samples dikhana jab design pe kaam karo"):
    (or asks for changes) in needs-human; nothing is built into the product before that.
 2. Build. The chosen direction becomes the design system below, across every screen.
 
+STAGE 1 IS DONE. The owner chose direction G on 2026-11-17 ("G final", needs-human #52). G lives in
+docs/design/samples/g/ on piece/p18-visual-design (commit 69bf2e61, not yet integrated); its note.md
+says what came from where. In short: F's structure and smart help (sidebar with pinned and recent
+items, saved-view tabs with counts, rows grouped by status with sticky base-currency subtotals, Group
+by / Sort / Columns, the next-best-action note on a record, the order timeline, the dashboard of what
+needs doing today) in D's look (D's tokens: dark-first with light and high-contrast themes, Geist and
+Geist Mono for English, Readex Pro for Arabic, a crisp hairline grid, glow only on the command field,
+the primary action, the active tab and focus, shortcut keys on buttons and a status bar of keys), with
+D's charts (area sparklines on key figures, a 12-month trend column in lists, ageing and open items in
+the record pane) and the Ctrl K command palette on every screen (find records and act on them, Tab for a
+record's actions, '>' for commands, '#' for documents, full right to left in Arabic). All three themes
+ship: light, dark and high contrast (AAA text, outlined badges, nothing carried by colour alone, a 3 px
+focus ring), chosen per user and remembered. Stage 2 builds G into the product from these samples:
+tokens.css becomes the design tokens of the shared kernel components; the samples are the reference
+screens the critic compares the product with, side by side.
+
 The owner's direction (2026-11-15, on the lead's proposal): the power of Dynamics 365 in a modern,
 clean manner; better than Dynamics where it is heavy, slow, grey or weak in Arabic. Principles every
 direction keeps:

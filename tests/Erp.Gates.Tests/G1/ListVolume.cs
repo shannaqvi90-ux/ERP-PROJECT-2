@@ -84,6 +84,10 @@ public static partial class ListVolume
     private sealed class Tally
     {
         public ConcurrentQueue<string> Wrong { get; } = new();
+
+        /// <summary>Adds the server's own log entry for the trace id in an answer (what went wrong behind a 500).</summary>
+        public Func<string, string> Annotate { get; set; } = text => text;
+
         public ConcurrentQueue<string> Blind { get; } = new();
         public List<string> Summary { get; } = [];
         public int Answers;
@@ -110,7 +114,7 @@ public static partial class ListVolume
         // Every module's DbContext, and the kernel's (the audit trail, which the audit log lists).
         var models = catalog.DbContexts.Append(typeof(Erp.Kernel.Data.KernelDbContext)).Select(t => ((DbContext)scope.ServiceProvider.GetRequiredService(t)).Model).ToList();
         await using var admin = await env.OpenAdminAsync();
-        var tally = new Tally();
+        var tally = new Tally { Annotate = env.Factory.ErrorLog.Annotate };
         foreach (var binding in catalog.ListBindings.Where(l => only?.Invoke(l.Definition) ?? true))
         {
             var list = binding.Definition;
@@ -415,7 +419,7 @@ public static partial class ListVolume
                 Interlocked.Increment(ref tally.Answers);
                 if (answer is null)
                 {
-                    tally.Wrong.Enqueue($"tenant {who}: GET {uri} was not answered with 200: {why}");
+                    tally.Wrong.Enqueue(tally.Annotate($"tenant {who}: GET {uri} was not answered with 200: {why}"));
                     continue;
                 }
                 if (skip > ListSearch.MaxRankedRows)
@@ -495,7 +499,7 @@ public static partial class ListVolume
                     Interlocked.Increment(ref tally.Answers);
                     if (answer is null)
                     {
-                        tally.Wrong.Enqueue($"tenant {who}: GET {uri} (tenant {owner}'s cursor after row {(at + 1) * truth.WalkTake}) was not answered with 200: {why}");
+                        tally.Wrong.Enqueue(tally.Annotate($"tenant {who}: GET {uri} (tenant {owner}'s cursor after row {(at + 1) * truth.WalkTake}) was not answered with 200: {why}"));
                         continue;
                     }
                     var mine = truths[who];
