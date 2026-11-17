@@ -170,7 +170,7 @@ export function mk2(lang) {
     [L('Invoiced', 'فوترة'), '14/11', 'now'],
     [L('Paid', 'سداد'), L('due 14/12', 'يستحق 14/12'), 'next'],
   ];
-  const NBA = { icon: 'warn', title: L('3 invoices overdue', '3 فواتير متأخرة'), body: L('AED 18,420.00 in total, the oldest 41 days. A statement usually brings payment within a week.', 'إجماليها 18,420.00 AED وأقدمها منذ 41 يومًا. كشف الحساب يأتي بالسداد غالبًا خلال أسبوع.'), cta: L('Send statement', 'إرسال كشف حساب'), key: 'S', alt: L('Remind me tomorrow', 'ذكّرني غدًا') };
+  const NBA = { icon: 'warn', title: L('3 invoices overdue', '3 فواتير متأخرة'), body: L('18,420.00 AED in total, the oldest 41 days. A statement usually brings payment within a week.', 'إجماليها 18,420.00 AED وأقدمها منذ 41 يومًا. كشف الحساب يأتي بالسداد غالبًا خلال أسبوع.'), cta: L('Send statement', 'إرسال كشف حساب'), key: 'S', alt: L('Remind me tomorrow', 'ذكّرني غدًا') };
 
   // ---- contact detail extras
   const INVOICES = [
