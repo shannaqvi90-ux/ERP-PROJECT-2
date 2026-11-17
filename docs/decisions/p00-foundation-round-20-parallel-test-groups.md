@@ -301,3 +301,5 @@ and the earlier 12-group run's rerun): no cause found, nothing changed for it; a
 
 Not done: cutting G1NonInterferenceTests by endpoint, and cutting gate processor time (goal 2): no safe saving was found
 that keeps every request and check, and the session was spent on the four measurements (about 7 h of wall time).
+
+Owner decision, needs-human #53 (2026-11-17): the default number of test groups at once is 3, not 2 (changed in build/verify-inside.sh and documented in ./erp at the integration of round 20).

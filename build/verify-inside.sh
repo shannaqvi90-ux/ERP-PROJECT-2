@@ -176,8 +176,8 @@ case "$stage" in
     # that is waiting for a place starts when another ends; the longest start first. Unset or not
     # a positive number takes the default (documented in ./erp). A group's result goes to a file
     # of its own, so the wait below needs no pid bookkeeping.
-    cap="${ERP_VERIFY_TEST_GROUPS:-2}"
-    if ! [[ "$cap" =~ ^[0-9]+$ ]] || ((cap < 1)); then cap=2; fi
+    cap="${ERP_VERIFY_TEST_GROUPS:-3}"
+    if ! [[ "$cap" =~ ^[0-9]+$ ]] || ((cap < 1)); then cap=3; fi
     echo "test groups at once: $cap"
     rm -f "$out"/dotnet-*.status
     start() {
