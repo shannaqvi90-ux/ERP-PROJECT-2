@@ -504,7 +504,7 @@ public sealed class TenantActivity
             }
             return status;
         }
-        NoteWrite(endpoint, status, text, variant);
+        NoteWrite(endpoint, status, text, variant, $"{endpoint.Method} [{phase}] by {Arabic.Name}");
         return status;
     }
 
@@ -575,7 +575,7 @@ public sealed class TenantActivity
             {
                 var path = await OwnPathAsync(endpoint, own, forWrite: true, actor);
                 var (status, text, location) = await SendAsync(actor, "POST", path, BuildBody(endpoint, own, template: null, variant), $"POST {path} [{phase}]");
-                if (note) NoteWrite(endpoint, status, text, variant);
+                if (note) NoteWrite(endpoint, status, text, variant, $"POST {path} [{phase}] by {actor.Name}");
                 // A record a partial body created is one more record of a table whose records the
                 // activity already creates and uses in routes; it is not kept as a route value of its
                 // own (every kept value is sent in every route by the attack: round 13 measured the
@@ -607,7 +607,7 @@ public sealed class TenantActivity
                     }
                 }
                 var (status, text, _) = await SendAsync(actor, endpoint.Method, path, BuildBody(endpoint, own, template, variant), $"{endpoint.Method} {path} [{phase}]");
-                if (note) NoteWrite(endpoint, status, text, variant);
+                if (note) NoteWrite(endpoint, status, text, variant, $"{endpoint.Method} {path} [{phase}] by {actor.Name}");
                 return (status, text);
             }
             default:
@@ -633,7 +633,7 @@ public sealed class TenantActivity
                     }
                 }
                 var (status, text, _) = await SendAsync(actor, endpoint.Method, path, null, $"{endpoint.Method} {path} [{phase}]");
-                if (note) NoteWrite(endpoint, status, text, variant);
+                if (note) NoteWrite(endpoint, status, text, variant, $"{endpoint.Method} {path} [{phase}] by {actor.Name}");
                 return (status, text);
             }
         }
@@ -658,7 +658,7 @@ public sealed class TenantActivity
     /// then never reached the code that could fill a cache).</summary>
     public List<string> UnsuccessfulWrites { get; } = [];
 
-    private void NoteWrite(ApiEndpoint endpoint, int status, string text, WriteVariant? variant = null)
+    private void NoteWrite(ApiEndpoint endpoint, int status, string text, WriteVariant? variant = null, string? where = null)
     {
         if (variant is { Partial: true })
         {
@@ -675,7 +675,7 @@ public sealed class TenantActivity
         }
         if (status is < 200 or >= 300)
         {
-            lock (_lock) UnsuccessfulWrites.Add($"{endpoint.Key} → {status} {text[..Math.Min(200, text.Length)]}");
+            lock (_lock) UnsuccessfulWrites.Add($"{endpoint.Key} → {status} {text[..Math.Min(200, text.Length)]}{(where is null ? "" : $" [{where}]")}");
         }
     }
 
