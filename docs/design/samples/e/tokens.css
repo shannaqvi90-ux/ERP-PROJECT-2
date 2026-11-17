@@ -1,0 +1,82 @@
+/* Direction E: "Financial clarity". Editorial and typographic: warm paper, ink, hairline rules,
+   serif hero figures, one violet accent for the main action, selection and focus only.
+   Design tokens: the only source of colour, type, spacing, radius, elevation and motion. */
+@font-face{font-family:"Bz Schibsted";src:url("../fonts/schibsted-grotesk-latin-wght-normal.woff2") format("woff2");font-weight:400 900;font-display:block}
+@font-face{font-family:"Bz Source Serif";src:url("../fonts/source-serif-4-latin-opsz-normal.woff2") format("woff2");font-weight:200 900;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2") format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2") format("woff2");font-weight:500;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2") format("woff2");font-weight:600;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2") format("woff2");font-weight:700;font-display:block}
+@font-face{font-family:"Bz Naskh";src:url("../fonts/noto-naskh-arabic-arabic-wght-normal.woff2") format("woff2");font-weight:400 700;font-display:block}
+
+:root{
+  /* type: a news grotesque for the interface, a text serif for titles and hero figures */
+  --font-ui:"Bz Schibsted","Bz Plex Arabic",system-ui,sans-serif;
+  --font-display:"Bz Source Serif","Bz Naskh",Georgia,serif;
+  --fs-2xs:10.5px;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:13.5px;--fs-lg:15px;--fs-xl:18px;--fs-2xl:22px;--fs-3xl:30px;--fs-hero:36px;--fs-fig:26px;
+  --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-display:560;
+  --lh-tight:1.15;--lh-body:1.45;--ls-title:-.015em;--ls-caps:.09em;--ls-cur:.06em;
+  /* space: 4 px grid */
+  --sp-1:2px;--sp-2:4px;--sp-3:6px;--sp-4:8px;--sp-5:12px;--sp-6:16px;--sp-7:20px;--sp-8:24px;--sp-9:32px;--sp-10:40px;
+  --radius-1:2px;--radius-2:3px;--radius-3:4px;--radius-pill:999px;
+  --rule-w:1px;--rule-heavy:2px;--focus-w:2px;
+  /* motion: quiet */
+  --dur-fast:100ms;--dur:180ms;--ease:cubic-bezier(.3,0,.2,1);
+  --pane-w:420px;--aside-w:330px;--idx-w:210px;
+  /* colour: light (paper, ink, hairlines) */
+  --bg:#FAF8F3;--paper:#FAF8F3;--surface:#FFFFFF;--tint:#F3F0E8;--sunken:#EFEBE1;
+  --fg:#1A1820;--fg-muted:#57534C;--fg-subtle:#6E6960;--fg-disabled:#ABA59A;
+  --rule:#DDD7CA;--rule-soft:#EAE5DA;--rule-strong:#1A1820;--rule-mid:#B9B2A3;
+  --hover:#F2EEE5;--selected:#F1EAFD;--selected-edge:#6A00E8;
+  --accent:#6A00E8;--accent-hover:#5900C4;--on-accent:#FFFFFF;--accent-text:#5A00C6;--accent-soft:#F1EAFD;
+  --neg:#B42318;--late:#B42318;--late-soft:#FBE9E6;--warn:#8A5300;--ok:#2E6B3F;--info:#2F4E8C;
+  --spark:#57534C;--spark-dot:#1A1820;--spark-zero:#C9C2B3;
+  --bar-track:#E6E1D5;--bar-fill:#4A463F;--bar-warn:#A86A12;--bar-over:#B42318;
+  --ag0:#D4CEC1;--ag1:#A59E90;--ag2:#6F695F;--ag3:#B42318;
+  --avatar-bg:#ECE7DC;--avatar-fg:#3F3B35;
+  --scrim:rgba(26,24,32,.3);
+  --shadow-1:0 1px 0 rgba(26,24,32,.04);
+  --shadow-2:0 1px 2px rgba(26,24,32,.06),0 8px 24px rgba(26,24,32,.08);
+  --shadow-3:0 16px 48px rgba(26,24,32,.18);
+  --logo-ink:block;--logo-white:none;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#141311;--paper:#141311;--surface:#1B1A17;--tint:#201E1B;--sunken:#100F0D;
+  --fg:#EEEAE1;--fg-muted:#B9B3A7;--fg-subtle:#9C968B;--fg-disabled:#5F5A52;
+  --rule:#34312C;--rule-soft:#29271F;--rule-strong:#EEEAE1;--rule-mid:#5A564E;
+  --hover:#23211D;--selected:#2A2140;--selected-edge:#9B5CFF;
+  --accent:#9B5CFF;--accent-hover:#AE7CFF;--on-accent:#120E1C;--accent-text:#C3A2FF;--accent-soft:#2A2140;
+  --neg:#FF8C7E;--late:#FF8C7E;--late-soft:#3A1E1A;--warn:#E8B45E;--ok:#8FD3A0;--info:#9DB8F0;
+  --spark:#B9B3A7;--spark-dot:#EEEAE1;--spark-zero:#4A463F;
+  --bar-track:#2E2B26;--bar-fill:#CFC9BC;--bar-warn:#E8B45E;--bar-over:#FF8C7E;
+  --ag0:#4A463F;--ag1:#7D776C;--ag2:#B9B3A7;--ag3:#FF8C7E;
+  --avatar-bg:#2C2A25;--avatar-fg:#E3DED3;
+  --scrim:rgba(0,0,0,.55);
+  --shadow-1:none;
+  --shadow-2:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  --shadow-3:0 16px 48px rgba(0,0,0,.6);
+  --logo-ink:none;--logo-white:block;
+  color-scheme:dark;
+}
+[data-theme="hc"]{
+  --bg:#000000;--paper:#000000;--surface:#000000;--tint:#0A0A0A;--sunken:#000000;
+  --fg:#FFFFFF;--fg-muted:#FFFFFF;--fg-subtle:#E8E8E8;--fg-disabled:#A8A8A8;
+  --rule:#FFFFFF;--rule-soft:#8C8C8C;--rule-strong:#FFFFFF;--rule-mid:#FFFFFF;
+  --hover:#1F1F1F;--selected:#2A1D5C;--selected-edge:#FFE600;
+  --accent:#D2B4FF;--accent-hover:#E4D2FF;--on-accent:#000000;--accent-text:#DCC4FF;--accent-soft:#1C1238;
+  --neg:#FF9AA3;--late:#FF9AA3;--late-soft:#3D0A12;--warn:#FFE600;--ok:#5CFFAA;--info:#9AD6FF;
+  --spark:#FFFFFF;--spark-dot:#FFE600;--spark-zero:#8C8C8C;
+  --bar-track:#4D4D4D;--bar-fill:#FFFFFF;--bar-warn:#FFE600;--bar-over:#FF9AA3;
+  --ag0:#FFFFFF;--ag1:#BDBDBD;--ag2:#FFE600;--ag3:#FF9AA3;
+  --avatar-bg:#000000;--avatar-fg:#FFFFFF;
+  --scrim:rgba(0,0,0,.85);
+  --shadow-1:none;--shadow-2:0 0 0 1px #FFFFFF;--shadow-3:0 0 0 2px #FFFFFF;
+  --logo-ink:none;--logo-white:block;
+  color-scheme:dark;
+}
+/* density: Comfortable (default) for reading, Compact for more rows */
+[data-density="comfortable"]{--row-h:36px;--ctl-h:34px;--cell-px:12px;--fld-gap:var(--sp-6);--sec-gap:var(--sp-8)}
+[data-density="compact"]{--row-h:28px;--ctl-h:28px;--cell-px:9px;--fld-gap:var(--sp-4);--sec-gap:var(--sp-6)}
+/* Arabic: Plex Sans Arabic for the interface, Naskh for titles; larger sizes, looser leading, no tracking */
+:lang(ar){--fs-2xs:11.5px;--fs-xs:12.5px;--fs-sm:13.5px;--fs-md:14.5px;--fs-lg:16px;--fs-xl:20px;--fs-2xl:24px;--fs-3xl:32px;--lh-body:1.7;--lh-tight:1.5;--ls-title:0;--ls-caps:0}
