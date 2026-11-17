@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { useI18n } from "../i18n";
 import { FilterByFieldContext } from "../lists/filterByField";
 import { useShortcut } from "../shortcuts";
@@ -74,6 +74,17 @@ export const optionLabel = (option: { labelEn: string; labelAr: string }, langua
 export function CustomFieldsSection({ entries, bind }: { entries: readonly CustomFieldEntry[] | null | undefined; bind: (key: string) => FieldBinding<string> }) {
   const { t, language } = useI18n();
   const filterBy = useContext(FilterByFieldContext);
+  // The custom field the cursor was last in: opening a panel (History) moves focus out of the form, and the
+  // shortcut then still acts on the field the person was typing in.
+  const lastField = useRef<string | null>(null);
+  useEffect(() => {
+    const onFocus = (event: FocusEvent) => {
+      const name = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-field^="customFields."]')?.dataset.field : undefined;
+      if (name) lastField.current = name;
+    };
+    document.addEventListener("focusin", onFocus);
+    return () => document.removeEventListener("focusin", onFocus);
+  }, []);
   // Alt+Shift+F in a custom field lists the records that hold the value typed there.
   useShortcut({
     id: "forms.customFields.filterList",
@@ -82,7 +93,7 @@ export function CustomFieldsSection({ entries, bind }: { entries: readonly Custo
     groupKey: "lists.shortcut.group",
     enabled: filterBy !== null && !!entries && entries.length > 0,
     run: () => {
-      const name = document.activeElement?.closest<HTMLElement>('[data-field^="customFields."]')?.dataset.field;
+      const name = document.activeElement?.closest<HTMLElement>('[data-field^="customFields."]')?.dataset.field ?? lastField.current;
       const entry = entries?.find((e) => customKey(e.key) === name);
       const value = entry ? bind(customKey(entry.key)).value : "";
       if (entry && value && filterBy) filterBy(entry.key, String(value).trim());

@@ -22,7 +22,8 @@ internal static partial class FieldRules
     /// camel case (letters and digits only), 3 to 40 characters.</summary>
     public static string KeyFor(string labelEn) => "cf" + Words(labelEn, upperFirst: true, 38);
 
-    /// <summary>A select option's value from its English label: the words in lower camel case.</summary>
+    /// <summary>A select option's value from its English label: the words joined, the first word's first
+    /// letter lower case unless the word is an acronym in capitals (EXW stays EXW, "Net 30" is net30).</summary>
     public static string OptionValueFor(string labelEn) => Words(labelEn, upperFirst: false, OptionValueMaxLength);
 
     private static string Words(string text, bool upperFirst, int max)
@@ -36,7 +37,8 @@ internal static partial class FieldRules
             {
                 continue;
             }
-            builder.Append(first && !upperFirst ? char.ToLowerInvariant(ascii[0]) : char.ToUpperInvariant(ascii[0]));
+            var acronym = ascii.Length > 1 && ascii.All(c => !char.IsAsciiLetterLower(c));
+            builder.Append(first && !upperFirst ? (acronym ? ascii[0] : char.ToLowerInvariant(ascii[0])) : char.ToUpperInvariant(ascii[0]));
             builder.Append(ascii.AsSpan(1));
             first = false;
         }
@@ -102,7 +104,7 @@ internal static partial class FieldRules
     [GeneratedRegex("[^A-Za-z0-9\\p{L}]+")]
     private static partial Regex NonAlphanumeric();
 
-    [GeneratedRegex("^[a-z][A-Za-z0-9]{0,39}$")]
+    [GeneratedRegex("^[A-Za-z][A-Za-z0-9]{0,39}$")]
     private static partial Regex OptionValueRegex();
 
     [GeneratedRegex("^-?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?$")]

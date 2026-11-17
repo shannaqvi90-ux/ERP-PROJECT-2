@@ -126,9 +126,9 @@ public sealed class CustomFieldGateTests(GateFixture fixture)
                     problems.Add($"customfields.{name}: a trigger function pins its search path");
                 }
             }
-            if (found < 12)
+            if (found < 13)
             {
-                problems.Add($"customfields: {found} functions found, expected the seven match functions, the four value functions and the history trigger");
+                problems.Add($"customfields: {found} functions found, expected the seven match functions, the four value functions, the date bucket function and the history trigger");
             }
         }
         Assert.True(problems.Count == 0, string.Join("\n", problems));
