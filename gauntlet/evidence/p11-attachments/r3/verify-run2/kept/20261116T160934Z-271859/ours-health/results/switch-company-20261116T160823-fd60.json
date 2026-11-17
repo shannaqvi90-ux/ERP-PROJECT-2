@@ -1,0 +1,512 @@
+{
+  "schema": 1,
+  "run_id": "switch-company-20261116T160823-fd60",
+  "instrument": 12,
+  "task": "switch-company",
+  "task_title": "Switch company",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Switch to working in \"Demo Manufacturing FZE\".",
+  "done_when": "The product shows the user working in \"Demo Manufacturing FZE\".",
+  "started_at": "2026-11-16T16:08:23.562Z",
+  "finished_at": "2026-11-16T16:08:35.972Z",
+  "environment": {
+    "base_url": "http://localhost:21160",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 1,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.23,
+    "system_wait_seconds": 0.108,
+    "human_seconds": 2.65,
+    "human_plus_wait_seconds": 2.758,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 1,
+      "B": 2,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Demo Manufacturing FZE (one-click button)",
+      "keystrokes": 0,
+      "at": 0.062,
+      "took": 0.056,
+      "began": 0.002,
+      "screen": "/",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "working in the other company",
+      "at": 0.119,
+      "seconds": 0.108
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "3a95e506e34e53c0.jpg",
+      "at": 0,
+      "path": "../out/ours-health/blind/shots/3a95e506e34e53c0.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "e4b7652225ab22ab.jpg",
+      "at": 0.23,
+      "path": "../out/ours-health/blind/shots/e4b7652225ab22ab.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "shown": {
+        "label": "DEMO-MFG · MAIN",
+        "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+      },
+      "companyId": "01a1e51d-e5d6-77bf-971d-df1629742401"
+    }
+  },
+  "path_notes": "pointer: click the company button in the top bar | keyboard: Alt+C > type \"manuf\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/switch-company.mjs",
+    "sha256": "17fbed1fa6f423ed0e67ac7fb0c8e0a96f536cbc98ff7cabcab1588a6ad49b51"
+  },
+  "task_notes": "Both companies exist in each product before the task (fixtures).",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.032,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.028,
+      "verified": true,
+      "gap_seconds": 0.14
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /api/tenancy/workplace (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "c2f4dc2096b2f5bf",
+    "elements": 147
+  },
+  "screen_after_verify": {
+    "sha256": "c2f4dc2096b2f5bf",
+    "elements": 147,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.068
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 5,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.239,
+      "by_step": 1,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/tenancy/workplace after 0.049 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch PUT /api/tenancy/companies/01a1e517-08c7-7118-9303-9e0367a895b8",
+    "fetch POST /api/tenancy/companies",
+    "fetch POST /api/tenancy/branches",
+    "fetch PUT /api/tenancy/workplace"
+  ],
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "pointer",
+    "human_plus_wait_seconds": "pointer"
+  },
+  "counts_path": "pointer",
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "click the company button in the top bar",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.23,
+        "system_wait_seconds": 0.108,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.758,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Demo Manufacturing FZE (one-click button)",
+          "keystrokes": 0,
+          "at": 0.062,
+          "took": 0.056,
+          "began": 0.002,
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "working in the other company",
+          "at": 0.119,
+          "seconds": 0.108
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a1e51d-e5d6-77bf-971d-df1629742401"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.032,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.028,
+          "verified": true,
+          "gap_seconds": 0.14
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 1,
+        "first": [
+          "GET /api/tenancy/workplace (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "c2f4dc2096b2f5bf",
+        "elements": 147
+      },
+      "screen_after_verify": {
+        "sha256": "c2f4dc2096b2f5bf",
+        "elements": 147,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.003,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.068
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 5,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.239,
+          "by_step": 1,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/tenancy/workplace after 0.049 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch PUT /api/tenancy/companies/01a1e517-08c7-7118-9303-9e0367a895b8",
+        "fetch POST /api/tenancy/companies",
+        "fetch POST /api/tenancy/branches",
+        "fetch PUT /api/tenancy/workplace"
+      ]
+    },
+    {
+      "id": "keyboard",
+      "path": "Alt+C > type \"manuf\" > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 8,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.188,
+        "system_wait_seconds": 0.071,
+        "human_seconds": 3.99,
+        "human_plus_wait_seconds": 4.061,
+        "klm_operator_counts": {
+          "K": 8,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "company switcher (Alt+C)",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.05,
+          "chord": "Alt+c",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "part of the company name",
+          "keystrokes": 5,
+          "at": 0.061,
+          "took": 0.052,
+          "text": "manuf",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "switch (Enter)",
+          "keystrokes": 1,
+          "at": 0.114,
+          "took": 0.006,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "switcher open, filter focused",
+          "at": 0.052,
+          "seconds": 0.008
+        },
+        {
+          "label": "working in the other company",
+          "at": 0.121,
+          "seconds": 0.063
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "shown": {
+            "label": "DEMO-MFG · MAIN",
+            "title": "Working in Demo Manufacturing FZE, branch Main office (Alt+C to switch)"
+          },
+          "companyId": "01a1e51d-e5d6-77bf-971d-df1629742401"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.005,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.035,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.019,
+          "verified": true,
+          "gap_seconds": 0.147
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "c2f4dc2096b2f5bf",
+        "elements": 147
+      },
+      "screen_after_verify": {
+        "sha256": "c2f4dc2096b2f5bf",
+        "elements": 147,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 3,
+        "longest_pause_seconds": 0.009,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.103
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 10,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.144,
+          "by_step": 3,
+          "chain": [
+            "input of step 3",
+            "the answer to PUT /api/tenancy/workplace after 0.022 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch PUT /api/tenancy/workplace"
+      ]
+    }
+  ]
+}

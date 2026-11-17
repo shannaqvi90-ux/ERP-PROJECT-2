@@ -1,0 +1,30 @@
+dir rtl lang ar
+url http://localhost:21150/contacts/contacts/0188c658-ac00-7a7d-a6d2-218a1566bc03?q=C036634
+paperclip 1 3 ملفات: الانتقال إلى الملفات 3 ملفات: الانتقال إلى الملفات (Alt+A)
+names line company-seal-5.png
+Delivery note.txt
+Trade licence TL-2026-70005.pdf
+focused after Alt+A معاينة company-seal-5.png
+dialog after Enter 1 company-seal-5.png | السابق | التالي | تنزيل | إغلاق
+add button text إضافة ملفات
+file chooser multiple true
+rows with stem 3 chooser true
+dropped row 1 exe row 0
+section messages crit-ar-66918-bad.exe: هذا النوع من الملفات غير مقبول.إخفاء
+memo buttons 3
+text viewer crit-ar-66918-memo.txt | مذكرة تسليم رقم ٤٥ | سطر ثاني | السابق | التالي | تنزيل | إغلاق
+pdf iframe /api/attachments/contacts.contacts/files/01a1e409-2503-7156-88e4-42097d334d07/content?inline=true
+DOWNLOAD FAIL page.waitForEvent: Timeout 8000ms exceeded while waiting for event "download"
+=========================== logs ===========================
+waiting for event "download"
+============================================================
+palette crit-ar-66918-dropped.txt | dropped text crit-ar-66918 | السابق | التالي | تنزيل | إغلاق
+after palette Enter http://localhost:21150/contacts/contacts/0188c658-ac00-7a7d-a6d2-218a1566bc03 dialog crit-ar-66918-seal.png | السابق | التالي | تنزيل | إغلاق img 1
+delete seal found 1
+delete dialog حذف هذا الملف؟ |  | سيُزال crit-ar-66918-seal.png من هذا السجل. يبقى الحذف مسجلاً في سجل التدقيق. |  | إلغاء | حذف
+focused in dialog إلغاء
+focused after Tab حذف
+seal rows after delete 0
+history عبدالله عبدالله المهيري | شخص · C036634 | crit-ar-66918-dropped.txt | crit-ar-66918-licence.pdf | crit-ar-66918-memo.txt | و3 أخرى | أنشأه فاطمة الزعابي · 16‏/11‏/2026، 3:06 م | ‹ | 5 من 100,006 | › | طباعة | 6 | السجل | أرشفة | حفظ | إغلاق | جهة الاتصال | الاسم (بالعربية) | الاسم (بالإنجليزية) | النوع | جهة | شخص | الجهة | اكتب جزءًا من الاسم أو الرمز ثم اختر. | المسمى الوظيفي | المرجع | اختياري؛ لا يتكرر داخل مساحة العمل (مثل C000123). | وسائل التو
+latin words in AR section ["Word","Excel","PowerPoint","zip"]
+errors []

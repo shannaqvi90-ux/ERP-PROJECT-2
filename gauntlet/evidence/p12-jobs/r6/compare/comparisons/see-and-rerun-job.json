@@ -1,0 +1,38 @@
+{
+  "task": "see-and-rerun-job",
+  "verdict": "ours error",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 4,
+      "odoo": 11,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": 31,
+      "odoo": 31,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": 120.547,
+      "odoo": 9.372,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": 13.13,
+      "odoo": 34.68,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 13.279,
+      "odoo": 39.526,
+      "outcome": "not_comparable"
+    }
+  },
+  "left_out": [],
+  "runs": {
+    "ours": "../../evidence-staging/p12-jobs/r6/compare/results/see-and-rerun-job-20261116T103803-dd8e.json",
+    "odoo": "../../evidence-staging/p12-jobs/r6/compare/results/see-and-rerun-job-20261116T104017-cb53.json"
+  }
+}

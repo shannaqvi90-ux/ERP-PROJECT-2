@@ -1,0 +1,14 @@
+import { chromium } from '/home/shan/critic/p12-jobs-r6-plant/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const base = 'http://localhost:21250';
+const browser = await chromium.launch({ executablePath: '/home/shan/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+await page.goto(base + '/'); await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type('changer.1794825308902@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Critic-Pass-2026-x'); await page.keyboard.press('Enter');
+await page.locator('main h1').waitFor();
+await page.goto(base + '/jobs/schedules/01a1e3ec-ce0c-71ec-8221-c2f077b8ab6e'); await page.waitForTimeout(2000);
+const box = page.locator('.list-record input[type=checkbox]').first();
+await box.focus(); await page.keyboard.press('Space');
+await page.keyboard.press('Control+s'); await page.waitForTimeout(2000);
+console.log('after switching off and Ctrl+S:', (await page.locator('.list-record').first().textContent()).slice(0, 400));
+await page.screenshot({ path: 'switch-off-by-changer-en.jpg', type: 'jpeg', quality: 65 });
+await browser.close();
