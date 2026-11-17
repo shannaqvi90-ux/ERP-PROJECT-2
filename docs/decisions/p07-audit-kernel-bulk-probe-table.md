@@ -25,3 +25,22 @@ and seeding of audit rows goes through audit.capture() on the audited tables.
 ## Cost
 No product code changed this round. The test adds one CREATE TABLE in the kernel test database. Processor
 time of p07's own work (item 2 of the round) was not reduced in this round: see the notes to the integrator.
+
+## Integration fix 1 of round 6 (processor time)
+
+The integrator's alone verify of the merge (45c217e9, log verify-integrator-p07-audit-r6.log, kept folder
+.verify-failed/20261117T141856Z-574843) passed every test (dotnet 1147, web 752, e2e 157, compare 489, build 13,
+timing 7, mutations 134/134). The only ratchet failure was verify.cpuSeconds: 24,580 s (dotnet 21,239, web 2,415,
+e2e 829, timing 96) against 23,300; the re-integration allowance ends at 23,800, so the run was 780 s over it.
+Load 0.75 at the start, peak 29.02 on 16 CPUs.
+
+Looked at, from that run's trx files and shard counters: the dotnet stage's time is the G1 gates (non-interference
+3,772 s of test time, the four HTTP shards 1,662 to 2,883 s each, list volume 1,749 s, GateSelfTests 1,057 s); the
+audit log is a share of their list queries (its `fields` choice has 165 values, each judged by eq and ne and a sorted
+twin), but per request it is cheap in the .NET process (the database containers are not counted) and no per-request
+saving was found in the audit module. The only large saving in p07's own work is fewer `fields` choices or a text
+filter in place of the choice; that changes the contract the module tests pin (`fields eq 'name_en'`, `ne`, 400 for a
+field recorded nowhere), so it was not done (never narrow a test). The dotnet stage's processor time for near-identical
+trees has varied by about 3,000 s between alone runs, so a saving of 800 s cannot be shown by one run either.
+No code changed in this fix; no verify was run (the integrator's alone run decides). Needs the owner: a higher limit
+for this re-integration, or a decision on the `fields` filter contract.
