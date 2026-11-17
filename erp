@@ -42,7 +42,7 @@
 #   ERP_TESTCONTAINERS_HOST  where verify's test containers reach the ports Testcontainers publishes
 #                         (default 127.0.0.1; host.docker.internal on Docker Desktop)
 #   ERP_VERIFY_TEST_GROUPS how many of the dotnet stage's test groups run at once, each with a
-#                         PostgreSQL server of its own (default 5; owner decision #51: all twelve
+#                         PostgreSQL server of its own (default 2; owner decision #51: all twelve
 #                         at once shortened the stage but raised its counted processor time 41 %,
 #                         because 16 threads were oversubscribed)
 #   ERP_VERIFY_KEEP_DIR   where a failed verify keeps its stage logs, test reports and the comparison

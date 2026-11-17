@@ -266,3 +266,38 @@ hyper-threads off.
   rerun), `ShardedAttackSelfTests`, the source gates and `Process=self-http` only inside that stage run
   (passed there; run before the last two small changes, which touch `ListVolume.cs`'s message
   and the diagnostics of a failed write).
+
+## Decision 3 (owner decision #51): a cap on the groups at once, default 2
+
+`ERP_VERIFY_TEST_GROUPS` (documented in `erp`, passed into the toolbox; read in `build/verify-inside.sh dotnet`)
+caps how many of the twelve groups run at once; a waiting group starts when one ends, the longest first. Default 2.
+Nothing else changed: every group, filter, partition check and judge is as above, and every test still runs once.
+
+Measured: the dotnet stage alone (`build/verify-inside.sh dotnet` in the toolbox as `./erp` runs it, through
+`ERP_VERIFY_ALONE=1 verify-slot.sh`, one setting at a time, machine quiet at the start, load 0.2). Every setting: all
+12 groups passed, 842 tests, no 500 from the audit log.
+
+| Groups at once | Wall | Counted processor time (cpu-dotnet) | Load mean / max |
+|---|---|---|---|
+| 1 (r19, one process; not this branch) | 10,374 s | 16,534 s | |
+| 2 | 7,872 s (-24 %) | 18,520 s (+1,986 s) | 6.6 / 18.4 |
+| 3 | 5,967 s (-42 %) | 19,598 s (+3,064 s) | 10.4 / 27.7 |
+| 5 | 5,371 s (-48 %) | 20,832 s (+4,298 s) | 16.1 / 39.4 |
+| 8 | 4,551 s (-56 %) | 22,119 s (+5,585 s) | 34.2 / 72.4 |
+| 12 (earlier run) | 4,871 s (-53 %) | 23,302 s (+6,768 s) | 37.6 / 99 |
+
+Counted time rises with every group added (hyper-threads, context switches, caches), and the wall gain flattens
+(5 to 12 groups gain 500 s). Default 2: it is the setting nearest the old figure (18,520 s is inside the range
+16,077 to 19,067 s that near-identical trees gave before this round) and still saves 2,500 s of wall time. 3 is the
+next step (-18 % more wall for +1,100 s). No setting measured at or below 16,534 s. About 2,000 s at setting 2 are
+the cost of twelve processes instead of one (JIT and start of each, tenant B's own work repeated in each of
+the four shares, its concurrent reader). A whole verify at the default would count about 21,600 s (dotnet 18,520 plus
+web, e2e and timing about 3,100 s) against the maximum of 20,800 s and the 21,300 s re-integration limit:
+**the numbers go to the owner before any change to the maximum (#51); the ratchet is untouched.** The caps are for the
+owner to choose, an integrator can pass `ERP_VERIFY_TEST_GROUPS=<n>`.
+
+The 500 on `/api/audit/log?...skip=119380` (G1ListVolumeTests) did not occur in five full runs of the stage (2, 3, 5, 8
+and the earlier 12-group run's rerun): no cause found, nothing changed for it; a 500 now carries the server's log entry.
+
+Not done: cutting G1NonInterferenceTests by endpoint, and cutting gate processor time (goal 2): no safe saving was found
+that keeps every request and check, and the session was spent on the four measurements (about 7 h of wall time).
