@@ -11,7 +11,7 @@ a{color:var(--accent-text);text-decoration:none}
 .tnum,.num,.money,.grid td.c-trn,input.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
 .dim{color:var(--fg-disabled)}
 kbd{font:var(--fw-medium) var(--fs-xs)/1 var(--font-ui);padding:var(--sp-1) var(--sp-3);border:1px solid var(--border-strong);border-radius:var(--radius-2);color:var(--fg-muted);background:var(--surface-2)}
-.logo-en img,.logo-ar img{display:block;width:auto}
+.logo-en img,.logo-ar img{width:auto}
 .lg-ink{display:var(--logo-ink)}.lg-white{display:var(--logo-white)}
 .on-dark .lg-ink{display:none}.on-dark .lg-white{display:block}
 
@@ -252,4 +252,7 @@ input.num{text-align:end}
 .c-email{width:24%}.c-roles{width:15%}.c-2fa{width:96px}.c-last{width:112px}
 .content>.stack>.tabs{position:static}
 .roles{width:260px}
-.grid-users .c-name{width:22%}.grid-users .c-email{width:26%}.grid-users .c-roles{width:14%}.grid-users .c-2fa{width:12%}.grid-users .c-status{width:13%}.grid-users .c-last{width:13%}
+.grid-users .c-name{width:22%}.grid-users .c-email{width:26%}.grid-users .c-roles{width:13%}.grid-users .c-2fa{width:12%}.grid-users .c-status{width:13%}.grid-users .c-last{width:14%}
+
+.grid td bdi{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
+.ctl:has(.in-btn) input,.ctl:has(.ok-mark) input{padding-inline-end:36px}
