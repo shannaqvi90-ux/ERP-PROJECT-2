@@ -2,6 +2,7 @@ import { Dialog } from "../../kernel/dialog";
 import { createFormatter, numeralSystems } from "../../kernel/format";
 import { languages, useI18n } from "../../kernel/i18n";
 import { sessionUserName, type Session } from "../../kernel/session";
+import { LookChoices } from "./LookControls";
 import { usePreferenceActions } from "./usePreferenceActions";
 
 const sampleDate = new Date(Date.UTC(2026, 9, 3, 9, 30));
@@ -47,6 +48,7 @@ export function PreferencesDialog({ session, onClose }: { session: Session; onCl
           })()}
         </p>
       </fieldset>
+      <LookChoices />
       {saveState && (
         <p className={saveState === "saved" ? "prefs-status" : "prefs-status warn"} role="status">
           {t(

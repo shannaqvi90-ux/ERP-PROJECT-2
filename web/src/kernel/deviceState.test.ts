@@ -76,6 +76,8 @@ describe("forgetIdentity", () => {
       "erp.language": "ar",
       "erp.numerals": "arab",
       "erp.navOpen": "0",
+      "erp.theme": "light",
+      "erp.density": "comfortable",
       "erp.passkeyOffer": "2",
       "erp.signInDomains": '{"salt":"0123456789abcdef0123456789abcdef","hashes":["0123456789abcdef","fedcba9876543210"]}',
     };

@@ -19,30 +19,13 @@
  * Linux). A bundled Arabic font waits for licence approval (docs/decisions/p04-shell-fonts.md).
  */
 :root {
-  --font: "Noto Sans Arabic Variable", system-ui, -apple-system, "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Sans", "DejaVu Sans", Arial, sans-serif;
-  --font-ar: "Noto Sans Arabic Variable", "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, "Noto Sans Arabic", "Noto Naskh Arabic", "DejaVu Sans", Arial, sans-serif;
-  --topbar: #1f3349;
-  --topbar-text: #ffffff;
-  --nav-bg: #ffffff;
-  --selected: #e7f0fb;
-  --kbd-bg: #f6f8fa;
-  --warn: #8a4b00;
-  --bg: #f3f4f6;
-  --surface: #ffffff;
-  --text: #1f2328;
-  --muted: #57606a;
-  --border: #d0d7de;
-  --accent: #0b5cad;
-  --accent-text: #ffffff;
-  --danger: #b42318;
-  --danger-bg: #fef3f2;
-  --focus: #1a73e8;
-  --row-height: 28px;
-  font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.4;
-  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+  color: var(--fg);
   background: var(--bg);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -59,14 +42,15 @@ body {
 
 /* Focus rings: always visible for keyboard users, on light and dark surfaces. */
 :focus-visible {
-  outline: 2px solid var(--focus);
+  outline: var(--focus-w) solid var(--focus);
   outline-offset: 1px;
 }
 
-.topbar :focus-visible {
-  outline-color: #ffffff;
-  box-shadow: 0 0 0 4px var(--focus);
+[data-theme="hc"] :focus-visible {
+  outline-width: 3px;
+  outline-offset: 2px;
 }
+
 
 .visually-hidden {
   position: absolute;
@@ -91,15 +75,15 @@ body {
 }
 
 kbd {
-  font: inherit;
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
   line-height: 1;
   padding: 2px 5px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--kbd-line);
   border-block-end-width: 2px;
-  border-radius: 3px;
+  border-radius: var(--radius-1);
   background: var(--kbd-bg);
-  color: var(--text);
+  color: var(--kbd-fg);
   white-space: nowrap;
 }
 
@@ -110,8 +94,9 @@ kbd {
 }
 
 h1 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-tight);
   margin: 0;
 }
 
@@ -134,13 +119,21 @@ h1 {
 
 .button {
   font: inherit;
-  height: 30px;
-  padding-inline: 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--surface);
-  color: var(--text);
+  font-weight: var(--fw-medium);
+  height: var(--ctl-h);
+  padding-inline: var(--sp-5);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-2);
+  background: var(--surface-2);
+  color: var(--fg);
   cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: var(--accent-line);
 }
 
 .button:disabled {
@@ -151,7 +144,15 @@ h1 {
 .button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--accent-text);
+  color: var(--on-accent);
+  font-weight: var(--fw-semibold);
+  box-shadow: var(--glow-soft);
+}
+
+.button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: var(--glow);
 }
 
 .button.ghost {
@@ -160,19 +161,31 @@ h1 {
   color: inherit;
 }
 
-.button.ghost:hover {
-  background: rgba(255, 255, 255, 0.15);
+.button.ghost:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: transparent;
 }
 
 input {
   font: inherit;
-  height: 30px;
-  padding-inline: 8px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  height: var(--ctl-h);
+  padding-inline: var(--sp-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-2);
   background: var(--surface);
-  color: var(--text);
+  color: var(--fg);
   min-width: 0;
+}
+
+input:focus-visible {
+  border-color: var(--accent);
+  box-shadow: var(--glow-soft);
+  outline: none;
+}
+
+[data-theme="hc"] input:focus-visible {
+  outline: 3px solid var(--focus);
+  box-shadow: none;
 }
 
 /* Boxes and buttons are their own size: the field height above made a checkbox 30 px tall, taller
@@ -199,8 +212,9 @@ input[aria-invalid="true"] {
 }
 
 .field-label {
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
 }
 
 .field-error {
@@ -388,12 +402,12 @@ input[aria-invalid="true"] {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-inline: 6px 12px;
-  height: 44px;
-  min-width: 0;
-  background: var(--topbar);
-  color: var(--topbar-text);
+  gap: var(--sp-4);
+  padding-inline: var(--sp-4);
+  height: var(--top-h);
+  background: var(--surface);
+  color: var(--fg);
+  border-block-end: 1px solid var(--line);
   position: sticky;
   inset-block-start: 0;
   z-index: 5;
@@ -405,7 +419,26 @@ input[aria-invalid="true"] {
 .topbar button,
 .topbar a,
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-weight: var(--fw-bold);
   white-space: nowrap;
+}
+
+.brand-mark {
+  display: inline-block;
+  height: 22px;
+  width: auto;
+}
+
+/* The wordmark in ink on light, in white on dark and high contrast (tokens: --logo-ink, --logo-white). */
+.brand-mark.ink {
+  display: var(--logo-ink);
+}
+
+.brand-mark.white {
+  display: var(--logo-white);
 }
 
 .topbar a {
@@ -426,8 +459,9 @@ input[aria-invalid="true"] {
 }
 
 .workspace-name {
-  padding-inline-end: 10px;
-  border-inline-end: 1px solid rgba(255, 255, 255, 0.35);
+  padding-inline: var(--sp-4);
+  border-inline-start: 1px solid var(--line);
+  color: var(--fg-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -457,19 +491,21 @@ input[aria-invalid="true"] {
   margin-inline: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 30px;
-  padding-inline: 10px 6px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--topbar-text);
+  gap: var(--sp-4);
+  height: var(--ctl-h);
+  padding-inline: var(--sp-5) var(--sp-3);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-3);
+  background: var(--surface-2);
+  color: var(--fg-muted);
   cursor: text;
   text-align: start;
+  box-shadow: var(--glow-soft);
 }
 
 .palette-trigger:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--hover);
+  box-shadow: var(--glow);
 }
 
 .palette-trigger-text {
@@ -479,11 +515,6 @@ input[aria-invalid="true"] {
   text-overflow: ellipsis;
 }
 
-.palette-trigger kbd {
-  background: transparent;
-  color: var(--topbar-text);
-  border-color: rgba(255, 255, 255, 0.5);
-}
 
 .topbar-end {
   display: flex;
@@ -512,10 +543,10 @@ input[aria-invalid="true"] {
 }
 
 .navpane {
-  width: 208px;
-  background: var(--nav-bg);
-  border-inline-end: 1px solid var(--border);
-  padding-block: 8px;
+  width: var(--side-w);
+  background: var(--side);
+  border-inline-end: 1px solid var(--line);
+  padding-block: var(--sp-4);
   overflow-y: auto;
 }
 
@@ -530,12 +561,12 @@ input[aria-invalid="true"] {
 .nav-group[data-label]::before {
   content: attr(data-label);
   display: block;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  padding: 4px 14px;
+  letter-spacing: var(--ls-caps);
+  color: var(--fg-subtle);
+  padding: var(--sp-3) var(--sp-6);
 }
 
 .navpane ul {
@@ -546,14 +577,17 @@ input[aria-invalid="true"] {
 
 .navpane a {
   display: block;
-  padding: 5px 14px;
-  color: var(--text);
+  padding: var(--sp-3) var(--sp-6);
+  margin-inline: var(--sp-3);
+  border-radius: var(--radius-2);
+  color: var(--fg-muted);
   text-decoration: none;
   border-inline-start: 3px solid transparent;
 }
 
 .navpane a:hover {
-  background: var(--bg);
+  background: var(--hover);
+  color: var(--fg);
 }
 
 /* The entry's go-to letter (G, then this key), beside the link (not inside it, so the link's
@@ -597,7 +631,7 @@ input[aria-invalid="true"] {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
+  box-shadow: var(--shadow-2);
   padding: 8px 12px;
   font-size: 13px;
   max-width: calc(100vw - 32px);
@@ -628,12 +662,18 @@ input[aria-invalid="true"] {
 
 .navpane a[aria-current="page"] {
   background: var(--selected);
-  border-inline-start-color: var(--accent);
-  font-weight: 600;
+  color: var(--fg);
+  border-inline-start-color: var(--selected-edge);
+  font-weight: var(--fw-semibold);
+}
+
+[data-theme="hc"] .navpane a[aria-current="page"] {
+  outline: 2px solid var(--fg);
+  outline-offset: -2px;
 }
 
 .workspace {
-  padding: 10px 16px;
+  padding: var(--sp-5) var(--sp-6);
   outline: none;
   min-width: 0;
   min-height: 0;
@@ -674,12 +714,13 @@ input[aria-invalid="true"] {
 
 .statusbar {
   display: flex;
-  gap: 16px;
+  gap: var(--sp-6);
   align-items: center;
-  padding: 3px 12px;
-  font-size: 12px;
-  color: var(--muted);
-  border-block-start: 1px solid var(--border);
+  height: var(--status-h);
+  padding-inline: var(--sp-5);
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  border-block-start: 1px solid var(--line);
   background: var(--surface);
 }
 
@@ -800,7 +841,7 @@ input[aria-invalid="true"] {
     inset-inline-start: 0;
     width: min(260px, 80vw);
     z-index: 6;
-    box-shadow: 0 6px 24px rgba(15, 23, 32, 0.3);
+    box-shadow: var(--shadow-2);
   }
 
   .workspace {
@@ -825,7 +866,7 @@ input[aria-invalid="true"] {
 .dialog-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 32, 0.45);
+  background: var(--scrim);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -837,7 +878,7 @@ input[aria-invalid="true"] {
   background: var(--surface);
   color: var(--text);
   border-radius: 6px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-2);
   width: min(560px, calc(100vw - 32px));
   max-height: 80vh;
   overflow: auto;
@@ -1020,7 +1061,7 @@ input[aria-invalid="true"] {
 
 .prefs-status {
   margin: 0;
-  color: #1a7f37;
+  color: var(--positive);
 }
 
 .prefs-status.warn {
@@ -1048,13 +1089,13 @@ input[aria-invalid="true"] {
   @bottom-center {
     content: counter(page) " / " counter(pages);
     font-size: 9pt;
-    color: #57606a;
+    color: var(--fg-muted);
   }
 }
 
 @media print {
   :root {
-    background: #ffffff;
+    background: var(--surface);
     font-size: 10.5pt;
   }
 
@@ -1091,8 +1132,8 @@ input[aria-invalid="true"] {
     justify-content: space-between;
     gap: 12px;
     font-size: 9pt;
-    color: #57606a;
-    border-block-end: 1px solid #d0d7de;
+    color: var(--fg-muted);
+    border-block-end: 1px solid var(--line-strong);
     padding-block-end: 4px;
     margin-block-end: 8px;
   }
@@ -1103,7 +1144,7 @@ input[aria-invalid="true"] {
 
   .list-print-scope {
     font-size: 9pt;
-    color: #57606a;
+    color: var(--fg-muted);
     margin-block: 0 6px;
   }
 
@@ -1199,7 +1240,7 @@ input[aria-invalid="true"] {
 /* Printed documents (kernel/print.tsx): the document's own language and direction. */
 .print-document {
   background: var(--surface);
-  color: #000000;
+  color: var(--fg);
   max-width: 190mm;
 }
 
@@ -1208,7 +1249,7 @@ input[aria-invalid="true"] {
   justify-content: space-between;
   align-items: flex-end;
   gap: 16px;
-  border-block-end: 2px solid #1f2328;
+  border-block-end: 2px solid var(--fg);
   padding-block-end: 6px;
   margin-block-end: 10px;
 }
@@ -1235,7 +1276,7 @@ input[aria-invalid="true"] {
 }
 
 .print-fact dt {
-  color: #57606a;
+  color: var(--fg-muted);
   min-width: 30%;
 }
 
@@ -1255,7 +1296,7 @@ input[aria-invalid="true"] {
 .print-document:not(.print-document-screen) td {
   text-align: start;
   padding: 3px 6px;
-  border-block-end: 1px solid #d0d7de;
+  border-block-end: 1px solid var(--line-strong);
 }
 
 .print-document .num {
@@ -1268,7 +1309,7 @@ input[aria-invalid="true"] {
   justify-content: space-between;
   margin-block-start: 12px;
   font-size: 9pt;
-  color: #57606a;
+  color: var(--fg-muted);
 }
 
 /* Screens */
@@ -1301,13 +1342,13 @@ input[aria-invalid="true"] {
 
 .grid th {
   font-weight: 600;
-  background: #f6f8fa;
+  background: var(--surface-2);
   position: sticky;
   inset-block-start: 0;
 }
 
 .grid tbody tr:hover {
-  background: #f6f8fa;
+  background: var(--surface-2);
 }
 
 .pager {
@@ -1338,7 +1379,7 @@ input[aria-invalid="true"] {
 /* Status messages that are not errors (for example "choose a new password"). */
 .notice {
   border: 1px solid var(--accent);
-  background: #eef5fc;
+  background: var(--selected);
   padding: 8px 10px;
   border-radius: 4px;
   margin-block-end: 12px;
@@ -1347,4 +1388,65 @@ input[aria-invalid="true"] {
 .signin-hint {
   font-size: 12px;
   margin-block: -6px 10px;
+}
+
+/* Look controls: density and theme switches of the top bar (kernel/theme.ts). */
+.look-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  background: var(--surface-2);
+}
+
+.segment {
+  font: inherit;
+  font-size: var(--fs-xs);
+  height: calc(var(--ctl-h) - 8px);
+  min-width: calc(var(--ctl-h) - 8px);
+  padding-inline: var(--sp-4);
+  border: 0;
+  border-radius: var(--radius-2);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.segment:hover {
+  color: var(--fg);
+}
+
+.segment[aria-pressed="true"] {
+  background: var(--selected);
+  color: var(--fg);
+  font-weight: var(--fw-semibold);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+}
+
+[data-theme="hc"] .segment[aria-pressed="true"] {
+  outline: 2px solid var(--fg);
+  outline-offset: -2px;
+}
+
+@media (max-width: 1180px) {
+  .look-controls .segmented:first-child {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .look-controls {
+    display: none;
+  }
 }

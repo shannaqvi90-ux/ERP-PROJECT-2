@@ -29,12 +29,12 @@
  * soon as it opens (kernel/passkeys.ts); it names nobody. `erp.signInDomains`: salted hashes of
  * the e-mail domains this device signed in with, so a whole address moves on to the password from
  * the plain address too (kernel/signInAddress.ts); no e-mail and no readable domain. */
-export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.passkeyOffer", "erp.signInDomains"];
+export const deviceKeys: readonly string[] = ["erp.language", "erp.numerals", "erp.navOpen", "erp.theme", "erp.density", "erp.passkeyOffer", "erp.signInDomains"];
 
 /**
  * Whether a device key holds a value of its own shape. A device setting is kept for the next
  * person on the device, so it may hold nothing but its setting: the language en or ar, the digits
- * latn or arab, the pane 1 or 0, the passkey offer 0, 1 or 2, and the salted domain hashes. A
+ * latn or arab, the pane 1 or 0, the theme system, light, dark or hc, the density compact or comfortable, the passkey offer 0, 1 or 2, and the salted domain hashes. A
  * kept key with anything else in it (a record's address beside the language, critic p04 round 12,
  * plant CL3b) is removed when the identity ends rather than handed on. The reviewed shapes are in
  * tests/Gates/device-keys.txt, which the G1 judges apply after every step.
@@ -47,6 +47,10 @@ export function deviceValueKept(key: string, value: string): boolean {
       return value === "latn" || value === "arab";
     case "erp.navOpen":
       return value === "0" || value === "1";
+    case "erp.theme":
+      return value === "system" || value === "light" || value === "dark" || value === "hc";
+    case "erp.density":
+      return value === "compact" || value === "comfortable";
     case "erp.passkeyOffer":
       return value === "0" || value === "1" || value === "2";
     case "erp.signInDomains":

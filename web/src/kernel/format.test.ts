@@ -45,6 +45,16 @@ describe("number and date formatting per language and digit choice", () => {
     expect(createFormatter("en", "latn").percent("0.125")).toBe("12.5%");
   });
 
+  it("writes every date day first, as dd/mm/yyyy, in both languages and both digit sets", () => {
+    const when = new Date(2026, 10, 3, 9, 5);
+    expect(createFormatter("en", "latn").date(when)).toBe("03/11/2026");
+    expect(createFormatter("ar", "latn").date(when)).toBe("03/11/2026");
+    expect(createFormatter("ar", "arab").date(when)).toBe("٠٣/١١/٢٠٢٦");
+    expect(createFormatter("en", "latn").dateTime(when)).toMatch(/^03\/11\/2026, /);
+    // Day 13 or more cannot be a month: the order is day, month, year.
+    expect(createFormatter("en", "latn").date(new Date(2026, 0, 31))).toBe("31/01/2026");
+  });
+
   it("writes dates in the Gregorian calendar in both languages", () => {
     const when = new Date(Date.UTC(2026, 9, 3, 6, 0));
     expect(createFormatter("en", "latn").date(when)).toContain("2026");

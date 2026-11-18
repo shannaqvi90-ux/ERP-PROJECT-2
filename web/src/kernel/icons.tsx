@@ -21,6 +21,10 @@ const paths = {
   screen: { d: "M3 4h14v10H3zM7 17h6", directional: false },
   bolt: { d: "M11 2.5L4.5 11H10l-1 6.5L15.5 9H10z", directional: false },
   attach: { d: "M15.5 9.2l-5.6 5.6a3.4 3.4 0 0 1-4.8-4.8l6-6a2.3 2.3 0 0 1 3.3 3.3l-6 6a1.1 1.1 0 0 1-1.6-1.6l5.4-5.4", directional: false },
+  sun: { d: "M10 6.5a3.5 3.5 0 1 1 0 7a3.5 3.5 0 0 1 0-7zM10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4", directional: false },
+  moon: { d: "M16.5 11.5A6.5 6.5 0 0 1 8.5 3.5a6.5 6.5 0 1 0 8 8z", directional: false },
+  contrast: { d: "M10 2.5a7.5 7.5 0 1 1 0 15a7.5 7.5 0 0 1 0-15zM10 2.5v15M10 2.5a7.5 7.5 0 0 1 0 15z", directional: false },
+  pin: { d: "M7 3h6l-1 5 3 3H5l3-3zM10 11v6", directional: false },
   record: { d: "M5 3h7l3 3v11H5zM8 9h4M8 12h4", directional: false },
 } as const;
 

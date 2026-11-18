@@ -64,7 +64,7 @@
   gap: 4px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #eef4fb;
+  background: var(--selected);
   padding-inline: 10px 4px;
   height: 24px;
   font-size: 13px;
@@ -82,7 +82,7 @@
 
 .list-chip-remove:hover,
 .list-chip-remove:focus-visible {
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--hover);
 }
 
 .button.link {
@@ -108,8 +108,8 @@
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
-  background: #fff8e1;
-  border: 1px solid #f0d58c;
+  background: var(--warning-soft);
+  border: 1px solid var(--warning);
   border-radius: 4px;
 }
 
@@ -223,7 +223,7 @@
 }
 
 .list-header {
-  background: #f6f8fa;
+  background: var(--surface-2);
   border-block-end: 1px solid var(--border);
   font-weight: 600;
 }
@@ -237,16 +237,16 @@
   position: absolute;
   inset-inline: 0;
   top: 0;
-  border-block-end: 1px solid #eef0f2;
+  border-block-end: 1px solid var(--line-soft);
   cursor: default;
 }
 
 .list-row:hover {
-  background: #f6f8fa;
+  background: var(--surface-2);
 }
 
 .list-row.is-selected {
-  background: #e8f1fb;
+  background: var(--hover);
 }
 
 /* The best match of a search in relevance order: Enter in the search box opens it. */
@@ -264,7 +264,7 @@
 
 .list-grid:focus .list-row.is-active,
 .list-grid:focus .list-group.is-active {
-  background: #d6e6f8;
+  background: var(--accent-soft);
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
@@ -409,7 +409,7 @@
 
 .list-sort:hover,
 .list-colmenu:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--hover);
 }
 
 /* A column waiting beside an open record (columnFit.ts) is in the row but not on screen; on paper
@@ -452,7 +452,7 @@
 }
 
 .list-more-button:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--hover);
 }
 
 .list-sort-mark {
@@ -471,7 +471,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-2);
   padding: 8px;
   font-weight: 400;
 }
@@ -518,7 +518,7 @@
 
 .list-menuitem:hover,
 .list-menuitem:focus-visible {
-  background: #eef4fb;
+  background: var(--selected);
 }
 
 .list-menuitem[aria-checked="true"] {
@@ -571,7 +571,7 @@
 }
 
 .list-groups .list-group {
-  border-block-end: 1px solid #eef0f2;
+  border-block-end: 1px solid var(--line-soft);
 }
 
 .list-empty {
@@ -628,7 +628,7 @@
   align-items: flex-start;
   justify-content: center;
   padding-block-start: 15vh;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--scrim);
 }
 
 .list-confirm {
@@ -637,7 +637,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 32px var(--scrim);
   padding: 12px 14px;
 }
 
@@ -649,7 +649,7 @@
 .list-confirm .button.danger {
   border-color: var(--danger);
   background: var(--danger);
-  color: #fff;
+  color: var(--surface);
 }
 
 /* Phone widths: a toolbar button whose words wrap (Arabic "مستخدم جديد", "طباعة أو تصدير") grows
@@ -701,7 +701,7 @@
   }
 
   .list-body.has-record > .list-record {
-    border-block-end: 1px solid #d0d7de !important;
+    border-block-end: 1px solid var(--line-strong) !important;
     padding-block-end: 8px;
     margin-block-end: 8px;
   }

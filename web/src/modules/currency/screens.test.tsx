@@ -85,7 +85,7 @@ describe("currencies screen", () => {
     await open("/currency/currencies");
     expect(cells()).toContain("4.2875 AED");
     expect(cells()).toContain("Base currency");
-    expect(cells()).toContain("23 Oct 2026");
+    expect(cells()).toContain("23/10/2026");
   });
 
   it("opens a currency with today's rate field focused: typing a rate and Enter saves it, dated by the server", async () => {
@@ -104,7 +104,7 @@ describe("currencies screen", () => {
     expect(post?.body).toEqual({ currency: "EUR", quoteCurrency: "AED", rate: "4.2875" });
     // The currency form itself was not saved by that Enter.
     expect(calls.some((c) => c.method === "PUT")).toBe(false);
-    expect(view!.container.querySelector(".cur-quick [role=status]")?.textContent).toBe("Saved: 1 EUR = 4.2875 AED on 24 Oct 2026.");
+    expect(view!.container.querySelector(".cur-quick [role=status]")?.textContent).toBe("Saved: 1 EUR = 4.2875 AED on 24/10/2026.");
   });
 
   it("converts an amount as it is typed, with the rate and its date", async () => {
@@ -119,7 +119,7 @@ describe("currencies screen", () => {
     expect(new URL(get.url, "http://x").searchParams.get("currency")).toBe("EUR");
     const output = (view!.container.querySelector("[data-testid=conversion]")!.textContent ?? "").replace(/\s/g, " ");
     expect(output).toContain("AED 5,359.38");
-    expect(output).toContain("the latest rate before then (23 Oct 2026)");
+    expect(output).toContain("the latest rate before then (23/10/2026)");
   });
 
   it("offers no rate entry to a user who may only read, and the form is read-only", async () => {
