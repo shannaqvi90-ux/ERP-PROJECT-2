@@ -457,6 +457,23 @@ input[aria-invalid="true"] {
   display: var(--logo-white);
 }
 
+.brand-icon {
+  display: none;
+  height: 24px;
+  width: 24px;
+}
+
+/* Phone width: the square app icon, so the workspace name keeps its room. */
+@media (max-width: 600px) {
+  .brand .brand-mark {
+    display: none;
+  }
+
+  .brand .brand-icon {
+    display: inline-block;
+  }
+}
+
 .topbar a {
   color: inherit;
   text-decoration: none;

@@ -60,7 +60,7 @@ test.describe("document numbering", () => {
     await expect(page.locator('.list-record input[name="padding"]')).toBeFocused();
     await page.keyboard.type("6");
     await expect(next).toHaveText(new RegExp(`^PO-${year().slice(2)}\\d{2}-000148$`));
-    await expect(page.locator(".nb-preview")).toContainText("Starts again on 1 Jan");
+    await expect(page.locator(".nb-preview")).toContainText("Starts again on 01/01/");
     await page.keyboard.press("Enter");
     await expect(page.locator(".list-record")).toContainText("Saved");
     await expect(row).toContainText(new RegExp(`PO-${year().slice(2)}\\d{2}-000148`));
