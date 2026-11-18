@@ -3,9 +3,9 @@
    or component writes a colour literal (web/src/design/designGate.test.ts). Themes are chosen on
    <html data-theme="light|dark|hc"> (kernel/theme.ts); the density on data-density. Fonts are
    bundled under their SIL OFL-1.1 licences (docs/decisions/p18-visual-design-fonts.md). */
-@font-face{font-family:"Bz Geist";src:url("/fonts/geist-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"Bz Geist Mono";src:url("/fonts/geist-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"Bz Readex";src:url("/fonts/readex-pro-arabic-wght-normal.woff2") format("woff2");font-weight:160 700;font-display:swap}
+@font-face{font-family:"Bz Geist";src:url("/fonts/geist-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Geist Mono";src:url("/fonts/geist-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Readex";src:url("/fonts/readex-pro-arabic-wght-normal.woff2") format("woff2");font-weight:160 700;font-display:block}
 
 :root{
   /* G additions: F's frame and components */

@@ -50,3 +50,6 @@ web/src/kernel/focusCycle.ts candidates  # The CSS selector of the elements Tab 
 web/src/kernel/forms/attachments.tsx watchers  # The change listeners of the record screens showing the file count (functions added while a screen is mounted and removed when it unmounts); never holds file or record data (the data lives in the identity-scoped map `stored`).
 web/src/modules/attachments/RecordFiles.tsx attachmentKinds  # The kinds of record that take files with the permission names that read and write them (the same as the server's registration); fixed in code, never written.
 web/src/modules/attachments/RecordFiles.tsx recordRoutes  # The screen route of each kind of record that takes files; fixed in code, never written.
+web/src/kernel/theme.ts themeChoices  # The four theme choices (system, light, dark, hc); fixed in code, never written.
+web/src/kernel/theme.ts densities  # The two densities (compact, comfortable); fixed in code, never written.
+web/src/modules/shell/LookControls.tsx themeIcon  # Which icon names each theme choice; fixed in code, never written.
