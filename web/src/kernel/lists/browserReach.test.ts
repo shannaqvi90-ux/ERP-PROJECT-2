@@ -140,6 +140,7 @@ const reviewedImports: Record<string, string> = {
   "react-dom": "flushSync, for focus that must follow a render at once.",
   "src/kernel/api.ts": "The one way to the server (same-origin fetch with the session cookie); keeps nothing.",
   "src/kernel/deviceState.ts": "identityScoped(): memory the forgetter empties when the identity ends.",
+  "src/kernel/extensions.ts": "The toolbar controls other modules add to a list (the Import button): components found by import.meta.glob that get the list's key and a function that reads its rows again, never a row.",
   "src/kernel/forms/leave.ts": "Asks before leaving a record with unsaved changes.",
   "src/kernel/router.tsx": "The in-app address of an open record (history, stamped by kernel/historyGuard).",
   "src/kernel/i18n.tsx": "English and Arabic words and formats.",
