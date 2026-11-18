@@ -1,0 +1,10 @@
+before: prefix DN-{BRANCH}-{YY}- perBranch True tax False next DN-DEIRA-HQ-26-0089
+counters: [('DEIRA-HQ', '2026', 89, 88), ('AQZ-WH', '2026', 58, 57), ('DIP-SR', '2026', 120, 119)]
+recent: ['DN-DIP-SR-26-0119', 'DN-DIP-SR-26-0118', 'DN-DEIRA-HQ-26-0088', 'DN-DEIRA-HQ-26-0087', 'DN-AQZ-WH-26-0057']
+PUT perBranch=false: 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-188069aa8aad97a57ff547e768936ffd-512b3ed89832545b-00","errors":{"perBranch":[{"code":"numberingBranchNeedsPerBranch","message":"{BRANCH} shows the branch's code: count the number
+after: perBranch True next number previewed: DN-DEIRA-HQ-26-0089 nextValue 89
+DN-AQZ-WH-26-0056|t
+DN-AQZ-WH-26-0057|t
+DN-DEIRA-HQ-26-0087|t
+DN-DEIRA-HQ-26-0088|t
+DN-DIP-SR-26-0118|t

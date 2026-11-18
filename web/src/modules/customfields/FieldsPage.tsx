@@ -110,7 +110,7 @@ export function requestOf(draft: Draft, field: CustomField | null) {
     labelEn: draft.labelEn.trim(),
     labelAr: draft.labelAr.trim(),
     required: draft.required,
-    default: draft.type === "lookup" || text === "" ? null : select ? (chosen?.value ?? null) : text,
+    default: draft.type === "lookup" || text === "" ? null : select ? (chosen?.value ?? text) : text,
     decimals: draft.type === "number" ? Number.parseInt(draft.decimals, 10) : null,
     options: parsed ? parsed.options : null,
     lookupTarget: draft.type === "lookup" ? draft.lookupTarget : null,

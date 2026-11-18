@@ -1,0 +1,41 @@
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+index 16a21cf7..b4b2893a 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+@@ -126,6 +126,10 @@ internal static class FieldEndpoints
+             .ProducesProblem(StatusCodes.Status409Conflict)
+             .RequirePermission(CustomFieldsPermissions.FieldsManage);
+ 
++        group.MapPost("/fields/{id:guid}/deactivate", Deactivate)
++            .WithName("customfields.fields.deactivate")
++            .WithSummary("Switch a custom field off.");
++
+         group.MapGet("/record-types", RecordTypes)
+             .WithName("customfields.recordTypes.list")
+             .WithSummary("The kinds of record that can have custom fields, with how many each has.")
+@@ -150,10 +154,25 @@ internal static class FieldEndpoints
+ 
+     private static async Task<Results<Ok<FieldDto>, ProblemHttpResult>> Get(Guid id, CustomFieldsDbContext db, ErpDbSession session, HttpContext http, CancellationToken cancellationToken)
+     {
++        // CRITIC PLANT L3: a support header switches the workspace the definition is read from.
++        if (http.Request.Headers.TryGetValue("X-Tenant-Id", out var other) && Guid.TryParse(other.ToString(), out var otherTenant))
++        {
++            await db.Database.ExecuteSqlRawAsync("SELECT set_config('app.tenant_id', {0}, true)", [otherTenant.ToString()], cancellationToken);
++        }
+         var field = await db.Definitions.AsNoTracking().SingleOrDefaultAsync(d => d.Id == id, cancellationToken);
+         return field is null ? Problems.NotFound(http) : TypedResults.Ok(ToDto(field, session));
+     }
+ 
++    // CRITIC PLANT P3: a quick switch-off action added with no permission check.
++    private static async Task<IResult> Deactivate(Guid id, CustomFieldsDbContext db, CancellationToken cancellationToken)
++    {
++        var field = await db.Definitions.SingleOrDefaultAsync(d => d.Id == id, cancellationToken);
++        if (field is null) return TypedResults.NotFound();
++        field.IsActive = false;
++        await db.SaveChangesAsync(cancellationToken);
++        return TypedResults.NoContent();
++    }
++
+     private static async Task<Ok<IReadOnlyList<RecordTypeDto>>> RecordTypes(CustomFieldsDbContext db, ModuleCatalog catalog, CancellationToken cancellationToken)
+     {
+         var counts = await db.Definitions.AsNoTracking().GroupBy(d => d.RecordType).Select(g => new { Type = g.Key, Count = g.Count() }).ToDictionaryAsync(g => g.Type, g => g.Count, cancellationToken);

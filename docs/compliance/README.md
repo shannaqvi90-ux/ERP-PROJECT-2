@@ -12,6 +12,8 @@ implemented.
 | [arabic-legal-name-on-documents.md](arabic-legal-name-on-documents.md) | Arabic legal name on printed documents | 2026-10-10 | Owner, 2026-10-10 (needs-human #9) |
 | [e-invoicing-timeline.md](e-invoicing-timeline.md) | UAE electronic invoicing deadlines (information, no rule implemented) | 2026-10-10 | Not needed (nothing implemented) |
 | [vat-tax-document-numbering.md](vat-tax-document-numbering.md) | Tax invoice and tax credit note numbering: gapless, never reused, reset only with the period in the number | 2026-10-30 | Owner, 2026-10-30 (needs-human #32) |
+| [exchange-rate-missing-date.md](exchange-rate-missing-date.md) | Exchange rate on a date with no published rate: the latest earlier rate, at most 7 days old by default | 2026-11-18 (gap filled by the owner; no official text found yet) | Owner, 2026-11-18 (needs-human #29) |
+| [pdpl-sign-in-retention.md](pdpl-sign-in-retention.md) | Sign-in records kept 1 year, then deleted | Not yet; to be checked before the deletion is built | Owner's decision, 2026-11-18 (needs-human #7) |
 
 Owner's sign-off for #4, #9 and #10, given on 2026-10-10 in reply to the lead's sourced
 recommendations: "project ka naam baad main decide karainge, baqi is k alawa jo tumhain thek lag

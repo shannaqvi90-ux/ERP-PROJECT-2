@@ -1,0 +1,52 @@
+build start 01:14:11
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:51.84
+build end 01:15:17
+listing 1: 1129 lines, 0 lines naming two tests 01:15:23
+listing 2: 1129 lines, 0 lines naming two tests 01:15:31
+listing 3: 1129 lines, 0 lines naming two tests 01:15:41
+listing 4: 1129 lines, 0 lines naming two tests 01:15:50
+listing 5: 1129 lines, 0 lines naming two tests 01:15:58
+listing 6: 1128 lines, 1 lines naming two tests 01:16:06
+    Erp.Modules.Currency.Tests.CurrencyApiTests.The_lookup_uses_the_dates_rate_then_the_latest_earlier_one_within_the_limit_and_never_a_later_one    Erp.Modules.Tenancy.Tests.AccessTests.A_new_user_works_in_no_company_until_given_access_and_then_only_in_the_companies_given
+listing 7: 1110 lines, 19 lines naming two tests 01:16:13
+    Erp.Modules.Identity.Tests.MatchingUsersActiveTests.Deactivates_every_matching_user_except_the_caller_and_stronger_users_and_audits_each_change    Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "30 3 * * *")
+    Erp.Modules.Identity.Tests.PlatformHttpTests.Health_is_public_and_checks_the_database    Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "*/15 * * * *")
+    Erp.Modules.Identity.Tests.SharedDatasetSeedTests.Demo_seed_loads_the_shared_dataset_users_into_the_main_tenant    Erp.Modules.Jobs.Tests.CronScheduleTests.Valid_timings_parse(text: "  0   0 * * 0  ")
+listing 8: 1128 lines, 1 lines naming two tests 01:16:21
+    Erp.Modules.Currency.Tests.CurrencyApiTests.The_lookup_uses_the_dates_rate_then_the_latest_earlier_one_within_the_limit_and_never_a_later_one    Erp.Modules.Tenancy.Tests.AccessTests.A_new_user_works_in_no_company_until_given_access_and_then_only_in_the_companies_given
+listing 9: 1129 lines, 0 lines naming two tests 01:16:28
+listing 10: 1128 lines, 1 lines naming two tests 01:16:35
+    Erp.Modules.Currency.Tests.CurrencyApiTests.The_lookup_uses_the_dates_rate_then_the_latest_earlier_one_within_the_limit_and_never_a_later_one    Erp.Modules.Numbering.Tests.PatternTests.Every_shared_example_formats_to_its_number
+listing 11: 1129 lines, 0 lines naming two tests 01:16:42
+listing 12: 1124 lines, 5 lines naming two tests 01:16:49
+    Erp.Modules.Currency.Tests.CurrencyApiTests.The_gate_workspace_holds_its_sample_of_ISO_4217_currencies_those_in_use_first_and_its_rates    Erp.Modules.Identity.Tests.UsersAndRolesTests.User_search_finds_by_name_or_email_and_escapes_wildcards
+    Erp.Modules.Currency.Tests.RateFileTests.A_file_longer_than_the_limit_stops_at_the_limit    Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "om")
+    Erp.Modules.Currency.Tests.RateFileTests.Every_problem_is_reported_with_its_line_and_nothing_is_read_from_a_bad_file    Erp.Modules.Identity.Tests.UsersListTests.A_search_in_relevance_order_pages_every_row_once_in_the_order_of_one_page(search: "a")
+=== STATICL20 (CRITIC_PLANT=L20) filter FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1OutsideProcessStateTests|FullyQualifiedName~G1TenantSourceTests start 01:16:49
+=== STATICL20 exit 1 end 01:17:13
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [1 s]
+Total tests: 6
+ Total time: 23.6453 Seconds
+=== G2P20 (CRITIC_PLANT=P20) filter (FullyQualifiedName~Erp.Gates.Tests.G2)&Load!=Timing start 01:17:13
+=== G2P20 exit 1 end 01:26:31
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y [26 s]
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.The_company_role_attack_catches_a_permission_checked_in_the_working_company_only [6 s]
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone [691 ms]
+  Failed Erp.Gates.Tests.G2.G2CompanyRoleTests.A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held [1 s]
+Total tests: 91
+ Total time: 9.2781 Minutes
+=== NIL20 (CRITIC_PLANT=L20) filter FullyQualifiedName~G1NonInterferenceTests&Load!=Timing start 01:26:31
+=== NIL20 exit 1 end 02:44:57
+  Failed Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did [1 h 18 m]
+Total tests: 1
+ Total time: 1.3071 Hours
+=== SHARD0L20 (CRITIC_PLANT=L20) filter Shard=0 start 02:44:57
+=== SHARD0L20 exit 1 end 03:56:20
+  Failed Erp.Gates.Tests.G1.G1HttpIsolationShardTests.Tenant_A_attacks_its_first_share_of_the_endpoints [1 h 11 m]
+Total tests: 1
+ Total time: 1.1896 Hours

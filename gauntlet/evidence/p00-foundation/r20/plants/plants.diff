@@ -1,0 +1,49 @@
+Only in src/Kernel/Erp.Kernel: CriticPlant.cs
+diff -ru /home/shan/critic/p00-foundation-r20/src/Kernel/Erp.Kernel/Lists/ListBinding.cs src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+--- /home/shan/critic/p00-foundation-r20/src/Kernel/Erp.Kernel/Lists/ListBinding.cs	2026-11-18 04:38:37.632671242 +0400
++++ src/Kernel/Erp.Kernel/Lists/ListBinding.cs	2026-11-18 04:43:29.780966227 +0400
+@@ -305,6 +305,8 @@
+ 
+     /// <summary>Run the request against the rows: a page with total, next cursor and groups, or
+     /// a 400 problem naming the parameter to correct.</summary>
++    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Total, DateTime At)> _criticTotals = new(StringComparer.Ordinal);
++
+     public async Task<ListResult<T>> QueryAsync(IQueryable<T> source, ListRequest request, HttpContext http, CancellationToken cancellationToken)
+     {
+         if (_extra.Count == 0 && InMemoryReason is null && source.Provider is IAsyncQueryProvider &&
+@@ -336,6 +338,21 @@
+         }
+         var filtered = Filtered(source, plan, database);
+         var total = request.KnownTotal ?? (database ? await filtered.CountAsync(cancellationToken) : filtered.Count());
++        // CRITIC PLANT L20: "the type-ahead asks the same count again and again": a database list remembers the total of
++        // a selection (search, filter, grouping) for 30 seconds in the binding itself and answers it again
++        // instead of counting. The key forgets the tenant (the binding is shared by every workspace).
++        if (Erp.Kernel.CriticPlant.Is("L20") && database && request.KnownTotal is null)
++        {
++            var criticKey = $"{request.Search}\u0001{request.Filter}\u0001{request.GroupBy}";
++            if (_criticTotals.TryGetValue(criticKey, out var memo) && memo.At > DateTime.UtcNow.AddSeconds(-30))
++            {
++                total = memo.Total;
++            }
++            else
++            {
++                _criticTotals[criticKey] = (total, DateTime.UtcNow);
++            }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff -ru /home/shan/critic/p00-foundation-r20/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+--- /home/shan/critic/p00-foundation-r20/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs	2026-11-18 04:38:36.762046237 +0400
++++ src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs	2026-11-18 04:43:29.781228335 +0400
+@@ -152,7 +152,9 @@
+             {
+                 found.UnionWith(await source.CompaniesGrantingAsync(session, permission, cancellationToken));
+             }
+-            _cache[permission] = companies = found;
++            // CRITIC PLANT P20: "held in one company means held": a permission a role grants in any of the
++            // user's companies counts in every company of the session (as a workspace-wide role's would).
++            _cache[permission] = companies = Erp.Kernel.CriticPlant.Is("P20") && found.Count > 0 ? null : found;
+         }
+         return companies;
+     }

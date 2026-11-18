@@ -1,0 +1,16 @@
+== last 2 audit entries for identity.roles (who, when, operation, field-level old/new)
+== money columns: any float/double/real column in the schema
+== numeric columns sample (currency rates)
+currency.exchange_rates.rate|numeric|19|8
+contacts.contacts.credit_limit_amount|numeric|28|10
+contacts.contacts.credit_limit_exchange_rate|numeric|19|8
+contacts.contacts.credit_limit_base_amount|numeric|19|4
+customfields.field_values.number_value|numeric|28|8
+829504|0190a000-0000-7000-8000-000000000001|2026-11-18 01:10:33.373888+00|01a1ec19-421e-7e3a-9eb2-18fd2d56b696|user|identity|roles|01a1ec19-415c-7ed4-be11-7761bdfd8a5c|update|{"permissions": {"new": ["audit.log.read", "contacts.contacts.read", "currency.currencies.read", "currency.rates.read", "customfields.fields.read", "identity.profile.update", "identity.roles.read", "identity.users.read", "jobs.jobs.read", "jobs.schedules.read", "numbering.sequences.read", "reports.catalog.read", "tenancy.ac
+829503|0190a000-0000-7000-8000-000000000001|2026-11-18 01:10:33.340309+00|01a1ec19-421e-7e3a-9eb2-18fd2d56b696|user|identity|roles|01a1ec19-415c-7ed4-be11-7761bdfd8a5c|update|{"permissions": {"new": ["audit.log.read", "contacts.contacts.read", "currency.currencies.read", "currency.rates.read", "customfields.fields.read", "identity.profile.update", "identity.users.read", "jobs.jobs.read", "jobs.schedules.read", "numbering.sequences.read", "reports.catalog.read", "tenancy.access.read", "tenancy.br
+credit_limit_amount
+credit_limit_base_amount
+credit_limit_exchange_rate
+credit_limit_stated
+credit_limit_base_currency
+credit_limit_currency

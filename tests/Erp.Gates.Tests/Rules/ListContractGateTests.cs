@@ -76,14 +76,14 @@ public sealed class ListContractGateTests(GateFixture fixture)
                 var labelled = definition.TryGetProperty("strings", out var strings) && strings.TryGetProperty(labelKey, out var label) &&
                                label.GetProperty("en").GetString() is { Length: > 0 } && label.GetProperty("ar").GetString() is { Length: > 0 };
                 // A custom field is hidden and filterable; it is sorted by unless it is a lookup (a record id means nothing as an
-                // order) and grouped by only when it is a single select or a yes/no (a few values), exactly.
+                // order) and grouped by unless it is a lookup, exactly.
                 var kind = column.GetProperty("type").GetString()!.ToLowerInvariant();
                 var sortable = kind != "reference";
-                var groupable = kind is "choice" or "boolean";
+                var groupable = kind != "reference";
                 if (!key.StartsWith("cf", StringComparison.Ordinal) || column.GetProperty("sortable").GetBoolean() != sortable || column.GetProperty("groupable").GetBoolean() != groupable ||
                     !column.GetProperty("filterable").GetBoolean() || !column.GetProperty("hidden").GetBoolean() || !labelled)
                 {
-                    problems.Add($"list '{list.Key}': extra column '{key}' is not a hidden, filterable custom field column (sortable unless a lookup, groupable only as a select or yes/no) with a label in both languages");
+                    problems.Add($"list '{list.Key}': extra column '{key}' is not a hidden, filterable custom field column (sortable unless a lookup, groupable unless a lookup) with a label in both languages");
                 }
             }
             if (extra.Select(c => c.GetProperty("key").GetString()).Distinct().Count() != extra.Count)

@@ -1,0 +1,8 @@
+tax invoice: INV-{YYYY}- 5 yearly next INV-2026-01203 tax True
+gapless false 400 {"gapless": [{"code": "numberingTaxGapless", "message": "A tax invoice or tax credit note sequence never skips a number: this cannot be turned off."}]}
+next number lowered to 5 400 {"nextValue": [{"code": "numberingNextNumberBelowIssued", "message": "Number 1,202 has already been given. Enter a number above it."}]}
+next number raised to 2000 after numbers given 400 {"nextValue": [{"code": "numberingGaplessNextNumberFixed", "message": "Numbers of this period have been given and this sequence never skips: the next number stays 1,203."}]}
+prefix INV- digits 9 (could INV-000001202 repeat? no) 400 {"reset": [{"code": "numberingYearlyNeedsYear", "message": "Numbers that start again every year need the year in the prefix or suffix ({YYYY} or {YY}), or this year's numbers would repeat last year's.
+prefix 'INV-2026-' literal, never (no repeat) 200 null
+after: INV-2026- never next INV-2026-01203
+back to yearly INV-{YYYY}-: 200 next INV-2026-01203

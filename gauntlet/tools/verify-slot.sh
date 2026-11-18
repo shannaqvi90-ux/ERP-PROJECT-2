@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Runs a command (normally `./erp verify`) while holding one of a few machine-wide slots, so parallel
 # agents do not run more full verifies at once than the machine can carry. Waits for a free slot.
-#   ERP_VERIFY_SLOTS  number of slots (default 3 since the 96 GB upgrade, owner decision #50 of
-#                     2026-11-15; it was 2 while the PC had 32 GB and ran out of memory with three)
+#   ERP_VERIFY_SLOTS  number of slots (default 2: owner decision #58 of 2026-11-18 (first written as #55) went back from the
+#                     third slot of #50, because three critics at once drove the load to 100-122 and
+#                     load-sensitive tests failed every critic's clean-clone verify)
 #   ERP_SLOT_DIR      folder of the slot lock files (default ~/.verify-slots)
 #   ERP_VERIFY_LOG    optional file for the command's output (stdout and stderr, plus this script's
 #                     own lines). Agents share one scratch folder, so name it after your role, piece
@@ -18,7 +19,7 @@
 #                     runs at a time (integrators also hold the integration lock).
 # Slots are held by open file descriptors and freed when the command exits, however it exits.
 set -u
-slots="${ERP_VERIFY_SLOTS:-3}"
+slots="${ERP_VERIFY_SLOTS:-2}"
 dir="${ERP_SLOT_DIR:-$HOME/.verify-slots}"
 log="${ERP_VERIFY_LOG:-}"
 mkdir -p "$dir"

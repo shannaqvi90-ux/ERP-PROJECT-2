@@ -1,0 +1,24 @@
+BEGIN
+0190a000-0000-7000-8000-000000000001|1794963280.014862
+value_text(B field,B record)=<null>
+value_date_trunc(B date field,B record)=<null>
+field_values rows with CANARY=0
+ERROR:  new row violates row-level security policy for table "field_values"
+B definitions visible=0
+all definitions visible=7
+B record values visible=0
+SAVEPOINT
+ROLLBACK
+ERROR:  WITH clause containing a data-modifying statement must be at the top level
+LINE 1: SELECT 'update of B values rows=' || (WITH u AS (UPDATE cust...
+                                                   ^
+ROLLBACK
+BEGIN
+0190a000-0000-7000-8000-000000000002|1794963280.145857
+control as B: value_text=CANARYB1794963008929 date_trunc=2031-01-01
+ROLLBACK
+BEGIN
+0190a000-0000-7000-8000-000000000001|1794963285.827080
+UPDATE 0
+DELETE 0
+ROLLBACK

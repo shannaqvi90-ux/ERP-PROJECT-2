@@ -1,0 +1,12 @@
+import { open, shot, BASE } from './lib.mjs';
+const lang = process.argv[2]; const ar = lang === 'ar';
+const { browser, page, errors } = await open(ar ? 'admin.ar@alnoor.example' : 'admin@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.keyboard.press('/'); await page.keyboard.type('Critic en Trading'); await page.waitForTimeout(1800);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(1800);
+await page.getByRole('button', { name: ar ? 'السجل' : 'History', exact: true }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(2500);
+const txt = await page.locator('main').innerText();
+const i = txt.indexOf(ar ? 'كل تغيير' : 'Every change');
+console.log(txt.slice(i, i + 4000));
+await shot(page, `${lang}-history-select-labels`);
+console.log(errors); await browser.close();

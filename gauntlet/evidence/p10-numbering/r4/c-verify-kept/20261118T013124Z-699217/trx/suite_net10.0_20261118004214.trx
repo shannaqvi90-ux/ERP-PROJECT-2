@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="7bfbd849-1d2d-42c2-a38f-2f1f05954e44" name="@docker-desktop 2026-11-18 00:41:20" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-18T00:41:20.9779266+00:00" queuing="2026-11-18T00:41:20.9779267+00:00" start="2026-11-18T00:41:07.1510563+00:00" finish="2026-11-18T00:42:14.0257538+00:00" />
+  <TestSettings name="default" id="ddaddbff-aad7-498c-9384-071277e776ca">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-11-18_00_41_20" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5d5d68b0-c8fa-4f06-9668-6ce4801c0e5d" testId="16895750-c7e1-6f4f-3e9f-9d34dc63a0d5" testName="Erp.Modules.Currency.Tests.WholeListSeedTests.A_workspace_outside_the_gates_holds_every_ISO_4217_currency_with_both_names_and_the_dirham_in_use" computerName="docker-desktop" duration="00:00:32.2771861" startTime="2026-11-18T00:41:19.2143477+00:00" endTime="2026-11-18T00:41:51.5232117+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d5d68b0-c8fa-4f06-9668-6ce4801c0e5d" />
+    <UnitTestResult executionId="d2b27091-b798-4715-9c31-b9cdf30bb816" testId="da3f9ca4-4d1b-8d81-f608-626b8c8c609a" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.Rates_are_entered_corrected_and_deleted_with_validation_in_the_callers_language" computerName="docker-desktop" duration="00:00:00.5149427" startTime="2026-11-18T00:42:07.5052588+00:00" endTime="2026-11-18T00:42:08.0203261+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d2b27091-b798-4715-9c31-b9cdf30bb816" />
+    <UnitTestResult executionId="61375a66-5d3c-4e91-98ab-37308391ad00" testId="159fdb23-a04a-e785-54aa-5232870c094d" testName="Erp.Modules.Currency.Tests.RateFileTests.The_shared_dataset_file_is_read_as_written" computerName="docker-desktop" duration="00:00:00.0293579" startTime="2026-11-18T00:41:19.7649453+00:00" endTime="2026-11-18T00:41:19.7944073+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="61375a66-5d3c-4e91-98ab-37308391ad00" />
+    <UnitTestResult executionId="28ada1e0-afd4-4d4e-9168-54edef1526f2" testId="c1fb7cbb-8afb-1f6b-2c31-f9fa89328169" testName="Erp.Modules.Currency.Tests.RateFileTests.Every_problem_is_reported_with_its_line_and_nothing_is_read_from_a_bad_file" computerName="docker-desktop" duration="00:00:00.1740925" startTime="2026-11-18T00:41:19.2139954+00:00" endTime="2026-11-18T00:41:19.4226650+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="28ada1e0-afd4-4d4e-9168-54edef1526f2" />
+    <UnitTestResult executionId="243473c7-8655-4cfd-986a-3eb4fcbfccda" testId="3f405885-e843-1812-20ad-cafeb412b148" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.The_lookup_uses_the_dates_rate_then_the_latest_earlier_one_within_the_limit_and_never_a_later_one" computerName="docker-desktop" duration="00:00:00.3380685" startTime="2026-11-18T00:42:13.0279105+00:00" endTime="2026-11-18T00:42:13.3660578+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="243473c7-8655-4cfd-986a-3eb4fcbfccda" />
+    <UnitTestResult executionId="1b34292d-0e2c-4d53-91d1-b3f568db5835" testId="9d166682-d65f-a695-b490-d93e897a7115" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.Only_someone_who_works_in_every_company_with_the_permission_changes_the_shared_currencies_and_rates" computerName="docker-desktop" duration="00:00:04.1010633" startTime="2026-11-18T00:42:08.2608967+00:00" endTime="2026-11-18T00:42:12.3620534+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1b34292d-0e2c-4d53-91d1-b3f568db5835" />
+    <UnitTestResult executionId="921a6a9f-0b25-4345-a801-d8f7b64a0009" testId="33384934-2e40-a749-ae84-b5ac87f7ed7e" testName="Erp.Modules.Currency.Tests.RateFileTests.Reads_columns_by_name_with_any_delimiter_and_both_date_forms" computerName="docker-desktop" duration="00:00:00.1048726" startTime="2026-11-18T00:41:19.6577884+00:00" endTime="2026-11-18T00:41:19.7627332+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="921a6a9f-0b25-4345-a801-d8f7b64a0009" />
+    <UnitTestResult executionId="20e05b4d-fa0f-431b-a7cb-b2907e5c4787" testId="fe4708c4-9643-5879-968e-c265995f887a" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.An_amount_is_converted_at_the_rate_found_and_its_base_amount_is_rounded_once_half_away_from_zero" computerName="docker-desktop" duration="00:00:00.2344803" startTime="2026-11-18T00:42:08.0257751+00:00" endTime="2026-11-18T00:42:08.2603339+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="20e05b4d-fa0f-431b-a7cb-b2907e5c4787" />
+    <UnitTestResult executionId="2b562586-24b3-4f04-9ea0-02dae816c0d6" testId="15054d99-a629-8353-be15-31a3fac31d91" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.Currencies_are_put_in_use_and_taken_out_of_use_but_a_base_currency_stays" computerName="docker-desktop" duration="00:00:01.0317720" startTime="2026-11-18T00:42:06.4655997+00:00" endTime="2026-11-18T00:42:07.4974758+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2b562586-24b3-4f04-9ea0-02dae816c0d6" />
+    <UnitTestResult executionId="41f8628a-cdfb-4989-a340-d9360d7fc080" testId="634f6e1a-8ec6-1ebf-edcd-0998771e1b01" testName="Erp.Modules.Currency.Tests.RateFileTests.A_file_without_the_required_columns_or_rows_is_refused" computerName="docker-desktop" duration="00:00:00.1190090" startTime="2026-11-18T00:41:19.5299023+00:00" endTime="2026-11-18T00:41:19.6490378+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="41f8628a-cdfb-4989-a340-d9360d7fc080" />
+    <UnitTestResult executionId="38d1c765-69c2-4b0d-9147-6a521ba3de60" testId="982aa3b7-6e62-8a52-dd54-1140670f5253" testName="Erp.Modules.Currency.Tests.RateFileTests.Quoted_values_keep_delimiters_and_doubled_quotes" computerName="docker-desktop" duration="00:00:00.0018080" startTime="2026-11-18T00:41:19.8046714+00:00" endTime="2026-11-18T00:41:19.8065252+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="38d1c765-69c2-4b0d-9147-6a521ba3de60" />
+    <UnitTestResult executionId="1bc11da3-047c-4ddd-a037-eb3938b14c17" testId="3d764d2f-e9be-a3e5-412b-71c5be6abe0b" testName="Erp.Modules.Currency.Tests.RateFileTests.A_file_longer_than_the_limit_stops_at_the_limit" computerName="docker-desktop" duration="00:00:00.3160381" startTime="2026-11-18T00:41:20.8773206+00:00" endTime="2026-11-18T00:41:21.1934268+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1bc11da3-047c-4ddd-a037-eb3938b14c17" />
+    <UnitTestResult executionId="1b20010c-0533-4b6f-a90e-f438b2a07102" testId="7af56341-0fd0-087d-e271-cfe0546317e3" testName="Erp.Modules.Currency.Tests.RateFileTests.The_demo_rates_are_the_same_every_run_positive_and_the_dollar_keeps_its_peg" computerName="docker-desktop" duration="00:00:01.0483967" startTime="2026-11-18T00:41:19.8275801+00:00" endTime="2026-11-18T00:41:20.8760506+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1b20010c-0533-4b6f-a90e-f438b2a07102" />
+    <UnitTestResult executionId="a01e58d0-8f89-47a1-8a13-dff0925e4c5e" testId="b0f72f64-ccdb-ee4a-aeda-47f2097c9936" testName="Erp.Modules.Currency.Tests.RateFileTests.The_English_names_come_from_the_same_ISO_list_as_the_kernel_codes" computerName="docker-desktop" duration="00:00:00.0147897" startTime="2026-11-18T00:41:19.8117722+00:00" endTime="2026-11-18T00:41:19.8266324+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a01e58d0-8f89-47a1-8a13-dff0925e4c5e" />
+    <UnitTestResult executionId="528899f9-d157-4909-8ed6-d543f262d004" testId="de2c9211-e8c1-7836-e1e0-bd0fef04ce20" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.Each_workspace_sees_and_converts_with_its_own_rates_only" computerName="docker-desktop" duration="00:00:00.6639537" startTime="2026-11-18T00:42:12.3625907+00:00" endTime="2026-11-18T00:42:13.0266130+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="528899f9-d157-4909-8ed6-d543f262d004" />
+    <UnitTestResult executionId="09eee4e3-e878-4d66-8e11-ffad6679a004" testId="64cd3677-e1dc-e767-d98e-1d7f5acfb377" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.The_gate_workspace_holds_its_sample_of_ISO_4217_currencies_those_in_use_first_and_its_rates" computerName="docker-desktop" duration="00:00:04.1066077" startTime="2026-11-18T00:42:02.3310450+00:00" endTime="2026-11-18T00:42:06.4377750+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09eee4e3-e878-4d66-8e11-ffad6679a004" />
+    <UnitTestResult executionId="ffa7bbfe-430c-47ef-8bc6-0cfbe7458315" testId="cb2b3626-489f-5081-e05e-d47484574613" testName="Erp.Modules.Currency.Tests.CurrencyApiTests.A_file_is_imported_whole_or_not_at_all_and_held_rates_are_kept_unless_replacing" computerName="docker-desktop" duration="00:00:00.2111677" startTime="2026-11-18T00:42:13.3665466+00:00" endTime="2026-11-18T00:42:13.5777827+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ffa7bbfe-430c-47ef-8bc6-0cfbe7458315" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.Every_problem_is_reported_with_its_line_and_nothing_is_read_from_a_bad_file" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="c1fb7cbb-8afb-1f6b-2c31-f9fa89328169">
+      <Execution id="28ada1e0-afd4-4d4e-9168-54edef1526f2" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="Every_problem_is_reported_with_its_line_and_nothing_is_read_from_a_bad_file" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.A_file_is_imported_whole_or_not_at_all_and_held_rates_are_kept_unless_replacing" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="cb2b3626-489f-5081-e05e-d47484574613">
+      <Execution id="ffa7bbfe-430c-47ef-8bc6-0cfbe7458315" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="A_file_is_imported_whole_or_not_at_all_and_held_rates_are_kept_unless_replacing" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.The_English_names_come_from_the_same_ISO_list_as_the_kernel_codes" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="b0f72f64-ccdb-ee4a-aeda-47f2097c9936">
+      <Execution id="a01e58d0-8f89-47a1-8a13-dff0925e4c5e" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="The_English_names_come_from_the_same_ISO_list_as_the_kernel_codes" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.The_lookup_uses_the_dates_rate_then_the_latest_earlier_one_within_the_limit_and_never_a_later_one" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="3f405885-e843-1812-20ad-cafeb412b148">
+      <Execution id="243473c7-8655-4cfd-986a-3eb4fcbfccda" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="The_lookup_uses_the_dates_rate_then_the_latest_earlier_one_within_the_limit_and_never_a_later_one" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.Currencies_are_put_in_use_and_taken_out_of_use_but_a_base_currency_stays" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="15054d99-a629-8353-be15-31a3fac31d91">
+      <Execution id="2b562586-24b3-4f04-9ea0-02dae816c0d6" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="Currencies_are_put_in_use_and_taken_out_of_use_but_a_base_currency_stays" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.Reads_columns_by_name_with_any_delimiter_and_both_date_forms" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="33384934-2e40-a749-ae84-b5ac87f7ed7e">
+      <Execution id="921a6a9f-0b25-4345-a801-d8f7b64a0009" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="Reads_columns_by_name_with_any_delimiter_and_both_date_forms" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.The_shared_dataset_file_is_read_as_written" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="159fdb23-a04a-e785-54aa-5232870c094d">
+      <Execution id="61375a66-5d3c-4e91-98ab-37308391ad00" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="The_shared_dataset_file_is_read_as_written" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.Only_someone_who_works_in_every_company_with_the_permission_changes_the_shared_currencies_and_rates" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="9d166682-d65f-a695-b490-d93e897a7115">
+      <Execution id="1b34292d-0e2c-4d53-91d1-b3f568db5835" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="Only_someone_who_works_in_every_company_with_the_permission_changes_the_shared_currencies_and_rates" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.The_gate_workspace_holds_its_sample_of_ISO_4217_currencies_those_in_use_first_and_its_rates" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="64cd3677-e1dc-e767-d98e-1d7f5acfb377">
+      <Execution id="09eee4e3-e878-4d66-8e11-ffad6679a004" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="The_gate_workspace_holds_its_sample_of_ISO_4217_currencies_those_in_use_first_and_its_rates" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.A_file_longer_than_the_limit_stops_at_the_limit" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="3d764d2f-e9be-a3e5-412b-71c5be6abe0b">
+      <Execution id="1bc11da3-047c-4ddd-a037-eb3938b14c17" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="A_file_longer_than_the_limit_stops_at_the_limit" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.WholeListSeedTests.A_workspace_outside_the_gates_holds_every_ISO_4217_currency_with_both_names_and_the_dirham_in_use" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="16895750-c7e1-6f4f-3e9f-9d34dc63a0d5">
+      <Execution id="5d5d68b0-c8fa-4f06-9668-6ce4801c0e5d" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.WholeListSeedTests" name="A_workspace_outside_the_gates_holds_every_ISO_4217_currency_with_both_names_and_the_dirham_in_use" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.The_demo_rates_are_the_same_every_run_positive_and_the_dollar_keeps_its_peg" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="7af56341-0fd0-087d-e271-cfe0546317e3">
+      <Execution id="1b20010c-0533-4b6f-a90e-f438b2a07102" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="The_demo_rates_are_the_same_every_run_positive_and_the_dollar_keeps_its_peg" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.Rates_are_entered_corrected_and_deleted_with_validation_in_the_callers_language" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="da3f9ca4-4d1b-8d81-f608-626b8c8c609a">
+      <Execution id="d2b27091-b798-4715-9c31-b9cdf30bb816" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="Rates_are_entered_corrected_and_deleted_with_validation_in_the_callers_language" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.An_amount_is_converted_at_the_rate_found_and_its_base_amount_is_rounded_once_half_away_from_zero" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="fe4708c4-9643-5879-968e-c265995f887a">
+      <Execution id="20e05b4d-fa0f-431b-a7cb-b2907e5c4787" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="An_amount_is_converted_at_the_rate_found_and_its_base_amount_is_rounded_once_half_away_from_zero" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.CurrencyApiTests.Each_workspace_sees_and_converts_with_its_own_rates_only" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="de2c9211-e8c1-7836-e1e0-bd0fef04ce20">
+      <Execution id="528899f9-d157-4909-8ed6-d543f262d004" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.CurrencyApiTests" name="Each_workspace_sees_and_converts_with_its_own_rates_only" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.Quoted_values_keep_delimiters_and_doubled_quotes" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="982aa3b7-6e62-8a52-dd54-1140670f5253">
+      <Execution id="38d1c765-69c2-4b0d-9147-6a521ba3de60" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="Quoted_values_keep_delimiters_and_doubled_quotes" />
+    </UnitTest>
+    <UnitTest name="Erp.Modules.Currency.Tests.RateFileTests.A_file_without_the_required_columns_or_rows_is_refused" storage="/work/tests/erp.modules.currency.tests/bin/release/net10.0/erp.modules.currency.tests.dll" id="634f6e1a-8ec6-1ebf-edcd-0998771e1b01">
+      <Execution id="41f8628a-cdfb-4989-a340-d9360d7fc080" />
+      <TestMethod codeBase="/work/tests/Erp.Modules.Currency.Tests/bin/Release/net10.0/Erp.Modules.Currency.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Modules.Currency.Tests.RateFileTests" name="A_file_without_the_required_columns_or_rows_is_refused" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="16895750-c7e1-6f4f-3e9f-9d34dc63a0d5" executionId="5d5d68b0-c8fa-4f06-9668-6ce4801c0e5d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="da3f9ca4-4d1b-8d81-f608-626b8c8c609a" executionId="d2b27091-b798-4715-9c31-b9cdf30bb816" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="159fdb23-a04a-e785-54aa-5232870c094d" executionId="61375a66-5d3c-4e91-98ab-37308391ad00" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c1fb7cbb-8afb-1f6b-2c31-f9fa89328169" executionId="28ada1e0-afd4-4d4e-9168-54edef1526f2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3f405885-e843-1812-20ad-cafeb412b148" executionId="243473c7-8655-4cfd-986a-3eb4fcbfccda" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9d166682-d65f-a695-b490-d93e897a7115" executionId="1b34292d-0e2c-4d53-91d1-b3f568db5835" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="33384934-2e40-a749-ae84-b5ac87f7ed7e" executionId="921a6a9f-0b25-4345-a801-d8f7b64a0009" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fe4708c4-9643-5879-968e-c265995f887a" executionId="20e05b4d-fa0f-431b-a7cb-b2907e5c4787" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="15054d99-a629-8353-be15-31a3fac31d91" executionId="2b562586-24b3-4f04-9ea0-02dae816c0d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="634f6e1a-8ec6-1ebf-edcd-0998771e1b01" executionId="41f8628a-cdfb-4989-a340-d9360d7fc080" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="982aa3b7-6e62-8a52-dd54-1140670f5253" executionId="38d1c765-69c2-4b0d-9147-6a521ba3de60" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3d764d2f-e9be-a3e5-412b-71c5be6abe0b" executionId="1bc11da3-047c-4ddd-a037-eb3938b14c17" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7af56341-0fd0-087d-e271-cfe0546317e3" executionId="1b20010c-0533-4b6f-a90e-f438b2a07102" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b0f72f64-ccdb-ee4a-aeda-47f2097c9936" executionId="a01e58d0-8f89-47a1-8a13-dff0925e4c5e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de2c9211-e8c1-7836-e1e0-bd0fef04ce20" executionId="528899f9-d157-4909-8ed6-d543f262d004" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="64cd3677-e1dc-e767-d98e-1d7f5acfb377" executionId="09eee4e3-e878-4d66-8e11-ffad6679a004" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cb2b3626-489f-5081-e05e-d47484574613" executionId="ffa7bbfe-430c-47ef-8bc6-0cfbe7458315" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="17" executed="17" passed="17" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:01.93]   Discovering: Erp.Modules.Currency.Tests
+[xUnit.net 00:00:03.58]   Discovered:  Erp.Modules.Currency.Tests
+[xUnit.net 00:00:04.34]   Starting:    Erp.Modules.Currency.Tests
+[xUnit.net 00:00:59.23]   Finished:    Erp.Modules.Currency.Tests (ID = '3fe4d9f9376a9a22bddef98c63ce45f66e9ac60cea823d962dfab8ba13e0bb10')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

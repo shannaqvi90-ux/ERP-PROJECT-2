@@ -1,0 +1,220 @@
+verify-slot: slot 2 of 3 taken at 2026-11-18T01:13:50Z after waiting 0 s; time the run from here
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:57.29
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.40]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.93]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.19]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:26.07]     Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [FAIL]
+[xUnit.net 00:00:26.07]       Catalogue permissions no endpoint uses (dead permissions confuse role editors): numbering.sequences.update
+[xUnit.net 00:00:26.07]       Stack Trace:
+[xUnit.net 00:00:26.08]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(322,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
+[xUnit.net 00:00:26.08]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.08]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.08]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:26.08]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [19 ms]
+  Error Message:
+   Catalogue permissions no endpoint uses (dead permissions confuse role editors): numbering.sequences.update
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 322
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client [2 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous [6 ms]
+[xUnit.net 00:00:42.06]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [FAIL]
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [valid] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-c700ce0394cd71528a14f3ade4410517-9a0dd7dc91858989-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [gapless turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-52338d57231f56c22a00971862a1c49e-99ad8787f2a12c83-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [perBranch turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-f4c39b3b9f990c7c7868435b93a0a8f9-bfd7925d2e4db64b-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [reset=monthly] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-dde761b9e2d08404cd5020f426bb1eb4-afed6facb184ba70-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [reset=never] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-94f9b62ea9ee71624168ae996d1258c6-53b949018c00c3f0-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [padding=12] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-70bddb37b4343098f86b0a7742141c27-7be9b64fb82f4e69-00"}
+[xUnit.net 00:00:42.07]       PUT /api/numbering/sequences/{id} [nextValue=4000] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-2f4e424c5aed595db36e8e8966f8488d-c9f9f23b62b0c3b0-00"}
+[xUnit.net 00:00:42.07]       PUT /api/numbering/sequences/{id} [suffix] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-b010423097db907d2c81551c3430d5f5-04612b4ccc96c249-00"}
+[xUnit.net 00:00:42.07]       Stack Trace:
+[xUnit.net 00:00:42.07]         /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(105,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters()
+[xUnit.net 00:00:42.07]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [4 s]
+  Error Message:
+   PUT /api/numbering/sequences/{id} [valid] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-c700ce0394cd71528a14f3ade4410517-9a0dd7dc91858989-00"}
+PUT /api/numbering/sequences/{id} [gapless turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-52338d57231f56c22a00971862a1c49e-99ad8787f2a12c83-00"}
+PUT /api/numbering/sequences/{id} [perBranch turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-f4c39b3b9f990c7c7868435b93a0a8f9-bfd7925d2e4db64b-00"}
+PUT /api/numbering/sequences/{id} [reset=monthly] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-dde761b9e2d08404cd5020f426bb1eb4-afed6facb184ba70-00"}
+PUT /api/numbering/sequences/{id} [reset=never] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-94f9b62ea9ee71624168ae996d1258c6-53b949018c00c3f0-00"}
+PUT /api/numbering/sequences/{id} [padding=12] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-70bddb37b4343098f86b0a7742141c27-7be9b64fb82f4e69-00"}
+PUT /api/numbering/sequences/{id} [nextValue=4000] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-2f4e424c5aed595db36e8e8966f8488d-c9f9f23b62b0c3b0-00"}
+PUT /api/numbering/sequences/{id} [suffix] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-b010423097db907d2c81551c3430d5f5-04612b4ccc96c249-00"}
+  Stack Trace:
+     at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters() in /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 105
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:42.74]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [FAIL]
+[xUnit.net 00:00:42.74]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:42.74]       Expected: Forbidden
+[xUnit.net 00:00:42.74]       Actual:   OK
+[xUnit.net 00:00:42.74]       Stack Trace:
+[xUnit.net 00:00:42.74]         /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(125,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence()
+[xUnit.net 00:00:42.74]         --- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [11 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [2 ms]
+  Failed Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [666 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Stack Trace:
+     at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence() in /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 125
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:46.32]     Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope [FAIL]
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company took QT-2040-00001/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed QT-2040-00002/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company took SO-2040-00001/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed SO-2040-00002/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed INV-2040-00001/06 for sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed CN-2040-00001/06 for sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company took PO-2040-00001/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed PO-2040-00002/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       Stack Trace:
+[xUnit.net 00:00:46.33]         /work/tests/Erp.Gates.Tests/G1/G1NumberingContractTests.cs(102,0): at Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope()
+[xUnit.net 00:00:46.33]         --- End of stack trace from previous location ---
+  Failed Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope [1 s]
+  Error Message:
+   tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took QT-2040-00001/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+a user whose permission is held in the first company previewed QT-2040-00002/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took SO-2040-00001/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+a user whose permission is held in the first company previewed SO-2040-00002/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+a user whose permission is held in the first company previewed INV-2040-00001/06 for sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+a user whose permission is held in the first company previewed CN-2040-00001/06 for sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took PO-2040-00001/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+a user whose permission is held in the first company previewed PO-2040-00002/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+  Stack Trace:
+     at Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope() in /work/tests/Erp.Gates.Tests/G1/G1NumberingContractTests.cs:line 102
+--- End of stack trace from previous location ---
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "session") [28 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "user") [24 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [47 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches [7 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [5 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: "holder") [21 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [10 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing [10 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue [32 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges [184 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers [25 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view [5 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds [549 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [27 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view [6 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line [24 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces [51 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone [1 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission [49 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers [8 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission [159 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission [23 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made [29 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write [8 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds [7 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list [6 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 32 s]
+[xUnit.net 00:04:36.37]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]
+[xUnit.net 00:04:36.37]       PUT /api/numbering/sequences/{id:guid} changes data but declares the read permission numbering.sequences.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:04:36.37]       Stack Trace:
+[xUnit.net 00:04:36.37]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(267,0): at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+[xUnit.net 00:04:36.37]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:36.37]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:36.37]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:04:36.37]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:04:37.07]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Error Message:
+   PUT /api/numbering/sequences/{id:guid} changes data but declares the read permission numbering.sequences.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+  Stack Trace:
+     at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 267
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [15 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [421 ms]
+
+Test Run Failed.
+Total tests: 42
+     Passed: 37
+     Failed: 5
+ Total time: 4.6284 Minutes
+Results File: /out/trx/plant_net10.0_20261118011937.trx

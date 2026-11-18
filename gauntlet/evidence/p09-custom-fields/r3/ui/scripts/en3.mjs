@@ -1,0 +1,13 @@
+import { open, shot, BASE } from './lib.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+const log = (...a) => console.log(...a);
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+log('url', page.url());
+await page.keyboard.press('/'); await page.keyboard.type('Al Noor Critic Target'); await page.waitForTimeout(1500);
+log((await page.locator('main').innerText()).slice(0, 400));
+await page.keyboard.press('Alt+n'); await page.waitForTimeout(1200);
+await shot(page, 'x-en-new-contact');
+const names = await page.evaluate(() => [...document.querySelectorAll('main [name]')].map(e => `${e.tagName}:${e.getAttribute('name')}:${e.labels?.[0]?.innerText ?? ''}`));
+log(names.join('\n'));
+log(errors);
+await browser.close();

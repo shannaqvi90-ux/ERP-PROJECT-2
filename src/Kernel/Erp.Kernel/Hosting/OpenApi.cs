@@ -78,6 +78,14 @@ internal static class OpenApiSetup
                 if (context.JsonPropertyInfo is null && type.GetCustomAttributes(typeof(CustomFieldValuesAttribute), true).Length > 0)
                 {
                     schema.Description = "The workspace's custom fields of this kind of record, one property per field named by the field's key (for example cfCustomerSegment); only fields that hold a value. Keys are per workspace: GET /api/customfields/fields lists them with their kind, labels in English and Arabic, decimals and options.";
+                    // The hook a client (p15) follows to learn this workspace's fields: where to read them and how a key looks.
+                    schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+                    schema.Extensions["x-erp-custom-fields"] = new JsonNodeExtension(new JsonObject
+                    {
+                        ["definitions"] = "/api/customfields/fields",
+                        ["recordTypeFilter"] = "recordType eq '<kind of record>' and isActive eq true",
+                        ["keyPattern"] = "^cf[A-Za-z0-9]{1,38}$",
+                    });
                     schema.AdditionalProperties = new OpenApiSchema
                     {
                         Description = "The value, by the field's kind: text and single select as a string (a select's option value), a number as a decimal string with the field's decimals, a date as yyyy-mm-dd, yes/no as a boolean, a lookup as a record id (its record's names follow as <key>Name and <key>NameAr).",

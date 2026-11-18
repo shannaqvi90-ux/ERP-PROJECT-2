@@ -1,0 +1,11 @@
+import { open, shot, BASE } from './lib.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+await page.goto(BASE + '/customfields/fields'); await page.waitForTimeout(2500);
+await shot(page, 'x-fields-list');
+console.log((await page.locator('main').innerText()).slice(0, 1500));
+await page.keyboard.press('Alt+n'); await page.waitForTimeout(1500);
+await shot(page, 'x-new-field');
+console.log('---form---'); console.log((await page.locator('main').innerText()).slice(0, 2000));
+console.log('focused:', await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 200)));
+console.log(errors);
+await browser.close();

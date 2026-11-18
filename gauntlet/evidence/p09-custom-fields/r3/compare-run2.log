@@ -1,0 +1,13 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+custom-field-filter      odoo  verified  steps 17  keys 61  machine 7.738s  human 53.48s  human+wait 55.325s  -> ../../evidence-staging/p09-custom-fields/r3/compare/results/custom-field-filter-20261118T035153-ecb9.json
+custom-field-filter      ours  error     steps 10  keys 36  machine 122.106s  human 26.73s  human+wait 27.372s  (TimeoutError: locator.waitFor: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p09-custom-fields/r3/compare/results/custom-field-filter-20261118T035233-a4f7.json
+    TimeoutError: locator.waitFor: Timeout 120000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.list-record [role="status"]').first() to be visible[22m
+    
+        (in the driver process)
+    Call log:
+    page: {"url":"/contacts/contacts/018917b1-0728-742d-9107-621de9659a73?q=sha+wal+rom","ready_state":"complete","title":"Product","focused":{"tag":"input","name":"customFields.cfInsuranceCover31","type":null,"label":null},"navigation":true,"busy":[],"messages":["Some fields need attention.","invalid field customFields.cfInsuranceCover31","This field is required."]}
+custom-field-filter      verdict ours error
+blind review page: ../../../../evidence-staging/p09-custom-fields/r3/compare/blind/review.html
+output: ../../../../evidence-staging/p09-custom-fields/r3/compare
