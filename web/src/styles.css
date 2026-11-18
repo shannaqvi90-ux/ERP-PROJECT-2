@@ -131,9 +131,11 @@ h1 {
   transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 
-.button:hover:not(:disabled) {
-  background: var(--hover);
-  border-color: var(--accent-line);
+@media screen {
+  .button:hover:not(:disabled) {
+    background: var(--hover);
+    border-color: var(--accent-line);
+  }
 }
 
 .button:disabled {
@@ -149,10 +151,12 @@ h1 {
   box-shadow: var(--glow-soft);
 }
 
-.button.primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  box-shadow: var(--glow);
+@media screen {
+  .button.primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: var(--glow);
+  }
 }
 
 .button.ghost {
@@ -161,9 +165,11 @@ h1 {
   color: inherit;
 }
 
-.button.ghost:hover:not(:disabled) {
-  background: var(--hover);
-  border-color: transparent;
+@media screen {
+  .button.ghost:hover:not(:disabled) {
+    background: var(--hover);
+    border-color: transparent;
+  }
 }
 
 input {
@@ -177,15 +183,17 @@ input {
   min-width: 0;
 }
 
-input:focus-visible {
-  border-color: var(--accent);
-  box-shadow: var(--glow-soft);
-  outline: none;
-}
+@media screen {
+  input:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--glow-soft);
+    outline: none;
+  }
 
-[data-theme="hc"] input:focus-visible {
-  outline: 3px solid var(--focus);
-  box-shadow: none;
+  [data-theme="hc"] input:focus-visible {
+    outline: 3px solid var(--focus);
+    box-shadow: none;
+  }
 }
 
 /* Boxes and buttons are their own size: the field height above made a checkbox 30 px tall, taller
@@ -1555,4 +1563,14 @@ input[aria-invalid="true"] {
 .home-areas-title {
   font-size: var(--fs-lg);
   margin: 0 0 var(--sp-4);
+}
+
+/* Paper does not move: no transition or animation is ever caught half way in a print. */
+@media print {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
