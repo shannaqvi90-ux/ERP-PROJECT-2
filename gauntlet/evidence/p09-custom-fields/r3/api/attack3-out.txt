@@ -1,0 +1,111 @@
+B create text field 201 cfSecretCANARYB1794963008929
+B create number field 201 cfScoreCANARYB1794963008929
+B create date field 201 cfDueCANARYB1794963008929
+B create contact 201 01a1ec21-eedc-714a-9fd8-4e0930e68813
+B create same-label field 201 cfProbe1794963009718
+B put same-key value 200 
+A create field with same label as B (key collision probe) 201 cfProbe1794963009718 SAME KEY
+A create number field 201 cfScore1794963009916
+A GET /api/customfields/fields/01a1ec21-edc3-7770-85c3-2b285af49f16 {} 404 no canary    
+A GET /api/customfields/fields/01a1ec21-edc3-7770-85c3-2b285af49f16 {"X-Tenant":"gulfste 404 no canary    
+A PUT /api/customfields/fields/01a1ec21-edc3-7770-85c3-2b285af49f16 {} 404 no canary    
+A PUT /api/customfields/fields/01a1ec21-edc3-7770-85c3-2b285af49f16 {"X-Tenant":"gulfste 404 no canary    
+A GET /api/customfields/fields?search=CANARYB1794963008929 {} 200 no canary    
+A GET /api/customfields/fields?search=CANARYB1794963008929 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/customfields/fields?pageSize=500 {} 200 no canary    
+A GET /api/customfields/fields?pageSize=500 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/customfields/record-types {} 200 no canary    
+A GET /api/customfields/record-types {"X-Tenant":"gulfste 200 no canary    
+A GET /api/contacts/contacts/01a1ec21-eedc-714a-9fd8-4e0930e68813 {} 404 no canary    
+A GET /api/contacts/contacts/01a1ec21-eedc-714a-9fd8-4e0930e68813 {"X-Tenant":"gulfste 404 no canary    
+A PUT /api/contacts/contacts/01a1ec21-eedc-714a-9fd8-4e0930e68813 {} 400 no canary    
+A PUT /api/contacts/contacts/01a1ec21-eedc-714a-9fd8-4e0930e68813 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?filter=cfSecretCANARYB1794963008929%20eq%20'CANARYB1794963008929' {} 400 no canary    
+A GET /api/contacts/contacts?filter=cfSecretCANARYB1794963008929%20eq%20'CANARYB1794963008929' {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?filter=cfScoreCANARYB1794963008929%20gt%200&take=5 {} 400 no canary    
+A GET /api/contacts/contacts?filter=cfScoreCANARYB1794963008929%20gt%200&take=5 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?sort=-cfScoreCANARYB1794963008929&take=5 {} 400 no canary    
+A GET /api/contacts/contacts?sort=-cfScoreCANARYB1794963008929&take=5 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?sort=cfSecretCANARYB1794963008929&take=5 {} 400 no canary    
+A GET /api/contacts/contacts?sort=cfSecretCANARYB1794963008929&take=5 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?groupBy=cfSecretCANARYB1794963008929 {} 400 no canary    
+A GET /api/contacts/contacts?groupBy=cfSecretCANARYB1794963008929 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?groupBy=cfScoreCANARYB1794963008929 {} 400 no canary    
+A GET /api/contacts/contacts?groupBy=cfScoreCANARYB1794963008929 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?search=CANARYB1794963008929 {} 200 no canary    
+A GET /api/contacts/contacts?search=CANARYB1794963008929 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/reports/lists/customfields.fields?format=csv {} 200 no canary    
+A GET /api/reports/lists/customfields.fields?format=csv {"X-Tenant":"gulfste 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&search=CANARYB1794963008929 {} 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&search=CANARYB1794963008929 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfSecretCANARYB1794963008929,cfScoreCANARYB1794963008929&filter=cfSecretCANARYB17949630 {} 400 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfSecretCANARYB1794963008929,cfScoreCANARYB1794963008929&filter=cfSecretCANARYB17949630 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfScoreCANARYB1794963008929&sort=-cfScoreCANARYB1794963008929&limit=5&language=en&numer {} 400 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfScoreCANARYB1794963008929&sort=-cfScoreCANARYB1794963008929&limit=5&language=en&numer {"X-Tenant":"gulfste 400 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&groupBy=cfSecretCANARYB1794963008929&columns=nameEn&language=en&numerals=latn&limit=50 {} 400 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&groupBy=cfSecretCANARYB1794963008929&columns=nameEn&language=en&numerals=latn&limit=50 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/lists/contacts.contacts/definition {} 200 no canary    
+A GET /api/lists/contacts.contacts/definition {"X-Tenant":"gulfste 200 no canary    
+A GET /api/contacts/contacts?filter=cfProbe1794963009718%20contains%20'CANARY'&take=5 {} 200 no canary    
+A GET /api/contacts/contacts?filter=cfProbe1794963009718%20contains%20'CANARY'&take=5 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/contacts/contacts?filter=cfProbe1794963009718%20eq%20'CANARYB1794963008929S'&take=5 {} 200 no canary    
+A GET /api/contacts/contacts?filter=cfProbe1794963009718%20eq%20'CANARYB1794963008929S'&take=5 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/contacts/contacts?sort=-cfProbe1794963009718&take=5 {} 200 no canary    
+A GET /api/contacts/contacts?sort=-cfProbe1794963009718&take=5 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/contacts/contacts?groupBy=cfProbe1794963009718 {} 200 no canary    
+A GET /api/contacts/contacts?groupBy=cfProbe1794963009718 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/contacts/contacts?search=CANARYB1794963008929S {} 200 no canary    
+A GET /api/contacts/contacts?search=CANARYB1794963008929S {"X-Tenant":"gulfste 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfProbe1794963009718&sort=-cfProbe1794963009718&limit=20&language=en&numerals=latn {} 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfProbe1794963009718&sort=-cfProbe1794963009718&limit=20&language=en&numerals=latn {"X-Tenant":"gulfste 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfProbe1794963009718&filter=cfProbe1794963009718%20contains%20'CANARY'&language=en&nume {} 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfProbe1794963009718&filter=cfProbe1794963009718%20contains%20'CANARY'&language=en&nume {"X-Tenant":"gulfste 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=xlsx&columns=nameEn,cfProbe1794963009718&groupBy=cfProbe1794963009718&limit=200&language=en&numerals=latn {} 200 no canary    
+A GET /api/reports/lists/contacts.contacts?format=xlsx&columns=nameEn,cfProbe1794963009718&groupBy=cfProbe1794963009718&limit=200&language=en&numerals=latn {"X-Tenant":"gulfste 200 no canary    
+A GET /api/lists/customfields.fields/definition {} 200 no canary    
+A GET /api/lists/customfields.fields/definition {"X-Tenant":"gulfste 200 no canary    
+A GET /api/openapi/v1.json {} 200 no canary    
+A GET /api/openapi/v1.json {"X-Tenant":"gulfste 200 no canary    
+A GET /api/contacts/contacts?groupBy=cfDueCANARYB1794963008929.month {} 400 no canary    
+A GET /api/contacts/contacts?groupBy=cfDueCANARYB1794963008929.month {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?groupBy=cfDueCANARYB1794963008929.year {} 400 no canary    
+A GET /api/contacts/contacts?groupBy=cfDueCANARYB1794963008929.year {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts?filter=cfDueCANARYB1794963008929%20ge%20'2031-01-01'&take=5 {} 400 no canary    
+A GET /api/contacts/contacts?filter=cfDueCANARYB1794963008929%20ge%20'2031-01-01'&take=5 {"X-Tenant":"gulfste 400 no canary    
+A GET /api/reports/lists/contacts.contacts?format=pdf&columns=nameEn,cfDueCANARYB1794963008929&groupBy=cfDueCANARYB1794963008929.year&limit=50&language=ar&n {} 400 no canary    
+A GET /api/reports/lists/contacts.contacts?format=pdf&columns=nameEn,cfDueCANARYB1794963008929&groupBy=cfDueCANARYB1794963008929.year&limit=50&language=ar&n {"X-Tenant":"gulfste 400 no canary    
+A GET /api/contacts/contacts/01a1ec21-eedc-714a-9fd8-4e0930e68813/history {} 404 no canary    
+A GET /api/contacts/contacts/01a1ec21-eedc-714a-9fd8-4e0930e68813/history {"X-Tenant":"gulfste 404 no canary    
+A GET /api/audit/log?filter=recordId%20eq%20'01a1ec21-eedc-714a-9fd8-4e0930e68813' {} 200 no canary    
+A GET /api/audit/log?filter=recordId%20eq%20'01a1ec21-eedc-714a-9fd8-4e0930e68813' {"X-Tenant":"gulfste 200 no canary    
+A GET /api/audit/log?search=CANARYB1794963008929 {} 200 no canary    
+A GET /api/audit/log?search=CANARYB1794963008929 {"X-Tenant":"gulfste 200 no canary    
+A GET /api/search?q=CANARYB1794963008929 {} 404 no canary    
+A GET /api/search?q=CANARYB1794963008929 {"X-Tenant":"gulfste 404 no canary    
+A save view with B key 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-52ff32522cfb74487fe9e8545d4adab0-d87464b9115c1191-00","errors":{"columns":[{"c
+A create lookup field 201 cfPartnerLink1794963235997
+A contact with lookup to B contact 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-e821fb7afc22637524a3ebedc219e01e-4f52f 
+A sort by lookup 400 ok
+viewer GET /api/customfields/fields 200
+viewer GET /api/customfields/fields/01a1ec21-f186-7ad7-8d0f-d6a72a9a544d 200
+viewer GET /api/customfields/record-types 200
+viewer POST /api/customfields/fields 403
+viewer PUT /api/customfields/fields/01a1ec25-64a1-71a5-b948-42f6ee70597b 403
+viewer GET /api/reports/lists/customfields.fields?format=csv 200
+viewer GET /api/contacts/contacts?sort=cfScore1794963009916&take=2 200
+viewer GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfScore1794963009916&limit=3&language=en&numera 200
+noaccess GET /api/customfields/fields 403
+noaccess GET /api/customfields/fields/01a1ec21-f186-7ad7-8d0f-d6a72a9a544d 403
+noaccess GET /api/customfields/record-types 403
+noaccess POST /api/customfields/fields 403
+noaccess PUT /api/customfields/fields/01a1ec25-64a1-71a5-b948-42f6ee70597b 403
+noaccess GET /api/reports/lists/customfields.fields?format=csv 403
+noaccess GET /api/contacts/contacts?sort=cfScore1794963009916&take=2 403
+noaccess GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfScore1794963009916&limit=3&language=en&numera 403
+A switch off cfPartnerLink1794963235997 200
+A switch off cfProbe1794963009718 200
+A switch off cfScore1794963009916 200
+B switch off cfSecretCANARYB1794963008929 200
+B switch off cfScoreCANARYB1794963008929 200
+B switch off cfProbe1794963009718 200
+B switch off cfDueCANARYB1794963008929 200

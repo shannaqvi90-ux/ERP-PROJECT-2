@@ -1,0 +1,15 @@
+import { open, shot, BASE } from './lib.mjs';
+const { browser, page } = await open('admin.ar@alnoor.example');
+const fn = () => page.evaluate(() => document.activeElement?.getAttribute('name'));
+await page.goto(BASE + '/customfields/fields'); await page.waitForTimeout(2000);
+await page.keyboard.press('Alt+n'); await page.waitForTimeout(800);
+console.log('start', await fn());
+await page.keyboard.type('Shipping line 42'); console.log('after en', await fn());
+await page.keyboard.press('Tab'); console.log('after tab', await fn());
+await page.keyboard.type('خط الشحن 42'); console.log('after ar', await fn());
+await page.keyboard.press('Tab'); console.log('after tab', await fn());
+await page.keyboard.press('Tab'); console.log('after tab', await fn());
+await page.keyboard.type('اختيار'); console.log('type value', await page.locator('[name=type]').inputValue());
+await page.keyboard.press('Tab'); console.log('after tab', await fn());
+await shot(page, 'x-ar-new-select');
+await browser.close();

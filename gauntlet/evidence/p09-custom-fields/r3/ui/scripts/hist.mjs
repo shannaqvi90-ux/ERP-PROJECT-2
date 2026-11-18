@@ -1,0 +1,22 @@
+import { open, shot, BASE } from './lib.mjs';
+const lang = process.argv[2] || 'en'; const ar = lang === 'ar';
+const { browser, page, errors } = await open(ar ? 'admin.ar@alnoor.example' : 'admin@alnoor.example');
+const log = (...a) => console.log(...a);
+const focusName = () => page.evaluate(() => document.activeElement?.getAttribute('name'));
+async function tabTo(name, max = 80) { for (let i = 0; i < max; i++) { if ((await focusName()) === name) return true; await page.keyboard.press('Tab'); } return false; }
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.keyboard.press('/'); await page.keyboard.type(process.argv[3]||'Critic en Trading'); await page.waitForTimeout(1800);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(1800);
+log('focus', await focusName());
+await tabTo('nameEn', 10) || await page.locator('[name=nameEn]').focus();
+await tabTo('customFields.cfInsuranceCover31'); await page.keyboard.press('Control+a'); await page.keyboard.type(ar ? '١٢٣٤٫٥٦' : '1234.56');
+await tabTo('customFields.cfIncoterm14727', 80) ; await page.keyboard.type(ar ? 'ت' : 'E');
+await page.keyboard.press('Control+s'); await page.waitForTimeout(2500);
+const t = await page.locator('main').innerText();
+log('saved?', /Saved|تم الحفظ/.test(t));
+await page.getByRole('button', { name: ar ? 'السجل' : 'History', exact: true }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(2500);
+await shot(page, `${lang}-record-history`);
+const panel = await page.locator('[role=dialog], aside, .history').last().innerText().catch(() => '');
+log(panel.slice(0, 900));
+log(errors);
+await browser.close();
