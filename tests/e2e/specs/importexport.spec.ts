@@ -78,8 +78,9 @@ test.describe("import and export", () => {
   test("the full export of the workspace is started, written in the background and downloaded as a zip", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
-    await page.keyboard.press("KeyG");
-    await page.keyboard.press("KeyE");
+    await page.locator("main").focus();
+    await page.keyboard.press("g");
+    await page.keyboard.press("e");
     await expect(page.getByRole("heading", { name: "Full export of the workspace" })).toBeVisible();
     await page.locator('[data-testid="export-start"]').click();
     const ready = page.locator('[data-testid="exports-table"] tbody tr').first().locator('[data-testid="export-download"]');
@@ -97,6 +98,7 @@ test.describe("import and export", () => {
     await page.keyboard.press("Alt+KeyI");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     expect((await page.request.get("/api/importexport/contacts.contacts/fields")).status()).toBe(403);
-    expect((await page.request.get("/api/importexport/tenant-exports")).status()).toBe(403);
+    // The viewer may read the exports' list but not start or download one.
+    expect((await page.request.post("/api/importexport/tenant-exports", { headers: { "X-Erp-Request": "1" }, data: { format: "csv" } })).status()).toBe(403);
   });
 });

@@ -45,6 +45,8 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
   const [skip, setSkip] = useState(false);
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const runButton = useRef<HTMLButtonElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
   const done = useRef(onDone);
   done.current = onDone;
   const imported = useRef(false);
@@ -130,6 +132,18 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
   const finished = session?.status === "completed";
   const ready = mapped && session.missingFields.length === 0;
 
+  // The keyboard follows the dialog's steps: the file chosen, focus goes to Import; the run ended, to Close (a control that
+  // disappears or is disabled must not leave the focus on the page behind, where Escape would not reach the dialog).
+  const step = session ? `${session.id}:${session.status}` : "";
+  useEffect(() => {
+    if (!step) return;
+    const timer = window.setTimeout(() => {
+      if (step.endsWith(":completed") || step.endsWith(":failed") || step.endsWith(":checked")) (runButton.current && !runButton.current.disabled && !step.endsWith(":completed") ? runButton.current : closeButton.current)?.focus();
+      else if (step.endsWith(":uploaded")) (runButton.current ?? closeButton.current)?.focus();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [step]);
+
   return (
     <Dialog title={t("importexport.import.title", { kind: t(titleKey) })} onClose={finish} className="ie-dialog" initialFocus={input}>
       <div className="ie-body">
@@ -155,7 +169,7 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
               accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               aria-label={t("importexport.import.choose")}
               data-testid="import-file"
-              disabled={busy || !fields}
+              disabled={busy}
               onChange={(e: ChangeEvent<HTMLInputElement>) => void choose(e.target.files?.[0])}
             />
             {fields && (
@@ -302,12 +316,12 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
             <button type="button" className="button" disabled={busy || !ready} onClick={() => void run(true)}>
               {t("importexport.import.check")}
             </button>
-            <button type="button" className="button primary" disabled={busy || !ready} onClick={() => void run(false)} data-testid="import-run">
+            <button ref={runButton} type="button" className="button primary" disabled={busy || !ready} onClick={() => void run(false)} data-testid="import-run">
               {t("importexport.import.run", { count: session?.rowCount ?? 0 })}
             </button>
           </>
         )}
-        <button type="button" className="button" onClick={finish}>
+        <button ref={closeButton} type="button" className="button" onClick={finish}>
           {finished ? t("importexport.close") : t("importexport.cancel")}
         </button>
       </div>
