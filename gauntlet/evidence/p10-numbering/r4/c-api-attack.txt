@@ -1,0 +1,54 @@
+A sees 44 sequences; B sees 22
+ids in both: 0
+B company codes: ['GSF-RAK', 'GSF-SHJ']
+A GET B seq accounting.journal 404 clean
+A PUT B seq accounting.journal 404 clean
+A GET B seq inventory.delivery 404 clean
+A PUT B seq inventory.delivery 404 clean
+A GET B seq inventory.receipt 404 clean
+A PUT B seq inventory.receipt 404 clean
+A GET B seq payments.payment 404 clean
+A PUT B seq payments.payment 404 clean
+A GET B seq payments.receipt 404 clean
+A PUT B seq payments.receipt 404 clean
+B's seq after A's PUTs: prefix JV-{YYYY}-{MM}- padding 4 version 1477812592 (was JV-{YYYY}-{MM}- 4 1477812592 )
+A list companyId=018f6605-b081-7a2e-b875-715c7e59b4d9 200 rows 44 clean
+A list companyId=018f6605-b084-76ac-9d30-ee67df6ed5de 200 rows 44 clean
+A list tenantId=9e71cc8c-8157-475f-82bc-c5d73f85f5f3 200 rows 44 clean
+A list filter=companyId eq '018f6605-b081-7a2e-b875-715c7e59b4d9' 200 rows 0 clean
+A list filter=companyId eq '018f6605-b084-76ac-9d30-ee67df6ed5de' 200 rows 0 clean
+A list search=GSF-SHJ 200 rows 0 clean
+A list search=GSF-RAK 200 rows 0 clean
+A list filter=companyCode eq 'GSF-SHJ' 200 rows 0 clean
+A list filter=companyCode eq 'GSF-RAK' 200 rows 0 clean
+A list filter=id eq '01a1ec20-0ee0-7f9d-a064-163bd2e07d7e' 400 rows 0 clean
+A GET B seq with X-Tenant 404 clean
+A list with X-Tenant 200 clean
+A GET B seq with X-Tenant-Id 404 clean
+A list with X-Tenant-Id 200 clean
+A GET B seq with X-Company 404 clean
+A list with X-Company 200 clean
+A GET B seq with X-Company-Id 404 clean
+A list with X-Company-Id 200 clean
+A GET B seq with X-Erp-Company 404 clean
+A list with X-Erp-Company 200 clean
+A GET B seq with X-Erp-Tenant 404 clean
+A list with X-Erp-Tenant 200 clean
+A GET B seq with X-Active-Company 404 clean
+A list with X-Active-Company 200 clean
+A export json  200 16041 clean
+A export json &filter=companyId eq '018f6605-b081-7a2e-b875-715c 200 1461 clean
+A export json &search=GSF-SHJ 200 1461 clean
+A export csv  200 3865 clean
+A export csv &filter=companyId eq '018f6605-b081-7a2e-b875-715c 200 76 clean
+A export csv &search=GSF-SHJ 200 76 clean
+A export xlsx  200 4102 clean
+A export xlsx &filter=companyId eq '018f6605-b081-7a2e-b875-715c 200 2270 clean
+A export xlsx &search=GSF-SHJ 200 2270 clean
+A export pdf  200 17875 clean
+A export pdf &filter=companyId eq '018f6605-b081-7a2e-b875-715c 200 11772 clean
+A export pdf &search=GSF-SHJ 200 11772 clean
+A GET view with B seq id 404
+viewer list 200 get 200 put 403 export 200
+noaccess list 403 get 403 put 403 export 403
+anonymous list 401 get 401 put 401 export 401

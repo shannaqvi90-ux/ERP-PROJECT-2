@@ -1,0 +1,2 @@
+#!/bin/bash
+exec docker run --rm --name c-p10-numbering-r4-plant --network host -v /var/run/docker.sock:/var/run/docker.sock -v /home/shan/critic/p10-numbering-r4-plant:/src:ro -v /home/shan/evidence-staging/p10-numbering/r4/c-plant-out:/out -v /home/shan/evidence-staging/p10-numbering/r4/c-plant-run.sh:/run.sh:ro -v erp-cache-nuget:/root/.nuget/packages -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal -e ERP_TEST_DB_DIRECT=1 -e FILTER="$FILTER" erp-toolbox:pw1.63.0-net10 bash /run.sh

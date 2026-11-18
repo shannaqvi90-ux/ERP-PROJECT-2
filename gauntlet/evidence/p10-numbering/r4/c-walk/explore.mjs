@@ -1,0 +1,10 @@
+import { open, shot } from './lib.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+console.log('url after sign-in', page.url());
+await page.keyboard.press('g'); await page.keyboard.press('n');
+await page.waitForTimeout(2000);
+console.log('url after g n', page.url());
+console.log((await page.locator('main').innerText()).slice(0, 1500));
+await shot(page, 'x-explore');
+console.log('errors', errors);
+await browser.close();

@@ -1,0 +1,15 @@
+     ✓ a saved contact opened as it is asks no duplicate check; changing its name asks  1164ms
+ ✓ src/modules/shell/clientIsolation.test.tsx (10 tests) 49080ms
+     ✓ tenant A sees, and the tab keeps, nothing of tenant B after B signs out  20518ms
+     ✓ in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out  20225ms
+     ✓ an address someone types or follows is kept, and stamped for the person in the tab  367ms
+     ✓ signing out forgets every cookie the document can read, whatever its path, and the tab's window name  492ms
+     ✓ with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B  3417ms
+     ✓ in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B  3418ms
+     ✓ a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail  344ms
+
+ Test Files  3 passed (3)
+      Tests  38 passed (38)
+   Start at  05:20:27
+   Duration  50.91s (transform 3.10s, setup 112ms, import 4.09s, tests 55.87s, environment 830ms)
+

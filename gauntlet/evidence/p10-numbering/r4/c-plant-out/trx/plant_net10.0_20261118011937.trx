@@ -1,0 +1,631 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="66abc060-3ee0-4e7a-acff-802638c11004" name="@docker-desktop 2026-11-18 01:15:28" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-18T01:15:28.1583075+00:00" queuing="2026-11-18T01:15:28.1583075+00:00" start="2026-11-18T01:15:00.1801409+00:00" finish="2026-11-18T01:19:37.8871279+00:00" />
+  <TestSettings name="default" id="811484ad-8979-4fce-a7ff-3b0f099d02a3">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-11-18_01_15_28" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="81614109-161c-4fa7-83c2-d5b4579514aa" testId="1af76972-9bdc-eb17-22e0-a72004f5fbc4" testName="Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier" computerName="docker-desktop" duration="00:00:00.4210333" startTime="2026-11-18T01:19:36.9664503+00:00" endTime="2026-11-18T01:19:37.3875390+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="81614109-161c-4fa7-83c2-d5b4579514aa" />
+    <UnitTestResult executionId="3bbfd3cc-0f8e-489e-ba24-5077e0026533" testId="c0f2cf51-b94a-44b5-aa0b-6305a6da2f90" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view" computerName="docker-desktop" duration="00:00:06.0644600" startTime="2026-11-18T01:17:11.4755786+00:00" endTime="2026-11-18T01:17:17.5401079+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3bbfd3cc-0f8e-489e-ba24-5077e0026533" />
+    <UnitTestResult executionId="70400ebd-5531-4276-9793-cf4e0239c0cf" testId="498a5c76-b603-9800-2bd4-508d8716af8d" testName="Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions" computerName="docker-desktop" duration="00:00:00.0021637" startTime="2026-11-18T01:15:43.1513582+00:00" endTime="2026-11-18T01:15:43.1535991+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="70400ebd-5531-4276-9793-cf4e0239c0cf" />
+    <UnitTestResult executionId="e4e47a17-1c24-441b-b34a-f741f9f619c3" testId="5e9448a5-127d-4c7a-6bca-2f2c3484576a" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission" computerName="docker-desktop" duration="00:00:00.0047265" startTime="2026-11-18T01:19:36.9443926+00:00" endTime="2026-11-18T01:19:36.9491810+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e4e47a17-1c24-441b-b34a-f741f9f619c3">
+      <Output>
+        <StdOut>100 endpoints compared with 10 reviewed map(s)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="13e50131-fbcb-415c-948a-bb4d245b3685" testId="724aa954-858d-c569-4c55-f1f33ea83c95" testName="Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope" computerName="docker-desktop" duration="00:00:01.5236590" startTime="2026-11-18T01:15:45.3615181+00:00" endTime="2026-11-18T01:15:46.8864235+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="13e50131-fbcb-415c-948a-bb4d245b3685">
+      <Output>
+        <ErrorInfo>
+          <Message>tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took QT-2040-00001/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+a user whose permission is held in the first company previewed QT-2040-00002/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took SO-2040-00001/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+a user whose permission is held in the first company previewed SO-2040-00002/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+a user whose permission is held in the first company previewed INV-2040-00001/06 for sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+a user whose permission is held in the first company previewed CN-2040-00001/06 for sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+a user whose permission is held in the first company took PO-2040-00001/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+a user whose permission is held in the first company previewed PO-2040-00002/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch </Message>
+          <StackTrace>   at Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope() in /work/tests/Erp.Gates.Tests/G1/G1NumberingContractTests.cs:line 102
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="415fd905-b7fd-4322-8325-00395dbc3876" testId="e9e2a4d7-3538-e1c6-e340-71c844d35d73" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone" computerName="docker-desktop" duration="00:00:01.4679047" startTime="2026-11-18T01:17:17.6218640+00:00" endTime="2026-11-18T01:17:19.0898409+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="415fd905-b7fd-4322-8325-00395dbc3876" />
+    <UnitTestResult executionId="6f14a61a-59d1-40f8-800a-8babc7a2e307" testId="98f7f8f4-8397-58e5-ee25-226447a2204d" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line" computerName="docker-desktop" duration="00:00:00.0249780" startTime="2026-11-18T01:17:17.5437975+00:00" endTime="2026-11-18T01:17:17.5688691+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f14a61a-59d1-40f8-800a-8babc7a2e307" />
+    <UnitTestResult executionId="9ddc6f2c-dacd-4ef4-a798-f900f240714d" testId="4185b191-08ee-8778-9e2a-71b6de47f569" testName="Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu" computerName="docker-desktop" duration="00:00:10.9683046" startTime="2026-11-18T01:16:43.3545335+00:00" endTime="2026-11-18T01:16:54.3229262+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9ddc6f2c-dacd-4ef4-a798-f900f240714d">
+      <Output>
+        <StdOut>4054 requests named the caller's own ids (16 ids) at 245 endpoints</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8245dd96-ebe4-486c-a895-0155d31784e5" testId="dba8f3e6-3552-23a3-5296-722959495f98" testName="Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns" computerName="docker-desktop" duration="00:00:47.6254449" startTime="2026-11-18T01:15:43.1539615+00:00" endTime="2026-11-18T01:16:30.7775425+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8245dd96-ebe4-486c-a895-0155d31784e5">
+      <Output>
+        <StdOut>121 endpoints exercised, 1174 requests, 1395 audited row changes judged
+DELETE /api/currency/rates/{id:guid} [alone]
+DELETE /api/identity/me/passkeys/{id:guid} [alone]
+DELETE /api/identity/roles/{id:guid} [alone]
+DELETE /api/identity/users/{id:guid} [alone]
+DELETE /api/identity/users/{id:guid}/passkeys [alone]
+DELETE /api/lists/audit.log/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/audit.log/views/{id:guid} [alone]
+DELETE /api/lists/contacts.contacts/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/contacts.contacts/views/{id:guid} [alone]
+DELETE /api/lists/currency.currencies/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/currency.currencies/views/{id:guid} [alone]
+DELETE /api/lists/currency.rates/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/currency.rates/views/{id:guid} [alone]
+DELETE /api/lists/customfields.fields/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/customfields.fields/views/{id:guid} [alone]
+DELETE /api/lists/identity.roles/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/identity.roles/views/{id:guid} [alone]
+DELETE /api/lists/identity.users/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/identity.users/views/{id:guid} [alone]
+DELETE /api/lists/jobs.jobs/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/jobs.jobs/views/{id:guid} [alone]
+DELETE /api/lists/jobs.schedules/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/jobs.schedules/views/{id:guid} [alone]
+DELETE /api/lists/numbering.sequences/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/numbering.sequences/views/{id:guid} [alone]
+DELETE /api/lists/tenancy.access/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/tenancy.access/views/{id:guid} [alone]
+DELETE /api/lists/tenancy.branches/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/tenancy.branches/views/{id:guid} [alone]
+DELETE /api/lists/tenancy.companies/shared-views/{id:guid} [with read permissions]
+DELETE /api/lists/tenancy.companies/views/{id:guid} [alone]
+DELETE /api/tenancy/companies/{id:guid}/logo [alone]
+POST /api/contacts/contacts [alone]
+POST /api/contacts/contacts/{id:guid}/archive [alone]
+POST /api/contacts/contacts/{id:guid}/restore [alone]
+POST /api/currency/rates [alone]
+POST /api/currency/rates/import [alone]
+POST /api/customfields/fields [alone]
+POST /api/identity/me/devices/approve [alone]
+POST /api/identity/me/passkeys [alone]
+POST /api/identity/me/passkeys/options [alone]
+POST /api/identity/roles [alone]
+POST /api/identity/roles/{id:guid}/copy [alone]
+POST /api/identity/users [alone]
+POST /api/identity/users/matching/active [alone]
+POST /api/identity/users/{id:guid}/devices/approve [alone]
+POST /api/identity/users/{id:guid}/password [alone]
+POST /api/identity/users/{id:guid}/sessions/revoke [alone]
+POST /api/identity/users/{id:guid}/unblock [alone]
+POST /api/jobs/jobs [alone]
+POST /api/jobs/jobs/{id:guid}/cancel [alone]
+POST /api/jobs/schedules [alone]
+POST /api/lists/audit.log/shared-views [with read permissions]
+POST /api/lists/audit.log/views [alone]
+POST /api/lists/contacts.contacts/shared-views [with read permissions]
+POST /api/lists/contacts.contacts/views [alone]
+POST /api/lists/currency.currencies/shared-views [with read permissions]
+POST /api/lists/currency.currencies/views [alone]
+POST /api/lists/currency.rates/shared-views [with read permissions]
+POST /api/lists/currency.rates/views [alone]
+POST /api/lists/customfields.fields/shared-views [with read permissions]
+POST /api/lists/customfields.fields/views [alone]
+POST /api/lists/identity.roles/shared-views [with read permissions]
+POST /api/lists/identity.roles/views [alone]
+POST /api/lists/identity.users/shared-views [with read permissions]
+POST /api/lists/identity.users/views [alone]
+POST /api/lists/jobs.jobs/shared-views [with read permissions]
+POST /api/lists/jobs.jobs/views [alone]
+POST /api/lists/jobs.schedules/shared-views [with read permissions]
+POST /api/lists/jobs.schedules/views [alone]
+POST /api/lists/numbering.sequences/shared-views [with read permissions]
+POST /api/lists/numbering.sequences/views [alone]
+POST /api/lists/tenancy.access/shared-views [with read permissions]
+POST /api/lists/tenancy.access/views [alone]
+POST /api/lists/tenancy.branches/shared-views [with read permissions]
+POST /api/lists/tenancy.branches/views [alone]
+POST /api/lists/tenancy.companies/shared-views [with read permissions]
+POST /api/lists/tenancy.companies/views [alone]
+POST /api/tenancy/branches [alone]
+POST /api/tenancy/companies [alone]
+PUT /api/contacts/contacts/{id:guid} [alone]
+PUT /api/currency/rates/{id:guid} [alone]
+PUT /api/customfields/fields/{id:guid} [with read permissions]
+PUT /api/identity/me/passkeys/{id:guid} [alone]
+PUT /api/identity/me/preferences [alone]
+PUT /api/identity/roles/{id:guid} [alone]
+PUT /api/identity/users/{id:guid} [alone]
+PUT /api/identity/users/{id:guid}/default-company [alone]
+PUT /api/jobs/schedules/{id:guid} [alone]
+PUT /api/lists/audit.log/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/audit.log/views/{id:guid} [alone]
+PUT /api/lists/contacts.contacts/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/contacts.contacts/views/{id:guid} [alone]
+PUT /api/lists/currency.currencies/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/currency.currencies/views/{id:guid} [alone]
+PUT /api/lists/currency.rates/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/currency.rates/views/{id:guid} [alone]
+PUT /api/lists/customfields.fields/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/customfields.fields/views/{id:guid} [alone]
+PUT /api/lists/identity.roles/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/identity.roles/views/{id:guid} [alone]
+PUT /api/lists/identity.users/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/identity.users/views/{id:guid} [alone]
+PUT /api/lists/jobs.jobs/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/jobs.jobs/views/{id:guid} [alone]
+PUT /api/lists/jobs.schedules/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/jobs.schedules/views/{id:guid} [alone]
+PUT /api/lists/numbering.sequences/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/numbering.sequences/views/{id:guid} [alone]
+PUT /api/lists/tenancy.access/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/tenancy.access/views/{id:guid} [alone]
+PUT /api/lists/tenancy.branches/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/tenancy.branches/views/{id:guid} [alone]
+PUT /api/lists/tenancy.companies/shared-views/{id:guid} [with read permissions]
+PUT /api/lists/tenancy.companies/views/{id:guid} [alone]
+PUT /api/tenancy/access/{userId:guid} [alone]
+PUT /api/tenancy/branches/{id:guid} [alone]
+PUT /api/tenancy/companies/{id:guid} [alone]
+PUT /api/tenancy/companies/{id:guid}/logo [alone]
+PUT /api/tenancy/tenant [alone]
+PUT /api/tenancy/workplace [alone]
+DELETE /api/attachments/contacts.contacts/files/{id:guid} [reviewed as unreachable]
+POST /api/attachments/contacts.contacts/{id:guid}/files [reviewed as unreachable]
+POST /api/jobs/jobs/{id:guid}/rerun [reviewed as unreachable]
+PUT /api/currency/currencies/{id:guid} [reviewed as unreachable]
+PUT /api/numbering/sequences/{id:guid} [reviewed as unreachable]
+151 dependent rows made; at records with dependents: DELETE /api/identity/roles/{id:guid}, DELETE /api/identity/users/{id:guid}, DELETE /api/identity/users/{id:guid}/passkeys, DELETE /api/tenancy/companies/{id:guid}/logo, POST /api/identity/roles/{id:guid}/copy, POST /api/identity/users/matching/active, POST /api/identity/users/{id:guid}/devices/approve, POST /api/identity/users/{id:guid}/password, POST /api/identity/users/{id:guid}/sessions/revoke, POST /api/identity/users/{id:guid}/unblock, PUT /api/identity/roles/{id:guid}, PUT /api/identity/users/{id:guid}, PUT /api/identity/users/{id:guid}/default-company, PUT /api/tenancy/access/{userId:guid}, PUT /api/tenancy/branches/{id:guid}, PUT /api/tenancy/companies/{id:guid}, PUT /api/tenancy/companies/{id:guid}/logo</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="12327d1f-aadd-4af1-9887-cf46eef714e4" testId="e86a8b33-a219-7d2a-d1ea-2f1e3b76da43" testName="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds" computerName="docker-desktop" duration="00:00:07.9015364" startTime="2026-11-18T01:17:56.6757126+00:00" endTime="2026-11-18T01:18:04.5752177+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="12327d1f-aadd-4af1-9887-cf46eef714e4" />
+    <UnitTestResult executionId="cd8746ac-e33a-49f8-9efc-9d406935bfb6" testId="f9cf5a04-a755-92d1-f8d4-9f23b3c16b3c" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;holder&quot;)" computerName="docker-desktop" duration="00:00:21.4105894" startTime="2026-11-18T01:16:21.9400886+00:00" endTime="2026-11-18T01:16:43.3491991+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cd8746ac-e33a-49f8-9efc-9d406935bfb6" />
+    <UnitTestResult executionId="78491e60-e434-45fd-bd83-7fd4ebabad3c" testId="720648b7-7e74-30a8-eab7-d800774b47c6" testName="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission" computerName="docker-desktop" duration="00:00:00.0028919" startTime="2026-11-18T01:19:36.9408394+00:00" endTime="2026-11-18T01:19:36.9440122+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="78491e60-e434-45fd-bd83-7fd4ebabad3c">
+      <Output>
+        <ErrorInfo>
+          <Message>PUT /api/numbering/sequences/{id:guid} changes data but declares the read permission numbering.sequences.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 267
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="bcfbafeb-d76e-413d-8779-c56e1008bc01" testId="57b4aee5-291c-d0ee-d51d-4bf3139ff1e5" testName="Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made" computerName="docker-desktop" duration="00:00:29.1911960" startTime="2026-11-18T01:17:27.4734833+00:00" endTime="2026-11-18T01:17:56.6629899+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bcfbafeb-d76e-413d-8779-c56e1008bc01">
+      <Output>
+        <StdOut>8806 requests named the caller's own ids (33 ids) at 245 endpoints</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="79c48776-55a2-4c5e-9077-7f68f8cf8745" testId="c2b8873c-bb57-6fe5-7ea6-ab512bdd5854" testName="Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches" computerName="docker-desktop" duration="00:00:07.4015513" startTime="2026-11-18T01:16:30.7815000+00:00" endTime="2026-11-18T01:16:38.1815623+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="79c48776-55a2-4c5e-9077-7f68f8cf8745">
+      <Output>
+        <StdOut>PUT /api/writeplant/companies/{companyId:guid} [isActive turned, on a record with dependents] as a user holding exactly [tenancy.companies.update] wrote update tenancy.branches (is_active), outside the write set of tenancy.companies.update (tests/Gates/permission-write-sets.txt): a request this permission authorises changes what it does not cover (answered 200)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="311efd02-33f1-4962-88f8-27d93b48372f" testId="810700a7-46b9-60c2-3818-dcf9a1d295a3" testName="Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it" computerName="docker-desktop" duration="00:01:32.3612047" startTime="2026-11-18T01:18:04.5832751+00:00" endTime="2026-11-18T01:19:36.9390818+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="311efd02-33f1-4962-88f8-27d93b48372f">
+      <Output>
+        <StdOut>10771 requests named the caller's own ids at endpoints of the held permission's module</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="208316ea-6c11-4271-bb7c-482a6b29008c" testId="9fced79a-90ef-314c-8062-322f9b52b581" testName="Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny" computerName="docker-desktop" duration="00:00:00.0013310" startTime="2026-11-18T01:17:27.4465443+00:00" endTime="2026-11-18T01:17:27.4479457+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="208316ea-6c11-4271-bb7c-482a6b29008c" />
+    <UnitTestResult executionId="7498b226-66e5-448a-812d-c0154dce5f11" testId="1f0db389-6050-7d95-66f9-9181c13ee813" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list" computerName="docker-desktop" duration="00:00:00.0062377" startTime="2026-11-18T01:18:04.5764518+00:00" endTime="2026-11-18T01:18:04.5827686+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7498b226-66e5-448a-812d-c0154dce5f11">
+      <Output>
+        <StdOut>245 module endpoints reviewed by a map or derived from their list</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f51a1109-b550-495e-ad63-dc1e66ece69c" testId="bb51813b-e3f3-6485-5681-5da6dcf42777" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous" computerName="docker-desktop" duration="00:00:00.0069763" startTime="2026-11-18T01:15:29.0198074+00:00" endTime="2026-11-18T01:15:29.0269535+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f51a1109-b550-495e-ad63-dc1e66ece69c" />
+    <UnitTestResult executionId="730f6e8f-136f-4320-9c00-3ef350b82d01" testId="0bedb0c5-4871-dc75-a52a-218adce715c5" testName="Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges" computerName="docker-desktop" duration="00:00:00.1849124" startTime="2026-11-18T01:17:04.7244039+00:00" endTime="2026-11-18T01:17:04.9094438+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="730f6e8f-136f-4320-9c00-3ef350b82d01" />
+    <UnitTestResult executionId="b64b4949-deee-4ab3-923d-67c512683667" testId="8d013dc6-8cb0-0dff-cadf-321fded5d2f3" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission" computerName="docker-desktop" duration="00:00:00.0157422" startTime="2026-11-18T01:19:36.9500522+00:00" endTime="2026-11-18T01:19:36.9658762+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b64b4949-deee-4ab3-923d-67c512683667" />
+    <UnitTestResult executionId="252aeed9-d214-426b-a325-de225ac9ed14" testId="43764c98-e67a-1cee-e097-3d165ef61caa" testName="Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write" computerName="docker-desktop" duration="00:00:00.0084540" startTime="2026-11-18T01:17:56.6666574+00:00" endTime="2026-11-18T01:17:56.6751841+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="252aeed9-d214-426b-a325-de225ac9ed14" />
+    <UnitTestResult executionId="0e47e64a-a7d8-4c55-bbae-ec2651741b14" testId="5f69bb80-969d-4007-30d9-e062f498b05b" testName="Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds" computerName="docker-desktop" duration="00:00:00.5494381" startTime="2026-11-18T01:17:10.8974693+00:00" endTime="2026-11-18T01:17:11.4470003+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e47e64a-a7d8-4c55-bbae-ec2651741b14" />
+    <UnitTestResult executionId="c0acbe76-7fac-41d5-8339-c7a68724cd48" testId="b745483a-6793-4ee7-e186-3610407a6c13" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue" computerName="docker-desktop" duration="00:00:00.0328491" startTime="2026-11-18T01:17:04.6906029+00:00" endTime="2026-11-18T01:17:04.7235341+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c0acbe76-7fac-41d5-8339-c7a68724cd48" />
+    <UnitTestResult executionId="4cb76ed6-914c-4ec4-88f5-206f54622c8d" testId="e1e64a24-beb0-ba4e-01a8-05734b1768c2" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing" computerName="docker-desktop" duration="00:00:10.3664436" startTime="2026-11-18T01:16:54.3243799+00:00" endTime="2026-11-18T01:17:04.6892350+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4cb76ed6-914c-4ec4-88f5-206f54622c8d">
+      <Output>
+        <StdOut>13 lists, 403 refusals checked on list endpoints, 234 own-view writes (756 with one more field of the view schemas), 39 view listings judged</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="587b531c-ecdb-4dbd-9a51-b847c5150b44" testId="3f211041-aa15-5239-a30a-9047d45afa33" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers" computerName="docker-desktop" duration="00:00:08.1414768" startTime="2026-11-18T01:17:19.1425568+00:00" endTime="2026-11-18T01:17:27.2840863+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="587b531c-ecdb-4dbd-9a51-b847c5150b44" />
+    <UnitTestResult executionId="9a0cfaa2-36de-4e44-a032-f8b74a44faf3" testId="a18f785d-5662-c88a-a1c2-9c1ef1fa354d" testName="Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters" computerName="docker-desktop" duration="00:00:04.6087109" startTime="2026-11-18T01:15:38.0442446+00:00" endTime="2026-11-18T01:15:42.6544039+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a0cfaa2-36de-4e44-a032-f8b74a44faf3">
+      <Output>
+        <ErrorInfo>
+          <Message>PUT /api/numbering/sequences/{id} [valid] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-c700ce0394cd71528a14f3ade4410517-9a0dd7dc91858989-00"}
+PUT /api/numbering/sequences/{id} [gapless turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-52338d57231f56c22a00971862a1c49e-99ad8787f2a12c83-00"}
+PUT /api/numbering/sequences/{id} [perBranch turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-f4c39b3b9f990c7c7868435b93a0a8f9-bfd7925d2e4db64b-00"}
+PUT /api/numbering/sequences/{id} [reset=monthly] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-dde761b9e2d08404cd5020f426bb1eb4-afed6facb184ba70-00"}
+PUT /api/numbering/sequences/{id} [reset=never] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-94f9b62ea9ee71624168ae996d1258c6-53b949018c00c3f0-00"}
+PUT /api/numbering/sequences/{id} [padding=12] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-70bddb37b4343098f86b0a7742141c27-7be9b64fb82f4e69-00"}
+PUT /api/numbering/sequences/{id} [nextValue=4000] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-2f4e424c5aed595db36e8e8966f8488d-c9f9f23b62b0c3b0-00"}
+PUT /api/numbering/sequences/{id} [suffix] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-b010423097db907d2c81551c3430d5f5-04612b4ccc96c249-00"}</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters() in /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 105
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e118867a-3d77-40ad-b415-50e299a7e886" testId="7a1361f6-542a-afbc-1851-a0171feb9c82" testName="Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting" computerName="docker-desktop" duration="00:00:11.2747826" startTime="2026-11-18T01:15:31.8756351+00:00" endTime="2026-11-18T01:15:43.1505312+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e118867a-3d77-40ad-b415-50e299a7e886">
+      <Output>
+        <StdOut>PUT /api/writeplant/workplace [valid] as a user holding exactly [tenancy.workplace.switch] wrote update tenancy.companies (arabic_legal_name_required), outside the write set of tenancy.workplace.switch (tests/Gates/permission-write-sets.txt): a request this permission authorises changes what it does not cover (answered 200)
+PUT /api/writeplant/workplace [arabicLegalNameRequired turned] as a user holding exactly [tenancy.workplace.switch] wrote update tenancy.companies (arabic_legal_name_required), outside the write set of tenancy.workplace.switch (tests/Gates/permission-write-sets.txt): a request this permission authorises changes what it does not cover (answered 200)
+PUT /api/writeplant/workplace [fiscalYearStartMonth=12] as a user holding exactly [tenancy.workplace.switch] wrote update tenancy.companies (arabic_legal_name_required), outside the write set of tenancy.workplace.switch (tests/Gates/permission-write-sets.txt): a request this permission authorises changes what it does not cover (answered 200)
+PUT /api/writeplant/workplace [fiscalYearStartMonth=12] as a user holding exactly [tenancy.workplace.switch] wrote update tenancy.companies (fiscal_year_start_month), outside the write set of tenancy.workplace.switch (tests/Gates/permission-write-sets.txt): a request this permission authorises changes what it does not cover (answered 200)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="151e1933-a0d6-4ad0-8cda-834890984527" testId="144a2abc-82c1-8151-8e5d-f8a6cedb8ab9" testName="Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence" computerName="docker-desktop" duration="00:00:00.6667353" startTime="2026-11-18T01:15:42.6663663+00:00" endTime="2026-11-18T01:15:43.3347784+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="151e1933-a0d6-4ad0-8cda-834890984527">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence() in /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs:line 125
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a3198c8e-4dd4-4e15-938e-b53465296ffa" testId="b675350a-fb30-4381-f137-65b2363dc637" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission" computerName="docker-desktop" duration="00:00:00.0497642" startTime="2026-11-18T01:17:19.0916432+00:00" endTime="2026-11-18T01:17:19.1414844+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a3198c8e-4dd4-4e15-938e-b53465296ffa" />
+    <UnitTestResult executionId="8296e3ec-e871-4e17-b069-f072f131635c" testId="a399ee7c-dce7-94f4-339c-ba7fb548703d" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used" computerName="docker-desktop" duration="00:00:00.0195266" startTime="2026-11-18T01:15:26.5984839+00:00" endTime="2026-11-18T01:15:26.6541774+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8296e3ec-e871-4e17-b069-f072f131635c">
+      <Output>
+        <ErrorInfo>
+          <Message>Catalogue permissions no endpoint uses (dead permissions confuse role editors): numbering.sequences.update</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used() in /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 322
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="825182a4-0eba-4933-a8ed-56014e13e41b" testId="55b3b75c-e876-e1b8-86bc-49e6f5da918b" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers" computerName="docker-desktop" duration="00:00:00.0251257" startTime="2026-11-18T01:17:04.9106560+00:00" endTime="2026-11-18T01:17:04.9358651+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="825182a4-0eba-4933-a8ed-56014e13e41b" />
+    <UnitTestResult executionId="8f5d0f36-2da3-4e07-be43-ae0cc8809592" testId="6d0da3aa-8118-684c-fa28-a11c5a24d243" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission" computerName="docker-desktop" duration="00:00:00.0237781" startTime="2026-11-18T01:17:27.4485614+00:00" endTime="2026-11-18T01:17:27.4724784+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8f5d0f36-2da3-4e07-be43-ae0cc8809592" />
+    <UnitTestResult executionId="e293fe7d-2ea0-458e-9ed5-71b0597c0b6c" testId="99648ed6-9454-2766-c9e4-f116d299c345" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission" computerName="docker-desktop" duration="00:00:00.0044144" startTime="2026-11-18T01:15:29.0140790+00:00" endTime="2026-11-18T01:15:29.0186382+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e293fe7d-2ea0-458e-9ed5-71b0597c0b6c" />
+    <UnitTestResult executionId="5ab9b7b1-d790-4cc1-82e0-aa9bdb9d2b1e" testId="57d61f69-f103-7105-c62a-a52a4c3eda4e" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;session&quot;)" computerName="docker-desktop" duration="00:00:28.1276640" startTime="2026-11-18T01:15:29.0287185+00:00" endTime="2026-11-18T01:15:57.1549105+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5ab9b7b1-d790-4cc1-82e0-aa9bdb9d2b1e" />
+    <UnitTestResult executionId="4079b5cc-5db1-4e89-aa55-3b8bb4a0f9e7" testId="8b29808e-e86c-4187-3f52-4dbaa55aa5ff" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces" computerName="docker-desktop" duration="00:00:00.0516309" startTime="2026-11-18T01:17:17.5694468+00:00" endTime="2026-11-18T01:17:17.6211758+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4079b5cc-5db1-4e89-aa55-3b8bb4a0f9e7" />
+    <UnitTestResult executionId="37481861-00a7-40aa-9c8e-1376afb8be0b" testId="b840e611-1b28-2b0f-a42a-253f060faf81" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;user&quot;)" computerName="docker-desktop" duration="00:00:24.7833540" startTime="2026-11-18T01:15:57.1565027+00:00" endTime="2026-11-18T01:16:21.9381394+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="37481861-00a7-40aa-9c8e-1376afb8be0b" />
+    <UnitTestResult executionId="462a1294-80d4-4d81-87eb-b8dd7915a9d0" testId="3150a92b-d085-0155-f0fc-1aea3c25818b" testName="Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match" computerName="docker-desktop" duration="00:00:00.0003691" startTime="2026-11-18T01:16:30.7792284+00:00" endTime="2026-11-18T01:16:30.7796785+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="462a1294-80d4-4d81-87eb-b8dd7915a9d0" />
+    <UnitTestResult executionId="cec05f69-962a-4df7-bae6-d657a4dbbf5f" testId="293b713c-bcaf-2d03-65b2-51b99acd43b5" testName="Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client" computerName="docker-desktop" duration="00:00:02.3324252" startTime="2026-11-18T01:15:26.6731034+00:00" endTime="2026-11-18T01:15:29.0082082+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cec05f69-962a-4df7-bae6-d657a4dbbf5f" />
+    <UnitTestResult executionId="d47abdf4-2a3e-4e91-8f2f-80c23ed2fa8c" testId="45bcf8f9-ca09-5c3f-974c-f153876f7c41" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view" computerName="docker-desktop" duration="00:00:05.9595382" startTime="2026-11-18T01:17:04.9363856+00:00" endTime="2026-11-18T01:17:10.8960046+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d47abdf4-2a3e-4e91-8f2f-80c23ed2fa8c" />
+    <UnitTestResult executionId="5c772c3e-863f-4b56-85a3-804a49eaa908" testId="a270c77b-ade3-7786-06cb-a6f2c6f72429" testName="Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns" computerName="docker-desktop" duration="00:00:00.0051946" startTime="2026-11-18T01:16:38.1829366+00:00" endTime="2026-11-18T01:16:38.1882195+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5c772c3e-863f-4b56-85a3-804a49eaa908" />
+    <UnitTestResult executionId="7ff84878-e8b2-4436-9818-f7ed4e92e884" testId="21953d52-e438-b2be-dadd-3893e6528daa" testName="Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission" computerName="docker-desktop" duration="00:00:00.1597064" startTime="2026-11-18T01:17:27.2862151+00:00" endTime="2026-11-18T01:17:27.4460029+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7ff84878-e8b2-4436-9818-f7ed4e92e884" />
+    <UnitTestResult executionId="7f4c671b-77f9-4978-a0d4-1905b840ce65" testId="45030846-2a40-25ca-3128-ac517916874a" testName="Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint" computerName="docker-desktop" duration="00:00:00.0271511" startTime="2026-11-18T01:17:11.4477849+00:00" endTime="2026-11-18T01:17:11.4750014+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7f4c671b-77f9-4978-a0d4-1905b840ce65" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="1af76972-9bdc-eb17-22e0-a72004f5fbc4">
+      <Execution id="81614109-161c-4fa7-83c2-d5b4579514aa" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e86a8b33-a219-7d2a-d1ea-2f1e3b76da43">
+      <Execution id="12327d1f-aadd-4af1-9887-cf46eef714e4" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="No_endpoint_grants_more_than_the_caller_holds" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="810700a7-46b9-60c2-3818-dcf9a1d295a3">
+      <Execution id="311efd02-33f1-4962-88f8-27d93b48372f" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="99648ed6-9454-2766-c9e4-f116d299c345">
+      <Execution id="e293fe7d-2ea0-458e-9ed5-71b0597c0b6c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="720648b7-7e74-30a8-eab7-d800774b47c6">
+      <Execution id="78491e60-e434-45fd-bd83-7fd4ebabad3c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="No_endpoint_that_changes_data_is_guarded_by_a_read_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="8d013dc6-8cb0-0dff-cadf-321fded5d2f3">
+      <Execution id="b64b4949-deee-4ab3-923d-67c512683667" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="0bedb0c5-4871-dc75-a52a-218adce715c5">
+      <Execution id="730f6e8f-136f-4320-9c00-3ef350b82d01" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Users_cannot_escalate_their_own_privileges" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="57b4aee5-291c-d0ee-d51d-4bf3139ff1e5">
+      <Execution id="bcfbafeb-d76e-413d-8779-c56e1008bc01" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="43764c98-e67a-1cee-e097-3d165ef61caa">
+      <Execution id="252aeed9-d214-426b-a325-de225ac9ed14" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Requests_that_only_read_cannot_write" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="4185b191-08ee-8778-9e2a-71b6de47f569">
+      <Execution id="9ddc6f2c-dacd-4ef4-a798-f900f240714d" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;holder&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="f9cf5a04-a755-92d1-f8d4-9f23b3c16b3c">
+      <Execution id="cd8746ac-e33a-49f8-9efc-9d406935bfb6" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="5f69bb80-969d-4007-30d9-e062f498b05b">
+      <Execution id="0e47e64a-a7d8-4c55-bbae-ec2651741b14" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Creating_a_user_cannot_grant_more_than_the_caller_holds" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="293b713c-bcaf-2d03-65b2-51b99acd43b5">
+      <Execution id="cec05f69-962a-4df7-bae6-d657a4dbbf5f" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="bb51813b-e3f3-6485-5681-5da6dcf42777">
+      <Execution id="f51a1109-b550-495e-ad63-dc1e66ece69c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a399ee7c-dce7-94f4-339c-ba7fb548703d">
+      <Execution id="8296e3ec-e871-4e17-b069-f072f131635c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="1f0db389-6050-7d95-66f9-9181c13ee813">
+      <Execution id="7498b226-66e5-448a-812d-c0154dce5f11" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e1e64a24-beb0-ba4e-01a8-05734b1768c2">
+      <Execution id="4cb76ed6-914c-4ec4-88f5-206f54622c8d" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a18f785d-5662-c88a-a1c2-9c1ef1fa354d">
+      <Execution id="9a0cfaa2-36de-4e44-a032-f8b74a44faf3" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.NumberingWriteSetTests" name="A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="724aa954-858d-c569-4c55-f1f33ea83c95">
+      <Execution id="13e50131-fbcb-415c-948a-bb4d245b3685" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1NumberingContractTests" name="Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="6d0da3aa-8118-684c-fa28-a11c5a24d243">
+      <Execution id="8f5d0f36-2da3-4e07-be43-ae0cc8809592" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a270c77b-ade3-7786-06cb-a6f2c6f72429">
+      <Execution id="5c772c3e-863f-4b56-85a3-804a49eaa908" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2WriteSetTests" name="A_write_is_covered_only_by_its_permissions_table_action_and_columns" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="98f7f8f4-8397-58e5-ee25-226447a2204d">
+      <Execution id="6f14a61a-59d1-40f8-800a-8babc7a2e307" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;session&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="57d61f69-f103-7105-c62a-a52a4c3eda4e">
+      <Execution id="5ab9b7b1-d790-4cc1-82e0-aa9bdb9d2b1e" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="3150a92b-d085-0155-f0fc-1aea3c25818b">
+      <Execution id="462a1294-80d4-4d81-87eb-b8dd7915a9d0" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2WriteSetTests" name="Collections_and_their_record_names_match" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;user&quot;)" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="b840e611-1b28-2b0f-a42a-253f060faf81">
+      <Execution id="37481861-00a7-40aa-9c8e-1376afb8be0b" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="45bcf8f9-ca09-5c3f-974c-f153876f7c41">
+      <Execution id="d47abdf4-2a3e-4e91-8f2f-80c23ed2fa8c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="8b29808e-e86c-4187-3f52-4dbaa55aa5ff">
+      <Execution id="4079b5cc-5db1-4e89-aa55-3b8bb4a0f9e7" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="9fced79a-90ef-314c-8062-322f9b52b581">
+      <Execution id="208316ea-6c11-4271-bb7c-482a6b29008c" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Undeclared_endpoints_fall_back_to_deny" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="7a1361f6-542a-afbc-1851-a0171feb9c82">
+      <Execution id="e118867a-3d77-40ad-b415-50e299a7e886" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2WriteSetTests" name="The_write_set_check_catches_a_switch_that_changes_a_company_setting" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="55b3b75c-e876-e1b8-86bc-49e6f5da918b">
+      <Execution id="825182a4-0eba-4933-a8ed-56014e13e41b" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c0f2cf51-b94a-44b5-aa0b-6305a6da2f90">
+      <Execution id="3bbfd3cc-0f8e-489e-ba24-5077e0026533" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_list_view_check_catches_a_personal_route_that_shares_a_view" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="b745483a-6793-4ee7-e186-3610407a6c13">
+      <Execution id="c0acbe76-7fac-41d5-8339-c7a68724cd48" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="21953d52-e438-b2be-dadd-3893e6528daa">
+      <Execution id="7ff84878-e8b2-4436-9818-f7ed4e92e884" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="c2b8873c-bb57-6fe5-7ea6-ab512bdd5854">
+      <Execution id="79c48776-55a2-4c5e-9077-7f68f8cf8745" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2WriteSetTests" name="The_write_set_check_catches_closing_a_company_that_also_closes_its_branches" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="e9e2a4d7-3538-e1c6-e340-71c844d35d73">
+      <Execution id="415fd905-b7fd-4322-8325-00395dbc3876" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_registered_list_is_readable_with_its_permission_alone" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="45030846-2a40-25ca-3128-ac517916874a">
+      <Execution id="7f4c671b-77f9-4978-a0d4-1905b840ce65" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Anonymous_callers_get_401_from_every_permissioned_endpoint" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="dba8f3e6-3552-23a3-5296-722959495f98">
+      <Execution id="8245dd96-ebe4-486c-a895-0155d31784e5" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2WriteSetTests" name="Each_permission_writes_only_its_reviewed_tables_and_columns" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="498a5c76-b603-9800-2bd4-508d8716af8d">
+      <Execution id="70400ebd-5531-4276-9793-cf4e0239c0cf" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2WriteSetTests" name="The_reviewed_write_sets_keep_company_settings_to_company_permissions" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="5e9448a5-127d-4c7a-6bca-2f2c3484576a">
+      <Execution id="e4e47a17-1c24-441b-b34a-f741f9f619c3" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="3f211041-aa15-5239-a30a-9047d45afa33">
+      <Execution id="587b531c-ecdb-4dbd-9a51-b847c5150b44" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="b675350a-fb30-4381-f137-65b2363dc637">
+      <Execution id="a3198c8e-4dd4-4e15-938e-b53465296ffa" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_a_list_whose_endpoint_declares_another_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="144a2abc-82c1-8151-8e5d-f8a6cedb8ab9">
+      <Execution id="151e1933-a0d6-4ad0-8cda-834890984527" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.NumberingWriteSetTests" name="A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1af76972-9bdc-eb17-22e0-a72004f5fbc4" executionId="81614109-161c-4fa7-83c2-d5b4579514aa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c0f2cf51-b94a-44b5-aa0b-6305a6da2f90" executionId="3bbfd3cc-0f8e-489e-ba24-5077e0026533" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="498a5c76-b603-9800-2bd4-508d8716af8d" executionId="70400ebd-5531-4276-9793-cf4e0239c0cf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5e9448a5-127d-4c7a-6bca-2f2c3484576a" executionId="e4e47a17-1c24-441b-b34a-f741f9f619c3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="724aa954-858d-c569-4c55-f1f33ea83c95" executionId="13e50131-fbcb-415c-948a-bb4d245b3685" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e9e2a4d7-3538-e1c6-e340-71c844d35d73" executionId="415fd905-b7fd-4322-8325-00395dbc3876" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="98f7f8f4-8397-58e5-ee25-226447a2204d" executionId="6f14a61a-59d1-40f8-800a-8babc7a2e307" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4185b191-08ee-8778-9e2a-71b6de47f569" executionId="9ddc6f2c-dacd-4ef4-a798-f900f240714d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dba8f3e6-3552-23a3-5296-722959495f98" executionId="8245dd96-ebe4-486c-a895-0155d31784e5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e86a8b33-a219-7d2a-d1ea-2f1e3b76da43" executionId="12327d1f-aadd-4af1-9887-cf46eef714e4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f9cf5a04-a755-92d1-f8d4-9f23b3c16b3c" executionId="cd8746ac-e33a-49f8-9efc-9d406935bfb6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="720648b7-7e74-30a8-eab7-d800774b47c6" executionId="78491e60-e434-45fd-bd83-7fd4ebabad3c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="57b4aee5-291c-d0ee-d51d-4bf3139ff1e5" executionId="bcfbafeb-d76e-413d-8779-c56e1008bc01" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c2b8873c-bb57-6fe5-7ea6-ab512bdd5854" executionId="79c48776-55a2-4c5e-9077-7f68f8cf8745" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="810700a7-46b9-60c2-3818-dcf9a1d295a3" executionId="311efd02-33f1-4962-88f8-27d93b48372f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9fced79a-90ef-314c-8062-322f9b52b581" executionId="208316ea-6c11-4271-bb7c-482a6b29008c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1f0db389-6050-7d95-66f9-9181c13ee813" executionId="7498b226-66e5-448a-812d-c0154dce5f11" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb51813b-e3f3-6485-5681-5da6dcf42777" executionId="f51a1109-b550-495e-ad63-dc1e66ece69c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0bedb0c5-4871-dc75-a52a-218adce715c5" executionId="730f6e8f-136f-4320-9c00-3ef350b82d01" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8d013dc6-8cb0-0dff-cadf-321fded5d2f3" executionId="b64b4949-deee-4ab3-923d-67c512683667" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="43764c98-e67a-1cee-e097-3d165ef61caa" executionId="252aeed9-d214-426b-a325-de225ac9ed14" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5f69bb80-969d-4007-30d9-e062f498b05b" executionId="0e47e64a-a7d8-4c55-bbae-ec2651741b14" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b745483a-6793-4ee7-e186-3610407a6c13" executionId="c0acbe76-7fac-41d5-8339-c7a68724cd48" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e1e64a24-beb0-ba4e-01a8-05734b1768c2" executionId="4cb76ed6-914c-4ec4-88f5-206f54622c8d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3f211041-aa15-5239-a30a-9047d45afa33" executionId="587b531c-ecdb-4dbd-9a51-b847c5150b44" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a18f785d-5662-c88a-a1c2-9c1ef1fa354d" executionId="9a0cfaa2-36de-4e44-a032-f8b74a44faf3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7a1361f6-542a-afbc-1851-a0171feb9c82" executionId="e118867a-3d77-40ad-b415-50e299a7e886" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="144a2abc-82c1-8151-8e5d-f8a6cedb8ab9" executionId="151e1933-a0d6-4ad0-8cda-834890984527" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b675350a-fb30-4381-f137-65b2363dc637" executionId="a3198c8e-4dd4-4e15-938e-b53465296ffa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a399ee7c-dce7-94f4-339c-ba7fb548703d" executionId="8296e3ec-e871-4e17-b069-f072f131635c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="55b3b75c-e876-e1b8-86bc-49e6f5da918b" executionId="825182a4-0eba-4933-a8ed-56014e13e41b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6d0da3aa-8118-684c-fa28-a11c5a24d243" executionId="8f5d0f36-2da3-4e07-be43-ae0cc8809592" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="99648ed6-9454-2766-c9e4-f116d299c345" executionId="e293fe7d-2ea0-458e-9ed5-71b0597c0b6c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="57d61f69-f103-7105-c62a-a52a4c3eda4e" executionId="5ab9b7b1-d790-4cc1-82e0-aa9bdb9d2b1e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8b29808e-e86c-4187-3f52-4dbaa55aa5ff" executionId="4079b5cc-5db1-4e89-aa55-3b8bb4a0f9e7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b840e611-1b28-2b0f-a42a-253f060faf81" executionId="37481861-00a7-40aa-9c8e-1376afb8be0b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3150a92b-d085-0155-f0fc-1aea3c25818b" executionId="462a1294-80d4-4d81-87eb-b8dd7915a9d0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="293b713c-bcaf-2d03-65b2-51b99acd43b5" executionId="cec05f69-962a-4df7-bae6-d657a4dbbf5f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="45bcf8f9-ca09-5c3f-974c-f153876f7c41" executionId="d47abdf4-2a3e-4e91-8f2f-80c23ed2fa8c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a270c77b-ade3-7786-06cb-a6f2c6f72429" executionId="5c772c3e-863f-4b56-85a3-804a49eaa908" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="21953d52-e438-b2be-dadd-3893e6528daa" executionId="7ff84878-e8b2-4436-9818-f7ed4e92e884" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="45030846-2a40-25ca-3128-ac517916874a" executionId="7f4c671b-77f9-4978-a0d4-1905b840ce65" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="42" executed="42" passed="37" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.40]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.93]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:01.19]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:26.07]       Catalogue permissions no endpoint uses (dead permissions confuse role editors): numbering.sequences.update
+[xUnit.net 00:00:26.07]       Stack Trace:
+[xUnit.net 00:00:26.08]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(322,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
+[xUnit.net 00:00:26.08]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.08]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:26.08]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:26.08]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [valid] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-c700ce0394cd71528a14f3ade4410517-9a0dd7dc91858989-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [gapless turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-52338d57231f56c22a00971862a1c49e-99ad8787f2a12c83-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [perBranch turned] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-f4c39b3b9f990c7c7868435b93a0a8f9-bfd7925d2e4db64b-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [reset=monthly] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-dde761b9e2d08404cd5020f426bb1eb4-afed6facb184ba70-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [reset=never] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-94f9b62ea9ee71624168ae996d1258c6-53b949018c00c3f0-00"}
+[xUnit.net 00:00:42.06]       PUT /api/numbering/sequences/{id} [padding=12] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-70bddb37b4343098f86b0a7742141c27-7be9b64fb82f4e69-00"}
+[xUnit.net 00:00:42.07]       PUT /api/numbering/sequences/{id} [nextValue=4000] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-2f4e424c5aed595db36e8e8966f8488d-c9f9f23b62b0c3b0-00"}
+[xUnit.net 00:00:42.07]       PUT /api/numbering/sequences/{id} [suffix] answered 403: {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-b010423097db907d2c81551c3430d5f5-04612b4ccc96c249-00"}
+[xUnit.net 00:00:42.07]       Stack Trace:
+[xUnit.net 00:00:42.07]         /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(105,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters()
+[xUnit.net 00:00:42.07]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:42.74]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:42.74]       Expected: Forbidden
+[xUnit.net 00:00:42.74]       Actual:   OK
+[xUnit.net 00:00:42.74]       Stack Trace:
+[xUnit.net 00:00:42.74]         /work/tests/Erp.Gates.Tests/G2/NumberingWriteSetTests.cs(125,0): at Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence()
+[xUnit.net 00:00:42.74]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.quotation in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company took QT-2040-00001/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed QT-2040-00002/06 for sales.quotation in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company took SO-2040-00001/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed SO-2040-00002/06 for sales.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.invoice in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company asking sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed INV-2040-00001/06 for sales.invoice in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking sales.creditNote in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company asking sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by PostgresException (42501: new row violates row-level security policy "company_write_insert" for table "counters"), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed CN-2040-00001/06 for sales.creditNote in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5881-74d2-9e1b-dbcfdba182f2 branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       tenant A's administrator asking purchasing.order in company 018d9689-5884-7faf-b2ca-407636564c2e branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user of the first company asking purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch : refused by NumberingException (numbering.sequenceMissing), not by the module's own check
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company took PO-2040-00001/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       a user whose permission is held in the first company previewed PO-2040-00002/06 for purchasing.order in company 0191260e-f484-76b8-a8f1-a8e0d330d99f branch 
+[xUnit.net 00:00:46.33]       Stack Trace:
+[xUnit.net 00:00:46.33]         /work/tests/Erp.Gates.Tests/G1/G1NumberingContractTests.cs(102,0): at Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope()
+[xUnit.net 00:00:46.33]         --- End of stack trace from previous location ---
+[xUnit.net 00:04:36.37]       PUT /api/numbering/sequences/{id:guid} changes data but declares the read permission numbering.sequences.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:04:36.37]       Stack Trace:
+[xUnit.net 00:04:36.37]         /work/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(267,0): at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+[xUnit.net 00:04:36.37]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:36.37]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:36.37]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:04:36.37]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:04:37.07]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="docker-desktop" outcome="Error" timestamp="2026-11-18T01:15:26.6685648+00:00">
+        <Text>[xUnit.net 00:00:26.07]     Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="docker-desktop" outcome="Error" timestamp="2026-11-18T01:15:42.6615156+00:00">
+        <Text>[xUnit.net 00:00:42.06]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_sequence_edit_writes_only_that_sequences_pattern_and_its_own_counters [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="docker-desktop" outcome="Error" timestamp="2026-11-18T01:15:43.3391560+00:00">
+        <Text>[xUnit.net 00:00:42.74]     Erp.Gates.Tests.G2.NumberingWriteSetTests.A_reader_and_a_caller_limited_to_one_branch_of_the_company_change_no_sequence [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="docker-desktop" outcome="Error" timestamp="2026-11-18T01:15:46.9195914+00:00">
+        <Text>[xUnit.net 00:00:46.32]     Erp.Gates.Tests.G1.G1NumberingContractTests.Tenant_A_never_takes_or_previews_a_number_of_tenant_B_or_of_a_company_outside_its_scope [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="docker-desktop" outcome="Error" timestamp="2026-11-18T01:19:36.9466002+00:00">
+        <Text>[xUnit.net 00:04:36.37]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

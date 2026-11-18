@@ -1,0 +1,66 @@
+== as erp_app, no tenant bound
+ seq_visible 
+-------------
+           0
+(1 row)
+
+ issued_visible 
+----------------
+              0
+(1 row)
+
+== bind tenant A (alnoor) with tx stamp, company scope all
+BEGIN
+              set_config              |    set_config     |    set_config     | set_config 
+--------------------------------------+-------------------+-------------------+------------
+ 0190a000-0000-7000-8000-000000000001 | 1794963021.388253 | 1794963021.388253 | all
+(1 row)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000001 |    44
+(1 row)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000001 |    10
+(1 row)
+
+              tenant_id               | count 
+--------------------------------------+-------
+ 0190a000-0000-7000-8000-000000000001 |    33
+(1 row)
+
+-- update B rows (expect 0)
+UPDATE 0
+UPDATE 0
+DELETE 0
+-- insert a sequence row for tenant B (expect RLS refusal)
+SAVEPOINT
+ERROR:  new row violates row-level security policy for table "sequences"
+ROLLBACK
+-- move A row into tenant B (expect RLS refusal)
+SAVEPOINT
+ERROR:  new row violates row-level security policy for table "sequences"
+ROLLBACK
+-- update / delete issued numbers of A (expect permission denied)
+SAVEPOINT
+ERROR:  permission denied for table issued_numbers
+ROLLBACK
+SAVEPOINT
+ERROR:  permission denied for table issued_numbers
+ROLLBACK
+ROLLBACK
+== tenant set without tx stamp
+BEGIN
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000002
+(1 row)
+
+ seq_visible_without_stamp 
+---------------------------
+                         0
+(1 row)
+
+ROLLBACK

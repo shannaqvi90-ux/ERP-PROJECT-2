@@ -1,0 +1,49 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6fb562c1..b9ba8763 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -290,14 +290,7 @@ internal static class SequenceEndpoints
+         }
+         // A role given in another company grants nothing here, and every branch of the company shares
+         // its sequences: the endpoint refuses first (the kernel refuses the write as well).
+-        if (!session.PermitsCompany(sequence.CompanyId))
+-        {
+-            return Problems.Forbidden(http, CompanyPermissionWriteException.Code);
+-        }
+-        if (!session.HoldsEveryBranch(sequence.CompanyId))
+-        {
+-            return Problems.Forbidden(http, "numbering.companyNeedsEveryBranch");
+-        }
++        // CRITIC PLANT P1: the handler's company and every-branch checks removed.
+         if (sequence.Version != request.Version)
+         {
+             return Problems.Conflict(http, "numbering.sequenceChanged");
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Migrations/20261117120000_CounterSupportRead.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Migrations/20261117120000_CounterSupportRead.cs
+new file mode 100644
+index 00000000..70b63a21
+--- /dev/null
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Migrations/20261117120000_CounterSupportRead.cs
+@@ -0,0 +1,23 @@
++using Microsoft.EntityFrameworkCore.Infrastructure;
++using Microsoft.EntityFrameworkCore.Migrations;
++
++#nullable disable
++
++namespace Erp.Modules.Numbering.Migrations
++{
++    /// <summary>CRITIC PLANT L1: an extra permissive SELECT policy on counters (tenant leak on read).</summary>
++    [DbContext(typeof(NumberingDbContext))]
++    [Migration("20261117120000_CounterSupportRead")]
++    public partial class CounterSupportRead : Migration
++    {
++        protected override void Up(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("CREATE POLICY company_support_read ON numbering.counters AS PERMISSIVE FOR SELECT TO erp_app USING (true);");
++        }
++
++        protected override void Down(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("DROP POLICY company_support_read ON numbering.counters;");
++        }
++    }
++}

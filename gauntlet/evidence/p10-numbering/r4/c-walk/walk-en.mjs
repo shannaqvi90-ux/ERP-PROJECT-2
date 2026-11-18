@@ -1,0 +1,18 @@
+import { open, shot } from './lib.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('n');
+await page.waitForURL(/numbering/);
+await page.waitForTimeout(800);
+await page.keyboard.type('quotation dxb');
+await page.waitForTimeout(1200);
+console.log('rows:', await page.locator('table tbody tr').count());
+await page.keyboard.press('ArrowDown');
+await page.keyboard.press('Enter');
+await page.waitForTimeout(1500);
+console.log('url', page.url());
+const focused = await page.evaluate(() => { const e = document.activeElement; return e ? e.outerHTML.slice(0, 200) : null; });
+console.log('focused', focused);
+console.log((await page.locator('main').innerText()).slice(0, 2500));
+await shot(page, 'c01-en-quotation-form');
+console.log('errors', errors);
+await browser.close();
