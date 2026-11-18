@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Erp.Kernel.CustomFields;
+using Erp.Kernel.Data;
 using Erp.Kernel.Http;
 using Erp.Kernel.ImportExport;
 using Erp.Kernel.Money;
@@ -9,6 +10,7 @@ using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NpgsqlTypes;
 
 namespace Erp.Modules.Contacts;
 
@@ -70,11 +72,11 @@ internal static class ContactsImport
         var definitions = customFields is null ? [] : await customFields.FieldsAsync(ContactsModule.RecordType, cancellationToken);
         var issues = new List<ImportIssue>();
         var state = batch.State;
-        var codes = (HashSet<string>)(state["codes"] ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+        var codes = Kept(state, "codes", () => new HashSet<string>(StringComparer.OrdinalIgnoreCase));
         // Organisations of this file by their name key: the id they will have (null while only checking, they are not written).
-        var created = (Dictionary<string, Guid>)(state["created"] ??= new Dictionary<string, Guid>(StringComparer.Ordinal));
-        var found = (Dictionary<string, Guid?>)(state["found"] ??= new Dictionary<string, Guid?>(StringComparer.Ordinal));
-        var baseCurrency = (string)(state["currency"] ??= (await ContactEndpoints.BaseCurrencyAsync(companies, cancellationToken)).Code);
+        var created = Kept(state, "created", () => new Dictionary<string, Guid>(StringComparer.Ordinal));
+        var found = Kept(state, "found", () => new Dictionary<string, Guid?>(StringComparer.Ordinal));
+        var baseCurrency = state.TryGetValue("currency", out var kept) && kept is string currency ? currency : (string)(state["currency"] = (await ContactEndpoints.BaseCurrencyAsync(companies, cancellationToken)).Code);
         var pending = new List<(Contact Contact, IReadOnlyDictionary<string, JsonElement> Custom)>();
 
         async Task FlushAsync()
@@ -83,25 +85,22 @@ internal static class ContactsImport
             {
                 return;
             }
-            await db.SaveChangesAsync(cancellationToken);
-            if (customFields is not null)
+            // One COPY and one INSERT for the batch (the contacts form's own validation has judged every row): the audit trigger and
+            // row-level security still see every row, as for any write.
+            var session = services.GetRequiredService<ErpDbSession>();
+            var tenant = services.GetRequiredService<ITenantContext>();
+            var now = DateTimeOffset.UtcNow;
+            await BulkInsert.InsertAsync(session, ContactsDbContext.SchemaName, "contacts", BulkColumns, pending.Select(p => BulkRow(p.Contact, tenant, now)), cancellationToken);
+            if (customFields is not null && definitions.Count > 0)
             {
-                foreach (var (contact, custom) in pending)
+                // After the contacts themselves, so the values' history follows their creation: all of the batch's values in one go.
+                // The values were checked with their rows; a refusal now means the fields changed under the import, which stops it.
+                var refused = await customFields.SaveNewAsync(ContactsModule.RecordType, [.. pending.Select((p, i) => (i, p.Contact.Id, p.Custom))], cancellationToken);
+                if (refused.Count > 0)
                 {
-                    if (definitions.Count == 0)
-                    {
-                        break;
-                    }
-                    // After the contact itself, so the values' history follows its creation. The values were checked with the row.
-                    var late = new Validator(Context(services, "en"));
-                    await customFields.SaveAsync(ContactsModule.RecordType, contact.Id, isNew: true, custom, late, cancellationToken);
-                    if (!late.IsValid)
-                    {
-                        throw new InvalidOperationException("A custom field value that passed the check was refused on saving: " + string.Join("; ", late.Errors.Select(e => e.Key + " " + string.Join(",", e.Value.Select(x => x.Code)))));
-                    }
+                    throw new InvalidOperationException("A custom field value that passed the check was refused on saving: " + string.Join("; ", refused.Values.First().Select(e => e.Key + " " + e.Value)));
                 }
             }
-            db.ChangeTracker.Clear();
             pending.Clear();
         }
 
@@ -112,17 +111,14 @@ internal static class ContactsImport
             Guid? organisationId = null;
             var wantsOrganisation = organisationText is not null && KindOf(values) == ContactKinds.Person;
             string? organisationProblem = null;
+            Guid? fileOrganisation = null;
             if (wantsOrganisation)
             {
                 var key = ContactsValidation.NameKey(organisationText);
                 if (created.TryGetValue(key, out var createdId))
                 {
-                    if (!batch.DryRun)
-                    {
-                        // The organisation of this file is written first so the person can point at it.
-                        await FlushAsync();
-                        organisationId = createdId;
-                    }
+                    // An organisation of this file: it is written with the people who point at it, in one statement.
+                    fileOrganisation = createdId;
                 }
                 else
                 {
@@ -168,13 +164,16 @@ internal static class ContactsImport
                 }
                 continue;
             }
+            if (fileOrganisation is { } fileParent && contact.Kind == ContactKinds.Person)
+            {
+                contact.OrganisationId = fileParent;
+            }
             if (contact.Kind == ContactKinds.Organisation)
             {
                 created[ContactsValidation.NameKey(string.IsNullOrWhiteSpace(contact.NameEn) ? contact.NameAr : contact.NameEn)] = contact.Id;
             }
             if (!batch.DryRun)
             {
-                db.Contacts.Add(contact);
                 pending.Add((contact, custom));
             }
 
@@ -210,6 +209,49 @@ internal static class ContactsImport
         }
         await FlushAsync();
         return issues;
+    }
+
+    private static readonly BulkColumn[] BulkColumns =
+    [
+        new("id", NpgsqlDbType.Uuid), new("tenant_id", NpgsqlDbType.Uuid), new("kind", NpgsqlDbType.Varchar), new("organisation_id", NpgsqlDbType.Uuid),
+        new("code", NpgsqlDbType.Varchar), new("name_en", NpgsqlDbType.Varchar), new("name_ar", NpgsqlDbType.Varchar), new("job_title", NpgsqlDbType.Varchar),
+        new("email", NpgsqlDbType.Varchar), new("phone", NpgsqlDbType.Varchar), new("mobile", NpgsqlDbType.Varchar), new("website", NpgsqlDbType.Varchar),
+        new("address_line1", NpgsqlDbType.Varchar), new("address_line2", NpgsqlDbType.Varchar), new("area", NpgsqlDbType.Varchar), new("city", NpgsqlDbType.Varchar),
+        new("emirate", NpgsqlDbType.Varchar), new("po_box", NpgsqlDbType.Varchar), new("country", NpgsqlDbType.Varchar), new("address_ar", NpgsqlDbType.Varchar),
+        new("tags", NpgsqlDbType.Varchar), new("trade_licence_number", NpgsqlDbType.Varchar), new("tax_registration_number", NpgsqlDbType.Varchar),
+        new("default_currency", NpgsqlDbType.Char), new("credit_limit_amount", NpgsqlDbType.Numeric), new("credit_limit_currency", NpgsqlDbType.Char),
+        new("credit_limit_exchange_rate", NpgsqlDbType.Numeric), new("credit_limit_base_amount", NpgsqlDbType.Numeric), new("credit_limit_base_currency", NpgsqlDbType.Char),
+        new("credit_limit_stated", NpgsqlDbType.Boolean), new("notes", NpgsqlDbType.Varchar), new("is_active", NpgsqlDbType.Boolean),
+        new("name_key", NpgsqlDbType.Varchar), new("name_ar_key", NpgsqlDbType.Varchar), new("email_key", NpgsqlDbType.Varchar),
+        new("phone_key", NpgsqlDbType.Varchar), new("mobile_key", NpgsqlDbType.Varchar),
+        new("created_at", NpgsqlDbType.TimestampTz), new("created_by", NpgsqlDbType.Uuid), new("updated_at", NpgsqlDbType.TimestampTz), new("updated_by", NpgsqlDbType.Uuid),
+    ];
+
+    private static object?[] BulkRow(Contact c, ITenantContext tenant, DateTimeOffset now) =>
+    [
+        c.Id, tenant.TenantId, c.Kind, c.OrganisationId,
+        c.Code, c.NameEn, c.NameAr, c.JobTitle,
+        c.Email, c.Phone, c.Mobile, c.Website,
+        c.AddressLine1, c.AddressLine2, c.Area, c.City,
+        c.Emirate, c.PoBox, c.Country, c.AddressAr,
+        c.Tags, c.TradeLicenceNumber, c.TaxRegistrationNumber,
+        c.DefaultCurrency, c.CreditLimitAmount, c.CreditLimitCurrency,
+        c.CreditLimitExchangeRate, c.CreditLimitBaseAmount, c.CreditLimitBaseCurrency,
+        c.CreditLimitStated, c.Notes, c.IsActive,
+        c.NameKey, c.NameArKey, c.EmailKey,
+        c.PhoneKey, c.MobileKey,
+        now, tenant.ActorId, now, tenant.ActorId,
+    ];
+
+    private static T Kept<T>(IDictionary<string, object?> state, string key, Func<T> create) where T : class
+    {
+        if (state.TryGetValue(key, out var value) && value is T existing)
+        {
+            return existing;
+        }
+        var made = create();
+        state[key] = made;
+        return made;
     }
 
     private static string FieldOf(string validatorField) =>

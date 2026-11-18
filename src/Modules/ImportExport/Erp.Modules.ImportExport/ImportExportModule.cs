@@ -40,7 +40,7 @@ public sealed class ImportExportModule : ErpModule
         module.AuditedRecord(new AuditRecordType("importexport.import_files", "importexport.record.importFile", Erp.Modules.Audit.Contracts.AuditPermissions.LogRead, null));
         module.AuditedRecord(new AuditRecordType("importexport.export_files", "importexport.record.exportFile", Erp.Modules.Audit.Contracts.AuditPermissions.LogRead, null));
         module.AuditedRecord(new AuditRecordType("importexport.import_mappings", "importexport.record.mapping", Erp.Modules.Audit.Contracts.AuditPermissions.LogRead, null));
-        module.AuditedRecord(new AuditRecordType("importexport.tenant_exports", "importexport.record.export", ImportExportPermissions.ExportsRead, "/importexport/exports"));
+        module.AuditedRecord(new AuditRecordType("importexport.tenant_exports", "importexport.record.export", ImportExportPermissions.ExportsRead, null));
         module.IsolationProbe<ImportExportIsolationProbe>();
         module.Seeder<ImportExportSeeder>();
     }

@@ -169,7 +169,7 @@ internal static class ImportEndpoints
 
             group.MapPost(root + "/imports/{id:guid}/run", (Guid id, RunImportRequest request, ImportExportDbContext db, IJobQueue jobs, HttpContext http, CancellationToken ct) => RunAsync(type, id, request, db, jobs, http, ct))
                 .WithName(name + ".run")
-                .WithSummary("Check the file (dryRun true: every row is validated with the record's own rules and nothing is written) or import it. Both run as a background job: the answer is the file's state, which turns to running; read it again until it is checked, completed or failed.")
+                .WithSummary("Check the file (dryRun true: every row is validated with the record's own rules and nothing is written) or import it. A file of up to 5,000 rows is processed while the caller waits (200 with the file's state: checked, completed or failed); a larger one runs as a background job (202 with the state running; read it again until it is checked, completed or failed).")
                 .ProducesValidationProblem()
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .ProducesProblem(StatusCodes.Status409Conflict)
@@ -494,7 +494,7 @@ internal static class ImportEndpoints
         return TypedResults.Ok(ToDto(type, session, fields, hasFile, Languages.ForRequest(http)));
     }
 
-    private static async Task<Results<Accepted<ImportSessionDto>, ProblemHttpResult>> RunAsync(
+    private static async Task<Results<Ok<ImportSessionDto>, Accepted<ImportSessionDto>, ProblemHttpResult>> RunAsync(
         ImportRecordType type, Guid id, RunImportRequest request, ImportExportDbContext db, IJobQueue jobs, HttpContext http, CancellationToken cancellationToken)
     {
         var session = await db.ImportSessions.SingleOrDefaultAsync(s => s.Id == id && s.RecordType == type.Table, cancellationToken);
@@ -525,14 +525,20 @@ internal static class ImportEndpoints
         {
             return validator.Add("columns", "importMappingIncomplete", string.Join(", ", missing.Select(f => language == Languages.Arabic ? f.LabelAr : f.LabelEn).Distinct())).ToResult();
         }
-        session.Status = ImportStatus.Running;
         session.DryRun = request.DryRun == true;
         session.OnError = onError;
         session.Issues = "[]";
         session.RowsChecked = session.RowsValid = session.RowsImported = session.RowsFailed = 0;
         session.FailureCode = session.FailureEn = session.FailureAr = null;
         session.FinishedAt = null;
-        var strings = http.RequestServices.GetRequiredService<StringCatalog>();
+        session.Status = ImportStatus.Running;
+        if (session.RowCount <= ImportRunner.InlineRows)
+        {
+            // A small file is processed while the person waits: no background job is needed for a few seconds' work.
+            var file = await db.ImportFiles.SingleAsync(f => f.SessionId == id, cancellationToken);
+            await ImportRunner.RunAsync(http.RequestServices, db, session, file, null, cancellationToken);
+            return TypedResults.Ok(ToDto(type, session, fields, file.ErrorReport is not null, language));
+        }
         var label = new JobText(session.FileName, session.FileName);
         var ticket = await jobs.EnqueueAsync(new JobRequest(ImportJobHandler.TypeKey, new { sessionId = session.Id }, label, Priority: 0, Source: JobSource.Module), cancellationToken);
         session.JobId = ticket.Id;
