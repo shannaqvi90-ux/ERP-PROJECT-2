@@ -36,3 +36,18 @@ Built through the shared kernel components, so every module has it:
 No existing task needs one more key or click: tabs are pointer helpers outside the Tab order (the
 form's) or one stop that replaces nothing (the list's, roving), and the date box takes the same text
 as before. See the notes of the round for the comparison runs.
+
+## Not built in this round, and why
+
+- **Pinned and recent items in the sidebar.** The navigation is asserted exactly, link by link, by
+  existing specs (`sign-in.spec.ts`: the list of the sixteen navigation links in both languages) and by
+  the comparison drivers, which find links inside the navigation landmark; a pinned or recent block
+  inside it would change those lists and every step count behind them. The palette already offers the
+  recent screens and records. A block beside the navigation (outside its landmark) with the user's
+  pins needs a place to keep pins per user (a server preference or a device key reviewed like the
+  theme) and is left for the next round with the owner's choice of where pins live.
+- **Trend and credit-bar cells** in lists (see above): no data source.
+- **Theme and density in the user's profile** (see tokens-and-themes): device setting only.
+- **Group subtotals in base currency** are the kernel list's existing group totals; the contacts list
+  has no money column, so the screens that show subtotals in this product are the ones with money
+  (exchange rates have none either). The styling is G's; the data waits for the invoicing modules.
