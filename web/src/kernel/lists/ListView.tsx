@@ -2,6 +2,7 @@ import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { identityScoped } from "../deviceState";
+import { allowed, extensions } from "../extensions";
 import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress, replaceAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
@@ -1060,6 +1061,9 @@ export function ListView(props: ListViewProps) {
             )}
           </div>
           {definition?.printable && current && <ListPrintMenu listKey={listKey} state={current} />}
+          {allowed(extensions.listActions.filter((item) => item.listKey === listKey), props.can ?? (() => true)).map((item) => (
+            <item.component key={item.key} listKey={listKey} reload={reload} />
+          ))}
           {props.actions}
         </div>
       </div>

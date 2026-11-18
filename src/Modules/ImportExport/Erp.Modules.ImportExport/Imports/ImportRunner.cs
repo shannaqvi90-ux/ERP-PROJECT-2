@@ -42,10 +42,10 @@ internal static class ImportRunner
         }
         catch (TableFormatException problem)
         {
-            await FailAsync(db, session, strings, "import" + char.ToUpperInvariant(problem.Code[0]) + problem.Code[1..], cancellationToken, problem.Args);
+            await FailAsync(db, session, strings, CodeOf(problem.Code), cancellationToken, problem.Args);
             return;
         }
-        var mapping = JsonSerializer.Deserialize<string?[]>(session.Mapping, ImportEngine.Json) ?? [];
+        var mapping = JsonSerializer.Deserialize<string?[]>(session.Mapping, JsonSerializerOptions.Web) ?? [];
         var rows = ImportEngine.Rows(table, mapping).ToList();
         var state = new Dictionary<string, object?>(StringComparer.Ordinal);
         var issuesByRow = new SortedDictionary<int, List<ImportIssue>>();
@@ -97,7 +97,7 @@ internal static class ImportRunner
         session.RowsFailed = issuesByRow.Count;
         session.RowsValid = rows.Count - issuesByRow.Count;
         session.Issues = JsonSerializer.Serialize(issuesByRow.Values.SelectMany(i => i).Take(ImportLimits.MaxShownIssues)
-            .Select(i => new StoredIssue(i.Row, i.Field, i.Code, i.MessageEn, i.MessageAr)), ImportEngine.Json);
+            .Select(i => new StoredIssue(i.Row, i.Field, i.Code, i.MessageEn, i.MessageAr)), JsonSerializerOptions.Web);
         file.ErrorReport = issuesByRow.Count > 0 ? ImportEngine.ErrorFile(table, issuesByRow, strings) : null;
         file.SizeBytes = file.Content.Length;
         if (refused)
@@ -121,6 +121,19 @@ internal static class ImportRunner
         }
     }
 
+
+    /// <summary>The validation code (its text is in the module's strings) of a file that cannot be read.</summary>
+    public static string CodeOf(string reason) => reason switch
+    {
+        "unknownFormat" => "importUnknownFormat",
+        "empty" => "importEmpty",
+        "noHeader" => "importNoHeader",
+        "tooManyRows" => "importTooManyRows",
+        "tooManyColumns" => "importTooManyColumns",
+        "cellTooLong" => "importCellTooLong",
+        "tooLarge" => "importTooLarge",
+        _ => "importDamaged",
+    };
 
     private static void AddIssue(SortedDictionary<int, List<ImportIssue>> byRow, ImportIssue issue)
     {

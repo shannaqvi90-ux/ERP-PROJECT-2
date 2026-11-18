@@ -246,10 +246,10 @@ internal static class ImportEndpoints
     internal static ImportSessionDto ToDto(ImportRecordType type, ImportSession s, IReadOnlyList<ImportFieldInfo> fields, bool hasErrorFile, string language)
     {
         var arabic = language == Languages.Arabic;
-        var headers = JsonSerializer.Deserialize<string[]>(s.Headers, ImportEngine.Json) ?? [];
-        var mapping = JsonSerializer.Deserialize<string?[]>(s.Mapping, ImportEngine.Json) ?? [];
-        var sample = JsonSerializer.Deserialize<string[][]>(s.Sample, ImportEngine.Json) ?? [];
-        var issues = JsonSerializer.Deserialize<StoredIssue[]>(s.Issues, ImportEngine.Json) ?? [];
+        var headers = JsonSerializer.Deserialize<string[]>(s.Headers, JsonSerializerOptions.Web) ?? [];
+        var mapping = JsonSerializer.Deserialize<string?[]>(s.Mapping, JsonSerializerOptions.Web) ?? [];
+        var sample = JsonSerializer.Deserialize<string[][]>(s.Sample, JsonSerializerOptions.Web) ?? [];
+        var issues = JsonSerializer.Deserialize<StoredIssue[]>(s.Issues, JsonSerializerOptions.Web) ?? [];
         var labels = fields.ToDictionary(f => f.Key, f => arabic ? f.LabelAr : f.LabelEn, StringComparer.Ordinal);
         var sources = SourceOf(s, headers, mapping);
         var columns = headers.Select((h, i) => new ImportColumnDto(i, h, i < mapping.Length ? mapping[i] : null, sources.ElementAtOrDefault(i),
@@ -313,7 +313,7 @@ internal static class ImportEndpoints
         }
         catch (TableFormatException problem)
         {
-            return validator.Add("file", "import" + char.ToUpperInvariant(problem.Code[0]) + problem.Code[1..], problem.Args).ToResult();
+            return validator.Add("file", ImportRunner.CodeOf(problem.Code), problem.Args).ToResult();
         }
 
         var services = http.RequestServices;
@@ -327,10 +327,10 @@ internal static class ImportEndpoints
             Format = table.Format,
             Status = ImportStatus.Uploaded,
             RowCount = table.Rows.Count,
-            Headers = JsonSerializer.Serialize(table.Headers, ImportEngine.Json),
-            Mapping = JsonSerializer.Serialize(mapping, ImportEngine.Json),
+            Headers = JsonSerializer.Serialize(table.Headers, JsonSerializerOptions.Web),
+            Mapping = JsonSerializer.Serialize(mapping, JsonSerializerOptions.Web),
             Sources = new string(source.Select(x => x switch { "memory" => 'm', "name" => 'n', _ => 'y' }).ToArray()),
-            Sample = JsonSerializer.Serialize(table.Rows.Take(SampleRows), ImportEngine.Json),
+            Sample = JsonSerializer.Serialize(table.Rows.Take(SampleRows), JsonSerializerOptions.Web),
         };
         db.ImportSessions.Add(session);
         db.ImportFiles.Add(new ImportFile { SessionId = session.Id, SizeBytes = bytes.Length, Content = bytes });
@@ -373,7 +373,7 @@ internal static class ImportEndpoints
         UploadImportRequest? request;
         try
         {
-            request = JsonSerializer.Deserialize<UploadImportRequest>(body, ImportEngine.Json);
+            request = JsonSerializer.Deserialize<UploadImportRequest>(body, JsonSerializerOptions.Web);
         }
         catch (JsonException)
         {
@@ -434,8 +434,8 @@ internal static class ImportEndpoints
         }
         var fields = await ImportEngine.FieldsAsync(type, http.RequestServices, cancellationToken);
         var known = fields.Select(f => f.Key).ToHashSet(StringComparer.Ordinal);
-        var headers = JsonSerializer.Deserialize<string[]>(session.Headers, ImportEngine.Json) ?? [];
-        var mapping = JsonSerializer.Deserialize<string?[]>(session.Mapping, ImportEngine.Json) ?? new string?[headers.Length];
+        var headers = JsonSerializer.Deserialize<string[]>(session.Headers, JsonSerializerOptions.Web) ?? [];
+        var mapping = JsonSerializer.Deserialize<string?[]>(session.Mapping, JsonSerializerOptions.Web) ?? new string?[headers.Length];
         var sources = session.Sources.PadRight(headers.Length, 'y').ToCharArray();
         foreach (var column in request.Columns!)
         {
@@ -454,7 +454,7 @@ internal static class ImportEndpoints
         {
             return validator.ToResult();
         }
-        session.Mapping = JsonSerializer.Serialize(mapping, ImportEngine.Json);
+        session.Mapping = JsonSerializer.Serialize(mapping, JsonSerializerOptions.Web);
         session.Sources = new string(sources);
         // The next file with these headers is mapped by itself.
         var remembered = await db.ImportMappings.Where(m => m.RecordType == type.Table).ToListAsync(cancellationToken);
@@ -518,7 +518,7 @@ internal static class ImportEndpoints
             return Problems.Conflict(http, "importDone");
         }
         var fields = await ImportEngine.FieldsAsync(type, http.RequestServices, cancellationToken);
-        var mapping = JsonSerializer.Deserialize<string?[]>(session.Mapping, ImportEngine.Json) ?? [];
+        var mapping = JsonSerializer.Deserialize<string?[]>(session.Mapping, JsonSerializerOptions.Web) ?? [];
         var language = Languages.ForRequest(http);
         var missing = ImportEngine.MissingRequired(type, fields, mapping);
         if (missing.Count > 0)

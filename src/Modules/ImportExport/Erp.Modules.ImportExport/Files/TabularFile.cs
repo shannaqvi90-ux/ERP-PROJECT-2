@@ -507,10 +507,10 @@ public static class TabularFile
             return "";
         }
         raw = raw.Trim();
-        if (isDate && double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial) && serial is > 0 and < 2_958_466)
+        if (isDate && decimal.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial) && serial is > 0 and < 2_958_466)
         {
-            var date = new DateTime(1899, 12, 30).AddDays(serial);
-            return Math.Abs(serial - Math.Floor(serial)) < 1e-9 ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : date.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            var date = new DateTime(1899, 12, 30).AddTicks((long)Math.Round(serial * TimeSpan.TicksPerDay));
+            return serial == Math.Floor(serial) ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : date.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
         }
         if (raw.Contains('E') || raw.Contains('e'))
         {

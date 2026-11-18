@@ -1,0 +1,93 @@
+/* Import and full export: the import dialog (mapping and report tables) and the full export screen. Logical properties only (Arabic mirrors).
+   The colours and sizes come from the shared tokens; the kernel's button, notice and dialog classes do the rest. */
+.ie-dialog {
+  inline-size: min(56rem, 96vw);
+}
+
+.ie-body {
+  display: grid;
+  gap: 12px;
+  max-block-size: 70vh;
+  overflow: auto;
+}
+
+.ie-drop {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px dashed var(--border, #b9c2cc);
+  border-radius: 4px;
+}
+
+.ie-dragging {
+  background: var(--accent-soft, #e8f1ff);
+}
+
+.ie-hint,
+.ie-sample,
+.ie-source {
+  color: var(--muted, #5b6672);
+  font-size: 0.85rem;
+}
+
+.ie-source {
+  margin-inline-start: 8px;
+}
+
+.ie-map,
+.ie-issues,
+.ie-exports {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.ie-map th,
+.ie-map td,
+.ie-issues th,
+.ie-issues td,
+.ie-exports th,
+.ie-exports td {
+  padding: 4px 8px;
+  border-block-end: 1px solid var(--border, #d9dee3);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.ie-caption {
+  text-align: start;
+  font-weight: 600;
+  padding-block-end: 4px;
+}
+
+.ie-page {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.ie-start {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ie-status {
+  font-weight: 600;
+}
+
+.ie-status-failed,
+.ie-status-expired {
+  color: var(--danger, #a4262c);
+}
+
+.ie-status-succeeded {
+  color: var(--success, #107c10);
+}
+
+.ie-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

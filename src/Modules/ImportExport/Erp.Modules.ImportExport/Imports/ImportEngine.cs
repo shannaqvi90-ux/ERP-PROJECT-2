@@ -17,8 +17,6 @@ internal static class ImportEngine
 {
     public const int BatchSize = 500;
 
-    public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
-
     /// <summary>The fields of a kind of record: its own, then the workspace's custom fields.</summary>
     public static async Task<IReadOnlyList<ImportFieldInfo>> FieldsAsync(ImportRecordType type, IServiceProvider services, CancellationToken cancellationToken)
     {

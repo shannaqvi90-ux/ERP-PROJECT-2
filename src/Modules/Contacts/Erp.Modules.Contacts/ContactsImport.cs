@@ -211,7 +211,7 @@ internal static class ContactsImport
         return issues;
     }
 
-    private static readonly BulkColumn[] BulkColumns =
+    private static readonly System.Collections.Immutable.ImmutableArray<BulkColumn> BulkColumns =
     [
         new("id", NpgsqlDbType.Uuid), new("tenant_id", NpgsqlDbType.Uuid), new("kind", NpgsqlDbType.Varchar), new("organisation_id", NpgsqlDbType.Uuid),
         new("code", NpgsqlDbType.Varchar), new("name_en", NpgsqlDbType.Varchar), new("name_ar", NpgsqlDbType.Varchar), new("job_title", NpgsqlDbType.Varchar),

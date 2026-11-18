@@ -162,7 +162,7 @@ internal sealed class TenantExportJobHandler : IJobHandler
         export.Status = ExportStatus.Succeeded;
         export.FileCount = manifestFiles.Count + 2 + (int)attachmentCount;
         export.ByteSize = bytes.Length;
-        export.RecordCounts = JsonSerializer.Serialize(counts, ImportEngine.Json);
+        export.RecordCounts = JsonSerializer.Serialize(counts, JsonSerializerOptions.Web);
         export.FinishedAt = DateTimeOffset.UtcNow;
         export.ExpiresAt = export.FinishedAt + TenantExports.Lifetime;
         await db.SaveChangesAsync(context.Cancellation);
@@ -310,7 +310,6 @@ internal sealed class TenantExportJobHandler : IJobHandler
             case decimal d: writer.WriteNumberValue(d); break;
             case int i: writer.WriteNumberValue(i); break;
             case long l: writer.WriteNumberValue(l); break;
-            case double d: writer.WriteNumberValue(d); break;
             case DateTimeOffset d: writer.WriteStringValue(d.ToUniversalTime()); break;
             case Guid g: writer.WriteStringValue(g); break;
             case JsonElement e: e.WriteTo(writer); break;

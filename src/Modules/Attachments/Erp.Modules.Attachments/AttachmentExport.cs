@@ -22,7 +22,13 @@ internal sealed class AttachmentExport(AttachmentsDbContext db, IAttachmentStore
 
     public async Task<Stream?> OpenAsync(Guid fileId, CancellationToken cancellationToken)
     {
-        var key = await db.Files.AsNoTracking().Where(f => f.Id == fileId).Select(f => f.StorageKey).SingleOrDefaultAsync(cancellationToken);
-        return key is null ? null : await store.OpenAsync(tenant.TenantId, key, cancellationToken);
+        var query = db.Files.AsNoTracking().Where(f => f.Id == fileId);
+        var file = await query.SingleOrDefaultAsync(cancellationToken);
+        if (file is null)
+        {
+            return null;
+        }
+        var key = file.StorageKey;
+        return await store.OpenAsync(tenant.TenantId, key, cancellationToken);
     }
 }
