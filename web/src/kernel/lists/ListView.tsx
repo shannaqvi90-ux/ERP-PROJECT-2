@@ -507,6 +507,22 @@ export function ListView(props: ListViewProps) {
     run: () => setMenu({ kind: "views" }),
   });
 
+  // Counts for the view tabs: the rows each built-in view holds, one page of one row each.
+  const [viewCounts, setViewCounts] = useState<Record<string, number | null>>({});
+  const countedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!props.viewCounts || !definition || definition.presets.length === 0 || countedFor.current === definition.key) return;
+    countedFor.current = definition.key;
+    const asks: [string, string | null][] = [["", null], ...definition.presets.map((p) => [`preset:${p.key}`, p.filter] as [string, string | null])];
+    for (const [id, filter] of asks) {
+      const params = new URLSearchParams({ take: "1" });
+      if (filter) params.set("filter", filter);
+      api<{ total: number }>("GET", `${definition.endpoint}?${params}`)
+        .then((page) => setViewCounts((c) => ({ ...c, [id]: page.total })))
+        .catch(() => setViewCounts((c) => ({ ...c, [id]: null })));
+    }
+  }, [props.viewCounts, definition]);
+
   if (loadError) {
     return (
       <section className="list-screen">
@@ -928,22 +944,6 @@ export function ListView(props: ListViewProps) {
       ]
     : [];
   const viewName = current?.view ? (viewChoices.find((c) => c.id === current.view)?.label ?? t("lists.views.standard")) : t("lists.views.standard");
-
-  // Counts for the view tabs: the rows each built-in view holds, one page of one row each.
-  const [viewCounts, setViewCounts] = useState<Record<string, number | null>>({});
-  const countedFor = useRef<string | null>(null);
-  useEffect(() => {
-    if (!props.viewCounts || !definition || definition.presets.length === 0 || countedFor.current === definition.key) return;
-    countedFor.current = definition.key;
-    const asks: [string, string | null][] = [["", null], ...definition.presets.map((p) => [`preset:${p.key}`, p.filter] as [string, string | null])];
-    for (const [id, filter] of asks) {
-      const params = new URLSearchParams({ take: "1" });
-      if (filter) params.set("filter", filter);
-      api<{ total: number }>("GET", `${definition.endpoint}?${params}`)
-        .then((page) => setViewCounts((c) => ({ ...c, [id]: page.total })))
-        .catch(() => setViewCounts((c) => ({ ...c, [id]: null })));
-    }
-  }, [props.viewCounts, definition]);
 
   const columnsTemplate = `${selectColumnRem}rem ${shown.map((c) => `minmax(${columnMinimum(c)}rem, ${columnWidth(c).share}fr)`).join(" ")}${waiting.length ? ` ${moreColumnRem}rem` : ""}`;
   // Every row and the header share one width (the columns' minimums, or the grid's when wider),
