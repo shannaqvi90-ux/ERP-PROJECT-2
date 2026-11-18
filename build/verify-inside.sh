@@ -146,21 +146,21 @@ case "$stage" in
           --logger "trx;LogFilePrefix=$name" --logger "console;verbosity=normal" --results-directory "$out/trx" \
           >"$out/dotnet-$name.log" 2>&1
     }
-    # (--list-tests ends with 1 when a project of the solution has no test that matches the filter.)
-    list_tests() {
-      { dotnet test "$@" -c Release --no-build --verbosity quiet --list-tests 2>&1 || true; } | { grep '^    ' || true; } | sort
-    }
+    # list_tests: one project at a time, strict parser (build/list-tests.sh, round 21)
+    source /work/build/list-tests.sh
+    lt() { list_tests "$@" || { echo "The test listing is broken (see above); that is not a missing or an extra test."; exit 1; }; }
     step ".NET: the test groups are every test exactly once"
-    list_tests Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
+    lt Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
     {
-      list_tests Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
-      list_tests "$gates" --filter "Load!=Timing&$in_groups"
-      list_tests "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
-      list_tests "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
-      for ((k = 0; k < http_shards; k++)); do list_tests "$gates" --filter "Shard=$k"; done
-      list_tests "$gates" --filter "Judge=http-attack"
-      for p in "${selftests[@]}"; do list_tests "$gates" --filter "Process=$p"; done
-    } | sort >"$out/tests-groups.txt"
+      lt Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
+      lt "$gates" --filter "Load!=Timing&$in_groups"
+      lt "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
+      lt "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
+      for ((k = 0; k < http_shards; k++)); do lt "$gates" --filter "Shard=$k"; done
+      lt "$gates" --filter "Judge=http-attack"
+      for p in "${selftests[@]}"; do lt "$gates" --filter "Process=$p"; done
+    } >"$out/tests-groups.raw"
+    sort "$out/tests-groups.raw" >"$out/tests-groups.txt"
     if [[ ! -s "$out/tests-all.txt" ]] || ! diff -q "$out/tests-all.txt" "$out/tests-groups.txt" >/dev/null; then
       echo "The test groups are not every test exactly once:"
       diff "$out/tests-all.txt" "$out/tests-groups.txt" | head -40
