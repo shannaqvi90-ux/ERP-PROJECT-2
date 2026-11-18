@@ -171,7 +171,11 @@
 }
 
 .money-input input.currency {
-  width: 4.5em;
+  /* Room for the three letters whole, with the field's padding and border (it showed "AEC"). */
+  flex: none;
+  box-sizing: content-box;
+  width: 4ch;
+  min-width: 4ch;
   text-transform: uppercase;
 }
 
@@ -298,4 +302,47 @@
    person did to cause it (the comparison harness measures exactly that). */
 [data-field^="customFields."] input[type="date"]::-webkit-calendar-picker-indicator {
   display: none;
+}
+
+/* Date field: day-first text box with a calendar button at its end (kernel/forms/dateInput.tsx). */
+.date-input {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.date-input > input[type="text"] {
+  flex: 1;
+  padding-inline-end: calc(var(--ctl-h) + var(--sp-2));
+}
+
+.date-picker-button {
+  position: absolute;
+  inset-inline-end: 1px;
+  inset-block: 1px;
+  width: calc(var(--ctl-h) - 2px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-2);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.date-picker-button:hover {
+  color: var(--accent-text);
+  background: var(--hover);
+}
+
+.date-picker-native {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }

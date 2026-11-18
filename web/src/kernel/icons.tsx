@@ -24,6 +24,7 @@ const paths = {
   sun: { d: "M10 6.5a3.5 3.5 0 1 1 0 7a3.5 3.5 0 0 1 0-7zM10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4", directional: false },
   moon: { d: "M16.5 11.5A6.5 6.5 0 0 1 8.5 3.5a6.5 6.5 0 1 0 8 8z", directional: false },
   contrast: { d: "M10 2.5a7.5 7.5 0 1 1 0 15a7.5 7.5 0 0 1 0-15zM10 2.5v15M10 2.5a7.5 7.5 0 0 1 0 15z", directional: false },
+  calendar: { d: "M3.5 5h13v11.5h-13zM3.5 8.5h13M7 3v3M13 3v3", directional: false },
   pin: { d: "M7 3h6l-1 5 3 3H5l3-3zM10 11v6", directional: false },
   record: { d: "M5 3h7l3 3v11H5zM8 9h4M8 12h4", directional: false },
 } as const;
