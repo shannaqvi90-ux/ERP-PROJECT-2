@@ -768,11 +768,11 @@ input[aria-invalid="true"] {
   min-width: 160px;
   padding: 12px 14px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  color: var(--accent-text);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 .empty-state {
@@ -1464,4 +1464,95 @@ input[aria-invalid="true"] {
   .look-controls {
     display: none;
   }
+}
+
+/* Home: what needs doing (kernel/home.tsx). */
+.home-summary {
+  margin: 0 0 var(--sp-6);
+  font-size: var(--fs-lg);
+  color: var(--fg-muted);
+}
+
+.home-summary[data-waiting] {
+  color: var(--warning);
+  font-weight: var(--fw-semibold);
+}
+
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-5);
+  margin-block-end: var(--sp-8);
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--card-pad);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-1);
+}
+
+.home-card-title {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  color: var(--fg-subtle);
+}
+
+.home-figures {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-figure + .home-figure {
+  border-block-start: 1px solid var(--line-soft);
+}
+
+.home-figure-link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  padding-block: var(--sp-3);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.home-figure-link:hover .home-figure-label {
+  text-decoration: underline;
+}
+
+.home-figure-count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+}
+
+.home-figure[data-attention] .home-figure-count {
+  color: var(--warning);
+}
+
+[data-theme="hc"] .home-figure[data-attention] .home-figure-count {
+  text-decoration: underline;
+}
+
+.home-card-action {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.home-areas-title {
+  font-size: var(--fs-lg);
+  margin: 0 0 var(--sp-4);
 }

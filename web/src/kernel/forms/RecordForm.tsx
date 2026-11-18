@@ -6,6 +6,7 @@ import { useSessionIfAny } from "../session";
 import { navigate } from "../router";
 import { chordForAria, chordKeys, useCommand, useShortcut } from "../shortcuts";
 import type { RecordFormState } from "./useRecordForm";
+import { SectionTabs } from "./SectionTabs";
 import "./forms.css";
 
 /** Moving through the records of the list the form was opened from. */
@@ -104,6 +105,7 @@ export function RecordForm<R, D>({
 }) {
   const { t } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
   const [asking, setAsking] = useState(false);
   const [printing, setPrinting] = useState(false);
@@ -317,7 +319,8 @@ export function RecordForm<R, D>({
           </div>
         )}
         <FormContext.Provider value={{ readOnly: form.readOnly }}>
-          <div className="record-body">{children}</div>
+          <SectionTabs root={bodyRef} />
+          <div className="record-body" ref={bodyRef}>{children}</div>
         </FormContext.Provider>
       </form>
       {panels.map((item) => (item.always || openPanels[item.key]) && <item.panel key={item.key} {...panelProps(item)} />)}

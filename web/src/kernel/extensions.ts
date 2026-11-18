@@ -10,6 +10,8 @@ import type { Language } from "./format";
  *    with no props, reads what it needs through useSession()/useI18n(), and may register its own
  *    shortcut with useShortcut() (it then appears in the shortcut help sheet).
  *  - `status`: short facts in the status line (inline end side).
+ *  - `home`: cards of the home screen that say what needs doing (counts of what waits for the user,
+ *    each leading to its screen); see kernel/home.tsx.
  *  - `palette`: sources of command palette entries: records found by what the user types
  *    (`minLength` >= 1) or a fixed set of actions (`minLength` 0, for example "switch to company X").
  *  - `actions`: what the module lets a user start from anywhere by typing in the command palette
@@ -162,6 +164,8 @@ export type ModuleExtensions = {
   history?: HistoryChild[];
   topbar?: SlotItem[];
   status?: SlotItem[];
+  /** Cards of the home screen: what needs doing, from the module (kernel/home.tsx). */
+  home?: SlotItem[];
   palette?: PaletteSource[];
   actions?: ModuleAction[];
   goTo?: GoToKey[];
@@ -173,7 +177,7 @@ type ExtensionModule = { extensions?: ModuleExtensions };
 const found = import.meta.glob<ExtensionModule>("../modules/*/extensions.{ts,tsx}", { eager: true });
 
 export function collectExtensions(sources: Record<string, ExtensionModule>): Required<ModuleExtensions> {
-  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [], goTo: [], record: [], history: [] };
+  const all: Required<ModuleExtensions> = { topbar: [], status: [], home: [], palette: [], actions: [], goTo: [], record: [], history: [] };
   const goToCodes = new Map<string, string>();
   const seen = new Set<string>();
   for (const [path, module] of Object.entries(sources).sort(([a], [b]) => a.localeCompare(b))) {
@@ -190,6 +194,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     }
     all.topbar.push(...(ext.topbar ?? []));
     all.status.push(...(ext.status ?? []));
+    all.home.push(...(ext.home ?? []));
     all.palette.push(...(ext.palette ?? []));
     all.record.push(...(ext.record ?? []));
     all.history.push(...(ext.history ?? []));
@@ -212,6 +217,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
   const byOrder = (a: SlotItem, b: SlotItem) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key);
   all.topbar.sort(byOrder);
   all.status.sort(byOrder);
+  all.home.sort(byOrder);
   all.record.sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key));
   return all;
 }

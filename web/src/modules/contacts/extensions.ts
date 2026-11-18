@@ -1,3 +1,4 @@
+import { ContactsHomeCard } from "./home";
 import { api } from "../../kernel/api";
 import type { ModuleExtensions } from "../../kernel/extensions";
 import { recordPath } from "../../kernel/router";
@@ -10,6 +11,7 @@ import { contactName, contactsPath, type ContactRow, type ListPage } from "./typ
  * Contacts.
  */
 export const extensions: ModuleExtensions = {
+  home: [{ key: "contacts.home", order: 10, permission: "contacts.contacts.read", component: ContactsHomeCard }],
   actions: [
     {
       key: "contacts.contacts.new",
