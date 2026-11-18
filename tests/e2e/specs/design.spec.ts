@@ -103,11 +103,13 @@ test.describe("design system", () => {
   test("the palette opens on every screen from the top bar field and the key", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
+    await expect(page.getByRole("heading", { name: /Welcome/ })).toBeVisible();
     for (const path of ["/", "/contacts/contacts", "/identity/users"]) {
       if (path !== "/") await page.locator(`nav a[href="${path}"]`).first().click();
-      await page.keyboard.press("Control+k");
-      await expect(page.getByRole("dialog")).toBeVisible();
+      await page.keyboard.press("Control+K");
+      await expect(page.getByRole("combobox"), `Ctrl+K on ${path}`).toBeFocused();
       await page.keyboard.press("Escape");
+      await expect(page.getByRole("combobox")).toHaveCount(0);
       await page.locator(".palette-trigger").click();
       await expect(page.getByRole("combobox")).toBeVisible();
       await page.keyboard.press("Escape");
