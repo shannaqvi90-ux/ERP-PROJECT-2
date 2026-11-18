@@ -64,18 +64,16 @@ internal static class TenantExportEndpoints
 
         group.MapPost("/tenant-exports", Start)
             .WithName("importexport.exports.start")
-            .WithSummary("Start a full export of everything the workspace holds (every kind of record, with custom fields, and the attachments). It runs in the background; read the export until it has succeeded, then download it. One export runs at a time (409).")
+            .WithSummary("Start a full export of everything the workspace holds (every kind of record, with custom fields, and the attachments). It runs in the background; read the export until it has succeeded, then download it. One export is written at a time: asking while one is queued or running answers that one.")
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status409Conflict)
             .Surface(SurfaceKind.Export)
             .RequirePermission(ImportExportPermissions.ExportsCreate);
 
         group.MapPost("/tenant-exports/{id:guid}/download", Download)
             .WithName("importexport.exports.download")
-            .WithSummary("Download a finished full export: a zip file with a manifest, one CSV or JSON file per kind of record and the attachments. Not available before it has succeeded or after it expires (410). Each download is counted on the export's record and stays in the audit trail.")
+            .WithSummary("Download a finished full export: a zip file with a manifest, one CSV or JSON file per kind of record and the attachments. Before it has succeeded the answer is 202 with the export's state (no file yet); after it expires, 410. Each download is counted on the export's record and stays in the audit trail.")
             .Produces(StatusCodes.Status200OK, contentType: "application/zip")
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status410Gone)
             .Surface(SurfaceKind.Export)
             .RequirePermission(ImportExportPermissions.ExportsDownload);
@@ -111,20 +109,12 @@ internal static class TenantExportEndpoints
         {
             return validator.ToResult();
         }
-        TenantExportTicket ticket;
-        try
-        {
-            ticket = await exports.StartAsync(format, cancellationToken);
-        }
-        catch (TenantExportRunningException)
-        {
-            return Problems.Conflict(http, "exportRunning");
-        }
+        var ticket = await exports.StartAsync(format, cancellationToken);
         var export = await db.TenantExports.AsNoTracking().SingleAsync(e => e.Id == ticket.Id, cancellationToken);
         return TypedResults.Accepted($"/api/importexport/tenant-exports/{export.Id}", ToDto(export, caller, Languages.ForRequest(http)));
     }
 
-    private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> Download(Guid id, ImportExportDbContext db, ITenantContext tenant, HttpContext http, CancellationToken cancellationToken)
+    private static async Task<Results<FileContentHttpResult, Accepted<TenantExportDto>, ProblemHttpResult>> Download(Guid id, ImportExportDbContext db, ITenantContext tenant, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
     {
         var export = await db.TenantExports.SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
         if (export is null)
@@ -137,7 +127,8 @@ internal static class TenantExportEndpoints
         }
         if (export.Status != ExportStatus.Succeeded)
         {
-            return Problems.Conflict(http, "exportNotReady");
+            // Not finished (or failed): there is no file to give yet; the answer is the export's state, to look at again.
+            return TypedResults.Accepted($"/api/importexport/tenant-exports/{export.Id}", ToDto(export, caller, Languages.ForRequest(http)));
         }
         var content = await db.ExportFiles.AsNoTracking().Where(f => f.ExportId == id).Select(f => f.Content).SingleOrDefaultAsync(cancellationToken);
         if (content is null)

@@ -101,7 +101,7 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
     if (!session) return;
     setProblem(null);
     try {
-      setSession(await api<ImportSession>("PUT", `${importBase(table)}/imports/${session.id}/mapping`, { columns: [{ index, field: field || null }], version: session.version }));
+      setSession(await api<ImportSession>("PUT", `${importBase(table)}/imports/${session.id}/mapping`, { columns: [{ index, field: field || null }] }));
     } catch (e) {
       setProblem(e instanceof ApiError ? e.message : t("importexport.problem"));
     }

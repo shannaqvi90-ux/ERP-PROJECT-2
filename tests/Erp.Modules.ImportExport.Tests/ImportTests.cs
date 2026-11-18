@@ -56,9 +56,11 @@ public sealed class ImportTests(ImportExportFixture fixture) : IClassFixture<Imp
         var oman = await admin.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts/{items.Single(i => i.GetProperty("nameEn").GetString()!.Contains("Two")).GetProperty("id").GetGuid()}", Cancel);
         Assert.Equal("OM", oman.GetProperty("country").GetString());
 
-        // Importing the same file again is refused until it is uploaded again.
+        // Importing the same file again writes nothing again: the answer is the finished file.
         using var again = await admin.PostAsJsonAsync($"{Api.Contacts}/imports/{id}/run", new { dryRun = false }, Cancel);
-        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+        var repeated = await Api.ReadAsync(again, HttpStatusCode.OK);
+        Assert.Equal("completed", repeated.GetProperty("status").GetString());
+        Assert.Equal(2, (await ListContactsAsync(admin, tag)).GetProperty("items").GetArrayLength());
     }
 
     [Fact]
@@ -162,7 +164,7 @@ public sealed class ImportTests(ImportExportFixture fixture) : IClassFixture<Imp
     }
 
     [Fact]
-    public async Task A_mapping_must_name_known_columns_and_fields_once_and_leave_no_required_field_open()
+    public async Task A_mapping_must_name_known_columns_and_fields_and_leave_no_required_field_open()
     {
         using var admin = await AdminAsync();
         var session = await Api.UploadCsvAsync(admin, "A,B\r\nx,y\r\n");
@@ -171,17 +173,24 @@ public sealed class ImportTests(ImportExportFixture fixture) : IClassFixture<Imp
         {
             new { columns = new[] { new { index = 9, field = "email" } } },
             new { columns = new[] { new { index = 0, field = "noSuchField" } } },
-            new { columns = new[] { new { index = 0, field = "email" }, new { index = 1, field = "email" } } },
             new { columns = Array.Empty<object>() },
         })
         {
             using var response = await admin.PutAsJsonAsync($"{Api.Contacts}/imports/{id}/mapping", body, Cancel);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
-        // No column fills a name: the file cannot be run.
+        // A field has one column: choosing it again takes it from the column that had it.
+        using var taken = await admin.PutAsJsonAsync($"{Api.Contacts}/imports/{id}/mapping", new { columns = new[] { new { index = 0, field = "email" }, new { index = 1, field = "email" } } }, Cancel);
+        var moved = await Api.ReadAsync(taken, HttpStatusCode.OK);
+        Assert.Equal(JsonValueKind.Null, moved.GetProperty("columns")[0].GetProperty("field").ValueKind);
+        Assert.Equal("email", moved.GetProperty("columns")[1].GetProperty("field").GetString());
+        // No column fills a name: the file says which fields are open, and a run reports every row's missing name (nothing is written).
+        var open = await Api.ReadAsync(await admin.GetAsync($"{Api.Contacts}/imports/{id}", Cancel), HttpStatusCode.OK);
+        Assert.Contains("Name", open.GetProperty("missingFields").EnumerateArray().Select(f => f.GetString()).ToList());
         using var run = await admin.PostAsJsonAsync($"{Api.Contacts}/imports/{id}/run", new { dryRun = false }, Cancel);
-        Assert.Equal(HttpStatusCode.BadRequest, run.StatusCode);
-        Assert.Contains("missingFields", (await Api.ReadAsync(await admin.GetAsync($"{Api.Contacts}/imports/{id}", Cancel), HttpStatusCode.OK)).ToString());
+        var rejected = await Api.ReadAsync(run, HttpStatusCode.OK);
+        Assert.Equal("failed", rejected.GetProperty("status").GetString());
+        Assert.Equal(1, rejected.GetProperty("rowsFailed").GetInt32());
     }
 
     [Fact]
@@ -356,6 +365,23 @@ public sealed class ImportTests(ImportExportFixture fixture) : IClassFixture<Imp
         Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"{Api.Contacts}/imports/{id}", Cancel)).StatusCode);
         var otherList = await other.GetFromJsonAsync<JsonElement>($"{Api.Contacts}/imports", Cancel);
         Assert.DoesNotContain(otherList.GetProperty("items").EnumerateArray(), i => i.GetProperty("id").GetGuid() == id);
+    }
+
+    [Fact]
+    public async Task Another_workspaces_organisations_and_references_are_not_found_by_an_import()
+    {
+        using var admin = await AdminAsync();
+        using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var theirs = Api.Unique("Their org") + " LLC";
+        var code = "THEIR-" + Guid.NewGuid().ToString("N")[..8];
+        using var made = await other.PostAsJsonAsync("/api/contacts/contacts", new { kind = "organisation", code, nameEn = theirs, nameAr = "", country = "AE", defaultCurrency = "AED", tags = Array.Empty<string>() }, Cancel);
+        await Api.ReadAsync(made, HttpStatusCode.Created);
+        // A person naming their organisation finds none; a reference they use is free here.
+        var id = (await Api.UploadCsvAsync(admin, $"Name,Kind,Organisation,Reference\r\nCross Person,person,{theirs},{code}\r\n")).GetProperty("id").GetGuid();
+        var checkedSession = await Api.RunAsync(fixture, admin, id, dryRun: true, onError: "skip");
+        var issues = checkedSession.GetProperty("issues").EnumerateArray().ToList();
+        Assert.Contains(issues, i => i.GetProperty("field").GetString() == "organisation");
+        Assert.DoesNotContain(issues, i => i.GetProperty("code").GetString() == "contactsCodeTaken");
     }
 
     [Fact]

@@ -8,7 +8,7 @@ Date: 2026-11-18. Piece: p14-import-export, round 1. Status: accepted. Source: o
   `importexport.exports.read` and `importexport.exports.download`, three separate permissions, because the file holds all the data)
   starts the export; it runs as the background job `importexport.tenantExport` in the workspace's own unit of work (so row-level
   security limits every read to the workspace); the screen (`/importexport/exports`, G then E, Alt+N to start) shows the state and the
-  download. One export runs at a time (409).
+  download. One export is written at a time: asking while one is queued or running answers that one.
 - **Format.** One zip file: `manifest.json` (format name, version, time, for each file its path, kind of record, label in both
   languages, record count, column names and SHA-256; the attachments' folder and count), `README.txt` (English and Arabic),
   `data/<schema.table>.csv|json` per kind of record that a module registered with `ModuleBuilder.ExportRecord` (the tenant's custom

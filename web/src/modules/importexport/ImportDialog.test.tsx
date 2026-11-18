@@ -117,7 +117,7 @@ describe("ImportDialog", () => {
       select.dispatchEvent(new Event("change", { bubbles: true }));
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ columns: [{ index: 1, field: "email" }], version: 1 });
+    expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ columns: [{ index: 1, field: "email" }] });
     await act(async () => {
       button(/Import 2 rows/).click();
       await new Promise((resolve) => setTimeout(resolve, 0));

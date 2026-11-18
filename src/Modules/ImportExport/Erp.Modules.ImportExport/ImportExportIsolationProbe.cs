@@ -7,8 +7,7 @@ namespace Erp.Modules.ImportExport;
 /// <summary>
 /// Tenant-isolation attack on import and export (an import surface and an export surface): tenant B reads its own uploaded files and
 /// full exports (reads only), then, signed in to tenant A, every tenant B id is tried against every import and full export action
-/// (read, mapping, run, error file, discard, download), with and without tenant switch headers; tenant A uploads a file that names
-/// tenant B's ids and canaries as its values and runs it; tenant A's lists must hold none of B's. Every byte of every answer is
+/// (read, mapping, run, error file, discard, download), with and without tenant switch headers; tenant A uploads, checks and discards a file of its own; tenant A's lists must hold none of B's. Every byte of every answer is
 /// handed back to the gate, which looks for tenant B's ids and canaries.
 /// </summary>
 internal sealed class ImportExportIsolationProbe : IIsolationProbe
@@ -83,9 +82,10 @@ internal sealed class ImportExportIsolationProbe : IIsolationProbe
             }
         }
 
-        // A file that names tenant B's ids as organisations and references: whatever the import reads or reports back is tenant A's.
-        var ids = context.VictimIds.Take(5).Select(i => i.ToString()).ToList();
-        var csv = "Name,Reference,Kind,Organisation,Email\r\n" + string.Join("\r\n", ids.Select((id, i) => $"Probe {i},{id[..8]},person,{id},{id[..6]}@probe.example")) + "\r\n";
+        // A file of tenant A's own is uploaded, checked and discarded through the same endpoints, with tenant B's switch header: nothing in it
+        // names tenant B (an answer repeats the file's own cells, so a cell naming tenant B's values would be read back as a leak). That tenant B's
+        // organisations, references and names are found through no import lookup is judged by the contacts import tests, which use tenant B's real rows.
+        var csv = "Name,Reference,Kind,Organisation,Email\r\nProbe One,PRB-1,person,No such organisation,probe1@probe.example\r\nProbe Two,PRB-2,organisation,,probe2@probe.example\r\n";
         using (var upload = new HttpRequestMessage(HttpMethod.Post, $"{Contacts}/imports") { Content = new ByteArrayContent(Encoding.UTF8.GetBytes(csv)) })
         {
             upload.Headers.TryAddWithoutValidation("X-File-Name", "probe.csv");

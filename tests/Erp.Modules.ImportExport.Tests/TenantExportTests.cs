@@ -119,14 +119,17 @@ public sealed class TenantExportTests(ImportExportFixture fixture) : IClassFixtu
     {
         using var admin = await AdminAsync();
         using var first = await admin.PostAsJsonAsync(Root, new { format = "csv" }, Cancel);
-        Assert.Equal(HttpStatusCode.Accepted, first.StatusCode);
-        using var second = await admin.PostAsJsonAsync(Root, new { format = "csv" }, Cancel);
-        Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
+        var started = await Api.ReadAsync(first, HttpStatusCode.Accepted);
+        // Asking again while it is queued answers that export, not a second one.
+        using var second = await admin.PostAsJsonAsync(Root, new { format = "json" }, Cancel);
+        var again = await Api.ReadAsync(second, HttpStatusCode.Accepted);
+        Assert.Equal(started.GetProperty("id").GetGuid(), again.GetProperty("id").GetGuid());
+        Assert.Equal("csv", again.GetProperty("format").GetString());
         using var bad = await admin.PostAsJsonAsync(Root, new { format = "xml" }, Cancel);
         Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
         await fixture.RunJobsAsync();
         using var third = await admin.PostAsJsonAsync(Root, new { format = "csv" }, Cancel);
-        Assert.Equal(HttpStatusCode.Accepted, third.StatusCode);
+        Assert.NotEqual(started.GetProperty("id").GetGuid(), (await Api.ReadAsync(third, HttpStatusCode.Accepted)).GetProperty("id").GetGuid());
         await fixture.RunJobsAsync();
     }
 
@@ -204,7 +207,8 @@ public sealed class TenantExportTests(ImportExportFixture fixture) : IClassFixtu
         using var admin = await AdminAsync();
         using var start = await admin.PostAsJsonAsync(Root, new { format = "csv" }, Cancel);
         var id = (await Api.ReadAsync(start, HttpStatusCode.Accepted)).GetProperty("id").GetGuid();
-        Assert.Equal(HttpStatusCode.Conflict, (await admin.PostAsync($"{Root}/{id}/download", null, Cancel)).StatusCode);
+        using var early = await admin.PostAsync($"{Root}/{id}/download", null, Cancel);
+        Assert.Equal("queued", (await Api.ReadAsync(early, HttpStatusCode.Accepted)).GetProperty("status").GetString());
         await fixture.RunJobsAsync();
     }
 }

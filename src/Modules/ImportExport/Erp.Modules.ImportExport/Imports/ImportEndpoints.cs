@@ -92,13 +92,13 @@ public sealed record UploadImportRequest(
 
 /// <summary>The field each column fills.</summary>
 public sealed record MappingColumn(
-    [property: Range(0, ImportLimits.MaxColumns - 1)] int Index,
+    [property: Range(0, ImportLimits.MaxColumns - 1), ApiExample("0")] int Index,
     [property: ApiExample("email"), StringLength(100), Description("The key of the field the column fills; null or empty leaves the column out.")] string? Field);
 
-/// <summary>Set the mapping of the columns. A column not named keeps its field.</summary>
+/// <summary>Set the mapping of the columns. A column not named keeps its field. The last mapping sent is the one kept: a file is its
+/// uploader's own work area, so there is no version to check.</summary>
 public sealed record SetMappingRequest(
-    [property: MaxLength(ImportLimits.MaxColumns)] IReadOnlyList<MappingColumn>? Columns,
-    [property: Description("The version of the file's record that was read.")] uint? Version);
+    [property: MaxLength(ImportLimits.MaxColumns)] IReadOnlyList<MappingColumn>? Columns);
 
 /// <summary>Check the file or import it.</summary>
 public sealed record RunImportRequest(
@@ -161,7 +161,7 @@ internal static class ImportEndpoints
 
             group.MapPut(root + "/imports/{id:guid}/mapping", (Guid id, SetMappingRequest request, ImportExportDbContext db, HttpContext http, CancellationToken ct) => SetMappingAsync(type, id, request, db, http, ct))
                 .WithName(name + ".mapping")
-                .WithSummary("Choose the field each column fills (null leaves a column out). The choice is remembered: the next file with the same headers is mapped the same way.")
+                .WithSummary("Choose the field each column fills (null leaves a column out; a field is filled by one column, so choosing it for a column takes it from the column that had it). The choice is remembered: the next file with the same headers is mapped the same way.")
                 .ProducesValidationProblem()
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .ProducesProblem(StatusCodes.Status409Conflict)
@@ -169,7 +169,7 @@ internal static class ImportEndpoints
 
             group.MapPost(root + "/imports/{id:guid}/run", (Guid id, RunImportRequest request, ImportExportDbContext db, IJobQueue jobs, HttpContext http, CancellationToken ct) => RunAsync(type, id, request, db, jobs, http, ct))
                 .WithName(name + ".run")
-                .WithSummary("Check the file (dryRun true: every row is validated with the record's own rules and nothing is written) or import it. A file of up to 5,000 rows is processed while the caller waits (200 with the file's state: checked, completed or failed); a larger one runs as a background job (202 with the state running; read it again until it is checked, completed or failed).")
+                .WithSummary("Check the file (dryRun true: every row is validated with the record's own rules and nothing is written) or import it. A file already imported answers its finished state and writes nothing again. A file of up to 5,000 rows is processed while the caller waits (200 with the file's state: checked, completed or failed); a larger one runs as a background job (202 with the state running; read it again until it is checked, completed or failed).")
                 .ProducesValidationProblem()
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .ProducesProblem(StatusCodes.Status409Conflict)
@@ -428,10 +428,6 @@ internal static class ImportEndpoints
         {
             return Problems.Conflict(http, "importRunning");
         }
-        if (request.Version is { } version && RowVersions.Reveal(version) != session.Version)
-        {
-            return Problems.Conflict(http, "importVersion");
-        }
         var fields = await ImportEngine.FieldsAsync(type, http.RequestServices, cancellationToken);
         var known = fields.Select(f => f.Key).ToHashSet(StringComparer.Ordinal);
         var headers = JsonSerializer.Deserialize<string[]>(session.Headers, JsonSerializerOptions.Web) ?? [];
@@ -444,12 +440,21 @@ internal static class ImportEndpoints
             validator.Must(field is null || known.Contains(field), "columns", "importMappingField");
             if (validator.IsValid)
             {
+                // A field is filled by one column: choosing it for this column takes it from the column that had it.
+                if (field is not null)
+                {
+                    for (var other = 0; other < mapping.Length; other++)
+                    {
+                        if (other != column.Index && mapping[other] == field)
+                        {
+                            mapping[other] = null;
+                        }
+                    }
+                }
                 mapping[column.Index] = field;
                 sources[column.Index] = 'y';
             }
         }
-        var chosen = mapping.Where(m => m is not null).Select(m => m!).ToList();
-        validator.Must(chosen.Count == chosen.Distinct(StringComparer.Ordinal).Count(), "columns", "importMappingDuplicate");
         if (!validator.IsValid)
         {
             return validator.ToResult();
@@ -515,16 +520,14 @@ internal static class ImportEndpoints
         }
         if (session.Status == ImportStatus.Completed)
         {
-            return Problems.Conflict(http, "importDone");
+            // Importing a file twice is not an error and writes nothing twice: the answer is the finished file's state.
+            var done = await ImportEngine.FieldsAsync(type, http.RequestServices, cancellationToken);
+            return TypedResults.Ok(ToDto(type, session, done, (await HasErrorFilesAsync(db, [session], cancellationToken)).Contains(id), Languages.ForRequest(http)));
         }
+        // A file whose columns leave a required field unfilled is not refused here: its rows are, each with the field's own problem
+        // (the screen says which fields are open in `missingFields` and keeps the buttons off until they are mapped).
         var fields = await ImportEngine.FieldsAsync(type, http.RequestServices, cancellationToken);
-        var mapping = JsonSerializer.Deserialize<string?[]>(session.Mapping, JsonSerializerOptions.Web) ?? [];
         var language = Languages.ForRequest(http);
-        var missing = ImportEngine.MissingRequired(type, fields, mapping);
-        if (missing.Count > 0)
-        {
-            return validator.Add("columns", "importMappingIncomplete", string.Join(", ", missing.Select(f => language == Languages.Arabic ? f.LabelAr : f.LabelEn).Distinct())).ToResult();
-        }
         session.DryRun = request.DryRun == true;
         session.OnError = onError;
         session.Issues = "[]";

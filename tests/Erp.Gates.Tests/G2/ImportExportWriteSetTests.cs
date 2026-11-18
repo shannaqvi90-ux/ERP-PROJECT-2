@@ -11,9 +11,9 @@ namespace Erp.Gates.Tests.G2;
 
 /// <summary>
 /// G2, what contacts.contacts.create lets an import write and what importexport.exports.download lets a download write. The generic
-/// write-set gate (<see cref="WriteSets"/>) cannot reach the run of an uploaded file or the download of a finished export, so both are
-/// listed in tests/Gates/write-set-unexercised.txt; this gate sends them itself, as a user holding exactly the permission the endpoint
-/// declares, and reads the audit trail: a check writes only the file's own record, an import writes the contacts of the file (and the
+/// write-set gate (<see cref="WriteSets"/>) cannot reach the download of a finished export (no worker finishes one there), so it is
+/// listed in tests/Gates/write-set-unexercised.txt; this gate sends it itself, and the import's run too with the cases the generic
+/// requests do not make (a check, a refused permission), as a user holding exactly the permission the endpoint declares, and reads the audit trail: a check writes only the file's own record, an import writes the contacts of the file (and the
 /// file's record) and nothing else, a download changes only the export's download count, moment and person; users holding any other
 /// contacts or export permission are refused with nothing written.
 /// </summary>

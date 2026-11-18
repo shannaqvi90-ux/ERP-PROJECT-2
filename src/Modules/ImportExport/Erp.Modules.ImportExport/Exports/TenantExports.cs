@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Erp.Modules.ImportExport.Exports;
 
 /// <summary>Starts a full export of the current workspace (see <see cref="ITenantExports"/>).</summary>
-internal sealed class TenantExports(ImportExportDbContext db, IJobQueue jobs) : ITenantExports
+internal sealed class TenantExports(ImportExportDbContext db, IJobQueue jobs, Erp.Kernel.Localization.StringCatalog strings) : ITenantExports
 {
     /// <summary>How long a finished export can be downloaded.</summary>
     public static readonly TimeSpan Lifetime = TimeSpan.FromDays(7);
@@ -21,14 +21,17 @@ internal sealed class TenantExports(ImportExportDbContext db, IJobQueue jobs) : 
             throw new ArgumentException("The format is csv or json.", nameof(format));
         }
         await ForgetAsync(db, cancellationToken);
-        if (await db.TenantExports.AnyAsync(e => e.Status == ExportStatus.Queued || e.Status == ExportStatus.Running, cancellationToken))
+        // One export is written at a time: asking again while one is queued or running answers that one (starting twice is not an error).
+        var active = await db.TenantExports.AsNoTracking().Where(e => e.Status == ExportStatus.Queued || e.Status == ExportStatus.Running)
+            .OrderBy(e => e.CreatedAt).Select(e => new TenantExportTicket(e.Id, e.Status)).FirstOrDefaultAsync(cancellationToken);
+        if (active is not null)
         {
-            throw new TenantExportRunningException();
+            return active;
         }
         var export = new TenantExport { Format = format };
         db.TenantExports.Add(export);
         var ticket = await jobs.EnqueueAsync(new JobRequest(TenantExportJobHandler.TypeKey, new { exportId = export.Id },
-            new JobText("Full export of the workspace", "تصدير كامل لبيانات مساحة العمل"), Source: JobSource.Module), cancellationToken);
+            new JobText(strings.Get("job.title.importexport.tenantExport", "en"), strings.Get("job.title.importexport.tenantExport", "ar")), Source: JobSource.Module), cancellationToken);
         export.JobId = ticket.Id;
         await db.SaveChangesAsync(cancellationToken);
         return new TenantExportTicket(export.Id, export.Status);
@@ -51,6 +54,3 @@ internal sealed class TenantExports(ImportExportDbContext db, IJobQueue jobs) : 
         db.TenantExports.RemoveRange(old);
     }
 }
-
-/// <summary>An export is already queued or running in the workspace.</summary>
-public sealed class TenantExportRunningException() : Exception("A full export is already running.");
