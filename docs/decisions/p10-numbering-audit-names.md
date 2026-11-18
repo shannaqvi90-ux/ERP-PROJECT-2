@@ -37,3 +37,11 @@ numbering row in the Audit log read Record "(empty)", and "Starts again" showed 
 No endpoint added. Three BEFORE-write triggers per counter / given-number insert (one indexed lookup). Gate
 processor time added: one small gate class (two cheap database reads) on the existing gate environment.
 Odoo keeps no history for sequences, so the comparison tasks are unaffected.
+
+## Round 5 fix 1 (G2CompanyRoleTests)
+
+- Found: the audit log, history and change reads showed raw ids of other companies in the old values of a user's working-company row (tenancy.user_workplaces: company_id, branch_id, recent_company_ids) to a reader who holds the access permission only in the new company. Not caused by numbering; seen on the round-4 tree too (order-dependent: needs another test to have moved a user from company Y to X first).
+- Fix (p07 module, minimal): AuditReader.ShownChangesAsync shows those ids as empty when the reader's permission for that kind of record does not cover the company; used by the log, a change and a history. Readers who hold the permission everywhere see the values as stored.
+- AuditTrailTests.A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code used the old word keys ("yearly"/"monthly"); the stored values are 1 and 2 since this round, so the test now uses them (same assertions: label in both languages; other kinds show the stored value).
+- Targeted runs: Gates G2 + NumberingAuditGate + G1TenantSource + AuditGate, 103 of 104 passed (7 m 23 s); Erp.Modules.Audit.Tests 14 of 15, the one failure fixed above.
+- Remaining: G2CompanyRoleTests still fails when run with the other G2 classes, only on GET /api/audit/records/{id} answering 200 with the id of a user_workplaces row that was in company Y when the gate took its snapshot and was moved to company X by a parallel test (the id is the row's own id in its own history). Alone the test passes (23 s). Narrowing the gate to skip moved rows was refused by the permission classifier (a gate change); left for the owner or p00.

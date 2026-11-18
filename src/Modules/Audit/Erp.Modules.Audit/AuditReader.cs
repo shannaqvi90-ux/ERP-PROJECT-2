@@ -163,6 +163,50 @@ public sealed class AuditReader(KernelDbContext db, ModuleCatalog catalog, ICurr
         return changes.OrderBy(c => c.Field, StringComparer.Ordinal).ToList();
     }
 
+    /// <summary>
+    /// The fields one audit row records, as this reader may see them: a row of a kind the caller reads only in some
+    /// companies (a user's working company, read where they hold the access permission) names company and branch ids
+    /// of other companies in its old values (the company the user worked in before) and its recent companies. Those
+    /// ids, of companies where the caller holds no such permission, are shown as empty: the history of a record in
+    /// company X must not tell a reader who holds the permission only in X which other companies exist.
+    /// </summary>
+    public async Task<IReadOnlyList<AuditFieldChange>> ShownChangesAsync(AuditEntry entry, CancellationToken cancellationToken)
+    {
+        var changes = Changes(entry);
+        var readable = (await ReadableTypesAsync(cancellationToken)).FirstOrDefault(r => r.Type.Table == entry.RecordType);
+        if (readable.Companies is not { } allowed)
+        {
+            return changes;
+        }
+        bool Held(JsonElement? value) =>
+            value is not { ValueKind: JsonValueKind.String } text || !Guid.TryParse(text.GetString(), out var id) || allowed.Contains(id);
+        static JsonElement Empty() => JsonSerializer.SerializeToElement<string?>(null);
+        var company = changes.FirstOrDefault(c => c.Field == "company_id");
+        var oldCompanyHeld = company is null || Held(company.Old);
+        var shown = new List<AuditFieldChange>(changes.Count);
+        foreach (var change in changes)
+        {
+            shown.Add(change.Field switch
+            {
+                "company_id" => change with { Old = Held(change.Old) ? change.Old : Empty(), New = Held(change.New) ? change.New : Empty() },
+                "branch_id" when !oldCompanyHeld => change with { Old = Empty() },
+                "recent_company_ids" => change with { Old = HeldIds(change.Old, allowed), New = HeldIds(change.New, allowed) },
+                _ => change,
+            });
+        }
+        return shown;
+    }
+
+    private static JsonElement? HeldIds(JsonElement? value, IReadOnlySet<Guid> allowed)
+    {
+        if (value is not { ValueKind: JsonValueKind.Array } list)
+        {
+            return value;
+        }
+        var kept = list.EnumerateArray().Where(i => i.ValueKind != JsonValueKind.String || !Guid.TryParse(i.GetString(), out var id) || allowed.Contains(id)).ToList();
+        return kept.Count == list.GetArrayLength() ? value : JsonSerializer.SerializeToElement(kept);
+    }
+
     /// <summary>Who made each change: a person by their name now (from identity), a person the
     /// workspace no longer has as a former user, work the system did by its kind.</summary>
     public async Task<IReadOnlyDictionary<Guid, UserSummary>> ActorsAsync(IEnumerable<Guid?> ids, CancellationToken cancellationToken)

@@ -92,7 +92,7 @@ internal static class AuditEndpoints
         {
             return Problems.NotFound(http);
         }
-        var changes = AuditReader.Changes(entry);
+        var changes = await reader.ShownChangesAsync(entry, cancellationToken);
         var actors = await reader.ActorsAsync([entry.ActorId], cancellationToken);
         var names = AuditLog.Mentioned(changes, await reader.ReferencedNamesAsync(changes, cancellationToken));
         var labels = await AuditLog.CustomFieldLabelsAsync(http.RequestServices, changes, entry.RecordType, cancellationToken);
@@ -168,7 +168,11 @@ internal static class AuditEndpoints
         }
         var texts = http.RequestServices.GetRequiredService<AuditTexts>();
         var actors = await reader.ActorsAsync(page.Select(e => e.ActorId), cancellationToken);
-        var changes = page.ToDictionary(e => e.Uid, AuditReader.Changes);
+        var changes = new Dictionary<Guid, IReadOnlyList<AuditFieldChange>>();
+        foreach (var e in page)
+        {
+            changes[e.Uid] = await reader.ShownChangesAsync(e, cancellationToken);
+        }
         var names = await reader.ReferencedNamesAsync(changes.Values.SelectMany(c => c), cancellationToken);
         var items = page.Select(e =>
         {
