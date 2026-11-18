@@ -339,7 +339,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         IReadOnlyList<ListGroup>? groups;
         try
         {
-            groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, database, cancellationToken) : null;
+            groups = plan.GroupBy is { } group ? await GroupsAsync(filtered, group, plan.GroupUnit, database, cancellationToken) : null;
         }
         catch (ListQueryException e)
         {
@@ -448,7 +448,8 @@ public sealed class ListBinding<T> : IListBinding where T : class
         int Skip,
         int Take,
         string? GroupBy,
-        bool Relevance);
+        bool Relevance,
+        string? GroupUnit = null);
 
     private Plan PlanFor(ListRequest request, int maxTake = ListRequest.MaxTake)
     {
@@ -490,9 +491,18 @@ public sealed class ListBinding<T> : IListBinding where T : class
             sort = [new ListSortKey(ListSearch.RelevanceKey, true), .. sort];
         }
         string? groupBy = null;
+        string? groupUnit = null;
         if (!string.IsNullOrWhiteSpace(request.GroupBy))
         {
-            if (Definition.Column(request.GroupBy) is not { } column)
+            // A custom date field is grouped by day (its own value), or by month or year with a suffix: cfShipDate.month.
+            var name = request.GroupBy;
+            var dot = name.LastIndexOf('.');
+            if (dot > 0 && name[(dot + 1)..] is "day" or "month" or "year" && _extra.Any(e => e.Column.Key == name[..dot] && e.Field.Type == Erp.Kernel.CustomFields.CustomFieldTypes.Date))
+            {
+                groupUnit = name[(dot + 1)..] == "day" ? null : name[(dot + 1)..];
+                name = name[..dot];
+            }
+            if (Definition.Column(name) is not { } column)
             {
                 throw new ListQueryException("groupBy", "list.unknownColumn");
             }
@@ -514,7 +524,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         }
         var take = Math.Clamp(request.Take ?? ListRequest.DefaultTake, 1, maxTake);
         var skip = Math.Max(0, request.Skip ?? 0);
-        return new Plan(words.Select(w => (w, ListSearch.Spellings(w))).ToList(), filter, sort, after, skip, take, groupBy, relevance);
+        return new Plan(words.Select(w => (w, ListSearch.Spellings(w))).ToList(), filter, sort, after, skip, take, groupBy, relevance, groupUnit);
     }
 
     private IQueryable<T> Filtered(IQueryable<T> source, Plan plan, bool database)
@@ -856,13 +866,23 @@ public sealed class ListBinding<T> : IListBinding where T : class
         var first = true;
         foreach (var key in sort)
         {
-            ordered = OrderCall(ordered, SortValue(key, plan, row, database), row, key.Descending, first);
+            var value = SortValue(key, plan, row, database);
+            if (key.Descending && database && IsCustom(key.Column))
+            {
+                // A record without a value comes last in both directions (PostgreSQL puts nulls first
+                // when descending): order by "has no value" first.
+                ordered = OrderCall(ordered, Expression.Equal(value, Expression.Constant(null, value.Type)), row, descending: false, first);
+                first = false;
+            }
+            ordered = OrderCall(ordered, value, row, key.Descending, first);
             first = false;
         }
         var idDescending = sort.Count > 0 && sort[0].Descending;
         ordered = OrderCall(ordered, new Rebind(_id.Parameters[0], row).Visit(_id.Body), row, idDescending, first);
         return source.Provider.CreateQuery<T>(ordered);
     }
+
+    private bool IsCustom(string column) => _extra.Any(e => e.Column.Key == column);
 
     private static Expression OrderCall(Expression source, Expression key, ParameterExpression row, bool descending, bool first)
     {
@@ -892,7 +912,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         Expression? equalSoFar = null;
         for (var i = 0; i < sort.Count; i++)
         {
-            var after = After(members[i], values[i], sort[i].Descending, database);
+            var after = After(members[i], values[i], sort[i].Descending, database ? !sort[i].Descending || IsCustom(sort[i].Column) : sort[i].Descending);
             terms.Add(equalSoFar is null ? after : Expression.AndAlso(equalSoFar, after));
             var equal = values[i] is null
                 ? Expression.Equal(members[i], Expression.Constant(null, members[i].Type))
@@ -914,14 +934,13 @@ public sealed class ListBinding<T> : IListBinding where T : class
         return Expression.Lambda<Func<T, bool>>(body, row);
     }
 
-    private static Expression After(Expression member, object? value, bool descending, bool database)
+    private static Expression After(Expression member, object? value, bool descending, bool nullsLast)
     {
         var nullable = !member.Type.IsValueType || Nullable.GetUnderlyingType(member.Type) is not null;
         var isNull = nullable ? Expression.Equal(member, Expression.Constant(null, member.Type)) : (Expression)Expression.Constant(false);
         if (value is null)
         {
             // Only nullable keys can hold null.
-            var nullsLast = database ? !descending : descending;
             return nullsLast ? Expression.Constant(false) : Expression.Not(isNull);
         }
         var beyond = Compare(member, Box(value, member.Type), greater: !descending);
@@ -929,8 +948,7 @@ public sealed class ListBinding<T> : IListBinding where T : class
         {
             return beyond;
         }
-        var nullsAfterValues = database ? !descending : descending;
-        return nullsAfterValues ? Expression.OrElse(beyond, isNull) : beyond;
+        return nullsLast ? Expression.OrElse(beyond, isNull) : beyond;
     }
 
     private static Expression Compare(Expression left, Expression right, bool greater) => CompareCore(left, right, greater, orEqual: false);
@@ -973,9 +991,16 @@ public sealed class ListBinding<T> : IListBinding where T : class
         };
     }
 
-    private async Task<IReadOnlyList<ListGroup>> GroupsAsync(IQueryable<T> source, string column, bool database, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<ListGroup>> GroupsAsync(IQueryable<T> source, string column, string? unit, bool database, CancellationToken cancellationToken)
     {
         var bound = _columns[column];
+        if (unit is not null && _extra.FirstOrDefault(e => e.Column.Key == column) is { } custom)
+        {
+            // A date field by month or year: the first day of the month or year (customfields.value_date_trunc).
+            var row = Expression.Parameter(typeof(T), "row");
+            var truncated = ListCustomFields.DateBucket(custom.Field, new Rebind(_id.Parameters[0], row).Visit(_id.Body), unit);
+            bound = bound with { Expression = Expression.Lambda(truncated, row) };
+        }
         var aggregates = Definition.Columns.Where(c => c.Aggregate && _columns.ContainsKey(c.Key)).Take(MaxTotals).ToList();
         var totals = aggregates.Where(c => c.Type != ListColumnType.Money).Select(c => _columns[c.Key]).ToList();
         var method = typeof(ListBinding<T>).GetMethod(nameof(GroupsCoreAsync), BindingFlags.NonPublic | BindingFlags.Instance)!.MakeGenericMethod(bound.ValueType);

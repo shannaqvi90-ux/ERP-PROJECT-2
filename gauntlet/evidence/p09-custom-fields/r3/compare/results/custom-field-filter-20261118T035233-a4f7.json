@@ -1,0 +1,290 @@
+{
+  "schema": 1,
+  "run_id": "custom-field-filter-20261118T035233-a4f7",
+  "instrument": 12,
+  "task": "custom-field-filter",
+  "task_title": "Add a custom field and filter by it",
+  "product": "ours",
+  "status": "error",
+  "goal": "Add a text field \"Licence ref\" to contacts, record \"LR-7731\" in it on the contact Shamma Waleed Al Romaithi, then filter the contact list to the contacts whose Licence ref is LR-7731.",
+  "done_when": "The contact list shows exactly one contact, Shamma Waleed Al Romaithi, filtered by the new field.",
+  "started_at": "2026-11-18T03:52:33.131Z",
+  "finished_at": "2026-11-18T03:54:55.199Z",
+  "environment": {
+    "base_url": "http://localhost:20950",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 10,
+    "keystrokes": 36,
+    "clicks": 4,
+    "scrolls": 0,
+    "field_entries": 3,
+    "key_chords": 3,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 122.106,
+    "system_wait_seconds": 0.642,
+    "human_seconds": 26.73,
+    "human_plus_wait_seconds": 27.372,
+    "klm_operator_counts": {
+      "K": 36,
+      "P": 4,
+      "B": 8,
+      "H": 5,
+      "M": 7
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Custom fields (navigation)",
+      "keystrokes": 0,
+      "at": 0.038,
+      "took": 0.11,
+      "began": 0.002,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "New custom field",
+      "keystrokes": 0,
+      "at": 0.243,
+      "took": 0.113,
+      "began": 0.149,
+      "screen": "/customfields/fields",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "field label",
+      "keystrokes": 12,
+      "at": 0.383,
+      "took": 0.084,
+      "text": "Licence ref",
+      "same_field": false,
+      "screen": "/customfields/fields/new",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "save (Enter)",
+      "keystrokes": 1,
+      "at": 0.468,
+      "took": 0.013,
+      "chord": "Enter",
+      "screen": "/customfields/fields/new",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Contacts (navigation)",
+      "keystrokes": 0,
+      "at": 0.591,
+      "took": 0.131,
+      "began": 0.539,
+      "screen": "/customfields/fields/01a1ecc9-19dd-704c-a197-cce60d851162",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "type",
+      "label": "the shortest word prefixes of the name",
+      "keystrokes": 11,
+      "at": 0.756,
+      "took": 0.185,
+      "text": "sha wal rom",
+      "same_field": false,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "open the best match",
+      "keystrokes": 1,
+      "at": 1.45,
+      "took": 0.03,
+      "chord": "Enter",
+      "screen": "/contacts/contacts",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "the new field",
+      "keystrokes": 0,
+      "at": 1.618,
+      "took": 0.055,
+      "began": 1.541,
+      "screen": "/contacts/contacts/018917b1-0728-742d-9107-621de9659a73",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "type",
+      "label": "value",
+      "keystrokes": 9,
+      "at": 1.704,
+      "took": 0.069,
+      "text": "LR-7731",
+      "same_field": true,
+      "screen": "/contacts/contacts/018917b1-0728-742d-9107-621de9659a73",
+      "chain": true
+    },
+    {
+      "n": 10,
+      "kind": "key",
+      "label": "save (Ctrl+S)",
+      "keystrokes": 2,
+      "at": 2.066,
+      "took": 0.033,
+      "chord": "Control+s",
+      "screen": "/contacts/contacts/018917b1-0728-742d-9107-621de9659a73",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "new field form, label focused",
+      "at": 0.356,
+      "seconds": 0.006
+    },
+    {
+      "label": "saved",
+      "at": 0.482,
+      "seconds": 0.057
+    },
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.723,
+      "seconds": 0.014
+    },
+    {
+      "label": "the contact in the list",
+      "at": 0.942,
+      "seconds": 0.507
+    },
+    {
+      "label": "the new field on the contact form",
+      "at": 1.482,
+      "seconds": 0.058
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "67712df46e761009.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p09-custom-fields/r3/compare/blind/shots/67712df46e761009.jpg"
+    },
+    {
+      "moment": "field added and filled in",
+      "file": "c8eac60acdea6d44.jpg",
+      "at": 1.773,
+      "path": "../../evidence-staging/p09-custom-fields/r3/compare/blind/shots/c8eac60acdea6d44.jpg"
+    },
+    {
+      "moment": "error",
+      "file": "4af0820659666f4b.jpg",
+      "at": 122.106,
+      "path": "../../evidence-staging/p09-custom-fields/r3/compare/blind/shots/4af0820659666f4b.jpg"
+    }
+  ],
+  "verification": null,
+  "path_notes": "Custom fields (navigation) > New custom field > type the label > Enter (saved) > Contacts (navigation) > type the shortest word prefixes of the contact's name > Enter opens it > click the new field > type the value > Ctrl+S > Alt+Shift+F: the form closes and the list is filtered by the field's value (a condition on that field only): exactly that contact.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/custom-field-filter.mjs",
+    "sha256": "215acec10fabb36f4e235ff52a7567d8a2537f7b961c8c984ced7f4caa2e7334"
+  },
+  "task_notes": "Set-up removes any earlier copy of the field.",
+  "error": "TimeoutError: locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.list-record [role=\"status\"]').first() to be visible\u001b[22m\n\n    (in the driver process)\nCall log:",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "error_page": {
+    "url": "/contacts/contacts/018917b1-0728-742d-9107-621de9659a73?q=sha+wal+rom",
+    "ready_state": "complete",
+    "title": "Product",
+    "focused": {
+      "tag": "input",
+      "name": "customFields.cfInsuranceCover31",
+      "type": null,
+      "label": null
+    },
+    "navigation": true,
+    "busy": [],
+    "messages": [
+      "Some fields need attention.",
+      "invalid field customFields.cfInsuranceCover31",
+      "This field is required."
+    ]
+  },
+  "verify_passes": null,
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 2,
+    "requests": 4,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.085
+  },
+  "set_up_writes_waited": 0,
+  "set_up_writes": [],
+  "failure_capture": {
+    "url": "http://localhost:20950/contacts/contacts/018917b1-0728-742d-9107-621de9659a73?q=sha+wal+rom",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "error: Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    ]
+  }
+}

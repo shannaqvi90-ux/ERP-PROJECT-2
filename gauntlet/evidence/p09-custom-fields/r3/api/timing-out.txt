@@ -1,0 +1,11 @@
+200 251 ms total=20171 groups=- filter=cfCustomerSegment eq 'government'  
+200 165 ms total=8292 groups=- filter=cfAccountManager contains 'ah'  
+200 211 ms total=7476 groups=- filter=cfCreditReview ge '2026-01-01' and cfCreditReview le '2026-06-30'  
+200 66 ms total=10068 groups=- filter=cfPreferredPartner eq true  
+200 340 ms total=4033 groups=- filter=cfCustomerSegment in ('retail','wholesale') and cfPreferredPartner eq true  
+200 2025 ms total=100008 groups=- sort=-cfCreditReview  first="2026-12-31"
+200 1181 ms total=100008 groups=- sort=cfAccountManager&skip=50000  
+200 16147 ms total=100008 groups=25 groupBy=cfCreditReview.month  
+200 940 ms total=100008 groups=6 groupBy=cfCustomerSegment  
+200 169 ms total=1 groups=- search=Critic en  
+200 34 ms total=2 groups=- filter=cfInsuranceCover31 ge 1000  

@@ -118,7 +118,7 @@ describe("custom fields screen", () => {
     await key(input("labelEn"), { key: "Enter", code: "Enter" });
     const post = calls.find((c) => c.method === "POST" && c.url === "/api/customfields/fields");
     expect(post?.body).toEqual({
-      recordType: "contacts.contacts", type: "select", labelEn: "Credit tier", labelAr: "فئة الائتمان", required: false, default: null, decimals: null,
+      recordType: "contacts.contacts", type: "select", labelEn: "Credit tier", labelAr: "فئة الائتمان", required: false, default: "Silver", decimals: null,
       options: [{ value: null, labelEn: "Gold", labelAr: "ذهبي" }, { value: null, labelEn: "Silver", labelAr: "فضي" }],
       lookupTarget: null, searchable: false, sortOrder: null, isActive: true, version: null,
     });

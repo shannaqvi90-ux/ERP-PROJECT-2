@@ -17,7 +17,7 @@ internal sealed record ExtraColumn(CustomFieldInfo Field, ListColumn Column, Fun
 /// <c>row.Id IN (customfields.match_…(field, operator, value))</c>: one uncorrelated question per
 /// condition that the value indexes answer, so filtering 100,000 records by a custom field costs an
 /// index range read and a semi-join, not a probe per record. Fields are filterable and (text) searchable;
-/// they are not sortable or groupable (a sort by a value held in another table cannot use a keyset index).
+/// they are sortable and groupable (but a lookup) through the value functions; a record without a value comes last.
 /// </summary>
 internal static class ListCustomFields
 {
@@ -51,7 +51,7 @@ internal static class ListCustomFields
         },
         Filterable: true,
         Sortable: field.Type != CustomFieldTypes.Lookup,
-        Groupable: field.Type is CustomFieldTypes.Select or CustomFieldTypes.Boolean,
+        Groupable: field.Type != CustomFieldTypes.Lookup,
         Hidden: true,
         Choices: field.Type == CustomFieldTypes.Select ? field.Options.Select(o => new ListChoice(o.Value, field.OptionKey(o.Value))).ToList() : null,
         LabelField: field.Type == CustomFieldTypes.Lookup ? field.Key + "Name" : null,
@@ -88,6 +88,10 @@ internal static class ListCustomFields
         };
         return name is null ? null : Call(name, Boxed(field.Id), id);
     }
+
+    /// <summary>A date field's value cut to the first day of its month or year (<paramref name="unit"/> is "month" or "year").</summary>
+    public static Expression DateBucket(CustomFieldInfo field, Expression id, string unit) =>
+        Call("ValueDateTrunc", Boxed(field.Id), id, Expression.Constant(unit));
 
     public static IReadOnlyList<ExtraColumn> Build(IReadOnlyList<CustomFieldInfo> fields) =>
         fields.Select(f => new ExtraColumn(f, Column(f), (condition, id) => Condition(f, condition, id))).ToList();

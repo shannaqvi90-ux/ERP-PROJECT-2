@@ -1,0 +1,11 @@
+import { open, shot, BASE } from './lib.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+const log = (...a) => console.log(...a);
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.getByRole('button', { name: 'Columns' }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(1000);
+await shot(page, 'x-en-columns');
+const dlg = page.locator('[role=dialog], [role=menu], .popover').last();
+log((await dlg.innerText().catch(() => 'no dialog')).slice(0, 1500));
+log('focus', await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 200)));
+log(errors);
+await browser.close();

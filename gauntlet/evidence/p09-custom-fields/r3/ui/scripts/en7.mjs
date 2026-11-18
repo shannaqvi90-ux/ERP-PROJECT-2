@@ -1,0 +1,23 @@
+import { open, shot, BASE } from './lib.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+const log = (...a) => console.log(...a);
+const reqs = []; page.on('request', r => { if (r.url().includes('/api/contacts/contacts?') || r.url().includes('/api/reports/')) reqs.push(decodeURIComponent(r.url().replace(/^.*\/api/, '/api'))); });
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.getByRole('button', { name: 'Columns' }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(800);
+for (const c of ['Insurance cover 31', 'Licence expiry 31', 'Incoterm 14727', 'Parent account 31']) { await page.getByLabel('Show ' + c).focus(); await page.keyboard.press('Space'); }
+await page.getByRole('button', { name: 'Done' }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+const menu = async (col, item) => { await page.getByRole('button', { name: 'Options for the column ' + col }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(500); await page.getByRole('menuitem', { name: item }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(1200); };
+await menu('Insurance cover 31', 'Filter…');
+await shot(page, 'x-en-filter-dialog');
+await page.keyboard.type('200000'); await page.keyboard.press('Enter'); await page.waitForTimeout(2500);
+log('after number filter:', (await page.locator('main').innerText()).slice(0, 300).replace(/\n/g,' | '));
+await shot(page, 'en-filter-custom-number');
+await menu('Licence expiry 31', 'Group by this column');
+log('after group:', (await page.locator('main').innerText()).slice(0, 600).replace(/\n/g,' | '));
+await shot(page, 'x-en-group-date');
+await menu('Insurance cover 31', 'Sort descending');
+log('after sort:', (await page.locator('main').innerText()).slice(0, 600).replace(/\n/g,' | '));
+log('dialog:', (await page.locator('[role=dialog]').last().innerText().catch(() => 'none')).slice(0, 800));
+log('focus', await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 250)));
+log(reqs.slice(-3).join('\n')); log(errors);
+await browser.close();

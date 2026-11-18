@@ -1,0 +1,53 @@
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs b/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs
+index 03f722d6..3dfaba6c 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/DocumentNumbers.cs
+@@ -62,15 +62,7 @@ internal sealed class DocumentNumbers(
+         detached.CorrelationId = session.CorrelationId;
+         // The caller's own tenant and actor, narrowed to the one company the number is for.
+         await detached.BeginAsync(session.TenantId, session.ActorId, session.ActorKind, cancellationToken);
+-        if (!session.AllCompanies)
+-        {
+-            await detached.BindCompaniesAsync([request.CompanyId], cancellationToken);
+-            detached.SetBranchLimits(session.HoldsEveryBranch(request.CompanyId) ? [] : [request.CompanyId]);
+-        }
+-        if (!session.PermissionEverywhere)
+-        {
+-            await detached.LimitToPermissionAsync([request.CompanyId], narrowScope: false, cancellationToken);
+-        }
++        await detached.BindCompaniesAsync([request.CompanyId], cancellationToken); // CRITIC PLANT L2: the request's company, unchecked
+         var issued = await TakeOnAsync(detached, plan, request, cancellationToken);
+         await detached.CommitAsync(cancellationToken);
+         return issued;
+@@ -104,7 +96,7 @@ internal sealed class DocumentNumbers(
+         {
+             throw new NumberingException(NumberingException.DateOutOfRange, NumberPattern.MinYear, NumberPattern.MaxYear);
+         }
+-        if (!session.HasTenant || !session.AllowsCompany(request.CompanyId) || !session.PermitsCompany(request.CompanyId))
++        if (!session.HasTenant) // CRITIC PLANT L2: company scope checks removed
+         {
+             throw new NumberingException(NumberingException.CompanyNotAllowed);
+         }
+diff --git a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+index 6fb562c1..0233baab 100644
+--- a/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
++++ b/src/Modules/Numbering/Erp.Modules.Numbering/Sequences/SequenceEndpoints.cs
+@@ -133,7 +133,7 @@ internal static class SequenceEndpoints
+             .ProducesValidationProblem()
+             .ProducesProblem(StatusCodes.Status403Forbidden)
+             .ProducesProblem(StatusCodes.Status409Conflict)
+-            .RequirePermission(NumberingPermissions.SequencesUpdate);
++            .RequirePermission(NumberingPermissions.SequencesRead); // CRITIC PLANT P2
+     }
+ 
+     private static async Task<Results<Ok<ListPage<SequenceRow>>, ProblemHttpResult>> List(
+diff --git a/tests/Gates/endpoint-permissions/numbering.txt b/tests/Gates/endpoint-permissions/numbering.txt
+index 63cea805..a6a7348e 100644
+--- a/tests/Gates/endpoint-permissions/numbering.txt
++++ b/tests/Gates/endpoint-permissions/numbering.txt
+@@ -7,4 +7,4 @@ prefix /api/numbering/
+ 
+ GET /api/numbering/sequences numbering.sequences.read # the document numbering list: how each company of the caller's scope numbers each kind of document, and the number its next document would get (no document's data)
+ GET /api/numbering/sequences/{id:guid} numbering.sequences.read # one sequence with its counters by period and branch and the last numbers it gave (numbers only; the documents they went to are their own modules')
+-PUT /api/numbering/sequences/{id:guid} numbering.sequences.update # changing a pattern, when the numbers start again, whether they may skip or the next number changes every later document's number in that company (also needs every branch of the company, checked in the handler)
++PUT /api/numbering/sequences/{id:guid} numbering.sequences.read # changing a pattern, when the numbers start again, whether they may skip or the next number changes every later document's number in that company (also needs every branch of the company, checked in the handler)

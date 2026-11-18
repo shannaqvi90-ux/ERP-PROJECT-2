@@ -1,0 +1,10 @@
+const B='http://localhost:20950';
+const tok=(await (await fetch(B+'/api/auth/sign-in',{method:'POST',headers:{'content-type':'application/json','X-Erp-Request':'1'},body:JSON.stringify({email:'admin@alnoor.example',password:'Demo-Pass-2026',issueToken:true})})).json()).token;
+const h={Authorization:'Bearer '+tok,'content-type':'application/json','X-Erp-Request':'1'};
+const id=process.argv[2];
+const c=await (await fetch(B+'/api/contacts/contacts/'+id,{headers:h})).json();
+console.log('segment options', JSON.stringify(c.customFieldDefinitions.find(d=>d.key==='cfCustomerSegment').options?.slice(0,5)));
+const body={...c, customFieldDefinitions:undefined, customFields:{...c.customFields, cfCustomerSegment:'keyAccount'}};
+let r=await fetch(B+'/api/contacts/contacts/'+id,{method:'PUT',headers:h,body:JSON.stringify(body)}); console.log('put1',r.status,(await r.text()).slice(0,200));
+const c2=await (await fetch(B+'/api/contacts/contacts/'+id,{headers:h})).json();
+r=await fetch(B+'/api/contacts/contacts/'+id,{method:'PUT',headers:h,body:JSON.stringify({...c2, customFieldDefinitions:undefined, customFields:{...c2.customFields, cfCustomerSegment:'government'}})}); console.log('put2',r.status);

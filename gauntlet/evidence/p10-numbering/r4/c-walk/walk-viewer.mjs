@@ -1,0 +1,15 @@
+import { open, shot } from './lib.mjs';
+const { browser, page, errors } = await open('viewer@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('n');
+await page.waitForURL(/numbering/); await page.waitForTimeout(1000);
+await page.keyboard.type('tax invoice dxb'); await page.waitForTimeout(1200);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');
+await page.waitForTimeout(1500);
+console.log('buttons', (await page.getByRole('button').allInnerTexts()).filter(Boolean).join(' | '));
+console.log('prefix readonly', await page.locator('input[name=prefix]').evaluate(e => e.readOnly || e.disabled));
+await shot(page, 'c10-viewer-read-only');
+const n = await (await open('noaccess@alnoor.example')).page;
+await n.goto('http://localhost:21050/numbering/sequences'); await n.waitForTimeout(1500);
+console.log('noaccess sees:', (await n.locator('main').innerText()).replace(/\s+/g,' ').slice(0,200));
+console.log('errors', errors);
+process.exit(0);

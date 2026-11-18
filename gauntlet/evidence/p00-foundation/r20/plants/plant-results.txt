@@ -1,0 +1,26 @@
+Critic p00 r20 plants (plants.diff; inert unless CRITIC_PLANT names them), run in the toolbox (run-in-toolbox.sh / run-plants.sh)
+on a copy of abca00c7 (/home/shan/critic/p00-foundation-r20-plant). Logs: plant-*.log.gz, run-plants-1.log.
+
+TENANT-LEAK PLANT L20 (kernel list machinery, src/Kernel/Erp.Kernel/Lists/ListBinding.cs QueryAsync): an instance field of the
+  binding (not a static) remembers the total of a selection (search, filter, groupBy) for 30 s; the key forgets the tenant.
+  CAUGHT statically (plant-STATICL20, 24 s): G1ProcessStateTests "reachable Erp.Kernel.Lists.ListBinding`1._criticTotals: a read-only
+    field that holds a mutable ConcurrentDictionary ..., reached from singleton ModuleCatalog._modules[0].ListBindings[0]".
+  CAUGHT dynamically (plant-NIL20, 1 h 18 m): G1NonInterferenceTests "tenant A: GET /api/audit/log ... total 3145 ... right after
+    tenant B sent the same request, but ... total 3135".
+  CAUGHT dynamically by the new sharded HTTP attack (plant-SHARD0L20, share 1 of 4 alone, 1 h 11 m): "tenant B asks first, tenant A
+    judged: GET /api/tenancy/branches?take=50 answered total 78, but walking the same query returns 67 rows" (+2 differential lines).
+    Control: the same share unplanted passed in verify run 2 (http-0: passed, 1 h 14 m).
+
+PERMISSION PLANT P20 (kernel, src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs SessionCompanyPermissions.CompaniesAsync):
+  "held in one company means held": a permission a role grants in any one of the user's companies counts in every company.
+  CAUGHT (plant-G2P20, 91 tests, 9.3 min): G2CompanyRoleTests.A_role_held_in_company_X_acts_on_nothing_of_company_Y,
+    The_company_role_attack_catches_a_permission_checked_in_the_working_company_only, A_manager_of_X_who_reads_Y_is_offered_changes_in_X_alone,
+    A_report_prints_another_areas_data_only_in_the_companies_where_that_permission_is_held.
+
+PRODUCT FAULT REPRODUCED (LISTTESTS, no plant involved, the plants add no test): build/verify-inside.sh's partition check lists
+  `dotnet test Erp.slnx --list-tests` twice and diffs the listings. Run 12 times on one unchanged build at load 60-75, 5 of the 12
+  listings had lines naming two tests (1, 19, 1, 1 and 5 such lines: list-all-6/7/8/10/12.txt), because the solution's test projects
+  print their lists at the same time and the lines interleave. Two listings that interleave differently fail the check, and with it
+  the whole .NET stage, before any test runs: exactly what verify run 1 hit (run1-kept/tests-groups.txt lines 731 and 967).
+
+Result: no gate gap this round. Both live plants were caught; L20 by three gates, including one share of the sharded HTTP attack.

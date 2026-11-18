@@ -1,0 +1,36 @@
+== roles
+erp_app|f|f|f|t
+erp_auth|f|f|f|f
+erp_owner|f|f|t|t
+erp_worker|f|f|f|t
+== role memberships
+erp_auth|erp_owner|f|t
+== tenant tables without RLS enabled+forced
+== tenant tables count / owned by erp_app
+29|0
+== nullable tenant_id
+== policies not tenant_isolation/company
+identity.sessions|auth_resolver_read|PERMISSIVE|{erp_auth}|SELECT|true
+identity.user_credentials|auth_resolver_read|PERMISSIVE|{erp_auth}|SELECT|true
+identity.users|auth_resolver_read|PERMISSIVE|{erp_auth}|SELECT|true
+jobs.schedules|due_tenants_read|PERMISSIVE|{erp_worker}|SELECT|true
+jobs.jobs|due_tenants_read|PERMISSIVE|{erp_worker}|SELECT|true
+== tenant_isolation policy sample
+audit.entries|{public}|ALL|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+tenancy.tenants|{public}|ALL|(tenant_id = erp.current_tenant_id())|(tenant_id = erp.current_tenant_id())
+== erp_worker table privileges
+jobs.jobs|locked_until|SELECT
+jobs.jobs|run_at|SELECT
+jobs.jobs|status|SELECT
+jobs.jobs|tenant_id|SELECT
+jobs.schedules|is_enabled|SELECT
+jobs.schedules|next_run_at|SELECT
+jobs.schedules|tenant_id|SELECT
+== erp_app on statistics
+f
+erp_app|erp-app|5
+erp_worker||1
+postgres|psql|1
+ConnectionStrings__App=Host=db;Username=erp_app;Password=***;Database=erp;Maximum Pool Size=50
+ConnectionStrings__App=Host=db;Username=erp_app;Password=***;Database=erp;Maximum Pool Size=20
+ConnectionStrings__Worker=Host=db;Username=erp_worker;Password=***;Database=erp;Maximum Pool Size=2

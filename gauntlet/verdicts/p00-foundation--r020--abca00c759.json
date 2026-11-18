@@ -1,0 +1,110 @@
+{
+  "piece": "p00-foundation",
+  "round": 20,
+  "commit": "abca00c759f274261bee7ae4e8fd4e32c4843ee5",
+  "judged_at": "2026-11-18T04:39:03Z",
+  "critic": "fresh critic, p00-foundation round 20",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, every test)",
+      "status": "fail",
+      "evidence": "I ran it twice on a fresh clone of abca00c7 through the slot script (3 slots, no ERP_VERIFY_ALONE). Command: ERP_PROJECT=c-p00-foundation-r20 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r20-runN.log gauntlet/tools/verify-slot.sh ./erp verify. RUN 1 (slot taken 00:38:55Z, load 1.29 at the start, 122.75 at the peak, run1-kept/verify-load-samples) FAILED. (a) The dotnet stage stopped after 193 s at p00's new step '.NET: the test groups are every test exactly once', with 'The test groups are not every test exactly once' and no test run. tests-groups.txt line 731 holds 'ContactsValidationTests.Names_that_differ_only_in_case...(\"Falcon Building Materials L.L.C.\")    Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered...' and line 967 holds 'SavedViewsTests.The_definition_describes_columns...    Erp.Modules.Tenancy.Tests.AccessTests.The_companies_switched...', so two test names sit on one line. tests-all.txt has 1,129 lines and tests-groups.txt 1,127 (run1-kept/). (b) In the web stage, 11 vitest tests timed out: clientIsolation.test.tsx 10/10 at 30 s and tenancy/screens.test.tsx 1 at 5 s. e2e passed 156. RUN 2 (slot taken 01:11:09Z, load 12.8 at the start, peaks 98 to 100 with my plant run and another critic's verify running alongside) FAILED. The dotnet stage passed in 11,184 s (1,129/1,129 tests; http-0..3, http-judge, noninterference, listvolume, gates-rest, projects and the three self-test groups all passed). web: vitest 749/749 and build 13/13 passed, but the comparison harness passed only 485/489: causation.test.mjs:664 (plant S9), guard.test.mjs:551 (the real ours sign-in driver), screen-causes.test.mjs:541 and set-up-off-clock.test.mjs:332, all 'action outside the clock' or timeouts. e2e: 156/156 passed, but the stage failed on the health check of the ours drivers ('configure-sequence ours invalid: action outside the clock'). The 7 Load=Timing tests did not run in either run. No full verify passed."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p00-foundation-r20 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up exited 0 in 556 s, with my verify running beside it. It served http://localhost:20050 on the overridden ports and project and printed the demo sign-ins, the team addresses, the API description and the database port (erp-up.log)."
+    },
+    {
+      "gate": "G1 tenant isolation: my own live attack as tenant A (alnoor) on tenant B (gulfsteel), API",
+      "status": "pass",
+      "evidence": "I reused r19's script with this database's ids (attack/attack.mjs, attack-run.log). It ran 246 operations with B's ids, 1,656 documented query-parameter requests, 1,065 tenant-switch requests (headers, query, cookies), exports, filters, path-form variants and audit-record requests. B's rows in all 29 tenant tables were the same before and after (attack/b-before-attack.txt = b-after-attack.txt, 'B UNCHANGED'). All 137 flagged lines were explained (attack/probe.txt). 'الخليج' and 'Gulf Steel' come from A's own contacts: 1,633 and 143 rows in alnoor. B's tenant id appears in A's audit log only inside the jobs.cleanup payload A itself sent (2 rows). The 54 audit-record answers for B's ids are byte-identical to the answer for a random id, traceId aside. A's DELETE of B's rate and file answered 204, but B still reads both (200) and A gets 404."
+    },
+    {
+      "gate": "G1 tenant isolation: the database role the app uses",
+      "status": "pass",
+      "evidence": "The web app connects only as erp_app (5 sessions). The worker uses erp_app plus erp_worker, and neither container holds owner or admin credentials (db-roles.txt). As erp_app (db-app-role-attack.txt): 0 rows with no tenant set, and 0 with a session-level app.tenant_id, because erp.current_tenant_id() also needs app.tenant_tx = now(). SET ROLE erp_owner, erp_worker and erp_auth were refused. ALTER TABLE ... DISABLE RLS was refused (must be owner). pg_stat_user_tables, pg_class and identity.user_credentials were refused. It cannot create anything in public. All 29 tenant tables have tenant_id NOT NULL with RLS enabled and forced, and none is owned by erp_app. The new erp_worker role is NOSUPERUSER NOBYPASSRLS NOINHERIT, member of nothing, and holds only the 7 columns it needs (jobs.jobs tenant_id/status/run_at/locked_until, jobs.schedules tenant_id/is_enabled/next_run_at)."
+    },
+    {
+      "gate": "G1 isolation gate suites (run 2)",
+      "status": "pass",
+      "evidence": "Every G1 group passed in run 2. The sharded HTTP attack: share 1 in 1 h 14 m, share 2 in 1 h 5 m, share 3 in 1 h 27 m, share 4 also passed, and http-judge passed. G1CompanyIsolationTests.A_user_of_company_X_cannot_reach_company_Y_through_any_endpoint passed in 16 m 7 s. G1ListVolumeTests at demo volume passed in 29 m 36 s. G1NonInterference and the three self-test groups passed. The judge checks that every endpoint is in exactly one share, and it passed, so the one endpoint new since r19 (GET /api/attachments/contacts.contacts/files, p11's) is reached."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "gates-rest, which holds G2, passed in run 2. Live checks: the no-roles user gets 403 from the API and a 'No access' screen at a direct URL. The viewer gets 403 on POST role and is offered no New button. Taking identity.roles.read from the Read-only role while the viewer was signed in turned the viewer's very next request into 403, and restoring it gave 200 again (attack/revoke-live.txt)."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR parity, audit coverage) and ratchet",
+      "status": "fail",
+      "evidence": "The rule gates passed in run 2's gates-rest. The database has no real or double precision column. Money is stored as amount, currency, rate, base amount and base currency (contacts.credit_limit_*). A role change wrote an audit row with actor, time and field-level new/old values (db-audit.txt). The verify never reached its ratchet step. I ran build/ratchet-check.mjs on run 2's kept folder and it printed 'Ratchet check FAILED: suite.compareTests: 485 passed, ratchet minimum 489; 4 failed'. Every other count is at or above its minimum: dotnet 1129 (min 1078), web 749 (747), e2e 156 (152), build 13 (13) (ratchet-check-run2.txt)."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p00-foundation-r20 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r20-run2.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify (run 2 of 2; run 1 stopped at the .NET partition check)",
+    "total": 2536,
+    "passed": 2532,
+    "failed": 4,
+    "skipped": 0,
+    "duration_s": 12388
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 12388,
+    "evidence": "Neither full verify of a fresh clone of abca00c7 passed. Run 1: the .NET stage failed after 193 s at its new partition check, because two test names were interleaved onto one line of the solution listing. 11 vitest tests also timed out at load up to 122. Run 2: about 12,388 s from slot to end. Every .NET test passed (stage 11,184 s), but 4 comparison-harness self-tests and the ours-driver health check (configure-sequence) failed at load up to 100. Logs: verify-critic-p00-foundation-r20-run1.log and -run2.log, run1-kept/, run2-kept/, ratchet-check-run2.txt."
+  },
+  "odoo": [
+    {
+      "task": "sign-in (sign in to an empty workspace)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.093,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 1.289,
+        "klm_seconds": 4.68
+      },
+      "notes": "The shared rig on :8069 passed run.mjs's live volume check (at least 100,000 rows in each of 7 main lists). Command: COMPARE_CHROMIUM=~/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome COMPARE_OURS_URL=http://localhost:20050 node run.mjs --task sign-in --product both --repeat 3 --out <staging>/compare. It exited 0 and all 6 runs were verified. Figures are medians of 3. Ours was judged on its whole 'passkey' path. Steps 1 < 2. Machine time 0.093 < 1.289 s. KLM 2.03 < 4.68 s. Human+wait 2.12 < 5.87 s. Keystrokes were exactly 0 in both and are left out (needs-human #11). The blind shots were pruned to the median run of each product (compare/PRUNED.txt). Empty workspace: I created emptyco with './erp tenant create --code emptyco ... --language ar'. Its owner signed in by keyboard with 84 keys, chose a new password, and reached the RTL Arabic home in 2.65 s (browser/empty.log, 08-empty-workspace-ar.jpg)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r20/01-sign-in-en.jpg",
+    "gauntlet/evidence/p00-foundation/r20/02-sign-in-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r20/03-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r20/04-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r20/05-roles-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r20/06-no-roles-user.jpg",
+    "gauntlet/evidence/p00-foundation/r20/07-no-roles-direct-url.jpg",
+    "gauntlet/evidence/p00-foundation/r20/08-empty-workspace-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r20/compare/blind/shots/2d46a9c82128cc25.jpg",
+    "gauntlet/evidence/p00-foundation/r20/compare/blind/shots/2e3c4f4b3679df95.jpg",
+    "gauntlet/evidence/p00-foundation/r20/compare/blind/shots/9ee16b2f64ad6fac.jpg",
+    "gauntlet/evidence/p00-foundation/r20/compare/blind/shots/e4c7863e56f2150b.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The new partition check in ./erp verify fails at random, so the one command can fail from a clean clone before any .NET test runs",
+    "detail": "This round's build/verify-inside.sh lists the tests twice with 'dotnet test Erp.slnx --list-tests' (once for the whole suite, once as the 'projects' group) and diffs the two lists against the groups. A solution listing runs the test projects at the same time, and their lines interleave: two test names end up on one line, or a line is cut. When the two listings interleave differently, the diff fails, and the whole .NET stage exits 1 with 'The test groups are not every test exactly once'. No test has run at that point. This happened in my first clean-clone verify, at a load of up to 122 with three verify slots shared. I then reproduced it with no plant involved: 12 listings of one unchanged build at load 60 to 75 gave lines naming two tests in 5 of the 12 (1, 19, 1, 1 and 5 such lines). So under the normal three-slot load the dotnet stage can fail on most runs, whatever the product's code. My second run happened to get two clean listings and then passed all 1,129 .NET tests. The check itself is a good idea (every test exactly once), but it must not depend on how parallel output interleaves. Fix suggestions for the builder: list one project at a time (-m:1, or loop over the test csproj files), or compare test names taken from the trx results. Second point: in the shared three-slot setting, the parallel groups did not shorten the stage. It took 11,184 s, against r19's 10,374 s quiet alone run, and its counted processor time was 23,744 s for dotnet alone (27,187 s in all against the 23,300 s maximum, at load peaks near 100 with my plant run beside it). G1ListVolume, scheduled after the self-test groups, ran alone at the tail.",
+    "evidence": "verify-critic-p00-foundation-r20-run1.log lines 1107-1120: '[dotnet] The test groups are not every test exactly once:' then '731c731 ... L.L.C.\")    Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(...)' and 'stage dotnet FAILED (exit 1 after 193 s)'. run1-kept/tests-all.txt (1,129 lines) and tests-groups.txt (1,127 lines, merged lines 731 and 967). Reproduction: plants/run-plants-1.log 'listing 6: 1128 lines, 1 lines naming two tests', 'listing 7: 1110 lines, 19 lines naming two tests', 'listing 12: 1124 lines, 5 lines naming two tests', with the files plants/list-all-{6,7,8,10,12}.txt. Command, inside the toolbox after a Release build: for n in $(seq 12); do dotnet test Erp.slnx -c Release --no-build --verbosity quiet --list-tests --filter 'Load!=Timing' | grep '^    ' | sort | grep -cE '^    [^ ].*[^ ]    [^ ]'; done. Load during run 1: run1-kept/verify-load-samples (peak 122.75 on 16 CPUs)."
+  },
+  "gate_gaps": [],
+  "other_findings": [
+    "No gate gap this round, and both live plants were caught (plants/plant-results.txt). L20 was a tenant-forgetting memo of list totals, kept in an instance field of the kernel's ListBinding (not a static). Three gates caught it: G1ProcessStateTests statically ('reachable ListBinding`1._criticTotals ... mutable ConcurrentDictionary'), G1NonInterferenceTests ('GET /api/audit/log ... total 3145 ... but ... total 3135'), and share 1 of the new sharded HTTP attack run alone ('GET /api/tenancy/branches?take=50 answered total 78, but walking the same query returns 67 rows'). The unplanted control is run 2's http-0, which passed. P20 made a permission held in one company count in every company (kernel SessionCompanyPermissions.CompaniesAsync). It was caught by 4 G2CompanyRoleTests in 9.3 min.",
+    "[route: p01-odoo-rig] Run 2 at load peaks 98 to 100: four comparison-harness self-tests failed, causation.test.mjs:664 (plant S9: 'locator.waitFor: Timeout 10000ms'), guard.test.mjs:551 (the real ours sign-in driver on a stand-in page, 'action outside the clock'), screen-causes.test.mjs:541 and set-up-off-clock.test.mjs:332 (controls judged 'invalid': 'action outside the clock ... StyleRecalcInvalidationTracking'). These are the timing class of gate backlog row 8, but the test names are new. In the same run the ours-driver health check judged configure-sequence 'invalid' for the same reason, which failed the e2e stage although all 156 e2e tests passed.",
+    "[route: p04-shell] Run 1 at load up to 122: web/src/modules/shell/clientIsolation.test.tsx failed 10/10 on its 30 s timeout, and [route: p02-tenancy] tenancy/screens.test.tsx 'companies: where the user's roles only read...' failed on its 5 s timeout. Both passed in run 2 (749/749).",
+    "Kernel operator CLI: a wrong usage, './erp tenant create emptyco \"Empty Co\" --language ar', ends with 'Unhandled exception. Erp.Modules.Tenancy.Provisioning.TenantCommand+CommandException: unexpected argument 'emptyco'.', a full stack trace and exit 139. ErpPlatform.TryRunCommandAsync does not catch a command's usage error (tenant-create-wrong-usage.log). The correct usage worked.",
+    "[route: p04-shell] The Arabic shell at 1366 px still cuts the command-search placeholder to 'البحث في ال...' (04-shell-ar.jpg). It is unchanged since r15.",
+    "English and Arabic by keyboard (browser/walk.log): the sign-in screen and the shell switch to lang ar and dir rtl, with the navigation on the right (left 1158, right 1366). The only Latin text on the Arabic sign-in screen is 'English'. Keyboard sign-in takes 0.64 to 0.66 s. 40 Tab presses in the English shell never land on the body. Ctrl+K, typing الأدوار and Enter opens Roles in RTL. After sign-out the API answers 401.",
+    "The OpenAPI document generated from the running app lists 151 paths and 249 operations, one more than r19 (GET /api/attachments/contacts.contacts/files). Test counts went up since r19: dotnet 1094 to 1129, web 740 to 749, compare 488 to 489, e2e 154 to 156.",
+    "Processor time in run 2, not a quiet run: dotnet 23,744 s, web 2,304 s, e2e 1,139 s, 27,187 s in all against the 23,300 s maximum. It ran beside another critic's verify and my own plant run, with load at the start 12.8 and peaks 98 to 100 (run2-kept/cpu-*, verify-load-samples). The integrators' alone runs decide this number."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p00-foundation/r20",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r20"
+}

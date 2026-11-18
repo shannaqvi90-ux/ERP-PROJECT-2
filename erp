@@ -41,6 +41,10 @@
 #                         demo database is first seeded. Unset: generated rates ending today.
 #   ERP_TESTCONTAINERS_HOST  where verify's test containers reach the ports Testcontainers publishes
 #                         (default 127.0.0.1; host.docker.internal on Docker Desktop)
+#   ERP_VERIFY_TEST_GROUPS how many of the dotnet stage's test groups run at once, each with a
+#                         PostgreSQL server of its own (default 3, owner decision, needs-human #53; #51: all twelve
+#                         at once shortened the stage but raised its counted processor time 41 %,
+#                         because 16 threads were oversubscribed)
 #   ERP_VERIFY_KEEP_DIR   where a failed verify keeps its stage logs, test reports and the comparison
 #                         harness's health-check output (results, screenshots, failure captures)
 #                         (default .verify-failed/ in the repository, one folder per failed run)
@@ -360,7 +364,7 @@ cmd_verify() {
   # build, migrations, seed), whose end-to-end tests follow the .NET stage. Then the timing
   # budgets alone, then the ratchet.
   bold "[1/3] Side by side: .NET build and tests | web and comparison harness | clean stack, then end-to-end"
-  stage dotnet run_toolbox "$out" --name "${project}-dotnet" -v "${project}-work":/work "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh dotnet
+  stage dotnet run_toolbox "$out" --name "${project}-dotnet" -v "${project}-work":/work -e ERP_VERIFY_TEST_GROUPS="${ERP_VERIFY_TEST_GROUPS:-}" "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh dotnet
   stage web run_toolbox "$out" --name "${project}-web" "$TOOLBOX_IMAGE" bash /src/build/verify-inside.sh web
   stage e2e verify_stack_and_e2e "$project"
   await dotnet web e2e

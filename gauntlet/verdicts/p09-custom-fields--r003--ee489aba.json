@@ -1,0 +1,116 @@
+{
+  "piece": "p09-custom-fields",
+  "round": 3,
+  "commit": "ee489aba",
+  "judged_at": "2026-11-18T03:57:27Z",
+  "critic": "fresh critic, p09-custom-fields round 3",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (gate suites)",
+      "status": "not-run",
+      "evidence": "The full gate suites never ran. In all 5 of my clean-clone verifies, the dotnet stage stopped at its 'test groups are every test exactly once' check before any test ran (see biggest gap). As a partial substitute I ran the static gate classes on the unplanted clone through the slot: G1TenantSettingCodeTests, G1TenantValueRuleTests, G1DatabaseIsolationTests, G1ProcessStateTests, G2PermissionTests and CustomFieldGateTests, 51 of 51 passed (clean-static-gates.log.gz). The G1 HTTP attack, list-volume and non-interference gates were not run."
+    },
+    {
+      "gate": "G1 tenant isolation (critic's own attack: API, export, database role, new SQL functions)",
+      "status": "pass",
+      "evidence": "api/attack3.mjs and api/attack3-out.txt. Tenant B (gulfsteel) made text, number and date fields with canary labels and a canary contact. As tenant A (alnoor), with and without X-Tenant / X-Tenant-Id headers, I tried 41 requests. Get, put, list and search of B's field: 404, or 200 without the canary. B's contact: 404 or 400, unchanged afterwards. Filter, sort and group by B's keys, including r3's groupBy=<date>.month/.year: 400. CSV, Excel and PDF exports with B's columns or filters: 400. Fields with the same key in both workspaces: no B value. Saved view with B's key: 400. Lookup pointing at B's contact: 400. Audit log, record history and OpenAPI: no canary. Database probe as erp_app with tenant A bound (api/db-role-probe.txt): value_text and r3's new value_date_trunc on B's field return null, 0 of B's definitions or values are visible, an INSERT of a B row is refused by RLS, UPDATE and DELETE of B's rows touch 0 rows. The control as B reads the canary and 2031-01-01. No customfields function is SECURITY DEFINER; RLS is enabled and forced on definitions and field_values."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "viewer@alnoor (read-only): reads fields, record types, sorted lists and exports with custom columns (200). Create and update of a field: 403. noaccess@alnoor: 403 on all 8 custom-field requests (attack3-out.txt). Static G2PermissionTests pass on the clean clone."
+    },
+    {
+      "gate": "Planted faults on this piece's surface (gate check)",
+      "status": "pass",
+      "evidence": "Planted in a separate copy, run through the slot. P3: a new POST /api/customfields/fields/{id}/deactivate with no permission. The host refuses to start: 'HTTP: POST /api/customfields/fields/{id:guid}/deactivate => Deactivate: declares no permission', so all 39 tests fail (plant-L3-P3-gates.log.gz). L3: GET /api/customfields/fields/{id} switches app.tenant_id from an X-Tenant-Id header. Caught by G1TenantSettingCodeTests.Only_reviewed_methods_name_the_tenant_setting ('FieldEndpoints.Get names the tenant setting'). P4: PUT /fields/{id} guarded by customfields.fields.read. Caught by G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission and No_endpoint_that_changes_data_is_guarded_by_a_read_permission (plant-L3-P4-gates.log.gz; diffs in plants-L3-P3.diff and plants-L3-P4.diff). I did not run the long sharded HTTP attack on the plants."
+    },
+    {
+      "gate": "G3 clean clone (one command: build, migrate, seed, all tests)",
+      "status": "fail",
+      "evidence": "5 of 5 runs of ./erp verify from the fresh clone failed. In every run the dotnet stage aborted at the test-group partition check, because `dotnet test --list-tests` output came out interleaved. Run 1 (slot taken 00:38:53Z, load peak 122.8): web 67 failed (paletteActions 56, clientIsolation 10, jobs screens 1), e2e passed. Run 2 (01:38:21Z, peak 99.0): web clientIsolation 10 failed; e2e 158 passed, but the ours-health check found 4 tasks invalid. Run 3 (02:05:06Z to 03:32:02Z, peak 68.3): web 749 passed, build 13 passed, compare 489 passed, e2e 158 passed; ours-health found configure-sequence invalid. Runs 4 and 5 failed the partition check again at load 58 to 66, and I stopped each by its PID. Logs are in verify-run1/, verify-run2/ and verify-run3/."
+    },
+    {
+      "gate": "G3 running seeded demo (one command)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p09-custom-fields-r3 ERP_HTTP_PORT=20950 ERP_DB_PORT=20951 with ERP_SEED_CONTACTS_CSV, ERP_SEED_USERS_CSV and ERP_SEED_RATES_CSV from the shared dataset: ./erp up ran in 567 s with 100,008 contacts (erp-up.log.gz). Port and project overrides worked as documented."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p09-custom-fields-r3 ERP_HTTP_PORT=20950 ERP_DB_PORT=20951 ERP_VERIFY_HTTP_PORT=20960 ERP_VERIFY_DB_PORT=20961 ERP_VERIFY_LOG=<staging>/verify-critic-p09-custom-fields-r3-run3.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify (run 3 of 5; the best run)",
+    "total": 1411,
+    "passed": 1409,
+    "failed": 2,
+    "skipped": 0,
+    "duration_s": 5216
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 5216,
+    "evidence": "Run 3 is the best of five. The dotnet stage failed after 125 s at '.NET: the test groups are every test exactly once', so none of the roughly 1,100 .NET tests ran. Web: 749/749 unit, 13/13 verify-machinery, 489/489 comparison-harness and the instrument mutations passed (stage passed in 5211 s). End-to-end: 158/158 passed. The ours-driver health check marked configure-sequence 'invalid: action outside the clock'. The 2 failures counted are the partition check and the health check. Runs 1, 2, 4 and 5 failed the same partition check; runs 1 and 2 also hit load-sensitive web failures. The machine was shared with the p00-foundation r20 and p10-numbering r4 critics' verifies (load 28 to 122). As a partial substitute: the p09 module tests ran outside verify at load 41 to 46, 27 of 28 passed. The 28th, CustomFieldVolumeTests.Filters_and_search_on_custom_fields_stay_within_the_list_budget, is a Load=Timing test, which verify runs alone; here it measured a 423 ms median against its 400 ms budget for cfCustomerSegment eq 'government' (p09-module-tests.log.gz)."
+  },
+  "odoo": [
+    {
+      "task": "custom-field-filter",
+      "winner": "ours",
+      "ours": {
+        "steps": 11,
+        "keystrokes": 39,
+        "seconds": 2.093,
+        "klm_seconds": 28.92
+      },
+      "odoo": {
+        "steps": 17,
+        "keystrokes": 61,
+        "seconds": 7.398,
+        "klm_seconds": 53.48
+      },
+      "notes": "Command: node run.mjs --task custom-field-filter --product both. Odoo was the shared rig on :8069, checked live at 100,000+ rows in 7 lists. Ours was my demo, seeded with the same dataset (100,008 contacts). Run 1: ours was strictly better on every metric (human+wait 29.611 s against 55.174 s). Run 3 gave the same result: ours 11/39/2.12 s/28.92 s against Odoo 17/61/7.618 s/53.48 s. Run 2 errored on ours only because of my own test data. I had added a required number field ('Insurance cover 31', with a default) beforehand, so the existing contact could not be saved from its form ('This field is required'). I switched that field off and re-ran. Branding was hidden; the blind review page is in compare/blind/review.html. No metric was left out."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-new-field-form.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-select-default-saved.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/ar-fields-created-by-keyboard.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-contact-custom-values.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/ar-contact-custom-values.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-column-chooser.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-filtered-custom-number.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/ar-filter-arabic-digits-empty.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-group-by-custom-date.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-history-select-values.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/ar-history-select-values.jpg",
+    "gauntlet/evidence/p09-custom-fields/r3/ui/en-date-default-us-format.jpg"
+  ],
+  "biggest_gap": {
+    "title": "No clean-clone verify can pass on a busy machine: the dotnet stage stops at its test-group partition check because the `dotnet test --list-tests` output it reads comes out interleaved",
+    "detail": "p09 itself now does its job. It beats Odoo on add-a-custom-field-and-filter on every metric. Round 2's gaps are fixed: a select default is kept at creation, option values keep acronyms (EXW, FOB, CIF), a descending sort puts values first, and text and number fields can be grouped. My isolation and permission attacks found nothing, and every fault I planted was caught. But the round has no full passing verify, and none of the roughly 1,100 .NET tests ran in any of my 5 runs. In build/verify-inside.sh (p00 r20, commit 4f22209d), list_tests runs `dotnet test Erp.slnx --list-tests` (and the per-group listings) and keeps the lines starting with four spaces. The test hosts of several projects write to the same pipe at once, so two test names sometimes land on one line, for example 'Erp.Kernel.Tests.SecurityTests.Email_validation(value: \"a@b\", valid: False)    Erp.Modules.Reports.Tests.RenderingTests.Mixed_text_is_ordered_as_a_reader_expects(...)'. The diff of tests-all.txt against tests-groups.txt then fails, and the stage exits 141 after about 125 s. It happened in all 5 runs, at load 58 to 122 at the moment of the check, each time on different pairs, on either side of the diff. The integrator's alone run of this merge passed, and p00 r20's critic verify got past the check while mine failed, so this is a race that load makes likely, not a product fault of p09. The likely fix (for p00): list one project at a time, or read --list-tests per test assembly, or match full lines and split on runs of 4 or more spaces. Never weaken or drop the partition check. Until then any critic verify beside another verify is likely to fail before testing anything. Owner: p00-foundation.",
+    "evidence": "To reproduce, run ./erp verify on a clean clone of ee489aba while another verify runs (load above about 50), then read '[dotnet] The test groups are not every test exactly once:' in the log. Diffs from my runs: verify-run2/verify-critic-p09-custom-fields-r3-run2.log.gz, verify-run3/verify-critic-p09-custom-fields-r3-run3.log.gz and verify-run3/verify-critic-p09-custom-fields-r3-run4-stopped.log.gz; the merged lines are in verify-run2/tests-all.txt.gz and verify-run3/tests-all.txt.gz. Load samples are in verify-run*/verify-load-samples."
+  },
+  "gate_gaps": [],
+  "other_findings": [
+    "[route: p00-foundation] Test-group partition check race in build/verify-inside.sh (list_tests). It is the biggest gap above and failed all 5 of my verifies before any .NET test ran.",
+    "[route: p00-foundation] web/src/modules/shell/clientIsolation.test.tsx timed out and cascaded, 10 failures, in run 1 (load peak 122.8) and run 2 (99.0). It passed in run 3 (68.3). This is the same class as recorded in serial-19/22.",
+    "[route: p04-shell] web/src/modules/shell/paletteActions.test.tsx had 56 failures in run 1 at load peak 122.8 ('Cannot read properties of null (reading querySelector)' at openPalette, line 229: the palette was not open after Ctrl+K and settle()). It passed in runs 2 and 3.",
+    "[route: p12-jobs] web/src/modules/jobs/screens.test.tsx 'cancels a running job and keeps it open' failed once in run 1 at load peak 122.8 (expected the Stopping… button to be disabled). It passed in runs 2 and 3.",
+    "[route: p01-odoo-rig] The e2e stage's ours-driver health check marked tasks 'invalid: action outside the clock (set-up): the page changed what it shows without a counted step'. The change came from a StyleRecalc set off by the harness's own DevTools read. Run 2 (load peak 99): configure-sequence, custom-field-filter, find-user and switch-to-arabic. Run 3 (68.3): configure-sequence. Run 1 passed it. All 158 end-to-end tests passed each time. This is gate backlog row 8's load-sensitive class, but these task names are not listed there.",
+    "Audit trail (p09 surface): a single-select custom field's history shows the stored option value, not its label, in both languages. A change shows 'Customer segment: keyAccount → government' in English and 'شريحة العميل: keyAccount → government' on the Arabic screen, instead of 'Key account → Government' and 'حساب رئيسي → حكومي' (ui/en-history-select-values.jpg, ui/ar-history-select-values.jpg; api/seg.mjs reproduces it). Lookups show the record's name and numbers show 2 decimals correctly. Custom dates show as 2027-12-31 in history, while the list shows 31 Dec 2027.",
+    "Custom fields screen (p09): for a date field, 'Default for new records' is the browser's native date input, which shows US mm/dd/yyyy (01/31/2027). Typing 2027-01-31 turns into year 70131 and the save is refused. In Arabic, a default typed in Arabic-Indic digits (٢٠٢٧-٠١-٣١) is silently dropped: the field saves with default null and no message (ui/en-date-default-us-format.jpg; scripts ui/scripts/en5d.mjs and ar5.mjs). The contact form's custom date takes typed yyyy-mm-dd in either set of digits.",
+    "Group by a custom date per month or year (new in r3) exists only in the API (groupBy=cfX.month or .year); the column menu groups dates by day only. It is slow over 100,008 contacts: 16.7 s by month and 9.1 s by year, against 1.1 s by day, at load 15 to 23 (api/timing-out.txt). value_date_trunc wraps value_date once per row. Odoo groups dates by month by default.",
+    "[route: p06-forms] In Arabic exports (CSV, Excel and PDF), a lookup custom field shows the target's English name ('Gulf Glass Co.') where the Arabic form shows 'شركة الخليج للزجاج'. The built-in Organisation column does the same, so the cause is the report engine (ui/export-1.pdf, ui/export-3.csv, ui/export-5.xlsx are the Arabic exports). The English CSV also leaves Name blank for a contact that has only an Arabic name, while the list shows it (ui/export-2.csv).",
+    "[route: p05-list-search] The list's Filter… dialog uses native <input type=number> and <input type=date> (kernel/lists/parts.tsx:310). On the Arabic screen, Arabic-Indic digits typed there (sent by Playwright as text input) are not taken: the filter silently stays off and 100,008 rows remain (ui/ar-filter-arabic-digits-empty.jpg). With Latin digits it works in both languages (2 rows, chip 'at least 200,000.00'). The product's form fields accept Arabic-Indic digits.",
+    "Adding a required custom field with a default stops any existing record from being saved in its form until someone fills the field. The form sends null for the empty field, while the API applies the default when the key is absent. With 100,000 contacts, a required field added later means every old contact needs the field filled before the first edit.",
+    "API documentation: OpenAPI describes customFields generically and points to GET /api/customfields/fields; a field added by the workspace (cfInsuranceCover31) is not named in /api/openapi/v1.json, signed in or not. This is unchanged since r1 (api/openapi-signed-in.json).",
+    "Still open since round 1: a number custom field has no currency, rate or base amount, so a money custom field cannot follow CLAUDE.md rule 2. Import could not be judged: there is no contact import yet (p14). Lookup custom fields cannot be sorted or grouped (400). This is by design in the list contract gate; Odoo groups by many-to-one properties.",
+    "Fixed since round 2 and still fixed: the select default is kept when chosen at creation (Incoterm: default FOB; Shipping line: default maersk, by keyboard in Arabic). Option values keep acronyms (EXW, FOB, CIF, MSC). A descending sort by a custom date gives 2026-12-31 first. Group by custom text and number now works. Print and export with custom columns and custom-field filters work in PDF, CSV and Excel, in both languages (2 rows, Arabic option labels in the Arabic files).",
+    "Works end to end by keyboard in English and Arabic: adding text, number (2 decimals, required, default 1500.25 or ١٢٠٠٫٥), date, yes/no, single select and lookup fields. Contact form values are saved and read back exactly through the API: 250000.75, 2027-12-31 (also typed as ٢٠٢٧-١٢-٣١), true, the lookup id with its name, and the text. Column chooser, header-menu filter, group by day, search on a searchable text field, and labelled history entries all work. Field definitions and values are audited in audit.entries with actor, and old and new values per custom_fields.<key>.",
+    "Performance: custom-field filters over 100,008 contacts answered in 34 to 340 ms through the API at load about 12 to 28: select eq, text contains, date range, yes/no, an AND of select-in and yes/no, and number ge. Sort by a custom date took 2.0 s and a deep skip of 50,000 took 1.2 s (api/timing-out.txt).",
+    "[route: p00-foundation] As in round 2, G1HttpIsolationTests walks each list's registered static columns, not a workspace's custom columns (sort, filter, groupBy and print columns by cf key). Today, forced RLS, the process-state gate and the tenant-setting source rule cover it: my static-cache and header-switch plants were caught by those rules, not by the HTTP attack. Planted L3 was caught only by the source rule G1TenantSettingCodeTests.",
+    "[route: p18-visual-design] On the Custom fields list at 1440 px, the Type and Status columns cut text ('Single s…', 'Switche…'). Dates in the forms are typed yyyy-mm-dd, not dd/mm/yyyy (kernel DateField, p06), although the owner asked for local date formats.",
+    "No dependency changes since round 2 and no Odoo code, views or text copied. Housekeeping: I removed compose project c-p09-custom-fields-r3 with its volumes and images, my clones and the plant copy, and my MSBuild worker nodes. Those nodes, left by my first plant run, had held verify slot 2 for about 10 minutes until I stopped them by PID. Later runs use -nodeReuse:false. I left the shared Odoo rig and other agents' runs alone."
+  ],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p09-custom-fields/r3",
+  "evidence_dir": "gauntlet/evidence/p09-custom-fields/r3"
+}
