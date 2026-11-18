@@ -44,7 +44,7 @@ internal sealed class ImportExportSeeder(ImportExportDbContext db) : ITenantSeed
             Issues = System.Text.Json.JsonSerializer.Serialize(new[] { new { row = 3, field = "nameEn", code = "required", en = "Enter the name in English or in Arabic.", ar = "أدخل الاسم بالإنجليزية أو بالعربية." } }),
             FinishedAt = at,
         };
-        foreach (var (header, field) in new[] { ("name", "name"), ("email", "email"), ("phone", "phone") })
+        foreach (var (header, field) in new[] { ("customername", "name"), ("customeremailaddress", "email"), ("customertelephone", "phone") })
         {
             db.ImportMappings.Add(new ImportMapping { RecordType = "contacts.contacts", HeaderKey = header, FieldKey = field, TimesUsed = 3, LastUsedAt = at });
         }
