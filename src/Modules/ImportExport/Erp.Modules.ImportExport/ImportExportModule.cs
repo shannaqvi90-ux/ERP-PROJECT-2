@@ -218,7 +218,7 @@ public sealed class ImportExportDbContext(DbContextOptions<ImportExportDbContext
             e.Property(x => x.Content).HasColumnType("bytea");
             e.Property(x => x.ErrorReport).HasColumnType("bytea");
             e.HasOne<ImportSession>().WithMany().HasForeignKey(x => new { x.TenantId, x.SessionId }).HasPrincipalKey(s => new { s.TenantId, s.Id }).OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(x => x.SessionId).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.SessionId }).IsUnique();
         });
         modelBuilder.Entity<ImportMapping>(e =>
         {
@@ -253,7 +253,7 @@ public sealed class ImportExportDbContext(DbContextOptions<ImportExportDbContext
             e.ToTable("export_files", t => t.HasCheckConstraint("ck_export_files_size", "size_bytes BETWEEN 1 AND 536870912"));
             e.Property(x => x.Content).HasColumnType("bytea");
             e.HasOne<TenantExport>().WithMany().HasForeignKey(x => new { x.TenantId, x.ExportId }).HasPrincipalKey(x => new { x.TenantId, x.Id }).OnDelete(DeleteBehavior.Cascade);
-            e.HasIndex(x => x.ExportId).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.ExportId }).IsUnique();
         });
     }
 }

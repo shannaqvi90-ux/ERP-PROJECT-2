@@ -184,30 +184,18 @@ namespace Erp.Modules.ImportExport.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_export_files_export_id",
-                schema: "importexport",
-                table: "export_files",
-                column: "export_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "ix_export_files_tenant_id_export_id",
                 schema: "importexport",
                 table: "export_files",
-                columns: new[] { "tenant_id", "export_id" });
-
-            migrationBuilder.CreateIndex(
-                name: "ix_import_files_session_id",
-                schema: "importexport",
-                table: "import_files",
-                column: "session_id",
+                columns: new[] { "tenant_id", "export_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_import_files_tenant_id_session_id",
                 schema: "importexport",
                 table: "import_files",
-                columns: new[] { "tenant_id", "session_id" });
+                columns: new[] { "tenant_id", "session_id" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_import_mappings_tenant_id_record_type_header_key",

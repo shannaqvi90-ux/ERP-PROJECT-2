@@ -79,11 +79,8 @@ namespace Erp.Modules.ImportExport.Migrations
                     b.HasAlternateKey("TenantId", "Id")
                         .HasName("ak_export_files_tenant_id_id");
 
-                    b.HasIndex("ExportId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_export_files_export_id");
-
                     b.HasIndex("TenantId", "ExportId")
+                        .IsUnique()
                         .HasDatabaseName("ix_export_files_tenant_id_export_id");
 
                     b.ToTable("export_files", "importexport", t =>
@@ -152,11 +149,8 @@ namespace Erp.Modules.ImportExport.Migrations
                     b.HasAlternateKey("TenantId", "Id")
                         .HasName("ak_import_files_tenant_id_id");
 
-                    b.HasIndex("SessionId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_import_files_session_id");
-
                     b.HasIndex("TenantId", "SessionId")
+                        .IsUnique()
                         .HasDatabaseName("ix_import_files_tenant_id_session_id");
 
                     b.ToTable("import_files", "importexport", t =>

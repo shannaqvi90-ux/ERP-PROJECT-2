@@ -1,0 +1,23 @@
+# Reviewed endpoint-to-permission map of the import and export module (G2). Every endpoint whose route
+# starts with a "prefix" below must be listed here with exactly the permission it declares, and
+# every line must match an endpoint. A new endpoint, a new kind of record that can be imported (one set
+# of nine lines each) or a changed permission fails the gate until this file is reviewed and changed
+# with it: the reason after # says why that permission, and no broader one, guards the endpoint.
+# Importing a kind of record is guarded by the permission that creates that kind of record (the module has no
+# permission of its own for it): whoever may add a contact by hand may add contacts from a file, and nobody else.
+# The full export of the workspace has three permissions of its own: to read the exports, to start one and to download one.
+prefix /api/importexport/
+
+GET /api/importexport/contacts.contacts/fields contacts.contacts.create # the fields a file can fill (names, which are required, the workspace's custom fields) and the limits: what the create form already shows to whoever may create contacts
+GET /api/importexport/contacts.contacts/template contacts.contacts.create # a CSV with the headers of those fields and an example row: no workspace data
+GET /api/importexport/contacts.contacts/imports contacts.contacts.create # the files this workspace uploaded for contacts, with their counts and first problems: the uploader's own work, which holds the data of the file
+POST /api/importexport/contacts.contacts/imports contacts.contacts.create # uploading a file stores its bytes and reads its header and first rows; it writes no contact
+GET /api/importexport/contacts.contacts/imports/{id:guid} contacts.contacts.create # one uploaded file with its mapping, first rows and the result of the last run (404 for another workspace's file)
+PUT /api/importexport/contacts.contacts/imports/{id:guid}/mapping contacts.contacts.create # choosing which field a column fills changes only the file's own record and the remembered mapping
+POST /api/importexport/contacts.contacts/imports/{id:guid}/run contacts.contacts.create # checking or importing a file writes contacts: it needs the permission that creates them (every row is validated with the contact form's own rules)
+GET /api/importexport/contacts.contacts/imports/{id:guid}/errors contacts.contacts.create # the rows of the file that had problems, as the uploader gave them
+DELETE /api/importexport/contacts.contacts/imports/{id:guid} contacts.contacts.create # discarding an uploaded file removes only the file and its error file; the contacts it wrote stay
+GET /api/importexport/tenant-exports importexport.exports.read # the list of full exports: when, state, size and expiry; no data of the workspace
+GET /api/importexport/tenant-exports/{id:guid} importexport.exports.read # one full export's state and counts per kind of record
+POST /api/importexport/tenant-exports importexport.exports.create # starts a background job that reads every kind of record of the workspace into a file; the file itself needs the download permission
+POST /api/importexport/tenant-exports/{id:guid}/download importexport.exports.download # the file holds all the workspace's data, so it is a permission of its own; a download is counted on the export's record and audited
