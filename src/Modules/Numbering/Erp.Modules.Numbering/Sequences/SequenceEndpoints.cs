@@ -364,6 +364,10 @@ internal static class SequenceEndpoints
                 {
                     return new Validator(http).Add("nextValue", "numberingGaplessNextNumberFixed", current).ToResult();
                 }
+                // Recorded on the sequence too, so its History says who set the next number, from what, to what.
+                sequence.NextSetFrom = current;
+                sequence.NextSetTo = nextValue;
+                sequence.NextSetPeriod = year == 0 ? "" : month == 0 ? $"{year:0000}" : $"{year:0000}-{month:00}";
                 if (counter is null)
                 {
                     db.Counters.Add(new NumberCounter { CompanyId = sequence.CompanyId, SequenceId = sequence.Id, BranchId = null, PeriodYear = year, PeriodMonth = month, NextValue = nextValue });
@@ -385,6 +389,10 @@ internal static class SequenceEndpoints
         sequence.Reset = request.Reset!;
         sequence.Gapless = request.Gapless!.Value;
         sequence.PerBranch = request.PerBranch!.Value;
+        if (await http.RequestServices.GetRequiredService<ICompanyDirectory>().GetAsync(sequence.CompanyId, cancellationToken) is { } named)
+        {
+            SequenceLabels.Apply(sequence, named, http.RequestServices.GetRequiredService<DocumentTypeCatalog>());
+        }
         db.Entry(sequence).Property(s => s.UpdatedAt).IsModified = true;
         try
         {

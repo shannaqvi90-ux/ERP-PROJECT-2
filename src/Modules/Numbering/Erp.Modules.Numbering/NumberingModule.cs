@@ -76,6 +76,26 @@ public sealed class NumberSequence : TenantEntity, ICompanyWide
 
     /// <summary>Each branch counts on its own (the pattern then holds {BRANCH}).</summary>
     public bool PerBranch { get; set; }
+
+    /// <summary>What the audit trail calls this record: the kind of document and the company, in each
+    /// language ("Purchase order · Al Noor Trading LLC"), kept with the sequence so a change names it
+    /// as it was called when it happened. Set by <see cref="SequenceLabels"/> on every save.</summary>
+    public string? NameEn { get; set; }
+
+    public string? NameAr { get; set; }
+
+    /// <summary>The document type key, shown as the record's identifier in the audit trail.</summary>
+    public string? Code { get; set; }
+
+    /// <summary>The last time someone set the next number by hand: the number it was, the number it
+    /// became and the period it was set for ("" a sequence that never starts again, "2026", "2026-10").
+    /// A counter moves with every document, so the hand-set change is recorded here, on the sequence,
+    /// where its History shows who set it and when.</summary>
+    public long? NextSetFrom { get; set; }
+
+    public long? NextSetTo { get; set; }
+
+    public string? NextSetPeriod { get; set; }
 }
 
 /// <summary>
@@ -104,6 +124,14 @@ public sealed class NumberCounter : TenantEntity, ICompanyOwned
     public long? LastIssued { get; set; }
 
     public DateTimeOffset? LastIssuedAt { get; set; }
+
+    /// <summary>The audit trail's name for the counter: the sequence's own, copied by the database
+    /// (a trigger) every time the counter is written; the application never sets them.</summary>
+    public string? NameEn { get; set; }
+
+    public string? NameAr { get; set; }
+
+    public string? Code { get; set; }
 }
 
 /// <summary>
@@ -127,6 +155,9 @@ public sealed class IssuedDocumentNumber : TenantEntity, ICompanyOwned
     public Guid? SourceId { get; set; }
 
     public bool Gapless { get; set; }
+
+    /// <summary>The audit trail's identifier for the number: the number itself, copied by the database.</summary>
+    public string? Code { get; set; }
 }
 
 public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> options, ITenantContext? tenant = null) : ModuleDbContext(options, tenant)
@@ -136,6 +167,9 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
     /// <summary>Longest document type key, period and printed number the columns hold.</summary>
     public const int DocumentTypeLength = 72;
     public const int NumberLength = 120;
+
+    /// <summary>Longest audit name of a sequence (the audit trail keeps 200 characters).</summary>
+    public const int LabelLength = 200;
 
     protected override string Schema => SchemaName;
 
@@ -154,6 +188,10 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
                 t.HasCheckConstraint("ck_sequences_document_type", "document_type ~ '^[a-z][a-zA-Z0-9]+\\.[a-z][a-zA-Z0-9]+$'");
             });
             e.Property(x => x.DocumentType).HasMaxLength(DocumentTypeLength);
+            e.Property(x => x.NameEn).HasMaxLength(LabelLength);
+            e.Property(x => x.NameAr).HasMaxLength(LabelLength);
+            e.Property(x => x.Code).HasMaxLength(DocumentTypeLength);
+            e.Property(x => x.NextSetPeriod).HasMaxLength(7);
             e.Property(x => x.Prefix).HasMaxLength(NumberPattern.MaxAffixLength);
             e.Property(x => x.Suffix).HasMaxLength(NumberPattern.MaxAffixLength);
             // Kept as a small number (0 never, 1 yearly, 2 monthly): the API's words are not the
@@ -171,6 +209,10 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
                 t.HasCheckConstraint("ck_counters_last_issued", "last_issued IS NULL OR last_issued < next_value");
                 t.HasCheckConstraint("ck_counters_period", "(period_year = 0 AND period_month = 0) OR (period_year BETWEEN 1990 AND 2199 AND period_month BETWEEN 0 AND 12)");
             });
+            // Named by the database from its sequence (numbering.copy_sequence_label).
+            e.Property(x => x.NameEn).HasMaxLength(LabelLength).ValueGeneratedOnAddOrUpdate();
+            e.Property(x => x.NameAr).HasMaxLength(LabelLength).ValueGeneratedOnAddOrUpdate();
+            e.Property(x => x.Code).HasMaxLength(DocumentTypeLength).ValueGeneratedOnAddOrUpdate();
             // One counter per sequence, branch (or none) and period: the row a number is taken from.
             e.HasIndex(x => new { x.TenantId, x.SequenceId, x.BranchId, x.PeriodYear, x.PeriodMonth }).IsUnique().AreNullsDistinct(false);
             e.HasOne<NumberSequence>().WithMany().HasForeignKey(x => new { x.TenantId, x.SequenceId })
@@ -182,6 +224,7 @@ public sealed class NumberingDbContext(DbContextOptions<NumberingDbContext> opti
             e.ToTable("issued_numbers");
             e.Property(x => x.DocumentType).HasMaxLength(DocumentTypeLength);
             e.Property(x => x.Number).HasMaxLength(NumberLength);
+            e.Property(x => x.Code).HasMaxLength(NumberLength).ValueGeneratedOnAdd();
             // A number exists once per company and document type, whatever pattern made it.
             e.HasIndex(x => new { x.TenantId, x.CompanyId, x.DocumentType, x.Number }).IsUnique();
             // The latest numbers of a sequence (its panel lists them).

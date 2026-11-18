@@ -301,6 +301,34 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
     }
 
     [Fact]
+    public async Task Setting_the_next_number_is_recorded_on_the_sequence_and_every_numbering_row_names_its_sequence_and_company_in_both_languages()
+    {
+        using var admin = await SignInAsync();
+        var row = await RowAsync(admin, "purchasing.bill");
+        var before = row.GetProperty("nextValue").GetInt64();
+        var saved = await PutAsync(admin, row, Body(row, nextValue: before + 400));
+        Assert.True(saved.StatusCode == HttpStatusCode.OK, await saved.Content.ReadAsStringAsync());
+        var id = row.GetProperty("id").GetGuid();
+
+        // The sequence's own history says what the next number was, what it became and for which period.
+        var setTo = await Db.TextAsync(Env,
+            "SELECT string_agg(changes::text, ' ') FROM audit.entries WHERE table_schema = 'numbering' AND table_name = 'sequences' AND record_id = @id AND changes ? 'next_set_to'", ("id", id));
+        Assert.Contains((before + 400).ToString(System.Globalization.CultureInfo.InvariantCulture), setTo, StringComparison.Ordinal);
+        Assert.Contains("next_set_from", setTo, StringComparison.Ordinal);
+
+        // No audited row of numbering reads "(empty)": each names the kind of document and the company, in English and Arabic.
+        Assert.Equal(0, await Db.ScalarAsync(Env,
+            "SELECT count(*) FROM audit.entries WHERE table_schema = 'numbering' AND (record_label IS NULL OR record_label_ar IS NULL OR record_code IS NULL) AND table_name <> 'issued_numbers'"));
+        var label = await Db.TextAsync(Env,
+            "SELECT record_label || ' | ' || record_label_ar FROM audit.entries WHERE table_schema = 'numbering' AND table_name = 'counters' AND changes ? 'next_value' ORDER BY occurred_at DESC LIMIT 1");
+        Assert.Contains("Supplier bill", label, StringComparison.Ordinal);
+        Assert.Contains("فاتورة مورد", label, StringComparison.Ordinal);
+        Assert.Contains(" · ", label, StringComparison.Ordinal);
+        // The recorded changes hold no name column: the names are for the heading, not data.
+        Assert.Equal(0, await Db.ScalarAsync(Env, "SELECT count(*) FROM audit.entries WHERE table_schema = 'numbering' AND (changes ? 'name_en' OR changes ? 'name_ar' OR changes ? 'code')"));
+    }
+
+    [Fact]
     public async Task A_sequence_that_starts_again_at_another_time_goes_on_from_todays_count()
     {
         using var admin = await SignInAsync();
