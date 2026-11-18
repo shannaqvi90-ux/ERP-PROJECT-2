@@ -808,14 +808,14 @@
   color: var(--fg);
 }
 
-.list-tab[aria-selected="true"] {
+.list-tab[aria-checked="true"] {
   color: var(--fg);
   font-weight: var(--fw-semibold);
   border-block-end-color: var(--accent);
   box-shadow: 0 6px 12px -8px var(--accent);
 }
 
-[data-theme="hc"] .list-tab[aria-selected="true"] {
+[data-theme="hc"] .list-tab[aria-checked="true"] {
   border-block-end-width: 3px;
   text-decoration: underline;
   box-shadow: none;
@@ -830,7 +830,7 @@
   color: var(--fg-muted);
 }
 
-.list-tab[aria-selected="true"] .list-tab-count {
+.list-tab[aria-checked="true"] .list-tab-count {
   background: var(--accent-soft);
   color: var(--accent-text);
 }

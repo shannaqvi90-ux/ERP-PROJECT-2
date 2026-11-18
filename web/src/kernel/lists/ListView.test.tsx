@@ -695,15 +695,15 @@ describe("printing a list", () => {
 });
 
 describe("view tabs", () => {
-  const tabs = () => [...document.querySelectorAll<HTMLElement>('[role="tab"]')];
+  const tabs = () => [...document.querySelectorAll<HTMLElement>('.list-tabs [role="radio"]')];
 
   it("show the standard view and each built-in view as a tab, the standard one selected, one tab stop", async () => {
     serve();
     await show();
     expect(tabs().map((t) => t.querySelector(".list-tab-label")?.textContent)).toEqual(["Standard", "Active users"]);
-    expect(tabs().map((t) => t.getAttribute("aria-selected"))).toEqual(["true", "false"]);
+    expect(tabs().map((t) => t.getAttribute("aria-checked"))).toEqual(["true", "false"]);
     expect(tabs().map((t) => t.tabIndex)).toEqual([0, -1]);
-    expect(document.querySelector('[role="tablist"]')?.getAttribute("aria-label")).toBe("Views");
+    expect(document.querySelector('.list-tabs')?.getAttribute("aria-label")).toBe("Views");
   });
 
   it("open a view on a click and on the arrow keys, narrowing the list by the view's filter", async () => {
@@ -712,12 +712,12 @@ describe("view tabs", () => {
     await show();
     await act(async () => tabs()[1]!.click());
     await settle();
-    expect(tabs().map((t) => t.getAttribute("aria-selected"))).toEqual(["false", "true"]);
+    expect(tabs().map((t) => t.getAttribute("aria-checked"))).toEqual(["false", "true"]);
     const last = calls.filter((c) => c.url.startsWith("/api/identity/users?")).at(-1)!;
     expect(param(last.url, "filter")).toContain("language eq 'ar'");
     await key(tabs()[1]!.parentElement!, "ArrowLeft");
     await settle();
-    expect(tabs().map((t) => t.getAttribute("aria-selected"))).toEqual(["true", "false"]);
+    expect(tabs().map((t) => t.getAttribute("aria-checked"))).toEqual(["true", "false"]);
   });
 
   it("show how many rows each view holds only when the screen asks for counts, one small request per view", async () => {

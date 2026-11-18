@@ -440,7 +440,7 @@ export function ColumnChooser({
 export type ViewChoice = { id: string; label: string; group: "builtIn" | "shared" | "mine"; isDefault: boolean };
 
 /**
- * The list's views as tabs under its heading (the standard view, the built-in views, the shared and
+ * The list's views as tabs under its heading (a radio group: one view is current; "tab" would shift the position of every tab on a screen that has its own record tabs) (the standard view, the built-in views, the shared and
  * the person's own), each with how many rows it holds when the screen asks for counts. The views
  * menu stays beside the toolbar for saving, updating and deleting; the tabs are the one-click way
  * to the views. One tab stop: Left and Right (the other way in Arabic) move and open the next view.
@@ -460,11 +460,11 @@ export function ViewTabs({ choices, current, counts, onPick }: { choices: ViewCh
     window.setTimeout(() => refs.current[tabs.indexOf(next)]?.focus(), 0);
   }
   return (
-    <div className="list-tabs" role="tablist" aria-label={t("lists.views.tabs")} onKeyDown={onKeyDown}>
+    <div className="list-tabs" role="radiogroup" aria-label={t("lists.views.tabs")} onKeyDown={onKeyDown}>
       {tabs.map((tab, index) => {
         const count = tab.id === null ? counts[""] : counts[tab.id];
         return (
-          <button key={tab.id ?? "standard"} ref={(node) => { refs.current[index] = node; }} type="button" role="tab" className="list-tab" aria-selected={index === Math.max(0, active)} tabIndex={index === Math.max(0, active) ? 0 : -1} onClick={() => onPick(tab.id)}>
+          <button key={tab.id ?? "standard"} ref={(node) => { refs.current[index] = node; }} type="button" role="radio" className="list-tab" aria-checked={index === Math.max(0, active)} tabIndex={index === Math.max(0, active) ? 0 : -1} onClick={() => onPick(tab.id)}>
             <span className="list-tab-label">{tab.label}</span>
             {typeof count === "number" && <span className="list-tab-count">{format.number(count)}</span>}
           </button>

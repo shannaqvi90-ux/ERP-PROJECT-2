@@ -12,7 +12,7 @@ const theme = (page: Page) => page.locator("html").getAttribute("data-theme");
 /** Controls whose own text is cut off by their box (a button showing "De", a currency showing "AEC"). */
 async function clippedControls(page: Page): Promise<string[]> {
   return page.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>("button, .button, input, select, [role=tab], .badge, label")]
+    [...document.querySelectorAll<HTMLElement>("button, .button, input, select, [role=tab], [role=radio], .badge, label")]
       .filter((el) => {
         const box = el.getBoundingClientRect();
         if (box.width === 0 || box.height === 0 || getComputedStyle(el).visibility === "hidden") return false;
