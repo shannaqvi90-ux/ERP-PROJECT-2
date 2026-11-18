@@ -10,6 +10,7 @@ import { Keys, chordForAria, useCommandList, useShortcut } from "../../kernel/sh
 import { Breadcrumbs } from "./Breadcrumbs";
 import { CommandPalette, type PaletteEntry } from "./CommandPalette";
 import { LanguageToggle, languageChord } from "./LanguageToggle";
+import { BrandMark } from "./BrandMark";
 import { LookControls } from "./LookControls";
 import { chooseDensity, chooseTheme, storedDensity, type ThemeChoice } from "../../kernel/theme";
 import { NavPane } from "./NavPane";
@@ -302,6 +303,7 @@ export function AppShell({ session }: { session: Session }) {
           type="button"
           className="palette-trigger"
           onClick={() => setDialog("palette")}
+          title={t("shell.palette.open")}
           aria-keyshortcuts={chordForAria(shellChords.palette)}
           aria-haspopup="dialog"
         >
@@ -464,16 +466,4 @@ export function PendingCommand({ action, onDone }: { action: ModuleAction; onDon
     return () => window.clearTimeout(timer);
   }, [action.pick, stage]);
   return null;
-}
-
-/** The Bizora wordmark (docs/design/brand, used as it is): ink on light, white on dark and high
- * contrast (the theme tokens show one of the two), the Arabic wordmark on Arabic screens. */
-export function BrandMark({ language }: { language: Language }) {
-  const file = language === "ar" ? "bizora-arabic" : "bizora-wordmark";
-  return (
-    <>
-      <img className="brand-mark ink" src={`/brand/${file}.svg`} alt="" />
-      <img className="brand-mark white" src={`/brand/${file}-white.svg`} alt="" />
-    </>
-  );
 }

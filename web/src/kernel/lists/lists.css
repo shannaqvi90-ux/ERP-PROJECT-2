@@ -779,3 +779,64 @@
     overflow-wrap: anywhere;
   }
 }
+
+/* Saved-view tabs under the heading, with the rows each holds (kernel/lists/parts.tsx ViewTabs). */
+.list-tabs {
+  display: flex;
+  gap: var(--sp-6);
+  overflow-x: auto;
+  border-block-end: 1px solid var(--line);
+  margin-block-end: var(--sp-4);
+}
+
+.list-tab {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-1);
+  border: 0;
+  border-block-end: 2px solid transparent;
+  margin-block-end: -1px;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.list-tab:hover {
+  color: var(--fg);
+}
+
+.list-tab[aria-selected="true"] {
+  color: var(--fg);
+  font-weight: var(--fw-semibold);
+  border-block-end-color: var(--accent);
+  box-shadow: 0 6px 12px -8px var(--accent);
+}
+
+[data-theme="hc"] .list-tab[aria-selected="true"] {
+  border-block-end-width: 3px;
+  text-decoration: underline;
+  box-shadow: none;
+}
+
+.list-tab-count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--fg-muted);
+}
+
+.list-tab[aria-selected="true"] .list-tab-count {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+[data-theme="hc"] .list-tab-count {
+  background: transparent;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+}

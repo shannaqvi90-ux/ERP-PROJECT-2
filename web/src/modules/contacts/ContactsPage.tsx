@@ -124,6 +124,7 @@ export function ContactsPage() {
         titleKey="contacts.contacts.title"
         countKey="contacts.contacts.count"
         searchPlaceholderKey="contacts.contacts.search"
+        viewCounts
         can={can}
         openOnClick
         reloadKey={panel.reload}

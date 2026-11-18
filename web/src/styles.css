@@ -237,14 +237,16 @@ input[aria-invalid="true"] {
   display: grid;
   place-items: center;
   padding: 16px;
+  background: var(--halo-signin) center 30% / 900px 600px no-repeat, var(--dots), var(--bg);
 }
 
 .signin-panel {
   width: min(380px, 100%);
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-4);
+  box-shadow: var(--shadow-3);
+  padding: var(--sp-8);
 }
 
 .signin-header {
@@ -255,7 +257,13 @@ input[aria-invalid="true"] {
 }
 
 .signin-title {
-  font-size: 20px;
+  font-size: var(--fs-2xl);
+  display: inline-flex;
+  align-items: center;
+}
+
+.signin-title .brand-mark {
+  height: 30px;
 }
 
 .signin-lead {
@@ -487,7 +495,7 @@ input[aria-invalid="true"] {
   font: inherit;
   flex: 1;
   max-width: 460px;
-  min-width: 160px;
+  min-width: 220px;
   margin-inline: auto;
   display: flex;
   align-items: center;
@@ -772,6 +780,13 @@ input[aria-invalid="true"] {
 }
 
 /* Narrow windows: the top bar keeps every control, with shorter labels. */
+@media (max-width: 1560px) {
+  .topbar-end .user-name,
+  .topbar-end .button.ghost:last-child span {
+    display: none;
+  }
+}
+
 @media (max-width: 960px) {
   .palette-trigger-text,
   .user-name,

@@ -439,6 +439,40 @@ export function ColumnChooser({
 
 export type ViewChoice = { id: string; label: string; group: "builtIn" | "shared" | "mine"; isDefault: boolean };
 
+/**
+ * The list's views as tabs under its heading (the standard view, the built-in views, the shared and
+ * the person's own), each with how many rows it holds when the screen asks for counts. The views
+ * menu stays beside the toolbar for saving, updating and deleting; the tabs are the one-click way
+ * to the views. One tab stop: Left and Right (the other way in Arabic) move and open the next view.
+ */
+export function ViewTabs({ choices, current, counts, onPick }: { choices: ViewChoice[]; current: string | null; counts: Record<string, number | null>; onPick: (id: string | null) => void }) {
+  const { t, format } = useI18n();
+  const tabs: { id: string | null; label: string }[] = [{ id: null, label: t("lists.views.standard") }, ...choices.map((c) => ({ id: c.id, label: c.label }))];
+  const active = tabs.findIndex((tab) => tab.id === current);
+  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
+    const step = event.key === "ArrowRight" ? (rtl ? -1 : 1) : event.key === "ArrowLeft" ? (rtl ? 1 : -1) : 0;
+    if (step === 0) return;
+    event.preventDefault();
+    const next = tabs[(Math.max(0, active) + step + tabs.length) % tabs.length]!;
+    onPick(next.id);
+    window.setTimeout(() => event.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')[tabs.indexOf(next)]?.focus(), 0);
+  }
+  return (
+    <div className="list-tabs" role="tablist" aria-label={t("lists.views.tabs")} onKeyDown={onKeyDown}>
+      {tabs.map((tab, index) => {
+        const count = tab.id === null ? counts[""] : counts[tab.id];
+        return (
+          <button key={tab.id ?? "standard"} type="button" role="tab" className="list-tab" aria-selected={index === Math.max(0, active)} tabIndex={index === Math.max(0, active) ? 0 : -1} onClick={() => onPick(tab.id)}>
+            <span className="list-tab-label">{tab.label}</span>
+            {typeof count === "number" && <span className="list-tab-count">{format.number(count)}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** The views menu: standard, built-in, shared and personal views, and saving the current state. */
 export function ViewsMenu({
   choices,
