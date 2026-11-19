@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../kernel/api";
 import { useI18n } from "../../kernel/i18n";
 import { ListView, type ReferenceSource } from "../../kernel/lists/ListView";
@@ -24,6 +24,7 @@ type LogRow = Row & {
   recordId: string | null;
   recordRoute: string | null;
   fields: string[];
+  fieldNames: string[];
   changes: string;
 };
 
@@ -46,9 +47,20 @@ export function AuditLogPage() {
       for (const row of rows) if (row.actorId) next[row.actorId] = actorText(row, language);
       return next;
     });
+  // The people the "Changed by" filter finds by name (identity's users, through the audit module's
+  // own endpoint); their names are kept for the filter's chip.
+  const findPeople = useCallback(
+    async (text: string) => {
+      const found = await api<{ id: string; name: string; nameAr: string | null; email: string | null }[]>("GET", `/api/audit/actors?take=10&search=${encodeURIComponent(text)}`);
+      const items = found.map((p) => ({ value: p.id, label: `${language === "ar" && p.nameAr ? p.nameAr : p.name}${p.email ? ` (${p.email})` : ""}`, name: language === "ar" && p.nameAr ? p.nameAr : p.name }));
+      setPeople((current) => ({ ...current, ...Object.fromEntries(items.map((i) => [i.value, i.name])) }));
+      return items.map(({ value, label }) => ({ value, label }));
+    },
+    [language],
+  );
   const references = useMemo<Record<string, ReferenceSource>>(
-    () => ({ actorId: { label: (id) => people[id] }, recordId: { label: () => undefined } }),
-    [people],
+    () => ({ actorId: { label: (id) => people[id], search: findPeople }, recordId: { label: () => undefined } }),
+    [people, findPeople],
   );
   return (
     <div className="audit-log">
@@ -70,6 +82,10 @@ export function AuditLogPage() {
             const r = row as LogRow;
             const name = language === "ar" && r.recordAr ? r.recordAr : r.record;
             return name ? <bdi>{name}</bdi> : <span className="muted">{t("audit.value.empty")}</span>;
+          },
+          fields: (row) => {
+            const r = row as LogRow;
+            return <bdi>{(r.fieldNames ?? r.fields).join(", ")}</bdi>;
           },
           changes: (row) => {
             const r = row as LogRow;

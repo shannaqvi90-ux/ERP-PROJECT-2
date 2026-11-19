@@ -139,28 +139,43 @@ case "$stage" in
     export ERP_GATE_SHARD_DIR="$out/g1-http-shards"
     rm -rf "$ERP_GATE_SHARD_DIR"
     mkdir -p "$ERP_GATE_SHARD_DIR"
+    # Each group's own processor seconds (user + system of the test processes the group's `dotnet test`
+    # waited for) go to $out/cpu-group-<name> (round 21: the stage's counted time varied by 4,000 s
+    # between alone runs and nothing said which group varied; a report, judged by nothing).
+    # (`times` is read in the shell itself: in a command substitution it would see a subshell's children.)
+    group_cpu() {
+      local f="$out/.times.$BASHPID"
+      times >"$f"
+      cpu_now="$(tail -1 "$f" | awk '{ split($1, a, /[ms]/); split($2, b, /[ms]/); printf "%.1f", a[1] * 60 + a[2] + b[1] * 60 + b[2] }')"
+      rm -f "$f"
+    }
     dotnet_test() {
-      local name="$1"
+      local name="$1" before status=0
       shift
+      group_cpu
+      before="$cpu_now"
       dotnet test "$@" -c Release --no-build --verbosity quiet \
           --logger "trx;LogFilePrefix=$name" --logger "console;verbosity=normal" --results-directory "$out/trx" \
-          >"$out/dotnet-$name.log" 2>&1
+          >"$out/dotnet-$name.log" 2>&1 || status=$?
+      group_cpu
+      awk -v a="$before" -v b="$cpu_now" 'BEGIN { printf "%.1f\n", b - a }' >"$out/cpu-group-$name"
+      return "$status"
     }
-    # (--list-tests ends with 1 when a project of the solution has no test that matches the filter.)
-    list_tests() {
-      { dotnet test "$@" -c Release --no-build --verbosity quiet --list-tests 2>&1 || true; } | { grep '^    ' || true; } | sort
-    }
+    # list_tests: one project at a time, strict parser (build/list-tests.sh, round 21)
+    source /work/build/list-tests.sh
+    lt() { list_tests "$@" || { echo "The test listing is broken (see above); that is not a missing or an extra test."; exit 1; }; }
     step ".NET: the test groups are every test exactly once"
-    list_tests Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
+    lt Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
     {
-      list_tests Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
-      list_tests "$gates" --filter "Load!=Timing&$in_groups"
-      list_tests "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
-      list_tests "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
-      for ((k = 0; k < http_shards; k++)); do list_tests "$gates" --filter "Shard=$k"; done
-      list_tests "$gates" --filter "Judge=http-attack"
-      for p in "${selftests[@]}"; do list_tests "$gates" --filter "Process=$p"; done
-    } | sort >"$out/tests-groups.txt"
+      lt Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
+      lt "$gates" --filter "Load!=Timing&$in_groups"
+      lt "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
+      lt "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
+      for ((k = 0; k < http_shards; k++)); do lt "$gates" --filter "Shard=$k"; done
+      lt "$gates" --filter "Judge=http-attack"
+      for p in "${selftests[@]}"; do lt "$gates" --filter "Process=$p"; done
+    } >"$out/tests-groups.raw"
+    sort "$out/tests-groups.raw" >"$out/tests-groups.txt"
     if [[ ! -s "$out/tests-all.txt" ]] || ! diff -q "$out/tests-all.txt" "$out/tests-groups.txt" >/dev/null; then
       echo "The test groups are not every test exactly once:"
       diff "$out/tests-all.txt" "$out/tests-groups.txt" | head -40

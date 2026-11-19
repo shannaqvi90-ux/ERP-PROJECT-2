@@ -43,6 +43,13 @@ public sealed record AuditEvent(
 public sealed record AuditHistory(string? RecordType, IReadOnlyList<AuditEvent> Items, Guid? Next, IReadOnlyDictionary<Guid, AuditRecordName> Names,
     IReadOnlyDictionary<string, AuditFieldLabel>? Fields = null);
 
+/// <summary>A person the 'Changed by' filter offers.</summary>
+/// <param name="Id">The person's id (the filter's actorId value).</param>
+/// <param name="Name">Their name.</param>
+/// <param name="NameAr">Their name in Arabic script, when they have one.</param>
+/// <param name="Email">Their e-mail (tells two people of one name apart); only for a reader who may read users.</param>
+public sealed record AuditPerson(Guid Id, string Name, string? NameAr, string? Email);
+
 internal static class AuditEndpoints
 {
     public const int DefaultTake = 50;
@@ -53,6 +60,11 @@ internal static class AuditEndpoints
         group.MapGet("/log", Log)
             .WithName("audit.log.list")
             .WithSummary("The audit log: every recorded change of the business records the caller may read (each kind of record needs its own read permission as well, in the record's company), newest first, a page at a time: word search on the record's name, filters (actorId, actorKind, action, recordType, record, recordId, fields eq 'email', occurredAt), sort, keyset or offset paging and grouping (the list query contract).")
+            .RequirePermission(AuditPermissions.LogRead);
+
+        group.MapGet("/actors", Actors)
+            .WithName("audit.actors.search")
+            .WithSummary("The people the audit log's 'Changed by' filter offers: users of the workspace whose name (English or Arabic) or e-mail contains the search text, by name, at most 20 (default 10). An empty search answers the first people by name; the filter itself is actorId in the audit log's list query.")
             .RequirePermission(AuditPermissions.LogRead);
 
         group.MapGet("/log/{id:guid}", Change)
@@ -81,6 +93,27 @@ internal static class AuditEndpoints
     {
         var result = await AuditLog.PageAsync(reader, catalog, texts, request, http, cancellationToken);
         return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(r => r));
+    }
+
+    private static async Task<Ok<IReadOnlyList<AuditPerson>>> Actors(
+        [FromQuery, Description("Part of the person's name or e-mail.")] string? search,
+        [FromQuery, Description("Most people to answer, 1 to 20 (default 10).")] int? take,
+        Erp.Modules.Identity.Contracts.IUserDirectory users, ICurrentUser user, CancellationToken cancellationToken)
+    {
+        var text = search?.Trim();
+        if (text is { Length: > 100 })
+        {
+            text = text[..100];
+        }
+        var page = await users.SearchAsync(string.IsNullOrEmpty(text) ? null : text, 0, Math.Clamp(take ?? 10, 1, 20), cancellationToken);
+        // E-mails belong to whoever may read users: without that permission the person is found by name only
+        // and shown without an e-mail, as the log shows its actors.
+        var mayReadEmails = user.Has(Erp.Modules.Identity.Contracts.IdentityPermissions.UsersRead);
+        IReadOnlyList<AuditPerson> people = [.. page.Items
+            .Where(u => mayReadEmails || string.IsNullOrEmpty(text)
+                        || u.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase) || (u.DisplayNameAr?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+            .Select(u => new AuditPerson(u.Id, u.DisplayName, u.DisplayNameAr, mayReadEmails ? u.Email : null))];
+        return TypedResults.Ok(people);
     }
 
     private static async Task<Results<Ok<AuditChange>, ProblemHttpResult>> Change(Guid id, AuditReader reader, ModuleCatalog catalog, AuditTexts texts,

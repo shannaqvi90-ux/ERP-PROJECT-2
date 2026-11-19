@@ -212,6 +212,121 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
+    public async Task The_changed_by_filter_finds_people_by_name_in_either_language_and_filters_the_log_by_the_one_chosen()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var (adminId, adminName) = await MeAsync(admin);
+        var role = await CreateRoleAsync(admin, "Picker Clerk", "identity.users.read");
+        // A person is found by part of the name, whatever its case; the answer carries the id the filter takes.
+        var people = await Json(await admin.GetAsync($"/api/audit/actors?search={Uri.EscapeDataString(adminName[..Math.Min(4, adminName.Length)].ToUpperInvariant())}"));
+        var me = people.EnumerateArray().Single(p => p.GetProperty("id").GetGuid() == adminId);
+        Assert.Equal(adminName, me.GetProperty("name").GetString());
+        Assert.False(string.IsNullOrEmpty(me.GetProperty("email").GetString()), "a reader of users sees the e-mail");
+        // Nobody of that name: an empty answer, never an error; a long or odd text is not an error either.
+        Assert.Empty((await Json(await admin.GetAsync("/api/audit/actors?search=zzzz-nobody-has-this-name"))).EnumerateArray());
+        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/audit/actors?search={Uri.EscapeDataString("%_'\\" + new string('x', 400))}")).StatusCode);
+        Assert.True((await Json(await admin.GetAsync("/api/audit/actors?take=500"))).GetArrayLength() <= 20);
+        // The chosen person's id filters the log to what they changed (one person, then several).
+        var filter = Uri.EscapeDataString($"actorId eq '{me.GetProperty("id").GetGuid()}' and recordId eq '{role.GetProperty("id").GetGuid()}'");
+        var mine = (await Json(await admin.GetAsync($"/api/audit/log?filter={filter}"))).GetProperty("items").EnumerateArray().ToList();
+        Assert.NotEmpty(mine);
+        Assert.All(mine, r => Assert.Equal(adminId, r.GetProperty("actorId").GetGuid()));
+        var several = Uri.EscapeDataString($"actorId in ('{adminId}','{Guid.NewGuid()}') and recordId eq '{role.GetProperty("id").GetGuid()}'");
+        Assert.NotEmpty((await Json(await admin.GetAsync($"/api/audit/log?filter={several}"))).GetProperty("items").EnumerateArray());
+        // Another tenant's people are not offered.
+        using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var theirs = await Json(await other.GetAsync($"/api/audit/actors?search={Uri.EscapeDataString(adminName)}"));
+        Assert.DoesNotContain(theirs.EnumerateArray(), p => p.GetProperty("id").GetGuid() == adminId);
+    }
+
+    [Fact]
+    public async Task A_person_without_the_permission_to_read_users_is_found_by_name_only_and_shown_without_an_email()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var (_, adminName) = await MeAsync(admin);
+        var email = Env.Email(Env.TenantA, "admin");
+        var role = await CreateRoleAsync(admin, "Picker Auditor", "audit.log.read", "identity.roles.read");
+        var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
+        {
+            email = $"audit.picker@{Env.TenantA.EmailDomain}", displayName = "Picker Auditor", language = "en", password = ErpTestEnvironment.Password,
+            mustChangePassword = false, roleIds = new[] { role.GetProperty("id").GetGuid() },
+        }));
+        using var auditor = await Env.SignInAsync(user.GetProperty("email").GetString()!);
+        var byName = await Json(await auditor.GetAsync($"/api/audit/actors?search={Uri.EscapeDataString(adminName[..Math.Min(4, adminName.Length)])}"));
+        Assert.NotEmpty(byName.EnumerateArray());
+        Assert.All(byName.EnumerateArray(), p => Assert.Equal(JsonValueKind.Null, p.TryGetProperty("email", out var e) ? e.ValueKind : JsonValueKind.Null));
+        // An e-mail finds nobody for a reader who may not read e-mails.
+        Assert.Empty((await Json(await auditor.GetAsync($"/api/audit/actors?search={Uri.EscapeDataString(email)}"))).EnumerateArray());
+    }
+
+    [Fact]
+    public async Task The_log_names_each_recorded_field_once_in_the_language_and_prints_the_names_not_a_count()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var role = await CreateRoleAsync(admin, "Names Steward", "identity.users.read");
+        await RenameRoleAsync(admin, role, "Names Warden", "identity.users.read");
+        var filter = Uri.EscapeDataString($"recordId eq '{role.GetProperty("id").GetGuid()}' and action eq 'update'");
+        var row = Assert.Single((await Json(await admin.GetAsync($"/api/audit/log?filter={filter}"))).GetProperty("items").EnumerateArray());
+        Assert.Equal(["Name in English"], row.GetProperty("fieldNames").EnumerateArray().Select(f => f.GetString()));
+        var arabic = Assert.Single((await Json(await admin.GetAsync($"/api/audit/log?filter={filter}&language=ar"))).GetProperty("items").EnumerateArray());
+        Assert.Equal(["الاسم بالإنجليزية"], arabic.GetProperty("fieldNames").EnumerateArray().Select(f => f.GetString()));
+        // The export's Fields column carries the names, as the screen does.
+        var csv = await admin.GetStringAsync($"/api/reports/lists/audit.log?format=csv&language=en&filter={filter}");
+        var lines = csv.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        Assert.Contains(lines, l => l.Contains("Names Warden", StringComparison.Ordinal) && l.Contains("Name in English", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_time_in_a_value_reads_as_a_date_and_time_in_the_language()
+    {
+        var texts = new AuditTexts();
+        using var doc = JsonDocument.Parse("\"2026-11-14T23:37:59.115984+00:00\"");
+        Assert.Equal("15 Nov 2026, 3:37 AM", texts.Value(doc.RootElement, "en"));
+        var arabic = texts.Value(doc.RootElement, "ar");
+        Assert.DoesNotContain("2026-11", arabic, StringComparison.Ordinal);
+        Assert.Contains("15\u200F/11\u200F/2026", arabic, StringComparison.Ordinal);
+        var change = new AuditFieldChange("expires_at", null, doc.RootElement.Clone());
+        Assert.Equal("Expires: 15 Nov 2026, 3:37 AM", texts.Summary([change], "insert", "en", null));
+        Assert.StartsWith("الحقل ينتهي في: 15", texts.Summary([change], "insert", "ar", null), StringComparison.Ordinal);
+        Assert.DoesNotContain("القيمة", texts.Summary([change], "insert", "ar", null), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task The_application_role_cannot_write_update_or_delete_an_audit_row_only_the_trigger_writes_them()
+    {
+        // A made-up row for its own tenant, with any actor and a time a year back, is refused; a row
+        // the trigger writes for a real change is not.
+        await using var app = await Env.OpenAppAsync();
+        foreach (var statement in new[]
+        {
+            $"INSERT INTO audit.entries (tenant_id, occurred_at, actor_id, actor_kind, table_schema, table_name, record_id, action, changes, transaction_id) VALUES ('{Env.TenantA.Id}', now() - interval '400 days', gen_random_uuid(), 'user', 'identity', 'roles', gen_random_uuid(), 'update', '{{}}'::jsonb, 1)",
+            "UPDATE audit.entries SET actor_id = gen_random_uuid()",
+            "DELETE FROM audit.entries",
+        })
+        {
+            await using var tx = await app.BeginTransactionAsync();
+            await using (var bind = new NpgsqlCommand(
+                "SELECT set_config('app.tenant_id', @t, true), set_config('app.tenant_tx', extract(epoch from now())::text, true)", app, tx))
+            {
+                bind.Parameters.AddWithValue("t", Env.TenantA.Id.ToString());
+                await bind.ExecuteNonQueryAsync();
+            }
+            var denied = await Assert.ThrowsAsync<PostgresException>(async () =>
+            {
+                await using var command = new NpgsqlCommand(statement, app, tx);
+                await command.ExecuteNonQueryAsync();
+            });
+            Assert.Equal("42501", denied.SqlState);
+            await tx.RollbackAsync();
+        }
+        // The capture trigger still writes: a change through the product leaves its row.
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var role = await CreateRoleAsync(admin, "Trigger Writes", "identity.users.read");
+        var history = await Json(await admin.GetAsync($"/api/audit/records/{role.GetProperty("id").GetGuid()}?type=identity.roles"));
+        Assert.Equal("insert", Assert.Single(history.GetProperty("items").EnumerateArray()).GetProperty("action").GetString());
+    }
+
+    [Fact]
     public async Task Ids_in_values_read_as_the_names_of_the_records_they_name()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
