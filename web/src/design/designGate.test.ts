@@ -127,6 +127,18 @@ describe("design tokens", () => {
     expect(offenders.map((f) => relative(root, f))).toEqual([]);
   });
 
+  it("nothing moves on its own: no CSS transition or animation (the comparison harness counts screen changes no step caused, and a hover fade is one)", () => {
+    const found: string[] = [];
+    for (const file of sources.filter((f) => f.endsWith(".css"))) {
+      const text = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+      for (const m of text.matchAll(/(^|[;{\s])(transition|animation)(-[a-z-]+)?\s*:\s*([^;}]*)/g)) {
+        if (/^none\b/.test(m[4]!.trim()) || /^0s\b/.test(m[4]!.trim())) continue;
+        found.push(`${relative(root, file)}: ${m[0].trim()}`);
+      }
+    }
+    expect(found, "transitions or animations in stylesheets").toEqual([]);
+  });
+
   it("every stylesheet uses logical properties only (it mirrors in Arabic)", () => {
     const physical = /(^|[;{\s])(margin|padding)-(left|right)\s*:|(^|[;{\s])(left|right)\s*:|text-align\s*:\s*(left|right)|border-(left|right)(-[a-z]+)?\s*:/m;
     const bad = stylesheets.filter((f) => physical.test(readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "")));
