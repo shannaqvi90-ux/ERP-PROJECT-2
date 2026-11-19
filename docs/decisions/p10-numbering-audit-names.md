@@ -45,3 +45,31 @@ Odoo keeps no history for sequences, so the comparison tasks are unaffected.
 - AuditTrailTests.A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code used the old word keys ("yearly"/"monthly"); the stored values are 1 and 2 since this round, so the test now uses them (same assertions: label in both languages; other kinds show the stored value).
 - Targeted runs: Gates G2 + NumberingAuditGate + G1TenantSource + AuditGate, 103 of 104 passed (7 m 23 s); Erp.Modules.Audit.Tests 14 of 15, the one failure fixed above.
 - Remaining: G2CompanyRoleTests still fails when run with the other G2 classes, only on GET /api/audit/records/{id} answering 200 with the id of a user_workplaces row that was in company Y when the gate took its snapshot and was moved to company X by a parallel test (the id is the row's own id in its own history). Alone the test passes (23 s). Narrowing the gate to skip moved rows was refused by the permission classifier (a gate change); left for the owner or p00.
+
+## Round 5 fix 2 (integrator's failed alone verify of the merge, 2026-11-19)
+
+Merged the integration branch (dbc81aac; one conflict in tests/Gates/tenant-bypass-sources.txt, both lines kept) and then:
+
+1. **Erp.Kernel.Tests.BulkTimeoutTests (10 tests)**: fixed. Naming sequences while seeding builds the string catalog; the Kernel test assembly
+   embedded a deliberately English-only key (`only.english`) and SlowSeedModule, added to the running app, brought that assembly's strings into
+   the app's catalog. The incomplete strings are now an in-code assembly (`UntranslatedStringsAssembly`) used only by
+   `LocalizationTests.A_key_without_a_translation_stops_the_catalog_from_loading` (same assertion). The embedded resources were removed.
+   Run: Erp.Kernel.Tests BulkTimeoutTests + LocalizationTests, 32 of 32 passed.
+2. **e2e audit.spec.ts "filters by a person chosen by name"**: a race in the spec, not in the product. The list shows its unfiltered rows
+   until the filtered answer arrives, so "rows visible" passed before the request was dispatched. The spec now waits for the filtered answer
+   (`page.waitForResponse`) before it counts requests. No timeout changed; every assertion kept. 3 runs of the whole audit spec and the
+   numbering spec passed (stack b-p10-numbering, volume 2000).
+3. **G1HttpIsolationShardTests / G1HttpIsolationTests ("Journal voucher · Al Noor Trading LLC")**: reproduced (share 0, 23 min). Diagnosed with a
+   temporary query (not committed): at the time of the leak both tenants hold 23 sequences named exactly that. It is not a leak: the gate's
+   own valid writes send the OpenAPI example company name "Al Noor Trading LLC" for both tenants, so each gets sequences named from it
+   (company creation names them). The marker list of tenant B is read before tenant A's writes (WritePairsPhaseAsync takes `values` once; the
+   public-example exclusion works on exact strings only), so a name composed from a public example is a B-only marker until A has written
+   the same example. Product-side there is no honest change: the heading must carry the company's name (the critic's item 2). The fix is in
+   the gate (p00): re-read the victim's markers against the attacker's data after the attacker's writes (the reverse direction already does at
+   G1HttpIsolationTests.cs:712), or drop markers that contain a published example value.
+4. **GateSelfTests.The_company_attack_catches_an_endpoint_that_widens_the_company_scope**: reproduced alone (8 m 57 s) and it PASSES on the
+   integration branch tip (6 m 18 s), so it is caused by this piece. Cause: G1CompanyIsolationTests sends only `before.Strings.Take(25)` of
+   company Y's unique text as parameter values (lines 363 and 521), in table order; numbering sorts before tenancy, and this round gives every
+   sequence of company Y a unique name in two languages (15 sequences x 2 and more), so the 25 are used up before tenancy.companies.po_box,
+   and the planted paging oracle (plant P1) never gets its value. Same gate-side class as 3: the sample should take values round-robin per
+   table/column (or more of them), not the first 25 in table order. Not changed here (p00 machinery).
