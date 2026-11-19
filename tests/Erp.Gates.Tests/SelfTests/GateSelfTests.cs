@@ -146,7 +146,10 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(report.Leaks, l => !l.Contains("/api/leaky/", StringComparison.Ordinal));
 
         // Lookups by e-mail, by an undocumented-name query parameter and by a body text field.
-        Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/lookup?email=", StringComparison.Ordinal));
+        Assert.True(report.Leaks.Any(l => l.Contains("/api/leaky/lookup?email=", StringComparison.Ordinal)),
+            "the attack did not catch the planted /api/leaky/lookup?email= leak (round 21: it is sent every e-mail address of tenant B, each with a control). " +
+            $"Leaks on /api/leaky/lookup: {report.Leaks.Count(l => l.Contains("/api/leaky/lookup", StringComparison.Ordinal))}; " +
+            $"requests counted for it: {string.Join(" | ", report.Phases.Where(p => p.Contains("leaky.lookup", StringComparison.Ordinal)).Take(8))}");
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/report?ownerReference=", StringComparison.Ordinal));
         Assert.Contains(report.Leaks, l => l.Contains("/api/leaky/find [body reference=", StringComparison.Ordinal));
 
