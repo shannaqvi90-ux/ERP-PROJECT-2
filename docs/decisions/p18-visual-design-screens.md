@@ -51,3 +51,25 @@ as before. See the notes of the round for the comparison runs.
 - **Group subtotals in base currency** are the kernel list's existing group totals; the contacts list
   has no money column, so the screens that show subtotals in this product are the ones with money
   (exchange rates have none either). The styling is G's; the data waits for the invoicing modules.
+
+## Round 1 fix: the comparison health check (serial-23b)
+
+The integrator's alone verify passed web, dotnet and all 170 e2e tests but failed the comparison
+harness's health check: eight ours tasks were refused ("action outside the clock (set-up): the page
+changed what it shows without a counted step causing it") and switch-company timed out. Causes, found
+by running the drivers against my own stack:
+
+- `.button` had a 140 ms hover transition. A hover fade after the pointer move is a style change the
+  harness cannot trace to a step. Removed; designGate.test.ts now fails on any CSS transition or
+  animation (so none returns). Nothing in the product animates now.
+- The density switch (two text segments, about 140 px) in the top bar left no room for the one-click
+  company chips, which wrap onto a hidden second line, so DEMO-MFG was clipped and never "stable".
+  The density switch moved to the status bar (same buttons, same labels; the preferences dialog and
+  palette are unchanged); the command field's minimum width is 200 px (was 220). Theme icons stay in the top bar.
+- SectionTabs' IntersectionObserver (current section follows the scroll) fired after the page settled,
+  a screen change no step caused (edit-and-save, attach-file). The current tab is now the last one
+  jumped to.
+
+Targeted run: all 22 built ours drivers verified against the stack of the merge (health check, run
+twice); 773 web unit tests pass; the whole Playwright suite (170) passes against my stack. No
+full ./erp verify (the integrator's alone run is that). Processor time added: none measurable.
