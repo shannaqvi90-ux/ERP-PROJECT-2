@@ -64,6 +64,9 @@ export const copyLimit = 5000;
 export type ReferenceSource = {
   label: (id: string) => string | undefined;
   options?: { value: string; label: string }[];
+  /** For a set too large to list: finds records by what the user types; the column's filter is then
+   * a picker (keyboard and mouse) instead of a text box. */
+  search?: (text: string) => Promise<{ value: string; label: string }[]>;
 };
 
 export type ListViewProps = {
@@ -1333,6 +1336,8 @@ export function ListView(props: ListViewProps) {
                         <FilterEditor
                           column={c}
                           options={c.type === "reference" ? references?.[c.key]?.options : undefined}
+                          search={c.type === "reference" ? references?.[c.key]?.search : undefined}
+                          labelOf={c.type === "reference" ? references?.[c.key]?.label : undefined}
                           current={current.conditions.filter((x) => x.column === c.key)}
                           onApply={(conditions) => update((s) => ({ ...s, conditions: [...s.conditions.filter((x) => x.column !== c.key), ...conditions] }))}
                           onClose={() => setMenu(null)}

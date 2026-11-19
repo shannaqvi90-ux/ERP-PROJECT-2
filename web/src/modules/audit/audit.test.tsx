@@ -64,7 +64,12 @@ function serve(permissions: string[]) {
     if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
     const parsed = new URL(url, "http://localhost");
     if (parsed.pathname === "/api/audit/records/u7" && parsed.searchParams.get("type") === "identity.users") {
-      if (parsed.searchParams.get("take") === "1") return { status: 200, body: { ...first, items: first.items.slice(0, 1), next: "e3" } };
+      if (parsed.searchParams.get("take") === "6" && window.location.hash === "#one-save") {
+        // One save wrote two rows (the record's own fields, then its custom fields).
+        const [a] = first.items;
+        const same = { ...a!, id: "e3b", occurredAt: "2026-10-24T10:15:00.400Z", changes: [{ field: "custom_fields.region", old: "North", new: "South" }] };
+        return { status: 200, body: { ...first, items: [same, a!, first.items[1]!], next: null, fields: { "custom_fields.region": { labelEn: "Region", labelAr: "المنطقة", type: "text", decimals: 0 } } } };
+      }
       return { status: 200, body: parsed.searchParams.get("before") === "e2" ? older : first };
     }
     return { status: 404, body: {} };
@@ -116,9 +121,21 @@ describe("a record's history on its form", () => {
     expect(latest.textContent).toContain("E-mail: from shamma@mail.example to shamma.new@mail.example");
     expect(latest.textContent).toContain("Active: from Yes to No");
     expect(latest.querySelector("time")!.getAttribute("datetime")).toBe("2026-10-24T10:15:00Z");
-    expect(calls.some((c) => c.url === "/api/audit/records/u7?type=identity.users&take=1")).toBe(true);
+    expect(calls.some((c) => c.url === "/api/audit/records/u7?type=identity.users&take=6")).toBe(true);
     // The whole history is read only when asked for.
-    expect(calls.filter((c) => c.url.startsWith("/api/audit/records/") && !c.url.includes("take=1"))).toEqual([]);
+    expect(calls.filter((c) => c.url.startsWith("/api/audit/records/") && !c.url.includes("take=6"))).toEqual([]);
+  });
+
+  it("shows what one save changed in one line: the record's own fields and its custom fields together", async () => {
+    window.location.hash = "#one-save";
+    serve(["identity.users.read", "audit.log.read"]);
+    const { container } = await show("en");
+    const latest = container.querySelector('[data-testid="audit-latest"]')!;
+    expect(latest.textContent).toContain("Region: from North to South");
+    expect(latest.textContent).toContain("E-mail: from shamma@mail.example to shamma.new@mail.example");
+    // A change another person made earlier is not part of it.
+    expect(latest.textContent).not.toContain("Sales clerk");
+    window.location.hash = "";
   });
 
   it("opens the whole history with Alt+Y: every change, every field, names for ids, secrets hidden, older changes on demand, Escape closes", async () => {
