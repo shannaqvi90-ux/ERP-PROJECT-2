@@ -14,5 +14,7 @@
 erp.language ^(en|ar)$  # The device's interface language: en or ar, nothing else (the user's own choice is in their profile).
 erp.numerals ^(latn|arab)$  # The digits Arabic screens use on this device: Latin or Arabic-Indic, nothing else.
 erp.navOpen ^(0|1)$  # Whether the navigation pane is open on this device: 1 or 0.
+erp.theme ^(system|light|dark|hc)$  # The look this device shows: the system's setting until chosen, then light, dark or high contrast; nothing else (p18-visual-design).
+erp.density ^(compact|comfortable)$  # How dense lists and forms are on this device: compact or comfortable; nothing else (p18-visual-design).
 erp.passkeyOffer ^(0|1|2)$  # Whether the sign-in screen asks this device for a passkey as it opens (1, 2) or not (0); names nobody.
 erp.signInDomains ^\{"salt":"[0-9a-f]{32}","hashes":\[("[0-9a-f]{16}"(,"[0-9a-f]{16}"){0,7})?\]\}$  # A random salt of the device and at most eight salted 64-bit hashes of sign-in e-mail domains; no e-mail, no readable domain, no id.

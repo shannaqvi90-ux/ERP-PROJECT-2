@@ -156,16 +156,16 @@
 }
 
 .id-notice {
-  border: 1px solid #1a7f37;
-  background: #f0fff4;
+  border: 1px solid var(--positive);
+  background: var(--positive-soft);
   padding: 8px 10px;
   border-radius: 4px;
   margin-block-end: 10px;
 }
 
 .id-notice.warn {
-  border-color: #9a6700;
-  background: #fff8c5;
+  border-color: var(--warning);
+  background: var(--warning-soft);
 }
 
 .id-notice p {
@@ -196,8 +196,8 @@
 }
 
 .id-badge.ok {
-  border-color: #1a7f37;
-  color: #1a7f37;
+  border-color: var(--positive);
+  color: var(--positive);
 }
 
 .id-badge.off {
@@ -206,8 +206,8 @@
 }
 
 .id-badge.warn {
-  border-color: #9a6700;
-  color: #9a6700;
+  border-color: var(--warning);
+  color: var(--warning);
 }
 
 .id-tabs {
@@ -235,7 +235,7 @@
 }
 
 .id-selected {
-  background: #e7f0fb;
+  background: var(--selected);
 }
 
 .grid tbody tr:focus-visible {

@@ -52,9 +52,15 @@
   gap: 4px;
   justify-content: flex-end;
   white-space: nowrap;
+  /* The buttons keep their whole words, however narrow the column is (the Delete button showed as "De"). */
+  flex: none;
+  min-inline-size: max-content;
 }
 
 .attachments-actions .button {
+  flex: none;
+  overflow: visible;
+  text-overflow: clip;
   height: 24px;
   display: inline-flex;
   align-items: center;

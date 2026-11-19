@@ -675,6 +675,8 @@ describe("G1 in the browser: one tab, tenant B then tenant A", { timeout: 30_000
       "erp.language": "ar",
       "erp.numerals": "arab",
       "erp.navOpen": "1",
+      "erp.theme": "hc",
+      "erp.density": "comfortable",
       "erp.passkeyOffer": "2",
       "erp.signInDomains": '{"salt":"0123456789abcdef0123456789abcdef","hashes":["0123456789abcdef"]}',
     };

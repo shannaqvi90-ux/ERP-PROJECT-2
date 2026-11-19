@@ -555,10 +555,10 @@ test.describe("app shell", () => {
       await cdp.detach();
       return fonts.map((f) => f.familyName);
     };
-    expect(await platformFonts()).toContain("Noto Sans Arabic");
+    expect(await platformFonts()).toContain("Readex Pro");
     await page.emulateMedia({ media: "print" });
     try {
-      expect(await platformFonts()).toContain("Noto Sans Arabic");
+      expect(await platformFonts()).toContain("Readex Pro");
     } finally {
       await page.emulateMedia({ media: "screen" });
     }

@@ -1,0 +1,75 @@
+# p18: what changed on the screens, and what did not
+
+Built through the shared kernel components, so every module has it:
+
+- **Shell.** Top bar on the surface colour with the Bizora wordmark (ink on light, white on dark and
+  high contrast, the Arabic wordmark in Arabic; `docs/design/brand/` used as it is, copied to
+  `web/public/brand/`), the command field with its glow, density and theme switches, language, help,
+  user. Sidebar on the `--side` ground. Status bar of keys. The palette (Ctrl K) already searched the
+  real endpoints and ran the real actions of every module; it gained the theme and density commands.
+- **Lists.** Saved-view tabs under the heading (`ViewTabs`): the standard view, the built-in views
+  and the shared and personal ones, one Tab stop, arrow keys move and open, counts when a screen asks
+  (`viewCounts`, one `take=1` request per built-in view; the contacts list asks, the audit log does
+  not, because counting a 700,000-row log on every open is not worth it). The views menu stays for
+  saving, updating and deleting. Group by, sort, columns, grouped rows with their subtotals, and the
+  details pane were already in the kernel list; they take the tokens. **Not built:** the trend and
+  credit-bar cells of the sample's contacts list: no module offers a 12-month series or a credit
+  figure through the API today, and a column with invented numbers would be a lie. The kernel takes
+  the cell when a module adds the data.
+- **Forms.** Section tabs under the record header (`SectionTabs`): one per section, jumping to it,
+  all sections stay on one page, so no field is hidden and no keystroke is added to any task (a
+  step-count rule of the owner: comparison tasks may not get slower). The record header with Save,
+  Discard and Close is sticky. Dates are a day-first text box with a calendar button
+  (`kernel/forms/dateInput.tsx`): it takes dd/mm/yyyy or yyyy-mm-dd in either set of digits and holds
+  yyyy-mm-dd. The native date box is gone because it draws mm/dd/yyyy on an American browser.
+- **Dates everywhere** are dd/mm/yyyy (`kernel/format.ts`), Gregorian, in the screen's digits.
+- **Clipped text.** The attachments' Delete button and the currency box of a money field keep their
+  whole words (`attachments.css`, `forms.css`); `design.spec.ts` fails on any button, input, tab or
+  badge whose text overflows its box, in English and Arabic, in the three themes.
+- **Home.** A dashboard of what needs doing: modules add cards through the new `home` extension
+  slot (`kernel/home.tsx`); a card counts rows of its own list endpoints (failed jobs, users who never
+  signed in, contacts) and an `attention` figure above zero counts toward "N things need you today".
+  A user sees only the cards their roles allow.
+
+## Tie-accepted and step counts
+
+No existing task needs one more key or click: tabs are pointer helpers outside the Tab order (the
+form's) or one stop that replaces nothing (the list's, roving), and the date box takes the same text
+as before. See the notes of the round for the comparison runs.
+
+## Not built in this round, and why
+
+- **Pinned and recent items in the sidebar.** The navigation is asserted exactly, link by link, by
+  existing specs (`sign-in.spec.ts`: the list of the sixteen navigation links in both languages) and by
+  the comparison drivers, which find links inside the navigation landmark; a pinned or recent block
+  inside it would change those lists and every step count behind them. The palette already offers the
+  recent screens and records. A block beside the navigation (outside its landmark) with the user's
+  pins needs a place to keep pins per user (a server preference or a device key reviewed like the
+  theme) and is left for the next round with the owner's choice of where pins live.
+- **Trend and credit-bar cells** in lists (see above): no data source.
+- **Theme and density in the user's profile** (see tokens-and-themes): device setting only.
+- **Group subtotals in base currency** are the kernel list's existing group totals; the contacts list
+  has no money column, so the screens that show subtotals in this product are the ones with money
+  (exchange rates have none either). The styling is G's; the data waits for the invoicing modules.
+
+## Round 1 fix: the comparison health check (serial-23b)
+
+The integrator's alone verify passed web, dotnet and all 170 e2e tests but failed the comparison
+harness's health check: eight ours tasks were refused ("action outside the clock (set-up): the page
+changed what it shows without a counted step causing it") and switch-company timed out. Causes, found
+by running the drivers against my own stack:
+
+- `.button` had a 140 ms hover transition. A hover fade after the pointer move is a style change the
+  harness cannot trace to a step. Removed; designGate.test.ts now fails on any CSS transition or
+  animation (so none returns). Nothing in the product animates now.
+- The density switch (two text segments, about 140 px) in the top bar left no room for the one-click
+  company chips, which wrap onto a hidden second line, so DEMO-MFG was clipped and never "stable".
+  The density switch moved to the status bar (same buttons, same labels; the preferences dialog and
+  palette are unchanged); the command field's minimum width is 200 px (was 220). Theme icons stay in the top bar.
+- SectionTabs' IntersectionObserver (current section follows the scroll) fired after the page settled,
+  a screen change no step caused (edit-and-save, attach-file). The current tab is now the last one
+  jumped to.
+
+Targeted run: all 22 built ours drivers verified against the stack of the merge (health check, run
+twice); 773 web unit tests pass; the whole Playwright suite (170) passes against my stack. No
+full ./erp verify (the integrator's alone run is that). Processor time added: none measurable.

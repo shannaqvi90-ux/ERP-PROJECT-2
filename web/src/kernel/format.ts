@@ -92,9 +92,19 @@ export function createFormatter(language: Language, numerals: Numerals): Formatt
   const locale = intlLocale(language, numerals);
   const shown = effectiveNumerals(language, numerals);
   const integer = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
-  const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
-  const dateTime = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
-  const time = new Intl.DateTimeFormat(locale, { timeStyle: "short" });
+  // Dates are always day/month/year with two-digit day and month (18/11/2026), in the Gregorian
+  // calendar and the screen's digits, never month first (p18; the owner's promise). Times follow the language's own short form.
+  const dateParts = new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", year: "numeric", calendar: "gregory" });
+  const timeFormat = new Intl.DateTimeFormat(locale, { timeStyle: "short" });
+  const part = (parts: Intl.DateTimeFormatPart[], type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  const date = {
+    format: (when: Date) => {
+      const parts = dateParts.formatToParts(when);
+      return `${part(parts, "day")}/${part(parts, "month")}/${part(parts, "year")}`;
+    },
+  };
+  const time = timeFormat;
+  const dateTime = { format: (when: Date) => `${date.format(when)}, ${time.format(when)}` };
   // Intl.NumberFormat.format accepts decimal strings and keeps every digit (ECMA-402 "exact
   // decimal" formatting); no binary floating point is involved.
   const formatDecimalString = (value: string, options: Intl.NumberFormatOptions) =>

@@ -10,6 +10,9 @@ import { Keys, chordForAria, useCommandList, useShortcut } from "../../kernel/sh
 import { Breadcrumbs } from "./Breadcrumbs";
 import { CommandPalette, type PaletteEntry } from "./CommandPalette";
 import { LanguageToggle, languageChord } from "./LanguageToggle";
+import { BrandMark } from "./BrandMark";
+import { LookControls } from "./LookControls";
+import { chooseDensity, chooseTheme, storedDensity, type ThemeChoice } from "../../kernel/theme";
 import { NavPane } from "./NavPane";
 import { actionEntries, offeredActions } from "./paletteActions";
 import { GoToHint, goToTargets, useGoTo } from "./goTo";
@@ -216,6 +219,20 @@ export function AppShell({ session }: { session: Session }) {
     return [
       { id: "action:language", title: t(`shell.action.language.${nextLanguage}`), keywords: [...both(`shell.action.language.${nextLanguage}`), "language", "اللغة", "عربي", "arabic", "english"], icon: "globe", chord: languageChord, run: () => changeLanguage(nextLanguage) },
       { id: "action:digits", title: t(`shell.action.digits.${nextDigits}`), keywords: [...both(`shell.action.digits.${nextDigits}`), "digits", "numbers", "أرقام"], icon: "keyboard", run: () => changeNumerals(nextDigits) },
+      ...(["light", "dark", "hc", "system"] as ThemeChoice[]).map((choice) => ({
+        id: `action:theme:${choice}`,
+        title: t(`shell.action.theme.${choice}`),
+        keywords: [...both(`shell.action.theme.${choice}`), "theme", "السمة", "appearance", "المظهر"],
+        icon: (choice === "light" ? "sun" : choice === "dark" ? "moon" : choice === "hc" ? "contrast" : "screen") as "sun" | "moon" | "contrast" | "screen",
+        run: () => chooseTheme(choice),
+      })),
+      {
+        id: "action:density",
+        title: t(`shell.action.density.${storedDensity() === "compact" ? "comfortable" : "compact"}`),
+        keywords: [...both("shell.look.density"), "density", "الكثافة", "rows"],
+        icon: "menu" as const,
+        run: () => chooseDensity(storedDensity() === "compact" ? "comfortable" : "compact"),
+      },
       { id: "action:preferences", title: t("shell.action.preferences"), keywords: both("shell.action.preferences"), icon: "user", chord: shellChords.preferences, run: () => setDialog("preferences") },
       { id: "action:shortcuts", title: t("shell.action.shortcuts"), keywords: both("shell.action.shortcuts"), icon: "help", chord: shellChords.helpAnywhere, run: () => setDialog("help") },
       ...(hasNavigation
@@ -269,7 +286,8 @@ export function AppShell({ session }: { session: Session }) {
           </button>
         )}
         <Link to="/" className="brand" data-brand="">
-          {t("shell.app.name")}
+          <BrandMark language={language} />
+          <span className="visually-hidden">{t("shell.app.name")}</span>
         </Link>
         <span className="workspace-name" title={t("shell.workspace")}>
           {tenantName}
@@ -285,6 +303,7 @@ export function AppShell({ session }: { session: Session }) {
           type="button"
           className="palette-trigger"
           onClick={() => setDialog("palette")}
+          title={t("shell.palette.open")}
           aria-keyshortcuts={chordForAria(shellChords.palette)}
           aria-haspopup="dialog"
         >
@@ -293,6 +312,7 @@ export function AppShell({ session }: { session: Session }) {
           <Keys chord={shellChords.palette} />
         </button>
         <div className="topbar-end">
+          <LookControls only="theme" />
           <LanguageToggle />
           <button
             type="button"
@@ -369,6 +389,9 @@ export function AppShell({ session }: { session: Session }) {
           </span>
         ))}
         {session.expiresAt && <span>{t("shell.status.sessionUntil", { time: format.dateTime(session.expiresAt) })}</span>}
+        <span className="status-item status-look">
+          <LookControls only="density" />
+        </span>
         <span className="status-hints" aria-hidden="true">
           <Keys chord={shellChords.palette} /> {t("shell.status.commands")} · <Keys chord={shellChords.help} /> {t("shell.status.shortcuts")}
         </span>

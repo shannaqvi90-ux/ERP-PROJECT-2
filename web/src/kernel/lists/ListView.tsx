@@ -32,7 +32,7 @@ import {
   type Row,
   type SavedView,
 } from "./model";
-import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
+import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, ViewTabs, type ViewChoice } from "./parts";
 import { FilterByFieldContext } from "./filterByField";
 import { formFloor, openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, splitterWidth, toggledShare, widenChord, writeShare } from "./recordWidth";
 import { moreColumnRem, shownColumns } from "./columnFit";
@@ -84,6 +84,8 @@ export type ListViewProps = {
   /** Screen actions shown in the toolbar (for example "New user"). */
   actions?: ReactNode;
   can?: (permission: string) => boolean;
+  /** Show how many rows each built-in view holds on its tab (one small request per view; for lists that are cheap to count). */
+  viewCounts?: boolean;
   /** A single click on a row opens it too (screens with a side panel). */
   openOnClick?: boolean;
   /**
@@ -507,6 +509,22 @@ export function ListView(props: ListViewProps) {
     enabled: Boolean(definition && current),
     run: () => setMenu({ kind: "views" }),
   });
+
+  // Counts for the view tabs: the rows each built-in view holds, one page of one row each.
+  const [viewCounts, setViewCounts] = useState<Record<string, number | null>>({});
+  const countedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!props.viewCounts || !definition || definition.presets.length === 0 || countedFor.current === definition.key) return;
+    countedFor.current = definition.key;
+    const asks: [string, string | null][] = [["", null], ...definition.presets.map((p) => [`preset:${p.key}`, p.filter] as [string, string | null])];
+    for (const [id, filter] of asks) {
+      const params = new URLSearchParams({ take: "1" });
+      if (filter) params.set("filter", filter);
+      api<{ total: number }>("GET", `${definition.endpoint}?${params}`)
+        .then((page) => setViewCounts((c) => ({ ...c, [id]: page.total })))
+        .catch(() => setViewCounts((c) => ({ ...c, [id]: null })));
+    }
+  }, [props.viewCounts, definition]);
 
   if (loadError) {
     return (
@@ -1066,6 +1084,8 @@ export function ListView(props: ListViewProps) {
           {props.actions}
         </div>
       </div>
+
+      {definition && viewChoices.length > 0 && <ViewTabs choices={viewChoices} current={current?.view ?? null} counts={viewCounts} onPick={pickView} />}
 
       {current && definition && (current.conditions.length > 0 || current.baseFilter || current.groupBy) && (
         <ul className="list-chips" aria-label={t("lists.filter.active")}>

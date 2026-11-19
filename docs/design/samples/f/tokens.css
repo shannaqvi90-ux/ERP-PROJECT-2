@@ -1,0 +1,89 @@
+/* Direction F: "Best of all". A's density and speed, B's lightness, C's Arabic typography and calm.
+   Design tokens: the only source of colour, type, spacing, radius, elevation and motion.
+   Dark and high-contrast themes redefine the same names. */
+@font-face{font-family:"Bz Inter";src:url("../fonts/inter-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Kufi";src:url("../fonts/noto-kufi-arabic-arabic-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Naskh";src:url("../fonts/noto-naskh-arabic-arabic-wght-normal.woff2") format("woff2");font-weight:400 700;font-display:block}
+
+:root{
+  /* type: Inter for Latin; Noto Kufi Arabic for Arabic UI, Noto Naskh Arabic for Arabic titles */
+  --font-ui:"Bz Inter","Bz Kufi",system-ui,sans-serif;
+  --font-display:"Bz Inter","Bz Naskh",serif;
+  --font-latin:"Bz Inter",sans-serif;
+  --fs-2xs:10.5px;--fs-xs:11px;--fs-sm:12px;--fs-md:13px;--fs-lg:14px;--fs-xl:16px;--fs-2xl:20px;--fs-3xl:24px;--fs-hero:28px;--fs-code:12px;
+  --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;
+  --lh-tight:1.25;--lh-body:1.45;--lh-title:1.2;--lh-text:1.5;--ls-tight:-.014em;--ls-caps:.05em;
+  /* space: 4 px grid */
+  --sp-1:2px;--sp-2:4px;--sp-3:6px;--sp-4:8px;--sp-5:12px;--sp-6:16px;--sp-7:20px;--sp-8:24px;--sp-9:32px;--sp-10:48px;
+  --radius-1:4px;--radius-2:6px;--radius-3:10px;--radius-4:14px;--radius-pill:999px;
+  --focus-w:2px;
+  /* motion */
+  --dur-fast:90ms;--dur:160ms;--ease:cubic-bezier(.2,0,0,1);
+  /* frame */
+  --side-w:228px;--head-h:48px;--pane-w:360px;--aside-w:300px;--roles-w:356px;
+  /* colour: light (warm paper, ink, one violet accent) */
+  --bg:#FAF9F7;--surface:#FFFFFF;--surface-2:#F7F6F3;--field:#F4F3F0;--side:#F4F2EE;--sunken:#EFEDE8;
+  --line:#ECE9E3;--line-soft:#F2F0EB;--line-strong:#D9D5CC;--grid-line:#F1EFEA;
+  --fg:#1D1B26;--fg-muted:#58556A;--fg-subtle:#6D6A7D;--fg-disabled:#A8A5B4;
+  --hover:#F5F3EF;--selected:#F1EAFD;--selected-edge:#6A00E8;--group-bg:#F8F7F4;--header-bg:#FFFFFF;
+  --accent:#6A00E8;--accent-hover:#5900C4;--on-accent:#FFFFFF;--accent-soft:#F2EBFD;--accent-text:#5B00C9;--accent-line:#D4BEF8;
+  --positive:#0B7A4B;--positive-soft:#E3F3EA;--warning:#8A5300;--warning-soft:#FBF0DA;--danger:#B42335;--danger-soft:#FBE8EA;--info:#1F5BA6;--info-soft:#E6EEF9;
+  --neg:#B42335;--focus:#6A00E8;
+  --nba-bg:#FFF8EC;--nba-line:#F1DDB5;
+  --spark:#6A00E8;--spark-area:rgba(106,0,232,.09);--spark-zero:#D9D5CC;--bar:#E3DEEF;--bar-last:#6A00E8;
+  --ag0:#D9D3E8;--ag1:#9B6BE8;--ag2:#D9982A;--ag3:#C93C4C;
+  --avatar-company-bg:#EEE7FB;--avatar-company-fg:#4E1FA0;--avatar-person-bg:#E3F1EC;--avatar-person-fg:#0F5C47;
+  --kbd-bg:#FFFFFF;--kbd-line:#DEDAD2;--kbd-fg:#58556A;
+  --scrim:rgba(29,27,38,.3);
+  --shadow-1:0 1px 2px rgba(29,27,38,.05);
+  --shadow-2:0 1px 2px rgba(29,27,38,.04),0 6px 20px rgba(29,27,38,.07);
+  --shadow-3:0 12px 40px rgba(29,27,38,.16),0 0 0 1px rgba(29,27,38,.05);
+  --wash:radial-gradient(700px 420px at 85% -10%,rgba(106,0,232,.07),transparent 70%),radial-gradient(600px 380px at 0% 110%,rgba(217,152,42,.08),transparent 70%);
+  --logo-ink:block;--logo-white:none;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#131219;--surface:#1A1922;--surface-2:#1F1E28;--field:#22212C;--side:#16151D;--sunken:#111017;
+  --line:#2A2834;--line-soft:#24222D;--line-strong:#3B3848;--grid-line:#23212C;
+  --fg:#ECEAF3;--fg-muted:#B2AEC2;--fg-subtle:#9590A8;--fg-disabled:#5E5A6E;
+  --hover:#22202B;--selected:#2A2140;--selected-edge:#A87BFF;--group-bg:#1D1C25;--header-bg:#1A1922;
+  --accent:#9B5CFF;--accent-hover:#AE7BFF;--on-accent:#120D1E;--accent-soft:#2A2042;--accent-text:#C3A3FF;--accent-line:#4E3A80;
+  --positive:#6CD6A0;--positive-soft:#16302A;--warning:#EDBA62;--warning-soft:#33280F;--danger:#FF8A96;--danger-soft:#3A1C24;--info:#86B9F2;--info-soft:#17293F;
+  --neg:#FF8A96;--focus:#C3A3FF;
+  --nba-bg:#2A2416;--nba-line:#4A3D1E;
+  --spark:#C3A3FF;--spark-area:rgba(155,92,255,.14);--spark-zero:#3B3848;--bar:#353145;--bar-last:#9B5CFF;
+  --ag0:#46405E;--ag1:#9B6BE8;--ag2:#EDBA62;--ag3:#FF8A96;
+  --avatar-company-bg:#2D2548;--avatar-company-fg:#D2BDFF;--avatar-person-bg:#173229;--avatar-person-fg:#9EE3C4;
+  --kbd-bg:#22212C;--kbd-line:#3B3848;--kbd-fg:#C6C2D6;
+  --scrim:rgba(0,0,0,.55);
+  --shadow-1:0 1px 2px rgba(0,0,0,.35);
+  --shadow-2:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.3);
+  --shadow-3:0 12px 40px rgba(0,0,0,.55),0 0 0 1px #3B3848;
+  --wash:radial-gradient(700px 420px at 85% -10%,rgba(155,92,255,.10),transparent 70%),radial-gradient(600px 380px at 0% 110%,rgba(237,186,98,.05),transparent 70%);
+  --logo-ink:none;--logo-white:block;
+  color-scheme:dark;
+}
+[data-theme="hc"]{
+  --bg:#000000;--surface:#000000;--surface-2:#000000;--field:#000000;--side:#000000;--sunken:#000000;
+  --line:#FFFFFF;--line-soft:#8C8C8C;--line-strong:#FFFFFF;--grid-line:#6E6E6E;
+  --fg:#FFFFFF;--fg-muted:#FFFFFF;--fg-subtle:#E8E8E8;--fg-disabled:#A6A6A6;
+  --hover:#1F1F1F;--selected:#2A1D5C;--selected-edge:#FFE600;--group-bg:#141414;--header-bg:#000000;
+  --accent:#D2B4FF;--accent-hover:#E4D2FF;--on-accent:#000000;--accent-soft:#1C1238;--accent-text:#DCC4FF;--accent-line:#FFFFFF;
+  --positive:#5CFFAA;--positive-soft:#002E16;--warning:#FFE600;--warning-soft:#332E00;--danger:#FF9AA3;--danger-soft:#3D0A12;--info:#9AD6FF;--info-soft:#00243D;
+  --neg:#FF9AA3;--focus:#FFE600;
+  --nba-bg:#000000;--nba-line:#FFE600;
+  --spark:#FFFFFF;--spark-area:transparent;--spark-zero:#8C8C8C;--bar:#8C8C8C;--bar-last:#FFE600;
+  --ag0:#FFFFFF;--ag1:#D2B4FF;--ag2:#FFE600;--ag3:#FF9AA3;
+  --avatar-company-bg:#000000;--avatar-company-fg:#FFFFFF;--avatar-person-bg:#000000;--avatar-person-fg:#FFFFFF;
+  --kbd-bg:#000000;--kbd-line:#FFFFFF;--kbd-fg:#FFFFFF;
+  --scrim:rgba(0,0,0,.85);
+  --shadow-1:none;--shadow-2:0 0 0 1px #FFFFFF;--shadow-3:0 0 0 2px #FFFFFF;
+  --wash:none;
+  --logo-ink:none;--logo-white:block;
+  color-scheme:dark;
+}
+/* density: Compact (default, A's speed) for more rows, Comfortable (B's air) for more space */
+[data-density="compact"]{--row-h:32px;--ctl-h:30px;--cell-px:8px;--fld-gap:var(--sp-5);--sec-pad:var(--sp-6);--card-pad:var(--sp-6)}
+[data-density="comfortable"]{--row-h:42px;--ctl-h:36px;--cell-px:14px;--fld-gap:var(--sp-6);--sec-pad:var(--sp-8);--card-pad:var(--sp-7)}
+/* Arabic (C's typography): Kufi for the interface, Naskh for titles, generous leading, no tracking */
+:lang(ar){--fs-2xs:11.5px;--fs-xs:12px;--fs-sm:13px;--fs-md:13.5px;--fs-lg:15px;--fs-xl:17px;--fs-2xl:24px;--fs-3xl:28px;--fs-hero:34px;--lh-body:1.65;--lh-title:1.5;--lh-text:1.85;--lh-tight:1.5;--ls-tight:0;--ls-caps:0}

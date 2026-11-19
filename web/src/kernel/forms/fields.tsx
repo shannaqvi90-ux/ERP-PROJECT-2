@@ -4,6 +4,7 @@ import { useI18n } from "../i18n";
 import { chordForAria, chordKeys } from "../shortcuts";
 import { minorUnitsOf } from "../format";
 import { countryChoices } from "./countries";
+import { DateInput } from "./dateInput";
 import { caretAfter, completesOnEntry, HOME_PREFIX, isCompletePhone, latinDigits, phoneValue } from "./phone";
 import { formChords } from "./RecordForm";
 import type { FieldBinding } from "./useRecordForm";
@@ -372,47 +373,23 @@ export function MoneyField({
   );
 }
 
-/** A calendar date (yyyy-mm-dd), with the browser's date picker. With `typed`, a text box that takes
- * the date as typed (yyyy-mm-dd, in either set of digits) and says so in the screen's language: the
- * browser's own picker writes its placeholder in the browser's language, not the screen's. */
+/** A calendar date, shown and typed day first (dd/mm/yyyy, yyyy-mm-dd also taken, in either set of
+ * digits) and held as yyyy-mm-dd (kernel/forms/dateInput.tsx). It has a calendar button as a
+ * pointer helper; with `typed` (custom fields) the text box stands alone. */
 export function DateField({ field, min, max, typed, ...p }: Common & { field: FieldBinding<string>; min?: string; max?: string; typed?: boolean }) {
-  const { t } = useI18n();
-  if (typed) {
-    return (
-      <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
-        {(a11y) => (
-          <input
-            {...a11y}
-            name={field.name}
-            type="text"
-            inputMode="numeric"
-            dir="ltr"
-            placeholder={t("forms.date.placeholder")}
-            maxLength={10}
-            autoComplete="off"
-            value={field.value ?? ""}
-            disabled={p.disabled || field.readOnly}
-            autoFocus={p.autoFocus}
-            onChange={(e) => field.onChange(latinDigits(e.target.value).replace(/[^0-9-]/g, ""))}
-          />
-        )}
-      </Field>
-    );
-  }
   return (
     <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
       {(a11y) => (
-        <input
+        <DateInput
           {...a11y}
           name={field.name}
-          type="date"
-          dir="ltr"
           value={field.value ?? ""}
           min={min}
           max={max}
+          noPicker={typed}
           disabled={p.disabled || field.readOnly}
           autoFocus={p.autoFocus}
-          onChange={(e) => field.onChange(e.target.value)}
+          onChange={field.onChange}
         />
       )}
     </Field>

@@ -117,7 +117,7 @@ describe("document numbering screen", () => {
     await wait();
     expect(preview()).toBe("INV-2026-01203");
     const text = plain(view!.container.querySelector(".nb-preview")?.textContent);
-    expect(text).toContain("Starts again on 1 Jan 2027 with INV-2027-00001.");
+    expect(text).toContain("Starts again on 01/01/2027 with INV-2027-00001.");
     expect(text).toContain("No number is ever skipped.");
     expect(view!.container.querySelector(".nb-history")?.textContent).toContain("1,202");
   });

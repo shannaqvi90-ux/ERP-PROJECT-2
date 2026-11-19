@@ -1,0 +1,70 @@
+/* Direction A: "Fluent, faster". Design tokens: the only source of colour, type, spacing, radius, elevation and motion. */
+@font-face{font-family:"Bz Plex";src:url("../fonts/ibm-plex-sans-latin-wght-normal.woff2") format("woff2");font-weight:100 700;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2") format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2") format("woff2");font-weight:500;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2") format("woff2");font-weight:600;font-display:block}
+@font-face{font-family:"Bz Plex Arabic";src:url("../fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2") format("woff2");font-weight:700;font-display:block}
+
+:root{
+  /* type */
+  --font-ui:"Bz Plex","Bz Plex Arabic",system-ui,sans-serif;
+  --font-display:var(--font-ui);
+  --fs-xs:11px;--fs-sm:12px;--fs-md:13px;--fs-lg:14px;--fs-xl:16px;--fs-2xl:20px;--fs-3xl:24px;
+  --fw-regular:400;--fw-medium:500;--fw-semibold:600;
+  --lh-tight:1.25;--lh-body:1.45;
+  --ls-caps:.04em;
+  /* space: 4px grid */
+  --sp-1:2px;--sp-2:4px;--sp-3:6px;--sp-4:8px;--sp-5:12px;--sp-6:16px;--sp-7:20px;--sp-8:24px;--sp-9:32px;--sp-10:48px;
+  --radius-1:2px;--radius-2:4px;--radius-3:6px;--radius-pill:999px;
+  --border-w:1px;--focus-w:2px;
+  /* motion */
+  --dur-fast:90ms;--dur:140ms;--ease:cubic-bezier(.2,0,0,1);
+  /* sizes per density */
+  --nav-w:236px;--nav-w-min:48px;--appbar-h:44px;--cmd-h:40px;--pane-w:372px;--factbox-w:320px;
+  /* colour: light */
+  --bg:#F3F3F8;--surface:#FFFFFF;--surface-2:#F8F8FB;--sunken:#ECECF3;
+  --chrome:#09071F;--chrome-2:#1C1940;--chrome-border:#2A2656;--fg-chrome:#FFFFFF;--fg-chrome-muted:#BDBAD8;
+  --fg:#1B1A2B;--fg-muted:#575470;--fg-subtle:#6C6985;--fg-disabled:#A9A7BC;
+  --border:#E0DFEA;--border-strong:#BEBCD0;--grid-line:#ECEBF3;
+  --hover:#F0EFF8;--selected:#EBDFFD;--selected-edge:#6A00E8;--header-bg:#F6F6FA;
+  --accent:#6A00E8;--accent-hover:#5900C4;--accent-press:#4A00A3;--on-accent:#FFFFFF;--accent-soft:#F0E7FD;--accent-text:#5E00D0;
+  --positive:#0E7A3E;--positive-soft:#E1F4E8;--warning:#8A4B00;--warning-soft:#FFF0D6;--danger:#B3202A;--danger-soft:#FCE6E8;--info:#0B5CAD;--info-soft:#E3EFFB;
+  --neg:#B3202A;--focus:#6A00E8;--focus-inner:#FFFFFF;
+  --avatar-company-bg:#E4E1F6;--avatar-company-fg:#3B2E8A;--avatar-person-bg:#DCEFF0;--avatar-person-fg:#0D5A60;
+  --scrim:rgba(9,7,31,.45);
+  --shadow-1:0 1px 2px rgba(9,7,31,.10);--shadow-2:0 2px 8px rgba(9,7,31,.12);--shadow-3:0 8px 28px rgba(9,7,31,.22);
+  --logo-ink:block;--logo-white:none;
+}
+[data-theme="dark"]{
+  --bg:#0E0C1C;--surface:#171527;--surface-2:#1C1A31;--sunken:#0B0A17;
+  --chrome:#06050F;--chrome-2:#1A1735;--chrome-border:#2A2656;--fg-chrome:#FFFFFF;--fg-chrome-muted:#B3B0D0;
+  --fg:#ECEAF7;--fg-muted:#ABA8C6;--fg-subtle:#9794B4;--fg-disabled:#5F5C7E;
+  --border:#2B2848;--border-strong:#47436F;--grid-line:#23203E;
+  --hover:#211E3A;--selected:#33225F;--selected-edge:#9B5CFF;--header-bg:#1B1930;
+  --accent:#9B5CFF;--accent-hover:#B07FFF;--accent-press:#C39DFF;--on-accent:#0E0B1A;--accent-soft:#2A1D52;--accent-text:#B88CFF;
+  --positive:#5BD58A;--positive-soft:#12301F;--warning:#F2B25B;--warning-soft:#3A2A10;--danger:#FF8F98;--danger-soft:#3E1A20;--info:#7DB8F5;--info-soft:#14304D;
+  --neg:#FF8F98;--focus:#B88CFF;--focus-inner:#0E0C1C;
+  --avatar-company-bg:#2D2860;--avatar-company-fg:#CFC8FF;--avatar-person-bg:#123C40;--avatar-person-fg:#9FE3E8;
+  --scrim:rgba(0,0,0,.6);
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);--shadow-2:0 2px 10px rgba(0,0,0,.5);--shadow-3:0 10px 30px rgba(0,0,0,.65);
+  --logo-ink:none;--logo-white:block;
+}
+[data-theme="hc"]{
+  --bg:#000000;--surface:#000000;--surface-2:#0B0B0B;--sunken:#000000;
+  --chrome:#000000;--chrome-2:#1A1A1A;--chrome-border:#FFFFFF;--fg-chrome:#FFFFFF;--fg-chrome-muted:#FFFFFF;
+  --fg:#FFFFFF;--fg-muted:#F0F0F0;--fg-subtle:#E0E0E0;--fg-disabled:#A0A0A0;
+  --border:#FFFFFF;--border-strong:#FFFFFF;--grid-line:#6E6E6E;
+  --hover:#262626;--selected:#2B1A66;--selected-edge:#FFE600;--header-bg:#141414;
+  --accent:#C9A6FF;--accent-hover:#DFC9FF;--accent-press:#EBDDFF;--on-accent:#000000;--accent-soft:#1E1240;--accent-text:#D9BFFF;
+  --positive:#59FFA2;--positive-soft:#003D1B;--warning:#FFE600;--warning-soft:#3D3500;--danger:#FF8D96;--danger-soft:#4A0A12;--info:#9AD6FF;--info-soft:#002B4A;
+  --neg:#FF8D96;--focus:#FFE600;--focus-inner:#000000;
+  --avatar-company-bg:#000000;--avatar-company-fg:#FFFFFF;--avatar-person-bg:#000000;--avatar-person-fg:#FFFFFF;
+  --scrim:rgba(0,0,0,.8);
+  --shadow-1:none;--shadow-2:none;--shadow-3:0 0 0 1px #FFFFFF;
+  --logo-ink:none;--logo-white:block;
+}
+/* density: Compact for more rows, Comfortable for more air */
+[data-density="compact"]{--row-h:28px;--ctl-h:28px;--cell-px:var(--sp-5);--fld-gap:var(--sp-3);--sec-gap:var(--sp-6);--nav-item-h:30px}
+[data-density="comfortable"]{--row-h:38px;--ctl-h:34px;--cell-px:var(--sp-6);--fld-gap:var(--sp-5);--sec-gap:var(--sp-8);--nav-item-h:36px}
+/* Arabic: larger size and looser leading, same tokens */
+:lang(ar){--fs-xs:12px;--fs-sm:13px;--fs-md:14px;--fs-lg:15px;--fs-xl:17px;--fs-2xl:22px;--fs-3xl:26px;--lh-body:1.7;--lh-tight:1.45;--ls-caps:0}

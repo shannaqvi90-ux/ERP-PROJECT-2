@@ -3,7 +3,14 @@ import { createRoot } from "react-dom/client";
 import { installFocusCycle } from "./kernel/focusCycle";
 import { installHistoryGuard } from "./kernel/historyGuard";
 import { App } from "./modules/shell/App";
+import { applyLook, followSystem } from "./kernel/theme";
+import "./design/tokens.css";
 import "./styles.css";
+
+// The remembered theme and density (or the system's) are on the document before the first screen
+// draws, so a reload never flashes the wrong look.
+applyLook();
+followSystem();
 
 // A page restored from the back/forward cache is an old document with an old identity in memory
 // (for example the screen of someone who has since signed out): load a fresh one instead.
