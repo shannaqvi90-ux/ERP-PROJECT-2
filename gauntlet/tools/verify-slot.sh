@@ -18,10 +18,21 @@
 #                     so it is not starved; runs already going finish first. Only one alone run waits or
 #                     runs at a time (integrators also hold the integration lock).
 # Slots are held by open file descriptors and freed when the command exits, however it exits.
+# The command runs with the lock descriptors closed, so a process it leaves behind (an MSBuild node,
+# a test host, a watcher) can never keep a slot: on 2026-11-18 an orphaned MSBuild node inherited
+# slot1's descriptor and held it for hours, and no integration could start.
 set -u
 slots="${ERP_VERIFY_SLOTS:-2}"
 dir="${ERP_SLOT_DIR:-$HOME/.verify-slots}"
 log="${ERP_VERIFY_LOG:-}"
+
+# run_unlocked <command...>: run the command with every lock descriptor (7, 8, 9 and the alone
+# run's 10 and up) closed for it; this shell keeps holding the locks until the command ends.
+run_unlocked() {
+  local closers="7>&- 8>&- 9>&-" i
+  for i in $(seq 1 "$slots"); do closers="$closers $((9 + i))>&-"; done
+  eval "\"\$@\" $closers"
+}
 mkdir -p "$dir"
 
 if [ -n "$log" ]; then
@@ -51,7 +62,7 @@ if [ "${ERP_VERIFY_ALONE:-}" = "1" ]; then
     until flock -n "$fd"; do sleep 15; waited=$((waited + 15)); done
   done
   echo "verify-slot: all $slots slots taken (alone) at $(date -u +%FT%TZ) after waiting ${waited} s; time the run from here" >&2
-  "$@"
+  run_unlocked "$@"
   exit $?
 fi
 
@@ -63,7 +74,7 @@ while :; do
       if flock -n 9; then
         exec 7>&-
         echo "verify-slot: slot $i of $slots taken at $(date -u +%FT%TZ) after waiting ${waited} s; time the run from here" >&2
-        "$@"
+        run_unlocked "$@"
         exit $?
       fi
       exec 9>&-
