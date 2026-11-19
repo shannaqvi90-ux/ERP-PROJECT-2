@@ -312,7 +312,7 @@ export function AppShell({ session }: { session: Session }) {
           <Keys chord={shellChords.palette} />
         </button>
         <div className="topbar-end">
-          <LookControls />
+          <LookControls only="theme" />
           <LanguageToggle />
           <button
             type="button"
@@ -389,6 +389,9 @@ export function AppShell({ session }: { session: Session }) {
           </span>
         ))}
         {session.expiresAt && <span>{t("shell.status.sessionUntil", { time: format.dateTime(session.expiresAt) })}</span>}
+        <span className="status-item status-look">
+          <LookControls only="density" />
+        </span>
         <span className="status-hints" aria-hidden="true">
           <Keys chord={shellChords.palette} /> {t("shell.status.commands")} · <Keys chord={shellChords.help} /> {t("shell.status.shortcuts")}
         </span>

@@ -519,7 +519,7 @@ input[aria-invalid="true"] {
   font: inherit;
   flex: 1;
   max-width: 460px;
-  min-width: 220px;
+  min-width: 200px;
   margin-inline: auto;
   display: flex;
   align-items: center;
@@ -1478,10 +1478,13 @@ input[aria-invalid="true"] {
   outline-offset: -2px;
 }
 
-@media (max-width: 1180px) {
-  .look-controls .segmented:first-child {
-    display: none;
-  }
+.statusbar .segmented {
+  padding: 1px;
+}
+
+.statusbar .segment {
+  height: calc(var(--status-h) - 8px);
+  min-width: 0;
 }
 
 @media (max-width: 960px) {

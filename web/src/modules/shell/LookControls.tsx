@@ -9,11 +9,12 @@ const themeIcon: Record<ThemeChoice, IconName> = { system: "screen", light: "sun
  * contrast. Pressing the chosen theme again returns to "follow the system". Both are remembered on
  * this device (kernel/theme.ts); the same choices are in the preferences dialog and the palette.
  */
-export function LookControls() {
+export function LookControls({ only }: { only?: "theme" | "density" }) {
   const { t } = useI18n();
   const { choice, theme, density, setTheme, setDensity } = useLook();
   return (
     <div className="look-controls" role="group" aria-label={t("shell.look.group")}>
+      {only !== "theme" && (
       <div className="segmented" role="group" aria-label={t("shell.look.density")}>
         {densities.map((option) => (
           <button key={option} type="button" className="segment" aria-pressed={density === option} onClick={() => setDensity(option)}>
@@ -21,6 +22,8 @@ export function LookControls() {
           </button>
         ))}
       </div>
+      )}
+      {only !== "density" && (
       <div className="segmented" role="group" aria-label={t("shell.look.theme")}>
         {themeChoices
           .filter((option) => option !== "system")
@@ -38,6 +41,7 @@ export function LookControls() {
             </button>
           ))}
       </div>
+      )}
     </div>
   );
 }
