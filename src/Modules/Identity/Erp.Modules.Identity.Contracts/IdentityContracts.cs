@@ -47,7 +47,7 @@ public interface IUserDirectory
 {
     Task<IReadOnlyDictionary<Guid, UserSummary>> GetAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken);
 
-    /// <summary>Users whose name or e-mail contains <paramref name="search"/> (all when empty), by name.</summary>
+    /// <summary>Users whose name (English or Arabic) or e-mail contains <paramref name="search"/> (all when empty), by name.</summary>
     Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken);
 
     /// <summary>The permissions the user's roles grant (empty for a user without roles or one

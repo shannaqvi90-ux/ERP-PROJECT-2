@@ -22,7 +22,9 @@ namespace Erp.Modules.Audit;
 /// <param name="RecordCode">The record's e-mail or code, when it has one.</param>
 /// <param name="RecordId">The record's id.</param>
 /// <param name="RecordRoute">The record's web address, when it has a screen.</param>
-/// <param name="Fields">The fields the change recorded.</param>
+/// <param name="Fields">The fields the change recorded, by stored name (the filter's values).</param>
+/// <param name="FieldNames">The same fields by name in the request's language (a custom field by the tenant's own label), each once:
+/// what the list's Fields column shows, prints and exports.</param>
 /// <param name="Changes">Every field's old and new value as one line, in the request's language (the
 /// document's, when the reports framework prints the log).</param>
 public sealed record AuditLogRow(
@@ -40,6 +42,7 @@ public sealed record AuditLogRow(
     Guid? RecordId,
     string? RecordRoute,
     IReadOnlyList<string> Fields,
+    IReadOnlyList<string> FieldNames,
     string Changes);
 
 /// <summary>One change with every field's stored old and new value (the log's change panel).</summary>
@@ -87,7 +90,7 @@ internal static class AuditLog
                     new ListColumn("recordAr", "audit.log.recordAr", ListColumnType.Text, Hidden: true),
                     new ListColumn("recordCode", "audit.log.recordCode", ListColumnType.Text, Hidden: true),
                     new ListColumn("recordId", "audit.log.recordId", ListColumnType.Reference, Filterable: true, Hidden: true, LabelField: "record"),
-                    new ListColumn("fields", "audit.log.fields", ListColumnType.Choice, Filterable: true,
+                    new ListColumn("fields", "audit.log.fields", ListColumnType.Choice, Filterable: true, LabelField: "fieldNames",
                         Choices: [.. texts.Fields.Select(f => new ListChoice(f, AuditTexts.FieldPrefix + f))]),
                     new ListColumn("changes", "audit.log.changes", ListColumnType.Text, Width: ListColumnWidth.Wide),
                 ],
@@ -204,8 +207,15 @@ internal static class AuditLog
             ? template.Replace("{id}", recordId.ToString(), StringComparison.Ordinal)
             : null;
         return new AuditLogRow(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, e.RecordType, e.RecordLabel, e.RecordLabelAr, e.RecordCode, e.RecordId, route,
-            e.Fields ?? [], texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels, recordType: e.RecordType));
+            e.Fields ?? [], FieldNames(e.Fields, texts, language, fieldLabels),
+            texts.Summary(shown, e.Action, language, Mentioned(changes, names), fieldLabels: fieldLabels, recordType: e.RecordType));
     }
+
+    /// <summary>The names of the fields a change recorded, in the language: a custom field by its label, any other by
+    /// the product's name for it; two fields of one name (a company's and a contact's) show once.</summary>
+    internal static IReadOnlyList<string> FieldNames(IReadOnlyList<string>? fields, AuditTexts texts, string language, IReadOnlyDictionary<string, AuditFieldLabel>? fieldLabels) =>
+        fields is null or { Count: 0 } ? [] :
+        [.. fields.Select(f => fieldLabels is not null && fieldLabels.TryGetValue(f, out var custom) ? custom.For(language) : texts.FieldName(f, language)).Distinct(StringComparer.Ordinal)];
 
     /// <summary>Who made a change, in English and Arabic: the person's name now; a person no longer
     /// in the workspace as a former user; the system's work by its kind.</summary>

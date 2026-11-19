@@ -5,5 +5,6 @@
 prefix /api/audit/
 
 GET /api/audit/log audit.log.read # every recorded change the caller may read, a page at a time (the list query contract)
+GET /api/audit/actors audit.log.read # the people the log's Changed by filter offers, found by name or e-mail (identity's user directory); names and e-mails of the workspace's own users, as the log shows its actors
 GET /api/audit/log/{id:guid} audit.log.read # one change of the log with its stored values; the same filter by kind of record, company and branch as the log
 GET /api/audit/records/{id:guid} audit.log.read # one record's history (its form's history panel); the same filter by kind of record, company and branch as the log

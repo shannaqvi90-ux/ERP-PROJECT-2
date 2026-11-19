@@ -41,7 +41,7 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// <param name="Choices">The values of a choice column, with their labels. A flag (boolean) column
 /// may name its two values instead, as the choices "true" and "false" (a role's type: System or
 /// Custom); screens and documents then show those labels in place of Yes and No.</param>
-/// <param name="LabelField">For a reference column: the row property that names the referenced
+/// <param name="LabelField">For a reference column (or a choice column of several values, the audit log's fields): the row property that names the referenced
 /// record (a branch row's <c>companyCode</c>), printed in reports in place of the id.</param>
 /// <param name="ArabicField">A row property holding the value in Arabic script (a user's
 /// <c>displayNameAr</c>): Arabic screens and documents show it when the row has one.</param>

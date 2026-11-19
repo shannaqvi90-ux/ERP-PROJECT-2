@@ -1280,9 +1280,24 @@ public static partial class IsolationAttack
         // Text values of one column are one class (the first, middle and last of the eight read
         // from each column stand for it, see RouteValueClasses); every sampled id is sent.
         { Type: "string" } => values.IdSample.Select(i => i.ToString())
-            .Concat(RouteValueClasses.Representatives(values.Strings, v => values.StringClasses.GetValueOrDefault(v, "other"))),
+            .Concat(RouteValueClasses.Representatives(values.Strings, v => values.StringClasses.GetValueOrDefault(v, "other")))
+            .Concat(MailAddressesFor(parameter, values))
+            .Distinct(StringComparer.Ordinal),
         _ => [],
     };
+
+    /// <summary>Every e-mail address of tenant B that the draw read, for a parameter whose name says it
+    /// takes one (round 21). The class representatives (first, middle, last of a column's eight) can all
+    /// fall on addresses of no account that signs in, or on the other columns' addresses that took the
+    /// class away from the users' own, so the planted e-mail lookup was found only most of the time.
+    /// An address is the one value a lookup by address is for: all of them are sent, at most
+    /// <see cref="MailAddressesPerParameter"/>.</summary>
+    private static IEnumerable<string> MailAddressesFor(ApiParameter parameter, VictimValues values) =>
+        parameter.Name.Contains("mail", StringComparison.OrdinalIgnoreCase)
+            ? values.Strings.Where(v => v.Contains('@', StringComparison.Ordinal) && !v.Any(char.IsWhiteSpace)).Take(MailAddressesPerParameter)
+            : [];
+
+    private const int MailAddressesPerParameter = 40;
 
     /// <summary>One of tenant A's own ids for the endpoint's route, preferring one the attacker can
     /// open, so the query and body attacks reach the handler.</summary>

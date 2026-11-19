@@ -448,7 +448,8 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
         if (!string.IsNullOrWhiteSpace(search))
         {
             var pattern = "%" + ListBinding<User>.EscapeLike(search.Trim().ToLowerInvariant()) + "%";
-            query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\"));
+            query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\")
+                || (u.DisplayNameAr != null && EF.Functions.ILike(u.DisplayNameAr, pattern, "\\")));
         }
         var total = await query.CountAsync(cancellationToken);
         var items = await query.OrderBy(u => u.DisplayName).ThenBy(u => u.Id)

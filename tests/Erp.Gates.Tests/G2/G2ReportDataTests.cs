@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -732,17 +733,40 @@ public static class ReportDataCheck
         return (string.Join("\n", cells), header);
     }
 
-    /// <summary>An XLSX workbook's cells (text, values, formulas), one per line, and the first row's
-    /// text cells (the column titles).</summary>
-    private static (string Text, IReadOnlyList<string>? Header) XlsxText(byte[] bytes)
+    /// <summary>An XLSX workbook's cells as they show (text, values, formulas), one per line, and the
+    /// first row's text cells (the column titles). A cell with a date or time format is read as the
+    /// date (and time) it displays, not as its serial number: a serial such as 46345.88001234 is no
+    /// "8800" printed (round 21; the serial is a way of storing the date, not data of the workspace).
+    /// A number cell is its number, a text cell its text.</summary>
+    internal static (string Text, IReadOnlyList<string>? Header) XlsxText(byte[] bytes)
     {
         using var archive = new System.IO.Compression.ZipArchive(new MemoryStream(bytes), System.IO.Compression.ZipArchiveMode.Read);
         var text = new StringBuilder();
         List<string>? header = null;
+        var dateStyles = new Dictionary<int, bool>();
+        if (archive.GetEntry("xl/styles.xml") is { } stylesEntry)
+        {
+            using var stream = stylesEntry.Open();
+            dateStyles = DateStyles(System.Xml.Linq.XDocument.Load(stream));
+        }
         foreach (var entry in archive.Entries.Where(e => e.FullName.StartsWith("xl/", StringComparison.Ordinal) && e.FullName.EndsWith(".xml", StringComparison.Ordinal)))
         {
             using var reader = new StreamReader(entry.Open(), Encoding.UTF8);
             var xml = reader.ReadToEnd();
+            // A date-styled cell's number becomes the text it displays.
+            xml = System.Text.RegularExpressions.Regex.Replace(xml, "<c\\b([^>]*?)(?<!/)>(.*?)</c>", cell =>
+            {
+                var style = System.Text.RegularExpressions.Regex.Match(cell.Groups[1].Value, "\\bs=\"(\\d+)\"");
+                if (!style.Success || !dateStyles.ContainsKey(int.Parse(style.Groups[1].Value, CultureInfo.InvariantCulture)) ||
+                    cell.Groups[1].Value.Contains("t=\"inlineStr\"", StringComparison.Ordinal))
+                {
+                    return cell.Value;
+                }
+                return System.Text.RegularExpressions.Regex.Replace(cell.Value, "<v>([^<]*)</v>", v =>
+                    double.TryParse(v.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial)
+                        ? $"<v>{DisplayedDate(serial, cell.Groups[1].Value, dateStyles)}</v>"
+                        : v.Value);
+            }, System.Text.RegularExpressions.RegexOptions.Singleline);
             foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(xml, "<(t|v|f)(?: [^>]*)?>([^<]*)</\\1>"))
             {
                 text.Append(System.Net.WebUtility.HtmlDecode(match.Groups[2].Value)).Append('\n');
@@ -756,6 +780,47 @@ public static class ReportDataCheck
             }
         }
         return (text.ToString(), header);
+    }
+
+    /// <summary>Which cell styles (index in cellXfs) are date or time formats; the value says whether
+    /// the format also shows a time of day. Keyed by style index; a number style is not in the map.</summary>
+    private static Dictionary<int, bool> DateStyles(System.Xml.Linq.XDocument styles)
+    {
+        System.Xml.Linq.XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        var codes = styles.Descendants(ns + "numFmt").ToDictionary(n => (int)n.Attribute("numFmtId")!, n => (string)n.Attribute("formatCode")!);
+        var result = new Dictionary<int, bool>();
+        var index = 0;
+        foreach (var xf in styles.Descendants(ns + "cellXfs").SelectMany(x => x.Elements(ns + "xf")))
+        {
+            var id = (int?)xf.Attribute("numFmtId") ?? 0;
+            // The built-in date and time formats are ids 14 to 22 and 45 to 47.
+            var code = codes.GetValueOrDefault(id) ?? (id is >= 14 and <= 22 or >= 45 and <= 47 ? (id is 14 ? "yyyy-mm-dd" : "yyyy-mm-dd hh:mm") : null);
+            if (code is not null)
+            {
+                // Quoted text and bracketed parts (currency, colours) are not date letters.
+                var bare = System.Text.RegularExpressions.Regex.Replace(code, "\"[^\"]*\"|\\[[^\\]]*\\]|\\\\.", "");
+                if (System.Text.RegularExpressions.Regex.IsMatch(bare, "[ydhsYDHS]"))
+                {
+                    result[index] = System.Text.RegularExpressions.Regex.IsMatch(bare, "[hsHS]");
+                }
+            }
+            index++;
+        }
+        return result;
+    }
+
+    /// <summary>The date (and, when the format shows it, the time to the minute, rounded as a
+    /// spreadsheet displays it) of a serial number.</summary>
+    private static string DisplayedDate(double serial, string cellAttributes, Dictionary<int, bool> dateStyles)
+    {
+        var style = int.Parse(System.Text.RegularExpressions.Regex.Match(cellAttributes, "\\bs=\"(\\d+)\"").Groups[1].Value, CultureInfo.InvariantCulture);
+        var moment = new DateTime(1899, 12, 30).AddTicks((long)Math.Round(serial * TimeSpan.TicksPerDay));
+        if (!dateStyles[style])
+        {
+            return moment.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        }
+        return new DateTime((moment.Ticks + TimeSpan.TicksPerMinute / 2) / TimeSpan.TicksPerMinute * TimeSpan.TicksPerMinute)
+            .ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
     }
 
     /// <summary>Every string and number a list endpoint answers the caller, every page.</summary>

@@ -118,6 +118,37 @@ test.describe("the audit trail", () => {
     await checkAccessibility(page, "the audit log in Arabic");
   });
 
+  test("the audit log filters by a person chosen by name, from the keyboard, in English and Arabic", async ({ page }) => {
+    for (const [language, who, column] of [
+      ["en", users.admin, "Changed by"],
+      ["ar", users.adminArabic, "بواسطة"],
+    ] as const) {
+      await page.context().clearCookies();
+      await freshStart(page, language);
+      await signIn(page, who);
+      await page.locator('nav a[href="/audit/log"]').first().click();
+      await expect(listRows(page).first()).toBeVisible();
+      const requests: number[] = [];
+      page.on("response", (r) => r.url().includes("/api/audit/log?") && r.url().includes("actorId") && requests.push(r.status()));
+      await page.getByRole("button", { name: new RegExp(column) }).first().click();
+      await page.getByRole("menuitem").filter({ hasText: language === "en" ? "Filter" : "تصفية" }).first().click();
+      const picker = page.getByRole("combobox");
+      await expect(picker).toBeFocused();
+      // A name never answers 400 or leaves the list unfiltered: the picker offers the people matching it.
+      // Several people share a name in a large workspace: the e-mail is what tells them apart.
+      await picker.fill(who);
+      await expect(page.getByRole("option")).toHaveCount(1);
+      await expect(page.getByRole("option").first()).toContainText(who);
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("Enter");
+      await expect(page.locator(".list-chips")).toBeVisible();
+      await expect(listRows(page).first()).toBeVisible();
+      expect(requests.length).toBeGreaterThan(0);
+      expect(requests.every((status) => status === 200)).toBe(true);
+      await expect(page.getByText(/Some fields need attention|بعض الحقول/)).toHaveCount(0);
+    }
+  });
+
   test("a user without the log's permission is not offered it", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.noAccess);

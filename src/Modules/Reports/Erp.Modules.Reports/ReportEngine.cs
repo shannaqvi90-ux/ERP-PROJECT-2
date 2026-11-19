@@ -386,6 +386,10 @@ public sealed class ReportEngine(WebStrings webStrings, TimeProvider time, ICurr
                 // alphabetical order, when the caller may read them; otherwise the ids (printed as a count).
                 ListColumnType.Choice when element.ValueKind == JsonValueKind.Array && names?.GetValueOrDefault(column.Key) is { } known =>
                     NamedValues(column, row, element, known, language, companyCodes, elsewhere?.GetValueOrDefault(column.Key)),
+                // A column that names its values in another property of the row (the audit log's fields): those names.
+                ListColumnType.Choice when element.ValueKind == JsonValueKind.Array && column.LabelField is { } namesField
+                                           && row.TryGetProperty(namesField, out var named) && named.ValueKind == JsonValueKind.Array =>
+                    string.Join(", ", named.EnumerateArray().Select(n => n.ToString())),
                 // Without the names: how many there are, those held in one company included.
                 ListColumnType.Choice when element.ValueKind == JsonValueKind.Array =>
                     element.EnumerateArray().Select(e => e.ToString()).Concat(InCompanyValues(column, row).Select(v => v.Value)).ToList(),

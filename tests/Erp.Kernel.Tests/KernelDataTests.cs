@@ -67,6 +67,44 @@ public sealed class KernelDataTests(KernelFixture fixture) : IClassFixture<Kerne
         await Assert.ThrowsAsync<CrossTenantWriteException>(() => db.SaveChangesAsync());
     }
 
+    private static readonly BulkColumn[] BulkProbeColumns =
+    [
+        new("tenant_id", NpgsqlDbType.Uuid), new("actor_kind", NpgsqlDbType.Varchar), new("table_schema", NpgsqlDbType.Varchar),
+        new("table_name", NpgsqlDbType.Varchar), new("action", NpgsqlDbType.Varchar), new("changes", NpgsqlDbType.Jsonb),
+        new("transaction_id", NpgsqlDbType.Bigint),
+    ];
+
+    /// <summary>
+    /// A tenant-owned table the application role may write, with row-level security enabled and forced and the
+    /// standard tenant_isolation policy (what ProtectTenantTable gives a module table). audit.entries cannot serve:
+    /// since the tamper-evidence migration only audit.capture() writes it, so the app role has no INSERT there.
+    /// Created through the admin connection in a schema of its own so no module table is involved.
+    /// </summary>
+    private async Task CreateBulkProbeAsync()
+    {
+        await using var admin = await Env.OpenAdminAsync();
+        await using var create = new NpgsqlCommand("""
+            CREATE SCHEMA IF NOT EXISTS kernel_probe;
+            GRANT USAGE ON SCHEMA kernel_probe TO erp_app;
+            CREATE TABLE IF NOT EXISTS kernel_probe.bulk_rows (
+                id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                tenant_id uuid NOT NULL,
+                actor_kind varchar(40) NOT NULL,
+                table_schema varchar(100) NOT NULL,
+                table_name varchar(100) NOT NULL,
+                action varchar(20) NOT NULL,
+                changes jsonb NOT NULL,
+                transaction_id bigint NOT NULL);
+            ALTER TABLE kernel_probe.bulk_rows ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE kernel_probe.bulk_rows FORCE ROW LEVEL SECURITY;
+            DROP POLICY IF EXISTS tenant_isolation ON kernel_probe.bulk_rows;
+            CREATE POLICY tenant_isolation ON kernel_probe.bulk_rows AS PERMISSIVE FOR ALL TO PUBLIC
+                USING (tenant_id = erp.current_tenant_id()) WITH CHECK (tenant_id = erp.current_tenant_id());
+            GRANT SELECT, INSERT, UPDATE, DELETE ON kernel_probe.bulk_rows TO erp_app;
+            """, admin);
+        await create.ExecuteNonQueryAsync();
+    }
+
     [Fact]
     [Trait(TimingBudget.Trait, TimingBudget.Value)]
     public async Task Bulk_insert_loads_100000_rows_through_row_level_security_quickly()
@@ -74,15 +112,11 @@ public sealed class KernelDataTests(KernelFixture fixture) : IClassFixture<Kerne
         await using var scope = Env.Factory.Services.CreateAsyncScope();
         var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
         await session.BeginAsync(Env.TenantA.Id, null, "seed");
-        var columns = new BulkColumn[]
-        {
-            new("tenant_id", NpgsqlDbType.Uuid), new("actor_kind", NpgsqlDbType.Varchar), new("table_schema", NpgsqlDbType.Varchar),
-            new("table_name", NpgsqlDbType.Varchar), new("action", NpgsqlDbType.Varchar), new("changes", NpgsqlDbType.Jsonb),
-            new("transaction_id", NpgsqlDbType.Bigint),
-        };
+        await CreateBulkProbeAsync();
+        var columns = BulkProbeColumns;
         var rows = Enumerable.Range(0, 100_000).Select(i => new object?[] { Env.TenantA.Id, "seed", "bulk", "test", "insert", "{}", (long)i });
         var stopwatch = Stopwatch.StartNew();
-        var inserted = await BulkInsert.InsertAsync(session, "audit", "entries", columns, rows);
+        var inserted = await BulkInsert.InsertAsync(session, "kernel_probe", "bulk_rows", columns, rows);
         stopwatch.Stop();
         await session.RollbackAsync();
         Assert.Equal(100_000, inserted);
@@ -95,18 +129,14 @@ public sealed class KernelDataTests(KernelFixture fixture) : IClassFixture<Kerne
         await using var scope = Env.Factory.Services.CreateAsyncScope();
         var session = scope.ServiceProvider.GetRequiredService<ErpDbSession>();
         await session.BeginAsync(Env.TenantA.Id, null, "seed");
-        var columns = new BulkColumn[]
-        {
-            new("tenant_id", NpgsqlDbType.Uuid), new("actor_kind", NpgsqlDbType.Varchar), new("table_schema", NpgsqlDbType.Varchar),
-            new("table_name", NpgsqlDbType.Varchar), new("action", NpgsqlDbType.Varchar), new("changes", NpgsqlDbType.Jsonb),
-            new("transaction_id", NpgsqlDbType.Bigint),
-        };
+        await CreateBulkProbeAsync();
+        var columns = BulkProbeColumns;
         var rows = new[]
         {
             new object?[] { Env.TenantA.Id, "seed", "bulk", "test", "insert", "{}", 1L },
             new object?[] { Env.TenantB.Id, "seed", "bulk", "test", "insert", "{}", 2L },
         };
-        var error = await Assert.ThrowsAsync<PostgresException>(() => BulkInsert.InsertAsync(session, "audit", "entries", columns, rows));
+        var error = await Assert.ThrowsAsync<PostgresException>(() => BulkInsert.InsertAsync(session, "kernel_probe", "bulk_rows", columns, rows));
         Assert.Equal(PostgresErrorCodes.InsufficientPrivilege, error.SqlState);
     }
 
