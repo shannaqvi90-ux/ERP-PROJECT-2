@@ -1,0 +1,288 @@
+{
+  "schema": 1,
+  "run_id": "who-changed-field-20261120T092052-26a1",
+  "instrument": 12,
+  "task": "who-changed-field",
+  "task_title": "Who changed this field, and when",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Find out who last changed the e-mail address of the contact Shamma Waleed Al Romaithi, from what to what, and when.",
+  "done_when": "The change is on screen: the old and new e-mail, the person who made it (Noor Editor) and the time.",
+  "started_at": "2026-11-20T09:20:52.747Z",
+  "finished_at": "2026-11-20T09:21:28.793Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 30,
+    "clicks": 3,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.586,
+    "system_wait_seconds": 1.721,
+    "human_seconds": 18.5,
+    "human_plus_wait_seconds": 20.221,
+    "klm_operator_counts": {
+      "K": 30,
+      "P": 3,
+      "B": 6,
+      "H": 2,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.05,
+      "took": 0.055,
+      "began": 0.002,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "at": 0.154,
+      "took": 0.049,
+      "began": 0.106,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 29,
+      "at": 0.923,
+      "took": 0.378,
+      "text": "Shamma Waleed Al Romaithi",
+      "same_field": false,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "search",
+      "keystrokes": 1,
+      "at": 1.304,
+      "took": 0.028,
+      "chord": "Enter",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open the result",
+      "keystrokes": 0,
+      "at": 1.727,
+      "took": 0.069,
+      "began": 1.675,
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.204,
+      "seconds": 0.64
+    },
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.845,
+      "seconds": 0.008
+    },
+    {
+      "label": "one result",
+      "at": 1.333,
+      "seconds": 0.341
+    },
+    {
+      "label": "latest change on screen",
+      "at": 1.798,
+      "seconds": 0.732
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "cc9396d4e2ed031c.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p07-audit/r6/compare/blind/shots/cc9396d4e2ed031c.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "534906855880e4f3.jpg",
+      "at": 2.586,
+      "path": "../../evidence-staging/p07-audit/r6/compare/blind/shots/534906855880e4f3.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "latest_change_on_screen": "Noor Editor 1:21 PM shamma.al.romaithi.73519@mail.example → shamma.romaithi.new@mail.example (Email)"
+    }
+  },
+  "path_notes": "Apps menu > Contacts (search focused) > type the name > Enter > open the result; the change log beside the form shows the latest change first (old > new e-mail, who, when).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/who-changed-field.mjs",
+    "sha256": "e3b1313e7287670dce7da63e18823052839356db2bffc23e021d10dd01bc86b7"
+  },
+  "task_notes": "Set-up makes the change as {changedBy} (an ordinary user) through the back end, so it is the latest change; clean-up restores the address.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.005,
+      "verified": true,
+      "gap_seconds": 0.067
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /web/assets/ff89cec/web.assets_emoji.min.js (script)",
+      "GET /mail/attachment/pdf_first_page/73621 (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "77023db1b405325c",
+    "elements": 1251
+  },
+  "screen_after_verify": {
+    "sha256": "77023db1b405325c",
+    "elements": 1251,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.006
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 133,
+    "not_caused": 7,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.229,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 1.39,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 1.695,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/73531/avatar_128, which no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 2.237,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 2.592,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 2.618,
+        "event": "ParseHTML",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0 s before it) and could have sent it: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 2.659,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 2.665,
+      "by_step": 5,
+      "chain": [
+        "the answer to GET /web/image/res.partner/215037/avatar_128 after 0.032 s",
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /mail/attachment/pdf_first_page/73621 after 0.077 s",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "finds": {
+    "value": "Shamma Waleed Al Romaithi",
+    "on_start_screen": false,
+    "typed_at_step": 3,
+    "shown_before": false
+  },
+  "set_up_writes": [
+    "fetch POST /web/dataset/call_kw/res.users/write",
+    "fetch POST /web/dataset/call_kw/res.partner/write"
+  ]
+}

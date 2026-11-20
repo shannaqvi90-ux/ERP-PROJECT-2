@@ -1,0 +1,22 @@
+noaccess /api/audit/log?take=5 403
+noaccess /api/audit/log/481c76de-ee5a-486f-b41e-549f366cfb91 403
+noaccess /api/audit/records/01a1f833-e30f-7081-9f80-6ab7af9be81c 403
+noaccess /api/reports/lists/audit.log?format=csv&take=5 403
+noaccess /api/audit/actors?search=a 403
+viewer /api/audit/log?take=5 200
+viewer /api/audit/log/481c76de-ee5a-486f-b41e-549f366cfb91 404
+viewer /api/audit/records/01a1f833-e30f-7081-9f80-6ab7af9be81c 200
+viewer /api/reports/lists/audit.log?format=csv&take=5 200
+viewer /api/audit/actors?search=a 200
+anonymous /api/audit/log?take=5 401
+anonymous /api/audit/log/481c76de-ee5a-486f-b41e-549f366cfb91 401
+anonymous /api/audit/records/01a1f833-e30f-7081-9f80-6ab7af9be81c 401
+anonymous /api/reports/lists/audit.log?format=csv 401
+anonymous /api/audit/actors?search=a 401
+auditor sign-in true
+auditor GET user change by id 404
+auditor history of a user {"recordType":null,"items":[],"next":null,"names":{},"fields":{}}
+auditor log kinds identity.roles total 5
+auditor actors by e-mail domain []
+auditor actors empty search [{"id":"018ce1bf-9b80-79cc-a514-40c9aadf2441","name":"Abdullah Abdullah Al Ameri","nameAr":"عبدالله عبدالله العامري","email":null},{"id":"01918fbf-88e0-7948-b7f3-be019bc9805d","name":"Abdullah Abdullah Al Ameri","nameAr":"عبدالله عبدالله العامري","email":null},{"id":"0193ccac-d8a0-7347-b81b-1b31e0dd
+admin actors noor [{"id":"01a1f828-fd06-7073-9577-436099af56aa","name":"Fatima Al Zaabi","nameAr":"فاطمة الزعابي","email":"admin.ar@alnoor.example"},{"id":"01a1f828-fd07-7eaa-be05-cec0010932f8","name":"Hessa Al Suwaidi","nameAr":"حصة السويدي","email":"accountant@alnoor.example"},{"id":"01a1f828-fd07-7e5a-bf90-10ccfed

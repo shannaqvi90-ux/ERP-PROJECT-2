@@ -1,0 +1,86 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/KernelSql.cs b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+index b01e94c9..cd5bbd1e 100644
+--- a/src/Kernel/Erp.Kernel/Data/KernelSql.cs
++++ b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+@@ -268,10 +268,10 @@ internal static class KernelSql
+         REVOKE ALL ON FUNCTION audit.capture() FROM PUBLIC;
+         ALTER FUNCTION audit.capture() OWNER TO erp_auth;
+         REVOKE CREATE ON SCHEMA audit FROM erp_auth;
+-        REVOKE INSERT ON audit.entries FROM erp_app;
++        -- PLANT L2: INSERT kept for erp_app
+         -- The trigger function writes the row of the change that fired it, for the tenant of that row
+         -- (the row security of the changed table has already judged the change); nobody else holds INSERT.
+-        CREATE POLICY audit_trigger_insert ON audit.entries AS PERMISSIVE FOR INSERT TO erp_auth WITH CHECK (true);
++        CREATE POLICY audit_trigger_insert ON audit.entries AS PERMISSIVE FOR INSERT TO erp_auth, erp_app WITH CHECK (true);
+         -- Creating a table's audit trigger (every tenant table's migration) needs EXECUTE on the function;
+         -- the migrations' role holds it, as its owner no longer does.
+         SET LOCAL ROLE erp_auth;
+diff --git a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+index f2176d04..a4aecab3 100644
+--- a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
++++ b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+@@ -50,6 +50,12 @@ public sealed record AuditHistory(string? RecordType, IReadOnlyList<AuditEvent>
+ /// <param name="Email">Their e-mail (tells two people of one name apart); only for a reader who may read users.</param>
+ public sealed record AuditPerson(Guid Id, string Name, string? NameAr, string? Email);
+ 
++/// <summary>PLANT L1: answers of the people search kept for the whole process.</summary>
++internal sealed class ActorCache
++{
++    public System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<AuditPerson>> Answers { get; } = new();
++}
++
+ internal static class AuditEndpoints
+ {
+     public const int DefaultTake = 50;
+@@ -64,8 +70,7 @@ internal static class AuditEndpoints
+ 
+         group.MapGet("/actors", Actors)
+             .WithName("audit.actors.search")
+-            .WithSummary("The people the audit log's 'Changed by' filter offers: users of the workspace whose name (English or Arabic) or e-mail contains the search text, by name, at most 20 (default 10). An empty search answers the first people by name; the filter itself is actorId in the audit log's list query.")
+-            .RequirePermission(AuditPermissions.LogRead);
++            .WithSummary("The people the audit log's 'Changed by' filter offers: users of the workspace whose name (English or Arabic) or e-mail contains the search text, by name, at most 20 (default 10). An empty search answers the first people by name; the filter itself is actorId in the audit log's list query.");
+ 
+         group.MapGet("/log/{id:guid}", Change)
+             .WithName("audit.log.get")
+@@ -98,8 +103,13 @@ internal static class AuditEndpoints
+     private static async Task<Ok<IReadOnlyList<AuditPerson>>> Actors(
+         [FromQuery, Description("Part of the person's name or e-mail.")] string? search,
+         [FromQuery, Description("Most people to answer, 1 to 20 (default 10).")] int? take,
+-        Erp.Modules.Identity.Contracts.IUserDirectory users, ICurrentUser user, CancellationToken cancellationToken)
++        Erp.Modules.Identity.Contracts.IUserDirectory users, ICurrentUser user, ActorCache cache, CancellationToken cancellationToken)
+     {
++        var key = (search ?? "") + "|" + take;
++        if (cache.Answers.TryGetValue(key, out var cached))
++        {
++            return TypedResults.Ok(cached);
++        }
+         var text = search?.Trim();
+         if (text is { Length: > 100 })
+         {
+@@ -108,11 +118,13 @@ internal static class AuditEndpoints
+         var page = await users.SearchAsync(string.IsNullOrEmpty(text) ? null : text, 0, Math.Clamp(take ?? 10, 1, 20), cancellationToken);
+         // E-mails belong to whoever may read users: without that permission the person is found by name only
+         // and shown without an e-mail, as the log shows its actors.
+-        var mayReadEmails = user.Has(Erp.Modules.Identity.Contracts.IdentityPermissions.UsersRead);
++        var mayReadEmails = true; // PLANT P1
++        _ = user;
+         IReadOnlyList<AuditPerson> people = [.. page.Items
+             .Where(u => mayReadEmails || string.IsNullOrEmpty(text)
+                         || u.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase) || (u.DisplayNameAr?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+             .Select(u => new AuditPerson(u.Id, u.DisplayName, u.DisplayNameAr, mayReadEmails ? u.Email : null))];
++        cache.Answers[key] = people;
+         return TypedResults.Ok(people);
+     }
+ 
+diff --git a/src/Modules/Audit/Erp.Modules.Audit/AuditModule.cs b/src/Modules/Audit/Erp.Modules.Audit/AuditModule.cs
+index fcf8a9a8..d1e29902 100644
+--- a/src/Modules/Audit/Erp.Modules.Audit/AuditModule.cs
++++ b/src/Modules/Audit/Erp.Modules.Audit/AuditModule.cs
+@@ -25,6 +25,7 @@ public sealed class AuditModule : ErpModule
+     {
+         module.Permissions([.. AuditPermissions.All]);
+         module.Services.AddSingleton<AuditTexts>();
++        module.Services.AddSingleton<ActorCache>(); // PLANT L1
+         module.Services.AddScoped<AuditReader>();
+         module.Endpoints(AuditEndpoints.Map);
+         module.Menu(new MenuEntry("audit.log", "audit.menu.log", "/audit/log", AuditPermissions.LogRead, Order: 930, Group: "settings"));

@@ -1,0 +1,128 @@
+{
+  "piece": "p07-audit",
+  "round": 6,
+  "commit": "dbc81aaca9d2f2c9b390163bd1eceffbe1e2301b",
+  "judged_at": "2026-11-20T21:00:34Z",
+  "critic": "fresh critic, p07-audit round 6",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone (./erp verify --clean-clone, two runs through verify-slot.sh, not alone)",
+      "status": "fail",
+      "evidence": "Neither full verify passed every test, so the G3 script never got to its own ./erp up. Run 1: slot taken at 11:53:30Z, FAILED at 14:41:38Z (10,088 s). dotnet passed (9,106 s), e2e passed (10,081 s). web FAILED on one comparison-harness self-test: gauntlet/compare test/set-up-off-clock.test.mjs:354 'X16 (critic r9): the clipboard is emptied at the start and read back' got 'invalid' instead of 'verified' ('the page changed what it shows without a counted step causing it ... 1.929 s before the clock started, a StyleRecal...'). Load was 40 to 60 at the time. The same test passed alone 3 times out of 3 at load about 28 (logs/x16-alone.log). Run 2, on a quieter machine: slot taken at 17:51:42Z, FAILED at 20:58:47Z (11,225 s). dotnet passed (9,599 s), web passed (4,845 s; the harness 489/489), e2e passed (10,761 s). The timing stage FAILED (453 s) on one test: Erp.Modules.Contacts.Tests.ContactsListVolumeTests.Sorted_filtered_grouped_broad_and_deep_keyset_pages_stay_within_budget. It reported '/api/contacts/contacts?take=100&search=محمد: median 454 ms, slowest 515 ms' against a 400 ms median budget. The stage is meant to measure alone, but it ran beside two other verifies at load 6 to 12. Both failures are load-sensitive and outside p07's code. The G3 script deletes its .verify-failed folder, so there is no processor-time figure. Separately, ./erp up in the critic's clone, with the comparison dataset, project c-p07-audit-r6 and ports 20750/20751 overridden through the environment as documented, built, migrated, seeded and served in about 9 minutes at load 40 to 70 (logs/up-critic-p07-r6.log)."
+    },
+    {
+      "gate": "G1 tenant isolation: critic's own attack on the real product (API, DB role, exports, headers, new /api/audit/actors)",
+      "status": "pass",
+      "evidence": "attack/attack-audit.mjs and .out: 903 requests as Al Noor's admin against Gulf Steel. They used B's change, record and user ids on /api/audit/log/{id} and /api/audit/records/{id} (bare, ?type= for 5 kinds, ?before=), the recordId and actorId filters (B's 100 users as actorId), search, record contains, the new /api/audit/actors (B's e-mails, e-mail domain 'gulfsteel', ids, X-Tenant-Id/X-Tenant/X-Workspace headers), and the CSV/XLSX export. Answers: 723 x 200, 120 x 400, 60 x 404, no 5xx. All 53 text matches were names or seeded file names that exist in both tenants. verify-hits.mjs checked them: all 827 matching rows belong to tenant A, and B gets 404 for each. DB as erp_app (attack/db-app.out): with no tenant bound it sees 0 rows; bound to B it sees only B's 9,102. INSERT, UPDATE, DELETE and TRUNCATE on audit.entries are all refused. Calling audit.capture() and attaching it to a temp table are refused. A row moved to B's tenant_id is refused by row-level security. All 27 tables carrying the capture trigger have forced row-level security and a tenant_id (attack/db-role.out). The one tenant table without the trigger is identity.sign_in_attempts."
+    },
+    {
+      "gate": "G1 gate suites on the real product",
+      "status": "pass",
+      "evidence": "Both verifies passed every G1 group: http-0..3, noninterference, self-http, self-company, self-noninterference, listvolume (demo volume), gates-rest and http-judge. http-judge needs every endpoint in exactly one attack share and no endpoint family without a probe (UncoveredSurfaces), so /api/audit/actors is reached. The dotnet stage was 1,141/1,141 in each run."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "G2PermissionTests passed in both verifies and in the planted runs. On the demo (attack/perms.out), noaccess gets 403 and anonymous gets 401 on /api/audit/log, /log/{id}, /records/{id}, /api/audit/actors and the audit.log export. The viewer gets 404 on a change of a kind it may not read. A 'Roles auditor' (identity.roles.read + audit.log.read) gets 404 on a user's change, an empty user history, and a log of identity.roles only. Its /api/audit/actors answers carry no e-mails, and searching by an e-mail domain finds nobody. tests/Gates/endpoint-permissions/audit.txt maps all 4 routes."
+    },
+    {
+      "gate": "Audit append-only and tamper evidence (CLAUDE.md rule 4)",
+      "status": "pass",
+      "evidence": "Fixed since rounds 2 and 4. erp_app now holds only SELECT on audit.entries. audit.capture() and audit.custom_field_history() are SECURITY DEFINER, owned by the NOLOGIN role erp_auth, with search_path pinned. As erp_app, inserting a made-up back-dated row with a random actor gives 'permission denied for table entries' (attack/db-app.out). A real change made as erp_app is still captured by the trigger with its tenant, actor kind and field old and new values. One keyboard save of a contact (job title + custom field) wrote 3 rows with the same transaction_id, 1008 (attack/keyboard-save-rows.out)."
+    },
+    {
+      "gate": "Planted faults on this piece's surface (clone only, deleted afterwards)",
+      "status": "pass",
+      "evidence": "plants/plants-L1-L2-P1-P2.diff. P2, missing permission: /api/audit/actors with no RequirePermission. Caught at host start by the kernel's authorisation check ('Endpoint authorisation is incomplete: GET /api/audit/actors => Actors: declares no permission'), so all 68 targeted tests failed (plant-critic-p07-r6-run1-all4.log). The other three were then run without P2 (plants-L1-L2-P1.diff, plant-critic-p07-r6-run2.log). L1, cross-tenant leak: a singleton ActorCache that keeps /api/audit/actors answers by search text for the whole process. Caught by G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed. L2, cross-tenant write: INSERT on audit.entries kept for erp_app, and the new audit_trigger_insert policy widened to erp_app WITH CHECK (true). Caught by G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application, Tenant_tables_enforce_row_level_security_with_the_standard_policy and Application_role_sees_and_changes_only_its_own_tenant_in_every_tenant_table, and by AuditTrailTests.The_application_role_cannot_write_update_or_delete_an_audit_row_only_the_trigger_writes_them. P1, missing permission check: /api/audit/actors returns e-mails to readers without identity.users.read. Caught by AuditTrailTests.A_person_without_the_permission_to_read_users_is_found_by_name_only_and_shown_without_an_email. Totals: module tests 2 of 20 failed, gate classes 4 of 48 failed. No gate gap."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p07-audit-r6 ERP_HTTP_PORT=20750 ERP_DB_PORT=20751 ERP_VERIFY_HTTP_PORT=20760 ERP_VERIFY_DB_PORT=20761 ERP_VERIFY_LOG=/home/shan/evidence-staging/p07-audit/r6/logs/verify-critic-p07-audit-r6-run2.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify --clean-clone (run 2; run 1 identical with its own log)",
+    "total": 2575,
+    "passed": 2574,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 11225
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 11225,
+    "evidence": "Run 2 (11,225 s from 'slot taken'): the timing stage failed on ContactsListVolumeTests (Arabic contact search median 454 ms against a 400 ms budget) at load 6 to 12. Run 1 (10,088 s): the web stage failed on the harness self-test X16 at load 40 to 60, and X16 passes alone 3/3. Run 2 counts: dotnet 1,141/1,141, web vitest 752/752, build-machinery 22/22, harness 489/489, e2e 159/159, timing 11/12. Run 1: 2,563 tests, 1 failed (the timing stage did not run). G3 never reached its ./erp up. The critic's own ./erp up of the clean clone worked."
+  },
+  "odoo": [
+    {
+      "task": "who-changed-field",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 14,
+        "seconds": 0.661,
+        "klm_seconds": 5.67
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 30,
+        "seconds": 2.586,
+        "klm_seconds": 18.5
+      },
+      "notes": "node run.mjs --task who-changed-field,who-renamed-user --product both, against the shared rig (live volume check passed; job_runs falls short about 2026-11-21T13:14Z). Ours was the critic's demo seeded with the shared dataset. Ours on 'palette-shortest' wins all 5 metrics (human+wait 6.038 s vs 20.221 s). Nothing was left out. The ours driver in the repo is still the p00 stub (built: false), so the critic reused round 4's critic driver (driver/ours-who-changed-field.mjs, task-fixtures.diff with fixtures.ours: []). The change looked for (Noor Editor changes the e-mail) was made just before the run with attack/prechange.mjs and restored afterwards (restore.out)."
+    },
+    {
+      "task": "who-renamed-user",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 2,
+        "seconds": 0.86,
+        "klm_seconds": 8.01
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 4,
+        "seconds": 3.312,
+        "klm_seconds": 10.07
+      },
+      "notes": "Same run. Ours on its whole path 'initials' wins all 5 metrics (human+wait 8.5 s vs 13.025 s). Nothing was left out. Not worse than round 4 (3/6 steps)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p07-audit/r6/browser/en-02-history-panel.jpg",
+    "gauntlet/evidence/p07-audit/r6/browser/ar-02-history-panel.jpg",
+    "gauntlet/evidence/p07-audit/r6/browser/en-03-after-keyboard-save.jpg",
+    "gauntlet/evidence/p07-audit/r6/browser/ar-03-after-keyboard-save.jpg",
+    "gauntlet/evidence/p07-audit/r6/browser/en-04-audit-log.jpg",
+    "gauntlet/evidence/p07-audit/r6/browser/ar-04-audit-log.jpg",
+    "gauntlet/evidence/p07-audit/r6/browser/en-05-b-three-filters.jpg",
+    "gauntlet/evidence/p07-audit/r6/browser/ar-05-a-changed-by.jpg",
+    "gauntlet/evidence/p07-audit/r6/compare/blind/shots/29e7217f3fa34281.jpg",
+    "gauntlet/evidence/p07-audit/r6/compare/blind/shots/534906855880e4f3.jpg",
+    "gauntlet/evidence/p07-audit/r6/compare/blind/shots/a2f0a1ef8b9327e0.jpg",
+    "gauntlet/evidence/p07-audit/r6/compare/blind/shots/eebea50abf88468c.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Record history and the audit log show stored codes instead of the field's labels, so the Arabic history shows English words ('sharjah → dubai', 'person')",
+    "detail": "The verdict is BLOCKED only because neither full verify passed every test. Each run had one load-sensitive failure outside p07's code: the p01 harness's X16 in run 1, and p16's contact-search timing budget in run 2 (see hard_gates). The product gap that most holds p07 back is how values are shown. A field that stores a code is shown as the raw code everywhere p07 shows values: the history panel (Alt+Y), the line under the record's heading, the log's 'Old and new values' column and the export. Examples are a contact's emirate (sharjah, dubai), its type (person, organisation) and country (AE). A user working in Arabic sees 'الإمارة sharjah dubai' and 'النوع person' in the history. The contacts list on the same screen shows the type as 'شخص'. AuditTexts maps choice labels only for the kinds registered in its lookup (AuditTrailTests.A_choice_shows_the_chosen_options_label... checks numbering.sequences 'reset' and asserts that contacts.contacts keeps the raw value). For a UAE trading company the emirate and contact type are everyday fields, and Odoo's chatter shows the selection label. Fix: take the labels in both languages from each list definition's column choices (the same choices the list and form already show), for every audited kind.",
+    "evidence": "browser/history-emirate.out. attack/emirate.mjs changes contact 'Shamma Waleed Al Romaithi' from sharjah to dubai as admin, then `node browser/walk1.mjs ar` (Ctrl+K, the contact, Alt+Y) prints the history 'الإمارة sharjah dubai' and, in the creation entry, 'النوع person', 'الدولة AE', 'الإمارة sharjah'. `node browser/walk1.mjs en` prints 'Emirate sharjah dubai'. ar-02-history-panel.jpg shows the list cell 'شخص' beside the panel. The contact was restored afterwards (emirate.mjs restore)."
+  },
+  "evidence_staging": "/home/shan/evidence-staging/p07-audit/r6",
+  "evidence_dir": "gauntlet/evidence/p07-audit/r6",
+  "gate_gaps": [],
+  "other_findings": [
+    "[route: p01-odoo-rig] Run 1's only failure was gauntlet/compare test/set-up-off-clock.test.mjs:354, X16 (critic r9) 'the clipboard is emptied at the start and read back': 'invalid' instead of 'verified', with a StyleRecalc counted 1.929 s before the clock. It happened at load 40 to 60, beside another critic's verify. It passed alone 3/3 at load about 28 (logs/x16-alone.log) and passed in run 2 (489/489). It is in the same class as gate backlog row 8 but is not one of the two tests listed there. Never skipped or loosened.",
+    "[route: p16-contacts] Run 2's only failure was in the timing stage: ContactsListVolumeTests.Sorted_filtered_grouped_broad_and_deep_keyset_pages_stay_within_budget, '/api/contacts/contacts?take=100&search=محمد: median 454 ms, slowest 515 ms' against MedianBudgetMilliseconds 400. The stage says it measures 'alone, after every other stage', but in a critic's slot verify it shares the machine with another verify (load 6 to 12 here). Either the Arabic search needs headroom, or critics' timing stages need to really run alone. Never loosen the budget.",
+    "Fixed since round 4 and kept fixed: (1) 'Changed by' is now a person picker (/api/audit/actors) that works by keyboard in English and Arabic. Filtering by Mariam Al Mansoori then Contact then Job title narrowed 760,186 rows to 17, 2 and 1, at 11 to 53 ms per request. (2) Tamper evidence: erp_app lost INSERT and the capture trigger is the only writer. (3) The export 'Fields' column has names, not a count, in English and Arabic (attack/export-*.csv). (4) Sign-in session times are formatted dates. (5) The line under the heading shows both the standard and the custom field change of one save. (6) The Fields filter has 160 to 161 choices and no duplicate labels.",
+    "Scope otherwise present in a real Chromium, by keyboard, in English and Arabic RTL. The history panel (Alt+Y, Escape gives focus back) works on all 12 main forms reached by G+letter: users, roles, companies, branches, company access, currencies, exchange rates, document numbering, jobs, job schedules, contacts and workspace (browser/forms.mjs). The log holds 760,000+ rows, opens in 250 ms, and filters by person, record type, field, record search and date (From only, typed as mm/dd/yyyy into a date input). Filtered CSV, XLSX and PDF exports take 250 to 400 ms in both languages. Custom field changes are captured field by field in the same transaction as the record change.",
+    "The new /api/audit/actors gives any holder of audit.log.read the names (English and Arabic) of every user in the workspace, here 100,000, even without identity.users.read. A 'Roles auditor' whose own log holds 5 rows lists people page by page (attack/perms.out, 'auditor actors empty search'). The endpoint map says this was reviewed, and e-mails are withheld. Still, it reveals more than the rows the reader may see; offering only people who appear as actors in visible rows would close it.",
+    "Person picker: the exact name does not rank first. In Arabic, 'فاطمة الزعابي' is the 4th option, after 'آنا فاطمة الزعابي' and others, because options are sorted alphabetically among contains-matches. In English, typing a first name ('Mariam') among 100,000 users never shows the admin. The picker sends one request per keystroke with no debounce.",
+    "The Arabic export's 'Changed by' column carries English names ('Fatima Al Zaabi'), while the Arabic screen shows 'فاطمة الزعابي' (attack/export-ar.csv).",
+    "Dates inside values stay ISO ('2026-12-31' for the Credit review date custom field) in the history, the heading line, the log and the export, in both languages. The owner asked for dd/mm/yyyy (decision #47).",
+    "Exporting the whole log stops at 200,000 of 760,198 rows, with a notice row (CSV 57 MB in 15 s). This is unchanged since round 2.",
+    "The history panel and the log need audit.log.read. The demo's 'Company manager' role (9 permissions) does not hold it, so a manager sees no history on any form they manage. This is unchanged since round 2.",
+    "[route: p07-audit] The ours driver for who-changed-field is still the p00 stub (built: false) at this commit. The comparison only ran because the critic reused round 4's critic driver. The piece should own and commit its driver, with a fixture rule for the whole-record contact save.",
+    "[route: p00-foundation] tests/Gates/g3-clean-clone.sh removes its work folder on exit, including the failed run's .verify-failed folder. A critic's clean-clone run therefore never yields a processor-time figure or the gate reports (seen in round 4 too).",
+    "Shared Odoo rig: run.mjs warns that job_runs falls below 100,000 about 2026-11-21T13:14Z. The lead tops it up."
+  ],
+  "human_gates": [],
+  "followups": []
+}
