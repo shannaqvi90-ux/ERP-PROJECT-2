@@ -15,18 +15,18 @@
   display: grid;
   gap: 8px;
   padding: 16px;
-  border: 1px dashed var(--border, #b9c2cc);
+  border: 1px dashed var(--border);
   border-radius: 4px;
 }
 
 .ie-dragging {
-  background: var(--accent-soft, #e8f1ff);
+  background: var(--accent-soft);
 }
 
 .ie-hint,
 .ie-sample,
 .ie-source {
-  color: var(--muted, #5b6672);
+  color: var(--muted);
   font-size: 0.85rem;
 }
 
@@ -48,7 +48,7 @@
 .ie-exports th,
 .ie-exports td {
   padding: 4px 8px;
-  border-block-end: 1px solid var(--border, #d9dee3);
+  border-block-end: 1px solid var(--border);
   text-align: start;
   vertical-align: middle;
 }
@@ -77,11 +77,11 @@
 
 .ie-status-failed,
 .ie-status-expired {
-  color: var(--danger, #a4262c);
+  color: var(--danger);
 }
 
 .ie-status-succeeded {
-  color: var(--success, #107c10);
+  color: var(--positive);
 }
 
 .ie-sr {

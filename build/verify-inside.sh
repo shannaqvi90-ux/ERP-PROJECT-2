@@ -165,7 +165,11 @@ case "$stage" in
     source /work/build/list-tests.sh
     lt() { list_tests "$@" || { echo "The test listing is broken (see above); that is not a missing or an extra test."; exit 1; }; }
     step ".NET: the test groups are every test exactly once"
-    lt Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
+    # Sorted as a whole like the groups' list: list_tests sorts within each project and follows the
+    # solution's project order, which need not be alphabetical (p14's ImportExport.Tests sits after
+    # Attachments.Tests in Erp.slnx). Sorting keeps duplicates, so "exactly once" is still checked.
+    lt Erp.slnx --filter "Load!=Timing" >"$out/tests-all.raw"
+    sort "$out/tests-all.raw" >"$out/tests-all.txt"
     {
       lt Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
       lt "$gates" --filter "Load!=Timing&$in_groups"
