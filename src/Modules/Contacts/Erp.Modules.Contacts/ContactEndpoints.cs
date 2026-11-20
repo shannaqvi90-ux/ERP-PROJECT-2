@@ -472,7 +472,7 @@ internal static class ContactEndpoints
         return validator.IsValid ? null : validator.ToResult();
     }
 
-    private static Validator Validate(SaveContactRequest request, HttpContext http, bool requireVersion)
+    internal static Validator Validate(SaveContactRequest request, HttpContext http, bool requireVersion)
     {
         var validator = new Validator(http)
             .Required("kind", request.Kind)
@@ -512,7 +512,7 @@ internal static class ContactEndpoints
     /// organisation exists in the workspace, is an organisation and is active (or is the one the
     /// person already had); the reference is free; an organisation with people stays one; the credit
     /// limit is made into money against the working company's base currency.</summary>
-    private static async Task<ProblemHttpResult?> CheckAsync(ContactsDbContext db, ICompanyDirectory companies, Contact contact, SaveContactRequest request,
+    internal static async Task<ProblemHttpResult?> CheckAsync(ContactsDbContext db, ICompanyDirectory companies, Contact contact, SaveContactRequest request,
         Validator validator, CancellationToken cancellationToken)
     {
         var kind = ContactsValidation.Clean(request.Kind)!;

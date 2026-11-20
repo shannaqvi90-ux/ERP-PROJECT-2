@@ -45,3 +45,19 @@ public interface IAttachmentStore
     /// <summary>Remove a file; nothing happens when the tenant has none.</summary>
     Task DeleteAsync(Guid tenantId, string key, CancellationToken cancellationToken);
 }
+
+/// <summary>One attached file as a full tenant export (p14) lists it.</summary>
+public sealed record ExportedFile(Guid Id, string RecordType, Guid RecordId, string Name, string ContentType, long SizeBytes, string Sha256, DateTimeOffset CreatedAt);
+
+/// <summary>
+/// What a full tenant export reads of the attachments module: every file of the current workspace
+/// (row-level security limits both calls to it) and its bytes. Used by the export job, in the job's unit of work.
+/// </summary>
+public interface IAttachmentExport
+{
+    /// <summary>A page of the workspace's files in id order, those after <paramref name="after"/> (null: from the first).</summary>
+    Task<IReadOnlyList<ExportedFile>> ListAsync(Guid? after, int take, CancellationToken cancellationToken);
+
+    /// <summary>The bytes of one file of the workspace; null when it has none (or the bytes are missing).</summary>
+    Task<Stream?> OpenAsync(Guid fileId, CancellationToken cancellationToken);
+}

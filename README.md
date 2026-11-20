@@ -157,6 +157,15 @@ Open Background jobs (G then J): the list of 100,000 jobs in the demo, a job's p
    (`docs/decisions/p11-attachments-record-permissions.md`). Bytes sit behind `IAttachmentStore` (a local volume,
    `Erp:Attachments:Root`; `docs/decisions/p11-attachments-storage.md`).
 
+9. Import and full export (p14). A module whose records can be imported from CSV or XLSX registers the kind,
+   `module.ImportRecord(new ImportRecordType("schema.table", labelKey, createPermission, fields, process, customFieldRecord, listPath, oneOfRequired))`,
+   where `process` validates a batch of rows with the record's own rules and, unless it is a dry run, writes the valid ones
+   (see `ContactsImport.cs`); add the nine lines to `tests/Gates/endpoint-permissions/importexport.txt`, the kind to `importKinds`
+   in `web/src/modules/importexport/types.ts` (its list gets the Import button) and its writes to
+   `tests/Gates/permission-write-sets.txt`. A module whose records belong in a tenant's full export registers
+   `module.ExportRecord(new ExportRecordType("schema.table", labelKey, columns, rows, customFieldRecord))`
+   (`docs/decisions/p14-import-export-import.md`, `p14-import-export-tenant-export.md`).
+
 The gates then attack the new endpoints and tables automatically: every documented route, query
 and body parameter receives the other tenant's ids, e-mails, codes and names, GETs are checked for
 existence oracles, and grant fields (`roleIds`, `permissions`) are checked for escalation. Every

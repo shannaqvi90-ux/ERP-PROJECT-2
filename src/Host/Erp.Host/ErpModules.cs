@@ -5,6 +5,7 @@ using Erp.Modules.Currency;
 using Erp.Modules.Contacts;
 using Erp.Modules.CustomFields;
 using Erp.Modules.Identity;
+using Erp.Modules.ImportExport;
 using Erp.Modules.Jobs;
 using Erp.Modules.Lists;
 using Erp.Modules.Numbering;
@@ -28,6 +29,8 @@ public static class ErpModules
         new CustomFieldsModule(),
         // After the modules whose records take files (the attachments it serves are theirs).
         new AttachmentsModule(),
+        // After the modules whose records can be imported and exported, and after attachments (the full export writes them).
+        new ImportExportModule(),
         // After every module that registers lists: it maps their definition and saved-view endpoints.
         new ListsModule(),
         // After every module that registers audited records (they are the audit log's record types).

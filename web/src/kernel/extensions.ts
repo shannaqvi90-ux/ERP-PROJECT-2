@@ -160,7 +160,20 @@ export type RecordPanelItem = {
  */
 export type HistoryChild = { key: string; parent: string; child: string; labelKey: string; permission?: string; hide?: string[] };
 
+/**
+ * A control a module adds to the toolbar of another module's list (p14: the Import button of a list of records that can be imported).
+ * `listKey` is the registered list; the component gets the list's key and a function that reads its rows again.
+ */
+export type ListActionItem = {
+  key: string;
+  listKey: string;
+  order?: number;
+  permission?: string;
+  component: ComponentType<{ listKey: string; reload: () => void }>;
+};
+
 export type ModuleExtensions = {
+  listActions?: ListActionItem[];
   history?: HistoryChild[];
   topbar?: SlotItem[];
   status?: SlotItem[];
@@ -177,7 +190,7 @@ type ExtensionModule = { extensions?: ModuleExtensions };
 const found = import.meta.glob<ExtensionModule>("../modules/*/extensions.{ts,tsx}", { eager: true });
 
 export function collectExtensions(sources: Record<string, ExtensionModule>): Required<ModuleExtensions> {
-  const all: Required<ModuleExtensions> = { topbar: [], status: [], home: [], palette: [], actions: [], goTo: [], record: [], history: [] };
+  const all: Required<ModuleExtensions> = { topbar: [], status: [], home: [], palette: [], actions: [], goTo: [], record: [], history: [], listActions: [] };
   const goToCodes = new Map<string, string>();
   const seen = new Set<string>();
   for (const [path, module] of Object.entries(sources).sort(([a], [b]) => a.localeCompare(b))) {
@@ -198,6 +211,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     all.palette.push(...(ext.palette ?? []));
     all.record.push(...(ext.record ?? []));
     all.history.push(...(ext.history ?? []));
+    all.listActions.push(...(ext.listActions ?? []));
     for (const action of ext.actions ?? []) {
       if (!action.permission) throw new Error(`Action "${action.key}" of module ${name} names no permission`);
       if ((action.pick || action.then) && !action.command) throw new Error(`Action "${action.key}" of module ${name} asks for a record or a second command but runs no command`);
@@ -218,6 +232,7 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
   all.topbar.sort(byOrder);
   all.status.sort(byOrder);
   all.home.sort(byOrder);
+  all.listActions.sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key));
   all.record.sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key));
   return all;
 }
