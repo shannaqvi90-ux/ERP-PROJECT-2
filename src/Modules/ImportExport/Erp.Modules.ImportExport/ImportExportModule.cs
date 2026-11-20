@@ -35,7 +35,7 @@ public sealed class ImportExportModule : ErpModule
         module.Endpoints(TenantExportEndpoints.Map);
         module.Services.AddJobType<ImportJobHandler>(ImportJobHandler.Type);
         module.Services.AddJobType<TenantExportJobHandler>(TenantExportJobHandler.Type);
-        module.Menu(new MenuEntry("importexport.exports", "importexport.menu.exports", "/importexport/exports", ImportExportPermissions.ExportsRead, Order: 900));
+        module.Menu(new MenuEntry("importexport.exports", "importexport.menu.exports", "/importexport/exports", ImportExportPermissions.ExportsRead, Order: 905, Group: "settings"));
         module.AuditedRecord(new AuditRecordType("importexport.import_sessions", "importexport.record.import", Erp.Modules.Audit.Contracts.AuditPermissions.LogRead, null));
         module.AuditedRecord(new AuditRecordType("importexport.import_files", "importexport.record.importFile", Erp.Modules.Audit.Contracts.AuditPermissions.LogRead, null));
         module.AuditedRecord(new AuditRecordType("importexport.export_files", "importexport.record.exportFile", Erp.Modules.Audit.Contracts.AuditPermissions.LogRead, null));

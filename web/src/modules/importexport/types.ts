@@ -53,8 +53,3 @@ export type TenantExport = {
 };
 
 export const importBase = (table: string) => `/api/importexport/${table}`;
-
-/** Kinds of record that can be imported, with the permission that creates them (the same as the server's registration). */
-export const importKinds: Record<string, { create: string; titleKey: string }> = {
-  "contacts.contacts": { create: "contacts.contacts.create", titleKey: "importexport.kind.contacts" },
-};
