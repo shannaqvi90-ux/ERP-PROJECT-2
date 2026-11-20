@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="9a921faf-7d06-4849-9049-aa7ec483b54a" name="@docker-desktop 2026-11-20 12:45:28" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-20T12:45:28.9299671+00:00" queuing="2026-11-20T12:45:28.9299672+00:00" start="2026-11-20T11:54:16.5272206+00:00" finish="2026-11-20T12:45:29.0627081+00:00" />
+  <TestSettings name="default" id="88aa852b-5b41-4e72-af93-4e54026a8a1f">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-11-20_12_45_28" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c3522b10-a3e8-499c-9d4c-68093cd463db" testId="cc0b2437-cb21-c18d-60db-42013145bbb4" testName="Erp.Gates.Tests.G1.G1HttpIsolationShardTests.Tenant_A_attacks_its_second_share_of_the_endpoints" computerName="docker-desktop" duration="00:50:58.1020549" startTime="2026-11-20T11:54:30.5601507+00:00" endTime="2026-11-20T12:45:28.5187006+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c3522b10-a3e8-499c-9d4c-68093cd463db">
+      <Output>
+        <StdOut>Share 2 of 4: slowest 20 requests of the attack (seconds, label, method, path):
+      5.2 s  [GET /api/reports/lists/audit.log [tenant B reads after the attack, in Arabic, own value in query format]] GET /api/reports/lists/audit.log?format=pdf
+      4.7 s  [GET /api/reports/lists/audit.log [tenant B reads before the attack, in Arabic, own value in query format]] GET /api/reports/lists/audit.log?format=pdf
+      3.7 s  [GET /api/reports/lists/audit.log [tenant B reads after the attack, own value in query format]] GET /api/reports/lists/audit.log?format=pdf
+      3.1 s  [GET /api/reports/lists/audit.log [tenant B reads before the attack, own value in query format]] GET /api/reports/lists/audit.log?format=pdf
+      1.8 s  [GET /api/reports/lists/audit.log [tenant B reads after the attack, in Arabic, own value in query format]] GET /api/reports/lists/audit.log?format=xlsx
+      1.7 s  [GET /api/reports/lists/audit.log [tenant B reads after the attack, in Arabic, own value in query format]] GET /api/reports/lists/audit.log?format=csv
+      1.2 s  [GET /api/reports/lists/audit.log [tenant B reads after the attack, own value in query format]] GET /api/reports/lists/audit.log?format=xlsx
+      1.2 s  [GET /api/reports/lists/audit.log [tenant B reads after the attack, own value in query format]] GET /api/reports/lists/audit.log?format=csv
+      1.0 s  [GET /api/reports/lists/audit.log [tenant B reads before the attack, in Arabic, own value in query format]] GET /api/reports/lists/audit.log?format=csv
+      1.0 s  [GET /api/reports/lists/audit.log [tenant B reads before the attack, in Arabic, own value in query format]] GET /api/reports/lists/audit.log?format=xlsx
+      0.8 s  [GET /api/reports/lists/audit.log [concurrent with the attack]] GET /api/reports/lists/audit.log
+      0.8 s  [GET /api/reports/lists/audit.log [tenant B reads before the attack, in Arabic, own value in query groupBy]] GET /api/reports/lists/audit.log?groupBy=actorKind
+      0.8 s  [GET /api/reports/lists/audit.log [concurrent with the attack]] GET /api/reports/lists/audit.log
+      0.8 s  [GET /api/reports/lists/audit.log [concurrent with the attack]] GET /api/reports/lists/audit.log
+      0.8 s  [GET /api/reports/lists/audit.log [concurrent with the attack]] GET /api/reports/lists/audit.log
+      0.7 s  [attack tenant A administrator (cookie) reports.lists.numbering.sequences] GET /api/reports/lists/numbering.sequences?tenantId=Activity%20CNRY395CD0DE03%2066
+      0.7 s  [attack tenant A administrator in Arabic (cookie) customfields.fields.list] GET /api/customfields/fields?tenant_id=7417ee49-6d17-4d30-b144-6057372fc8df
+      0.7 s  [attack tenant A administrator in Arabic (cookie) customfields.fields.list] GET /api/customfields/fields?tenant_id=01a1f8ce-d911-7869-b1f4-d7896f0c484d
+      0.7 s  [GET /api/reports/lists/audit.log [tenant B reads before the attack, in Arabic, own value in query format]] GET /api/reports/lists/audit.log?format=json
+      0.7 s  [attack tenant A administrator in Arabic (cookie) customfields.fields.list] GET /api/customfields/fields?tenant_id=2716l08259074036774328989566552j%2F365mv0149vm993w2698jw6973p921719
+routes, tenant headers and guessed queries: 45477 requests so far (3377 by tenant A's Arabic sessions; tenant B 173295, 31186 in Arabic), 144.3 s
+tenant switch inputs: 20 headers, 50 query names, 3 cookies, 52 body names: 55246 requests so far (3377 by tenant A's Arabic sessions; tenant B 173529, 31250 in Arabic), 178.1 s
+write after write: 117 pairs over 34 endpoints, 536 pairs with 154 documented values, 16890 tenant A requests: 55246 requests so far (3377 by tenant A's Arabic sessions; tenant B 187625, 37405 in Arabic), 727.3 s
+answer shapes: 5 endpoints, 293 shapes (30 documented values, 10 rows of them together), 1143 tenant B and 804 tenant A requests (75 of them tenant B's own requests as sent): 56057 requests so far (3377 by tenant A's Arabic sessions; tenant B 190301, 37916 in Arabic), 757.9 s
+tenant B values in route and query parameters (controls checked against 3854003 characters of tenant A's data, 0 longer than their value): 382691 requests so far (97304 by tenant A's Arabic sessions; tenant B 217878, 44810 in Arabic), 1938.8 s
+registered lists through their query contract: 15167 attacks, 27045 requests: 409736 requests so far (97304 by tenant A's Arabic sessions; tenant B 221751, 45778 in Arabic), 2039.7 s
+list answers judged against each tenant's own rows: 2064 queries (1208 sorted), 896 with different true answers (612 sorted), 58470 rows walked; process-wide state fingerprinted in 115778 lines from 238 roots: 409736 requests so far (97304 by tenant A's Arabic sessions; tenant B 247764, 52281 in Arabic), 2338.9 s
+tenant B values in body fields: 473096 requests so far (97304 by tenant A's Arabic sessions; tenant B 253703, 53766 in Arabic), 2450.0 s
+tenant B activity: 410120 requests (63404 concurrent with the attack), 3263 successful own writes, 409831 responses judged for tenant A markers: 473096 requests so far (97304 by tenant A's Arabic sessions; tenant B 410120, 79532 in Arabic), 2690.9 s
+cost by phase and kind: 2|query:filter|attack-en=21288; 2|query:filter|control-en=16123; 1|Plain|en=15620; 1|TenantHeaders|en=13240; 1|TenantQuery|en=13240; 2|query:search|attack-en=8156; 2|query:companyId|attack-en=6831; 2|query:name|attack-en=6800; 2|query:q|attack-en=6800; 2|query:email|attack-en=6800; 2|query:tenant|attack-en=6800; 2|query:workspace|attack-en=6800; 2|query:code|attack-en=6800; 2|query:tenant_id|attack-en=6800; 2|query:userId|attack-en=6800; 2|query:tenantId|attack-en=6800; 2|query:id|attack-en=6800; 2|query:search|control-en=4245; 2|path:id|attack-en=3434; 1|Plain|ar=3377; 2|query:companyId|attack-ar=3331; 2|query:search|attack-ar=3300; 2|query:id|attack-ar=3300; 2|query:tenantId|attack-ar=3300; 2|query:code|attack-ar=3300; 2|query:filter|attack-ar=3300; 2|query:userId|attack-ar=3300; 2|query:tenant_id|attack-ar=3300; 2|query:workspace|attack-ar=3300; 2|query:tenant|attack-ar=3300; 2|query:q|attack-ar=3300; 2|query:email|attack-ar=3300; 2|query:name|attack-ar=3300; 2|query:companyId|control-en=2979; 2|query:companyId|control-ar=2979; 2|query:workspace|control-en=2937; 2|query:workspace|control-ar=2937; 2|query:name|control-en=2937; 2|query:search|control-ar=2937; 2|query:email|control-en=2937; 2|query:code|control-en=2937; 2|query:q|control-en=2937; 2|query:tenantId|control-en=2937; 2|query:userId|control-en=2937; 2|query:tenant_id|control-ar=2937; 2|query:userId|control-ar=2937; 2|query:tenant|control-ar=2937; 2|query:tenant_id|control-en=2937; 2|query:email|control-ar=2937; 2|query:tenantId|control-ar=2937; 2|query:name|control-ar=2937; 2|query:id|control-ar=2937; 2|query:q|control-ar=2937; 2|query:code|control-ar=2937; 2|query:id|control-en=2937; 2|query:filter|control-ar=2937; 2|query:tenant|control-en=2937; 2|query:groupBy|attack-en=2608; 2|query:groupBy|control-en=2456; 1|other|en=2035
+cost by endpoint: GET /api/contacts/contacts=20698; GET /api/customfields/fields=15981; GET /api/jobs/schedules=15647; GET /api/reports/lists/numbering.sequences=12778; GET /api/reports/lists/identity.roles=12751; GET /api/reports/lists/contacts.contacts=12739; GET /api/reports/run/contacts.contactCard=10611; GET /api/reports/run/tenancy.companyProfile=10601; GET /api/health=9987; GET /api/currency/convert=7685; GET /api/lists/tenancy.access/shared-views/{id:guid}=6699; GET /api/lists/currency.rates/views/{id:guid}=6699; GET /api/lists/audit.log/views/{id:guid}=6699; GET /api/lists/tenancy.branches/views/{id:guid}=6699; GET /api/identity/me/passkeys/{id:guid}=6699; GET /api/lists/currency.currencies/shared-views/{id:guid}=6699; GET /api/jobs/schedules/{id:guid}=6699; GET /api/contacts/contacts/{id:guid}=6699; GET /api/customfields/fields/{id:guid}=6699; GET /api/lists/jobs.jobs/views/{id:guid}=6699; GET /api/lists/identity.users/shared-views/{id:guid}=6699; GET /api/attachments/contacts.contacts/{id:guid}/files=6660; GET /api/lists/jobs.jobs/views=5073; GET /api/jobs/types=5073; GET /api/lists/currency.currencies/definition=5073
+cost by parameter: query:filter=43648; query:search=18638; query:companyId=16120; query:name=15974; query:workspace=15974; query:q=15974; query:email=15974; query:tenant=15974; query:code=15974; query:tenant_id=15974; query:id=15974; query:tenantId=15974; query:userId=15974; path:id=7790; query:groupBy=6576; query:sort=4932; query:numerals=4110; query:timeZone=4110; query:disposition=4110; query:language=4110; query:format=4110; query:columns=2466; query:after=2466; query:date=822; query:amount=822; query:currency=822; query:company=524; query:contact=524
+tenant B: 4651 ids (131 sampled), 396 text values, 277 extra markers (0 product texts left out), 100 probe values</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.G1.G1HttpIsolationShardTests.Tenant_A_attacks_its_second_share_of_the_endpoints" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="cc0b2437-cb21-c18d-60db-42013145bbb4">
+      <Execution id="c3522b10-a3e8-499c-9d4c-68093cd463db" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1HttpIsolationShardTests" name="Tenant_A_attacks_its_second_share_of_the_endpoints" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="cc0b2437-cb21-c18d-60db-42013145bbb4" executionId="c3522b10-a3e8-499c-9d4c-68093cd463db" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.21]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.57]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.73]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:51:11.94]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="5a6899ee-af7b-4e3b-a878-5d8ac38d4565" name="@docker-desktop 2026-11-20 11:17:00" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-20T11:17:00.3079013+00:00" queuing="2026-11-20T11:17:00.3079013+00:00" start="2026-11-20T09:59:48.2446125+00:00" finish="2026-11-20T11:17:00.3120421+00:00" />
+  <TestSettings name="default" id="da0d681a-93d5-4ec2-bb35-513a201e41b8">
+    <Deployment runDeploymentRoot="_docker-desktop_2026-11-20_11_17_00" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="446c127b-aba4-4bb7-92ac-a5f3d4d0a4d7" testId="4740f566-51a1-26f9-5808-71ac832be86e" testName="Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" computerName="docker-desktop" duration="01:16:52.2100870" startTime="2026-11-20T10:00:08.0746244+00:00" endTime="2026-11-20T11:17:00.0687456+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="446c127b-aba4-4bb7-92ac-a5f3d4d0a4d7">
+      <Output>
+        <StdOut>18656 comparisons over 102 endpoints (1044 with different answers per tenant), 1876 write comparisons over 53 endpoints and 796 body variants, 84536 requests, 14 unstable; in Arabic: 9328 comparisons (3295 answered in Arabic), 114 write comparisons (8 between the workspace-wide Arabic administrators); 163702 response header lines compared, 14 changing answers judged by how they change, 225 configuration keys watched; 75308 times attributed to a request (0 ambiguous, 0 paced re-runs), 0 cookie values compared; 426 partial-body write comparisons, 60 partial bodies judged against the other tenant's choice
+unstable: tenant A: POST /api/attachments/contacts.contacts/{id:guid}/files answers differently from one write to the next (201 {"id":"01a1f870-bd76-7cc7-a279-336fd5c6e21a","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31… / 201 {"id":"01a1f870-bdc0-7718-86ed-b9037505167d","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31…)
+unstable: tenant B: POST /api/attachments/contacts.contacts/{id:guid}/files answers differently from one write to the next (201 {"id":"01a1f870-be2c-7b52-9d42-b3ff172a29c9","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31… / 201 {"id":"01a1f870-be58-79d6-b758-1701cfe55d5b","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31…)
+unstable: tenant A in Arabic: POST /api/attachments/contacts.contacts/{id:guid}/files answers differently from one write to the next (201 {"id":"01a1f870-beb9-72d4-a96e-cf56edd2e81a","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31… / 201 {"id":"01a1f870-bee4-7173-9218-754eac810543","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31…)
+unstable: tenant B in Arabic: POST /api/attachments/contacts.contacts/{id:guid}/files answers differently from one write to the next (201 {"id":"01a1f870-bf34-7230-b745-4f3e5949384a","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31… / 201 {"id":"01a1f870-bf4f-76eb-a815-28e7ca9ac658","name":"licence-copy.txt","contentType":"text/plain; charset=utf-8","sizeBytes":13,"sha256":"947d19557338446a31…)
+unstable: tenant A: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a1f870-ebb9-7d8a-ae00-508017c365fc","nameEn":"Activity alpha 343","nameAr":"\u0646\u0634\u0627\u0637 alpha 343","permissions":["audit.log.read","co… / 201 {"id":"01a1f870-ebd5-7f3f-a6e3-768b9daa9658","nameEn":"Activity alpha 345","nameAr":"\u0646\u0634\u0627\u0637 alpha 345","permissions":["audit.log.read","co…)
+unstable: tenant B: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a1f870-ec22-7b27-ae33-7a71632b0fb1","nameEn":"Activity CNRYFC5B432801 345","nameAr":"\u0646\u0634\u0627\u0637 CNRYFC5B432801 345","permissions":["a… / 201 {"id":"01a1f870-ec4a-7141-91c1-8a4f720a06a7","nameEn":"Activity CNRYFC5B432801 347","nameAr":"\u0646\u0634\u0627\u0637 CNRYFC5B432801 347","permissions":["a…)
+unstable: tenant A in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a1f870-ecb6-7b10-aea2-01e952000724","nameEn":"Activity alpha 353","nameAr":"\u0646\u0634\u0627\u0637 alpha 353","permissions":["identity.users.read… / 201 {"id":"01a1f870-ecda-79aa-96df-7fecce39b59a","nameEn":"Activity alpha 355","nameAr":"\u0646\u0634\u0627\u0637 alpha 355","permissions":["identity.users.read…)
+unstable: tenant B in Arabic: POST /api/identity/roles/{id:guid}/copy answers differently from one write to the next (201 {"id":"01a1f870-ed27-7929-8f74-2c033998aa9b","nameEn":"Activity CNRYFC5B432801 355","nameAr":"\u0646\u0634\u0627\u0637 CNRYFC5B432801 355","permissions":["i… / 201 {"id":"01a1f870-ed4c-73de-8431-b59d6b7aed4c","nameEn":"Activity CNRYFC5B432801 357","nameAr":"\u0646\u0634\u0627\u0637 CNRYFC5B432801 357","permissions":["i…)
+unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"YEF8-JPFK-KJAM","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"PFTQ-2EXX-DXTE","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)
+unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"3ADV-6A9A-ZRA9","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"EBA6-HAWD-KHXH","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)
+unstable: tenant A: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"96F6-Y9RU-WK4J","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"3MH3-8WPX-2BYR","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)
+unstable: tenant B: POST /api/identity/users/{id:guid}/password (without password, mustChangePassword, removePasskeys) answers differently from one write to the next (200 {"mustChangePassword":true,"setupCode":"F3ZK-3SVZ-XWWW","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr… / 200 {"mustChangePassword":true,"setupCode":"2DAF-2ZKM-5QFE","setupCodeExpiresAt":"\u003Ctime\u003E","sessionsEnded":0,"passkeysRemoved":0}
+[headers]
+cache-contr…)
+unstable: tenant A in Arabic: POST /api/jobs/jobs/{id:guid}/rerun answers differently from one write to the next (201 {"id":"01a1f871-040f-78e2-a703-ef7055c237e7","type":"jobs.selfCheck","typeNameEn":"Self-check of the job queue","typeNameAr":"\u0641\u062D\u0635 \u0630\u062… / 201 {"id":"01a1f871-0440-7245-8f2b-0efa2fc914ce","type":"jobs.selfCheck","typeNameEn":"Self-check of the job queue","typeNameAr":"\u0641\u062D\u0635 \u0630\u062…)
+unstable: tenant B in Arabic: POST /api/jobs/jobs/{id:guid}/rerun answers differently from one write to the next (201 {"id":"01a1f871-0491-7ab6-9a87-c8ab17e6b153","type":"jobs.selfCheck","typeNameEn":"Self-check of the job queue","typeNameAr":"\u0641\u062D\u0635 \u0630\u062… / 201 {"id":"01a1f871-04b6-78b6-bad1-c40ee624b2fd","type":"jobs.selfCheck","typeNameEn":"Self-check of the job queue","typeNameAr":"\u0641\u062D\u0635 \u0630\u062…)</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.G1.G1NonInterferenceTests.What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" storage="/work/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="4740f566-51a1-26f9-5808-71ac832be86e">
+      <Execution id="446c127b-aba4-4bb7-92ac-a5f3d4d0a4d7" />
+      <TestMethod codeBase="/work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1NonInterferenceTests" name="What_tenant_A_is_answered_never_depends_on_what_tenant_B_did" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="4740f566-51a1-26f9-5808-71ac832be86e" executionId="446c127b-aba4-4bb7-92ac-a5f3d4d0a4d7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.75]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.95]   Starting:    Erp.Gates.Tests
+[xUnit.net 01:17:11.78]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

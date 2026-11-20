@@ -1,0 +1,319 @@
+{
+  "schema": 1,
+  "run_id": "attach-file-20261120T142932-ce59",
+  "instrument": 12,
+  "task": "attach-file",
+  "task_title": "Attach a file to a record",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
+  "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
+  "started_at": "2026-11-20T14:29:32.410Z",
+  "finished_at": "2026-11-20T14:29:37.976Z",
+  "environment": {
+    "base_url": "http://localhost:20060",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 0,
+    "clicks": 1,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 1,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.099,
+    "system_wait_seconds": 0.03,
+    "human_seconds": 4.15,
+    "human_plus_wait_seconds": 4.18,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 2,
+      "B": 6,
+      "H": 0,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "open file dialog: trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "at": 0.018,
+      "took": 0.036,
+      "began": 0.001,
+      "screen": "/contacts/contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "file-pick",
+      "label": "trade-licence-TL-2026-73519.pdf",
+      "keystrokes": 0,
+      "at": 0.055,
+      "took": 0.012,
+      "file": "trade-licence-TL-2026-73519.pdf",
+      "screen": "/contacts/contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "file listed on the contact",
+      "at": 0.067,
+      "seconds": 0.03
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "0515e8e7374b9598.jpg",
+      "at": 0,
+      "path": "../out/ours-health/blind/shots/0515e8e7374b9598.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "3693e253ef77526f.jpg",
+      "at": 0.099,
+      "path": "../out/ours-health/blind/shots/3693e253ef77526f.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "attachments": [
+        {
+          "id": "01a1f95c-e141-713e-a475-34bad4b14ca5",
+          "name": "trade-licence-TL-2026-73519.pdf",
+          "contentType": "application/pdf",
+          "sizeBytes": 417,
+          "sha256": "0ab1f902dfcf2468d9bc6871dbb51f1a6bdcc74a13a07380e2190f317c5daade",
+          "previewable": true,
+          "createdAt": "2026-11-20T14:29:36.193802+00:00",
+          "createdBy": "01a1f8cd-8186-7c96-afdb-bb0b7706d6f0",
+          "createdByName": "Mariam Al Mansoori",
+          "createdByNameAr": "مريم المنصوري"
+        }
+      ],
+      "shown": {
+        "listed": 1
+      }
+    }
+  },
+  "path_notes": "Pick the file at the \"Add files\" button of the contact's Attachments section (the file dialog and the choice of the file are one step); the file is listed on the contact.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/attach-file.mjs",
+    "sha256": "c3e49f404ca34a4d837ae9bd37a555b891cd26fe0c675349eed6a25407482123"
+  },
+  "task_notes": "The file is committed (data/fixtures). Clean-up deletes the attachment.",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "record",
+    "opened_by_sign_in": "/contacts/contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024",
+    "path": "/contacts/contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024",
+    "query": "",
+    "fragment": "",
+    "fields": 25,
+    "filled": [
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameEn",
+        "password": false,
+        "value_length": 25,
+        "value": "Shamma Waleed Al Romaithi"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "nameAr",
+        "password": false,
+        "value_length": 16,
+        "value": "شمة وليد الرميثي"
+      },
+      {
+        "tag": "input",
+        "type": "email",
+        "name": "email",
+        "password": false,
+        "value_length": 37,
+        "value": "shamma.al.romaithi.73519@mail.example"
+      },
+      {
+        "tag": "input",
+        "type": "tel",
+        "name": "mobile",
+        "password": false,
+        "value_length": 16,
+        "value": "+971 54 427 3034"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "defaultCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      },
+      {
+        "tag": "input",
+        "type": "text",
+        "name": "creditLimitCurrency",
+        "password": false,
+        "value_length": 3,
+        "value": "AED"
+      }
+    ],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.014,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.015,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "a3732ebbb183f3b4",
+    "elements": 1324
+  },
+  "screen_after_verify": {
+    "sha256": "a3732ebbb183f3b4",
+    "elements": 1324,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 3,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.037
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files"
+    ],
+    "read_after": [
+      "GET /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files"
+    ],
+    "changed": [
+      "GET /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files"
+    ],
+    "changed_parts": {
+      "GET /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files": [
+        "items.0.id",
+        "items.0.name",
+        "items.0.contentType",
+        "items.0.sizeBytes",
+        "items.0.sha256",
+        "items.0.previewable",
+        "items.0.createdAt",
+        "items.0.createdBy"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files"
+    ],
+    "end_state": [
+      "GET /api/attachments/contacts.contacts/*/files [items.name, items.sizeBytes]"
+    ],
+    "end_state_changed": {
+      "GET /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files": [
+        "items.0.name",
+        "items.0.sizeBytes"
+      ]
+    },
+    "end_state_gained": [
+      "trade-licence-TL-2026-73519.pdf"
+    ],
+    "writes_sent": [
+      "POST /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files",
+        "at": 0.06653429099999994,
+        "by_step": 2,
+        "browser_record": {
+          "caused": true,
+          "by_step": 2,
+          "chain_seconds": 0.003,
+          "chain": [
+            "a DevTools command of step 2"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 7,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.09,
+      "by_step": 2,
+      "chain": [
+        "the answer to POST /api/attachments/contacts.contacts/01a1f95c-d3de-7e78-bc2e-c2f3206dc024/files after 0.021 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /api/contacts/contacts"
+  ]
+}

@@ -1,0 +1,40 @@
+=== LT1
+29d28
+<         bad=1
+not ok 3 - a broken listing is reported as broken: two names on one line
+not ok 4 - a broken listing is reported as broken: two names on one line, the second a theory
+not ok 5 - a broken listing is reported as broken: a log line in a test line
+not ok 9 - the solution is listed one project at a time, and a broken project fails the whole listing
+# pass 5
+# fail 4
+=== LT2
+61c61
+<     for p in $(grep -o 'tests/[^"]*\.csproj' "$target"); do list_project "$p" "$@" || return $?; done
+---
+>     for p in $(grep -o 'tests/[^"]*\.csproj' "$target"); do list_project "$p" "$@" || true; done
+not ok 9 - the solution is listed one project at a time, and a broken project fails the whole listing
+# pass 8
+# fail 1
+=== LT3
+61c61
+<     for p in $(grep -o 'tests/[^"]*\.csproj' "$target"); do list_project "$p" "$@" || return $?; done
+---
+>     for p in $(grep -o 'tests/[^"]*\.csproj' "$target" | head -n -1); do list_project "$p" "$@" || return $?; done
+not ok 9 - the solution is listed one project at a time, and a broken project fails the whole listing
+# pass 8
+# fail 1
+=== LT4
+52c52
+<   [[ -z "$out" ]] || printf '%s\n' "$out" | sort
+---
+>   [[ -z "$out" ]] || printf '%s\n' "$out" | sort -u
+# pass 9
+# fail 0
+=== LT5
+37c37
+<     if ((nomatch || !seen)); then return 0; fi
+---
+>     return 0
+not ok 7 - a broken listing is reported as broken: no header and not empty (a crash, a build error)
+# pass 8
+# fail 1

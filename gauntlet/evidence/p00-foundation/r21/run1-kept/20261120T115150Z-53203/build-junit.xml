@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="a good listing gives its names, in order, theory arguments kept" time="0.005658" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a project without tests (no output) and a filter matching nothing (header only) give no names" time="0.005992" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a broken listing is reported as broken: two names on one line" time="0.002774" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a broken listing is reported as broken: two names on one line, the second a theory" time="0.003229" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a broken listing is reported as broken: a log line in a test line" time="0.002717" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a broken listing is reported as broken: a test line before the header" time="0.003046" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a broken listing is reported as broken: no header and not empty (a crash, a build error)" time="0.002652" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a broken listing is reported as broken: two listings in one stream (a second header)" time="0.002549" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="the solution is listed one project at a time, and a broken project fails the whole listing" time="0.030076" classname="test" file="/work/build/list-tests.test.mjs"/>
+	<testcase name="a SIGTERM to ./erp verify ends every stage process it started (the e2e loop, docker run, tee, sed, the load sampler)" time="1.316663" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="stop_process_trees ends a process, its children and grandchildren, and nothing else" time="0.943567" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="a run busy only in the middle is not judged quiet (critics p02 r8, p03 r8, p01 r10: load 0.28 at the start, 68-74 mid-run, 4.76 at the end)" time="0.036567" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="a run quiet throughout and too slow fails, and one quiet throughout within the maximum passes" time="0.064884" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="one busy sample anywhere makes the run busy; without samples (an older ./erp) the start and end readings decide as before" time="0.089222" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="samples that cannot be read do not make a run quiet: an empty or broken sample file is judged busy only by its readings, never skipped silently" time="0.032877" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="the machine's busy ticks are user + nice + system + irq + softirq + steal, never idle or iowait" time="0.003846" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="an older kernel's line without the steal column still parses" time="0.002991" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="a line that is not the aggregate cpu line, or has a non-number, gives nothing and fails" time="0.011034" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="the live /proc/stat gives a number that only grows" time="0.003662" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="cpu-machine is the busy seconds between the start and the end, with two decimals" time="0.005247" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="the ratchet check reports the machine's processor time, the verify's and the difference, and judges nothing by it" time="0.033723" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<testcase name="a run without cpu-machine says it was not recorded and still passes" time="0.030764" classname="test" file="/work/build/verify-processes.test.mjs"/>
+	<!-- tests 22 -->
+	<!-- suites 0 -->
+	<!-- pass 22 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 2741.862223 -->
+</testsuites>

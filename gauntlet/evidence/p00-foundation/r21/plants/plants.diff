@@ -1,0 +1,59 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 76533459..9df05485 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -991,7 +991,28 @@ public sealed class ListBinding<T> : IListBinding where T : class
+         };
+     }
+ 
++    // CRITIC PLANT L21: "a month's buckets do not change every second": the date-bucket groups of a custom date field are
++    // remembered in the binding (shared by every workspace) by column and unit only, in an immutable dictionary swapped in.
++    private System.Collections.Immutable.ImmutableDictionary<string, IReadOnlyList<ListGroup>> _criticBuckets =
++        System.Collections.Immutable.ImmutableDictionary<string, IReadOnlyList<ListGroup>>.Empty;
++
+     private async Task<IReadOnlyList<ListGroup>> GroupsAsync(IQueryable<T> source, string column, string? unit, bool database, CancellationToken cancellationToken)
++    {
++        if (Erp.Kernel.CriticPlant.Is("L21") && unit is not null)
++        {
++            var criticKey = column + "|" + unit;
++            if (_criticBuckets.TryGetValue(criticKey, out var remembered))
++            {
++                return remembered;
++            }
++            var fresh = await GroupsCriticAsync(source, column, unit, database, cancellationToken);
++            _criticBuckets = _criticBuckets.SetItem(criticKey, fresh);
++            return fresh;
++        }
++        return await GroupsCriticAsync(source, column, unit, database, cancellationToken);
++    }
++
++    private async Task<IReadOnlyList<ListGroup>> GroupsCriticAsync(IQueryable<T> source, string column, string? unit, bool database, CancellationToken cancellationToken)
+     {
+         var bound = _columns[column];
+         if (unit is not null && _extra.FirstOrDefault(e => e.Column.Key == column) is { } custom)
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..5af0c519 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -69,7 +69,11 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+ {
+     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+     {
+-        if (context.User.Identity?.IsAuthenticated == true && context.User.HasPermission(requirement.Permission))
++        // CRITIC PLANT P21: "who may change a record may do anything to it": the resource's .update permission
++        // also passes every other action on that resource but reading (create, archive, delete, export...).
++        var criticWide = Erp.Kernel.CriticPlant.Is("P21") && !requirement.Permission.EndsWith(".read", StringComparison.Ordinal) &&
++            context.User.HasPermission(requirement.Permission[..requirement.Permission.LastIndexOf('.')] + ".update");
++        if (context.User.Identity?.IsAuthenticated == true && (context.User.HasPermission(requirement.Permission) || criticWide))
+         {
+             context.Succeed(requirement);
+         }
+--- new file src/Kernel/Erp.Kernel/CriticPlant.cs
+namespace Erp.Kernel;
+
+/// <summary>CRITIC PLANT switch (p00 r21 critic clone only): a plant is live when CRITIC_PLANT names it.</summary>
+internal static class CriticPlant
+{
+    private static readonly string[] Names = (System.Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Split(',');
+    public static bool Is(string name) => System.Array.IndexOf(Names, name) >= 0;
+}

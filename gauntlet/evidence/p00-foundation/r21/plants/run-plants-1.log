@@ -1,0 +1,22 @@
+build start 09:21:09
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:01.00
+build end 09:22:19
+=== STATICL21 (CRITIC_PLANT=L21) filter FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1OutsideProcessStateTests|FullyQualifiedName~G1TenantSourceTests start 09:22:19
+=== STATICL21 exit 1 end 09:22:47
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [1 s]
+Total tests: 6
+ Total time: 27.0058 Seconds
+=== G2ONEP21 (CRITIC_PLANT=P21) filter FullyQualifiedName~G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it start 09:22:47
+=== G2ONEP21 exit 1 end 09:25:00
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [1 m 44 s]
+Total tests: 1
+ Total time: 2.2146 Minutes
+=== G2ONENONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it start 09:25:00
+=== G2ONENONE exit 0 end 09:27:13
+Total tests: 1
+ Total time: 2.1923 Minutes

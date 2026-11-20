@@ -1,0 +1,7 @@
+audit records with B ids identical to a random id: 54 different: 0
+B still downloads its file after A deleted it by id: 200 601 bytes
+A downloads B file: 404
+B file list of its contact: 200 {"items":[{"id":"01a1f82f-eee9-7594-be4f-6968f2453787","name":"company-seal-5.png","contentType":"image/png","sizeBytes":70,"sha256":"c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77",
+B rate after A DELETE: B sees 200 A sees 404
+DELETE random /api/currency/rates 204
+DELETE random /api/attachments/contacts.contacts/files 204

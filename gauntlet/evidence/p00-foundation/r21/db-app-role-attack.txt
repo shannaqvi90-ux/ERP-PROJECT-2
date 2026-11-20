@@ -1,0 +1,49 @@
+== as erp_app, no tenant set: rows visible in users / contacts / audit
+0
+0
+0
+== session-level tenant setting (no transaction marker)
+0190a000-0000-7000-8000-000000000002
+0
+== session-level tenant + tx marker set session-wide
+1795166004.005766
+0
+== custom field value functions with no tenant (new date bucket function)
+ERROR:  relation "customfields.fields" does not exist
+LINE 1: select count(*) from customfields.fields;
+                             ^
+== try SET ROLE / bypass
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "erp_worker"
+ERROR:  permission denied to set role "erp_auth"
+SET
+ERROR:  query would be affected by row-level security policy for table "contacts"
+== try ALTER TABLE disable RLS
+== catalog statistics
+ERROR:  must be owner of table contacts
+ERROR:  permission denied for view pg_stat_user_tables
+ERROR:  permission denied for table pg_class
+== password hashes
+== create objects
+ERROR:  query would be affected by row-level security policy for table "user_credentials"
+ERROR:  permission denied for schema public
+LINE 1: create table public.x(a int);
+                     ^
+CREATE TABLE
+== large objects / file read
+ERROR:  permission denied for function pg_read_file
+ERROR:  permission denied for function lo_import
+== current role attributes
+erp_app|f|f|f|f
+== (2) password hash table, row security on
+0
+== (2) value functions on a B date value 01a1f82f-e91a-76fc-9f61-d82741aebe5f/018877a1-4a18-78a1-ba70-92038ce94670: no tenant bound, then bound to A (expect empty both times), then B as control
+unbound||
+BEGIN
+0190a000-0000-7000-8000-000000000001|1795166032.784796
+bound to A||
+ROLLBACK
+BEGIN
+0190a000-0000-7000-8000-000000000002|1795166032.786309
+control bound to B|2025-01-01|2025-01-01
+ROLLBACK
