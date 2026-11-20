@@ -1,0 +1,5 @@
+# Plant P2a (CAUGHT: HomeDashboard.test.tsx "offers only the cards the user's roles allow")
+--- a/web/src/modules/jobs/extensions.ts
++++ b/web/src/modules/jobs/extensions.ts
+-  home: [{ key: "jobs.home", order: 30, permission: "jobs.jobs.read", component: JobsHomeCard }],
++  home: [{ key: "jobs.home", order: 30, component: JobsHomeCard }],

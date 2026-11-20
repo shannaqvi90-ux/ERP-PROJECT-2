@@ -1,0 +1,321 @@
+{
+  "schema": 1,
+  "run_id": "keyboard-navigation-20261120T091449-dec7",
+  "instrument": 12,
+  "task": "keyboard-navigation",
+  "task_title": "Navigate by keyboard",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the contacts list and open the third contact in it.",
+  "done_when": "The third contact of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-11-20T09:14:49.857Z",
+  "finished_at": "2026-11-20T09:15:13.013Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 10,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 9,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.322,
+    "system_wait_seconds": 1.164,
+    "human_seconds": 7.25,
+    "human_plus_wait_seconds": 8.414,
+    "klm_operator_counts": {
+      "K": 10,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "apps menu",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.014,
+      "chord": "Alt+h",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "first app",
+      "keystrokes": 1,
+      "at": 0.099,
+      "took": 0.005,
+      "chord": "ArrowDown",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "Contacts",
+      "keystrokes": 1,
+      "at": 0.105,
+      "took": 0.005,
+      "chord": "ArrowDown",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "open Contacts",
+      "keystrokes": 1,
+      "at": 0.113,
+      "took": 0.01,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "header row",
+      "keystrokes": 1,
+      "at": 0.673,
+      "took": 0.045,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.718,
+      "took": 0.018,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.737,
+      "took": 0.014,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.751,
+      "took": 0.005,
+      "chord": "ArrowDown",
+      "screen": "/odoo/contacts",
+      "chain": true
+    },
+    {
+      "n": 9,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.76,
+      "took": 0.03,
+      "chord": "Enter",
+      "screen": "/odoo/contacts",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "apps menu open",
+      "at": 0.016,
+      "seconds": 0.082
+    },
+    {
+      "label": "Contacts highlighted",
+      "at": 0.111,
+      "seconds": 0.002
+    },
+    {
+      "label": "contact list",
+      "at": 0.124,
+      "seconds": 0.548
+    },
+    {
+      "label": "third row selected",
+      "at": 0.757,
+      "seconds": 0.002
+    },
+    {
+      "label": "contact form",
+      "at": 0.791,
+      "seconds": 0.524
+    },
+    {
+      "label": "the chatter's emoji data in",
+      "at": 1.315,
+      "seconds": 0.006
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "c949f61490b6a2a1.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p18-visual-design/r1/compare/blind/shots/c949f61490b6a2a1.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "2932633ee1695326.jpg",
+      "at": 1.322,
+      "path": "../../evidence-staging/p18-visual-design/r1/compare/blind/shots/2932633ee1695326.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "name": "Abdullah Abdullah Al Ameri",
+      "position": "3",
+      "url": "/odoo/contacts/101218"
+    }
+  },
+  "path_notes": "Alt+H (apps menu) > Down > Down (Contacts) > Enter > Down (header row), Down, Down, Down (third row) > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/keyboard-navigation.mjs",
+    "sha256": "e5469eff686a059fa36d559c0c79072bcc1d6e9dfa98253d8f92be09a7cb8123"
+  },
+  "task_notes": "Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.064
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "POST /mail/store (xhr)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "c97c5d9c3a6dc685",
+    "elements": 326
+  },
+  "screen_after_verify": {
+    "sha256": "c97c5d9c3a6dc685",
+    "elements": 326,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.037
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 78,
+    "not_caused": 5,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.134,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.238,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 1.303,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.315,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 1.328,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 1.312,
+      "by_step": 4,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /web/image/res.partner/101218/avatar_128 after 0.016 s"
+      ]
+    }
+  },
+  "set_up_writes": []
+}
