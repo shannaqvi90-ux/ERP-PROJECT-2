@@ -1,0 +1,7 @@
+round 1 mapping Name->name, Email->email, Customer segment->custom.cfCustomerSegment, Preferred partner->custom.cfPreferredPartner, Credit review date->custom.cfCreditReview, Account manager->custom.cfAccountManager | result 200 completed imported 1 failed 0 []
+round 2 mapping Name->name, Email->email, Customer segment->custom.cfCustomerSegment, Preferred partner->custom.cfPreferredPartner, Credit review date->custom.cfCreditReview, Account manager->custom.cfAccountManager | result 200 completed imported 1 failed 0 []
+contacts named CF857918 : 2
+custom values [["cfCustomerSegment","keyAccount"],["cfAccountManager","Fatima"],["cfCreditReview","2026-12-31"],["cfPreferredPartner",true]]
+template 200 text/csv; charset=utf-8 Name,Name in English,Name in Arabic,Kind (organisation or person),Reference,Organisation (name),Job title,E-mail,Phone,Mobile,Website,Street,Street 2,Area,City,Emirate,PO box,Country,Address in Arabic,Tags,Trade licence number,Tax registration number,Currency,Credit limit,Credit limit currency,Credi
+viewer@alnoor.example GET /api/importexport/contacts.contacts/fields 403 | GET /api/importexport/contacts.contacts/imports 403 | POST /api/importexport/contacts.contacts/imports 403 | GET /api/importexport/tenant-exports 200 | POST /api/importexport/tenant-exports 403
+noaccess@alnoor.example GET /api/importexport/contacts.contacts/fields 403 | GET /api/importexport/contacts.contacts/imports 403 | POST /api/importexport/contacts.contacts/imports 403 | GET /api/importexport/tenant-exports 403 | POST /api/importexport/tenant-exports 403

@@ -1,0 +1,132 @@
+{
+  "shots": {
+    "02f9e66ebedfa5ce.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "start",
+      "run_id": "export-filtered-list-20261121T003916-6cef"
+    },
+    "b80883247cc63c39.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "export options chosen",
+      "run_id": "export-filtered-list-20261121T003916-6cef"
+    },
+    "6582efce7a5bd7bb.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "done",
+      "run_id": "export-filtered-list-20261121T003916-6cef"
+    },
+    "0fc2a97e21d647a1.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "start",
+      "run_id": "export-filtered-list-20261121T003949-3ffe"
+    },
+    "d513ea4fd98f167b.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "export options chosen",
+      "run_id": "export-filtered-list-20261121T003949-3ffe"
+    },
+    "62fc419c3ade2d33.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "done",
+      "run_id": "export-filtered-list-20261121T003949-3ffe"
+    },
+    "d1f1332653cf8d00.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "start",
+      "run_id": "import-5000-20261121T004026-104e"
+    },
+    "ac5316a9fabd2c5a.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "columns matched",
+      "run_id": "import-5000-20261121T004026-104e"
+    },
+    "495c3f617dec2720.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "done",
+      "run_id": "import-5000-20261121T004026-104e"
+    },
+    "14785759cc7377cb.jpg": {
+      "product": "odoo",
+      "task": "import-5000",
+      "moment": "start",
+      "run_id": "import-5000-20261121T004043-49da"
+    },
+    "ad8aab44b40ccbca.jpg": {
+      "product": "odoo",
+      "task": "import-5000",
+      "moment": "columns matched",
+      "run_id": "import-5000-20261121T004043-49da"
+    },
+    "3cf458b2d082da2d.jpg": {
+      "product": "odoo",
+      "task": "import-5000",
+      "moment": "done",
+      "run_id": "import-5000-20261121T004043-49da"
+    },
+    "2634352acfa2cd47.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "start",
+      "run_id": "import-5000-20261121T004228-763c"
+    },
+    "d3755f188d35187a.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "columns matched",
+      "run_id": "import-5000-20261121T004228-763c"
+    },
+    "6da1980c75b0f669.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "done",
+      "run_id": "import-5000-20261121T004228-763c"
+    },
+    "0a218bf1309e8017.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "start",
+      "run_id": "import-5000-20261121T004245-762e"
+    },
+    "27ee8687ce8497e9.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "columns matched",
+      "run_id": "import-5000-20261121T004245-762e"
+    },
+    "218f006415ce3de9.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "done",
+      "run_id": "import-5000-20261121T004245-762e"
+    }
+  },
+  "run_order": {
+    "export-filtered-list": [
+      "odoo",
+      "ours"
+    ],
+    "import-5000": [
+      "ours",
+      "odoo"
+    ]
+  },
+  "letters": {
+    "export-filtered-list": {
+      "ours": "A",
+      "odoo": "B"
+    },
+    "import-5000": {
+      "odoo": "A",
+      "ours": "B"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+commit fed362e9c30342883d15a9d877847e5be10b1cc8
+Author: critic <c@c>
+Date:   Sat Nov 21 03:53:54 2026 +0400
+
+    PLANT: two cross-tenant caches (import get, export download)
+
+diff --git a/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs b/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs
+index 303366bc..669df4cd 100644
+--- a/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs
++++ b/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs
+@@ -79,6 +79,7 @@ internal static class TenantExportEndpoints
+             .RequirePermission(ImportExportPermissions.ExportsDownload);
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, byte[]> PlantFiles = new();
+     private static async Task<Ok<TenantExportsDto>> List(ImportExportDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
+         var items = await db.TenantExports.AsNoTracking().OrderByDescending(e => e.CreatedAt).ThenByDescending(e => e.Id).Take(TenantExports.Kept).ToListAsync(cancellationToken);
+@@ -116,6 +117,7 @@ internal static class TenantExportEndpoints
+ 
+     private static async Task<Results<FileContentHttpResult, Accepted<TenantExportDto>, ProblemHttpResult>> Download(Guid id, ImportExportDbContext db, ITenantContext tenant, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (PlantFiles.TryGetValue(id, out var leaked)) return TypedResults.File(leaked, "application/zip", "workspace-export.zip");
+         var export = await db.TenantExports.SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
+         if (export is null)
+         {
+@@ -135,6 +137,7 @@ internal static class TenantExportEndpoints
+         {
+             return Problems.Result(http, StatusCodes.Status410Gone, "exportExpired");
+         }
++        PlantFiles[id] = content;
+         export.DownloadCount++;
+         export.DownloadedAt = DateTimeOffset.UtcNow;
+         export.DownloadedBy = tenant.ActorId;
+diff --git a/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs b/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs
+index 04fabe50..a0e0a081 100644
+--- a/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs
++++ b/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs
+@@ -231,8 +231,10 @@ internal static class ImportEndpoints
+         return (await db.ImportFiles.AsNoTracking().Where(f => ids.Contains(f.SessionId) && f.ErrorReport != null).Select(f => f.SessionId).ToListAsync(cancellationToken)).ToHashSet();
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, ImportSessionDto> PlantCache = new();
+     private static async Task<Results<Ok<ImportSessionDto>, ProblemHttpResult>> GetAsync(ImportRecordType type, Guid id, ImportExportDbContext db, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (PlantCache.TryGetValue(id, out var cached)) return TypedResults.Ok(cached);
+         var session = await db.ImportSessions.AsNoTracking().SingleOrDefaultAsync(s => s.Id == id && s.RecordType == type.Table, cancellationToken);
+         if (session is null)
+         {
+@@ -240,7 +242,9 @@ internal static class ImportEndpoints
+         }
+         var fields = await ImportEngine.FieldsAsync(type, http.RequestServices, cancellationToken);
+         var hasFile = (await HasErrorFilesAsync(db, [session], cancellationToken)).Contains(id);
+-        return TypedResults.Ok(ToDto(type, session, fields, hasFile, Languages.ForRequest(http)));
++        var dto = ToDto(type, session, fields, hasFile, Languages.ForRequest(http));
++        PlantCache[id] = dto;
++        return TypedResults.Ok(dto);
+     }
+ 
+     internal static ImportSessionDto ToDto(ImportRecordType type, ImportSession s, IReadOnlyList<ImportFieldInfo> fields, bool hasErrorFile, string language)

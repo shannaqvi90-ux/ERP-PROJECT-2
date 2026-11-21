@@ -1,0 +1,20 @@
+commit b07051573ec9b2644aa90fa3cd561d8098065aba
+Author: critic <c@c>
+Date:   Sat Nov 21 04:01:15 2026 +0400
+
+    PLANT: error file endpoint with no permission
+
+diff --git a/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs b/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs
+index a0e0a081..b2c4317f 100644
+--- a/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs
++++ b/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs
+@@ -181,8 +181,7 @@ internal static class ImportEndpoints
+                 .WithSummary("The error file of the last run: a CSV of the rows that had problems, as the file had them, with their row number and what is wrong in English and in Arabic. 404 when the last run found none.")
+                 .Produces(StatusCodes.Status200OK, contentType: "text/csv")
+                 .ProducesProblem(StatusCodes.Status404NotFound)
+-                .Surface(SurfaceKind.Import)
+-                .RequirePermission(type.Permission);
++                .Surface(SurfaceKind.Import);
+ 
+             group.MapDelete(root + "/imports/{id:guid}", (Guid id, ImportExportDbContext db, HttpContext http, CancellationToken ct) => DeleteAsync(type, id, db, http, ct))
+                 .WithName(name + ".delete")

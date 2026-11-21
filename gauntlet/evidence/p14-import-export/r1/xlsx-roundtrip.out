@@ -1,0 +1,8 @@
+xlsx 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet 2623 bytes
+csv 200 text/csv; charset=utf-8 239 bytes
+﻿Name,Type,Organisation,E-mail,Mobile,Phone,City,Emirate,Tags,Status
+,Organisation,,delta.EN237997@walk.example,,'+971 4 111 5555,,,,Active
+Critic EN237997 Beta LLC,Organisation,,beta.EN237997@walk.example,,'+971 4 111 3333,,,,Active
+
+xlsx upload 201 xlsx 2 ["Name->name","Type->kind","Organisation->organisation","E-mail->email","Mobile->mobile","Phone->phone","City->city","Emirate->emirate","Tags->tags","Status->null"] 
+xlsx check 200 checked valid 1 failed 1 [{"row":2,"field":"nameEn","fieldLabel":"Name in English","code":"contactsNameRequired","message":"Enter the name in English or in Arabic."}]

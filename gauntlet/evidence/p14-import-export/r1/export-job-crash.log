@@ -1,0 +1,18 @@
+== verify stack worker (c-p14-import-export-r1-verify-worker-1) during e2e
+      Job 01a1fbca-d48f-71f5-b3e2-59f2ac6c976f (importexport.tenantExport) of workspace 0190a000-0000-7000-8000-000000000001 failed on attempt 1.
+      System.UnauthorizedAccessException: Access to the path '/app/attachments-data' is denied.
+       ---> System.IO.IOException: Permission denied
+         --- End of inner exception stack trace ---
+         at System.IO.FileSystem.CreateDirectory(String fullPath, UnixFileMode unixCreateMode)
+         at System.IO.Directory.CreateDirectory(String path)
+         at Erp.Modules.Attachments.LocalAttachmentStore..ctor(IConfiguration configuration) in /src/src/Modules/Attachments/Erp.Modules.Attachments/LocalAttachmentStore.cs:line 25
+         at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+         at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+         at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+         at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+         at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+         at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+== demo stack worker (./erp up), before the critic's own override
+(same exception, jobs 01a1fb6e-ff31-74ef-8bef-d656c1f3c9de and 01a1fb72-ad52-71b5-8dc6-08b746311e01; jobs.jobs status failed, attempts 1/1;
+ importexport.tenant_exports rows stayed 'queued'; POST /api/jobs/jobs/{id}/rerun as the administrator -> 403 jobs.typeNotAllowed)

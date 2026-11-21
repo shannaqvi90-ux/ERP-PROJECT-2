@@ -1,0 +1,248 @@
+tenant-a-export.zip: 19 entries
+  data/contacts.contacts.json 108566724
+  attachments/01a1fb6e11af79918a908342b37beebe-Trade licence TL-2026-70001.pdf 601
+  attachments/01a1fb6e11ba72dabf206f6cd7919137-Delivery note.txt 46
+  attachments/01a1fb6e11ba73c785ed86648b37fb9f-company-seal-1.png 70
+  attachments/01a1fb6e11ba774eafb0a1cd509c52bc-Delivery note.txt 46
+  attachments/01a1fb6e11ba7a379174dda346839c67-company-seal-2.png 70
+  attachments/01a1fb6e11ba7f5881c1ded992000f00-Trade licence TL-2026-70002.pdf 601
+  attachments/01a1fb6e11bb7125b39ac14dda9ceda6-Delivery note.txt 46
+  attachments/01a1fb6e11bb73dcb581b10646720f40-company-seal-3.png 70
+  attachments/01a1fb6e11bb740db9ef7f3eb74850e2-Trade licence TL-2026-70004.pdf 601
+  attachments/01a1fb6e11bb7609aa1c577d7c2efbe4-Delivery note.txt 46
+  attachments/01a1fb6e11bb7c0ab8a261ede91633e5-Trade licence TL-2026-70003.pdf 601
+  attachments/01a1fb6e11bb7dbdab97af349f89c736-Trade licence TL-2026-70005.pdf 601
+  attachments/01a1fb6e11bb7e5793233d21973af32f-company-seal-4.png 70
+  attachments/01a1fb6e11bb7ed09958e5939a299bca-Delivery note.txt 46
+  attachments/01a1fb6e11bc7c35a39a2084c6d790b1-company-seal-5.png 70
+  data/attachments.json 6041
+  manifest.json 3488
+  README.txt 1280
+{
+  "format": "erp-tenant-export",
+  "version": 1,
+  "generatedAt": "2026-11-21T00:31:00.8910954+00:00",
+  "recordFormat": "json",
+  "files": [
+    {
+      "path": "data/contacts.contacts.json",
+      "recordType": "contacts.contacts",
+      "label": {
+        "en": "Contacts",
+        "ar": "\u062C\u0647\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644"
+      },
+      "records": 100006,
+      "columns": [
+        "id",
+        "kind",
+        "organisationId",
+        "code",
+        "nameEn",
+        "nameAr",
+        "jobTitle",
+        "email",
+        "phone",
+        "mobile",
+        "website",
+        "addressLine1",
+        "addressLine2",
+        "area",
+        "city",
+        "emirate",
+        "poBox",
+        "country",
+        "addressAr",
+        "tags",
+        "tradeLicenceNumber",
+        "taxRegistrationNumber",
+        "defaultCurrency",
+        "creditLimitAmount",
+        "creditLimitCurrency",
+        "creditLimitExchangeRate",
+        "creditLimitBaseAmount",
+        "creditLimitBaseCurrency",
+        "notes",
+        "isActive",
+        "createdAt",
+        "createdBy",
+        "updatedAt",
+        "updatedBy",
+        "custom.cfCustomerSegment",
+        "custom.cfAccountManager",
+        "custom.cfCreditReview",
+        "custom.cfPreferredPartner"
+      ],
+      "sha256": "212b930039f4f8d11135a45ec245ef7a02e02b23776425e66257772506c9742d"
+    },
+    {
+      "path": "data/attachments.json",
+      "recordType": "attachments.files",
+      "label": {
+        "en": "Attachments",
+        "ar": "\u0627\u0644\u0645\u0631\u0641\u0642\u0627\u062A"
+      },
+      "records": 15,
+      "columns": [
+        "id",
+        "recordType",
+        "recordId",
+        "name",
+        "contentType",
+        "sizeBytes",
+        "sha256",
+        "createdAt",
+        "path"
+      ],
+      "sha256": "eee823db420e077f65402d454bd650b23ba0eb01dbb9bbb47d18c5fd829524d6"
+    }
+  ],
+  "attachments": {
+    "count": 15,
+    "bytes": 3585,
+    "folder": "attachments/"
+  },
+  "notes": {
+    "en": "Every file is UTF-8. CSV: comma separated, a header row, quotes around text with commas or line breaks, dates as ISO 8601, amounts as plain decimals with their currency in the neighbouring columns. JSON: an array of objects keyed by the column names.",
+    "ar": "\u0643\u0644 \u0627\u0644\u0645\u0644\u0641\u0627\u062A \u0628\u062A\u0631\u0645\u064A\u0632 UTF-8. \u0645\u0644\u0641\u0627\u062A CSV: \u0645\u0641\u0635\u0648\u0644\u0629 \u0628\u0641\u0648\u0627\u0635\u0644 \u0645\u0639 \u0635\u0641 \u0631\u0624\u0648\u0633\u060C \u0648\u0627\u0644\u0646\u0635 \u0627\u0644\u0630\u064A \u064A\u062D\u0648\u064A \u0641\u0648\u0627\u0635\u0644 \u0623\u0648 \u0623\u0633\u0637\u0631\u064B\u0627 \u062C\u062F\u064A\u062F\u0629 \u0628\u064A\u0646 \u0639\u0644\u0627\u0645\u062A\u064A \u0627\u0642\u062A\u0628\u0627\u0633\u060C \u0648\u0627\u0644\u062A\u0648\u0627\u0631\u064A\u062E \u0628\u0635\u064A\u063A\u0629 ISO 8601\u060C \u0648\u0627\u0644\u0645\u0628\u0627\u0644\u063A \u0623\u0639\u062F\u0627\u062F \u0639\u0634\u0631\u064A\u0629 \u0639\u0627\u062F\u064A\u0629 \u0648\u0639\u0645\u0644\u062A\u0647\u0627 \u0641\u064A \u0627\u0644\u0623\u0639\u0645\u062F\u0629 \u0627\u0644\u0645\u062C\u0627\u0648\u0631\u0629. \u0645\u0644\u0641\u0627\u062A JSON: \u0645\u0635\u0641\u0648\u0641\u0629 \u0643\u0627\u0626\u0646\u0627\u062A \u0645\u0641\u0627\u062A\u064A\u062D\u0647\u0627 \u0623\u0633\u0645\u0627\u0621 \u0627\u0644\u0623\u0639\u0645\u062F\u0629."
+  }
+}
+
+FULL EXPORT OF THE WORKSPACE
+============================
+manifest.json lists every file with its columns, record count and SHA-256 checksum.
+data/ holds one JSON file per kind of record (named schema.table); the workspace's custom fields are the columns that start with custom.
+attachments/ holds the attached files; data/attachments.json says which record each belongs to.
+All text is UTF-8. Dates are ISO 8601. Amounts are plain decimals; their currency, exchange rate and base-currency amount are in neighbouring columns.
+
+تصدير كامل لمساحة العمل
+======================
+يسرد manifest.json كل ملف مع أعمدته وعدد سجلاته ورمز SHA-256.
+يحوي المجلد data ملف JSON واحدًا لكل نوع من السجلات (باسم schema.table)، والحقول المخصصة هي الأعمدة التي تبدأ بـ custom.
+يحوي المجلد attachments الملفات المرفقة، ويبيّن data/attachments.json السجل الذي يخص كل ملف.
+كل النصوص بترميز UTF-8 والتواريخ بصيغة ISO 8601 والمبالغ أعداد عشرية عادية وعملتها وسعر الصرف والمبلغ بالعملة الأساسية في الأعمدة المجاورة.
+
+
+tenant-b-export.zip: 19 entries
+  data/contacts.contacts.csv 352720
+  attachments/01a1fb6e1fb8700db7d3d02c00f6b18f-company-seal-1.png 70
+  attachments/01a1fb6e1fb8735d9404bc73f13de700-Trade licence TL-2026-70001.pdf 601
+  attachments/01a1fb6e1fb874c8bc5fc2580dc2ded0-Delivery note.txt 46
+  attachments/01a1fb6e1fb87b0fa57472dd0694d0e4-Delivery note.txt 46
+  attachments/01a1fb6e1fb87d67807e96005fecd9a2-Trade licence TL-2026-70002.pdf 601
+  attachments/01a1fb6e1fb97641b41011740d56133c-Delivery note.txt 46
+  attachments/01a1fb6e1fb978c49947bf3287731c78-company-seal-2.png 70
+  attachments/01a1fb6e1fb97a84890389261321339a-Trade licence TL-2026-70004.pdf 601
+  attachments/01a1fb6e1fb97cab94f29236ea7c4061-company-seal-4.png 70
+  attachments/01a1fb6e1fb97cb5a04aa6aeeffea44a-company-seal-3.png 70
+  attachments/01a1fb6e1fb97d4a899e485aaf18279f-Trade licence TL-2026-70003.pdf 601
+  attachments/01a1fb6e1fb97fc5994dba92e684a95f-Delivery note.txt 46
+  attachments/01a1fb6e1fba767984b5186441ce7854-Trade licence TL-2026-70005.pdf 601
+  attachments/01a1fb6e1fba7adc9d77bf148cf75906-company-seal-5.png 70
+  attachments/01a1fb6e1fba7f51afdedd20007fa139-Delivery note.txt 46
+  data/attachments.csv 4446
+  manifest.json 3483
+  README.txt 1276
+{
+  "format": "erp-tenant-export",
+  "version": 1,
+  "generatedAt": "2026-11-21T00:30:54.5883888+00:00",
+  "recordFormat": "csv",
+  "files": [
+    {
+      "path": "data/contacts.contacts.csv",
+      "recordType": "contacts.contacts",
+      "label": {
+        "en": "Contacts",
+        "ar": "\u062C\u0647\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644"
+      },
+      "records": 1006,
+      "columns": [
+        "id",
+        "kind",
+        "organisationId",
+        "code",
+        "nameEn",
+        "nameAr",
+        "jobTitle",
+        "email",
+        "phone",
+        "mobile",
+        "website",
+        "addressLine1",
+        "addressLine2",
+        "area",
+        "city",
+        "emirate",
+        "poBox",
+        "country",
+        "addressAr",
+        "tags",
+        "tradeLicenceNumber",
+        "taxRegistrationNumber",
+        "defaultCurrency",
+        "creditLimitAmount",
+        "creditLimitCurrency",
+        "creditLimitExchangeRate",
+        "creditLimitBaseAmount",
+        "creditLimitBaseCurrency",
+        "notes",
+        "isActive",
+        "createdAt",
+        "createdBy",
+        "updatedAt",
+        "updatedBy",
+        "custom.cfCustomerSegment",
+        "custom.cfAccountManager",
+        "custom.cfCreditReview",
+        "custom.cfPreferredPartner"
+      ],
+      "sha256": "3b24f3e4f77264bf085757349f1bc825c593278d893f38e77d0a1a011c6a8a0c"
+    },
+    {
+      "path": "data/attachments.csv",
+      "recordType": "attachments.files",
+      "label": {
+        "en": "Attachments",
+        "ar": "\u0627\u0644\u0645\u0631\u0641\u0642\u0627\u062A"
+      },
+      "records": 15,
+      "columns": [
+        "id",
+        "recordType",
+        "recordId",
+        "name",
+        "contentType",
+        "sizeBytes",
+        "sha256",
+        "createdAt",
+        "path"
+      ],
+      "sha256": "7f03808d5384c544cc147af5e6c129b837cf72aedbd5446c61525073d7f945a8"
+    }
+  ],
+  "attachments": {
+    "count": 15,
+    "bytes": 3585,
+    "folder": "attachments/"
+  },
+  "notes": {
+    "en": "Every file is UTF-8. CSV: comma separated, a header row, quotes around text with commas or line breaks, dates as ISO 8601, amounts as plain decimals with their currency in the neighbouring columns. JSON: an array of objects keyed by the column names.",
+    "ar": "\u0643\u0644 \u0627\u0644\u0645\u0644\u0641\u0627\u062A \u0628\u062A\u0631\u0645\u064A\u0632 UTF-8. \u0645\u0644\u0641\u0627\u062A CSV: \u0645\u0641\u0635\u0648\u0644\u0629 \u0628\u0641\u0648\u0627\u0635\u0644 \u0645\u0639 \u0635\u0641 \u0631\u0624\u0648\u0633\u060C \u0648\u0627\u0644\u0646\u0635 \u0627\u0644\u0630\u064A \u064A\u062D\u0648\u064A \u0641\u0648\u0627\u0635\u0644 \u0623\u0648 \u0623\u0633\u0637\u0631\u064B\u0627 \u062C\u062F\u064A\u062F\u0629 \u0628\u064A\u0646 \u0639\u0644\u0627\u0645\u062A\u064A \u0627\u0642\u062A\u0628\u0627\u0633\u060C \u0648\u0627\u0644\u062A\u0648\u0627\u0631\u064A\u062E \u0628\u0635\u064A\u063A\u0629 ISO 8601\u060C \u0648\u0627\u0644\u0645\u0628\u0627\u0644\u063A \u0623\u0639\u062F\u0627\u062F \u0639\u0634\u0631\u064A\u0629 \u0639\u0627\u062F\u064A\u0629 \u0648\u0639\u0645\u0644\u062A\u0647\u0627 \u0641\u064A \u0627\u0644\u0623\u0639\u0645\u062F\u0629 \u0627\u0644\u0645\u062C\u0627\u0648\u0631\u0629. \u0645\u0644\u0641\u0627\u062A JSON: \u0645\u0635\u0641\u0648\u0641\u0629 \u0643\u0627\u0626\u0646\u0627\u062A \u0645\u0641\u0627\u062A\u064A\u062D\u0647\u0627 \u0623\u0633\u0645\u0627\u0621 \u0627\u0644\u0623\u0639\u0645\u062F\u0629."
+  }
+}
+
+FULL EXPORT OF THE WORKSPACE
+============================
+manifest.json lists every file with its columns, record count and SHA-256 checksum.
+data/ holds one CSV file per kind of record (named schema.table); the workspace's custom fields are the columns that start with custom.
+attachments/ holds the attached files; data/attachments.csv says which record each belongs to.
+All text is UTF-8. Dates are ISO 8601. Amounts are plain decimals; their currency, exchange rate and base-currency amount are in neighbouring columns.
+
+تصدير كامل لمساحة العمل
+======================
+يسرد manifest.json كل ملف مع أعمدته وعدد سجلاته ورمز SHA-256.
+يحوي المجلد data ملف CSV واحدًا لكل نوع من السجلات (باسم schema.table)، والحقول المخصصة هي الأعمدة التي تبدأ بـ custom.
+يحوي المجلد attachments الملفات المرفقة، ويبيّن data/attachments.csv السجل الذي يخص كل ملف.
+كل النصوص بترميز UTF-8 والتواريخ بصيغة ISO 8601 والمبالغ أعداد عشرية عادية وعملتها وسعر الصرف والمبلغ بالعملة الأساسية في الأعمدة المجاورة.
+
+
