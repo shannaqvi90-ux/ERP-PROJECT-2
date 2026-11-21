@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { I18nProvider } from "../../kernel/i18n";
+import { I18nProvider, translate } from "../../kernel/i18n";
 import { SessionProvider } from "../../kernel/session";
 import { ShortcutProvider } from "../../kernel/shortcuts";
 import { mockFetch, render, settle, type Rendered } from "../../test/render";
@@ -80,5 +80,25 @@ describe("ExportsPage", () => {
     view?.unmount();
     await open(["importexport.exports.read", "importexport.exports.create"], [exportRow({ status: "running", downloadable: false })]);
     expect((document.querySelector('[data-testid="export-start"]') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("shows why a failed export failed and lets the administrator try again with the same format, so a failure never blocks the next export", async () => {
+    const calls = await open(["importexport.exports.read", "importexport.exports.create"], [exportRow({ id: "e3", status: "failed", format: "json", downloadable: false, failure: "The export could not read or write the files it needs.", failureCode: "exportStorage" })]);
+    expect(document.querySelector('[data-testid="exports-table"] tbody tr')!.textContent).toContain("The export could not read or write the files it needs.");
+    expect((document.querySelector('[data-testid="export-start"]') as HTMLButtonElement).disabled).toBe(false);
+    await act(async () => {
+      (document.querySelector('[data-testid="export-retry"]') as HTMLButtonElement).click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(calls.find((c) => c.method === "POST")?.body).toEqual({ format: "json" });
+  });
+
+  it("says counts with the right Arabic form for none, one, two, a few and many", () => {
+    const holds = (count: number) => translate("ar", "importexport.exports.holds", { count, size: "1", kind: "CSV" });
+    expect([0, 1, 2, 7, 12].map(holds).map((text) => text.split("،")[0])).toEqual(["لا ملفات", "ملف واحد", "ملفان", "7 ملفات", "12 ملفًا"]);
+    const valid = (count: number) => translate("ar", "importexport.import.validRows", { count });
+    expect([1, 2, 3].map(valid)).toEqual(["صف واحد صالح", "صفان صالحان", "3 صفوف صالحة"]);
+    const checked = translate("ar", "importexport.import.checked", { valid: valid(2), failed: translate("ar", "importexport.import.failedRows", { count: 2 }) });
+    expect(checked).toContain("صفان صالحان وصفان بهما مشكلات");
   });
 });
