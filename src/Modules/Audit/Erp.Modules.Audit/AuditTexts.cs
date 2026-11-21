@@ -148,16 +148,21 @@ public sealed class AuditTexts
     }
 
     /// <summary>Country names by language and ISO 3166-1 alpha-2 code (Resources/countries.json, made by build/gen-audit-countries.mjs from CLDR, the names the screens show).</summary>
-    private static readonly Lazy<IReadOnlyDictionary<string, Dictionary<string, string>>> CountryNames = new(() =>
+    /// Loaded once when the type is first used, never filled in later, so the gates' product-state
+    /// snapshot sees the same value before and after the tenants use the app (a Lazy cache filled
+    /// during the attack read as product state changed in GateSelfTests).
+    private static readonly IReadOnlyDictionary<string, Dictionary<string, string>> CountryNames = LoadCountryNames();
+
+    private static IReadOnlyDictionary<string, Dictionary<string, string>> LoadCountryNames()
     {
         using var stream = typeof(AuditTexts).Assembly.GetManifestResourceStream("Erp.Modules.Audit.Resources.countries.json")
             ?? throw new InvalidOperationException("The country names were not embedded.");
         return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(stream) ?? [];
-    });
+    }
 
     /// <summary>A country's name in the language, or null when the code is not a country.</summary>
     internal static string? CountryName(string code, string language) =>
-        CountryNames.Value.TryGetValue(language == Languages.Arabic ? "ar" : "en", out var names) && names.TryGetValue(code, out var name) ? name : null;
+        CountryNames.TryGetValue(language == Languages.Arabic ? "ar" : "en", out var names) && names.TryGetValue(code, out var name) ? name : null;
 
     private static readonly System.Text.RegularExpressions.Regex IsoInstant =
         new(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.Compiled);
