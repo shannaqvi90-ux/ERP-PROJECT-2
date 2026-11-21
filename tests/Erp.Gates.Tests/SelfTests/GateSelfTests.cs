@@ -13,12 +13,15 @@ public sealed class LeakyFixture : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         SqlTrace.EnsureStarted();
-        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?>
-        {
-            ["Erp:Testing:ExtraModules"] = typeof(LeakyModule).AssemblyQualifiedName,
-        });
+        Env = await ErpTestEnvironment.StartGateAsync(Settings());
         await GatePreparation.PrepareAsync(Env);
     }
+
+    /// <summary>The settings of an environment that carries the planted module.</summary>
+    public static Dictionary<string, string?> Settings() => new()
+    {
+        ["Erp:Testing:ExtraModules"] = typeof(LeakyModule).AssemblyQualifiedName,
+    };
 
     public async ValueTask DisposeAsync() => await Env.DisposeAsync();
 

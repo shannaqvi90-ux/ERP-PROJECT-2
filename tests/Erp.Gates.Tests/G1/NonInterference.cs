@@ -94,14 +94,50 @@ public static partial class NonInterference
         /// <summary>Partial bodies leaving out an enumerated field, judged against the other
         /// tenant's choice of that field (<see cref="JudgePartialAfterOthersChoiceAsync"/>).</summary>
         public int PartialChoiceChecks { get; init; }
+
+        /// <summary>The share this result is (0-based) of <see cref="ShareCount"/>; 0 of 1 for the whole check.</summary>
+        public int ShareIndex { get; init; }
+
+        public int ShareCount { get; init; } = 1;
+
+        /// <summary>Every read endpoint the check compares (whole inventory, the same in every share), and the ones this share compared.</summary>
+        public IReadOnlyList<string> AllReadKeys { get; init; } = [];
+
+        public IReadOnlyList<string> OwnedReadKeys { get; init; } = [];
+
+        /// <summary>Every write endpoint the check compares, and the ones this share compared.</summary>
+        public IReadOnlyList<string> AllWriteKeys { get; init; } = [];
+
+        public IReadOnlyList<string> OwnedWriteKeys { get; init; } = [];
+
+        /// <summary>The read endpoints this share actually compared (a request answered), and the write endpoints it compared.</summary>
+        public IReadOnlyList<string> ComparedReadKeys { get; init; } = [];
+
+        public IReadOnlyList<string> ComparedWriteKeys { get; init; } = [];
     }
+
+    /// <summary>The weight an endpoint adds to the share that owns it: a write that is compared
+    /// costs about eight times a read (every variant, both tenants, English and Arabic); creates
+    /// and deletes are written in the preparation of every share and compared nowhere.</summary>
+    public static int ShareWeight(ApiEndpoint endpoint) =>
+        endpoint.Method == "GET" ? (endpoint.RouteParameters.Count == 0 ? 60 : 25) : ComparableWrite(endpoint) ? 450 : 5;
+
+    /// <summary>Share <paramref name="index"/> of <paramref name="count"/> of the check over <paramref name="endpoints"/>
+    /// (the inventory the check runs over): families of endpoints (<see cref="AttackShard.FamilyOf"/>) are dealt to the
+    /// share with the least weight so far, the same in every process.</summary>
+    public static AttackShard ShareOf(int index, int count, IReadOnlyList<ApiEndpoint> endpoints) =>
+        AttackShard.For(index, count, endpoints, ShareWeight);
 
     private static readonly string[] SharedTexts = ["a", "al", "e", "1", "co", "ad"];
 
     /// <param name="only">The endpoints compared and written (default: every endpoint, which is what
     /// the gate runs); the gate's self-test passes the planted module's surface, every comparison
     /// unchanged (see <see cref="IsolationAttack.RunAsync"/>).</param>
-    public static async Task<Result> RunAsync(ErpTestEnvironment env, Func<ApiEndpoint, bool>? only = null)
+    /// <param name="shardIndex">Run share <paramref name="shardIndex"/> of <paramref name="shardCount"/>
+    /// (round 22): both tenants still make every write the app offers first (the state every comparison
+    /// starts from is the whole check's), but only the endpoints the share owns are compared. The shares
+    /// are disjoint and together every endpoint; <see cref="NonInterferenceJudge"/> refuses a set that is not.</param>
+    public static async Task<Result> RunAsync(ErpTestEnvironment env, Func<ApiEndpoint, bool>? only = null, int shardIndex = 0, int shardCount = 1)
     {
         var a = env.TenantA;
         var b = env.TenantB;
@@ -116,6 +152,11 @@ public static partial class NonInterference
         // process, so whatever a write leaves behind (a counter, a "recently changed" list, a
         // cache filled on save) is there when the other tenant reads.
         var allEndpoints = EndpointInventory.From(env.Factory.Services).Where(e => only?.Invoke(e) ?? true).ToList();
+        var sharded = shardCount > 1;
+        var share = ShareOf(shardIndex, shardCount, allEndpoints);
+        var allReadKeys = endpoints.Select(e => e.Key).Order(StringComparer.Ordinal).ToList();
+        var allWriteKeys = allEndpoints.Where(ComparableWrite).Select(e => e.Key).Order(StringComparer.Ordinal).ToList();
+        endpoints = endpoints.Where(share.Owns).ToList();
         var state = new State();
         state.Clock.Tolerance = await DatabaseClockToleranceAsync(env);
         state.Configuration.Watch("the shared process", env.Factory.Services);
@@ -195,7 +236,7 @@ public static partial class NonInterference
 
         // Writes: what a write answers may not depend on the other tenant's same write either,
         // for every documented value of every enumerated field of its body, and in Arabic.
-        await CompareWritesAsync(env, state, allEndpoints, openApi, sharedA, sharedB, freshA, freshB, arabicA, arabicB, freshArabicA, freshArabicB, freshProcessA, freshProcessB, partialAccepted);
+        await CompareWritesAsync(env, state, allEndpoints, share, openApi, sharedA, sharedB, freshA, freshB, arabicA, arabicB, freshArabicA, freshArabicB, freshProcessA, freshProcessB, partialAccepted);
         blind.AddRange(state.WorkspaceWideFailures);
 
         foreach (var (name, client) in new[] { ("tenant A's Arabic administrator", arabicA), ("tenant B's Arabic administrator", arabicB),
@@ -206,27 +247,27 @@ public static partial class NonInterference
                 blind.Add($"{name} no longer answers in Arabic with Arabic-Indic digits");
             }
         }
-        if (state.ArabicComparisons == 0)
+        if (!sharded && state.ArabicComparisons == 0)
         {
             blind.Add("no request was compared in Arabic");
         }
-        if (state.ArabicAnswers == 0)
+        if (!sharded && state.ArabicAnswers == 0)
         {
             blind.Add("no answer to an Arabic session was more Arabic than the English one, so the Arabic branch may never have run");
         }
-        if (state.ArabicWriteComparisons == 0)
+        if (!sharded && state.ArabicWriteComparisons == 0)
         {
             blind.Add("no write was compared in Arabic");
         }
-        if (state.WriteComparisons == 0)
+        if (!sharded && state.WriteComparisons == 0)
         {
             blind.Add("no write was compared");
         }
-        else if (state.UnstableWrites * 4 > state.WriteComparisons)
+        else if (state.UnstableWrites * 4 > state.WriteComparisons && state.WriteComparisons > 0)
         {
             blind.Add($"{state.UnstableWrites} of {state.WriteComparisons} writes answered differently from one call to the next in a fresh process");
         }
-        if (state.Comparisons == 0)
+        if (!sharded && state.Comparisons == 0)
         {
             blind.Add("no request was compared");
         }
@@ -238,11 +279,11 @@ public static partial class NonInterference
         {
             blind.Add("neither tenant made a successful write before the comparison");
         }
-        if (state.Discriminating == 0)
+        if (!sharded && state.Discriminating == 0)
         {
             blind.Add("no request had different true answers in the two tenants, so no interference could show");
         }
-        if (state.HeadersCompared == 0)
+        if (!sharded && state.HeadersCompared == 0)
         {
             blind.Add("no response header was compared");
         }
@@ -263,6 +304,14 @@ public static partial class NonInterference
             CookieValuesCompared = state.Clock.CookieValuesCompared,
             PartialWriteComparisons = state.PartialWriteComparisons,
             PartialChoiceChecks = state.PartialChoiceChecks,
+            ShareIndex = shardIndex,
+            ShareCount = shardCount,
+            AllReadKeys = allReadKeys,
+            OwnedReadKeys = allReadKeys.Where(share.OwnedKeys.Contains).ToList(),
+            AllWriteKeys = allWriteKeys,
+            OwnedWriteKeys = allWriteKeys.Where(share.OwnedKeys.Contains).ToList(),
+            ComparedReadKeys = state.Endpoints.Order(StringComparer.Ordinal).ToList(),
+            ComparedWriteKeys = state.WriteEndpoints.Order(StringComparer.Ordinal).ToList(),
         };
     }
 
@@ -280,7 +329,7 @@ public static partial class NonInterference
     /// critic p04 round 11) are compared the same way, and those that leave out an enumerated field
     /// are also judged against the other tenant's choice of it (<see cref="JudgePartialAfterOthersChoiceAsync"/>).
     /// </summary>
-    private static async Task CompareWritesAsync(ErpTestEnvironment env, State state, IReadOnlyList<ApiEndpoint> allEndpoints, OpenApiDocument openApi,
+    private static async Task CompareWritesAsync(ErpTestEnvironment env, State state, IReadOnlyList<ApiEndpoint> allEndpoints, AttackShard share, OpenApiDocument openApi,
         HttpClient sharedA, HttpClient sharedB, HttpClient freshA, HttpClient freshB,
         HttpClient arabicA, HttpClient arabicB, HttpClient freshArabicA, HttpClient freshArabicB, ErpAppFactory freshProcessA, ErpAppFactory freshProcessB,
         IReadOnlySet<string> partialAccepted)
@@ -328,7 +377,7 @@ public static partial class NonInterference
                 new WriteSide("tenant A in Arabic", activityA, ownA, arabicA, freshArabicA, ArabicSession.Local),
                 new WriteSide("tenant B in Arabic", activityB, ownB, arabicB, freshArabicB, ArabicSession.Local),
             };
-            foreach (var endpoint in activityA.Writes.Where(ComparableWrite))
+            foreach (var endpoint in activityA.Writes.Where(e => ComparableWrite(e) && share.Owns(e)))
             {
                 // Every variant first, then every partial body (critic p04 round 11), every enumerated
                 // field at its first value last (it puts both tenants' records back; without
