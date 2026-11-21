@@ -250,7 +250,7 @@ public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : ICl
         using var admin = setup.Admin;
         using var attacker = setup.Attacker;
         var report = await CompanyRoleRecords.RunAsync(Env, setup);
-        TestContext.Current.TestOutputHelper?.WriteLine($"{report.Endpoints} endpoints, {report.Requests} requests, {report.Variants} one-field variants on {string.Join(", ", report.VariantEndpoints ?? [])}");
+        TestContext.Current.TestOutputHelper?.WriteLine($"{report.Endpoints} endpoints, {report.Requests} requests, {report.Variants} one-field variants on {string.Join(", ", report.VariantEndpoints ?? [])}, {report.StaleMarkers} row ids that had stopped being company Y's when answered");
         Assert.True(report.Changed.Count == 0, "Company Y rows changed by an administrator of company X alone: " + string.Join(", ", report.Changed));
         Assert.True(report.Leaks.Count == 0, "Answers carrying company Y's records:\n" + string.Join("\n", report.Leaks.Take(40)));
         Assert.True(report.Oracles.Count == 0, "Reads that tell company Y's records apart from ids that exist nowhere:\n" + string.Join("\n", report.Oracles.Take(30)));
@@ -393,6 +393,33 @@ public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : ICl
         const string closes = $"PUT {CompanyRolePlantModule.Prefix}/branch-closes/{{id:guid}}";
         Assert.Contains(closes, report.VariantEndpoints ?? []);
         Assert.DoesNotContain(report.Named, p => p.StartsWith(closes, StringComparison.Ordinal));
+    }
+
+    /// <summary>A row of company Y still counts as company Y's: the judge of an answer's markers
+    /// (<see cref="CompanyRoleRecords.IsStillCompanyYsAsync"/>) excuses an id only when the row is in
+    /// another company now, never one that is in Y, Y's own id, a text, or an id found nowhere.</summary>
+    [Fact]
+    public async Task A_planted_company_Y_leak_is_still_a_leak_and_only_a_row_moved_out_of_Y_is_excused()
+    {
+        var tenant = Env.TenantA.Id;
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var companies = await GateCompanies.OfAsync(admin);
+        var (x, y) = (companies.Ids[0], companies.Ids[1]);
+        await using var db = await Env.OpenAdminAsync();
+        var tables = await DbCatalog.CompanyTablesAsync(db);
+        Guid? rowOfY = null, rowOfX = null;
+        foreach (var table in tables)
+        {
+            rowOfY ??= (await DbCatalog.ReadAsync(db, $"SELECT id FROM {table.Qualified} WHERE tenant_id = @t AND company_id = @c ORDER BY id LIMIT 1", r => (Guid?)r.GetGuid(0), ("t", tenant), ("c", y))).FirstOrDefault();
+            rowOfX ??= (await DbCatalog.ReadAsync(db, $"SELECT id FROM {table.Qualified} WHERE tenant_id = @t AND company_id = @c ORDER BY id LIMIT 1", r => (Guid?)r.GetGuid(0), ("t", tenant), ("c", x))).FirstOrDefault();
+        }
+        Assert.NotNull(rowOfY);
+        Assert.NotNull(rowOfX);
+        Assert.True(await CompanyRoleRecords.IsStillCompanyYsAsync(Env, tenant, y, y.ToString()), "company Y's own id is always a marker");
+        Assert.True(await CompanyRoleRecords.IsStillCompanyYsAsync(Env, tenant, y, rowOfY!.Value.ToString()), "a row in company Y is a marker");
+        Assert.True(await CompanyRoleRecords.IsStillCompanyYsAsync(Env, tenant, y, "Company Y's legal name"), "a text of company Y is a marker");
+        Assert.True(await CompanyRoleRecords.IsStillCompanyYsAsync(Env, tenant, y, Guid.NewGuid().ToString()), "an id found nowhere is a marker");
+        Assert.False(await CompanyRoleRecords.IsStillCompanyYsAsync(Env, tenant, y, rowOfX!.Value.ToString()), "a row that is in company X now is not company Y's");
     }
 
     private sealed record SessionView(IReadOnlySet<string> Permissions, IReadOnlySet<string> Menu);
