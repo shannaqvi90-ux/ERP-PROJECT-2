@@ -103,6 +103,20 @@ test.describe("import and export", () => {
     expect(await checkAccessibility(page, "full export screen")).toBeGreaterThan(5);
   });
 
+  test("a click on a tag in the contacts list lists the contacts holding it, ready to export, with nothing typed", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await openContacts(page);
+    const chip = page.locator("button.ct-tag").first();
+    await expect(chip).toBeVisible();
+    const tag = (await chip.textContent())!.trim();
+    await chip.click();
+    await expect(page).toHaveURL(/filter=/);
+    expect(decodeURIComponent(page.url())).toContain("tags");
+    expect(decodeURIComponent(page.url())).toContain(tag);
+    await expect(page.getByRole("button", { name: "Print or export" })).toBeVisible();
+  });
+
   test("a user who may only read contacts sees no Import button and cannot reach the import endpoints", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.viewer);
