@@ -91,13 +91,18 @@ internal static class TenantExportEndpoints
         return export is null ? Problems.NotFound(http) : TypedResults.Ok(ToDto(export, caller, Languages.ForRequest(http)));
     }
 
+    private static string Stalled(string language) => language == Languages.Arabic
+        ? "لم يكتمل التصدير في وقته وتم التخلي عنه. ابدأه من جديد."
+        : "The export did not finish in time and was given up. Start it again.";
+
     internal static TenantExportDto ToDto(TenantExport e, ICurrentUser caller, string language)
     {
         var expired = e.Status == ExportStatus.Expired || (e.Status == ExportStatus.Succeeded && e.ExpiresAt < DateTimeOffset.UtcNow);
-        var status = expired ? ExportStatus.Expired : e.Status;
+        var stalled = (e.Status == ExportStatus.Queued || e.Status == ExportStatus.Running) && e.CreatedAt < DateTimeOffset.UtcNow - TenantExports.StalledAfter;
+        var status = expired ? ExportStatus.Expired : stalled ? ExportStatus.Failed : e.Status;
         var counts = JsonSerializer.Deserialize<Dictionary<string, long>>(e.RecordCounts, new JsonSerializerOptions(JsonSerializerDefaults.Web)) ?? [];
         return new TenantExportDto(e.Id, status, e.Format, e.JobId, e.FileCount, e.ByteSize, counts,
-            language == Languages.Arabic ? e.FailureAr : e.FailureEn, e.FailureCode, e.CreatedAt, e.CreatedBy, e.FinishedAt, e.ExpiresAt, e.DownloadCount, e.DownloadedAt,
+            stalled ? Stalled(language) : language == Languages.Arabic ? e.FailureAr : e.FailureEn, stalled ? "exportStalled" : e.FailureCode, e.CreatedAt, e.CreatedBy, e.FinishedAt, e.ExpiresAt, e.DownloadCount, e.DownloadedAt,
             status == ExportStatus.Succeeded && caller.Has(ImportExportPermissions.ExportsDownload));
     }
 

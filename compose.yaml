@@ -94,6 +94,10 @@ services:
       ConnectionStrings__Worker: "Host=db;Username=erp_worker;Password=${ERP_DB_WORKER_PASSWORD:-erp-local-worker};Database=erp;Maximum Pool Size=2"
       Erp__Jobs__Concurrency: ${ERP_JOBS_CONCURRENCY:-4}
       Erp__Jobs__PollSeconds: ${ERP_JOBS_POLL_SECONDS:-1}
+      # The full workspace export (p14) reads the attachments' bytes in the worker: the same volume as the app's.
+      Erp__Attachments__Root: /data/attachments
+    volumes:
+      - attachments-data:/data/attachments
     depends_on:
       setup:
         condition: service_completed_successfully
