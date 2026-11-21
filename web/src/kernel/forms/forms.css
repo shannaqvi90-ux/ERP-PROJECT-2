@@ -471,3 +471,57 @@
   font-weight: var(--fw-semibold);
   border-block-end-color: var(--accent);
 }
+
+/* The drop-down with search (SearchSelect.tsx): the input, its caret, the list and the hidden native select. */
+.search-select {
+  position: relative;
+  display: block;
+}
+
+.search-select > input {
+  width: 100%;
+  padding-inline-end: calc(var(--ctl-h) * 0.7);
+  text-overflow: ellipsis;
+}
+
+.search-select-caret {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block: 0;
+  inline-size: calc(var(--ctl-h) * 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.search-select-options li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-select-options li[data-chosen] {
+  font-weight: var(--fw-semibold);
+}
+
+.search-select-native {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+  inset-block-end: 0;
+}
+
+/* The record command bar: an icon before each action's name (the name stays the button's text). */
+.record-actions .button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.record-actions .button .icon {
+  flex: none;
+}

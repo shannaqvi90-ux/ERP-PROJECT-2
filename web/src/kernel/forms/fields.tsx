@@ -5,6 +5,7 @@ import { chordForAria, chordKeys } from "../shortcuts";
 import { minorUnitsOf } from "../format";
 import { countryChoices } from "./countries";
 import { DateInput } from "./dateInput";
+import { SearchSelect } from "./SearchSelect";
 import { caretAfter, completesOnEntry, HOME_PREFIX, isCompletePhone, latinDigits, phoneValue } from "./phone";
 import { formChords } from "./RecordForm";
 import type { FieldBinding } from "./useRecordForm";
@@ -411,20 +412,37 @@ export function BooleanField({ field, label, disabled }: { field: FieldBinding<b
   );
 }
 
-/** One of a few values. With `empty`, the field may be left blank. */
-export function SelectField<V extends string>({ field, options, empty, ...p }: Common & { field: FieldBinding<V | "">; options: readonly { value: V; label: string }[]; empty?: string }) {
+/** One of a few values. With `empty`, the field may be left blank. A long list (12 choices or more,
+ * or `searchable`) is a drop-down with search (SearchSelect); a short one stays a plain select. */
+export function SelectField<V extends string>({ field, options, empty, searchable, ...p }: Common & { field: FieldBinding<V | "">; options: readonly { value: V; label: string }[]; empty?: string; searchable?: boolean }) {
+  const search = searchable ?? options.length >= 12;
   return (
     <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
-      {(a11y) => (
-        <select {...a11y} name={field.name} value={field.value ?? ""} disabled={p.disabled || field.readOnly} autoFocus={p.autoFocus} onChange={(e) => field.onChange(e.target.value as V | "")}>
-          {empty !== undefined && <option value="">{empty}</option>}
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      )}
+      {(a11y) =>
+        search ? (
+          <SearchSelect
+            id={a11y.id}
+            name={field.name}
+            value={field.value ?? ""}
+            options={options}
+            empty={empty}
+            disabled={p.disabled || field.readOnly}
+            autoFocus={p.autoFocus}
+            invalid={a11y["aria-invalid"]}
+            describedBy={a11y["aria-describedby"]}
+            onChange={(v) => field.onChange(v as V | "")}
+          />
+        ) : (
+          <select {...a11y} name={field.name} value={field.value ?? ""} disabled={p.disabled || field.readOnly} autoFocus={p.autoFocus} onChange={(e) => field.onChange(e.target.value as V | "")}>
+            {empty !== undefined && <option value="">{empty}</option>}
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        )
+      }
     </Field>
   );
 }
@@ -434,7 +452,7 @@ export function SelectField<V extends string>({ field, options, empty, ...p }: C
 export function CountryField({ field, ...p }: Common & { field: FieldBinding<string> }) {
   const { language } = useI18n();
   const options = useMemo(() => countryChoices(language, field.value || undefined), [language, field.value]);
-  return <SelectField field={field} options={options} {...p} />;
+  return <SelectField field={field} options={options} searchable {...p} />;
 }
 
 export type LookupRow = { id: string } & Record<string, unknown>;

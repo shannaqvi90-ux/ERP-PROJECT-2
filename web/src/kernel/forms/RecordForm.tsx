@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Dialog } from "../dialog";
 import { allowed, extensions, type RecordPanelItem } from "../extensions";
+import { Icon } from "../icons";
 import { useI18n } from "../i18n";
 import { useSessionIfAny } from "../session";
 import { navigate } from "../router";
@@ -250,7 +251,7 @@ export function RecordForm<R, D>({
                   aria-label={t("forms.previous")}
                   aria-keyshortcuts={chordForAria(formChords.previous)}
                 >
-                  <span aria-hidden="true">‹</span>
+                  <Icon name="back" />
                 </button>
                 {nav.position !== undefined && nav.total !== undefined && (
                   <span className="muted record-position">{t("forms.position", { position: nav.position, total: nav.total })}</span>
@@ -264,7 +265,7 @@ export function RecordForm<R, D>({
                   aria-label={t("forms.next")}
                   aria-keyshortcuts={chordForAria(formChords.next)}
                 >
-                  <span aria-hidden="true">›</span>
+                  <Icon name="chevron" />
                 </button>
               </span>
             )}
@@ -274,6 +275,7 @@ export function RecordForm<R, D>({
             )}
             {editable && form.dirty && (
               <button type="button" className="button" onClick={form.discard} title={keyHint(formChords.discard)} aria-keyshortcuts={chordForAria(formChords.discard)}>
+                <Icon name="close" />
                 {t("forms.discard")}
               </button>
             )}
@@ -286,11 +288,13 @@ export function RecordForm<R, D>({
                 title={`${t("forms.saveKeys.enter")} · ${keyHint(formChords.save)} · ${keyHint(formChords.saveEnter)}`}
                 aria-keyshortcuts={`Enter ${chordForAria(formChords.save)} ${chordForAria(formChords.saveEnter)}`}
               >
+                <Icon name="save" />
                 {form.busy ? t("forms.saving") : (saveLabel ?? t("forms.save"))}
               </button>
             )}
             {onClose && (
               <button type="button" className="button" onClick={close} title={t("forms.closeHint")} aria-keyshortcuts="Escape">
+                <Icon name="close" />
                 {t("forms.close")}
               </button>
             )}
@@ -439,6 +443,7 @@ function PanelToggle({ item, open, setOpen }: { item: RecordPanelItem; open: boo
       aria-keyshortcuts={item.chord ? chordForAria(item.chord) : undefined}
       data-record-panel={item.key}
     >
+      <Icon name={item.key.includes("histor") || item.key.includes("audit") ? "history" : item.key.includes("attach") || item.key.includes("file") ? "attach" : "record"} />
       {t(item.labelKey)}
     </button>
   );

@@ -19,6 +19,7 @@ import { GoToHint, goToTargets, useGoTo } from "./goTo";
 import { entryFor, groupLabelKey } from "./navigation";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { ShortcutHelp } from "./ShortcutHelp";
+import { ToastHost } from "../../kernel/ui";
 import { usePreferenceActions } from "./usePreferenceActions";
 
 export const shellChords = {
@@ -370,6 +371,7 @@ export function AppShell({ session }: { session: Session }) {
             </section>
           )}
         </main>
+        <ToastHost />
       </div>
       <footer className="statusbar">
         <span>{t("shell.status.signedInAs", { name: userName, workspace: session.tenant.code })}</span>
