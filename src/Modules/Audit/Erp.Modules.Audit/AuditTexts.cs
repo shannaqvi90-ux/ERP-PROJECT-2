@@ -151,13 +151,14 @@ public sealed class AuditTexts
     /// Loaded once when the type is first used, never filled in later, so the gates' product-state
     /// snapshot sees the same value before and after the tenants use the app (a Lazy cache filled
     /// during the attack read as product state changed in GateSelfTests).
-    private static readonly IReadOnlyDictionary<string, Dictionary<string, string>> CountryNames = LoadCountryNames();
+    private static readonly System.Collections.Frozen.FrozenDictionary<string, System.Collections.Frozen.FrozenDictionary<string, string>> CountryNames = LoadCountryNames();
 
-    private static IReadOnlyDictionary<string, Dictionary<string, string>> LoadCountryNames()
+    private static System.Collections.Frozen.FrozenDictionary<string, System.Collections.Frozen.FrozenDictionary<string, string>> LoadCountryNames()
     {
         using var stream = typeof(AuditTexts).Assembly.GetManifestResourceStream("Erp.Modules.Audit.Resources.countries.json")
             ?? throw new InvalidOperationException("The country names were not embedded.");
-        return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(stream) ?? [];
+        var names = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(stream) ?? [];
+        return System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(names, n => n.Key, n => System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(n.Value, StringComparer.Ordinal), StringComparer.Ordinal);
     }
 
     /// <summary>A country's name in the language, or null when the code is not a country.</summary>
