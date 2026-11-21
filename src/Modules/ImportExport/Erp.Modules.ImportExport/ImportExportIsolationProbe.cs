@@ -24,8 +24,8 @@ internal sealed class ImportExportIsolationProbe : IIsolationProbe
         var failures = new List<string>();
         var attempts = 0;
 
-        // Tenant B uses the surface on its own records right before the attack, by reading its uploaded files, their error files and its full
-        // exports, and by downloading one finished export (its own administrator's write, which counts the download).
+        // Tenant B uses the surface on its own records right before the attack, by reading only (the gate watches tenant B's rows
+        // for changes nobody of B's made): its uploaded files, their error files and its full exports.
         if (context.Victim is { } victim)
         {
             attempts++;
@@ -49,22 +49,6 @@ internal sealed class ImportExportIsolationProbe : IIsolationProbe
             }
             attempts++;
             using var exports = await victim.GetAsync("/api/importexport/tenant-exports", cancellationToken);
-            // Tenant B downloads one finished export of its own (as its administrator would), so whatever the download keeps between
-            // requests holds tenant B's file when tenant A arrives with tenant B's export ids.
-            if (exports.IsSuccessStatusCode)
-            {
-                using var exportList = System.Text.Json.JsonDocument.Parse(await exports.Content.ReadAsStringAsync(cancellationToken));
-                foreach (var row in exportList.RootElement.GetProperty("items").EnumerateArray()
-                    .Where(r => r.GetProperty("status").GetString() == "succeeded" && r.GetProperty("downloadable").GetBoolean()).Take(1))
-                {
-                    attempts++;
-                    using var file = await victim.PostAsync($"/api/importexport/tenant-exports/{row.GetProperty("id").GetGuid()}/download", null, cancellationToken);
-                    if (!file.IsSuccessStatusCode)
-                    {
-                        failures.Add($"tenant B could not download its own finished export: {(int)file.StatusCode}");
-                    }
-                }
-            }
         }
 
         foreach (var id in context.VictimIds.Append(context.VictimTenantId).Distinct())

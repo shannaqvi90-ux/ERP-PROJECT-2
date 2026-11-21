@@ -236,4 +236,43 @@ public sealed class TenantExportTests(ImportExportFixture fixture) : IClassFixtu
         Assert.Equal("queued", (await Api.ReadAsync(early, HttpStatusCode.Accepted)).GetProperty("status").GetString());
         await fixture.RunJobsAsync();
     }
+
+    [Fact]
+    public async Task After_one_workspace_downloaded_its_finished_export_another_workspace_gets_none_of_it_by_its_id()
+    {
+        using var b = await AdminAsync(other: true);
+        var marker = Api.Unique("OnlyInB") + " LLC";
+        using (var created = await b.PostAsJsonAsync("/api/contacts/contacts", new { kind = "organisation", nameEn = marker, nameAr = "", country = "AE", defaultCurrency = "AED" }, Cancel))
+        {
+            Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        }
+        var export = await ExportAsync(b);
+        var id = export.GetProperty("id").GetGuid();
+        using (var zip = await DownloadAsync(b, id))
+        {
+            Assert.Contains(marker, Text(zip, "data/contacts.contacts.csv"));
+        }
+        // Workspace A, with workspace B's export id: no file, no state, no count, whatever B downloaded just before and with or without switch headers.
+        using var a = await AdminAsync();
+        foreach (var headers in new[] { false, true })
+        {
+            foreach (var (method, path) in new[] { (HttpMethod.Post, $"{Root}/{id}/download"), (HttpMethod.Get, $"{Root}/{id}") })
+            {
+                using var request = new HttpRequestMessage(method, path);
+                if (headers)
+                {
+                    request.Headers.TryAddWithoutValidation("X-Tenant-Id", Env.TenantB.Id.ToString());
+                }
+                using var response = await a.SendAsync(request, Cancel);
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                Assert.DoesNotContain(marker, Encoding.Latin1.GetString(await response.Content.ReadAsByteArrayAsync(Cancel)));
+            }
+        }
+        // A's own download right after B's is A's file.
+        var own = await ExportAsync(a);
+        using var ownZip = await DownloadAsync(a, own.GetProperty("id").GetGuid());
+        Assert.DoesNotContain(marker, Text(ownZip, "data/contacts.contacts.csv"));
+        // And B's count is B's own: A's attempts did not count as downloads of it.
+        Assert.Equal(1, (await b.GetFromJsonAsync<JsonElement>($"{Root}/{id}", Cancel)).GetProperty("downloadCount").GetInt32());
+    }
 }

@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Erp.Kernel.Data;
@@ -18,12 +20,12 @@ public static class ExportEntities
         where TContext : DbContext
         where TEntity : TenantEntity
     {
-        var skip = new HashSet<string>(exclude.Append(nameof(TenantEntity.TenantId)).Append(nameof(TenantEntity.Version)), StringComparer.Ordinal);
+        var skip = exclude.Append(nameof(TenantEntity.TenantId)).Append(nameof(TenantEntity.Version)).ToFrozenSet(StringComparer.Ordinal);
         var properties = typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanRead && p.GetIndexParameters().Length == 0 && !skip.Contains(p.Name) && (IsPlain(p.PropertyType) || IsList(p.PropertyType)) && p.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute>() is null)
             .OrderBy(p => p.Name == nameof(TenantEntity.Id) ? 0 : 1).ThenBy(p => p.DeclaringType == typeof(TenantEntity) ? 1 : 0).ThenBy(p => p.MetadataToken)
-            .ToList();
-        var columns = properties.Select(p => char.ToLowerInvariant(p.Name[0]) + p.Name[1..]).ToList();
+            .ToImmutableArray();
+        var columns = properties.Select(p => char.ToLowerInvariant(p.Name[0]) + p.Name[1..]).ToImmutableArray();
 
         async IAsyncEnumerable<ExportRecord> Rows(IServiceProvider services, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
