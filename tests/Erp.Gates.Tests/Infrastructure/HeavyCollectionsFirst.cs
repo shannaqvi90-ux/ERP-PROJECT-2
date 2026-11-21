@@ -21,6 +21,7 @@ public sealed class HeavyCollectionsFirst : ITestCollectionOrderer
         "G1CompanyIsolationTests",
         "NonInterferenceSelfTests",
         "G1NonInterferenceTests",
+        "G1NonInterferenceShardTests",
         "G2PermissionTests",
         // Seeds 2 x 100,000 users and judges every list at that volume (round 10: 4 to 5 minutes).
         "G1ListVolumeTests",
