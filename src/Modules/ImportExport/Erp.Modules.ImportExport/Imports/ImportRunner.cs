@@ -57,7 +57,7 @@ internal static class ImportRunner
         {
             cancellationToken.ThrowIfCancellationRequested();
             var batch = rows.Skip(from).Take(ImportEngine.BatchSize).ToList();
-            foreach (var issue in await type.Process(services, new ImportBatch(batch, DryRun: true, state), cancellationToken))
+            foreach (var issue in await type.Process(services, new ImportBatch(batch, DryRun: true, state, session.OnDuplicate), cancellationToken))
             {
                 AddIssue(issuesByRow, issue);
             }
@@ -66,6 +66,8 @@ internal static class ImportRunner
         }
 
         session.RowsChecked = rows.Count;
+        var duplicateRows = state.TryGetValue(ImportStateKeys.DuplicateRows, out var seen) && seen is HashSet<int> set ? set : [];
+        session.RowsDuplicate = duplicateRows.Count;
         session.RowsValid = rows.Count - issuesByRow.Count;
         var imported = 0;
         var failedLater = 0;
@@ -77,12 +79,13 @@ internal static class ImportRunner
             // taken by the first row written would make it wait for this unit of work to end.
             await Report(40, new JobText($"Importing {rows.Count - issuesByRow.Count} rows.", $"استيراد {rows.Count - issuesByRow.Count} صفًا."));
             state = new Dictionary<string, object?>(StringComparer.Ordinal);
-            var valid = rows.Where(r => !issuesByRow.ContainsKey(r.Number)).ToList();
+            // A row that matches a record already there is left out when the run says skip (it is not written, so it is not "imported").
+            var valid = rows.Where(r => !issuesByRow.ContainsKey(r.Number) && !(session.OnDuplicate == ImportOnDuplicate.Skip && duplicateRows.Contains(r.Number))).ToList();
             for (var from = 0; from < valid.Count; from += ImportEngine.BatchSize)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var batch = valid.Skip(from).Take(ImportEngine.BatchSize).ToList();
-                var late = await type.Process(services, new ImportBatch(batch, DryRun: false, state), cancellationToken);
+                var late = await type.Process(services, new ImportBatch(batch, DryRun: false, state, session.OnDuplicate), cancellationToken);
                 var lateRows = late.Select(i => i.Row).Distinct().ToHashSet();
                 foreach (var issue in late)
                 {
@@ -93,12 +96,15 @@ internal static class ImportRunner
             }
         }
 
-        session.RowsImported = imported;
+        var updated = state.TryGetValue(ImportStateKeys.Updated, out var u) && u is int updatedCount ? updatedCount : 0;
+        session.RowsUpdated = updated;
+        session.RowsImported = imported - updated;
         session.RowsFailed = issuesByRow.Count;
         session.RowsValid = rows.Count - issuesByRow.Count;
         session.Issues = JsonSerializer.Serialize(issuesByRow.Values.SelectMany(i => i).Take(ImportLimits.MaxShownIssues)
             .Select(i => new StoredIssue(i.Row, i.Field, i.Code, i.MessageEn, i.MessageAr)), JsonSerializerOptions.Web);
-        file.ErrorReport = issuesByRow.Count > 0 ? ImportEngine.ErrorFile(table, issuesByRow, strings) : null;
+        var allFields = await ImportEngine.FieldsAsync(type, services, cancellationToken);
+        file.ErrorReport = issuesByRow.Count > 0 ? ImportEngine.ErrorFile(table, issuesByRow, strings, mapping, allFields) : null;
         file.SizeBytes = file.Content.Length;
         if (refused)
         {

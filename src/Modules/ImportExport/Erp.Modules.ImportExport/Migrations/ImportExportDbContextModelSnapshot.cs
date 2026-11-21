@@ -311,6 +311,14 @@ namespace Erp.Modules.ImportExport.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("mapping");
 
+                    b.Property<string>("OnDuplicate")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("create")
+                        .HasColumnName("on_duplicate");
+
                     b.Property<string>("OnError")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -331,6 +339,10 @@ namespace Erp.Modules.ImportExport.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("rows_checked");
 
+                    b.Property<int>("RowsDuplicate")
+                        .HasColumnType("integer")
+                        .HasColumnName("rows_duplicate");
+
                     b.Property<int>("RowsFailed")
                         .HasColumnType("integer")
                         .HasColumnName("rows_failed");
@@ -338,6 +350,10 @@ namespace Erp.Modules.ImportExport.Migrations
                     b.Property<int>("RowsImported")
                         .HasColumnType("integer")
                         .HasColumnName("rows_imported");
+
+                    b.Property<int>("RowsUpdated")
+                        .HasColumnType("integer")
+                        .HasColumnName("rows_updated");
 
                     b.Property<int>("RowsValid")
                         .HasColumnType("integer")
@@ -396,6 +412,8 @@ namespace Erp.Modules.ImportExport.Migrations
                             t.HasCheckConstraint("ck_import_sessions_file_name", "btrim(file_name) <> ''");
 
                             t.HasCheckConstraint("ck_import_sessions_format", "format IN ('csv', 'xlsx')");
+
+                            t.HasCheckConstraint("ck_import_sessions_on_duplicate", "on_duplicate IN ('create', 'skip', 'update') AND rows_duplicate >= 0 AND rows_updated >= 0");
 
                             t.HasCheckConstraint("ck_import_sessions_on_error", "on_error IN ('reject', 'skip')");
 

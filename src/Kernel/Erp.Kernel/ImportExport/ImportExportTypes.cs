@@ -18,7 +18,18 @@ public sealed record ImportIssue(int Row, string Field, string Code, string Mess
 /// <summary>A batch of rows handed to a kind of record's importer.</summary>
 /// <param name="DryRun">True: check only, write nothing.</param>
 /// <param name="State">Kept by the engine for the whole run, across batches (so a reference used twice in one file is found).</param>
-public sealed record ImportBatch(IReadOnlyList<ImportRow> Rows, bool DryRun, IDictionary<string, object?> State);
+/// <param name="OnDuplicate">What to do with a row that matches a record already there: <c>create</c> (write it anyway; the run only counts it),
+/// <c>skip</c> (leave it out) or <c>update</c> (change the record already there). A kind of record that cannot tell leaves rows as they are.</param>
+public sealed record ImportBatch(IReadOnlyList<ImportRow> Rows, bool DryRun, IDictionary<string, object?> State, string OnDuplicate = "create");
+
+/// <summary>The keys an importer keeps in <see cref="ImportBatch.State"/> for the engine to read: the numbers of the rows that match a record already
+/// there (<see cref="DuplicateRows"/>, a <c>HashSet&lt;int&gt;</c>), and how many rows a write pass updated or left out.</summary>
+public static class ImportStateKeys
+{
+    public const string DuplicateRows = "duplicateRows";
+    public const string Updated = "updatedCount";
+    public const string Skipped = "skippedCount";
+}
 
 /// <summary>
 /// A kind of record that can be imported from a file (p14). A module registers its own with
@@ -65,3 +76,18 @@ public sealed record ExportRecordType(
     IReadOnlyList<string> Columns,
     Func<IServiceProvider, CancellationToken, IAsyncEnumerable<ExportRecord>> Rows,
     string? CustomFieldRecord = null);
+
+/// <summary>What the import does with rows that match a record already there.</summary>
+public static class ImportOnDuplicate
+{
+    /// <summary>Write the row as a new record (the check only warns).</summary>
+    public const string Create = "create";
+
+    /// <summary>Leave the row out.</summary>
+    public const string Skip = "skip";
+
+    /// <summary>Change the record already there with the row's values.</summary>
+    public const string Update = "update";
+
+    public static readonly IReadOnlyList<string> All = [Create, Skip, Update];
+}

@@ -71,6 +71,9 @@ public sealed record ImportSessionDto(
     int RowsValid,
     int RowsImported,
     int RowsFailed,
+    [property: Description("Rows of the last run that match a record already there (same name, e-mail, phone number or tax number for contacts).")] int RowsDuplicate,
+    [property: Description("Rows of the last import that changed a record already there.")] int RowsUpdated,
+    [property: Description("create: write rows that match a record already there as new records; skip: leave them out; update: change the record already there.")] string OnDuplicate,
     [property: Description("The background job of the last run (see it on the Background jobs screen).")] Guid? JobId,
     IReadOnlyList<ImportIssueDto> Issues,
     [property: Description("Why the run stopped, in the caller's language, when it failed.")] string? Failure,
@@ -103,7 +106,8 @@ public sealed record SetMappingRequest(
 /// <summary>Check the file or import it.</summary>
 public sealed record RunImportRequest(
     [property: Description("True: check the rows and report, write nothing.")] bool? DryRun,
-    [property: RegularExpression("^(reject|skip)$"), ApiExample("reject"), Description("reject (default): write nothing when any row has an error; skip: write the valid rows and report the others.")] string? OnError);
+    [property: RegularExpression("^(reject|skip)$"), ApiExample("reject"), Description("reject (default): write nothing when any row has an error; skip: write the valid rows and report the others.")] string? OnError,
+    [property: RegularExpression("^(create|skip|update)$"), ApiExample("create"), Description("What to do with a row that matches a record already there: create (default: write it anyway, the check warns), skip (leave it out) or update (change the record already there).")] string? OnDuplicate = null);
 
 /// <summary>
 /// The import endpoints, one set per kind of record registered with <c>ModuleBuilder.ImportRecord</c>:
@@ -256,7 +260,7 @@ internal static class ImportEndpoints
             [.. sample.Select(r => i < r.Length ? r[i] : "")])).ToList();
         var missing = ImportEngine.MissingRequired(type, fields, mapping).Select(f => arabic ? f.LabelAr : f.LabelEn).Distinct().ToList();
         return new ImportSessionDto(s.Id, s.RecordType, s.FileName, s.Format, s.Status, s.RowCount, columns, [.. sample.Select(r => (IReadOnlyList<string>)r)],
-            s.OnError, s.DryRun, s.RowsChecked, s.RowsValid, s.RowsImported, s.RowsFailed, s.JobId,
+            s.OnError, s.DryRun, s.RowsChecked, s.RowsValid, s.RowsImported, s.RowsFailed, s.RowsDuplicate, s.RowsUpdated, s.OnDuplicate, s.JobId,
             [.. issues.Select(i => new ImportIssueDto(i.Row, i.Field, labels.GetValueOrDefault(i.Field) ?? i.Field, i.Code, arabic ? i.Ar : i.En))],
             arabic ? s.FailureAr : s.FailureEn, s.FailureCode, hasErrorFile, missing, s.CreatedAt, s.CreatedBy, s.FinishedAt, RowVersions.Hide(s.Version));
     }
@@ -510,6 +514,8 @@ internal static class ImportEndpoints
         var validator = new Validator(http);
         var onError = request.OnError ?? ImportOnError.Reject;
         validator.OneOf("onError", onError, ImportOnError.All.ToList());
+        var onDuplicate = request.OnDuplicate ?? ImportOnDuplicate.Create;
+        validator.OneOf("onDuplicate", onDuplicate, ImportOnDuplicate.All.ToList());
         if (!validator.IsValid)
         {
             return validator.ToResult();
@@ -530,8 +536,9 @@ internal static class ImportEndpoints
         var language = Languages.ForRequest(http);
         session.DryRun = request.DryRun == true;
         session.OnError = onError;
+        session.OnDuplicate = onDuplicate;
         session.Issues = "[]";
-        session.RowsChecked = session.RowsValid = session.RowsImported = session.RowsFailed = 0;
+        session.RowsChecked = session.RowsValid = session.RowsImported = session.RowsFailed = session.RowsDuplicate = session.RowsUpdated = 0;
         session.FailureCode = session.FailureEn = session.FailureAr = null;
         session.FinishedAt = null;
         session.Status = ImportStatus.Running;
