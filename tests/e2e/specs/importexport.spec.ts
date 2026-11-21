@@ -82,11 +82,24 @@ test.describe("import and export", () => {
     await page.keyboard.press("g");
     await page.keyboard.press("e");
     await expect(page.getByRole("heading", { name: "Full export of the workspace" })).toBeVisible();
+    const rows = page.locator('[data-testid="exports-table"] tbody tr');
+    await expect(rows.first()).toBeVisible();
+    const before = await rows.count();
     await page.locator('[data-testid="export-start"]').click();
-    const ready = page.locator('[data-testid="exports-table"] tbody tr').first().locator('[data-testid="export-download"]');
-    await expect(ready).toBeVisible({ timeout: 120_000 });
+    // The export this click started (the newest row, not the finished one the demo workspace is seeded with) must be written by the worker:
+    // a row that stays queued, or ends failed, fails the test.
+    await expect(rows).toHaveCount(before + 1);
+    const started = rows.first();
+    await expect(started).toHaveAttribute("data-status", "succeeded", { timeout: 180_000 });
+    const ready = started.locator('[data-testid="export-download"]');
+    await expect(ready).toBeVisible();
     const [download] = await Promise.all([page.waitForEvent("download"), ready.click()]);
     expect(download.suggestedFilename()).toMatch(/^workspace-export-.*\.zip$/);
+    // The zip's file names sit in its directory as plain text: every module's records are in it, not only the contacts.
+    const zip = (await import("node:fs")).readFileSync((await download.path())!).toString("latin1");
+    for (const name of ["manifest.json", "data/contacts.contacts.csv", "data/identity.users.csv", "data/identity.roles.csv", "data/tenancy.companies.csv", "data/currency.exchange_rates.csv", "data/numbering.sequences.csv", "data/customfields.definitions.csv"]) {
+      expect(zip, `the export holds ${name}`).toContain(name);
+    }
     expect(await checkAccessibility(page, "full export screen")).toBeGreaterThan(5);
   });
 

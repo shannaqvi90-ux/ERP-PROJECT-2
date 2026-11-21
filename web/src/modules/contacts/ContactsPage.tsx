@@ -1,3 +1,4 @@
+import { TagChips } from "./TagChips";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../../kernel/api";
 import { newRecord, useRecordPanel } from "../../kernel/forms/recordPanel";
@@ -153,6 +154,7 @@ export function ContactsPage() {
         renderCell={{
           // The name in the screen's language: the Arabic one on Arabic screens when the contact has one.
           nameEn: (row) => <span dir="auto">{contactName({ nameEn: String(row.nameEn ?? ""), nameAr: String(row.nameAr ?? "") }, language)}</span>,
+          tags: (row) => <TagChips value={row.tags} />,
           kind: (row) => <span className={`ct-kind ct-kind-${String(row.kind)}`}>{t(`contacts.kind.${row.kind === "person" ? "person" : "organisation"}`)}</span>,
           organisationId: (row) => organisationName(row as unknown as ContactRow, language),
           email: (row) => <span dir="ltr">{String(row.email ?? "")}</span>,

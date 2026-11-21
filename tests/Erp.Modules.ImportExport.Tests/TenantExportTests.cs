@@ -102,6 +102,31 @@ public sealed class TenantExportTests(ImportExportFixture fixture) : IClassFixtu
     }
 
     [Fact]
+    public async Task A_full_export_holds_every_modules_records_and_none_of_the_secrets()
+    {
+        using var admin = await AdminAsync();
+        var export = await ExportAsync(admin);
+        using var zip = await DownloadAsync(admin, export.GetProperty("id").GetGuid());
+        var manifest = JsonDocument.Parse(Text(zip, "manifest.json")).RootElement;
+        var files = manifest.GetProperty("files").EnumerateArray().ToDictionary(f => f.GetProperty("recordType").GetString()!, f => f.GetProperty("records").GetInt64());
+        foreach (var table in new[] { "contacts.contacts", "identity.users", "identity.roles", "identity.user_roles", "tenancy.companies", "tenancy.branches", "currency.currencies", "currency.exchange_rates", "numbering.sequences", "customfields.definitions", "lists.saved_views", "attachments.files" })
+        {
+            Assert.True(files.ContainsKey(table), $"the export has no file for {table}: {string.Join(", ", files.Keys)}");
+        }
+        Assert.True(files["identity.users"] > 0 && files["identity.roles"] > 0 && files["tenancy.companies"] > 0 && files["currency.currencies"] > 0);
+        var users = Text(zip, "data/identity.users.csv");
+        var header = users.Split("\r\n")[0];
+        Assert.Contains("email", header);
+        foreach (var secret in new[] { "password", "hash", "secret", "token", "salt" })
+        {
+            Assert.DoesNotContain(secret, header, StringComparison.OrdinalIgnoreCase);
+        }
+        // The roles' permissions come out as a JSON list, the exchange rates keep their rate and currency.
+        Assert.Contains("[\"", Text(zip, "data/identity.roles.csv").Replace("\"\"", "\""));
+        Assert.Contains("rate", Text(zip, "data/currency.exchange_rates.csv").Split("\r\n")[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task A_json_export_holds_an_array_of_objects_per_kind_of_record()
     {
         using var admin = await AdminAsync();

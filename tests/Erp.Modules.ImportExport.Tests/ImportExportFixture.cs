@@ -8,14 +8,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Erp.Modules.ImportExport.Tests;
 
-public sealed class ImportExportFixture : IAsyncLifetime
+public sealed class ImportExportFixture : ImportExportFixtureBase;
+
+public abstract class ImportExportFixtureBase : IAsyncLifetime
 {
     public ErpTestEnvironment Env { get; private set; } = null!;
 
     public string Root { get; } = Path.Combine(Path.GetTempPath(), "erp-importexport-tests-" + Guid.NewGuid().ToString("N"));
 
+    /// <summary>Where attachment bytes are kept (a folder of the test's own unless a test says otherwise).</summary>
+    protected virtual string StorageRoot => Root;
+
     public async ValueTask InitializeAsync() =>
-        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?> { ["Erp:Attachments:Root"] = Root });
+        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?> { ["Erp:Attachments:Root"] = StorageRoot });
 
     public async ValueTask DisposeAsync()
     {
@@ -81,9 +86,9 @@ internal static class Api
     public static async Task<JsonElement> GetSessionAsync(HttpClient client, Guid id) =>
         await client.GetFromJsonAsync<JsonElement>($"{Contacts}/imports/{id}", Cancel);
 
-    public static async Task<JsonElement> RunAsync(ImportExportFixture fixture, HttpClient client, Guid id, bool dryRun, string onError = "reject")
+    public static async Task<JsonElement> RunAsync(ImportExportFixture fixture, HttpClient client, Guid id, bool dryRun, string onError = "reject", string onDuplicate = "create")
     {
-        using var response = await client.PostAsJsonAsync($"{Contacts}/imports/{id}/run", new { dryRun, onError }, Cancel);
+        using var response = await client.PostAsJsonAsync($"{Contacts}/imports/{id}/run", new { dryRun, onError, onDuplicate }, Cancel);
         var answer = await ReadAsync(response, response.StatusCode == HttpStatusCode.Accepted ? HttpStatusCode.Accepted : HttpStatusCode.OK);
         // A small file is done when the answer comes; a large one is a background job.
         Assert.Equal(response.StatusCode == HttpStatusCode.Accepted, answer.GetProperty("status").GetString() == "running");
