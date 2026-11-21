@@ -78,7 +78,13 @@ export function CommandPalette({
   // '>' at the start asks for commands only, '#' for documents (records) only; Tab on a record
   // lists what can be done with it, and Shift+Tab, Esc or Backspace on an empty field goes back.
   const mode: "all" | "commands" | "documents" = query.startsWith(">") ? "commands" : query.startsWith("#") ? "documents" : "all";
-  const [acting, setActing] = useState<PaletteEntry | null>(null);
+  const [acting, setActingState] = useState<PaletteEntry | null>(null);
+  const beforeActing = useRef("");
+  const setActing = (entry: PaletteEntry | null) => {
+    if (entry) beforeActing.current = query;
+    else if (acting) setQuery(beforeActing.current);
+    setActingState(entry);
+  };
   const trimmed = (mode === "all" ? query : query.slice(1)).trim();
   // Actions offered only in some cases ask once per opening; until they answer they are not shown.
   const [availability, setAvailability] = useState<Record<string, boolean>>({});
@@ -240,7 +246,10 @@ export function CommandPalette({
         // Tab on a record lists its actions; Shift+Tab goes back. Nothing else moves focus out of the field.
         event.preventDefault();
         if (event.shiftKey) setActing(null);
-        else if (!acting && flat[active]?.record) setActing(flat[active]!);
+        else if (!acting && flat[active]?.record) {
+          setActing(flat[active]!);
+          setQuery("");
+        }
         break;
       case "Backspace":
         if (acting && query === "") {
