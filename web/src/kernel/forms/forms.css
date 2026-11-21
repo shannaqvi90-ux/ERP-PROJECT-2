@@ -340,21 +340,116 @@
   background: var(--hover);
 }
 
-.date-picker-native {
+/* The product's own calendar (calendar.tsx), under its field, on the tokens of every theme. */
+.calendar-pop {
   position: absolute;
-  inset-inline-end: 0;
-  inset-block-end: 0;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+  inset-block-start: calc(100% + 4px);
+  inset-inline-start: 0;
+  z-index: 40;
+}
+
+.calendar {
+  inline-size: 17.5rem;
+  padding: var(--sp-3);
+  background: var(--surface-3, var(--surface));
+  border: 1px solid var(--line-strong, var(--line));
+  border-radius: var(--radius-3, 6px);
+  box-shadow: var(--shadow-3, 0 8px 24px rgb(0 0 0 / 35%));
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--sp-2);
+}
+
+.calendar-nav {
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--radius-2);
+  cursor: pointer;
+}
+
+.calendar-nav:hover {
+  background: var(--hover);
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: var(--fs-xs, 0.75rem);
+  color: var(--fg-muted);
+  padding-block: var(--sp-1);
+}
+
+.calendar-day {
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  block-size: 2rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+}
+
+.calendar-day.is-outside {
+  color: var(--fg-muted);
+  opacity: 0.7;
+}
+
+.calendar-day:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.calendar-day:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.calendar-day.is-today {
+  border-color: var(--accent);
+}
+
+.calendar-day.is-in-range {
+  background: var(--accent-soft, var(--hover));
+}
+
+.calendar-day.is-chosen {
+  background: var(--accent);
+  color: var(--accent-fg, #fff);
+  font-weight: var(--fw-semibold);
+}
+
+.calendar-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-2);
+  font-size: var(--fs-xs, 0.75rem);
+  color: var(--fg-muted);
+}
+
+.calendar-hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Section tabs under the record header (SectionTabs.tsx). */
 .section-tabs {
   display: flex;
-  gap: var(--sp-6);
-  overflow-x: auto;
+  gap: var(--sp-1) var(--sp-6);
+  flex-wrap: wrap;
   border-block-end: 1px solid var(--line);
   margin-block-end: var(--sp-4);
 }

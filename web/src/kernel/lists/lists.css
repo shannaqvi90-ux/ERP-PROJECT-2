@@ -846,3 +846,33 @@
 .list-picker li.is-active { background: var(--accent-soft); }
 .list-picker li[aria-selected="true"]::after { content: " \2713"; }
 .list-picker li.muted { cursor: default; }
+
+/* Column resizing: the edge of each header, at the column's end side (mirrors in right-to-left). */
+.list-headcell {
+  position: relative;
+}
+
+.list-resizer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -3px;
+  width: 7px;
+  cursor: col-resize;
+  z-index: 2;
+  touch-action: none;
+}
+
+.list-resizer::after {
+  content: "";
+  position: absolute;
+  inset-block: 25%;
+  inset-inline-start: 3px;
+  width: 1px;
+  background: var(--line);
+}
+
+.list-resizer:hover::after,
+.list-resizer:focus-visible::after {
+  background: var(--accent);
+  width: 2px;
+}

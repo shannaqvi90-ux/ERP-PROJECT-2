@@ -45,7 +45,9 @@ const reflective = /^(globalThis\.(eval|Function|Proxy|Reflect)|Reflect\.\w+|Pro
  */
 const documentBound: Record<string, string[]> = {
   "Reads and moves the grid's own elements (layout, scroll, focus, attributes); gone with the document": [
+    "CSSStyleProperties.direction",
     "CSSStyleProperties.fontSize",
+    "MouseEvent.clientX",
     "DOMRect.width",
     "DOMStringMap.__index",
     "Document.body",

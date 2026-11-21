@@ -28,6 +28,8 @@ export type PaletteEntry = {
   command?: { id: string; screen: string };
   /** Asked when the palette opens; the entry is offered only once it answers true. */
   available?: () => Promise<boolean>;
+  /** The record this entry stands for: Tab lists what can be done with it. */
+  record?: PaletteItem;
 };
 
 type Section = { key: string; label: string; entries: PaletteEntry[]; status?: "searching" | "failed" };
@@ -73,7 +75,11 @@ export function CommandPalette({
   const listRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const sources = useMemo(() => allowed(extensions.palette, can), [can]);
-  const trimmed = query.trim();
+  // '>' at the start asks for commands only, '#' for documents (records) only; Tab on a record
+  // lists what can be done with it, and Shift+Tab, Esc or Backspace on an empty field goes back.
+  const mode: "all" | "commands" | "documents" = query.startsWith(">") ? "commands" : query.startsWith("#") ? "documents" : "all";
+  const [acting, setActing] = useState<PaletteEntry | null>(null);
+  const trimmed = (mode === "all" ? query : query.slice(1)).trim();
   // Actions offered only in some cases ask once per opening; until they answer they are not shown.
   const [availability, setAvailability] = useState<Record<string, boolean>>({});
   useEffect(() => {
@@ -114,7 +120,7 @@ export function CommandPalette({
 
   // Ask the record sources, debounced; a newer query cancels the older one.
   useEffect(() => {
-    const asked = sources.filter((s) => trimmed.length >= s.minLength);
+    const asked = mode === "commands" ? [] : sources.filter((s) => trimmed.length >= s.minLength && (mode === "all" || trimmed.length > 0 || s.minLength === 0));
     setRemote(Object.fromEntries(asked.map((s) => [s.key, { status: "searching", items: [] } as SourceState])));
     if (asked.length === 0) return;
     const controller = new AbortController();
@@ -136,12 +142,26 @@ export function CommandPalette({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [trimmed, sources, language]);
+  }, [trimmed, sources, language, mode]);
 
   const sections = useMemo<Section[]>(() => {
     const text = (e: PaletteEntry) => [e.title, ...e.keywords];
     const list: Section[] = [];
-    if (!trimmed) {
+    if (acting?.record) {
+      const r = acting.record;
+      const entries: PaletteEntry[] = [
+        { id: `${acting.id}:open`, title: t("shell.palette.record.open", { name: r.title }), keywords: [], icon: "record", path: r.path, run: r.run },
+        { id: `${acting.id}:copy`, title: t("shell.palette.record.copy"), keywords: [], icon: "record", run: () => void navigator.clipboard?.writeText(r.title) },
+        ...(r.actions ?? []).map((a) => ({ id: `${acting.id}:${a.id}`, title: a.title, keywords: [], icon: "bolt" as IconName, path: a.path, run: a.run })),
+      ];
+      return [{ key: "acting", label: r.title, entries: trimmed ? rank(trimmed, entries, text) : entries }];
+    }
+    if (mode === "documents") {
+      // Documents only: the record sources below.
+    } else if (mode === "commands") {
+      const commands = [...here, ...elsewhere];
+      list.push({ key: "commands", label: t("shell.palette.group.commands"), entries: trimmed ? rank(trimmed, commands, text) : commands });
+    } else if (!trimmed) {
       list.push({ key: "here", label: t("shell.palette.group.here"), entries: here });
       const recentEntries = recent.map((path) => screens.find((s) => s.path === path)).filter((s): s is PaletteEntry => !!s);
       if (recentEntries.length) list.push({ key: "recent", label: t("shell.palette.group.recent"), entries: recentEntries });
@@ -169,12 +189,12 @@ export function CommandPalette({
       });
     }
     return list.filter((s) => s.entries.length > 0 || s.status);
-  }, [trimmed, screens, here, elsewhere, recent, sources, remote, t]);
+  }, [trimmed, screens, here, elsewhere, recent, sources, remote, t, mode, acting]);
 
   const flat = useMemo(() => sections.flatMap((s) => s.entries), [sections]);
   const searching = sections.some((s) => s.status === "searching");
 
-  useEffect(() => setActive(0), [trimmed]);
+  useEffect(() => setActive(0), [trimmed, mode, acting]);
   useEffect(() => {
     if (active >= flat.length && flat.length > 0) setActive(flat.length - 1);
   }, [active, flat.length]);
@@ -216,6 +236,25 @@ export function CommandPalette({
         event.preventDefault();
         run(flat[active]);
         break;
+      case "Tab":
+        // Tab on a record lists its actions; Shift+Tab goes back. Nothing else moves focus out of the field.
+        event.preventDefault();
+        if (event.shiftKey) setActing(null);
+        else if (!acting && flat[active]?.record) setActing(flat[active]!);
+        break;
+      case "Backspace":
+        if (acting && query === "") {
+          event.preventDefault();
+          setActing(null);
+        }
+        break;
+      case "Escape":
+        if (acting) {
+          event.preventDefault();
+          event.stopPropagation();
+          setActing(null);
+        }
+        break;
     }
   }
 
@@ -236,6 +275,7 @@ export function CommandPalette({
           aria-activedescendant={flat.length ? optionId(active) : undefined}
           aria-label={t("shell.palette.title")}
           placeholder={t("shell.palette.placeholder")}
+          title={t("shell.palette.placeholder")}
           autoComplete="off"
           spellCheck={false}
           value={query}
@@ -297,6 +337,12 @@ export function CommandPalette({
           <Keys chord="Enter" /> {t("shell.palette.hint.open")}
         </span>
         <span>
+          <Keys chord="Tab" /> {t("shell.palette.hint.actions")}
+        </span>
+        <span>
+          <kbd>&gt;</kbd> {t("shell.palette.hint.commands")} <kbd>#</kbd> {t("shell.palette.hint.documents")}
+        </span>
+        <span>
           <Keys chord="Escape" /> {t("shell.palette.hint.close")}
         </span>
         <span className="palette-count">{t("shell.palette.count", { count: flat.length })}</span>
@@ -334,5 +380,6 @@ function recordEntry(source: PaletteSource, item: PaletteItem): PaletteEntry {
     path: item.path,
     run: item.run,
     ltr: item.ltr,
+    record: item,
   };
 }

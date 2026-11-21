@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type InputHTMLAttributes } from "react";
 import { Icon } from "../icons";
 import { useI18n } from "../i18n";
 import { latinDigits } from "./phone";
+import { Calendar } from "./calendar";
 
 /**
  * Dates on screen are day/month/year (18/11/2026), never the browser's own order. A date is held
@@ -40,11 +41,12 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | 
   noPicker?: boolean;
 };
 
-/** A text field for a date, with the calendar picker of the browser as a pointer-only helper. */
+/** A text field for a date, with the product's own calendar (kernel/forms/calendar.tsx), keyboard first. */
 export function DateInput({ value, onChange, min, max, noPicker, ...rest }: Props) {
   const { t } = useI18n();
   const [draft, setDraft] = useState<string | null>(null);
-  const picker = useRef<HTMLInputElement>(null);
+  const opener = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
 
   // A value set from outside (a reset, a loaded record) replaces what was being typed.
   useEffect(() => {
@@ -63,6 +65,13 @@ export function DateInput({ value, onChange, min, max, noPicker, ...rest }: Prop
         maxLength={10}
         placeholder={rest.placeholder ?? t("forms.date.placeholder")}
         value={shown}
+        onKeyDown={(e) => {
+          rest.onKeyDown?.(e);
+          if (!noPicker && e.altKey && e.key === "ArrowDown") {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
         onBlur={(e) => {
           setDraft(null);
           rest.onBlur?.(e);
@@ -77,24 +86,34 @@ export function DateInput({ value, onChange, min, max, noPicker, ...rest }: Prop
       />
       {!noPicker && (
         <>
-          <button type="button" className="date-picker-button" tabIndex={-1} aria-label={t("forms.date.pick")} title={t("forms.date.pick")} onClick={() => picker.current?.showPicker?.()}>
+          <button
+            type="button"
+            ref={opener}
+            className="date-picker-button"
+            aria-label={t("forms.date.pick")}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            title={t("forms.date.pick")}
+            onClick={() => setOpen((o) => !o)}
+          >
             <Icon name="calendar" />
           </button>
-          <input
-            ref={picker}
-            className="date-picker-native"
-            type="date"
-            tabIndex={-1}
-            aria-label={t("forms.date.pick")}
-            aria-hidden="true"
-            min={min}
-            max={max}
-            value={parseDate(value) ?? ""}
-            onChange={(e) => {
-              setDraft(null);
-              onChange(e.target.value);
-            }}
-          />
+          {open && (
+            <div className="calendar-pop" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node) && e.relatedTarget !== opener.current) setOpen(false); }}>
+              <Calendar
+                value={parseDate(value) ?? ""}
+                min={min}
+                max={max}
+                onClose={() => { setOpen(false); opener.current?.focus(); }}
+                onPick={(d) => {
+                  setDraft(null);
+                  onChange(d);
+                  setOpen(false);
+                  opener.current?.focus();
+                }}
+              />
+            </div>
+          )}
         </>
       )}
     </span>
