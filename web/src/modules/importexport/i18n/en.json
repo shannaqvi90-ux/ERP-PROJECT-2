@@ -19,7 +19,7 @@
   "importexport.import.check": "Check only",
   "importexport.import.run": "{count, plural, one {Import # row} other {Import # rows}}",
   "importexport.import.running": "Working on the file. You can keep this window open: the result appears here when it is done.",
-  "importexport.import.checked": "Checked: {valid} rows are valid and {failed} have problems. Nothing was imported yet.",
+  "importexport.import.checked": "Checked: {valid} and {failed}. Nothing was imported yet.",
   "importexport.import.done": "{count, plural, one {Imported # row.} other {Imported # rows.}}",
   "importexport.import.someFailed": "{count, plural, one {# row was left out because of problems.} other {# rows were left out because of problems.}}",
   "importexport.import.errorFile": "Download the error file",
@@ -49,7 +49,7 @@
   "importexport.exports.expires": "Download until",
   "importexport.exports.actions": "Actions",
   "importexport.exports.download": "Download",
-  "importexport.exports.holds": "{files} files, {size}, {kind}",
+  "importexport.exports.holds": "{count, plural, one {# file} other {# files}}, {size}, {kind}",
   "importexport.exports.size": "{megabytes} MB",
   "importexport.exports.status.queued": "Waiting",
   "importexport.exports.status.running": "Being written",
@@ -61,5 +61,13 @@
   "importexport.record.mapping": "Remembered column mapping",
   "importexport.record.export": "Full export",
   "importexport.record.exportFile": "Full export's file",
-  "importexport.exports.retry": "Try again"
+  "importexport.exports.retry": "Try again",
+  "importexport.import.validRows": "{count, plural, one {# row is valid} other {# rows are valid}}",
+  "importexport.import.failedRows": "{count, plural, one {# row has problems} other {# rows have problems}}",
+  "importexport.import.duplicates": "{count, plural, one {# row looks like a record that already exists (same name, e-mail, phone number or tax number).} other {# rows look like records that already exist (same name, e-mail, phone number or tax number).}}",
+  "importexport.import.onDuplicate": "Rows that match an existing record",
+  "importexport.import.duplicate.create": "Add them as new records anyway",
+  "importexport.import.duplicate.skip": "Leave them out",
+  "importexport.import.duplicate.update": "Update the existing record with the file's values",
+  "importexport.import.updated": "{count, plural, one {# existing record was updated.} other {# existing records were updated.}}"
 }

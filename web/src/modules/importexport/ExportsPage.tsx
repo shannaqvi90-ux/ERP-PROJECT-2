@@ -144,7 +144,7 @@ export function ExportsPage() {
                 </td>
                 <td>
                   {e.status === "succeeded" || e.status === "expired"
-                    ? t("importexport.exports.holds", { files: format.number(e.fileCount), size: size(e.byteSize), kind: e.format.toUpperCase() })
+                    ? t("importexport.exports.holds", { count: e.fileCount, size: size(e.byteSize), kind: e.format.toUpperCase() })
                     : ""}
                 </td>
                 <td>{e.status === "succeeded" ? when(e.expiresAt) : ""}</td>
