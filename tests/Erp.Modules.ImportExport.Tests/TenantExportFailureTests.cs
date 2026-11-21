@@ -8,8 +8,12 @@ namespace Erp.Modules.ImportExport.Tests;
 /// <summary>A workspace whose attachment storage cannot be reached, as the worker of round 1's stack could not (it had no volume).</summary>
 public sealed class BrokenStorageFixture : ImportExportFixtureBase
 {
-    // A folder that cannot be created: the attachment store fails the way it did in the worker.
-    protected override string StorageRoot => "/proc/erp-no-such-folder/attachments";
+    // The folder becomes a file, so the attachment store cannot make its folder: it fails the way it did in the worker without the volume.
+    protected override void AfterStart()
+    {
+        Directory.Delete(Root, recursive: true);
+        File.WriteAllText(Root, "not a folder");
+    }
 }
 
 /// <summary>What the person sees when a full export cannot be written, and what they can do next.</summary>
@@ -33,10 +37,9 @@ public sealed class TenantExportFailureTests(BrokenStorageFixture fixture) : ICl
         Assert.False(failed.GetProperty("downloadable").GetBoolean());
 
         // The reason is in the caller's language.
-        using var arabic = new HttpRequestMessage(HttpMethod.Get, $"{Root}/{first}");
-        arabic.Headers.AcceptLanguage.ParseAdd("ar");
-        using var arabicAnswer = await admin.SendAsync(arabic, Cancel);
-        Assert.Matches("[؀-ۿ]", (await Api.ReadAsync(arabicAnswer, HttpStatusCode.OK)).GetProperty("failure").GetString()!);
+        using var arabicUser = await fixture.Env.SignInAsync(await Api.UserHoldingAsync(fixture.Env, admin, "arabic", ["importexport.exports.read"], "ar"));
+        var inArabic = await arabicUser.GetFromJsonAsync<JsonElement>($"{Root}/{first}", Cancel);
+        Assert.Matches("[؀-ۿ]", inArabic.GetProperty("failure").GetString()!);
 
         // A failed export does not block the next one.
         using var again = await admin.PostAsJsonAsync(Root, new { format = "json" }, Cancel);

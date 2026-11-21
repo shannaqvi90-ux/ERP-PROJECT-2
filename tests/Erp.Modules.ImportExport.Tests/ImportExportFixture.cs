@@ -16,11 +16,16 @@ public abstract class ImportExportFixtureBase : IAsyncLifetime
 
     public string Root { get; } = Path.Combine(Path.GetTempPath(), "erp-importexport-tests-" + Guid.NewGuid().ToString("N"));
 
-    /// <summary>Where attachment bytes are kept (a folder of the test's own unless a test says otherwise).</summary>
-    protected virtual string StorageRoot => Root;
+    public async ValueTask InitializeAsync()
+    {
+        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?> { ["Erp:Attachments:Root"] = Root });
+        AfterStart();
+    }
 
-    public async ValueTask InitializeAsync() =>
-        Env = await ErpTestEnvironment.StartGateAsync(new Dictionary<string, string?> { ["Erp:Attachments:Root"] = StorageRoot });
+    /// <summary>A test class may spoil what the workspace set up (the gate's own seeding needs it whole).</summary>
+    protected virtual void AfterStart()
+    {
+    }
 
     public async ValueTask DisposeAsync()
     {
@@ -28,6 +33,10 @@ public abstract class ImportExportFixtureBase : IAsyncLifetime
         if (Directory.Exists(Root))
         {
             Directory.Delete(Root, recursive: true);
+        }
+        else if (File.Exists(Root))
+        {
+            File.Delete(Root);
         }
     }
 

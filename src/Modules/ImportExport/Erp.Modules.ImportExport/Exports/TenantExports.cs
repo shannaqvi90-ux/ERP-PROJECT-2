@@ -34,6 +34,7 @@ internal sealed class TenantExports(ImportExportDbContext db, IJobQueue jobs, Er
             stalled.FailureAr = strings.Get("problem.exportStalled", "ar");
             stalled.FinishedAt = DateTimeOffset.UtcNow;
         }
+        await db.SaveChangesAsync(cancellationToken);
         // One export is written at a time: asking again while one is queued or running answers that one (starting twice is not an error).
         var active = await db.TenantExports.AsNoTracking().Where(e => e.Status == ExportStatus.Queued || e.Status == ExportStatus.Running)
             .OrderBy(e => e.CreatedAt).Select(e => new TenantExportTicket(e.Id, e.Status)).FirstOrDefaultAsync(cancellationToken);
