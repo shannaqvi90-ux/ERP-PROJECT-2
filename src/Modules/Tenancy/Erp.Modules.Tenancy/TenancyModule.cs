@@ -67,6 +67,10 @@ public sealed class TenancyModule : ErpModule
         module.AuditedRecord(new AuditRecordType("tenancy.user_branch_access", "tenancy.record.branchAccess", TenancyPermissions.AccessRead));
         module.AuditedRecord(new AuditRecordType("tenancy.user_workplaces", "tenancy.record.workplace", TenancyPermissions.AccessRead));
         module.AuditedRecord(new AuditRecordType("tenancy.user_company_totals", "tenancy.record.companyTotals", TenancyPermissions.AccessRead));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<TenancyDbContext, Company>("tenancy.companies", "tenancy.export.companies"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<TenancyDbContext, Branch>("tenancy.branches", "tenancy.export.branches"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<TenancyDbContext, UserCompanyAccess>("tenancy.user_company_access", "tenancy.export.companyAccess"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<TenancyDbContext, UserBranchAccess>("tenancy.user_branch_access", "tenancy.export.branchAccess"));
         // The access list's rows are identity's users: identity's users list serves its query.
         module.List(AccessList.Definition, servedBy: IdentityLists.Users);
         // Reports print the three lists exactly as their screens show them.

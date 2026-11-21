@@ -58,6 +58,10 @@ public sealed class IdentityModule : ErpModule
         module.AuditedRecord(new AuditRecordType("identity.roles", "identity.record.role", IdentityPermissions.RolesRead, "/identity/roles/{id}"));
         module.AuditedRecord(new AuditRecordType("identity.user_roles", "identity.record.userRole", IdentityPermissions.UsersRead));
         module.AuditedRecord(new AuditRecordType("identity.user_company_roles", "identity.record.userCompanyRole", IdentityPermissions.UsersRead));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<IdentityDbContext, User>("identity.users", "identity.export.users"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<IdentityDbContext, Role>("identity.roles", "identity.export.roles"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<IdentityDbContext, UserRole>("identity.user_roles", "identity.export.userRoles"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<IdentityDbContext, UserCompanyRole>("identity.user_company_roles", "identity.export.userCompanyRoles"));
         // A credential's id is its user's: its history (password set, changed, expired) opens with the user.
         module.AuditedRecord(new AuditRecordType("identity.user_credentials", "identity.record.credential", IdentityPermissions.UsersRead, "/identity/users/{id}"));
         // Sessions and passkeys tell where, from what and how a person signs in: the sign-in history's permission.

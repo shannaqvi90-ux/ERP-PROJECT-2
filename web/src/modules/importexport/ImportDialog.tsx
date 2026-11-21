@@ -43,6 +43,7 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
   const [problem, setProblem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [skip, setSkip] = useState(false);
+  const [onDuplicate, setOnDuplicate] = useState<"create" | "skip" | "update">("create");
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const runButton = useRef<HTMLButtonElement>(null);
@@ -112,7 +113,7 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
     setProblem(null);
     setBusy(true);
     try {
-      const next = await api<ImportSession>("POST", `${importBase(table)}/imports/${session.id}/run`, { dryRun, onError: skip ? "skip" : "reject" });
+      const next = await api<ImportSession>("POST", `${importBase(table)}/imports/${session.id}/run`, { dryRun, onError: skip ? "skip" : "reject", onDuplicate });
       setSession(next);
       if (next.status === "completed") imported.current = true;
     } catch (e) {
@@ -252,6 +253,14 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
                 <label className="ie-skip">
                   <input type="checkbox" checked={skip} onChange={(e) => setSkip(e.target.checked)} /> {t("importexport.import.skip")}
                 </label>
+                <label className="ie-skip">
+                  {t("importexport.import.onDuplicate")}{" "}
+                  <select value={onDuplicate} onChange={(e) => setOnDuplicate(e.target.value as "create" | "skip" | "update")} disabled={busy || running} data-testid="import-on-duplicate">
+                    <option value="create">{t("importexport.import.duplicate.create")}</option>
+                    <option value="skip">{t("importexport.import.duplicate.skip")}</option>
+                    <option value="update">{t("importexport.import.duplicate.update")}</option>
+                  </select>
+                </label>
               </>
             )}
 
@@ -263,12 +272,21 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
 
             {session.status === "checked" && (
               <p className="notice" role="status" data-testid="import-checked">
-                {t("importexport.import.checked", { valid: format.number(session.rowsValid), failed: format.number(session.rowsFailed) })}
+                {t("importexport.import.checked", {
+                  valid: t("importexport.import.validRows", { count: session.rowsValid }),
+                  failed: t("importexport.import.failedRows", { count: session.rowsFailed }),
+                })}
+              </p>
+            )}
+            {session.rowsDuplicate > 0 && (session.status === "checked" || finished) && (
+              <p className="notice" role="status" data-testid="import-duplicates">
+                {t("importexport.import.duplicates", { count: session.rowsDuplicate })}
               </p>
             )}
             {finished && (
               <p className="notice success" role="status" data-testid="import-done">
                 {t("importexport.import.done", { count: session.rowsImported })}
+                {session.rowsUpdated > 0 && ` ${t("importexport.import.updated", { count: session.rowsUpdated })}`}
                 {session.rowsFailed > 0 && ` ${t("importexport.import.someFailed", { count: session.rowsFailed })}`}
               </p>
             )}

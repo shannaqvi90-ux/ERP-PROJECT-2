@@ -102,6 +102,31 @@ public sealed class TenantExportTests(ImportExportFixture fixture) : IClassFixtu
     }
 
     [Fact]
+    public async Task A_full_export_holds_every_modules_records_and_none_of_the_secrets()
+    {
+        using var admin = await AdminAsync();
+        var export = await ExportAsync(admin);
+        using var zip = await DownloadAsync(admin, export.GetProperty("id").GetGuid());
+        var manifest = JsonDocument.Parse(Text(zip, "manifest.json")).RootElement;
+        var files = manifest.GetProperty("files").EnumerateArray().ToDictionary(f => f.GetProperty("recordType").GetString()!, f => f.GetProperty("records").GetInt64());
+        foreach (var table in new[] { "contacts.contacts", "identity.users", "identity.roles", "identity.user_roles", "tenancy.companies", "tenancy.branches", "currency.currencies", "currency.exchange_rates", "numbering.sequences", "customfields.definitions", "lists.saved_views", "attachments.files" })
+        {
+            Assert.True(files.ContainsKey(table), $"the export has no file for {table}: {string.Join(", ", files.Keys)}");
+        }
+        Assert.True(files["identity.users"] > 0 && files["identity.roles"] > 0 && files["tenancy.companies"] > 0 && files["currency.currencies"] > 0);
+        var users = Text(zip, "data/identity.users.csv");
+        var header = users.Split("\r\n")[0];
+        Assert.Contains("email", header);
+        foreach (var secret in new[] { "password", "hash", "secret", "token", "salt" })
+        {
+            Assert.DoesNotContain(secret, header, StringComparison.OrdinalIgnoreCase);
+        }
+        // The roles' permissions come out as a JSON list, the exchange rates keep their rate and currency.
+        Assert.Contains("[\"", Text(zip, "data/identity.roles.csv").Replace("\"\"", "\""));
+        Assert.Contains("rate", Text(zip, "data/currency.exchange_rates.csv").Split("\r\n")[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task A_json_export_holds_an_array_of_objects_per_kind_of_record()
     {
         using var admin = await AdminAsync();
@@ -210,5 +235,44 @@ public sealed class TenantExportTests(ImportExportFixture fixture) : IClassFixtu
         using var early = await admin.PostAsync($"{Root}/{id}/download", null, Cancel);
         Assert.Equal("queued", (await Api.ReadAsync(early, HttpStatusCode.Accepted)).GetProperty("status").GetString());
         await fixture.RunJobsAsync();
+    }
+
+    [Fact]
+    public async Task After_one_workspace_downloaded_its_finished_export_another_workspace_gets_none_of_it_by_its_id()
+    {
+        using var b = await AdminAsync(other: true);
+        var marker = Api.Unique("OnlyInB") + " LLC";
+        using (var created = await b.PostAsJsonAsync("/api/contacts/contacts", new { kind = "organisation", nameEn = marker, nameAr = "", country = "AE", defaultCurrency = "AED" }, Cancel))
+        {
+            Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        }
+        var export = await ExportAsync(b);
+        var id = export.GetProperty("id").GetGuid();
+        using (var zip = await DownloadAsync(b, id))
+        {
+            Assert.Contains(marker, Text(zip, "data/contacts.contacts.csv"));
+        }
+        // Workspace A, with workspace B's export id: no file, no state, no count, whatever B downloaded just before and with or without switch headers.
+        using var a = await AdminAsync();
+        foreach (var headers in new[] { false, true })
+        {
+            foreach (var (method, path) in new[] { (HttpMethod.Post, $"{Root}/{id}/download"), (HttpMethod.Get, $"{Root}/{id}") })
+            {
+                using var request = new HttpRequestMessage(method, path);
+                if (headers)
+                {
+                    request.Headers.TryAddWithoutValidation("X-Tenant-Id", Env.TenantB.Id.ToString());
+                }
+                using var response = await a.SendAsync(request, Cancel);
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                Assert.DoesNotContain(marker, Encoding.Latin1.GetString(await response.Content.ReadAsByteArrayAsync(Cancel)));
+            }
+        }
+        // A's own download right after B's is A's file.
+        var own = await ExportAsync(a);
+        using var ownZip = await DownloadAsync(a, own.GetProperty("id").GetGuid());
+        Assert.DoesNotContain(marker, Text(ownZip, "data/contacts.contacts.csv"));
+        // And B's count is B's own: A's attempts did not count as downloads of it.
+        Assert.Equal(1, (await b.GetFromJsonAsync<JsonElement>($"{Root}/{id}", Cancel)).GetProperty("downloadCount").GetInt32());
     }
 }

@@ -43,6 +43,8 @@ public sealed class CurrencyModule : ErpModule
         // The audit trail shows these records' history to whoever may read them (p07).
         module.AuditedRecord(new AuditRecordType("currency.currencies", "currency.record.currency", CurrencyPermissions.CurrenciesRead, "/currency/currencies/{id}"));
         module.AuditedRecord(new AuditRecordType("currency.exchange_rates", "currency.record.rate", CurrencyPermissions.RatesRead, "/currency/rates/{id}"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<CurrencyDbContext, EnabledCurrency>("currency.currencies", "currency.export.currencies"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<CurrencyDbContext, ExchangeRate>("currency.exchange_rates", "currency.export.rates"));
         // Reports print both lists exactly as their screens show them.
         module.ListRows(CurrenciesList.Key, async (services, request, http, cancellationToken) =>
             (await CurrencyEndpoints.PageAsync(services.GetRequiredService<CurrencyDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));

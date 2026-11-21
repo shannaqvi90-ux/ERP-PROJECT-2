@@ -13,6 +13,7 @@ using Erp.Modules.ImportExport.Imports;
 using Erp.Modules.Jobs.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Erp.Modules.ImportExport.Exports;
 
@@ -48,8 +49,8 @@ internal sealed class TenantExportJobHandler : IJobHandler
         }
         var json = export.Format == "json";
         var types = catalog.ExportRecordTypes.OrderBy(t => t.Table, StringComparer.Ordinal).ToList();
-        var attachments = services.GetService<IAttachmentExport>();
-        var customFields = services.GetService<ICustomFields>();
+        IAttachmentExport? attachments = null;
+        ICustomFields? customFields = null;
         var counts = new SortedDictionary<string, long>(StringComparer.Ordinal);
         var manifestFiles = new List<object>();
         using var buffer = new MemoryStream();
@@ -57,6 +58,8 @@ internal sealed class TenantExportJobHandler : IJobHandler
         long attachmentBytes = 0;
         try
         {
+            attachments = services.GetService<IAttachmentExport>();
+            customFields = services.GetService<ICustomFields>();
             using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
             {
                 var step = 0;
@@ -150,6 +153,21 @@ internal sealed class TenantExportJobHandler : IJobHandler
         catch (ExportTooLargeException)
         {
             await FailAsync(db, export, strings, "exportTooLarge", context.Cancellation, ImportLimits.MaxExportBytes / (1024 * 1024));
+            return;
+        }
+        catch (OperationCanceledException)
+        {
+            // Stopped by the administrator or the worker: the export ends visibly as failed, so a new one can be started.
+            await FailAsync(db, export, strings, "exportStopped", CancellationToken.None);
+            return;
+        }
+        catch (Exception e) when (e is not JobFailure)
+        {
+            // Whatever went wrong (storage not reachable, a record that cannot be written): the export must not stay "queued" for ever.
+            var code = e is UnauthorizedAccessException or IOException ? "exportStorage" : "exportFailed";
+            services.GetService<Microsoft.Extensions.Logging.ILoggerFactory>()?.CreateLogger<TenantExportJobHandler>()
+                .LogError(e, "The full export {ExportId} failed ({Code}).", export.Id, code);
+            await FailAsync(db, export, strings, code, CancellationToken.None);
             return;
         }
         if (buffer.Length > ImportLimits.MaxExportBytes)

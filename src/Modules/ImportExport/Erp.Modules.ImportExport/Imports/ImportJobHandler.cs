@@ -41,7 +41,7 @@ internal sealed class ImportJobHandler : IJobHandler
         await ImportRunner.RunAsync(services, db, session, file, context.ReportAsync, context.Cancellation);
         if (session.Status != ImportStatus.Failed || session.FailureCode == "importRowsRejected")
         {
-            context.SetResult(new { session.RecordType, rows = session.RowCount, valid = session.RowsValid, imported = session.RowsImported, failed = session.RowsFailed, dryRun = session.DryRun });
+            context.SetResult(new { session.RecordType, rows = session.RowCount, valid = session.RowsValid, imported = session.RowsImported, updated = session.RowsUpdated, duplicates = session.RowsDuplicate, failed = session.RowsFailed, dryRun = session.DryRun });
         }
     }
 }
