@@ -50,12 +50,15 @@ export function personAddress(actorId: string): string {
 export const redacted = "[redacted]";
 
 const isoInstant = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
+const isoDate = /^\d{4}-\d{2}-\d{2}$/;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type ValueFormat = {
   t: (key: string, params?: Record<string, string | number>) => string;
   formatDateTime: (value: string) => string;
   formatNumber: (value: number) => string;
+  /** A calendar date (yyyy-mm-dd) in the user's date format (dd/mm/yyyy). */
+  formatDate?: (value: string) => string;
   /** A decimal string at the given scale (never through a binary float). */
   formatDecimal?: (value: string, scale?: number) => string;
   language: string;
@@ -75,6 +78,19 @@ export function valueText(value: unknown, f: ValueFormat, decimals?: number, fie
     const key = `audit.choice.${f.recordType}.${field}.${value}`;
     const text = f.t(key);
     if (text !== key) return text;
+    // A country is shown by its name in the screen's language, a kind of record by its name.
+    if (typeof value === "string" && /^country$|_country$/.test(field) && /^[A-Z]{2}$/.test(value)) {
+      try {
+        const name = new Intl.DisplayNames([f.language], { type: "region" }).of(value);
+        if (name && name !== value) return name;
+      } catch {
+        /* keep the code */
+      }
+    }
+    if (typeof value === "string" && /(^|_)(record_type|lookup_target)$/.test(field)) {
+      const kind = f.t(`audit.kind.${value}`);
+      if (kind !== `audit.kind.${value}`) return kind;
+    }
   }
   if (value === null || value === undefined || value === "") return f.t("audit.value.empty");
   if (value === true) return f.t("audit.value.yes");
@@ -90,6 +106,7 @@ export function valueText(value: unknown, f: ValueFormat, decimals?: number, fie
   if (typeof value === "string") {
     if (value === redacted) return f.t("audit.value.hidden");
     if (isoInstant.test(value)) return f.formatDateTime(value);
+    if (isoDate.test(value) && f.formatDate) return f.formatDate(value);
     const name = uuid.test(value) ? f.names?.[value.toLowerCase()] ?? f.names?.[value] : undefined;
     if (name) return f.language === "ar" && name.nameAr ? name.nameAr : name.name;
     return value;
@@ -126,4 +143,12 @@ export function actorText(event: Pick<AuditEvent, "actorName" | "actorNameAr">, 
 /** The fields a change shows (the record's own id is the record, not one of its fields). */
 export function shownChanges(event: AuditEvent): FieldChange[] {
   return event.changes.filter((c) => c.field !== "id" && !event.hiddenFields?.includes(c.field));
+}
+
+/** A calendar date (yyyy-mm-dd) as the user's date format shows it, read as that local day (never shifted by a time zone). */
+export function calendarDate(format: { date: (value: Date) => string }): (value: string) => string {
+  return (value) => {
+    const [y, m, d] = value.split("-").map(Number);
+    return format.date(new Date(y!, m! - 1, d!));
+  };
 }
