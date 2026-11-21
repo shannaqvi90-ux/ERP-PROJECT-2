@@ -96,11 +96,11 @@ export function ToastHost() {
     current,
   );
   return (
-    <div className="toast-host" role="region" aria-label={t("kernel.toasts")} aria-live="polite">
+    <div className="toast-host" role="region" aria-label={t("shell.toasts")} aria-live="polite">
       {items.map((x) => (
         <div key={x.id} className="toast" data-kind={x.kind} role={x.kind === "error" ? "alert" : "status"}>
           <span className="toast-text">{x.message}</span>
-          <button type="button" className="toast-close" aria-label={t("kernel.toast.dismiss")} onClick={() => setToasts(current().filter((y) => y.id !== x.id))}>
+          <button type="button" className="toast-close" aria-label={t("shell.toast.dismiss")} onClick={() => setToasts(current().filter((y) => y.id !== x.id))}>
             ×
           </button>
         </div>

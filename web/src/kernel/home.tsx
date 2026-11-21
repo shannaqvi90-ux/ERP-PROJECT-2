@@ -90,7 +90,7 @@ function Figure({ figure }: { figure: HomeFigure }) {
         <span className="home-figure-label">{t(figure.labelKey)}</span>
         <span className="home-figure-count">{count === null ? <Skeleton width="3.5rem" height="1.1rem" /> : format.number(count)}</span>
       </Link>
-      {trend && trend.some((n) => n > 0) && <Sparkline points={trend} label={t("kernel.home.trend", { label: t(figure.labelKey), last: format.number(trend[trend.length - 1] ?? 0), months: trend.length })} />}
+      {trend && trend.some((n) => n > 0) && <Sparkline points={trend} label={t("shell.home.trend", { label: t(figure.labelKey), last: format.number(trend[trend.length - 1] ?? 0), months: trend.length })} />}
     </li>
   );
 }

@@ -1841,7 +1841,6 @@ function ColumnResizer({ label, onSize, current, reset }: { label: string; onSiz
       aria-hidden="true"
       title={label}
       className="list-resizer"
-      onClick={(e) => e.stopPropagation()}
       onDoubleClick={reset}
       onPointerDown={(e) => {
         e.preventDefault();

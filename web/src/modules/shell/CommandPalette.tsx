@@ -349,7 +349,7 @@ export function CommandPalette({
           <Keys chord="Tab" /> {t("shell.palette.hint.actions")}
         </span>
         <span>
-          <kbd>&gt;</kbd> {t("shell.palette.hint.commands")} <kbd>#</kbd> {t("shell.palette.hint.documents")}
+          {t("shell.palette.hint.prefixes")}
         </span>
         <span>
           <Keys chord="Escape" /> {t("shell.palette.hint.close")}

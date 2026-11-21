@@ -155,7 +155,7 @@ export function SearchSelect({
           ))}
         </ul>
       )}
-      <select className="search-select-native" name={name} value={value} tabIndex={-1} aria-hidden="true" disabled={disabled} onChange={(e) => onChange(e.target.value)}>
+      <select className="search-select-native" aria-label={name} name={name} value={value} tabIndex={-1} aria-hidden="true" disabled={disabled} onChange={(e) => onChange(e.target.value)}>
         {empty !== undefined && <option value="">{empty}</option>}
         {options.map((o) => (
           <option key={o.value} value={o.value}>
