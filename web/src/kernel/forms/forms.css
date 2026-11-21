@@ -354,7 +354,7 @@
   background: var(--surface-3, var(--surface));
   border: 1px solid var(--line-strong, var(--line));
   border-radius: var(--radius-3, 6px);
-  box-shadow: var(--shadow-3, 0 8px 24px rgb(0 0 0 / 35%));
+  box-shadow: var(--shadow-2);
 }
 
 .calendar-head {
@@ -425,7 +425,7 @@
 
 .calendar-day.is-chosen {
   background: var(--accent);
-  color: var(--accent-fg, #fff);
+  color: var(--on-accent);
   font-weight: var(--fw-semibold);
 }
 
@@ -541,7 +541,7 @@
 
 .tag-field:focus-within {
   border-color: var(--accent);
-  box-shadow: var(--focus-ring, 0 0 0 2px var(--accent-soft));
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 .tag-field > input {

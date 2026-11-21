@@ -39,7 +39,7 @@ export type CalendarProps = {
 };
 
 export function Calendar({ value, onPick, onClose, min, max, rangeFrom, rangeTo }: CalendarProps) {
-  const { t, language } = useI18n();
+  const { t, language, format } = useI18n();
   const today = useMemo(() => {
     const n = new Date();
     return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()));
@@ -48,12 +48,8 @@ export function Calendar({ value, onPick, onClose, min, max, rangeFrom, rangeTo 
   const [cursor, setCursor] = useState<Date>(start);
   const grid = useRef<HTMLDivElement>(null);
   const moved = useRef(false);
-  const locale = language === "ar" ? "ar-AE-u-nu-latn" : "en-GB";
-  const monthName = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" }).format(cursor);
-  const weekdayNames = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 0, 5 + i)))),
-    [locale],
-  );
+  const monthName = format.monthYear(cursor);
+  const weekdayNames = useMemo(() => Array.from({ length: 7 }, (_, i) => format.weekdayShort(i)), [format]);
 
   const first = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth(), 1));
   const gridStart = addDays(first, -weekday(first));

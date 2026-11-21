@@ -1,4 +1,5 @@
 import { useEffect, useId, useState, useSyncExternalStore, type ReactNode } from "react";
+import { identityScoped } from "./deviceState";
 import { useI18n } from "./i18n";
 
 /**
@@ -50,28 +51,36 @@ export function SkeletonRows({ rows = 6, label }: { rows?: number; label: string
 export type ToastKind = "info" | "success" | "error";
 type ToastItem = { id: number; message: string; kind: ToastKind };
 
-let toasts: ToastItem[] = [];
-let nextId = 1;
-const listeners = new Set<() => void>();
-const emit = () => listeners.forEach((l) => l());
+// Held in identity-scoped maps, so what a toast said ends with the person who saw it.
+const store = identityScoped<"toasts", ToastItem[]>();
+const counter = identityScoped<"toast" | "listener", number>();
+const listeners = identityScoped<number, () => void>();
+const current = (): ToastItem[] => {
+  let items = store.get("toasts");
+  if (!items) {
+    items = [];
+    store.set("toasts", items);
+  }
+  return items;
+};
+const setToasts = (next: ToastItem[]) => {
+  store.set("toasts", next);
+  listeners.forEach((l) => l());
+};
 
 /** Show a short message (already in the person's language) that goes by itself after a few
  * seconds; an error stays longer. Returns a function that removes it. */
 export function toast(message: string, kind: ToastKind = "info"): () => void {
-  const id = nextId++;
-  toasts = [...toasts.slice(-3), { id, message, kind }];
-  emit();
-  const remove = () => {
-    toasts = toasts.filter((x) => x.id !== id);
-    emit();
-  };
+  const id = (counter.get("toast") ?? 1);
+  counter.set("toast", id + 1);
+  setToasts([...current().slice(-3), { id, message, kind }]);
+  const remove = () => setToasts(current().filter((x) => x.id !== id));
   window.setTimeout(remove, kind === "error" ? 8000 : 4000);
   return remove;
 }
 
 export function clearToasts(): void {
-  toasts = [];
-  emit();
+  setToasts([]);
 }
 
 /** Where toasts appear (once, in the shell). A live region, so a screen reader announces each. */
@@ -79,17 +88,19 @@ export function ToastHost() {
   const { t } = useI18n();
   const items = useSyncExternalStore(
     (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
+      const key = counter.get("listener") ?? 1;
+      counter.set("listener", key + 1);
+      listeners.set(key, l);
+      return () => void listeners.delete(key);
     },
-    () => toasts,
+    current,
   );
   return (
     <div className="toast-host" role="region" aria-label={t("kernel.toasts")} aria-live="polite">
       {items.map((x) => (
         <div key={x.id} className="toast" data-kind={x.kind} role={x.kind === "error" ? "alert" : "status"}>
           <span className="toast-text">{x.message}</span>
-          <button type="button" className="toast-close" aria-label={t("kernel.toast.dismiss")} onClick={() => { toasts = toasts.filter((y) => y.id !== x.id); emit(); }}>
+          <button type="button" className="toast-close" aria-label={t("kernel.toast.dismiss")} onClick={() => setToasts(current().filter((y) => y.id !== x.id))}>
             ×
           </button>
         </div>
@@ -111,8 +122,9 @@ export function Sparkline({ points, label, width = 96, height = 28 }: { points: 
   const pad = 3;
   const x = (i: number) => pad + (i * (width - 2 * pad)) / (points.length - 1);
   const y = (v: number) => height - pad - ((v - min) / span) * (height - 2 * pad);
-  const line = points.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
-  const area = `${line} L${x(points.length - 1).toFixed(1)} ${height - pad} L${x(0).toFixed(1)} ${height - pad} Z`;
+  const n = (v: number) => Math.round(v * 10) / 10;
+  const line = points.map((v, i) => `${i === 0 ? "M" : "L"}${n(x(i))} ${n(y(v))}`).join(" ");
+  const area = `${line} L${n(x(points.length - 1))} ${height - pad} L${n(x(0))} ${height - pad} Z`;
   return (
     <svg className="sparkline" width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>
       <title>{label}</title>

@@ -74,6 +74,10 @@ export type Formatter = {
   date: (value: string | Date) => string;
   dateTime: (value: string | Date) => string;
   time: (value: string | Date) => string;
+  /** The month and year of a day, as a calendar heading: November 2026 / نوفمبر ٢٠٢٦. */
+  monthYear: (value: string | Date) => string;
+  /** A short weekday name; 0 is Monday. */
+  weekdayShort: (mondayBased: number) => string;
   /** Digits only (no grouping), for codes and reference numbers that must still follow the digit choice. */
   digits: (text: string) => string;
 };
@@ -110,6 +114,8 @@ export function createFormatter(language: Language, numerals: Numerals): Formatt
   const formatDecimalString = (value: string, options: Intl.NumberFormatOptions) =>
     new Intl.NumberFormat(locale, options).format(value as Intl.StringNumericLiteral);
 
+  const monthYearFormat = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", calendar: "gregory", timeZone: "UTC" });
+  const weekdayFormat = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" });
   return {
     locale,
     numerals: shown,
@@ -138,6 +144,8 @@ export function createFormatter(language: Language, numerals: Numerals): Formatt
     date: (value) => date.format(toDate(value)),
     dateTime: (value) => dateTime.format(toDate(value)),
     time: (value) => time.format(toDate(value)),
+    monthYear: (value) => monthYearFormat.format(toDate(value)),
+    weekdayShort: (i) => weekdayFormat.format(new Date(Date.UTC(2026, 0, 5 + i))),
     digits: (text) => (shown === "arab" ? text.replace(/[0-9]/g, (d) => arabicIndic[Number(d)] ?? d) : text),
   };
 }

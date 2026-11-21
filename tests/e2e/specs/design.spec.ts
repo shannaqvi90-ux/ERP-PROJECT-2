@@ -91,6 +91,48 @@ test.describe("design system", () => {
     }
   }
 
+  for (const language of ["en", "ar"] as const) {
+    for (const density of ["compact", "comfortable"] as const) {
+      test(`text cut with an ellipsis always carries its full text as a title, in ${language}, ${density} (list cells, tabs, placeholders, form values)`, async ({ page }) => {
+        await freshStart(page, language);
+        await page.evaluate((d) => localStorage.setItem("erp.density", d), density);
+        await page.reload();
+        await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+        const cutWithoutTitle = () =>
+          page.evaluate(() =>
+            [...document.querySelectorAll<HTMLElement>("td, th, [role=tab], button, a, label, legend, input, select, .section-tab")]
+              .filter((el) => {
+                const box = el.getBoundingClientRect();
+                if (box.width === 0 || box.height === 0 || getComputedStyle(el).visibility === "hidden" || el.closest("[aria-hidden=true]")) return false;
+                const cut = el.scrollWidth > el.clientWidth + 1;
+                return cut && !el.title && !el.closest("[title]");
+              })
+              .map((el) => `${el.tagName.toLowerCase()}.${el.className} "${(el.textContent || (el as HTMLInputElement).value || "").trim().slice(0, 30)}"`),
+          );
+        await page.locator('nav a[href="/contacts/contacts"]').first().click();
+        await expect(page.locator("table[role=grid] tbody tr").first()).toBeVisible();
+        await page.waitForTimeout(400);
+        expect(await cutWithoutTitle(), "contacts list").toEqual([]);
+        await page.locator("table[role=grid] tbody tr").first().click();
+        await page.waitForTimeout(500);
+        expect(await cutWithoutTitle(), "contacts list with a record open").toEqual([]);
+        // Column widths can be changed: the edge of each header, and Wider in the column menu.
+        expect(await page.locator(".list-resizer").count()).toBeGreaterThan(0);
+      });
+    }
+  }
+
+  test("every control of a form is reachable by Tab: the section tabs and the calendar button are not skipped", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await page.locator('nav a[href="/tenancy/companies"]').first().click();
+    await expect(page.locator("table[role=grid] tbody tr").first()).toBeVisible();
+    await page.locator("table[role=grid] tbody tr").first().click();
+    await expect(page.locator(".record-form")).toBeVisible();
+    const skipped = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>(".section-tab, .date-picker-button")].filter((el) => el.tabIndex < 0).length);
+    expect(skipped).toBe(0);
+  });
+
   test("the home screen counts what waits for the user and leads to it", async ({ page }) => {
     await freshStart(page, "en");
     await signIn(page, users.admin);
