@@ -23,3 +23,13 @@ other modules' list definitions at run time (a module may use another only throu
 - Look-ups by id already showed the referenced record's name; unchanged.
 - Cost: no new endpoint; the gate adds one cheap database read. Not done: the Arabic export's "Changed by"
   column still carries the English name; the person picker's ranking; the comparison driver (p00 stub).
+
+## Fixer run, serial-24 (integration fix 1)
+
+The country-name cache is built when AuditTexts is first used and held as FrozenDictionary (29cee4e7, a32fab2f), so the
+gate's product-state check and G1ProcessStateTests no longer see a changing or mutable static. Targeted runs after merging
+the integration branch: AuditGateTests, G1ProcessStateTests, G1TenantSourceTests (13 passed), web audit unit tests (22 passed),
+GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks alone (passed, 17 m). Run as the whole GateSelfTests
+class (1 h 17 m) that one test failed once with System.OutOfMemoryException in ResponseText.Pdf (StringBuilder.ToString of a
+whole-log PDF print, tests/Erp.Gates.Tests/Infrastructure/ResponseText.cs:133, p00's decoder); the other 24 passed. It did not repeat alone.
+This round adds no processor time beyond the earlier measured runs.
