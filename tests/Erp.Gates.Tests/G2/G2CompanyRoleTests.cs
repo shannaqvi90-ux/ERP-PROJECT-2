@@ -246,10 +246,15 @@ public sealed partial class G2CompanyRoleTests(CompanyRoleFixture fixture) : ICl
     [Fact]
     public async Task A_role_held_in_company_X_acts_on_nothing_of_company_Y()
     {
-        var setup = await CompanyRoleRecords.PrepareAsync(Env, Guid.NewGuid().ToString("N")[..8]);
+        // A database of its own (a copy of the gate template, round 22): the class's other tests
+        // switch users between the companies and leave audit entries about rows that are in company Y
+        // now and were company X's when written, which the administrator of X may read; beside them
+        // this attack's snapshot of company Y's rows was not the state its answers were judged against.
+        await using var env = await ErpTestEnvironment.StartGateAsync();
+        var setup = await CompanyRoleRecords.PrepareAsync(env, Guid.NewGuid().ToString("N")[..8]);
         using var admin = setup.Admin;
         using var attacker = setup.Attacker;
-        var report = await CompanyRoleRecords.RunAsync(Env, setup);
+        var report = await CompanyRoleRecords.RunAsync(env, setup);
         TestContext.Current.TestOutputHelper?.WriteLine($"{report.Endpoints} endpoints, {report.Requests} requests, {report.Variants} one-field variants on {string.Join(", ", report.VariantEndpoints ?? [])}, {report.StaleMarkers} row ids that had stopped being company Y's when answered");
         Assert.True(report.Changed.Count == 0, "Company Y rows changed by an administrator of company X alone: " + string.Join(", ", report.Changed));
         Assert.True(report.Leaks.Count == 0, "Answers carrying company Y's records:\n" + string.Join("\n", report.Leaks.Take(40)));

@@ -167,7 +167,8 @@ public static class CompanyRoleRecords
                     remaining = remaining.Replace(marker, "", StringComparison.OrdinalIgnoreCase);
                     continue;
                 }
-                leaks.Add($"{label}: answered {status} carrying company Y's '{marker}'");
+                var at = remaining.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+                leaks.Add($"{label}: answered {status} carrying company Y's '{marker}'" + (Environment.GetEnvironmentVariable("ERP_GATE_DIAG") == "1" && at >= 0 ? $" [...{remaining[Math.Max(0, at - 400)..Math.Min(remaining.Length, at + 300)]}...]" : ""));
                 break;
             }
             return (status, text);
