@@ -76,6 +76,18 @@ public sealed class AuditTexts
             {
                 return Get(key, language);
             }
+            if (v.ValueKind == JsonValueKind.String)
+            {
+                var code = v.GetString() ?? "";
+                if ((field == "country" || field.EndsWith("_country", StringComparison.Ordinal)) && CountryName(code, language) is { } country)
+                {
+                    return country;
+                }
+                if ((field == "record_type" || field == "lookup_target" || field.EndsWith("_record_type", StringComparison.Ordinal)) && Has("audit.kind." + code, language))
+                {
+                    return Get("audit.kind." + code, language);
+                }
+            }
         }
         switch (v.ValueKind)
         {
@@ -84,7 +96,7 @@ public sealed class AuditTexts
             case JsonValueKind.False:
                 return Get("audit.value.no", language);
             case JsonValueKind.Number:
-                return v.GetRawText();
+                return Number(v.GetRawText());
             case JsonValueKind.String:
                 var text = v.GetString() ?? "";
                 if (text == AuditValues.Redacted)
@@ -94,6 +106,10 @@ public sealed class AuditTexts
                 if (IsoInstant.IsMatch(text) && DateTimeOffset.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var instant))
                 {
                     return Instant(instant, language);
+                }
+                if (IsoDate.IsMatch(text) && DateOnly.TryParseExact(text, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var day))
+                {
+                    return $"{day.Day:00}/{day.Month:00}/{day.Year:0000}";
                 }
                 if (labels is not null && Guid.TryParse(text, out var id) && labels.TryGetValue(id, out var name))
                 {
@@ -107,6 +123,47 @@ public sealed class AuditTexts
                 return v.GetRawText();
         }
     }
+
+    private static readonly System.Text.RegularExpressions.Regex IsoDate = new(@"^\d{4}-\d{2}-\d{2}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>A number with its thousands grouped (25,000.50), the fraction kept exactly as stored (never through a binary float).</summary>
+    private static string Number(string raw)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(raw, @"^(-?)(\d+)(\.\d+)?$");
+        if (!match.Success)
+        {
+            return raw;
+        }
+        var digits = match.Groups[2].Value;
+        var grouped = new StringBuilder();
+        for (var i = 0; i < digits.Length; i++)
+        {
+            if (i > 0 && (digits.Length - i) % 3 == 0)
+            {
+                grouped.Append(',');
+            }
+            grouped.Append(digits[i]);
+        }
+        return match.Groups[1].Value + grouped + match.Groups[3].Value;
+    }
+
+    /// <summary>Country names by language and ISO 3166-1 alpha-2 code (Resources/countries.json, made by build/gen-audit-countries.mjs from CLDR, the names the screens show).</summary>
+    /// Loaded once when the type is first used, never filled in later, so the gates' product-state
+    /// snapshot sees the same value before and after the tenants use the app (a Lazy cache filled
+    /// during the attack read as product state changed in GateSelfTests).
+    private static readonly System.Collections.Frozen.FrozenDictionary<string, System.Collections.Frozen.FrozenDictionary<string, string>> CountryNames = LoadCountryNames();
+
+    private static System.Collections.Frozen.FrozenDictionary<string, System.Collections.Frozen.FrozenDictionary<string, string>> LoadCountryNames()
+    {
+        using var stream = typeof(AuditTexts).Assembly.GetManifestResourceStream("Erp.Modules.Audit.Resources.countries.json")
+            ?? throw new InvalidOperationException("The country names were not embedded.");
+        var names = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(stream) ?? [];
+        return System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(names, n => n.Key, n => System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(n.Value, StringComparer.Ordinal), StringComparer.Ordinal);
+    }
+
+    /// <summary>A country's name in the language, or null when the code is not a country.</summary>
+    internal static string? CountryName(string code, string language) =>
+        CountryNames.TryGetValue(language == Languages.Arabic ? "ar" : "en", out var names) && names.TryGetValue(code, out var name) ? name : null;
 
     private static readonly System.Text.RegularExpressions.Regex IsoInstant =
         new(@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.Compiled);
