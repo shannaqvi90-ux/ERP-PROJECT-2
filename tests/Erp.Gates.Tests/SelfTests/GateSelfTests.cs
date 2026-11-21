@@ -934,6 +934,23 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         Assert.DoesNotContain(result.Problems, p => p.StartsWith(ignoring, StringComparison.Ordinal) && !p.Contains(worksElsewhere, StringComparison.Ordinal));
     }
 
+    /// <summary>Backlog row 17 (critic p10 round 4, plant P2b): a reader's write that is reviewed
+    /// and also listed as unreached by the write-set gate is refused, and so is an unreached
+    /// endpoint with no existing test file of its own named.</summary>
+    [Fact]
+    public void A_reader_write_no_gate_sends_and_an_unreached_endpoint_without_its_own_test_are_refused()
+    {
+        var inventory = EndpointInventory.From(fixture.Env.Factory.Services);
+        var read = inventory.First(e => ReadPermissionWrites.ChangesData(e) && !e.IsAnonymous && ReadPermissionWrites.ReadActions.Contains(Erp.Kernel.Security.PermissionDefinition.Parse(e.Permission).Action));
+        var reviewed = new List<(string, string)> { (read.Key, "a reader may") };
+        var withOwn = new List<(string, string)> { ("PUT /api/x/{id:guid}", "sent by tests/Erp.Gates.Tests/G2/G2PermissionTests.cs") };
+        Assert.DoesNotContain(ReadPermissionWrites.Check(inventory, reviewed, withOwn).Problems, p => p.Contains("no gate sends", StringComparison.Ordinal));
+        Assert.Contains(ReadPermissionWrites.Check(inventory, reviewed, [(read.Key, "sent by tests/Erp.Gates.Tests/G2/G2PermissionTests.cs")]).Problems,
+            p => p.Contains("no gate sends", StringComparison.Ordinal));
+        Assert.Contains(ReadPermissionWrites.Check(inventory, reviewed, [("PUT /api/x/{id:guid}", "no test named")]).Problems, p => p.Contains("must name", StringComparison.Ordinal));
+        Assert.Contains(ReadPermissionWrites.Check(inventory, reviewed, [("PUT /api/x/{id:guid}", "tests/Erp.Gates.Tests/G2/NoSuchFile.cs")]).Problems, p => p.Contains("does not exist", StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task The_permission_checks_catch_a_write_guarded_by_a_read_permission_and_a_read_that_writes()
     {
