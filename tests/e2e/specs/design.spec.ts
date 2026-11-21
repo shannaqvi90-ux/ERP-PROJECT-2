@@ -26,10 +26,10 @@ async function clippedControls(page: Page): Promise<string[]> {
 }
 
 test.describe("design system", () => {
-  test("follows the system theme until one is chosen, then keeps the choice across a reload", async ({ page }) => {
+  test("is dark (direction G) until a theme is chosen, whatever colour the system prefers, then keeps the choice across a reload", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await freshStart(page, "en");
-    expect(await theme(page)).toBe("light");
+    expect(await theme(page)).toBe("dark");
     await page.emulateMedia({ colorScheme: "dark" });
     await expect.poll(() => theme(page)).toBe("dark");
     await signIn(page, users.admin);
@@ -42,7 +42,7 @@ test.describe("design system", () => {
     // The choice is the device's: still light after the system changes.
     await page.emulateMedia({ colorScheme: "dark" });
     expect(await theme(page)).toBe("light");
-    // Pressing the chosen theme again hands the choice back to the system.
+    // Pressing the chosen theme again hands the choice back to the default (dark).
     await page.getByRole("button", { name: "Light", exact: true }).click();
     await expect.poll(() => theme(page)).toBe("dark");
   });

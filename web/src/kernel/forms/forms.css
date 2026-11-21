@@ -525,3 +525,58 @@
 .record-actions .button .icon {
   flex: none;
 }
+
+/* The tag field (TagField in fields.tsx): chips and the box that adds the next one. */
+.tag-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  min-block-size: var(--ctl-h);
+  background: var(--surface);
+  border: 1px solid var(--line-strong, var(--line));
+  border-radius: var(--radius-2);
+}
+
+.tag-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring, 0 0 0 2px var(--accent-soft));
+}
+
+.tag-field > input {
+  flex: 1 1 6rem;
+  min-inline-size: 5rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-inline-size: 14rem;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--accent-line, var(--line));
+  border-radius: 999px;
+  background: var(--accent-soft, var(--hover));
+  color: var(--accent-text, var(--fg));
+  font-size: var(--fs-sm);
+}
+
+.tag-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-chip-remove {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}

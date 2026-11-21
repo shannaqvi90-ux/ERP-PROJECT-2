@@ -39,10 +39,13 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | 
   max?: string;
   /** No calendar button (a narrow place, such as a filter). */
   noPicker?: boolean;
+  /** For one end of a date range: both ends, so the calendar draws the days between them. */
+  rangeFrom?: string;
+  rangeTo?: string;
 };
 
 /** A text field for a date, with the product's own calendar (kernel/forms/calendar.tsx), keyboard first. */
-export function DateInput({ value, onChange, min, max, noPicker, ...rest }: Props) {
+export function DateInput({ value, onChange, min, max, noPicker, rangeFrom, rangeTo, ...rest }: Props) {
   const { t } = useI18n();
   const [draft, setDraft] = useState<string | null>(null);
   const opener = useRef<HTMLButtonElement>(null);
@@ -104,6 +107,8 @@ export function DateInput({ value, onChange, min, max, noPicker, ...rest }: Prop
                 value={parseDate(value) ?? ""}
                 min={min}
                 max={max}
+                rangeFrom={parseDate(rangeFrom ?? "") ?? undefined}
+                rangeTo={parseDate(rangeTo ?? "") ?? undefined}
                 onClose={() => { setOpen(false); opener.current?.focus(); }}
                 onPick={(d) => {
                   setDraft(null);

@@ -596,3 +596,64 @@ export function LookupField({ field, endpoint, labelOf, initialLabel, filter, ..
     </Field>
   );
 }
+
+/**
+ * Tags: each is a chip with its own remove button; type a word and press Enter, comma or Tab to
+ * add it (a comma or semicolon, in either script, also splits a pasted list), Backspace on an empty
+ * box takes the last one off. The value is kept as the tags joined with ", ", the form the
+ * record's text field always had, so a saved record, a saved draft and the server see no change.
+ */
+export function TagField({ field, maxTags = 20, maxLength = 40, ...p }: Common & { field: FieldBinding<string>; maxTags?: number; maxLength?: number }) {
+  const { t } = useI18n();
+  const [text, setText] = useState("");
+  const tags = field.value.split(/[,،;]/).map((x) => x.trim()).filter(Boolean);
+  const set = (next: string[]) => field.onChange(next.join(", "));
+  const add = (raw: string) => {
+    const incoming = raw.split(/[,،;]/).map((x) => x.trim().slice(0, maxLength)).filter(Boolean);
+    const next = [...tags];
+    for (const tag of incoming) if (next.length < maxTags && !next.some((k) => k.toLowerCase() === tag.toLowerCase())) next.push(tag);
+    set(next);
+    setText("");
+  };
+  const readOnly = p.disabled || field.readOnly;
+  return (
+    <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint ?? t("forms.tags.hint")} wide={p.wide}>
+      {(a11y) => (
+        <span className="tag-field">
+          {tags.map((tag) => (
+            <span className="tag-chip" key={tag} title={tag}>
+              <span className="tag-chip-text">{tag}</span>
+              {!readOnly && (
+                <button type="button" className="tag-chip-remove" aria-label={t("forms.tags.remove", { tag })} onClick={() => set(tags.filter((x) => x !== tag))}>
+                  ×
+                </button>
+              )}
+            </span>
+          ))}
+          <input
+            {...a11y}
+            name={field.name}
+            value={text}
+            disabled={readOnly}
+            autoFocus={p.autoFocus}
+            autoComplete="off"
+            maxLength={maxLength}
+            placeholder={tags.length === 0 ? t("forms.tags.placeholder") : ""}
+            onChange={(e) => (/[,،;]/.test(e.target.value) ? add(e.target.value) : setText(e.target.value))}
+            onBlur={() => text.trim() && add(text)}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) && text.trim()) {
+                e.preventDefault();
+                e.stopPropagation();
+                add(text);
+              } else if (e.key === "Backspace" && text === "" && tags.length > 0) {
+                e.preventDefault();
+                set(tags.slice(0, -1));
+              }
+            }}
+          />
+        </span>
+      )}
+    </Field>
+  );
+}
