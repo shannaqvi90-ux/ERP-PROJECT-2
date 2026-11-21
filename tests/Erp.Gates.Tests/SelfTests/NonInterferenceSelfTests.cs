@@ -20,7 +20,20 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
     public async Task The_non_interference_check_catches_shared_state_that_leaks_no_marker()
     {
         // On the planted module's surface (the product's is the gate's, G1NonInterferenceTests).
-        var result = await NonInterference.RunAsync(fixture.Env, only: GateSelfTests.PlantedEndpoint);
+        // Run as two shares (round 22), each in an environment of its own as ./erp verify runs the
+        // gate's shares: the planted interference is split across the shares, and the verdict is the
+        // judge's on both, which must still see all of it.
+        var first = await NonInterference.RunAsync(fixture.Env, only: GateSelfTests.PlantedEndpoint, shardIndex: 0, shardCount: 2);
+        await using var secondEnv = await Erp.Testing.ErpTestEnvironment.StartGateAsync(LeakyFixture.Settings());
+        await Erp.Gates.Tests.Infrastructure.GatePreparation.PrepareAsync(secondEnv);
+        var second = await NonInterference.RunAsync(secondEnv, only: GateSelfTests.PlantedEndpoint, shardIndex: 1, shardCount: 2);
+        Assert.NotEmpty(first.Findings);
+        Assert.NotEmpty(second.Findings);
+        var shareVerdict = NonInterferenceJudge.Failures([first, second], [], expectedShares: 2, ratchet: false);
+        Assert.Contains(shareVerdict, f => f.StartsWith("share 1:", StringComparison.Ordinal) && f.Contains("depend on the other tenant's activity", StringComparison.Ordinal));
+        Assert.Contains(shareVerdict, f => f.StartsWith("share 2:", StringComparison.Ordinal) && f.Contains("depend on the other tenant's activity", StringComparison.Ordinal));
+        Assert.DoesNotContain(shareVerdict, f => f.Contains("no share compared", StringComparison.Ordinal) || f.Contains("by two shares", StringComparison.Ordinal) || f.Contains("shares of the non-interference", StringComparison.Ordinal));
+        var result = NonInterferenceJudge.Merge([first, second]);
         foreach (var finding in result.Findings)
         {
             TestContext.Current.TestOutputHelper?.WriteLine(finding);
@@ -116,6 +129,49 @@ public sealed class NonInterferenceSelfTests(LeakyFixture fixture) : IClassFixtu
         Assert.DoesNotContain(result.Findings, f => !f.Contains("/api/leaky/", StringComparison.Ordinal));
         Assert.Empty(result.BlindSpots);
         Assert.True(result.Discriminating > 0);
+    }
+
+    /// <summary>The judge refuses shares that are not the whole check: one missing, one twice, an
+    /// endpoint in two shares or in none, a finding or blind spot in any share, a number below the
+    /// minimum (round 22).</summary>
+    [Fact]
+    public void The_judge_of_the_shares_refuses_a_set_that_is_not_the_whole_check()
+    {
+        NonInterference.Result Share(int index, int count, string[] reads, string[] writes, string[] allReads, string[] allWrites, string[]? findings = null) =>
+            new(findings ?? [], [], [], 10, 10, 2, reads.Length, 10, writes.Length, 10, 10, 2, 10, 2)
+            {
+                HeadersCompared = 5, ConfigurationKeysWatched = 3, ShareIndex = index, ShareCount = count,
+                AllReadKeys = allReads, OwnedReadKeys = reads, ComparedReadKeys = reads, AllWriteKeys = allWrites, OwnedWriteKeys = writes, ComparedWriteKeys = writes,
+            };
+        string[] allR = ["GET /a", "GET /b", "GET /c"], allW = ["PUT /a/{id}", "PUT /b/{id}"];
+        var s0 = Share(0, 2, ["GET /a", "GET /b"], ["PUT /a/{id}"], allR, allW);
+        var s1 = Share(1, 2, ["GET /c"], ["PUT /b/{id}"], allR, allW);
+        Assert.Empty(NonInterferenceJudge.Failures([s0, s1], [], expectedShares: 2, ratchet: false));
+        // A share that did not report.
+        Assert.NotEmpty(NonInterferenceJudge.Failures([s0], ["share 2 of 2 left no result"], expectedShares: 2, ratchet: false));
+        // The same share twice.
+        Assert.NotEmpty(NonInterferenceJudge.Failures([s0, s0], [], expectedShares: 2, ratchet: false));
+        // An endpoint in two shares.
+        Assert.Contains(NonInterferenceJudge.Failures([s0, Share(1, 2, ["GET /b", "GET /c"], ["PUT /b/{id}"], allR, allW)], [], expectedShares: 2, ratchet: false),
+            f => f.Contains("compared by two shares", StringComparison.Ordinal));
+        // An endpoint in none.
+        Assert.Contains(NonInterferenceJudge.Failures([s0, Share(1, 2, ["GET /c"], [], allR, allW)], [], expectedShares: 2, ratchet: false),
+            f => f.Contains("no share compared", StringComparison.Ordinal));
+        // Shares that cut different inventories.
+        Assert.NotEmpty(NonInterferenceJudge.Failures([s0, Share(1, 2, ["GET /c"], ["PUT /b/{id}"], ["GET /a", "GET /c"], allW)], [], expectedShares: 2, ratchet: false));
+        // A planted interference found in one share only still fails the verdict.
+        Assert.Contains(NonInterferenceJudge.Failures([s0, Share(1, 2, ["GET /c"], ["PUT /b/{id}"], allR, allW, ["tenant A: GET /c is answered differently"])], [], expectedShares: 2, ratchet: false),
+            f => f.StartsWith("share 2:", StringComparison.Ordinal));
+        // The ratchet minimums apply to the shares added up.
+        Assert.Contains(NonInterferenceJudge.Failures([s0, s1], [], expectedShares: 2), f => f.StartsWith("g1.nonInterferenceComparisons", StringComparison.Ordinal));
+        // The shares of one inventory are disjoint and whole, for any number of shares.
+        var inventory = Enumerable.Range(0, 40).Select(i => new Erp.Gates.Tests.Infrastructure.ApiEndpoint(i % 3 == 0 ? "PUT" : "GET", $"/api/f{i / 4}/x{i}", $"n{i}", ["p.x.read"], null, Erp.Kernel.Security.SurfaceKind.Data, true)).ToList();
+        foreach (var count in new[] { 2, 3, 4 })
+        {
+            var owned = Enumerable.Range(0, count).SelectMany(i => NonInterference.ShareOf(i, count, inventory).OwnedKeys).ToList();
+            Assert.Equal(inventory.Count, owned.Count);
+            Assert.Equal(inventory.Count, owned.Distinct().Count());
+        }
     }
 
     [Fact]

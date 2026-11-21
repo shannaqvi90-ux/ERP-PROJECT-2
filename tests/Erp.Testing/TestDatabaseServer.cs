@@ -69,10 +69,14 @@ public sealed class TestDatabaseServer
             .WithUsername("postgres")
             .WithPassword(adminPassword)
             .WithDatabase("postgres")
-            // Durability is irrelevant for throw-away test data. Every environment of the process
-            // has its own database here, each with its own pools.
+            // Durability is irrelevant for throw-away test data, so the data directory is in memory
+            // (tmpfs: round 22, owner decision #59) and fsync, synchronous commit and full-page
+            // writes are off. The server and everything on it go with the test process. Only the
+            // test servers: the product's own settings and the demo database are untouched.
+            // Every environment of the process has its own database here, each with its own pools.
             .WithCommand("-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off", "-c", "max_connections=1500",
                 "-c", "shared_buffers=256MB")
+            .WithTmpfsMount("/var/lib/postgresql/data")
             .Build();
         await container.StartAsync();
         return new TestDatabaseServer(container, adminPassword);
