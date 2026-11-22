@@ -89,8 +89,9 @@ function outermost(roots: Set<ParentNode>): ParentNode[] {
  * as a microtask at the end of that task), and only around the nodes that changed. It is not put off
  * to a timer: a title set from a timer of its own is a change of the page in a task no one can tie to
  * what the person did (the comparison harness's health check, under load, saw it as the page changing
- * on its own while a list refreshed). Only the window's size, the density, the language and the
- * direction, which no change of the page announces, are swept from a timer.
+ * on its own while a list refreshed). A change of density, language, direction or theme moves every width
+ * and is swept over the whole page at once. Only the window's size, which no change of the page
+ * announces, is swept from a timer.
  */
 export function installOverflowTitles(): () => void {
   if (typeof MutationObserver === "undefined") return () => {};
@@ -112,7 +113,7 @@ export function installOverflowTitles(): () => void {
         const root = el?.parentElement ?? el;
         if (root && root.isConnected) roots.add(root);
       }
-      if (r.type === "attributes" && r.target === document.documentElement) whole();
+      if (r.type === "attributes" && r.target === document.documentElement) roots.add(document.body);
     }
     for (const root of outermost(roots)) sweepOverflowTitles(root);
     // The sweep's own changes never arm another sweep.
@@ -131,7 +132,7 @@ export function installOverflowTitles(): () => void {
   };
   document.addEventListener("pointerover", now, true);
   document.addEventListener("focusin", now, true);
-  whole();
+  // No sweep is armed here: the page's first render is a change like any other and is swept as it happens.
   return () => {
     observer.disconnect();
     window.removeEventListener("resize", whole);
