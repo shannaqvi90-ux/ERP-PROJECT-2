@@ -16,16 +16,33 @@ function fullText(el: HTMLElement): string {
   return (el.textContent ?? "").replace(/\s+/g, " ").trim();
 }
 
+let measureContext: CanvasRenderingContext2D | null | undefined;
+
+/** The width a text needs in an element's font, measured off the page so the page itself never changes. */
+function textWidth(text: string, style: CSSStyleDeclaration): number | null {
+  if (measureContext === undefined) {
+    measureContext = /jsdom/i.test(navigator.userAgent) ? null : document.createElement("canvas").getContext("2d");
+  }
+  if (!measureContext) return null;
+  measureContext.font = style.font || `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const spacing = parseFloat(style.letterSpacing);
+  return measureContext.measureText(text).width + (Number.isFinite(spacing) ? spacing * text.length : 0);
+}
+
 function isCut(el: HTMLElement): boolean {
   if (el instanceof HTMLInputElement && el.value === "" && el.placeholder) {
-    // A placeholder is cut when it needs more room than the box has (measured on a hidden clone of its text).
-    const probe = document.createElement("span");
+    // A placeholder is cut when it needs more room than the box has. It is measured on a canvas, not on
+    // a hidden clone added to the page: a clone changed the page after every sweep, with no one acting.
     const style = getComputedStyle(el);
-    probe.style.cssText = `position:absolute;visibility:hidden;white-space:pre;font:${style.font};letter-spacing:${style.letterSpacing}`;
-    probe.textContent = el.placeholder;
-    document.body.appendChild(probe);
-    const need = probe.getBoundingClientRect().width;
-    probe.remove();
+    let need = textWidth(el.placeholder, style);
+    if (need === null) {
+      const probe = document.createElement("span");
+      probe.style.cssText = `position:absolute;visibility:hidden;white-space:pre;font:${style.font};letter-spacing:${style.letterSpacing}`;
+      probe.textContent = el.placeholder;
+      document.body.appendChild(probe);
+      need = probe.getBoundingClientRect().width;
+      probe.remove();
+    }
     return need > el.clientWidth - 12;
   }
   return el.scrollWidth > el.clientWidth + 1 || (el.clientHeight > 0 && el.scrollHeight > el.clientHeight + 2 && getComputedStyle(el).overflowY !== "visible");
