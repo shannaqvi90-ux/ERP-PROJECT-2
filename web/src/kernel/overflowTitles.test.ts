@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { sweepOverflowTitles } from "./overflowTitles";
+import { installOverflowTitles, sweepOverflowTitles } from "./overflowTitles";
 
 function cut(el: HTMLElement, scroll: number, client: number) {
   Object.defineProperty(el, "scrollWidth", { configurable: true, value: scroll });
@@ -37,5 +37,24 @@ describe("overflow titles", () => {
     cut(document.getElementById("i")!, 400, 120);
     sweepOverflowTitles();
     expect(document.getElementById("i")!.title).toBe("A very long licensing authority name");
+  });
+
+  it("titles what a change of the page added in the same task, not from a timer", async () => {
+    const stop = installOverflowTitles();
+    try {
+      const cell = document.createElement("td");
+      cell.textContent = "Al Noor Electromechanical LLC 15";
+      cut(cell, 300, 120);
+      const row = document.createElement("tr");
+      row.appendChild(cell);
+      const table = document.createElement("table");
+      table.appendChild(row);
+      document.body.appendChild(table);
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(cell.title).toBe("Al Noor Electromechanical LLC 15");
+    } finally {
+      stop();
+    }
   });
 });

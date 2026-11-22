@@ -76,39 +76,65 @@ export function sweepOverflowTitles(root: ParentNode = document): number {
   return set;
 }
 
-/** Start the sweep for this document; returns a function that stops it. */
+/** Drop every root that sits inside another root of the list. */
+function outermost(roots: Set<ParentNode>): ParentNode[] {
+  const list = [...roots];
+  return list.filter(r => !list.some(o => o !== r && o.contains(r as Node)));
+}
+
+/**
+ * Start the sweep for this document; returns a function that stops it.
+ *
+ * A change of the page is swept at once, in the same task that made it (the observer's callback runs
+ * as a microtask at the end of that task), and only around the nodes that changed. It is not put off
+ * to a timer: a title set from a timer of its own is a change of the page in a task no one can tie to
+ * what the person did (the comparison harness's health check, under load, saw it as the page changing
+ * on its own while a list refreshed). Only the window's size, the density, the language and the
+ * direction, which no change of the page announces, are swept from a timer.
+ */
 export function installOverflowTitles(): () => void {
   if (typeof MutationObserver === "undefined") return () => {};
   let timer: number | undefined;
-  const later = () => {
+  const whole = () => {
     if (timer !== undefined) return;
     timer = window.setTimeout(() => {
       timer = undefined;
-      sweep();
+      sweepOverflowTitles();
+      observer.takeRecords();
     }, 120);
   };
-  const observer = new MutationObserver(later);
-  // The sweep's own changes (the hidden placeholder probe it adds and removes) are dropped, so a sweep
-  // never arms the next one: without this, any empty input with a placeholder kept the page changing
-  // every 120 ms with no one acting on it.
-  const sweep = (root?: ParentNode) => {
-    sweepOverflowTitles(root);
+  const observer = new MutationObserver(records => {
+    const roots = new Set<ParentNode>();
+    for (const r of records) {
+      const nodes = r.type === "childList" ? [...r.addedNodes] : [r.target];
+      for (const n of nodes) {
+        const el = n.nodeType === Node.ELEMENT_NODE ? (n as Element) : n.parentElement;
+        const root = el?.parentElement ?? el;
+        if (root && root.isConnected) roots.add(root);
+      }
+      if (r.type === "attributes" && r.target === document.documentElement) whole();
+    }
+    for (const root of outermost(roots)) sweepOverflowTitles(root);
+    // The sweep's own changes never arm another sweep.
     observer.takeRecords();
-  };
+  });
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["class", "value", "data-density", "dir", "lang"] });
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-density", "data-theme", "dir", "lang"] });
-  window.addEventListener("resize", later);
+  window.addEventListener("resize", whole);
   // The cell under the pointer or focus is checked at once, whatever the sweep has not reached yet.
   const now = (e: Event) => {
     const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>(candidates);
-    if (el) sweep(el.parentElement ?? document);
+    if (el) {
+      sweepOverflowTitles(el.parentElement ?? document);
+      observer.takeRecords();
+    }
   };
   document.addEventListener("pointerover", now, true);
   document.addEventListener("focusin", now, true);
-  later();
+  whole();
   return () => {
     observer.disconnect();
-    window.removeEventListener("resize", later);
+    window.removeEventListener("resize", whole);
     document.removeEventListener("pointerover", now, true);
     document.removeEventListener("focusin", now, true);
     if (timer !== undefined) window.clearTimeout(timer);
