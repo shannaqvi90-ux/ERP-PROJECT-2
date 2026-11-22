@@ -69,3 +69,13 @@ from the record sources, Tab on a record lists Open, Copy the name and the actio
 
 Web only. No server code, no endpoint, no table. Processor time added to `./erp verify`: the new unit tests
 (about 30) and one more Playwright pass over two screens in four modes; not measured separately.
+
+## Overflow titles and the comparison harness's health check (integration fix, 2026-11-22)
+
+The integrator's three alone verifies failed only in the comparison harness's health check. Three causes were found and fixed:
+
+1. The sweep measured a cut placeholder with a hidden span and re-armed itself through its own observer (fix 3ad9cf14, later replaced by the canvas measure 789d20f1; `takeRecords()` after every sweep stays).
+2. `parseFloat` in `overflowTitles.ts` was refused by the money gate (9b8eed63).
+3. The sweep ran from a 120 ms timer armed by the observer, so its title changes were page changes in a task the harness could not tie to a step. The sweep now runs in the observer's own callback (a microtask of the task that changed the page), only around the changed nodes; a change of density, language, direction or theme sweeps the whole page at once; only a window resize uses a timer. No sweep is armed at page load.
+
+Measured on a clean stack (2,000 users) after the 180 Playwright specs: all 24 built ours tasks verified, with and without the e2e state. Under artificial load (22 busy loops, load about 23) the health check is itself intermittent: `import-5000` was invalid in 2 of 12 runs with the sweep removed entirely and in 2 of 12 runs with this version (and `edit-and-save` and `attach-file` in other runs, with "a DevTools command outside any step"), so that class of failure is the harness under load (gate backlog row 8's class), not this piece's sweep. A health check that fails only on such a task on a busy machine should be re-run when quiet. Full e2e on a fresh stack: 180 passed (11.0 min). Web unit tests: 806 passed. Gate classes Money, Shell, String, ModuleBoundary, Registration and G1ClientState: 23 passed. Processor time added: none measurable (no new test projects; one unit test).
