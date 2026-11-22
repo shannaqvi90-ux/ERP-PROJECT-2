@@ -129,8 +129,20 @@ internal static class ImportEngine
     }
 
     /// <summary>The error file: the rows that had problems, as the file had them, then the row number and the problems in English and in Arabic.</summary>
-    public static byte[] ErrorFile(Table table, IReadOnlyDictionary<int, List<ImportIssue>> issuesByRow, StringCatalog strings)
+    public static byte[] ErrorFile(Table table, IReadOnlyDictionary<int, List<ImportIssue>> issuesByRow, StringCatalog strings, IReadOnlyList<string?> mapping, IReadOnlyList<ImportFieldInfo> fields)
     {
+        // A problem names its column the way the file does (its header), else the field's label: never the field's key.
+        var labels = fields.ToDictionary(f => f.Key, StringComparer.Ordinal);
+        var headerOf = new Dictionary<string, string>(StringComparer.Ordinal);
+        for (var c = 0; c < mapping.Count && c < table.Headers.Count; c++)
+        {
+            if (mapping[c] is { } key && !string.IsNullOrWhiteSpace(table.Headers[c]))
+            {
+                headerOf.TryAdd(key, table.Headers[c].Trim());
+            }
+        }
+        string Name(string key, bool arabic) => headerOf.TryGetValue(key, out var header) && !arabic ? header
+            : labels.TryGetValue(key, out var field) ? (arabic ? field.LabelAr : field.LabelEn) : headerOf.GetValueOrDefault(key) ?? key;
         var builder = new StringBuilder();
         void Write(IEnumerable<string> cells) => builder.Append(string.Join(",", cells.Select(Quote))).Append("\r\n");
         Write(table.Headers.Concat([strings.Get("import.errors.row", "en"), strings.Get("import.errors.problemsEn", "en"), strings.Get("import.errors.problemsAr", "ar")]));
@@ -139,8 +151,8 @@ internal static class ImportEngine
             var cells = row - 2 >= 0 && row - 2 < table.Rows.Count ? table.Rows[row - 2] : [];
             Write(table.Headers.Select((_, i) => i < cells.Length ? cells[i] : "")
                 .Concat([row.ToString(CultureInfo.InvariantCulture),
-                    string.Join(" | ", issues.Select(i => $"{i.Field}: {i.MessageEn}")),
-                    string.Join(" | ", issues.Select(i => $"{i.Field}: {i.MessageAr}"))]));
+                    string.Join(" | ", issues.Select(i => $"{Name(i.Field, false)}: {i.MessageEn}")),
+                    string.Join(" | ", issues.Select(i => $"{Name(i.Field, true)}: {i.MessageAr}"))]));
         }
         return [.. new UTF8Encoding(true).GetPreamble(), .. Encoding.UTF8.GetBytes(builder.ToString())];
     }

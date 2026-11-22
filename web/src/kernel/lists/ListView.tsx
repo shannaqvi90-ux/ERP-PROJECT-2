@@ -34,7 +34,7 @@ import {
   type SavedView,
 } from "./model";
 import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, ViewTabs, type ViewChoice } from "./parts";
-import { FilterByFieldContext } from "./filterByField";
+import { FilterByFieldContext, FilterByWordContext } from "./filterByField";
 import { formFloor, openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, splitterWidth, toggledShare, widenChord, writeShare } from "./recordWidth";
 import { moreColumnRem, shownColumns } from "./columnFit";
 import { useListRows } from "./useListRows";
@@ -628,6 +628,11 @@ export function ListView(props: ListViewProps) {
     closeRecord();
   }
 
+  /** A word in a cell was chosen: the list is filtered to the rows whose column contains it (the column's own earlier condition is replaced). */
+  function filterByWord(column: string, word: string) {
+    update((s) => ({ ...s, groupBy: null, search: "", conditions: [...s.conditions.filter((c) => c.column !== column), { column, op: "contains", values: [word] }] }));
+  }
+
   /** Open the record at a position of the list (next and previous from the record's form). */
   function openAt(index: number) {
     const row = rows.rowAt(index);
@@ -1017,6 +1022,7 @@ export function ListView(props: ListViewProps) {
   }
 
   return (
+    <FilterByWordContext.Provider value={filterByWord}>
     <section className="list-screen" aria-busy={rows.loading || rows.loadedKey !== expectedKey || searchText !== appliedSearch}>
       <div className="list-toolbar screen-header">
         <h1>{t(titleKey)}</h1>
@@ -1487,6 +1493,7 @@ export function ListView(props: ListViewProps) {
         <span>{t("lists.keys")}</span>
       </div>
     </section>
+    </FilterByWordContext.Provider>
   );
 }
 

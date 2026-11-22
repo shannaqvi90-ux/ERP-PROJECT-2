@@ -6,6 +6,7 @@ using Erp.Kernel.Http;
 using Erp.Kernel.ImportExport;
 using Erp.Kernel.Money;
 using Erp.Modules.Contacts.Contracts;
+using Erp.Modules.Currency.Contracts;
 using Erp.Modules.Tenancy.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -78,10 +79,42 @@ internal static class ContactsImport
         var found = Kept(state, "found", () => new Dictionary<string, Guid?>(StringComparer.Ordinal));
         var baseCurrency = state.TryGetValue("currency", out var kept) && kept is string currency ? currency : (string)(state["currency"] = (await ContactEndpoints.BaseCurrencyAsync(companies, cancellationToken)).Code);
         var pending = new List<(Contact Contact, IReadOnlyDictionary<string, JsonElement> Custom)>();
+        var updates = new List<(Contact Contact, IReadOnlyDictionary<string, JsonElement> Custom)>();
+        var duplicateRows = Kept(state, ImportStateKeys.DuplicateRows, () => new HashSet<int>());
+        var rates = services.GetService<IExchangeRates>();
+        var rateMemo = new Dictionary<string, string?>(StringComparer.Ordinal);
+        var existingContacts = await DuplicateIndex.LoadAsync(db, batch.Rows, baseCurrency, cancellationToken);
 
         async Task FlushAsync()
         {
-            if (batch.DryRun || pending.Count == 0)
+            if (batch.DryRun)
+            {
+                return;
+            }
+            if (updates.Count > 0)
+            {
+                // Rows that change a record already there: saved through the context, so the audit trail keeps what each changed.
+                foreach (var (contact, custom) in updates)
+                {
+                    db.Entry(contact).Property(c => c.UpdatedAt).IsModified = true;
+                }
+                await db.SaveChangesAsync(cancellationToken);
+                if (customFields is not null && definitions.Count > 0)
+                {
+                    foreach (var (contact, custom) in updates.Where(u => u.Custom.Count > 0))
+                    {
+                        var customValidator = new Validator(Context(services, "en"));
+                        await customFields.SaveAsync(ContactsModule.RecordType, contact.Id, isNew: false, custom, customValidator, cancellationToken);
+                        if (!customValidator.IsValid)
+                        {
+                            throw new InvalidOperationException("A custom field value that passed the check was refused on saving.");
+                        }
+                    }
+                }
+                state[ImportStateKeys.Updated] = (state.TryGetValue(ImportStateKeys.Updated, out var done) && done is int n ? n : 0) + updates.Count;
+                updates.Clear();
+            }
+            if (pending.Count == 0)
             {
                 return;
             }
@@ -134,6 +167,15 @@ internal static class ContactsImport
             }
             var code = ContactsValidation.Clean(Clean(values, "code"));
             var codeProblem = code is not null && !codes.Add(code) ? "contactsCodeTaken" : null;
+            // The records already there that this row matches (the warning of the check; the target of an update).
+            var probe = Build(values, baseCurrency, null);
+            var matches = existingContacts.Find(probe);
+            Guid? target = null;
+            string? ambiguous = null;
+            if (matches.Count > 0 && batch.OnDuplicate == ImportOnDuplicate.Update)
+            {
+                (target, ambiguous) = existingContacts.Target(probe, matches);
+            }
             var customProblems = new List<(string Language, Validator Validator)>();
 
             var (englishValidator, contact, custom) = await CheckAsync("en");
@@ -164,6 +206,18 @@ internal static class ContactsImport
                 }
                 continue;
             }
+            if (matches.Count > 0)
+            {
+                duplicateRows.Add(row.Number);
+            }
+            if (target is not null)
+            {
+                if (!batch.DryRun)
+                {
+                    updates.Add((contact, custom));
+                }
+                continue;
+            }
             if (fileOrganisation is { } fileParent && contact.Kind == ContactKinds.Person)
             {
                 contact.OrganisationId = fileParent;
@@ -181,8 +235,16 @@ internal static class ContactsImport
             {
                 var http = Context(services, language);
                 var request = Build(values, baseCurrency, organisationId);
+                request = await WithWorkspaceRateAsync(request, baseCurrency, rates, rateMemo, cancellationToken);
+                Contact contact = new();
+                if (target is { } targetId)
+                {
+                    // A dry run changes a loose copy; a real run changes the tracked record, saved with the batch.
+                    var query = batch.DryRun ? db.Contacts.AsNoTracking() : db.Contacts;
+                    contact = await query.SingleAsync(c => c.Id == targetId, cancellationToken);
+                    request = MergeOnto(contact, values, request);
+                }
                 var validator = ContactEndpoints.Validate(request, http, requireVersion: false);
-                var contact = new Contact();
                 var custom = (IReadOnlyDictionary<string, JsonElement>)new Dictionary<string, JsonElement>();
                 if (organisationProblem is not null)
                 {
@@ -191,6 +253,10 @@ internal static class ContactsImport
                 if (codeProblem is not null)
                 {
                     validator.Add("code", codeProblem);
+                }
+                if (ambiguous is not null)
+                {
+                    validator.Add("name", ambiguous);
                 }
                 if (definitions.Count > 0)
                 {
@@ -209,6 +275,71 @@ internal static class ContactsImport
         }
         await FlushAsync();
         return issues;
+    }
+
+
+    /// <summary>A foreign-currency credit limit with no rate in the file takes the workspace's own rate (the latest one within its age limit); with none, the row is refused as before.</summary>
+    private static async Task<SaveContactRequest> WithWorkspaceRateAsync(SaveContactRequest request, string baseCurrency, IExchangeRates? rates, Dictionary<string, string?> memo, CancellationToken cancellationToken)
+    {
+        if (rates is null || request.CreditLimitAmount is null || request.CreditLimitExchangeRate is not null)
+        {
+            return request;
+        }
+        var currency = (request.CreditLimitCurrency ?? request.DefaultCurrency)?.Trim().ToUpperInvariant();
+        if (currency is not { Length: 3 } || currency == baseCurrency)
+        {
+            return request;
+        }
+        if (!memo.TryGetValue(currency, out var rate))
+        {
+            try
+            {
+                var found = await rates.FindAsync(new CurrencyCode(currency), new CurrencyCode(baseCurrency), DateOnly.FromDateTime(DateTime.UtcNow), RateLookupRule.LatestWithinLimit, cancellationToken);
+                rate = found.Found?.Rate.ToString("0.########", CultureInfo.InvariantCulture);
+            }
+            catch (ArgumentException)
+            {
+                rate = null;
+            }
+            memo[currency] = rate;
+        }
+        return rate is null ? request : request with { CreditLimitExchangeRate = rate };
+    }
+
+    /// <summary>The request of an update: the record as it is now, with the values of the columns the file has (a column left out of the mapping, or a blank cell, changes nothing).</summary>
+    private static SaveContactRequest MergeOnto(Contact existing, IReadOnlyDictionary<string, string?> values, SaveContactRequest file)
+    {
+        bool Has(params string[] keys) => keys.Any(k => values.ContainsKey(k));
+        var credit = existing.CreditLimit;
+        return new SaveContactRequest(
+            Kind: Has("kind") ? file.Kind : existing.Kind,
+            Code: Has("code") ? file.Code : existing.Code,
+            NameEn: Has("name", "nameEn") && file.NameEn is not null ? file.NameEn : existing.NameEn,
+            NameAr: Has("name", "nameAr") && !string.IsNullOrWhiteSpace(file.NameAr) ? file.NameAr : existing.NameAr,
+            OrganisationId: existing.OrganisationId,
+            JobTitle: Has("jobTitle") ? file.JobTitle : existing.JobTitle,
+            Email: Has("email") ? file.Email : existing.Email,
+            Phone: Has("phone") ? file.Phone : existing.Phone,
+            Mobile: Has("mobile") ? file.Mobile : existing.Mobile,
+            Website: Has("website") ? file.Website : existing.Website,
+            AddressLine1: Has("addressLine1") ? file.AddressLine1 : existing.AddressLine1,
+            AddressLine2: Has("addressLine2") ? file.AddressLine2 : existing.AddressLine2,
+            Area: Has("area") ? file.Area : existing.Area,
+            City: Has("city") ? file.City : existing.City,
+            Emirate: Has("emirate") ? file.Emirate : existing.Emirate,
+            PoBox: Has("poBox") ? file.PoBox : existing.PoBox,
+            Country: Has("country") ? file.Country : existing.Country,
+            AddressAr: Has("addressAr") ? file.AddressAr : existing.AddressAr,
+            Tags: Has("tags") ? file.Tags : existing.Tags?.Split(ContactsValidation.TagSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+            TradeLicenceNumber: Has("tradeLicenceNumber") ? file.TradeLicenceNumber : existing.TradeLicenceNumber,
+            TaxRegistrationNumber: Has("taxRegistrationNumber") ? file.TaxRegistrationNumber : existing.TaxRegistrationNumber,
+            DefaultCurrency: Has("defaultCurrency") ? file.DefaultCurrency : existing.DefaultCurrency,
+            CreditLimitAmount: Has("creditLimitAmount") ? file.CreditLimitAmount : credit?.Amount.ToString(CultureInfo.InvariantCulture),
+            CreditLimitCurrency: Has("creditLimitAmount", "creditLimitCurrency") ? file.CreditLimitCurrency : credit?.Currency,
+            CreditLimitExchangeRate: Has("creditLimitAmount", "creditLimitExchangeRate") ? file.CreditLimitExchangeRate : credit?.ExchangeRate.ToString(CultureInfo.InvariantCulture),
+            Notes: Has("notes") ? file.Notes : existing.Notes,
+            Version: null,
+            CustomFields: file.CustomFields);
     }
 
     private static readonly System.Collections.Immutable.ImmutableArray<BulkColumn> BulkColumns =

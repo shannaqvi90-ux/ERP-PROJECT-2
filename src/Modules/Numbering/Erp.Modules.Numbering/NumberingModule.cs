@@ -44,6 +44,7 @@ public sealed class NumberingModule : ErpModule
             (await SequenceEndpoints.PageAsync(services.GetRequiredService<NumberingDbContext>(), services.GetRequiredService<ModuleCatalog>(), request, http, cancellationToken)).Map(r => (object)r));
         // The audit trail shows these records' history to whoever may read them (p07).
         module.AuditedRecord(new AuditRecordType("numbering.sequences", "numbering.record.sequence", NumberingPermissions.SequencesRead, "/numbering/sequences/{id}"));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<NumberingDbContext, NumberSequence>("numbering.sequences", "numbering.export.sequences"));
         module.AuditedRecord(new AuditRecordType("numbering.counters", "numbering.record.counter", NumberingPermissions.SequencesRead, null));
         module.AuditedRecord(new AuditRecordType("numbering.issued_numbers", "numbering.record.issuedNumber", NumberingPermissions.SequencesRead, null));
         module.Seeder<NumberingSeeder>();

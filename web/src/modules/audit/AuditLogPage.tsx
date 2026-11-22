@@ -6,7 +6,7 @@ import type { Row } from "../../kernel/lists/model";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
 import { actionKey, changeLine } from "./RecordHistory";
-import { actorText, fieldLabel, logAddress, personAddress, type AuditEvent, type FieldChange, type FieldLabel, type RecordName, type ValueFormat } from "./model";
+import { actorText, calendarDate, fieldLabel, logAddress, personAddress, type AuditEvent, type FieldChange, type FieldLabel, type RecordName, type ValueFormat } from "./model";
 import "./audit.css";
 
 /** A row of the audit log (GET /api/audit/log). */
@@ -115,7 +115,7 @@ function ChangePanel({ id, onClose, onRow }: { id: string; onClose: () => void; 
     // onRow only remembers the person's name; the change is read again only for another id.
   }, [id]);
   const f = useMemo<ValueFormat>(
-    () => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names: found?.names, fields: found?.fields, recordType: found?.change.recordType }),
+    () => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, formatDate: calendarDate(format), language, names: found?.names, fields: found?.fields, recordType: found?.change.recordType }),
     [t, formatDateTime, formatNumber, format, language, found],
   );
   if (found === undefined) return <p className="muted">{t("audit.history.loading")}</p>;

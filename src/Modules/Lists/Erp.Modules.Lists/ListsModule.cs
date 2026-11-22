@@ -28,6 +28,7 @@ public sealed class ListsModule : ErpModule
         module.Seeder<ListsSeeder>();
         // Saved views' history: shared views are what people who may share views look after.
         module.AuditedRecord(new AuditRecordType("lists.saved_views", "lists.audit.savedView", ListsPermissions.ViewsShare));
+        module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<ListsDbContext, SavedView>("lists.saved_views", "lists.export.savedViews"));
     }
 }
 

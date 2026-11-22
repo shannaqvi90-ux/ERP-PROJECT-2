@@ -1,3 +1,4 @@
+using Erp.Kernel.ImportExport;
 using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Modules;
@@ -83,6 +84,15 @@ public sealed class ImportSession : TenantEntity
     public int RowsValid { get; set; }
     public int RowsImported { get; set; }
     public int RowsFailed { get; set; }
+
+    /// <summary>Rows that match a record already there (found by the last run).</summary>
+    public int RowsDuplicate { get; set; }
+
+    /// <summary>Rows that changed a record already there (<see cref="ImportOnDuplicate.Update"/>).</summary>
+    public int RowsUpdated { get; set; }
+
+    /// <summary>What a run does with rows that match a record already there (<see cref="ImportOnDuplicate"/>).</summary>
+    public string OnDuplicate { get; set; } = ImportOnDuplicate.Create;
 
     public Guid? JobId { get; set; }
 
@@ -194,6 +204,7 @@ public sealed class ImportExportDbContext(DbContextOptions<ImportExportDbContext
                 t.HasCheckConstraint("ck_import_sessions_status", "status IN ('uploaded', 'running', 'checked', 'completed', 'failed')");
                 t.HasCheckConstraint("ck_import_sessions_format", "format IN ('csv', 'xlsx')");
                 t.HasCheckConstraint("ck_import_sessions_on_error", "on_error IN ('reject', 'skip')");
+                t.HasCheckConstraint("ck_import_sessions_on_duplicate", "on_duplicate IN ('create', 'skip', 'update') AND rows_duplicate >= 0 AND rows_updated >= 0");
                 t.HasCheckConstraint("ck_import_sessions_counts", "row_count >= 0 AND rows_checked >= 0 AND rows_valid >= 0 AND rows_imported >= 0 AND rows_failed >= 0");
                 t.HasCheckConstraint("ck_import_sessions_file_name", "btrim(file_name) <> ''");
             });
@@ -202,6 +213,7 @@ public sealed class ImportExportDbContext(DbContextOptions<ImportExportDbContext
             e.Property(x => x.Format).HasMaxLength(10);
             e.Property(x => x.Status).HasMaxLength(20);
             e.Property(x => x.OnError).HasMaxLength(10);
+            e.Property(x => x.OnDuplicate).HasMaxLength(10).HasDefaultValue(ImportOnDuplicate.Create);
             e.Property(x => x.Headers).HasColumnType("jsonb");
             e.Property(x => x.Mapping).HasColumnType("jsonb");
             e.Property(x => x.Sources).HasMaxLength(ImportLimits.MaxColumns);

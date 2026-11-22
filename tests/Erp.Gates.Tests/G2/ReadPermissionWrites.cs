@@ -25,9 +25,30 @@ public static class ReadPermissionWrites
 
     public sealed record Result(IReadOnlyList<string> Problems, int StateChangingChecked);
 
-    public static Result Check(IEnumerable<ApiEndpoint> endpoints, IReadOnlyList<(string Entry, string Reason)> reviewed)
+    /// <param name="unexercised">The endpoints the write-set gate cannot get an accepted answer from
+    /// (tests/Gates/write-set-unexercised.txt), each with its reason; null reads the file.</param>
+    public static Result Check(IEnumerable<ApiEndpoint> endpoints, IReadOnlyList<(string Entry, string Reason)> reviewed,
+        IReadOnlyList<(string Entry, string Reason)>? unexercised = null)
     {
         var problems = new List<string>();
+        // Backlog row 17 (critic p10 round 4, plant P2b): an endpoint that changes data under a read
+        // permission, reviewed here AND listed as one no generic write-set request reaches, is a write
+        // by a reader that no gate sends: the reviewed write set of its permission would never be
+        // compared with what it writes. Refused outright; and every unexercised endpoint names the
+        // test file that sends it itself, which must exist.
+        unexercised ??= Repo.ReadReviewedList(WriteSets.UnexercisedFile);
+        var unreached = unexercised.Select(u => u.Entry.Replace(WriteSets.WithDependents, "", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal);
+        problems.AddRange(reviewed.Where(r => unreached.Contains(r.Entry)).Select(r =>
+            $"{r.Entry} is reviewed in {ReviewedFile} (a reader may change data there) and listed in {WriteSets.UnexercisedFile} (no write-set request reaches it): " +
+            "a write by a read permission that no gate sends. Make the generic write-set gate reach it"));
+        foreach (var (entry, reason) in unexercised)
+        {
+            var named = System.Text.RegularExpressions.Regex.Matches(reason, @"tests/Erp\.Gates\.Tests/[A-Za-z0-9_/]+\.cs").Select(m => m.Value).Distinct().ToList();
+            if (named.Count == 0 || named.Any(f => !File.Exists(Repo.PathOf(f.Split('/')))))
+            {
+                problems.Add($"{WriteSets.UnexercisedFile}: '{entry}' must name, in its reason, the existing test file that sends it itself ({(named.Count == 0 ? "none named" : string.Join(", ", named.Where(f => !File.Exists(Repo.PathOf(f.Split('/'))))) + " does not exist")})");
+            }
+        }
         problems.AddRange(reviewed.Where(r => string.IsNullOrWhiteSpace(r.Reason)).Select(r => $"{ReviewedFile}: '{r.Entry}' needs a reason after '#'"));
         var allowed = reviewed.Select(r => r.Entry).ToHashSet(StringComparer.Ordinal);
         var used = new HashSet<string>(StringComparer.Ordinal);

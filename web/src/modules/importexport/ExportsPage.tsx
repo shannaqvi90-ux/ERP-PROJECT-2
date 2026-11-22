@@ -68,12 +68,12 @@ export function ExportsPage() {
     return () => window.clearInterval(timer);
   }, [active, load]);
 
-  async function start() {
+  async function start(format: "csv" | "json" = kind) {
     if (busy || active) return;
     setBusy(true);
     setProblem(null);
     try {
-      await api("POST", "/api/importexport/tenant-exports", { format: kind });
+      await api("POST", "/api/importexport/tenant-exports", { format });
       await load();
     } catch (e) {
       setProblem(e instanceof ApiError ? e.message : t("importexport.problem"));
@@ -144,11 +144,16 @@ export function ExportsPage() {
                 </td>
                 <td>
                   {e.status === "succeeded" || e.status === "expired"
-                    ? t("importexport.exports.holds", { files: format.number(e.fileCount), size: size(e.byteSize), kind: e.format.toUpperCase() })
+                    ? t("importexport.exports.holds", { count: e.fileCount, size: size(e.byteSize), kind: e.format.toUpperCase() })
                     : ""}
                 </td>
                 <td>{e.status === "succeeded" ? when(e.expiresAt) : ""}</td>
                 <td>
+                  {e.status === "failed" && canStart && (
+                    <button type="button" className="button" disabled={busy || active} onClick={() => void start(e.format === "json" ? "json" : "csv")} data-testid="export-retry">
+                      {t("importexport.exports.retry")}
+                    </button>
+                  )}
                   {e.downloadable && (
                     <button type="button" className="button" onClick={() => void save(e.id)} data-testid="export-download">
                       {t("importexport.exports.download")}

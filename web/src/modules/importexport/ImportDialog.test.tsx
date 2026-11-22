@@ -28,7 +28,7 @@ const session = (over: Partial<ImportSession> = {}): ImportSession => ({
     { index: 0, header: "Name", field: "name", source: "name", sample: ["Al Noor", "Sara"] },
     { index: 1, header: "Mail", field: null, source: null, sample: ["a@x.ae"] },
   ],
-  rows: [["Al Noor", "a@x.ae"]], onError: "reject", dryRun: false, rowsChecked: 0, rowsValid: 0, rowsImported: 0, rowsFailed: 0, jobId: null, issues: [], failure: null,
+  rows: [["Al Noor", "a@x.ae"]], onError: "reject", dryRun: false, rowsChecked: 0, rowsValid: 0, rowsImported: 0, rowsFailed: 0, rowsDuplicate: 0, rowsUpdated: 0, onDuplicate: "create", jobId: null, issues: [], failure: null,
   failureCode: null, hasErrorFile: false, missingFields: [], createdAt: "2026-11-18T09:00:00Z", finishedAt: null, version: 1, ...over,
 });
 
@@ -122,7 +122,7 @@ describe("ImportDialog", () => {
       button(/Import 2 rows/).click();
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    expect(calls.find((c) => c.url.endsWith("/run"))?.body).toEqual({ dryRun: false, onError: "reject" });
+    expect(calls.find((c) => c.url.endsWith("/run"))?.body).toEqual({ dryRun: false, onError: "reject", onDuplicate: "create" });
     expect(document.querySelector('[data-testid="import-done"]')?.textContent).toContain("Imported 2 rows");
     await act(async () => button(/Close/).click());
     expect(done).toBe(1);
@@ -142,7 +142,7 @@ describe("ImportDialog", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(calls.find((c) => c.url.endsWith("/run"))?.body).toMatchObject({ dryRun: true });
-    expect(document.querySelector('[data-testid="import-checked"]')?.textContent).toContain("1 have problems");
+    expect(document.querySelector('[data-testid="import-checked"]')?.textContent).toContain("1 row has problems");
     expect(document.querySelector('[data-testid="import-issues"]')?.textContent).toContain("Enter a valid e-mail.");
     expect(document.querySelector<HTMLAnchorElement>('[data-testid="import-errors"]')?.getAttribute("href")).toBe("/api/importexport/contacts.contacts/imports/s1/errors");
   });

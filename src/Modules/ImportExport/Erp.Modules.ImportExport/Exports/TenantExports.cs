@@ -11,6 +11,9 @@ internal sealed class TenantExports(ImportExportDbContext db, IJobQueue jobs, Er
     /// <summary>How long a finished export can be downloaded.</summary>
     public static readonly TimeSpan Lifetime = TimeSpan.FromDays(7);
 
+    /// <summary>An export still queued or running after this long is given up (the job's own limit is 4 hours).</summary>
+    public static readonly TimeSpan StalledAfter = TimeSpan.FromHours(5);
+
     /// <summary>How many exports are kept, newest first (older ones go with their files).</summary>
     public const int Kept = 20;
 
@@ -21,6 +24,17 @@ internal sealed class TenantExports(ImportExportDbContext db, IJobQueue jobs, Er
             throw new ArgumentException("The format is csv or json.", nameof(format));
         }
         await ForgetAsync(db, cancellationToken);
+        // An export whose job died without telling it (the worker lost, the job timed out) ends as failed, so it never blocks a new one.
+        var giveUp = DateTimeOffset.UtcNow - StalledAfter;
+        foreach (var stalled in await db.TenantExports.Where(e => (e.Status == ExportStatus.Queued || e.Status == ExportStatus.Running) && e.CreatedAt < giveUp).ToListAsync(cancellationToken))
+        {
+            stalled.Status = ExportStatus.Failed;
+            stalled.FailureCode = "exportStalled";
+            stalled.FailureEn = strings.Get("problem.exportStalled", "en");
+            stalled.FailureAr = strings.Get("problem.exportStalled", "ar");
+            stalled.FinishedAt = DateTimeOffset.UtcNow;
+        }
+        await db.SaveChangesAsync(cancellationToken);
         // One export is written at a time: asking again while one is queued or running answers that one (starting twice is not an error).
         var active = await db.TenantExports.AsNoTracking().Where(e => e.Status == ExportStatus.Queued || e.Status == ExportStatus.Running)
             .OrderBy(e => e.CreatedAt).Select(e => new TenantExportTicket(e.Id, e.Status)).FirstOrDefaultAsync(cancellationToken);

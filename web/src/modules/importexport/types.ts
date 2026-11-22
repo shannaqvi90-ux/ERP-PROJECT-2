@@ -23,6 +23,9 @@ export type ImportSession = {
   rowsValid: number;
   rowsImported: number;
   rowsFailed: number;
+  rowsDuplicate: number;
+  rowsUpdated: number;
+  onDuplicate: "create" | "skip" | "update";
   jobId: string | null;
   issues: ImportIssue[];
   failure: string | null;

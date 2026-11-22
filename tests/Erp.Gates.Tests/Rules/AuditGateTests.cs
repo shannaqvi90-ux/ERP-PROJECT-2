@@ -124,6 +124,97 @@ public sealed class AuditGateTests(AuditFixture fixture) : IClassFixture<AuditFi
         Assert.True(problems.Count == 0, string.Join("\n", problems));
     }
 
+    private static readonly System.Text.RegularExpressions.Regex ChoiceCheck =
+        new(@"\(\(?(\w+)\)?(::\w+)?\s*=\s*ANY\s*\(\(?ARRAY\[(.*?)\]", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.Singleline);
+
+    private static string Snake(string camel) => System.Text.RegularExpressions.Regex.Replace(camel, "(?<!^)([A-Z])", "_$1").ToLowerInvariant();
+
+    /// <summary>Every recorded choice value of every audited table is shown by its label, in English and Arabic, never by its stored
+    /// code (round 7: a contact's emirate showed "sharjah" in the Arabic history). A choice is a column whose CHECK names its values, or a
+    /// column the module's own list gives choices for (the same choices its list and form show). Each value needs
+    /// <c>audit.choice.&lt;schema.table&gt;.&lt;column&gt;.&lt;value&gt;</c> in both languages of the audit strings, the Arabic one in Arabic
+    /// letters; a kind of record named by a column (<c>record_type</c>) has <c>audit.kind.&lt;kind&gt;</c>.</summary>
+    [Fact]
+    public async Task Every_recorded_choice_value_of_every_audited_table_has_a_label_in_both_languages()
+    {
+        var catalog = Env.Factory.Services.GetRequiredService<Erp.Kernel.Modules.ModuleCatalog>();
+        await using var admin = await Env.OpenAdminAsync();
+        var audited = await DbCatalog.ReadAsync(admin, """
+            SELECT n.nspname || '.' || c.relname, encode(t.tgargs, 'escape')
+              FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+              JOIN pg_proc p ON p.oid = t.tgfoid JOIN pg_namespace pn ON pn.oid = p.pronamespace
+             WHERE pn.nspname = 'audit' AND p.proname = 'capture' AND NOT t.tgisinternal
+            """, r => (Table: r.GetString(0), Args: r.GetString(1).Split("\\000", StringSplitOptions.RemoveEmptyEntries)));
+        Assert.True(audited.Count >= 25, $"only {audited.Count} audited tables were found");
+        var choices = new HashSet<(string Table, string Column, string Value)>();
+        var columnsOf = new Dictionary<string, HashSet<string>>();
+        foreach (var (table, args) in audited)
+        {
+            var parts = table.Split('.');
+            var left = args.Where(a => a.StartsWith('-')).Select(a => a[1..]).Concat(NeverRecorded).ToHashSet();
+            columnsOf[table] = (await DbCatalog.ColumnsAsync(admin, new TableRef(parts[0], parts[1]))).Select(c => c.Name).Where(c => !left.Contains(c)).ToHashSet();
+            var checks = await DbCatalog.ReadAsync(admin, """
+                SELECT pg_get_constraintdef(k.oid)
+                  FROM pg_constraint k JOIN pg_class c ON c.oid = k.conrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+                 WHERE k.contype = 'c' AND n.nspname = @s AND c.relname = @t
+                """, r => r.GetString(0), ("s", parts[0]), ("t", parts[1]));
+            foreach (var definition in checks)
+            {
+                foreach (System.Text.RegularExpressions.Match m in ChoiceCheck.Matches(definition))
+                {
+                    if (!columnsOf[table].Contains(m.Groups[1].Value))
+                    {
+                        continue;
+                    }
+                    foreach (System.Text.RegularExpressions.Match value in System.Text.RegularExpressions.Regex.Matches(m.Groups[3].Value, @"'([^']*)'|\(?(-?\d+)\)?"))
+                    {
+                        choices.Add((table, m.Groups[1].Value, value.Groups[1].Success ? value.Groups[1].Value : value.Groups[2].Value));
+                    }
+                }
+            }
+        }
+        foreach (var list in catalog.Lists)
+        {
+            var schema = list.Key.Split('.')[0];
+            foreach (var column in list.Columns.Where(c => c.Choices is { Count: > 0 } && c.Type == Erp.Kernel.Lists.ListColumnType.Choice))
+            {
+                foreach (var (table, columns) in columnsOf.Where(t => t.Key.StartsWith(schema + ".", StringComparison.Ordinal) && t.Value.Contains(Snake(column.Key))))
+                {
+                    foreach (var choice in column.Choices!.Where(c => c.Value is not ("true" or "false")))
+                    {
+                        choices.Add((table, Snake(column.Key), choice.Value));
+                    }
+                }
+            }
+        }
+        foreach (var expected in new[] { "contacts.contacts.kind", "contacts.contacts.emirate", "identity.users.language", "importexport.import_sessions.status", "identity.passkeys.algorithm" })
+        {
+            Assert.Contains(choices, c => $"{c.Table}.{c.Column}" == expected);
+        }
+        var problems = new List<string>();
+        foreach (var language in new[] { "en", "ar" })
+        {
+            var strings = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(Repo.PathOf("web", "src", "modules", "audit", "i18n", $"{language}.json")))!;
+            foreach (var (table, column, value) in choices.OrderBy(c => c.Table).ThenBy(c => c.Column).ThenBy(c => c.Value))
+            {
+                var key = $"audit.choice.{table}.{column}.{value}";
+                if (!strings.TryGetValue(key, out var label) || string.IsNullOrWhiteSpace(label) || (label == value && language == "ar"))
+                {
+                    problems.Add($"{key} has no label in {language} (web/src/modules/audit/i18n/{language}.json)");
+                }
+                else if (language == "ar" && !System.Text.RegularExpressions.Regex.IsMatch(label, @"\p{IsArabic}"))
+                {
+                    problems.Add($"{key}: the Arabic label '{label}' has no Arabic letters");
+                }
+            }
+            foreach (var type in catalog.AuditRecordTypes.Where(t => !strings.ContainsKey("audit.kind." + t.Table)))
+            {
+                problems.Add($"audit.kind.{type.Table} has no name in {language} (web/src/modules/audit/i18n/{language}.json)");
+            }
+        }
+        Assert.True(problems.Count == 0, string.Join("\n", problems));
+    }
+
     [Fact]
     public async Task Every_audited_table_is_a_registered_kind_of_record_and_every_recorded_field_has_a_name_in_both_languages()
     {

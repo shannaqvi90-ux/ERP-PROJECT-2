@@ -43,7 +43,8 @@ public static class CompanyRoleRecords
         int Endpoints,
         int Requests,
         int Variants = 0,
-        IReadOnlyList<string>? VariantEndpoints = null);
+        IReadOnlyList<string>? VariantEndpoints = null,
+        int StaleMarkers = 0);
 
     public sealed class Setup
     {
@@ -127,6 +128,7 @@ public static class CompanyRoleRecords
         var oracles = new List<string>();
         var errors = new List<string>();
         var requests = 0;
+        var staleMarkers = 0;
         var client = setup.Attacker;
 
         async Task<(int Status, string Text)> SendAsync(string method, string path, JsonNode? body) => await SendWithAsync(client, method, path, body);
@@ -152,9 +154,22 @@ public static class CompanyRoleRecords
             {
                 errors.Add($"{label}: {status} {Short(text)}");
             }
-            if (before.FindMarker(text) is { } marker)
+            // Judged against what is company Y's now (round 22): a row id of the snapshot that has
+            // meanwhile stopped being Y's (a user's workplace moved to X by another test's request
+            // in the same database) is no longer company Y's record, so an answer carrying it
+            // leaks nothing of Y. Y's own id, every text and every id still in Y stay markers.
+            var remaining = text;
+            while (before.FindMarker(remaining) is { } marker)
             {
-                leaks.Add($"{label}: answered {status} carrying company Y's '{marker}'");
+                if (await IsStillCompanyYsAsync(env, tenant, setup.Y, marker) is false)
+                {
+                    staleMarkers++;
+                    remaining = remaining.Replace(marker, "", StringComparison.OrdinalIgnoreCase);
+                    continue;
+                }
+                var at = remaining.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+                leaks.Add($"{label}: answered {status} carrying company Y's '{marker}'" + (Environment.GetEnvironmentVariable("ERP_GATE_DIAG") == "1" && at >= 0 ? $" [...{remaining[Math.Max(0, at - 400)..Math.Min(remaining.Length, at + 300)]}...]" : ""));
+                break;
             }
             return (status, text);
         }
@@ -285,7 +300,36 @@ public static class CompanyRoleRecords
         }
 
         var after = await CompanySnapshot.TakeAsync(env, tenant, setup.Y, openApi.ExampleValues());
-        return new Report(CompanySnapshot.Differences(before, after), leaks, oracles, errors, named, endpoints.Count, requests, variants.Sent.Count, variants.Endpoints);
+        return new Report(CompanySnapshot.Differences(before, after), leaks, oracles, errors, named, endpoints.Count, requests, variants.Sent.Count, variants.Endpoints, staleMarkers);
+    }
+
+    /// <summary>
+    /// Whether the row a snapshot marker names is company <paramref name="company"/>'s right now.
+    /// False only for the id of a row of a company table that is not in the company at this moment
+    /// (moved to another company, or gone); true for the company's own id, for every id of a row
+    /// still in it and for anything that is not a row id (a text of company Y), so a real leak is
+    /// never excused by this check.
+    /// </summary>
+    public static async Task<bool> IsStillCompanyYsAsync(ErpTestEnvironment env, Guid tenant, Guid company, string marker)
+    {
+        if (!Guid.TryParse(marker, out var id) || id == company)
+        {
+            return true;
+        }
+        await using var db = await env.OpenAdminAsync();
+        var tables = await DbCatalog.CompanyTablesAsync(db);
+        var anywhere = false;
+        foreach (var table in tables)
+        {
+            if (await DbCatalog.ScalarAsync<bool>(db, $"SELECT EXISTS (SELECT 1 FROM {table.Qualified} WHERE tenant_id = @t AND id = @i AND company_id = @c)",
+                    ("t", tenant), ("i", id), ("c", company)))
+            {
+                return true;
+            }
+            anywhere |= await DbCatalog.ScalarAsync<bool>(db, $"SELECT EXISTS (SELECT 1 FROM {table.Qualified} WHERE tenant_id = @t AND id = @i)", ("t", tenant), ("i", id));
+        }
+        // An id that is in no company table now is not a moved row but one that is gone: still a marker.
+        return !anywhere;
     }
 
     public static async Task SwitchAsync(HttpClient client, Guid company)
