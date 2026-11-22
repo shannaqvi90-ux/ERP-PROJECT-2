@@ -67,17 +67,24 @@ export function installOverflowTitles(): () => void {
     if (timer !== undefined) return;
     timer = window.setTimeout(() => {
       timer = undefined;
-      sweepOverflowTitles();
+      sweep();
     }, 120);
   };
   const observer = new MutationObserver(later);
+  // The sweep's own changes (the hidden placeholder probe it adds and removes) are dropped, so a sweep
+  // never arms the next one: without this, any empty input with a placeholder kept the page changing
+  // every 120 ms with no one acting on it.
+  const sweep = (root?: ParentNode) => {
+    sweepOverflowTitles(root);
+    observer.takeRecords();
+  };
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["class", "value", "data-density", "dir", "lang"] });
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-density", "data-theme", "dir", "lang"] });
   window.addEventListener("resize", later);
   // The cell under the pointer or focus is checked at once, whatever the sweep has not reached yet.
   const now = (e: Event) => {
     const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>(candidates);
-    if (el) sweepOverflowTitles(el.parentElement ?? document);
+    if (el) sweep(el.parentElement ?? document);
   };
   document.addEventListener("pointerover", now, true);
   document.addEventListener("focusin", now, true);
