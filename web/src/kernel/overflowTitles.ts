@@ -25,8 +25,8 @@ function textWidth(text: string, style: CSSStyleDeclaration): number | null {
   }
   if (!measureContext) return null;
   measureContext.font = style.font || `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-  const spacing = parseFloat(style.letterSpacing);
-  return measureContext.measureText(text).width + (Number.isFinite(spacing) ? spacing * text.length : 0);
+  measureContext.letterSpacing = style.letterSpacing && style.letterSpacing !== "normal" ? style.letterSpacing : "0px";
+  return measureContext.measureText(text).width;
 }
 
 function isCut(el: HTMLElement): boolean {
