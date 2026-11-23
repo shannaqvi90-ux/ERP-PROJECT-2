@@ -1,0 +1,21 @@
+Critic p00 r22, four full verifies of a fresh clone of 3240e848 through the slot script (2 slots, no ERP_VERIFY_ALONE):
+ERP_PROJECT=c-p00-foundation-r22 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061
+ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r22-runN.log gauntlet/tools/verify-slot.sh ./erp verify
+
+run 1 (slot 15:09:15Z, start load 1.31, peak 79.27): FAILED web only. vitest 718/786: the web stage started with the build, e2e
+  image build and another critic's verify, load 45-66 in its 83 s; first test of clientIsolation.test.tsx timed out at 30 s and its
+  file cascaded (10), paletteActions.test.tsx 57 (first test 5.4 s timeout, then 'null.querySelector' cascade), tenancy/screens 1 timeout.
+  dotnet 1,189/1,189 passed (10,396 s), e2e 174/174. Compare and build tests did not run (web stage stopped). run1-kept/.
+run 2 (slot 00:15:12Z 11-23, start 6.16, peak 50.11): FAILED web only: gauntlet/compare test/screen-causes.test.mjs:225 'control: the
+  initials as the typed piece verify' -> 'invalid': 'action outside the clock (set-up) ... ScheduleStyleRecalculation: a DevTools command
+  outside any step (the harness reading the page)'. Everything else passed: dotnet 1,189, web 786, compare 488/489, build 22, e2e 174.
+run 3 (slot 03:48:20Z, start 21.80, peak 51.81): FAILED web and e2e: screen-causes.test.mjs:488 'the clock starts 1.1-2.1 s after
+  verify()'s read ...' (same 'action outside the clock' judgement), and the e2e stage's ours-driver health check judged import-5000
+  'invalid' ('action outside the clock ... StyleRecalcInvalidationTracking ... a DevTools command of the harness during step 2') at
+  load about 1 to 7. dotnet 1,189, web 786, compare 488/489, build 22, e2e 174 all passed. run3-kept/ (ours-health results).
+run 4 (slot 06:36:01Z, start 0.57, peak 25.83, the only verify on the machine for most of it): PASSED EVERY TEST, ratchet passed.
+  dotnet 1,201 (1,189 + 12 timing), web 786, e2e 174, compare 489, build 22 = 2,672, 0 failed, 0 skipped. verify passed in 7,887 s
+  (dotnet 6,551, web 4,459, e2e 7,593, timing 292). Processor time 24,097 s (dotnet 20,933, web 2,299, e2e 774, timing 91) against
+  the 24,700 s maximum. G1 HTTP shares 28 m 16 s, 31 m 32 s, 57 m 21 s, 34 m 44 s; G1 non-interference shares 18 m 46 s, 18 m 6 s, 17 m 23 s.
+Per-group processor time (run 2): http-0 2,292, http-1 2,345, http-2 4,888, http-3 3,299, ni-0 883, ni-1 876, ni-2 784, gates-rest 3,056,
+  self-http 2,533, listvolume 626, self-company 446, projects 372, self-noninterference 311.
