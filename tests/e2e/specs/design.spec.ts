@@ -98,17 +98,36 @@ test.describe("design system", () => {
         await page.evaluate((d) => localStorage.setItem("erp.density", d), density);
         await page.reload();
         await signIn(page, language === "ar" ? users.adminArabic : users.admin);
-        const cutWithoutTitle = () =>
-          page.evaluate(() =>
+        // A cut cell is titled when the person points at it (nothing writes to the page by itself): point at
+        // every cut element in turn and require the title.
+        const cutWithoutTitle = async () => {
+          const spots = await page.evaluate(() =>
             [...document.querySelectorAll<HTMLElement>("td, th, [role=tab], button, a, label, legend, input, select, .section-tab")]
-              .filter((el) => {
+              .map((el, i) => ({ el, i }))
+              .filter(({ el }) => {
                 const box = el.getBoundingClientRect();
                 if (box.width === 0 || box.height === 0 || getComputedStyle(el).visibility === "hidden" || el.closest("[aria-hidden=true]")) return false;
-                const cut = el.scrollWidth > el.clientWidth + 1;
-                return cut && !el.title && !el.closest("[title]");
+                return el.scrollWidth > el.clientWidth + 1 && !el.title && !el.closest("[title]");
               })
-              .map((el) => `${el.tagName.toLowerCase()}.${el.className} "${(el.textContent || (el as HTMLInputElement).value || "").trim().slice(0, 30)}"`),
+              .map(({ el, i }) => {
+                const box = el.getBoundingClientRect();
+                return { i, x: box.x + Math.min(box.width / 2, 20), y: box.y + box.height / 2, label: `${el.tagName.toLowerCase()}.${el.className} "${(el.textContent || (el as HTMLInputElement).value || "").trim().slice(0, 30)}"` };
+              }),
           );
+          const missing: string[] = [];
+          for (const spot of spots) {
+            await page.mouse.move(spot.x, spot.y);
+            const titled = await page.evaluate(
+              ({ i }) => {
+                const el = document.querySelectorAll<HTMLElement>("td, th, [role=tab], button, a, label, legend, input, select, .section-tab")[i];
+                return !!el && (!!el.title || !!el.closest("[title]"));
+              },
+              { i: spot.i },
+            );
+            if (!titled) missing.push(spot.label);
+          }
+          return missing;
+        };
         await page.locator('nav a[href="/contacts/contacts"]').first().click();
         await expect(page.locator("table[role=grid] tbody tr").first()).toBeVisible();
         await page.waitForTimeout(400);

@@ -2,9 +2,10 @@
  * No text is cut without a way to read it. Wherever the screen cuts a value with an ellipsis (list
  * cells, headers, labels, badges, buttons, tabs, input values and placeholders, in either language
  * and at either density), the full text is put in the element's title, so hovering (or focusing)
- * shows it. One sweep serves every screen, the kernel's and the modules': it runs after the page
- * changes (batched to one pass per frame burst), and again when the window or the density changes.
- * An element that already has a title of its own keeps it; a title this sweep set goes again when
+ * shows it. One handler serves every screen, the kernel's and the modules': the title is worked out
+ * only when the person points at or focuses the element, in the task of that pointer or focus event.
+ * Nothing runs from a timer, an observer or a sweep of the page, so the page never changes by itself.
+ * An element that already has a title of its own keeps it; a title this handler set goes again when
  * the text fits.
  */
 const candidates = "td, th, [role=gridcell], [role=columnheader], [role=tab], [role=option], [role=menuitem], .list-text, .list-sort-label, .list-headlabel, .badge, label, legend, button, a, h1, h2, h3, dt, dd, li, .truncate, input, select, textarea";
@@ -48,6 +49,7 @@ function isCut(el: HTMLElement): boolean {
   return el.scrollWidth > el.clientWidth + 1 || (el.clientHeight > 0 && el.scrollHeight > el.clientHeight + 2 && getComputedStyle(el).overflowY !== "visible");
 }
 
+/** Check every candidate under a root (used by tests and tools; the page itself only checks what is pointed at). */
 export function sweepOverflowTitles(root: ParentNode = document): number {
   let set = 0;
   for (const el of root.querySelectorAll<HTMLElement>(candidates)) {
@@ -76,68 +78,47 @@ export function sweepOverflowTitles(root: ParentNode = document): number {
   return set;
 }
 
-/** Drop every root that sits inside another root of the list. */
-function outermost(roots: Set<ParentNode>): ParentNode[] {
-  const list = [...roots];
-  return list.filter(r => !list.some(o => o !== r && o.contains(r as Node)));
+/** The elements that may carry a title at the point of an event: its target and the candidates around it. */
+function around(target: EventTarget | null): HTMLElement[] {
+  const found: HTMLElement[] = [];
+  let el: Element | null = target instanceof Element ? target : null;
+  for (let depth = 0; el && depth < 4; depth++, el = el.parentElement) {
+    if (el instanceof HTMLElement && el.matches(candidates)) found.push(el);
+  }
+  return found;
+}
+
+/** Give one element its title when its text is cut, or take its own title away when the text fits. */
+function titleOne(el: HTMLElement): void {
+  const own = el.hasAttribute("title") && !el.hasAttribute(marker);
+  if (own || el.closest("[aria-hidden=true]") || el.classList.contains("visually-hidden")) return;
+  if (el.clientWidth === 0 && !(el instanceof HTMLInputElement)) return;
+  if (isCut(el)) {
+    const text = fullText(el);
+    if (text && el.getAttribute("title") !== text) {
+      el.setAttribute("title", text);
+      el.setAttribute(marker, "");
+    }
+  } else if (el.hasAttribute(marker)) {
+    el.removeAttribute("title");
+    el.removeAttribute(marker);
+  }
 }
 
 /**
- * Start the sweep for this document; returns a function that stops it.
- *
- * A change of the page is swept at once, in the same task that made it (the observer's callback runs
- * as a microtask at the end of that task), and only around the nodes that changed. It is not put off
- * to a timer: a title set from a timer of its own is a change of the page in a task no one can tie to
- * what the person did (the comparison harness's health check, under load, saw it as the page changing
- * on its own while a list refreshed). A change of density, language, direction or theme moves every width
- * and is swept over the whole page at once. Only the window's size, which no change of the page
- * announces, is swept from a timer.
+ * Start titling for this document; returns a function that stops it. The title of a cut cell is
+ * computed when the person points at or focuses it, in the task of that pointer or focus event, and
+ * never from a timer, an observer or a sweep that writes to the page: the page does not change on
+ * its own, so a comparison harness sees no change that no step caused.
  */
 export function installOverflowTitles(): () => void {
-  if (typeof MutationObserver === "undefined") return () => {};
-  let timer: number | undefined;
-  const whole = () => {
-    if (timer !== undefined) return;
-    timer = window.setTimeout(() => {
-      timer = undefined;
-      sweepOverflowTitles();
-      observer.takeRecords();
-    }, 120);
-  };
-  const observer = new MutationObserver(records => {
-    const roots = new Set<ParentNode>();
-    for (const r of records) {
-      const nodes = r.type === "childList" ? [...r.addedNodes] : [r.target];
-      for (const n of nodes) {
-        const el = n.nodeType === Node.ELEMENT_NODE ? (n as Element) : n.parentElement;
-        const root = el?.parentElement ?? el;
-        if (root && root.isConnected) roots.add(root);
-      }
-      if (r.type === "attributes" && r.target === document.documentElement) roots.add(document.body);
-    }
-    for (const root of outermost(roots)) sweepOverflowTitles(root);
-    // The sweep's own changes never arm another sweep.
-    observer.takeRecords();
-  });
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["class", "value", "data-density", "dir", "lang"] });
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-density", "data-theme", "dir", "lang"] });
-  window.addEventListener("resize", whole);
-  // The cell under the pointer or focus is checked at once, whatever the sweep has not reached yet.
   const now = (e: Event) => {
-    const el = (e.target as HTMLElement | null)?.closest?.<HTMLElement>(candidates);
-    if (el) {
-      sweepOverflowTitles(el.parentElement ?? document);
-      observer.takeRecords();
-    }
+    for (const el of around(e.target)) titleOne(el);
   };
   document.addEventListener("pointerover", now, true);
   document.addEventListener("focusin", now, true);
-  // No sweep is armed here: the page's first render is a change like any other and is swept as it happens.
   return () => {
-    observer.disconnect();
-    window.removeEventListener("resize", whole);
     document.removeEventListener("pointerover", now, true);
     document.removeEventListener("focusin", now, true);
-    if (timer !== undefined) window.clearTimeout(timer);
   };
 }

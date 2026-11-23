@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { installOverflowTitles, sweepOverflowTitles } from "./overflowTitles";
 
 function cut(el: HTMLElement, scroll: number, client: number) {
@@ -39,7 +39,7 @@ describe("overflow titles", () => {
     expect(document.getElementById("i")!.title).toBe("A very long licensing authority name");
   });
 
-  it("titles what a change of the page added in the same task, not from a timer", async () => {
+  it("titles a cut cell only when it is pointed at or focused, and the page changes by itself never", async () => {
     const stop = installOverflowTitles();
     try {
       const cell = document.createElement("td");
@@ -50,11 +50,28 @@ describe("overflow titles", () => {
       const table = document.createElement("table");
       table.appendChild(row);
       document.body.appendChild(table);
-      await Promise.resolve();
-      await Promise.resolve();
+      await new Promise(r => setTimeout(r, 300));
+      expect(cell.hasAttribute("title")).toBe(false);
+      cell.dispatchEvent(new Event("pointerover", { bubbles: true }));
+      expect(cell.title).toBe("Al Noor Electromechanical LLC 15");
+      cut(cell, 50, 120);
+      cell.dispatchEvent(new Event("pointerover", { bubbles: true }));
+      expect(cell.hasAttribute("title")).toBe(false);
+      cut(cell, 300, 120);
+      cell.dispatchEvent(new Event("focusin", { bubbles: true }));
       expect(cell.title).toBe("Al Noor Electromechanical LLC 15");
     } finally {
       stop();
     }
+  });
+
+  it("starts no observer and no timer", () => {
+    const observe = vi.spyOn(MutationObserver.prototype, "observe");
+    const timers = vi.spyOn(window, "setTimeout");
+    const stop = installOverflowTitles();
+    stop();
+    expect(observe).not.toHaveBeenCalled();
+    expect(timers).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
   });
 });
