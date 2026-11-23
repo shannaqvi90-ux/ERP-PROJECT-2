@@ -255,6 +255,25 @@ public sealed class ContactTests(ContactsFixture fixture) : IClassFixture<Contac
     }
 
     [Fact]
+    public async Task The_tag_choices_list_each_tag_of_the_workspace_once_and_never_another_workspaces()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        using var other = await Env.SignInAsync(Env.Email(Env.TenantB, "admin"));
+        var stem = Guid.NewGuid().ToString("N")[..6];
+        var mine = $"Zq{stem}";
+        var theirs = $"Zr{stem}";
+        await CreateAsync(admin, With(Organisation($"Tag Maker One {stem} LLC"), ("tags", new[] { mine, "shared " + stem })));
+        await CreateAsync(admin, With(Organisation($"Tag Maker Two {stem} LLC"), ("tags", new[] { mine.ToUpperInvariant() })));
+        await CreateAsync(other, With(Organisation($"Tag Maker Three {stem} LLC"), ("tags", new[] { theirs })));
+
+        var choices = (await admin.GetFromJsonAsync<JsonElement>("/api/contacts/contacts/tags", Cancel)).EnumerateArray().Select(t => t.GetString()!).ToList();
+        Assert.Single(choices, c => string.Equals(c, mine, StringComparison.OrdinalIgnoreCase));
+        Assert.Contains("shared " + stem, choices);
+        Assert.DoesNotContain(theirs, choices);
+        Assert.Equal(choices.Count, choices.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    [Fact]
     public async Task Another_workspaces_contacts_are_neither_seen_nor_matched_nor_linked()
     {
         using var attacker = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));

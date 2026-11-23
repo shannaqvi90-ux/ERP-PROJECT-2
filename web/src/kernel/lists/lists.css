@@ -846,3 +846,5 @@
 .list-picker li.is-active { background: var(--accent-soft); }
 .list-picker li[aria-selected="true"]::after { content: " \2713"; }
 .list-picker li.muted { cursor: default; }
+.list-values li { padding: 0; }
+.list-values .list-menuitem { width: 100%; text-align: start; }

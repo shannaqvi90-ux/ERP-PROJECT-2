@@ -102,6 +102,8 @@ export type ListViewProps = {
   reloadKey?: number | string;
   /** Labels (and filter choices) of reference columns, by column key. */
   references?: Partial<Record<string, ReferenceSource>>;
+  /** Text columns whose filter lists the values the workspace already holds, to pick one (by column key). */
+  filterValues?: Partial<Record<string, () => Promise<string[]>>>;
 };
 
 /** Address parameters the list owns; any other parameter belongs to the screen and is kept. */
@@ -1368,6 +1370,7 @@ export function ListView(props: ListViewProps) {
                           options={c.type === "reference" ? references?.[c.key]?.options : undefined}
                           search={c.type === "reference" ? references?.[c.key]?.search : undefined}
                           labelOf={c.type === "reference" ? references?.[c.key]?.label : undefined}
+                          suggest={c.type === "text" ? props.filterValues?.[c.key] : undefined}
                           current={current.conditions.filter((x) => x.column === c.key)}
                           onApply={(conditions) => update((s) => ({ ...s, conditions: [...s.conditions.filter((x) => x.column !== c.key), ...conditions] }))}
                           onClose={() => setMenu(null)}
