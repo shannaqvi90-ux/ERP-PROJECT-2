@@ -79,3 +79,19 @@ The integrator's three alone verifies failed only in the comparison harness's he
 3. The sweep ran from a 120 ms timer armed by the observer, so its title changes were page changes in a task the harness could not tie to a step. The sweep now runs in the observer's own callback (a microtask of the task that changed the page), only around the changed nodes; a change of density, language, direction or theme sweeps the whole page at once; only a window resize uses a timer. No sweep is armed at page load.
 
 Measured on a clean stack (2,000 users) after the 180 Playwright specs: all 24 built ours tasks verified, with and without the e2e state. Under artificial load (22 busy loops, load about 23) the health check is itself intermittent: `import-5000` was invalid in 2 of 12 runs with the sweep removed entirely and in 2 of 12 runs with this version (and `edit-and-save` and `attach-file` in other runs, with "a DevTools command outside any step"), so that class of failure is the harness under load (gate backlog row 8's class), not this piece's sweep. A health check that fails only on such a task on a busy machine should be re-run when quiet. Full e2e on a fresh stack: 180 passed (11.0 min). Web unit tests: 806 passed. Gate classes Money, Shell, String, ModuleBoundary, Registration and G1ClientState: 23 passed. Processor time added: none measurable (no new test projects; one unit test).
+
+## Round 3: overflow titles come from the render, not from observers or pointer moves
+
+Decision: `kernel/overflowTitles.ts` sets a cut-off element's `title` (a) in `useOverflowTitles()`, a
+layout effect called in AppShell, ListView, RecordForm, SearchSelect and CommandPalette, and (b) on
+`focusin`. No pointer handler, timer or observer. Reason: Chromium aligns pointermove/pointerover
+with the animation frame, so a DOM write in a pointer handler is a task the comparison harness cannot
+trace to a step (import-5000 and export-filtered-list went invalid). The hook first ran as a passive
+effect; one of two fresh-stack full health runs then made import-5000 invalid on a style recalc
+0.2 s after step 2, and another made custom-field-filter invalid, because a passive effect can run
+in a later scheduler task of no traceable origin. A layout effect runs inside the commit of the
+render that shows the text.
+Evidence: on fresh stacks built like verify's (2,000 users), the full ours health run
+(`run.mjs --task built --product ours --health`) verified all 24 tasks (import-5000 included) in
+two runs; web unit 808 of 808; Playwright design, shell, keyboard-cycle, lists, navigation specs
+all passed; source and allowlist gate classes passed (30 of 30). Not a full `./erp verify`.
