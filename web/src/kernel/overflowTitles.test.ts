@@ -52,10 +52,12 @@ describe("overflow titles", () => {
       document.body.appendChild(table);
       await new Promise(r => setTimeout(r, 300));
       expect(cell.hasAttribute("title")).toBe(false);
-      cell.dispatchEvent(new Event("pointerover", { bubbles: true }));
+      cell.dispatchEvent(new Event("pointermove", { bubbles: true }));
+      expect(cell.hasAttribute("title")).toBe(false);
+      cell.dispatchEvent(Object.assign(new Event("pointermove", { bubbles: true }), { movementX: 3, movementY: 1 }));
       expect(cell.title).toBe("Al Noor Electromechanical LLC 15");
       cut(cell, 50, 120);
-      cell.dispatchEvent(new Event("pointerover", { bubbles: true }));
+      cell.dispatchEvent(Object.assign(new Event("pointermove", { bubbles: true }), { movementX: 3, movementY: 1 }));
       expect(cell.hasAttribute("title")).toBe(false);
       cut(cell, 300, 120);
       cell.dispatchEvent(new Event("focusin", { bubbles: true }));

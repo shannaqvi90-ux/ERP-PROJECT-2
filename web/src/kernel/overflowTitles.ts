@@ -108,17 +108,24 @@ function titleOne(el: HTMLElement): void {
 /**
  * Start titling for this document; returns a function that stops it. The title of a cut cell is
  * computed when the person points at or focuses it, in the task of that pointer or focus event, and
- * never from a timer, an observer or a sweep that writes to the page: the page does not change on
- * its own, so a comparison harness sees no change that no step caused.
+ * never from a timer, an observer or a sweep that writes to the page. The browser also dispatches
+ * pointer events by itself when the page changes under a still pointer (the pointer is "moved" to where
+ * it already is); those events carry no movement and are ignored, so the page never changes by itself
+ * and a comparison harness sees no change that no step caused.
  */
 export function installOverflowTitles(): () => void {
-  const now = (e: Event) => {
+  const point = (e: Event) => {
+    const m = e as PointerEvent;
+    if ((!m.movementX && !m.movementY)) return;
     for (const el of around(e.target)) titleOne(el);
   };
-  document.addEventListener("pointerover", now, true);
-  document.addEventListener("focusin", now, true);
+  const focus = (e: Event) => {
+    for (const el of around(e.target)) titleOne(el);
+  };
+  document.addEventListener("pointermove", point, true);
+  document.addEventListener("focusin", focus, true);
   return () => {
-    document.removeEventListener("pointerover", now, true);
-    document.removeEventListener("focusin", now, true);
+    document.removeEventListener("pointermove", point, true);
+    document.removeEventListener("focusin", focus, true);
   };
 }
