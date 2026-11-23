@@ -52,9 +52,16 @@ public sealed record AuditLogRow(
 public sealed record AuditChange(AuditLogRow Change, IReadOnlyList<AuditFieldChange> Details, IReadOnlyDictionary<Guid, AuditRecordName> Names,
     IReadOnlyDictionary<string, AuditFieldLabel>? Fields = null);
 
+/// <summary>One option of a single-select custom field: its stored value and its labels.</summary>
+public sealed record AuditFieldOption(string Value, string LabelEn, string LabelAr);
+
 /// <summary>A tenant-defined field as the trail names it: its labels in both languages and, for a number, its decimals.</summary>
-public sealed record AuditFieldLabel(string LabelEn, string LabelAr, string Type, int Decimals)
+public sealed record AuditFieldLabel(string LabelEn, string LabelAr, string Type, int Decimals, IReadOnlyList<AuditFieldOption>? Options = null)
 {
+    /// <summary>A single-select field's option as the person reads it (its label in the language), or null when the value is not an option.</summary>
+    public string? Option(string value, string language) =>
+        Options?.FirstOrDefault(o => o.Value == value) is { } o ? (language == "ar" && !string.IsNullOrWhiteSpace(o.LabelAr) ? o.LabelAr : o.LabelEn) : null;
+
     public string For(string language) => language == "ar" && !string.IsNullOrWhiteSpace(LabelAr) ? LabelAr : LabelEn;
 }
 
@@ -151,7 +158,7 @@ internal static class AuditLog
             return new Dictionary<string, AuditFieldLabel>();
         }
         var found = await customFields.DescribeAsync(keys, recordType, cancellationToken);
-        return found.ToDictionary(p => CustomFieldPrefix + p.Key, p => new AuditFieldLabel(p.Value.LabelEn, p.Value.LabelAr, p.Value.Type, p.Value.Decimals), StringComparer.Ordinal);
+        return found.ToDictionary(p => CustomFieldPrefix + p.Key, p => new AuditFieldLabel(p.Value.LabelEn, p.Value.LabelAr, p.Value.Type, p.Value.Decimals, [.. p.Value.Options.Select(o => new AuditFieldOption(o.Value, o.LabelEn, o.LabelAr))]), StringComparer.Ordinal);
     }
 
     /// <summary>The language of the change texts: the document's (the reports framework's
