@@ -1,0 +1,19 @@
+openapi 200 mentions cfCustomerSegment: true cfIncoterm55484: false customFields: 2
+select eq 200 total 20171 median ms 302 274,285,302,316,349
+text contains 200 total 8310 median ms 148 133,137,148,153,160
+date ge 200 total 8813 median ms 120 101,110,120,125,148
+bool eq 200 total 10068 median ms 75 70,70,75,76,81
+sort by cf date 200 total 100008 median ms 2362 2300,2332,2362,2400,2454
+group by select 200 total 100008 median ms 1258 1216,1226,1258,1279,1289
+group by date month 200 total 100008 median ms 19110 18653,18927,19110,19176,19600
+search 200 total 36 median ms 30 27,29,30,32,37
+export csv en 200
+﻿Name,Customer segment,Incoterm 55484,Credit cap 55484,Licence expiry 55484
+Gulf Glass Co.,Wholesale,EXW,250000.75,2027-12-31
+Gulf Steel Industries Co.,Government,EXW,250000.75,2027-12-31
+
+export csv ar 200
+﻿الاسم,شريحة العميل,شروط التسليم 55484,حد الائتمان 55484,انتهاء الرخصة 55484
+شركة الخليج للزجاج,جملة,تسليم المصنع,250000.75,2027-12-31
+شركة الخليج للصناعات الحديدية,حكومي,تسليم المصنع,250000.75,2027-12-31
+

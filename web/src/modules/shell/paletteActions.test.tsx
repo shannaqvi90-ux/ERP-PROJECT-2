@@ -82,11 +82,14 @@ const every = [
   "jobs.schedules.update",
   "customfields.fields.read",
   "customfields.fields.manage",
+  "importexport.exports.read",
+  "importexport.exports.create",
+  "importexport.exports.download",
 ];
 
 /** A user who may read every screen and change nothing but their own settings. */
 const reader = ["identity.profile.update", "identity.users.read", "identity.roles.read", "identity.signIns.read", "tenancy.companies.read", "tenancy.branches.read", "tenancy.workplace.read",
-  "currency.currencies.read", "currency.rates.read", "contacts.contacts.read", "numbering.sequences.read", "jobs.jobs.read", "jobs.schedules.read", "customfields.fields.read"];
+  "currency.currencies.read", "currency.rates.read", "contacts.contacts.read", "numbering.sequences.read", "jobs.jobs.read", "jobs.schedules.read", "customfields.fields.read", "importexport.exports.read"];
 
 const session = (permissions: string[], language = "en") => ({
   authenticated: true,

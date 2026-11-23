@@ -1,0 +1,270 @@
+{
+  "schema": 1,
+  "run_id": "find-record-20261120T091646-5aa1",
+  "instrument": 12,
+  "task": "find-record",
+  "task_title": "Find one record among 100,000",
+  "product": "ours",
+  "status": "error",
+  "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
+  "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
+  "started_at": "2026-11-20T09:16:46.344Z",
+  "finished_at": "2026-11-20T09:16:49.256Z",
+  "environment": {
+    "base_url": "http://localhost:21850",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {},
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [],
+  "verification": null,
+  "path_notes": "palette: Ctrl+K > type the contact's name > Enter opens the contact's form. | palette-shortest: Ctrl+K > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the contact's form. | menu: Contacts (navigation; the search box has the focus) > type the name > Enter opens the best match. | goto: G then O (Contacts; the search box has the focus) > type the name > Enter opens the best match. | shortest: Contacts (navigation; the search box has the focus) > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the best match.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/find-record.mjs",
+    "sha256": "d33648b14db78906add28b79d8b369b02d6f9737e5a774583714790fa9b72252"
+  },
+  "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
+  "error": "palette: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)\npalette-shortest: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)\nmenu: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)\ngoto: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)\nshortest: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)",
+  "start_state": null,
+  "error_page": {
+    "palette": {
+      "url": "blank",
+      "ready_state": "complete",
+      "title": "",
+      "focused": null,
+      "navigation": false,
+      "busy": [],
+      "messages": []
+    },
+    "palette-shortest": {
+      "url": "blank",
+      "ready_state": "complete",
+      "title": "",
+      "focused": null,
+      "navigation": false,
+      "busy": [],
+      "messages": []
+    },
+    "menu": {
+      "url": "blank",
+      "ready_state": "complete",
+      "title": "",
+      "focused": null,
+      "navigation": false,
+      "busy": [],
+      "messages": []
+    },
+    "goto": {
+      "url": "blank",
+      "ready_state": "complete",
+      "title": "",
+      "focused": null,
+      "navigation": false,
+      "busy": [],
+      "messages": []
+    },
+    "shortest": {
+      "url": "blank",
+      "ready_state": "complete",
+      "title": "",
+      "focused": null,
+      "navigation": false,
+      "busy": [],
+      "messages": []
+    }
+  },
+  "verify_passes": null,
+  "requests_after_clock": null,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": null,
+  "set_up_writes_waited": null,
+  "failure_capture": {
+    "url": "about:blank",
+    "console": [],
+    "screenshot": "../../evidence-staging/p18-visual-design/r1/compare/failures/failure-58268788dce9857f.jpg"
+  },
+  "screenshots_path": "palette",
+  "best_path_per_metric": {},
+  "counts_path": "palette",
+  "variants": [
+    {
+      "id": "palette",
+      "path": "Ctrl+K > type the contact's name > Enter opens the contact's form.",
+      "status": "error",
+      "error": "Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)",
+      "error_page": {
+        "url": "blank",
+        "ready_state": "complete",
+        "title": "",
+        "focused": null,
+        "navigation": false,
+        "busy": [],
+        "messages": []
+      },
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": null,
+      "failure_capture": {
+        "url": "about:blank",
+        "console": [],
+        "screenshot": "../../evidence-staging/p18-visual-design/r1/compare/failures/failure-58268788dce9857f.jpg"
+      }
+    },
+    {
+      "id": "palette-shortest",
+      "path": "Ctrl+K > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the contact's form.",
+      "status": "error",
+      "error": "Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)",
+      "error_page": {
+        "url": "blank",
+        "ready_state": "complete",
+        "title": "",
+        "focused": null,
+        "navigation": false,
+        "busy": [],
+        "messages": []
+      },
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": null,
+      "failure_capture": {
+        "url": "about:blank",
+        "console": [],
+        "screenshot": "../../evidence-staging/p18-visual-design/r1/compare/failures/failure-5e78908f62f46796.jpg"
+      }
+    },
+    {
+      "id": "menu",
+      "path": "Contacts (navigation; the search box has the focus) > type the name > Enter opens the best match.",
+      "status": "error",
+      "error": "Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)",
+      "error_page": {
+        "url": "blank",
+        "ready_state": "complete",
+        "title": "",
+        "focused": null,
+        "navigation": false,
+        "busy": [],
+        "messages": []
+      },
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": null,
+      "failure_capture": {
+        "url": "about:blank",
+        "console": [],
+        "screenshot": "../../evidence-staging/p18-visual-design/r1/compare/failures/failure-baf4149309361ec0.jpg"
+      }
+    },
+    {
+      "id": "goto",
+      "path": "G then O (Contacts; the search box has the focus) > type the name > Enter opens the best match.",
+      "status": "error",
+      "error": "Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)",
+      "error_page": {
+        "url": "blank",
+        "ready_state": "complete",
+        "title": "",
+        "focused": null,
+        "navigation": false,
+        "busy": [],
+        "messages": []
+      },
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": null,
+      "failure_capture": {
+        "url": "about:blank",
+        "console": [],
+        "screenshot": "../../evidence-staging/p18-visual-design/r1/compare/failures/failure-b291f67ed3a45a4a.jpg"
+      }
+    },
+    {
+      "id": "shortest",
+      "path": "Contacts (navigation; the search box has the focus) > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the best match.",
+      "status": "error",
+      "error": "Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database\n    (in the driver process)\n    at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)\n    at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)",
+      "error_page": {
+        "url": "blank",
+        "ready_state": "complete",
+        "title": "",
+        "focused": null,
+        "navigation": false,
+        "busy": [],
+        "messages": []
+      },
+      "counts": null,
+      "steps": [],
+      "waits": [],
+      "verification": null,
+      "start_state": null,
+      "verify_passes": null,
+      "requests_after_clock": null,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": null,
+      "set_up_writes_waited": null,
+      "failure_capture": {
+        "url": "about:blank",
+        "console": [],
+        "screenshot": "../../evidence-staging/p18-visual-design/r1/compare/failures/failure-99620a8e0eee6a77.jpg"
+      }
+    }
+  ]
+}

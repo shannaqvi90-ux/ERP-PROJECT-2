@@ -1,0 +1,47 @@
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs
+index e58efc4f..af7cba25 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/CustomFieldService.cs
+@@ -14,7 +14,8 @@ namespace Erp.Modules.CustomFields;
+ /// </summary>
+ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog catalog, IServiceProvider services) : ICustomFields
+ {
+-    private readonly Dictionary<string, IReadOnlyList<CustomFieldInfo>> _fields = new(StringComparer.Ordinal);
++    // CRITIC PLANT L4: a process-wide cache of the definitions by kind of record (no workspace in the key).
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<CustomFieldInfo>> _fields = new(StringComparer.Ordinal);
+ 
+     public async Task<IReadOnlyList<CustomFieldInfo>> FieldsAsync(string recordType, CancellationToken cancellationToken)
+     {
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+index 16a21cf7..b082f102 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+@@ -126,6 +126,14 @@ internal static class FieldEndpoints
+             .ProducesProblem(StatusCodes.Status409Conflict)
+             .RequirePermission(CustomFieldsPermissions.FieldsManage);
+ 
++        // CRITIC PLANT P5: a quick value edit for any record, guarded only by the custom-field manage permission
++        // (it skips the owning record's own update permission, e.g. contacts.contacts.update).
++        group.MapPut("/values/{recordType}/{recordId:guid}", PutValues)
++            .WithName("customfields.values.put")
++            .WithSummary("Set custom field values of a record.")
++            .ProducesValidationProblem()
++            .RequirePermission(CustomFieldsPermissions.FieldsManage);
++
+         group.MapGet("/record-types", RecordTypes)
+             .WithName("customfields.recordTypes.list")
+             .WithSummary("The kinds of record that can have custom fields, with how many each has.")
+@@ -154,6 +162,13 @@ internal static class FieldEndpoints
+         return field is null ? Problems.NotFound(http) : TypedResults.Ok(ToDto(field, session));
+     }
+ 
++    private static async Task<IResult> PutValues(string recordType, Guid recordId, Dictionary<string, System.Text.Json.JsonElement> values, Erp.Kernel.CustomFields.ICustomFields fields, HttpContext http, CancellationToken cancellationToken)
++    {
++        var validator = new Validator(http);
++        await fields.SaveAsync(recordType, recordId, false, values, validator, cancellationToken);
++        return validator.IsValid ? TypedResults.NoContent() : validator.ToResult();
++    }
++
+     private static async Task<Ok<IReadOnlyList<RecordTypeDto>>> RecordTypes(CustomFieldsDbContext db, ModuleCatalog catalog, CancellationToken cancellationToken)
+     {
+         var counts = await db.Definitions.AsNoTracking().GroupBy(d => d.RecordType).Select(g => new { Type = g.Key, Count = g.Count() }).ToDictionaryAsync(g => g.Type, g => g.Count, cancellationToken);

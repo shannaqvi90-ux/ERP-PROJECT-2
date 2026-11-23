@@ -1,0 +1,21 @@
+import { open, shot, focused } from './pw.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+const t = String(Date.now()).slice(-5);
+const go = async () => { await page.keyboard.press('Control+k'); await page.waitForTimeout(400); await page.keyboard.type('Custom fields'); await page.waitForTimeout(800); await page.keyboard.press('Enter'); await page.waitForTimeout(2000); };
+await go();
+const field = async (en, ar, type, extra) => {
+  await page.keyboard.press('Alt+n'); await page.waitForTimeout(800);
+  await page.keyboard.type(en); await page.keyboard.press('Tab'); await page.keyboard.type(ar); await page.keyboard.press('Tab'); await page.keyboard.press('Tab');
+  await page.keyboard.type(type); await page.waitForTimeout(300);
+  await extra(); await page.keyboard.press('Tab'); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
+  const msg = await page.$$eval('[role=alert], .field-error', els => els.map(e => e.textContent.trim()).filter(Boolean));
+  console.log(en, 'messages', msg);
+};
+const tabTo = async name => { for (let i = 0; i < 8; i++) { await page.keyboard.press('Tab'); if ((await focused(page)).includes('name=' + name + ' ')) return true; } console.log('no', name); return false; };
+const SUF = process.argv[2] || t;
+await field('Incoterm ' + SUF, 'شروط التسليم ' + SUF, 'Single', async () => { await tabTo('options'); await page.keyboard.type('FOB | فوب\nCIF | سيف\nEXW | تسليم المصنع'); await page.waitForTimeout(300); await shot(page, 'tmp-select-new'); await tabTo('defaultValue'); await page.keyboard.type('C'); console.log('select default ->', await page.evaluate(() => document.activeElement.value)); });
+await field('Credit cap ' + SUF, 'حد الائتمان ' + SUF, 'Number', async () => { await tabTo('decimals'); await page.keyboard.type('2'); await tabTo('required'); await page.keyboard.press('Space'); await tabTo('defaultValue'); await page.keyboard.type('1500.25'); });
+await shot(page, 's24-en-fields-created-by-keyboard');
+console.log('errors', errors);
+console.log('suffix', t);
+await browser.close();

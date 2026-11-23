@@ -1,0 +1,16 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-11-21T13:14:51.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing;
+                                                     the lead or the owner runs it there, needs-human #13: never stop, recreate or reset the shared rig)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig, for a builder or critic; then COMPARE_ODOO_URL=http://localhost:<port>)
+    tools/odoo-reference/up.sh --status             (what is running and the recorded volume; changes nothing)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+who-changed-field        odoo  verified  steps 5  keys 30  machine 2.586s  human 18.5s  human+wait 20.221s  -> ../../evidence-staging/p07-audit/r6/compare/results/who-changed-field-20261120T092052-26a1.json
+who-changed-field        ours  verified  steps 3  keys 14  machine 0.661s  human 5.67s  human+wait 6.038s  -> ../../evidence-staging/p07-audit/r6/compare/results/who-changed-field-20261120T092128-031d.json
+who-changed-field        verdict win (ours judged on its whole path 'palette-shortest')
+who-renamed-user         ours  verified  steps 3  keys 2  machine 0.86s  human 8.01s  human+wait 8.5s  -> ../../evidence-staging/p07-audit/r6/compare/results/who-renamed-user-20261120T092220-4646.json
+who-renamed-user         odoo  verified  steps 6  keys 4  machine 3.312s  human 10.07s  human+wait 13.025s  -> ../../evidence-staging/p07-audit/r6/compare/results/who-renamed-user-20261120T092303-7b77.json
+who-renamed-user         verdict win (ours judged on its whole path 'initials')
+blind review page: ../../../../evidence-staging/p07-audit/r6/compare/blind/review.html
+output: ../../../../evidence-staging/p07-audit/r6/compare

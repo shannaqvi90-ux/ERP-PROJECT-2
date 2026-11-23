@@ -1,0 +1,358 @@
+{
+  "schema": 1,
+  "run_id": "export-filtered-list-20261121T003916-6cef",
+  "instrument": 12,
+  "task": "export-filtered-list",
+  "task_title": "Export a filtered list",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Export every contact tagged \"Government\" to a spreadsheet with at least their name, e-mail and phone.",
+  "done_when": "The product hands over a spreadsheet file; it holds one row per contact tagged \"Government\" (every one of them, not just the first page) with name, e-mail and phone columns.",
+  "started_at": "2026-11-21T00:39:16.583Z",
+  "finished_at": "2026-11-21T00:39:49.618Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 9,
+    "keystrokes": 11,
+    "clicks": 8,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 6.112,
+    "system_wait_seconds": 3.857,
+    "human_seconds": 26.43,
+    "human_plus_wait_seconds": 30.287,
+    "klm_operator_counts": {
+      "K": 11,
+      "P": 8,
+      "B": 16,
+      "H": 2,
+      "M": 9
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.033,
+      "took": 0.063,
+      "began": 0.002,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "at": 0.148,
+      "took": 0.052,
+      "began": 0.097,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "tag",
+      "keystrokes": 11,
+      "at": 0.522,
+      "took": 0.093,
+      "text": "Government",
+      "same_field": false,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Search Tag for",
+      "keystrokes": 0,
+      "at": 1.077,
+      "took": 0.123,
+      "began": 1.022,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "select the page",
+      "keystrokes": 0,
+      "at": 2.33,
+      "took": 0.229,
+      "began": 2.27,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Select all",
+      "keystrokes": 0,
+      "at": 2.751,
+      "took": 0.127,
+      "began": 2.591,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Actions",
+      "keystrokes": 0,
+      "at": 2.915,
+      "took": 0.069,
+      "began": 2.879,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Export",
+      "keystrokes": 0,
+      "at": 3.033,
+      "took": 0.158,
+      "began": 2.985,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Export (download)",
+      "keystrokes": 0,
+      "at": 4.052,
+      "took": 0.149,
+      "began": 3.86,
+      "screen": "/odoo/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.202,
+      "seconds": 0.302
+    },
+    {
+      "label": "contact list, search focused",
+      "at": 0.504,
+      "seconds": 0.004
+    },
+    {
+      "label": "search options",
+      "at": 0.616,
+      "seconds": 0.405
+    },
+    {
+      "label": "filtered list",
+      "at": 1.204,
+      "seconds": 1.066
+    },
+    {
+      "label": "select-all offer",
+      "at": 2.56,
+      "seconds": 0.03
+    },
+    {
+      "label": "export dialog",
+      "at": 3.192,
+      "seconds": 0.141
+    },
+    {
+      "label": "file received",
+      "at": 4.201,
+      "seconds": 1.909
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "02f9e66ebedfa5ce.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p14-import-export/r1/compare/blind/shots/02f9e66ebedfa5ce.jpg"
+    },
+    {
+      "moment": "export options chosen",
+      "file": "b80883247cc63c39.jpg",
+      "at": 3.334,
+      "path": "../../evidence-staging/p14-import-export/r1/compare/blind/shots/b80883247cc63c39.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "6582efce7a5bd7bb.jpg",
+      "at": 6.112,
+      "path": "../../evidence-staging/p14-import-export/r1/compare/blind/shots/6582efce7a5bd7bb.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "Contact (res.partner).xlsx",
+      "header": [
+        "Avatar 128",
+        "Display Name",
+        "Email",
+        "Phone",
+        "Activities",
+        "Country",
+        "Stats"
+      ],
+      "rows": 6581,
+      "expected_rows": 6581
+    }
+  },
+  "path_notes": "Apps menu > Contacts > type the tag > choose \"Search Tag for\" > header check box > Select all > Actions > Export > Export (the dialog proposes the list's columns: name, e-mail, phone and more).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/export-filtered-list.mjs",
+    "sha256": "70b21c5526724ddba17bba5d6878531b3ab2461aef7ef2334fed0c2dbb1120b9"
+  },
+  "task_notes": "Thousands of contacts carry the tag, so the export must cover more than the page on screen. The verification reads the file.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 0,
+      "longest_pause_seconds": 0.062,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.062,
+      "verified": true
+    },
+    {
+      "requests": 0,
+      "longest_pause_seconds": 0.066,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.066,
+      "verified": true,
+      "gap_seconds": 0.132
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "4b4247ec7043be47",
+    "elements": 3219
+  },
+  "screen_after_verify": {
+    "sha256": "4b4247ec7043be47",
+    "elements": 3219,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.001
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 204,
+    "not_caused": 77,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.221,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.504,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 1.044,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/149073/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.046,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.061,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/113478/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.062,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/171959/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.063,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "it followed the answer to GET /web/image/res.partner/134985/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.065,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 6.142,
+      "by_step": 9,
+      "chain": [
+        "input of step 9",
+        "the answer to POST /web/export/xlsx after 1.876 s",
+        "a timer of 0.066 s",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

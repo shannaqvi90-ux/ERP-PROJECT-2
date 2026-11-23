@@ -1,3 +1,4 @@
+import { JobsHomeCard } from "./home";
 import "./jobs.css";
 import { api } from "../../kernel/api";
 import type { ModuleExtensions } from "../../kernel/extensions";
@@ -10,6 +11,7 @@ import type { JobRow, ListPage } from "./types";
  * by title, kind or state ("clean up", "failed"), each opened in the list with its panel.
  */
 export const extensions: ModuleExtensions = {
+  home: [{ key: "jobs.home", order: 30, permission: "jobs.jobs.read", component: JobsHomeCard }],
   actions: [
     { key: "jobs.jobs.print", labelKey: "jobs.action.printJobs", keywordsKey: "jobs.action.printKeywords", permission: "jobs.jobs.read", path: "/jobs/jobs", command: "lists.print" },
     { key: "jobs.schedules.new", labelKey: "jobs.action.newSchedule", keywordsKey: "jobs.action.newScheduleKeywords", permission: "jobs.schedules.create", path: "/jobs/schedules", command: "jobs.schedules.new" },

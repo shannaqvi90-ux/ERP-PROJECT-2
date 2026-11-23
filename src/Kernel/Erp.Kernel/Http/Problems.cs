@@ -63,6 +63,9 @@ public sealed class Validator(HttpContext context)
 
     public bool IsValid => _errors.Count == 0;
 
+    /// <summary>The problems collected so far, by field (a copy).</summary>
+    public IReadOnlyDictionary<string, FieldError[]> Errors => _errors.ToDictionary(p => p.Key, p => p.Value.ToArray(), StringComparer.Ordinal);
+
     public Validator Add(string field, string code, params object?[] args)
     {
         if (!_errors.TryGetValue(field, out var list))

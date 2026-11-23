@@ -1,0 +1,124 @@
+{
+  "piece": "p14-import-export",
+  "round": 1,
+  "commit": "d9d6f5e9",
+  "judged_at": "2026-11-21T02:08:21Z",
+  "verdict": "LOSS",
+  "critic": "fresh critic, p14-import-export round 1",
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (suites)",
+      "status": "pass",
+      "evidence": "Full ./erp verify passed: all four G1HttpIsolationShardTests shares, G1ImportExportAttackTests, G1ProcessStateTests, G1DatabaseIsolationTests, G1ClientStateTests and the rest of the gates passed (verify-summary.txt)."
+    },
+    {
+      "gate": "G1 hand attack, tenant A (alnoor) against tenant B (gulfsteel)",
+      "status": "pass",
+      "evidence": "attack-a-vs-b.mjs/.out: 63 requests using B's import id, B's finished export id and B's tenant id across GET/PUT/POST/DELETE imports, errors, mapping, run, tenant-exports get and download, plain and with X-Tenant-Id headers or query. All answered 404 or 204 and none held B's canary or ids. A's own CSV and JSON full exports share 0 contact ids and 0 attachment names with B's. erp_app/erp_worker are not superuser and not BYPASSRLS. RLS is enabled and forced on all 5 importexport tables (owner erp_owner). As erp_app with no session binding, the tables show 0 rows."
+    },
+    {
+      "gate": "G1 planted leaks on this piece's surface (clone only)",
+      "status": "pass",
+      "evidence": "plant-1-cross-tenant-caches.diff: a process-wide cache keyed only by id in GET imports/{id} and in POST tenant-exports/{id}/download. G1ImportExportAttackTests reported 37 leaks plus probe hits on imports/{id}. G1ProcessStateTests flagged both static caches. The download cache was caught only by the process-state gate (see other findings)."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "Suites pass. Plant 2 (plant-2-no-permission.diff): removing RequirePermission from GET imports/{id}/errors failed G2PermissionTests (Undeclared_endpoints_fall_back_to_deny, A_user_whose_roles_grant_nothing...): 'declares no permission'. By hand: viewer and noaccess get 403 on fields, imports list and upload, and on starting an export. The viewer reads the exports list (200), as the reviewed map allows. In e2e the viewer sees no Import button."
+    },
+    {
+      "gate": "G3 clean clone",
+      "status": "pass",
+      "evidence": "Fresh clone at d9d6f5e9: ./erp verify passed in 8169 s (2666 tests, 0 failed, Ratchet check passed). ./erp up with the comparison dataset was serving in 336 s. Ports overridden through ERP_PROJECT/ERP_HTTP_PORT/ERP_DB_PORT/ERP_VERIFY_* (21450-21461)."
+    },
+    {
+      "gate": "Rule gates (licences, decimal money, string twins, audit)",
+      "status": "pass",
+      "evidence": "Covered by the passing verify (string check: 1684 keys in English and Arabic). In the DB, imported contacts hold credit_limit_amount numeric(28,10) with currency, rate numeric(19,8) and base amount numeric(19,4) plus base currency (EUR 1250.75 x 4.1 = 5128.08 AED). audit.entries has an insert row per imported contact with the importer as actor, and rows for import_sessions, import_files, import_mappings, tenant_exports (download counts) and export_files."
+    }
+  ],
+  "tests": {
+    "command": "ERP_PROJECT=c-p14-import-export-r1 ERP_HTTP_PORT=21450 ERP_DB_PORT=21451 ERP_VERIFY_HTTP_PORT=21460 ERP_VERIFY_DB_PORT=21461 gauntlet/tools/verify-slot.sh ./erp verify (fresh clone at d9d6f5e9)",
+    "total": 2666,
+    "passed": 2666,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 8169
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 8169,
+    "evidence": "Slot taken 2026-11-20T23:51:25Z and verify passed in 8169 s: dotnet 1195, web unit 786, e2e 174, compare 489, build 22, all passed. Processor time 24098 s against the 24500 s maximum, measured on a busy machine (load peaked at 34.44; this critic's plant gate runs and demo stack ran beside it). ./erp up was serving in 336 s, and all demo sign-ins were printed."
+  },
+  "odoo": [
+    {
+      "task": "import-5000",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 0,
+        "seconds": 4.906,
+        "klm_seconds": 12.1
+      },
+      "odoo": {
+        "steps": 7,
+        "keystrokes": 0,
+        "seconds": 13.402,
+        "klm_seconds": 17.4
+      },
+      "notes": "Both products verified: 5,000 contacts added, first and last found. Both scored 0 keystrokes, so that metric is left out (owner rule #11). Ours is strictly better on steps, machine seconds and modelled seconds (human+wait 16.05 against 29.2). Two of three runs of ours came out invalid on the harness's causation check: the page changed with no counted step causing it, 0.2 to 0.3 s into the measured part. The third run verified, and that run is the one recorded. The builder's ours driver was used as is."
+    },
+    {
+      "task": "export-filtered-list",
+      "winner": "odoo",
+      "ours": {
+        "steps": 8,
+        "keystrokes": 11,
+        "seconds": 2.009,
+        "klm_seconds": 22.43
+      },
+      "odoo": {
+        "steps": 9,
+        "keystrokes": 11,
+        "seconds": 6.112,
+        "klm_seconds": 26.43
+      },
+      "notes": "The builder left the ours driver as a stub. The critic wrote it (ours-export-filtered-list.mjs): Contacts > Tags column options > Filter... > click the value field > type 'Government' > Apply > Print or export > Excel in English. It exports all 6,581 rows, the same count as Odoo, and verified. Ours is better on steps, machine and modelled seconds but ties Odoo on keystrokes (11 = 11, the typed tag), and a tie is a loss. It is not tie-accepted: this is round 1, there was no earlier tie and the builder has no decision record of tried paths. Paths the critic tried that do not cut keystrokes: Tab instead of clicking the value field (+1 key), Enter instead of Apply (+1 key), the list search (does not match tags, 0 results), and Alt+Shift+F on a 'Government' cell (filters tags eq, 4,525 rows, misses multi-tag contacts). Tags are one free-text string ('VIP; Government') with no choices, so a value pick list (zero keystrokes) is not possible today. Typing the tag in lower case would save the Shift, but Odoo's frozen driver types the tag as given, so the inputs were kept equal."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p14-import-export/r1/01-en-import-mapping.jpg",
+    "gauntlet/evidence/p14-import-export/r1/02-en-import-check-report.jpg",
+    "gauntlet/evidence/p14-import-export/r1/03-en-import-done.jpg",
+    "gauntlet/evidence/p14-import-export/r1/04-ar-import-mapping.jpg",
+    "gauntlet/evidence/p14-import-export/r1/05-ar-import-check-report.jpg",
+    "gauntlet/evidence/p14-import-export/r1/05b-ar-import-done.jpg",
+    "gauntlet/evidence/p14-import-export/r1/06-en-broken-full-export.jpg",
+    "gauntlet/evidence/p14-import-export/r1/07-ar-full-export.jpg",
+    "gauntlet/evidence/p14-import-export/r1/08-cmp-export-a.jpg",
+    "gauntlet/evidence/p14-import-export/r1/09-cmp-export-b.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The full tenant export crashes on the stack the product ships, then blocks every later export; the e2e test passes only on the seeded fake export",
+    "detail": "compose.yaml gives the attachments volume and Erp__Attachments__Root=/data/attachments to setup and app but not to the worker service. So TenantExportJobHandler (line 51, GetService<IAttachmentExport>) builds LocalAttachmentStore in the worker, which tries to create /app/attachments-data and gets UnauthorizedAccessException. The job fails on attempt 1 of 1 ('jobs.unexpected'). The importexport.tenant_exports row stays 'queued' for ever, and the screen shows 'Waiting' with no error. Because 'one export is written at a time' (POST answers the queued one, and the Start button and Alt+N are disabled while one is active), the workspace can never export again. The administrator cannot rerun the job either: POST /api/jobs/jobs/{id}/rerun answers 403 jobs.typeNotAllowed. Only a database edit gets it out. The e2e test 'the full export of the workspace is started, written in the background and downloaded as a zip' passed in 621 ms on the verify stack, whose worker logged the same crash during the run. It clicks Download on the first row before the list reloads, and that row is the export ImportExportSeeder inserts as already 'Ready', expiring in 3,650 days. Even when the job runs (after the critic's own worker override), the export holds only contacts.contacts and attachments: no users, roles, companies, branches, currencies, exchange rates, custom field definitions, numbering sequences, saved views, jobs or audit trail. That falls short of 'all of the tenant's data' (needs-human #44). Fix: give the worker the volume and setting, mark the export failed with a readable reason when its job fails (and let it be retried), make the e2e wait for the export it started to be ready, and register every module's records for the export.",
+    "evidence": "export-job-crash.log; 06-en-broken-full-export.jpg (export started 4:12 'Waiting'; the seeded row shows 'Download until 18/11/2036'); rerun-jobs.mjs (403 jobs.typeNotAllowed); critic-only-worker-override.yaml (the two lines that make the job run); tenant-exports-contents.txt (manifest: data/contacts.contacts.* and data/attachments.* only). Repro: ./erp up, sign in as admin@alnoor.example, press G then E, press Alt+N, wait. The row stays 'Waiting' and `docker logs <project>-worker-1` shows System.UnauthorizedAccessException: Access to the path '/app/attachments-data' is denied."
+  },
+  "gate_gaps": [],
+  "other_findings": [
+    "[route: p14-import-export] The import and export isolation probe never judges a finished tenant-B export file. Tenant B only lists its exports (a download is a write), and nothing makes B's export succeed before A's attack, so A's download requests with B's ids are only ever answered 404 or 202. In the plant, a cache keyed by id in POST tenant-exports/{id}/download was missed by G1ImportExportAttackTests and caught only by G1ProcessStateTests. The probe should give tenant B a succeeded export, download it, and then attack it.",
+    "Importing the same file twice silently creates duplicate contacts: same name and e-mail, 2 contacts (custom-and-dupes.out). There is no duplicate warning, although the contact form has one, and no update mode for existing records (Odoo's import can update existing records).",
+    "A foreign-currency credit limit in the file is refused unless the file also carries the exchange rate ('Enter the exchange rate: how many AED one USD is worth.'). The workspace's own rates (100,000 in the demo) are not offered.",
+    "The error file's problem columns use raw field keys in both languages, for example 'creditLimitExchangeRate: ...' and 'email: ...' (walk-en-errors.csv). The column's own header or the field's label should be used.",
+    "Arabic wording: the check result reads '2 صفًا صالحًا و2 بها مشكلات' (no dual form), and the export contents read '1 ملفًا' (no singular). The 'checked' and 'holds' messages are not pluralised.",
+    "The exports screen shows only a state word (Waiting / Being written / Ready). There is no percentage or progress text, although the job reports progress. A finished import job's progress text stays 'Checked 500 of 6000 rows.' at 100 %.",
+    "The whole export is assembled in memory and stored in the database, capped at 256 MB (ImportLimits.MaxExportBytes). A workspace with more than 256 MB of attachments cannot export at all.",
+    "[route: p16-contacts] List export: in English, the Name column is the nameEn field, so a contact with only an Arabic name exports with an empty name (list-export.csv). Re-importing our own XLSX export then fails that row ('Enter the name in English or in Arabic'). The CSV export also writes phone numbers as '+971 4 ...' with a leading apostrophe (formula escaping).",
+    "Design system (p18 integrated): the full export screen and the import mapping use native browser selects. The export screen has no page header or command bar like the other lists.",
+    "Scope: only contacts are registered for import. Users, exchange rates, companies, branches and currencies cannot be imported through p14.",
+    "The import side works end to end in English and Arabic by keyboard: Alt+I, mapping by header with memory ('as before' on the next file), first-values preview, Check only (dry run) with a report, a bilingual error file download, skip-and-import, custom fields (select, text, dd/mm/yyyy date, yes/no stored), XLSX upload, and a 6,000-row file run as a background job (check 1.0 s, import 5.1 s)."
+  ],
+  "human_gates": [],
+  "minor_only": false,
+  "evidence_staging": "/home/shan/evidence-staging/p14-import-export/r1",
+  "evidence_dir": "gauntlet/evidence/p14-import-export/r1"
+}

@@ -1,0 +1,34 @@
+plant run B start 2026-11-22T21:20:13Z load 15.35 10.99 13.01
+
+Time Elapsed 00:00:35.23
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/shan/critic/p07-audit-r7-plant/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 296
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/shan/critic/p07-audit-r7-plant/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 249
+   at Program.<Main>$(String[] args) in /home/shan/critic/p07-audit-r7-plant/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at Microsoft.AspNetCore.Mvc.Testing.DeferredHostBuilder.DeferredHost.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Start(IHost host)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.CreateHost(IHostBuilder builder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.ConfigureHostBuilder(IHostBuilder hostBuilder)
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.StartServer()
+   at Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`1.get_Services()
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /home/shan/critic/p07-audit-r7-plant/tests/Erp.Testing/ErpTestEnvironment.cs:line 129
+   at Erp.Testing.ErpTestEnvironment.SeedAsync(TestDatabaseServer server, String database, SeedPlan plan, IDictionary`2 settings) in /home/shan/critic/p07-audit-r7-plant/tests/Erp.Testing/ErpTestEnvironment.cs:line 139
+   at Erp.Testing.ErpTestEnvironment.<>c__DisplayClass34_0.<<StartGateAsync>b__0>d.MoveNext() in /home/shan/critic/p07-audit-r7-plant/tests/Erp.Testing/ErpTestEnvironment.cs:line 91
+   at Erp.Testing.TestDatabaseServer.<>c__DisplayClass26_0.<<GateTemplateAsync>b__3>d.MoveNext() in /home/shan/critic/p07-audit-r7-plant/tests/Erp.Testing/TestDatabaseServer.cs:line 167
+   at Erp.Testing.TestDatabaseServer.GateTemplateAsync(IDictionary`2 settings, Func`2 seed) in /home/shan/critic/p07-audit-r7-plant/tests/Erp.Testing/TestDatabaseServer.cs:line 172
+   at Erp.Testing.ErpTestEnvironment.StartGateAsync(IDictionary`2 settings) in /home/shan/critic/p07-audit-r7-plant/tests/Erp.Testing/ErpTestEnvironment.cs:line 88
+   at Erp.Gates.Tests.Infrastructure.GateFixture.InitializeAsync() in /home/shan/critic/p07-audit-r7-plant/tests/Erp.Gates.Tests/Infrastructure/GateFixture.cs:line 17
+  Failed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Error Message:
+   Assembly fixture type 'Erp.Gates.Tests.Infrastructure.GateFixture' threw in InitializeAsync
+   at Erp.Kernel.Hosting.ErpPlatform.ValidateEndpoints(WebApplication app) in /home/shan/critic/p07-audit-r7-plant/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 296
+   at Erp.Kernel.Hosting.ErpPlatform.UseErpPlatform(WebApplication app) in /home/shan/critic/p07-audit-r7-plant/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs:line 249
+   at Program.<Main>$(String[] args) in /home/shan/critic/p07-audit-r7-plant/src/Host/Erp.Host/Program.cs:line 8
+   at Program.<Main>(String[] args)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+plant run B end 2026-11-22T21:20:57Z

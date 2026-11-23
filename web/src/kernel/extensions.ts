@@ -10,6 +10,8 @@ import type { Language } from "./format";
  *    with no props, reads what it needs through useSession()/useI18n(), and may register its own
  *    shortcut with useShortcut() (it then appears in the shortcut help sheet).
  *  - `status`: short facts in the status line (inline end side).
+ *  - `home`: cards of the home screen that say what needs doing (counts of what waits for the user,
+ *    each leading to its screen); see kernel/home.tsx.
  *  - `palette`: sources of command palette entries: records found by what the user types
  *    (`minLength` >= 1) or a fixed set of actions (`minLength` 0, for example "switch to company X").
  *  - `actions`: what the module lets a user start from anywhere by typing in the command palette
@@ -158,10 +160,25 @@ export type RecordPanelItem = {
  */
 export type HistoryChild = { key: string; parent: string; child: string; labelKey: string; permission?: string; hide?: string[] };
 
+/**
+ * A control a module adds to the toolbar of another module's list (p14: the Import button of a list of records that can be imported).
+ * `listKey` is the registered list; the component gets the list's key and a function that reads its rows again.
+ */
+export type ListActionItem = {
+  key: string;
+  listKey: string;
+  order?: number;
+  permission?: string;
+  component: ComponentType<{ listKey: string; reload: () => void }>;
+};
+
 export type ModuleExtensions = {
+  listActions?: ListActionItem[];
   history?: HistoryChild[];
   topbar?: SlotItem[];
   status?: SlotItem[];
+  /** Cards of the home screen: what needs doing, from the module (kernel/home.tsx). */
+  home?: SlotItem[];
   palette?: PaletteSource[];
   actions?: ModuleAction[];
   goTo?: GoToKey[];
@@ -173,7 +190,7 @@ type ExtensionModule = { extensions?: ModuleExtensions };
 const found = import.meta.glob<ExtensionModule>("../modules/*/extensions.{ts,tsx}", { eager: true });
 
 export function collectExtensions(sources: Record<string, ExtensionModule>): Required<ModuleExtensions> {
-  const all: Required<ModuleExtensions> = { topbar: [], status: [], palette: [], actions: [], goTo: [], record: [], history: [] };
+  const all: Required<ModuleExtensions> = { topbar: [], status: [], home: [], palette: [], actions: [], goTo: [], record: [], history: [], listActions: [] };
   const goToCodes = new Map<string, string>();
   const seen = new Set<string>();
   for (const [path, module] of Object.entries(sources).sort(([a], [b]) => a.localeCompare(b))) {
@@ -190,9 +207,11 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
     }
     all.topbar.push(...(ext.topbar ?? []));
     all.status.push(...(ext.status ?? []));
+    all.home.push(...(ext.home ?? []));
     all.palette.push(...(ext.palette ?? []));
     all.record.push(...(ext.record ?? []));
     all.history.push(...(ext.history ?? []));
+    all.listActions.push(...(ext.listActions ?? []));
     for (const action of ext.actions ?? []) {
       if (!action.permission) throw new Error(`Action "${action.key}" of module ${name} names no permission`);
       if ((action.pick || action.then) && !action.command) throw new Error(`Action "${action.key}" of module ${name} asks for a record or a second command but runs no command`);
@@ -212,6 +231,8 @@ export function collectExtensions(sources: Record<string, ExtensionModule>): Req
   const byOrder = (a: SlotItem, b: SlotItem) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key);
   all.topbar.sort(byOrder);
   all.status.sort(byOrder);
+  all.home.sort(byOrder);
+  all.listActions.sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key));
   all.record.sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.key.localeCompare(b.key));
   return all;
 }

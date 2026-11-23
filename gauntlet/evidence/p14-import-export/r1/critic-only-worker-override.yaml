@@ -1,0 +1,6 @@
+services:
+  worker:
+    environment:
+      Erp__Attachments__Root: /data/attachments
+    volumes:
+      - attachments-data:/data/attachments

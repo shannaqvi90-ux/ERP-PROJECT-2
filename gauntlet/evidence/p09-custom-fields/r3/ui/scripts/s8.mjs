@@ -1,0 +1,12 @@
+import { open, shot } from './pw.mjs';
+const email = process.argv[2], tag = process.argv[3], who = process.argv[4];
+const { browser, page, errors } = await open(email);
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.keyboard.press('/'); await page.keyboard.type(who); await page.waitForTimeout(2000);
+await page.keyboard.press('ArrowDown'); await page.waitForTimeout(300); await page.keyboard.press('Enter'); await page.waitForTimeout(3000);
+await page.keyboard.press('Alt+y'); await page.waitForTimeout(3000);
+await shot(page, `s24-${tag}-history-panel`);
+const text = await page.evaluate(() => document.body.innerText);
+console.log(text.split('\n').filter(l => /55484|شريحة|segment/i.test(l) || /^(FOB|EXW|CIF|فوب|سيف|تسليم المصنع|wholesale|government|Wholesale|Government|جملة|حكومي)/.test(l.trim())).slice(0, 30).join('\n'));
+console.log('errors', errors);
+await browser.close();

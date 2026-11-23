@@ -1,0 +1,14 @@
+import { open, shot, focused } from './pw.mjs';
+const email = process.argv[2] || 'admin@alnoor.example', tag = process.argv[3] || 'en';
+const { browser, page, errors } = await open(email);
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.keyboard.press('/'); await page.keyboard.type('Gulf Glass'); await page.waitForTimeout(1500);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(2500);
+await page.keyboard.press('Control+s'); await page.waitForTimeout(1500);
+console.log('focus after refused save', await focused(page));
+await page.evaluate(() => document.activeElement.scrollIntoView({ block: 'center' }));
+await shot(page, `s24-${tag}-required-default-blocks-old-record`);
+const vals = await page.$$eval('input[name^="customFields"], select[name^="customFields"]', els => els.map(e => [e.name, e.value]));
+console.log(vals);
+console.log('errors', errors);
+await browser.close();

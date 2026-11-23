@@ -209,6 +209,8 @@ public sealed partial class G1ClientStateTests
         ["erp.language"] = "ar",
         ["erp.numerals"] = "arab",
         ["erp.navOpen"] = "1",
+        ["erp.theme"] = "hc",
+        ["erp.density"] = "comfortable",
         ["erp.passkeyOffer"] = "2",
         ["erp.signInDomains"] = "{\"salt\":\"0123456789abcdef0123456789abcdef\",\"hashes\":[\"0123456789abcdef\"]}",
     };

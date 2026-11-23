@@ -1,0 +1,26 @@
+Critic p00 r22 plants (plants.diff; inert unless CRITIC_PLANT names them), run in the toolbox through the verify slots
+(run-in-toolbox.sh + run-plants.sh, run-in-toolbox-2.sh + run-plants-2.sh) on a copy of 3240e848 (/home/shan/critic/p00-foundation-r22-plantL).
+Logs: plant-*.log, run-plants-1.log, run-plants-2-first-try.log (P22b also switched P22 on: substring clash, re-run as Q22), run-plants-3.log.
+
+TENANT-LEAK PLANT L22 (kernel request pipeline, src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs UseErpPlatform, after UseAuthorization):
+  every GET /api/...?take=... answer cached 30 s keyed by path and query only (not by tenant or user), held in a closure-captured
+  ConcurrentDictionary of the pipeline (a shape no earlier round planted: no static field, no singleton service).
+  Static walk MISSED it (plant-STATICL22... plant-STATIC-L22.log: G1ProcessStateTests and G1OutsideProcessStateTests passed, 21 s):
+    the walk does not reach middleware closures. Not a gate gap on its own, because a dynamic gate caught it:
+  CAUGHT (plant-LISTVOL-L22.log, 25 min): G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume
+    "41653 list answers at volume that are not the asking tenant's own: list 'tenancy.companies': row ... was walked by both tenants ...",
+    and The_volume_check_catches_totals_taken_from_whole_table_figures_or_kept_for_big_lists
+    "tenant A: page 1 of 501 of the keyset walk of GET /api/identity/users?take=200 answered total 202510, but the walk returns 100005 rows".
+
+PERMISSION PLANT P22 (kernel, src/Kernel/Erp.Kernel/Security/Permissions.cs RequirePermission): for permissions ending in .download or
+  .output (export downloads, job output files) the policy only requires a signed-in user; the RequiresPermission metadata is kept.
+  CAUGHT at host start (plant-G2-P22.log): ErpPlatform.ValidateEndpoints refuses to start: "GET /api/jobs/jobs/{id:guid}/output => Output:
+    declares 'jobs.jobs.output' but no authorization policy on it requires that permission" (and the same for the tenant-export download);
+    every G2PermissionTests test fails on the gate fixture.
+PERMISSION PLANT Q22 (kernel, PermissionAuthorizationHandler, passes the start-up check): <module>.<resource>.read also passes
+  <module>.<resource>.download and .output ("whoever may read the exports may download them").
+  CAUGHT (plant-G2ONE-Q22.log, 56 s): G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it
+    "[bearer] importexport.exports.read: POST /api/importexport/tenant-exports/{id:guid}/download answered 404 (expected 403)", cookie too.
+  Control: the whole G2PermissionTests class with no plant passed 33/33 (plant-G2-NONE.log).
+
+Result: no gate gap. Every plant was caught by at least one gate.

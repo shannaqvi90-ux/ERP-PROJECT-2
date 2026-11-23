@@ -1,0 +1,27 @@
+import { open, shot, focused } from './pw.mjs';
+const { browser, page, errors } = await open('admin.ar@alnoor.example');
+await page.keyboard.press('Control+k'); await page.waitForTimeout(400); await page.keyboard.type('الحقول المخصصة'); await page.waitForTimeout(900); await page.keyboard.press('Enter'); await page.waitForTimeout(2000);
+console.log(page.url());
+await page.keyboard.press('Alt+n'); await page.waitForTimeout(800);
+await page.keyboard.type('Supplier link 55484'); await page.keyboard.press('Tab'); await page.keyboard.type('المورد المرتبط 55484'); await page.keyboard.press('Tab'); await page.keyboard.press('Tab');
+const opts = await page.evaluate(() => [...document.activeElement.options].map(o => o.text)); console.log('type options (ar):', opts);
+await page.keyboard.press('End'); await page.waitForTimeout(300); console.log('type ->', await page.evaluate(() => document.activeElement.value));
+await page.keyboard.press('Tab'); console.log(await focused(page)); const t = await page.evaluate(() => document.activeElement.tagName === 'SELECT' ? [...document.activeElement.options].map(o => o.text) : null); console.log('lookup targets', t);
+await page.keyboard.press('ArrowDown'); await shot(page, 's24-ar-new-lookup-field');
+await page.keyboard.press('Control+s'); await page.waitForTimeout(1500);
+const msg = await page.$$eval('[role=alert], .field-error', els => els.map(e => e.textContent.trim()).filter(Boolean)); console.log('save', msg);
+// contact form: pick a contact in the lookup
+await page.keyboard.press('Escape'); await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.keyboard.press('/'); await page.keyboard.type('Gulf Steel'); await page.waitForTimeout(2000);
+await page.keyboard.press('ArrowDown'); await page.waitForTimeout(300); await page.keyboard.press('Enter'); await page.waitForTimeout(3000);
+const lk = await page.$$eval('[name^="customFields.cfSupplierLink55484"], [data-field^="customFields.cfSupplierLink55484"] input', els => els.map(e => e.outerHTML.slice(0, 200)));
+console.log('lookup input', lk);
+const inp = page.locator('[data-field="customFields.cfSupplierLink55484"] input').first();
+await inp.focus(); await page.keyboard.type('Gulf Glass'); await page.waitForTimeout(2000);
+await shot(page, 's24-ar-lookup-picking');
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(500);
+await page.keyboard.press('Control+s'); await page.waitForTimeout(2000);
+const msg2 = await page.$$eval('[role=alert], .field-error', els => els.map(e => e.textContent.trim()).filter(Boolean)); console.log('save contact', msg2);
+console.log('lookup value now', await inp.inputValue());
+console.log('errors', errors);
+await browser.close();

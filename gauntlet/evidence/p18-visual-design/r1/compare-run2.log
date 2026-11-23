@@ -1,0 +1,32 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-11-21T13:14:51.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing;
+                                                     the lead or the owner runs it there, needs-human #13: never stop, recreate or reset the shared rig)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig, for a builder or critic; then COMPARE_ODOO_URL=http://localhost:<port>)
+    tools/odoo-reference/up.sh --status             (what is running and the recorded volume; changes nothing)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+find-record              ours  verified  steps 3  keys 14  machine 0.881s  human 5.67s  human+wait 6.023s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/find-record-20261120T093358-664e.json
+find-record              odoo  verified  steps 5  keys 30  machine 2.295s  human 17.91s  human+wait 19.489s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/find-record-20261120T093456-b286.json
+find-record              verdict win (ours judged on its whole path 'palette-shortest')
+find-user                odoo  verified  steps 6  keys 5  machine 2.783s  human 10.35s  human+wait 12.858s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/find-user-20261120T093550-eb9f.json
+find-user                ours  verified  steps 3  keys 8  machine 1.607s  human 6.64s  human+wait 7.597s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/find-user-20261120T093858-8c08.json
+find-user                verdict win (ours judged on its whole path 'initials')
+attach-file              odoo  verified  steps 3  keys 0  machine 0.402s  human 6.8s  human+wait 6.905s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/attach-file-20261120T094115-81d9.json
+attach-file              ours  verified  steps 2  keys 0  machine 0.309s  human 4.15s  human+wait 4.356s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/attach-file-20261120T094140-f865.json
+attach-file              verdict win
+attach-file              left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+new-user-keyboard        odoo  verified  steps 4  keys 10  machine 1.732s  human 5.9s  human+wait 7.498s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/new-user-keyboard-20261120T094147-3a26.json
+new-user-keyboard        ours  verified  steps 3  keys 8  machine 0.367s  human 3.99s  human+wait 4.019s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/new-user-keyboard-20261120T094211-2405.json
+new-user-keyboard        verdict win (ours judged on its whole path 'goTo')
+open-third-user-keyboard ours  verified  steps 6  keys 6  machine 0.37s  human 6.13s  human+wait 6.312s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/open-third-user-keyboard-20261120T094234-6d0b.json
+open-third-user-keyboard odoo  verified  steps 8  keys 13  machine 1.539s  human 6.74s  human+wait 8.096s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/open-third-user-keyboard-20261120T094242-6e87.json
+open-third-user-keyboard verdict win
+see-converted            odoo  failed    steps 11  keys 13  machine 4.516s  human 23.79s  human+wait 27.154s  (menus: failed)  -> ../../evidence-staging/p18-visual-design/r1/compare/results/see-converted-20261120T094307-4d2e.json
+    menus: failed
+    palette: failed
+    page: {}
+see-converted            ours  verified  steps 4  keys 4  machine 1.013s  human 9.47s  human+wait 9.724s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/see-converted-20261120T094401-0754.json
+see-converted            verdict odoo failed (fix the reference before judging)
+blind review page: ../../../../evidence-staging/p18-visual-design/r1/compare/blind/review.html
+output: ../../../../evidence-staging/p18-visual-design/r1/compare

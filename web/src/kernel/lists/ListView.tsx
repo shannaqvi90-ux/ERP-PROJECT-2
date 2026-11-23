@@ -2,6 +2,7 @@ import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
 import { identityScoped } from "../deviceState";
+import { allowed, extensions } from "../extensions";
 import { requestLeave } from "../forms/leave";
 import { recordAddress, recordInAddress, replaceAddress } from "../router";
 import type { RecordNavigation } from "../forms/RecordForm";
@@ -32,8 +33,8 @@ import {
   type Row,
   type SavedView,
 } from "./model";
-import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, type ViewChoice } from "./parts";
-import { FilterByFieldContext } from "./filterByField";
+import { ColumnChooser, ConfirmDialog, FilterEditor, Popover, SaveViewDialog, ViewsMenu, ViewTabs, type ViewChoice } from "./parts";
+import { FilterByFieldContext, FilterByWordContext } from "./filterByField";
 import { formFloor, openingShare, readShare, recordShare, shareAfterKey, shareForList, shareFromPointer, shareToFit, splitterWidth, toggledShare, widenChord, writeShare } from "./recordWidth";
 import { moreColumnRem, shownColumns } from "./columnFit";
 import { useListRows } from "./useListRows";
@@ -84,6 +85,8 @@ export type ListViewProps = {
   /** Screen actions shown in the toolbar (for example "New user"). */
   actions?: ReactNode;
   can?: (permission: string) => boolean;
+  /** Show how many rows each built-in view holds on its tab (one small request per view; for lists that are cheap to count). */
+  viewCounts?: boolean;
   /** A single click on a row opens it too (screens with a side panel). */
   openOnClick?: boolean;
   /**
@@ -508,6 +511,22 @@ export function ListView(props: ListViewProps) {
     run: () => setMenu({ kind: "views" }),
   });
 
+  // Counts for the view tabs: the rows each built-in view holds, one page of one row each.
+  const [viewCounts, setViewCounts] = useState<Record<string, number | null>>({});
+  const countedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!props.viewCounts || !definition || definition.presets.length === 0 || countedFor.current === definition.key) return;
+    countedFor.current = definition.key;
+    const asks: [string, string | null][] = [["", null], ...definition.presets.map((p) => [`preset:${p.key}`, p.filter] as [string, string | null])];
+    for (const [id, filter] of asks) {
+      const params = new URLSearchParams({ take: "1" });
+      if (filter) params.set("filter", filter);
+      api<{ total: number }>("GET", `${definition.endpoint}?${params}`)
+        .then((page) => setViewCounts((c) => ({ ...c, [id]: page.total })))
+        .catch(() => setViewCounts((c) => ({ ...c, [id]: null })));
+    }
+  }, [props.viewCounts, definition]);
+
   if (loadError) {
     return (
       <section className="list-screen">
@@ -605,6 +624,11 @@ export function ListView(props: ListViewProps) {
       columns: s.columns.includes(column) ? s.columns : [...s.columns, column],
     }));
     closeRecord();
+  }
+
+  /** A word in a cell was chosen: the list is filtered to the rows whose column contains it (the column's own earlier condition is replaced). */
+  function filterByWord(column: string, word: string) {
+    update((s) => ({ ...s, groupBy: null, search: "", conditions: [...s.conditions.filter((c) => c.column !== column), { column, op: "contains", values: [word] }] }));
   }
 
   /** Open the record at a position of the list (next and previous from the record's form). */
@@ -995,6 +1019,7 @@ export function ListView(props: ListViewProps) {
   }
 
   return (
+    <FilterByWordContext.Provider value={filterByWord}>
     <section className="list-screen" aria-busy={rows.loading || rows.loadedKey !== expectedKey || searchText !== appliedSearch}>
       <div className="list-toolbar screen-header">
         <h1>{t(titleKey)}</h1>
@@ -1063,9 +1088,14 @@ export function ListView(props: ListViewProps) {
             )}
           </div>
           {definition?.printable && current && <ListPrintMenu listKey={listKey} state={current} />}
+          {allowed(extensions.listActions.filter((item) => item.listKey === listKey), props.can ?? (() => true)).map((item) => (
+            <item.component key={item.key} listKey={listKey} reload={reload} />
+          ))}
           {props.actions}
         </div>
       </div>
+
+      {definition && viewChoices.length > 0 && <ViewTabs choices={viewChoices} current={current?.view ?? null} counts={viewCounts} onPick={pickView} />}
 
       {current && definition && (current.conditions.length > 0 || current.baseFilter || current.groupBy) && (
         <ul className="list-chips" aria-label={t("lists.filter.active")}>
@@ -1443,6 +1473,7 @@ export function ListView(props: ListViewProps) {
         <span>{t("lists.keys")}</span>
       </div>
     </section>
+    </FilterByWordContext.Provider>
   );
 }
 

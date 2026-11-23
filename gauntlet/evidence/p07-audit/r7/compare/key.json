@@ -1,0 +1,72 @@
+{
+  "shots": {
+    "089cd824c1e59e2a.jpg": {
+      "product": "ours",
+      "task": "who-changed-field",
+      "moment": "start",
+      "run_id": "who-changed-field-20261122T153659-cce7"
+    },
+    "67f347bfa232d0d6.jpg": {
+      "product": "ours",
+      "task": "who-changed-field",
+      "moment": "done",
+      "run_id": "who-changed-field-20261122T153659-cce7"
+    },
+    "3066e39f43896c87.jpg": {
+      "product": "odoo",
+      "task": "who-changed-field",
+      "moment": "start",
+      "run_id": "who-changed-field-20261122T153745-4981"
+    },
+    "d187a193c15bea8c.jpg": {
+      "product": "odoo",
+      "task": "who-changed-field",
+      "moment": "done",
+      "run_id": "who-changed-field-20261122T153745-4981"
+    },
+    "0cd7003717ad3f77.jpg": {
+      "product": "ours",
+      "task": "who-renamed-user",
+      "moment": "start",
+      "run_id": "who-renamed-user-20261122T153825-9120"
+    },
+    "7d3cfe9e0d48dc42.jpg": {
+      "product": "ours",
+      "task": "who-renamed-user",
+      "moment": "done",
+      "run_id": "who-renamed-user-20261122T153825-9120"
+    },
+    "05dfbdeb5887b86d.jpg": {
+      "product": "odoo",
+      "task": "who-renamed-user",
+      "moment": "start",
+      "run_id": "who-renamed-user-20261122T153910-a9b4"
+    },
+    "46a91c486e7ef88e.jpg": {
+      "product": "odoo",
+      "task": "who-renamed-user",
+      "moment": "done",
+      "run_id": "who-renamed-user-20261122T153910-a9b4"
+    }
+  },
+  "run_order": {
+    "who-changed-field": [
+      "ours",
+      "odoo"
+    ],
+    "who-renamed-user": [
+      "ours",
+      "odoo"
+    ]
+  },
+  "letters": {
+    "who-changed-field": {
+      "odoo": "A",
+      "ours": "B"
+    },
+    "who-renamed-user": {
+      "odoo": "A",
+      "ours": "B"
+    }
+  }
+}

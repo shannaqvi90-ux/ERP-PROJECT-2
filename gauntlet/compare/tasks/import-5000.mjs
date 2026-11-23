@@ -10,7 +10,10 @@ export default {
   // writes that save it (the measured part must send one of them).
   endState: {
     odoo: { reads: [{ read: 'POST /web/dataset/call_kw/res.partner/search_count', parts: ['result'] }], writes: ['POST /web/dataset/call_kw/base_import.import/execute_import'] },
+    ours: { reads: [{ read: 'GET /api/contacts/contacts', parts: ['total'] }], writes: ['POST /api/importexport/contacts.contacts/imports/*/run'] },
   },
+  // The writes set-up and clean-up send for our product: clean-up archives the contacts the import added (contacts are never deleted).
+  fixtures: { ours: ['POST /api/contacts/contacts/*/archive'] },
   moments: ['columns matched'],
   start: 'Signed in as an administrator, on the screen the product shows right after sign-in.',
   goal: 'Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.',

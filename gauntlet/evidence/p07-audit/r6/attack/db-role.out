@@ -1,0 +1,110 @@
+Pager usage is off.
+  rolname   | rolbypassrls | rolsuper | rolcanlogin 
+------------+--------------+----------+-------------
+ erp_app    | f            | f        | t
+ erp_auth   | f            | f        | f
+ erp_owner  | f            | f        | t
+ erp_worker | f            | f        | t
+(4 rows)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 760166
+ 0190a000-0000-7000-8000-000000000002 |   9102
+(2 rows)
+
+  grantee  |                       string_agg                        
+-----------+---------------------------------------------------------
+ erp_app   | SELECT
+ erp_auth  | INSERT,SELECT
+ erp_owner | DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE
+(3 rows)
+
+       polname        | polpermissive | polcmd |  polroles  |                                    q                                    |                  wc                   
+----------------------+---------------+--------+------------+-------------------------------------------------------------------------+---------------------------------------
+ tenant_isolation     | t             | *      | {-}        | (tenant_id = erp.current_tenant_id())                                   | (tenant_id = erp.current_tenant_id())
+ audit_company_scope  | f             | r      | {-}        | ((record_company_id IS NULL) OR erp.company_allowed(record_company_id)) | 
+ audit_trigger_insert | t             | a      | {erp_auth} |                                                                         | true
+(3 rows)
+
+       proname        | prosecdef |   owner   |              proconfig              
+----------------------+-----------+-----------+-------------------------------------
+ field_names          | f         | erp_owner | {"search_path=pg_catalog, pg_temp"}
+ field_list           | f         | erp_owner | {"search_path=pg_catalog, pg_temp"}
+ capture              | t         | erp_auth  | {"search_path=pg_catalog, pg_temp"}
+ custom_field_history | t         | erp_auth  | {"search_path=pg_catalog, pg_temp"}
+(4 rows)
+
+ relrowsecurity | relforcerowsecurity 
+----------------+---------------------
+ t              | t
+(1 row)
+
+             tbl             | rls | force_rls | has_tenant | app_ins | worker_ins 
+-----------------------------+-----+-----------+------------+---------+------------
+ tenancy.tenants             | t   | t         | t          | t       | f
+ tenancy.companies           | t   | t         | t          | t       | f
+ tenancy.branches            | t   | t         | t          | t       | f
+ tenancy.user_company_access | t   | t         | t          | t       | f
+ tenancy.user_branch_access  | t   | t         | t          | t       | f
+ tenancy.user_workplaces     | t   | t         | t          | t       | f
+ tenancy.user_company_totals | t   | t         | t          | t       | f
+ identity.roles              | t   | t         | t          | t       | f
+ identity.users              | t   | t         | t          | t       | f
+ identity.sessions           | t   | t         | t          | t       | f
+ identity.user_roles         | t   | t         | t          | t       | f
+ identity.user_credentials   | t   | t         | t          | t       | f
+ identity.user_company_roles | t   | t         | t          | t       | f
+ identity.passkeys           | t   | t         | t          | t       | f
+ numbering.sequences         | t   | t         | t          | t       | f
+ numbering.counters          | t   | t         | t          | t       | f
+ numbering.issued_numbers    | t   | t         | t          | t       | f
+ currency.currencies         | t   | t         | t          | t       | f
+ currency.exchange_rates     | t   | t         | t          | t       | f
+ jobs.jobs                   | t   | t         | t          | t       | f
+ jobs.schedules              | t   | t         | t          | t       | f
+ jobs.job_attempts           | t   | t         | t          | t       | f
+ contacts.contacts           | t   | t         | t          | t       | f
+ customfields.definitions    | t   | t         | t          | t       | f
+ customfields.field_values   | t   | t         | t          | t       | f
+ attachments.files           | t   | t         | t          | t       | f
+ lists.saved_views           | t   | t         | t          | t       | f
+(27 rows)
+
+            oid            
+---------------------------
+ identity.sign_in_attempts
+(1 row)
+
+   nspname    | app_create | worker_create 
+--------------+------------+---------------
+ public       | f          | f
+ customfields | f          | f
+ audit        | f          | f
+ attachments  | f          | f
+ tenancy      | f          | f
+ lists        | f          | f
+ erp          | f          | f
+ identity     | f          | f
+ numbering    | f          | f
+ currency     | f          | f
+ jobs         | f          | f
+ contacts     | f          | f
+(12 rows)
+
+ app_exec | worker_exec | app_db_create | app_temp 
+----------+-------------+---------------+----------
+ f        | f           | f             | t
+(1 row)
+
+Pager usage is off.
+ app | worker | owner 
+-----+--------+-------
+ f   | f      | t
+(1 row)
+
+          tgrelid          
+---------------------------
+ customfields.field_values
+(1 row)
+

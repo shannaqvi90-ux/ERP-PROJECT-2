@@ -1,0 +1,13 @@
+# Plant P1 (CAUGHT: G1ClientStateTests.Every_piece_of_module_level_state_in_the_web_sources_is_reviewed, web/src/kernel/home.tsx:28 seenCounts)
+# Plant P1b (CAUGHT: G1ClientStateTests.Every_use_of_a_carrier_that_outlives_the_document_is_reviewed, web/src/modules/identity/home.tsx local-storage 1)
+--- a/web/src/kernel/home.tsx
++const seenCounts = new Map<string, number>();
+ export function useCount(endpoint: string, filter?: string): number | null {
+-  const [count, setCount] = useState<number | null>(null);
++  const [count, setCount] = useState<number | null>(() => seenCounts.get(endpoint + "|" + (filter ?? "")) ?? null);
+-      .then((page) => setCount(page.total))
++      .then((page) => { seenCounts.set(endpoint + "|" + (filter ?? ""), page.total); setCount(page.total); })
+--- a/web/src/modules/identity/home.tsx
++export function rememberHomeCount(key: string, n: number): void {
++  try { window.localStorage.setItem("erp.homeCount." + key, String(n)); } catch { /* ignore */ }
++}

@@ -1,3 +1,4 @@
+import { DateInput } from "../../kernel/forms/dateInput";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { decimalInput } from "../../kernel/forms/fields";
@@ -213,18 +214,15 @@ export function Converter({ currency, quote }: { currency: string; quote: string
             {t("currency.convert.date")}
           </label>
           {/* Text, not the browser's date picker: the picker's icon is an image the browser loads on
-              its own after the panel draws, and an empty field here means today. */}
-          <input
+              its own after the panel draws, and an empty field here means today. Day first. */}
+          <DateInput
             id={`${id}-date`}
             name="date"
-            dir="ltr"
-            inputMode="numeric"
+            noPicker
             placeholder={t("currency.convert.datePlaceholder")}
             value={date}
-            autoComplete="off"
-            maxLength={10}
             aria-invalid={date !== "" && !isDay(date) ? true : undefined}
-            onChange={(e) => setDate(e.target.value.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d))).replace(/[^\d-]/g, ""))}
+            onChange={setDate}
           />
         </div>
       </div>

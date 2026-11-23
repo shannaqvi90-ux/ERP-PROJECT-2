@@ -1,0 +1,126 @@
+{
+  "shots": {
+    "bcba04834f8933c3.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "start",
+      "run_id": "export-filtered-list-20261122T153434-2543"
+    },
+    "7b030f6eeb08f40b.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "error",
+      "run_id": "export-filtered-list-20261122T153434-2543"
+    },
+    "7a2a4d7795509a02.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "start",
+      "run_id": "export-filtered-list-20261122T153641-cbfc"
+    },
+    "b9777bc4b17a8e09.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "export options chosen",
+      "run_id": "export-filtered-list-20261122T153641-cbfc"
+    },
+    "584210fec824ee06.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "done",
+      "run_id": "export-filtered-list-20261122T153641-cbfc"
+    },
+    "f2778273307528fe.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "start",
+      "run_id": "export-filtered-list-20261122T154614-01e0"
+    },
+    "6bbd42f55c23d4d5.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "export options chosen",
+      "run_id": "export-filtered-list-20261122T154614-01e0"
+    },
+    "0c91a0b0e8295297.jpg": {
+      "product": "ours",
+      "task": "export-filtered-list",
+      "moment": "done",
+      "run_id": "export-filtered-list-20261122T154614-01e0"
+    },
+    "397fea6619934e8a.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "start",
+      "run_id": "export-filtered-list-20261122T154838-173c"
+    },
+    "cf638711c039e0bd.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "export options chosen",
+      "run_id": "export-filtered-list-20261122T154838-173c"
+    },
+    "50859e8c73e93c06.jpg": {
+      "product": "odoo",
+      "task": "export-filtered-list",
+      "moment": "done",
+      "run_id": "export-filtered-list-20261122T154838-173c"
+    },
+    "c73c322483365ae2.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "start",
+      "run_id": "import-5000-20261122T154933-d96b"
+    },
+    "ba13609eb5c3b2b9.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "columns matched",
+      "run_id": "import-5000-20261122T154933-d96b"
+    },
+    "026a2288f63700b7.jpg": {
+      "product": "ours",
+      "task": "import-5000",
+      "moment": "done",
+      "run_id": "import-5000-20261122T154933-d96b"
+    },
+    "c147e8a2655f4c92.jpg": {
+      "product": "odoo",
+      "task": "import-5000",
+      "moment": "start",
+      "run_id": "import-5000-20261122T154954-829e"
+    },
+    "167188422df8f4a2.jpg": {
+      "product": "odoo",
+      "task": "import-5000",
+      "moment": "columns matched",
+      "run_id": "import-5000-20261122T154954-829e"
+    },
+    "e2732694ab5271ff.jpg": {
+      "product": "odoo",
+      "task": "import-5000",
+      "moment": "done",
+      "run_id": "import-5000-20261122T154954-829e"
+    }
+  },
+  "run_order": {
+    "export-filtered-list": [
+      "ours",
+      "odoo"
+    ],
+    "import-5000": [
+      "ours",
+      "odoo"
+    ]
+  },
+  "letters": {
+    "export-filtered-list": {
+      "odoo": "A",
+      "ours": "B"
+    },
+    "import-5000": {
+      "ours": "A",
+      "odoo": "B"
+    }
+  }
+}

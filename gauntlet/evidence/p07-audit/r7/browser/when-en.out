@@ -1,0 +1,16 @@
+null|When
+▼
+Options for the column When|▾
+Options for the column Changed by|▾
+Options for the column Change|▾
+Options for the column Record type|▾
+Options for the column Record|▾
+Options for the column Fields|▾
+Sort ascending
+Sort descending
+Filter…
+Hide this column
+<div role="dialog" aria-label="Filter: When" aria-modal="false" class="list-popover list-filter"><form><h2 class="list-popover-title">Filter: When</h2><div class="list-range"><label class="field"><span class="field-label">From</span><span class="date-input"><input dir="ltr" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="dd/mm/yyyy" type="text" value=""></span></label><label class="field"><span class="field-label">To</span><span class="date-input"><input dir="ltr" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="dd/mm/yyyy" type="text" value=""></span></label></div><div class="list-popover-actions"><button type="submit" class="button primary">Apply</button><button type="button" class="button ghost-dark">Cancel</button></div></form></div>
+values 22/11/2026,22/11/2026
+api /api/audit/log?filter=occurredAt+ge+'2026-11-22T00:00:00+04:00'+and+occurredAt+lt+'2026-11-23T00:00:00+04:00'&sort=-occurredAt&take=100
+760,264 changes | Changes only | Clear all filters | Changed by | Change | Changed

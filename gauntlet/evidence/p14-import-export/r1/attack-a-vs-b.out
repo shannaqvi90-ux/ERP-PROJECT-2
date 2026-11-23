@@ -1,0 +1,74 @@
+tenant A alnoor tenant B gulfsteel 0190a000-0000-7000-8000-000000000002
+B upload 201 01a1fb83-59d1-7823-8bc7-0c5a895f0cff
+B dry run 200 checked issues 2 hasErrorFile true
+B export start 202 01a1fb83-59fd-7758-aa18-6debea7b5d34 queued
+B export succeeded { 'attachments.files': 15, 'contacts.contacts': 1006 } 95834
+B own download 200 95834 bytes
+A export succeeded {"attachments.files":15,"contacts.contacts":100006} 12768814 
+A download 200 12768814 bytes, Content-Disposition attachment; filename=workspace-export-20261121-0030.zip; filename*=UTF-8''workspace-export-20261121-0030.zip
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff [plain] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/errors [plain] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/mapping [plain] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/run [plain] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff [plain] -> 204 0b
+GET /api/importexport/tenant-exports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff [plain] -> 404 170b
+POST /api/importexport/tenant-exports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/download [plain] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff [header] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/errors [header] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/mapping [header] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/run [header] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff [header] -> 204 0b
+GET /api/importexport/tenant-exports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff [header] -> 404 170b
+POST /api/importexport/tenant-exports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/download [header] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/errors?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/mapping?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/run?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 204 0b
+GET /api/importexport/tenant-exports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+POST /api/importexport/tenant-exports/01a1fb83-59d1-7823-8bc7-0c5a895f0cff/download?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34 [plain] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/errors [plain] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/mapping [plain] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/run [plain] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34 [plain] -> 204 0b
+GET /api/importexport/tenant-exports/01a1fb83-59fd-7758-aa18-6debea7b5d34 [plain] -> 404 170b
+POST /api/importexport/tenant-exports/01a1fb83-59fd-7758-aa18-6debea7b5d34/download [plain] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34 [header] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/errors [header] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/mapping [header] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/run [header] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34 [header] -> 204 0b
+GET /api/importexport/tenant-exports/01a1fb83-59fd-7758-aa18-6debea7b5d34 [header] -> 404 170b
+POST /api/importexport/tenant-exports/01a1fb83-59fd-7758-aa18-6debea7b5d34/download [header] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/errors?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/mapping?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34/run?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/01a1fb83-59fd-7758-aa18-6debea7b5d34?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 204 0b
+GET /api/importexport/tenant-exports/01a1fb83-59fd-7758-aa18-6debea7b5d34?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+POST /api/importexport/tenant-exports/01a1fb83-59fd-7758-aa18-6debea7b5d34/download?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002 [plain] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/errors [plain] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/mapping [plain] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/run [plain] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002 [plain] -> 204 0b
+GET /api/importexport/tenant-exports/0190a000-0000-7000-8000-000000000002 [plain] -> 404 170b
+POST /api/importexport/tenant-exports/0190a000-0000-7000-8000-000000000002/download [plain] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002 [header] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/errors [header] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/mapping [header] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/run [header] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002 [header] -> 204 0b
+GET /api/importexport/tenant-exports/0190a000-0000-7000-8000-000000000002 [header] -> 404 170b
+POST /api/importexport/tenant-exports/0190a000-0000-7000-8000-000000000002/download [header] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+GET /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/errors?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+PUT /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/mapping?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+POST /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002/run?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+DELETE /api/importexport/contacts.contacts/imports/0190a000-0000-7000-8000-000000000002?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 204 0b
+GET /api/importexport/tenant-exports/0190a000-0000-7000-8000-000000000002?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+POST /api/importexport/tenant-exports/0190a000-0000-7000-8000-000000000002/download?tenantId=0190a000-0000-7000-8000-000000000002&tenant=gulfsteel [query] -> 404 170b
+GET /api/importexport/contacts.contacts/imports?take=30 (A own) checked
+GET /api/importexport/tenant-exports (A own) checked
+LEAKS: none

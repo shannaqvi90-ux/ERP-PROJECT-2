@@ -4,6 +4,7 @@ import { rememberedEmailKey as lastEmailKey } from "../../kernel/deviceState";
 import { completesKnownEmail, completesTeamEmail, deviceKnowsSignInDomains, fullEmail, rememberSignInDomain, teamDomain } from "../../kernel/signInAddress";
 import { freshPasskeyChallenge, useSession, type Workspace } from "../../kernel/session";
 import { askForPasskey, cancelledByPerson, notePasswordSignIn, passkeyAskedOnArrival, passkeysSupported, setPasskeyOffered, takeSignedOut, type PasskeySignIn } from "../../kernel/passkeys";
+import { BrandMark } from "./BrandMark";
 import { LanguageToggle } from "./LanguageToggle";
 
 function rememberedEmail(): string {
@@ -327,7 +328,10 @@ export function SignInPage() {
     <div className="signin">
       <div className="signin-panel">
         <div className="signin-header">
-          <h1 className="signin-title">{t("shell.app.name")}</h1>
+          <h1 className="signin-title">
+            <BrandMark language={language} />
+            <span className="visually-hidden">{t("shell.app.name")}</span>
+          </h1>
           <LanguageToggle />
         </div>
         <p className="signin-lead">{t("shell.signIn.lead")}</p>

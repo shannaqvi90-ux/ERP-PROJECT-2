@@ -1,0 +1,62 @@
+verify-slot: slot 1 of 2 taken at 2026-11-20T23:51:25Z after waiting 0 s; time the run from here
+[1mstage dotnet passed in 6847 s[0m
+[1mstage web passed in 4594 s[0m
+[1mstage e2e passed in 7884 s[0m
+[1mstage timing passed in 283 s[0m
+[e2e]   ✓   64 [chromium] › specs/importexport.spec.ts:22:7 › import and export › a CSV file is mapped by its headers, checked, then imported from the keyboard, with an error file for the bad row (2.0s)
+[e2e]   ✓   65 [chromium] › specs/importexport.spec.ts:66:7 › import and export › the same screens work in Arabic and mirror (610ms)
+[e2e]   ✓   66 [chromium] › specs/importexport.spec.ts:78:7 › import and export › the full export of the workspace is started, written in the background and downloaded as a zip (621ms)
+[e2e]   ✓   67 [chromium] › specs/importexport.spec.ts:93:7 › import and export › a user who may only read contacts sees no Import button and cannot reach the import endpoints (716ms)
+[timing]  Total time: 4.6811 Minutes
+[1mstage timing passed in 283 s[0m
+[1m[3/3] Ratchet[0m
+[ratchet] 
+[ratchet] verify wall time before the ratchet: 8168 s (maximum on a quiet machine 3600 s; not judged: the machine was busy (load 0.26 at the start, 1.48 at the end, highest 34.44 over 547 readings (545 samples while the stages ran) on 16 CPUs; quiet is at most 0.5 per CPU at every reading))
+[ratchet] verify processor time: 24098 s (dotnet 20789, web 2451, e2e 767, timing 91; maximum 24500 s)
+[ratchet] machine processor time over the run: 59466 s; verify stages 24098 s; other work beside the verify 35368 s (59.5 % of the machine's)
+[ratchet] 
+[ratchet] Test counts this run:
+[ratchet]   suite.dotnetTests      passed  1195  failed 0  skipped 0  (minimum 1175)
+[ratchet]   suite.webUnitTests     passed   786  failed 0  skipped 0  (minimum 782)
+[ratchet]   suite.e2eTests         passed   174  failed 0  skipped 0  (minimum 167)
+[ratchet]   suite.compareTests     passed   489  failed 0  skipped 0  (minimum 489)
+[ratchet]   suite.buildTests       passed    22  failed 0  skipped 0  (minimum 22)
+[ratchet] Ratchet check passed.
+[1mverify passed in 8169 s[0m
+
+== ./erp up (demo, comparison dataset): 336 s
+ Container c-p14-import-export-r1-app-1 Starting 
+ Container c-p14-import-export-r1-setup-1 Exited 
+ Container c-p14-import-export-r1-worker-1 Starting 
+ Container c-p14-import-export-r1-app-1 Started 
+ Container c-p14-import-export-r1-worker-1 Started 
+
+[1mThe demo is running (335 s): http://localhost:21450[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:21450/?domain=alnoor.example
+    http://localhost:21450/?domain=gulfsteel.example
+
+  API description: http://localhost:21450/api/openapi/v1.json
+  Database:        localhost:21451 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
+
+== planted faults (clone only)
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:   37 leaks:
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:   static Erp.Modules.ImportExport.Exports.TenantExportEndpoints.PlantFiles: a read-only field that holds a mutable ConcurrentDictionary<Guid, Byte[]>. Make it immutable, s
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:  Failed Erp.Gates.Tests.G1.G1ImportExportAttackTests.Tenant_A_cannot_reach_tenant_B_s_imports_and_exports_through_the_import_and_export_endpoints [5 m 32 s]
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [897 ms]
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:[xUnit.net 00:00:24.48]       static Erp.Modules.ImportExport.Exports.TenantExportEndpoints.PlantFiles: a read-only field that holds a mutable ConcurrentDictionary<Guid, By
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:[xUnit.net 00:00:24.48]       static Erp.Modules.ImportExport.Imports.ImportEndpoints.PlantCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, ImportSe
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:[xUnit.net 00:06:01.25]       37 leaks:
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant-critic-p14-import-export-r1.log:static Erp.Modules.ImportExport.Imports.ImportEndpoints.PlantCache: a read-only field that holds a mutable ConcurrentDictionary<Guid, ImportSessionDto>. Make it immutable, 
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant2-critic-p14-import-export-r1.log:  Failed Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu [1 ms]
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant2-critic-p14-import-export-r1.log:  Failed Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny [1 ms]
+/tmp/claude-1000/-home-shan-ERP-PROJECT-2/05653939-cfaa-424f-8082-bbd46d0114d5/scratchpad/plant2-critic-p14-import-export-r1.log:HTTP: GET /api/importexport/contacts.contacts/imports/{id:guid}/errors: declares no permission

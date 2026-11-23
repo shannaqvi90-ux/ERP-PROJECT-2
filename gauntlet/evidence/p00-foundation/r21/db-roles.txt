@@ -1,0 +1,25 @@
+== roles (name|super|bypassrls|createrole|login)
+erp_app|f|f|f|t
+erp_auth|f|f|f|f
+erp_owner|f|f|f|t
+erp_worker|f|f|f|t
+== tenant tables without RLS enabled+forced
+== tenant tables count / owned by erp_app
+29|0
+== nullable tenant_id
+== tables erp_app can read that have no tenant_id
+== float columns anywhere
+== money columns sample (contacts)
+credit_limit_amount numeric
+credit_limit_base_amount numeric
+credit_limit_exchange_rate numeric
+credit_limit_stated boolean
+credit_limit_base_currency character
+credit_limit_currency character
+== SECURITY DEFINER functions
+identity.resolve_session owner erp_auth
+identity.verify_sign_in owner erp_auth
+== app sessions by role
+erp_app|2
+erp_worker|1
+postgres|1

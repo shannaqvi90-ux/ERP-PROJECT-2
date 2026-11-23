@@ -1,0 +1,31 @@
+Critic p00 r21 plants (plants.diff; inert unless CRITIC_PLANT names them), run in the toolbox (run-in-toolbox.sh / run-plants.sh)
+on a copy of faa9330d (/home/shan/critic/p00-foundation-r21-plant). Logs: plant-*.log.gz, run-plants-1.log, run-plants-2.log, plant-listing.log.
+
+TENANT-LEAK PLANT L21 (kernel list machinery, src/Kernel/Erp.Kernel/Lists/ListBinding.cs GroupsAsync, the date-bucket path new since r20):
+  the month/year groups of a custom date field are remembered in the binding (shared by every workspace) by column and unit only,
+  in a NON-readonly field holding an ImmutableDictionary that is swapped (a shape no earlier round planted).
+  CAUGHT statically (plant-STATICL21, 28 s): G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed
+    "reachable Erp.Kernel.Lists.ListBinding`1._criticBuckets: a field that can be reassigned at any time (ImmutableDictionary<...>),
+     reached from singleton Erp.Kernel.Modules.ModuleCatalog._modules[0].ListBindings[0]".
+  Not run dynamically: no dynamic list gate sends groupBy=<date field>.month or .year (grep of tests/Erp.Gates.Tests: no such value;
+    ListVolume.cs lines 280-307 send groupBy=<column key> only). The static walk is the only gate on that path (see verdict note).
+
+PERMISSION PLANT P21 (kernel, src/Kernel/Erp.Kernel/Security/Permissions.cs PermissionAuthorizationHandler):
+  "who may change a record may do anything to it": <resource>.update also passes every other action on that resource but reading.
+  CAUGHT (plant-G2ONEP21, 1 m 44 s): G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it
+    "[bearer] contacts.contacts.update: POST /api/contacts/contacts answered 400 (expected 403)", archive/restore 404 (expected 403), cookie too.
+  Control: the same test with the plant off passed (plant-G2ONENONE, 2 m 12 s).
+
+GATE-MACHINERY PLANTS on this round's new partition listing (build/list-tests.sh), judged by build/list-tests.test.mjs (plant-listing.log):
+  LT1 a line naming two tests is dropped silently (bad=1 removed)        CAUGHT (4 tests fail)
+  LT2 a project whose listing fails is skipped (|| true)                  CAUGHT (test 9)
+  LT3 the solution's last test project is never listed (head -n -1)       CAUGHT (test 9)
+  LT5 a listing with no header and output (a crash) counts as empty       CAUGHT (test 7)
+  (LT4, sort -u inside one project's listing, passed the tests; it only folds a name one project lists twice, which the
+   cross-group check does not depend on, so it is not counted as a gap.)
+
+PRODUCT FAULT OF r20 RE-TESTED (LISTTESTS21, no plant): the round-21 listing (list_tests Erp.slnx --filter "Load!=Timing") run 6 times
+  on one build at load 60-63: every listing exited 0 with the same 1,135 names (md5 2cf81715ca03 each time) (run-plants-2.log).
+  Verify run 1's own partition check also passed: "1135 tests, each in exactly one group".
+
+Result: no gate gap. Both kernel plants and all four meaningful listing plants were caught.

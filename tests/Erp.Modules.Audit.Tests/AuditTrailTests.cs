@@ -626,6 +626,42 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
+    public void A_contacts_emirate_kind_country_date_and_amount_are_shown_as_its_own_screen_shows_them_in_both_languages()
+    {
+        var texts = new AuditTexts();
+        static JsonElement J(string json) => JsonDocument.Parse(json).RootElement;
+        var change = new[]
+        {
+            new AuditFieldChange("emirate", J("\"sharjah\""), J("\"dubai\"")),
+            new AuditFieldChange("kind", J("\"organisation\""), J("\"person\"")),
+            new AuditFieldChange("country", J("\"AE\""), J("\"SA\"")),
+            new AuditFieldChange("credit_limit_amount", J("1234567.50"), J("25000")),
+            new AuditFieldChange("review_date", J("\"2026-12-31\""), J("\"2027-01-05\"")),
+        };
+        var english = texts.Summary(change, "update", "en", null, max: 1000, recordType: "contacts.contacts");
+        Assert.Contains("Sharjah", english);
+        Assert.Contains("Dubai", english);
+        Assert.Contains("Organisation", english);
+        Assert.Contains("United Arab Emirates", english);
+        Assert.Contains("Saudi Arabia", english);
+        Assert.Contains("1,234,567.50", english);
+        Assert.Contains("31/12/2026", english);
+        Assert.DoesNotContain("sharjah", english);
+        Assert.DoesNotContain("2026-12-31", english);
+        var arabic = texts.Summary(change, "update", "ar", null, max: 1000, recordType: "contacts.contacts");
+        Assert.Contains("الشارقة", arabic);
+        Assert.Contains("دبي", arabic);
+        Assert.Contains("جهة", arabic);
+        Assert.Contains("شخص", arabic);
+        Assert.Contains("الإمارات", arabic);
+        Assert.Contains("31", arabic);
+        Assert.DoesNotContain("sharjah", arabic);
+        Assert.DoesNotContain("Dubai", arabic);
+        Assert.DoesNotContain("person", arabic);
+        Assert.DoesNotContain("2026-12-31", arabic);
+    }
+
+    [Fact]
     public async Task A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));

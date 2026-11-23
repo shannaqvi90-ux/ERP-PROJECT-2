@@ -1,0 +1,45 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { applyLook, chooseDensity, chooseTheme, densityKey, resolveTheme, storedDensity, storedThemeChoice, themeKey } from "./theme";
+
+const media = (matching: string[]) =>
+  vi.fn((query: string) => ({ matches: matching.includes(query), addEventListener: () => {}, removeEventListener: () => {} }) as unknown as MediaQueryList);
+
+describe("theme and density", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    delete document.documentElement.dataset.theme;
+    delete document.documentElement.dataset.density;
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("follows the system until a theme is chosen", () => {
+    vi.stubGlobal("matchMedia", media(["(prefers-color-scheme: light)"]));
+    expect(storedThemeChoice()).toBe("system");
+    expect(applyLook()).toBe("light");
+    expect(document.documentElement.dataset.theme).toBe("light");
+    vi.stubGlobal("matchMedia", media(["(prefers-contrast: more)", "(prefers-color-scheme: light)"]));
+    expect(resolveTheme("system")).toBe("hc");
+    vi.stubGlobal("matchMedia", media([]));
+    expect(resolveTheme("system")).toBe("dark");
+    expect(localStorage.getItem(themeKey)).toBeNull();
+  });
+
+  it("remembers a chosen theme and density and applies them again on the next load", () => {
+    vi.stubGlobal("matchMedia", media(["(prefers-color-scheme: light)"]));
+    chooseTheme("hc");
+    chooseDensity("comfortable");
+    expect(localStorage.getItem(themeKey)).toBe("hc");
+    expect(localStorage.getItem(densityKey)).toBe("comfortable");
+    delete document.documentElement.dataset.theme;
+    applyLook();
+    expect(document.documentElement.dataset.theme).toBe("hc");
+    expect(document.documentElement.dataset.density).toBe("comfortable");
+  });
+
+  it("ignores a stored value that is not a theme or a density", () => {
+    localStorage.setItem(themeKey, "neon");
+    localStorage.setItem(densityKey, "huge");
+    expect(storedThemeChoice()).toBe("system");
+    expect(storedDensity()).toBe("compact");
+  });
+});

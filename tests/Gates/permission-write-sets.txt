@@ -82,3 +82,10 @@ jobs.schedules.create jobs.schedules insert *  # the new schedule
 jobs.schedules.update jobs.schedules update name,cron,payload,is_enabled,next_run_at  # the schedule's name, timing, parameters and switch; its last run is the worker's
 jobs.jobs.read lists.saved_views insert,update,delete *  # the reader's own views of the background jobs list
 jobs.schedules.read lists.saved_views insert,update,delete *  # the reader's own views of the schedules list
+
+# Import and export (p14): an uploaded file is the uploader's work area; importing is judged by the contact form's own rules.
+contacts.contacts.create importexport.import_sessions insert,update,delete *  # the uploaded file's record: made on upload, changed by its mapping and its runs, removed when discarded (and the oldest ones when a new file arrives)
+contacts.contacts.create importexport.import_files insert,update,delete *  # the uploaded bytes (and the error file of a run), kept apart from the record so listing never reads them; the audit trail records only their size
+contacts.contacts.create importexport.import_mappings insert,update,delete *  # the memory of which field a column header was mapped to, so the next file with that header maps itself
+importexport.exports.create importexport.tenant_exports insert *  # the record of the full export that was asked for (state queued)
+importexport.exports.create jobs.jobs insert *  # the background job that writes the export (queued in the same transaction)

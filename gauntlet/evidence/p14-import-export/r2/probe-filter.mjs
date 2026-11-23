@@ -1,0 +1,25 @@
+// Probe of the Tags column's Filter... popover: what it offers (operators, value suggestions) before and after typing a few letters.
+import path from 'node:path';
+import { createRequire } from 'node:module';
+const require = createRequire(path.join(process.cwd(), 'package.json'));
+const { chromium } = require('playwright-core');
+const { findChromium } = await import(path.join(process.cwd(), 'lib/browser.mjs'));
+const BASE = process.env.BASE || 'http://localhost:21450';
+const OUT = process.env.OUT || '.';
+const browser = await chromium.launch({ executablePath: findChromium(), headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1600, height: 900 } })).newPage();
+await page.goto(BASE + '/');
+await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type('admin@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('nav[aria-label="Main navigation"]').waitFor();
+await page.goto(BASE + '/contacts/contacts'); await page.locator('table[role=grid] tbody tr').first().waitFor(); await page.waitForTimeout(800);
+await page.locator('table[role=grid] thead th', { hasText: 'Tags' }).locator('button').last().click();
+await page.getByText('Filter…').click(); await page.waitForTimeout(600);
+const dlg = page.locator('[role=dialog]').last();
+console.log('popover:', (await dlg.innerText().catch(() => '')).replace(/\s+/g, ' '));
+console.log('controls:', JSON.stringify(await dlg.locator('input,select,button,[role=option],datalist option').evaluateAll(es => es.map(e => `${e.tagName}:${e.getAttribute('type') ?? ''}:${e.getAttribute('list') ?? ''}:${(e.value ?? '').slice(0, 30)}:${(e.innerText ?? '').slice(0, 30)}`))));
+const input = dlg.locator('input[type=text], input:not([type])').first();
+await input.click(); await page.keyboard.type('Gov'); await page.waitForTimeout(1200);
+console.log('after Gov:', (await page.locator('[role=listbox], datalist, [role=option]').allInnerTexts().catch(() => [])).join(' | ').slice(0, 300));
+await page.screenshot({ path: path.join(OUT, 'probe-filter.jpg'), type: 'jpeg', quality: 55 });
+await browser.close();

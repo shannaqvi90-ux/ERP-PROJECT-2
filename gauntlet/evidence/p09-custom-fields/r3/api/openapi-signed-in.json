@@ -7136,6 +7136,908 @@
         "x-erp-permission": "contacts.contacts.update"
       }
     },
+    "/api/importexport/contacts.contacts/fields": {
+      "get": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "The fields a file of contacts.contacts records can fill (the kind's own and the workspace's custom fields), the fields of which one must be mapped, and the limits a file keeps.",
+        "operationId": "importexport.imports.contacts.contacts.fields",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportFieldsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      }
+    },
+    "/api/importexport/contacts.contacts/template": {
+      "get": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "A CSV file with the headers of every field of contacts.contacts records and one example row, to fill in and upload.",
+        "operationId": "importexport.imports.contacts.contacts.template",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      }
+    },
+    "/api/importexport/contacts.contacts/imports": {
+      "get": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "The files uploaded for contacts.contacts records, newest first, with their state.",
+        "operationId": "importexport.imports.contacts.contacts.list",
+        "parameters": [
+          {
+            "name": "take",
+            "in": "query",
+            "description": "Most files returned, 1 to 30 (default 10).",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSessionsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      },
+      "post": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "Upload a CSV or XLSX file of contacts.contacts records. Either the body is the file's bytes (any content type except JSON; the X-File-Name header is its name; what the screen sends) or JSON with the name and the bytes as base64. The server reads it, matches its columns to fields (by past mappings, then by name) and answers the preview: nothing is written to the records yet.",
+        "operationId": "importexport.imports.contacts.contacts.upload",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadImportRequest"
+              }
+            },
+            "application/octet-stream": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadImportRequest"
+              }
+            },
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSessionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      }
+    },
+    "/api/importexport/contacts.contacts/imports/{id}": {
+      "get": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "One uploaded file: its columns with their mapping and first values, the first rows, and the result of the last check or import (counts and the first problems).",
+        "operationId": "importexport.imports.contacts.contacts.get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSessionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      },
+      "delete": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "Discard an uploaded file and its error file. What an import wrote to the records stays. A file that is being checked or imported cannot be discarded (409). Deleting a file that is not there answers 204.",
+        "operationId": "importexport.imports.contacts.contacts.delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      }
+    },
+    "/api/importexport/contacts.contacts/imports/{id}/mapping": {
+      "put": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "Choose the field each column fills (null leaves a column out; a field is filled by one column, so choosing it for a column takes it from the column that had it). The choice is remembered: the next file with the same headers is mapped the same way.",
+        "operationId": "importexport.imports.contacts.contacts.mapping",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetMappingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSessionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      }
+    },
+    "/api/importexport/contacts.contacts/imports/{id}/run": {
+      "post": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "Check the file (dryRun true: every row is validated with the record's own rules and nothing is written) or import it. A file already imported answers its finished state and writes nothing again. A file of up to 5,000 rows is processed while the caller waits (200 with the file's state: checked, completed or failed); a larger one runs as a background job (202 with the state running; read it again until it is checked, completed or failed).",
+        "operationId": "importexport.imports.contacts.contacts.run",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSessionDto"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSessionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      }
+    },
+    "/api/importexport/contacts.contacts/imports/{id}/errors": {
+      "get": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "The error file of the last run: a CSV of the rows that had problems, as the file had them, with their row number and what is wrong in English and in Arabic. 404 when the last run found none.",
+        "operationId": "importexport.imports.contacts.contacts.errors",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "contacts.contacts.create"
+      }
+    },
+    "/api/importexport/tenant-exports": {
+      "get": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "The workspace's full exports, newest first: state, size, what each holds and when its file expires.",
+        "operationId": "importexport.exports.list",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantExportsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "importexport.exports.read"
+      },
+      "post": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "Start a full export of everything the workspace holds (every kind of record, with custom fields, and the attachments). It runs in the background; read the export until it has succeeded, then download it. One export is written at a time: asking while one is queued or running answers that one.",
+        "operationId": "importexport.exports.start",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartTenantExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantExportDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "importexport.exports.create"
+      }
+    },
+    "/api/importexport/tenant-exports/{id}": {
+      "get": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "One full export: its state, counts per kind of record and expiry.",
+        "operationId": "importexport.exports.get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantExportDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "importexport.exports.read"
+      }
+    },
+    "/api/importexport/tenant-exports/{id}/download": {
+      "post": {
+        "tags": [
+          "importexport"
+        ],
+        "summary": "Download a finished full export: a zip file with a manifest, one CSV or JSON file per kind of record and the attachments. Before it has succeeded the answer is 202 with the export's state (no file yet); after it expires, 410. Each download is counted on the export's record and stays in the audit trail.",
+        "operationId": "importexport.exports.download",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantExportDto"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Gone",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "importexport.exports.download"
+      }
+    },
     "/api/lists/tenancy.companies/definition": {
       "get": {
         "tags": [
@@ -19586,6 +20488,80 @@
         "x-erp-permission": "audit.log.read"
       }
     },
+    "/api/audit/actors": {
+      "get": {
+        "tags": [
+          "audit"
+        ],
+        "summary": "The people the audit log's 'Changed by' filter offers: users of the workspace whose name (English or Arabic) or e-mail contains the search text, by name, at most 20 (default 10). An empty search answers the first people by name; the filter itself is actorId in the audit log's list query.",
+        "operationId": "audit.actors.search",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Part of the person's name or e-mail.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "description": "Most people to answer, 1 to 20 (default 10).",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditPerson"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": [ ],
+            "bearer": [ ]
+          }
+        ],
+        "x-erp-permission": "audit.log.read"
+      }
+    },
     "/api/audit/log/{id}": {
       "get": {
         "tags": [
@@ -23946,6 +24922,7 @@
           "recordId",
           "recordRoute",
           "fields",
+          "fieldNames",
           "changes"
         ],
         "type": "object",
@@ -24020,8 +24997,44 @@
               "type": "string"
             }
           },
+          "fieldNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "changes": {
             "type": "string"
+          }
+        }
+      },
+      "AuditPerson": {
+        "required": [
+          "id",
+          "name",
+          "nameAr",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nameAr": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -26117,6 +27130,189 @@
           }
         }
       },
+      "ImportColumnDto": {
+        "required": [
+          "index",
+          "header",
+          "field",
+          "source",
+          "sample"
+        ],
+        "type": "object",
+        "properties": {
+          "index": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "header": {
+            "type": "string"
+          },
+          "field": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The key of the field the column fills, or null when it is left out."
+          },
+          "source": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "How the field was chosen: memory (the same header was mapped to it before), name (the header names it) or you (chosen by hand); null when left out."
+          },
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The first values of the column."
+          }
+        }
+      },
+      "ImportFieldDto": {
+        "required": [
+          "key",
+          "label",
+          "labelEn",
+          "labelAr",
+          "required",
+          "custom",
+          "example"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "description": "The field's name in the caller's language."
+          },
+          "labelEn": {
+            "type": "string"
+          },
+          "labelAr": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "custom": {
+            "type": "boolean",
+            "description": "True for a custom field of the workspace."
+          },
+          "example": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ImportFieldsDto": {
+        "required": [
+          "items",
+          "oneOfRequired",
+          "formats",
+          "maxFileBytes",
+          "maxRows",
+          "maxColumns",
+          "listPath"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportFieldDto"
+            }
+          },
+          "oneOfRequired": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Fields of which at least one must be mapped; empty when none is required that way."
+          },
+          "formats": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "File name extensions accepted."
+          },
+          "maxFileBytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "maxRows": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxColumns": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "listPath": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The path of the list of these records."
+          }
+        }
+      },
+      "ImportIssueDto": {
+        "required": [
+          "row",
+          "field",
+          "fieldLabel",
+          "code",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "row": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "field": {
+            "type": "string"
+          },
+          "fieldLabel": {
+            "type": "string",
+            "description": "The field's name in the caller's language, or the key when it is not a field."
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string",
+            "description": "What is wrong, in the caller's language."
+          }
+        }
+      },
       "ImportRatesRequest": {
         "required": [
           "fileName",
@@ -26216,6 +27412,197 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "ImportSessionDto": {
+        "required": [
+          "id",
+          "recordType",
+          "fileName",
+          "format",
+          "status",
+          "rowCount",
+          "columns",
+          "rows",
+          "onError",
+          "dryRun",
+          "rowsChecked",
+          "rowsValid",
+          "rowsImported",
+          "rowsFailed",
+          "jobId",
+          "issues",
+          "failure",
+          "failureCode",
+          "hasErrorFile",
+          "missingFields",
+          "createdAt",
+          "createdBy",
+          "finishedAt",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recordType": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "uploaded, running, checked, completed or failed."
+          },
+          "rowCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportColumnDto"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "The first rows of the file, as text, one value per column."
+          },
+          "onError": {
+            "type": "string",
+            "description": "reject: write nothing when any row has an error; skip: write the valid rows."
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "True when the last run only checked."
+          },
+          "rowsChecked": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rowsValid": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rowsImported": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rowsFailed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "jobId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The background job of the last run (see it on the Background jobs screen).",
+            "format": "uuid"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportIssueDto"
+            }
+          },
+          "failure": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Why the run stopped, in the caller's language, when it failed."
+          },
+          "failureCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A code for the failure."
+          },
+          "hasErrorFile": {
+            "type": "boolean",
+            "description": "True when an error file can be downloaded."
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Required fields no column fills (names in the caller's language); the file cannot be run until they are mapped."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "version": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "uint32"
+          }
+        }
+      },
+      "ImportSessionsDto": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportSessionDto"
+            }
           }
         }
       },
@@ -27660,6 +29047,40 @@
           }
         }
       },
+      "MappingColumn": {
+        "required": [
+          "index",
+          "field"
+        ],
+        "type": "object",
+        "properties": {
+          "index": {
+            "examples": [
+              "0"
+            ],
+            "maximum": 79,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "field": {
+            "examples": [
+              "email"
+            ],
+            "maxLength": 100,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The key of the field the column fills; null or empty leaves the column out."
+          }
+        }
+      },
       "Money": {
         "description": "    An amount of money as the ledger rule requires it: the amount in its currency, the exchange\n    rate used, and the amount in the base currency, together with which currency that base is\n    (companies of one tenant may keep different base currencies). Decimal only — never floating\n    point.\n    Rounding follows the owner-signed rule docs/compliance/vat-rounding-and-currency.md. Rule 1:\na figure rounds to its currency's minor units half away from zero. Rule 2: rounding happens\nonce, on the figure that is stated; lines and subtotals keep their full precision. So a\nMoney is either unrounded (a line or a subtotal: the default) or\nstated (Money Money.State() rounded it once). An unrounded money carries the exact\namount, and its exact base amount is always Amount × ExchangeRate; Money Money.Add(Money other)\nsums the exact figures and never the rounded base amounts, so three lines of USD 1.00 at\n3.6725 total AED 11.0175, stated as 11.02 (not 3.67 + 3.67 + 3.67 = 11.01). Stated figures\nadd as stated figures (a statement of two invoices sums what each invoice stated). Mixing the\ntwo would round part of a total twice, so Money Money.Add(Money other) refuses it.\n    Stored as `numeric(28,10)` amount, `numeric(19,8)` rate, `numeric(19,4)` base\n    amount, `char(3)` currencies and a `boolean` stated flag (MoneyMapping).\n    Every figure goes through Money Money.Create(decimal amount, CurrencyCode currency, decimal exchangeRate, CurrencyCode baseCurrency), Money Money.Unrounded(decimal amount, CurrencyCode currency, decimal exchangeRate, CurrencyCode baseCurrency) or Money Money.InBase(decimal amount, CurrencyCode currency),\nand the operations on them: the properties have no setters (no object initialiser and no\nwith expression can set a base amount that disagrees with the amount and the rate), JSON\nis read through MoneyJsonConverter (which builds with Money Money.Unrounded(decimal amount, CurrencyCode currency, decimal exchangeRate, CurrencyCode baseCurrency)), and\nthe database reads the columns back through the constructor. The one figure no factory makes is\ndefault(Money), which has no currency: every operation refuses it."
       },
@@ -28919,6 +30340,33 @@
               "string"
             ],
             "format": "uint32"
+          }
+        }
+      },
+      "RunImportRequest": {
+        "required": [
+          "dryRun",
+          "onError"
+        ],
+        "type": "object",
+        "properties": {
+          "dryRun": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "True: check the rows and report, write nothing."
+          },
+          "onError": {
+            "examples": [
+              "reject"
+            ],
+            "pattern": "^(reject|skip)$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "reject (default): write nothing when any row has an error; skip: write the valid rows and report the others."
           }
         }
       },
@@ -30654,6 +32102,24 @@
           }
         }
       },
+      "SetMappingRequest": {
+        "required": [
+          "columns"
+        ],
+        "type": "object",
+        "properties": {
+          "columns": {
+            "maxItems": 80,
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MappingColumn"
+            }
+          }
+        }
+      },
       "SetMatchingUsersActiveRequest": {
         "required": [
           "active",
@@ -30927,6 +32393,25 @@
           }
         }
       },
+      "StartTenantExportRequest": {
+        "required": [
+          "format"
+        ],
+        "type": "object",
+        "properties": {
+          "format": {
+            "examples": [
+              "csv"
+            ],
+            "pattern": "^(csv|json)$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The format of the file kept for each kind of record: csv (default) or json."
+          }
+        }
+      },
       "SwitchWorkplaceRequest": {
         "required": [
           "companyId",
@@ -31008,6 +32493,148 @@
           "everyCompany": {
             "type": "boolean",
             "description": "True when the caller works in every company of the workspace and every branch of each: only then may they change the workspace, which every company shares."
+          }
+        }
+      },
+      "TenantExportDto": {
+        "required": [
+          "id",
+          "status",
+          "format",
+          "jobId",
+          "fileCount",
+          "byteSize",
+          "recordCounts",
+          "failure",
+          "failureCode",
+          "createdAt",
+          "createdBy",
+          "finishedAt",
+          "expiresAt",
+          "downloadCount",
+          "downloadedAt",
+          "downloadable"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "description": "queued, running, succeeded, failed or expired (the file is removed after a few days)."
+          },
+          "format": {
+            "type": "string",
+            "description": "csv or json: the format of the file kept for each kind of record."
+          },
+          "jobId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The background job writing it (see its progress on the Background jobs screen).",
+            "format": "uuid"
+          },
+          "fileCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "byteSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "recordCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int64"
+            },
+            "description": "The records written, by kind of record."
+          },
+          "failure": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "failureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "finishedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "After this moment the file cannot be downloaded.",
+            "format": "date-time"
+          },
+          "downloadCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "downloadedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "downloadable": {
+            "type": "boolean",
+            "description": "True when the caller may download it now."
+          }
+        }
+      },
+      "TenantExportsDto": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TenantExportDto"
+            }
           }
         }
       },
@@ -31502,6 +33129,36 @@
           }
         }
       },
+      "UploadImportRequest": {
+        "required": [
+          "file",
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "file": {
+            "examples": [
+              "contacts.csv"
+            ],
+            "maxLength": 150,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "data": {
+            "examples": [
+              "TmFtZSxFbWFpbAo="
+            ],
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The file's bytes, base64."
+          }
+        }
+      },
       "UploadLogoRequest": {
         "required": [
           "contentType",
@@ -31840,6 +33497,9 @@
     },
     {
       "name": "attachments"
+    },
+    {
+      "name": "importexport"
     },
     {
       "name": "lists"

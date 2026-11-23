@@ -1,0 +1,13 @@
+import {start,out} from './lib.mjs';
+const {browser,page} = await start();
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(3500);
+const cell = page.locator('[role=gridcell], td').filter({hasText:'Al Noor Electrome'}).first();
+console.log('cell html', (await cell.evaluate(e=>e.outerHTML)).slice(0,400));
+await cell.hover(); await page.waitForTimeout(1500);
+console.log('tooltips', await page.locator('[role=tooltip]').allInnerTexts());
+console.log('title attrs', await page.evaluate(()=>[...document.querySelectorAll('[title]')].slice(0,5).map(e=>e.title)));
+const ph = page.locator('main input[type=search], main input').first();
+console.log('search input', await ph.evaluate(e=>({ph:e.placeholder, sw:e.scrollWidth, cw:e.clientWidth, w:e.getBoundingClientRect().width})));
+console.log('thead sticky', await page.evaluate(()=>{const t=document.querySelector('thead, [role=rowgroup]'); return t?getComputedStyle(t).position:null}));
+console.log('table scroll', await page.evaluate(()=>{const t=document.querySelector('table, [role=grid]'); const p=t.parentElement; return {tw:t.scrollWidth, pw:p.clientWidth, ox:getComputedStyle(p).overflowX}}));
+await browser.close();

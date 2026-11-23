@@ -80,6 +80,12 @@ public sealed class ModuleDescriptor
 
     /// <summary>The kinds of records of this module that files can be attached to (p11).</summary>
     public List<Erp.Kernel.Attachments.AttachmentRecordType> AttachmentRecordTypes { get; } = [];
+
+    /// <summary>The kinds of records of this module that can be imported from a file (p14).</summary>
+    public List<Erp.Kernel.ImportExport.ImportRecordType> ImportRecordTypes { get; } = [];
+
+    /// <summary>The kinds of records of this module that a full tenant export writes (p14).</summary>
+    public List<Erp.Kernel.ImportExport.ExportRecordType> ExportRecordTypes { get; } = [];
 }
 
 /// <summary>A command-line verb a module adds to the host (<c>Erp.Host &lt;verb&gt; …</c>), for
@@ -358,6 +364,60 @@ public sealed class ModuleBuilder
         return this;
     }
 
+    /// <summary>Let records of this module be imported from CSV and XLSX files (p14): the import module serves the
+    /// upload, mapping, check and import under the record's create permission
+    /// (<see cref="Erp.Kernel.ImportExport.ImportRecordType"/>).</summary>
+    public ModuleBuilder ImportRecord(Erp.Kernel.ImportExport.ImportRecordType record)
+    {
+        var problems = new List<string>();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(record.Table, "^[a-z_][a-z0-9_]{0,62}\\.[a-z_][a-z0-9_]{0,62}$") || !record.Table.StartsWith(_descriptor.Schema + ".", StringComparison.Ordinal))
+        {
+            problems.Add($"import record '{record.Table}': must look like '{_descriptor.Schema}.table'");
+        }
+        if (_descriptor.ImportRecordTypes.Any(r => r.Table == record.Table))
+        {
+            problems.Add($"import record '{record.Table}' is registered twice");
+        }
+        if (!PermissionDefinition.IsValidKey(record.Permission))
+        {
+            problems.Add($"import record '{record.Table}': '{record.Permission}' is not a permission key");
+        }
+        if (record.Fields.Count == 0 || record.Fields.Select(f => f.Key).Distinct(StringComparer.Ordinal).Count() != record.Fields.Count || record.Fields.Any(f => f.Key.StartsWith("custom.", StringComparison.Ordinal)))
+        {
+            problems.Add($"import record '{record.Table}': needs fields with distinct keys that do not start with 'custom.'");
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(string.Join("\n", problems));
+        }
+        _descriptor.ImportRecordTypes.Add(record);
+        return this;
+    }
+
+    /// <summary>Let records of this module be written by a full tenant export (p14).</summary>
+    public ModuleBuilder ExportRecord(Erp.Kernel.ImportExport.ExportRecordType record)
+    {
+        var problems = new List<string>();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(record.Table, "^[a-z_][a-z0-9_]{0,62}\\.[a-z_][a-z0-9_]{0,62}$") || !record.Table.StartsWith(_descriptor.Schema + ".", StringComparison.Ordinal))
+        {
+            problems.Add($"export record '{record.Table}': must look like '{_descriptor.Schema}.table'");
+        }
+        if (_descriptor.ExportRecordTypes.Any(r => r.Table == record.Table))
+        {
+            problems.Add($"export record '{record.Table}' is registered twice");
+        }
+        if (record.Columns.Count == 0 || record.Columns.Distinct(StringComparer.Ordinal).Count() != record.Columns.Count)
+        {
+            problems.Add($"export record '{record.Table}': needs distinct column names");
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(string.Join("\n", problems));
+        }
+        _descriptor.ExportRecordTypes.Add(record);
+        return this;
+    }
+
     /// <summary>Register an attack the tenant-isolation gate runs against a surface that is not a
     /// plain HTTP data endpoint (exports, jobs, files).</summary>
     public ModuleBuilder IsolationProbe<TProbe>() where TProbe : class, IIsolationProbe
@@ -406,6 +466,12 @@ public sealed class ModuleCatalog
 
     /// <summary>Every kind of record that files can be attached to (p11).</summary>
     public IEnumerable<Erp.Kernel.Attachments.AttachmentRecordType> AttachmentRecordTypes => _modules.SelectMany(m => m.AttachmentRecordTypes);
+
+    /// <summary>Every kind of record that can be imported from a file (p14).</summary>
+    public IEnumerable<Erp.Kernel.ImportExport.ImportRecordType> ImportRecordTypes => _modules.SelectMany(m => m.ImportRecordTypes);
+
+    /// <summary>Every kind of record a full tenant export writes (p14).</summary>
+    public IEnumerable<Erp.Kernel.ImportExport.ExportRecordType> ExportRecordTypes => _modules.SelectMany(m => m.ExportRecordTypes);
 
     /// <summary>The registered kind of audited record of this <c>schema.table</c>, or null.</summary>
     public AuditRecordType? FindAuditRecordType(string table) => AuditRecordTypes.FirstOrDefault(r => r.Table == table);

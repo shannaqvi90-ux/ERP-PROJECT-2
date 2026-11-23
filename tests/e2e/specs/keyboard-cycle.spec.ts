@@ -31,7 +31,7 @@ test.describe("Tab cycle", () => {
       await expect(page.locator("main h1")).toBeVisible();
       const skip = language === "ar" ? /:انتقل إلى المحتوى$/ : /:Skip to content$/;
 
-      const forward = await walk(page, 70);
+      const forward = await walk(page, 130);
       expect(forward, forward.join(" > ")).not.toContain("BODY");
       // The control after the last one is the first one: "Skip to content", reached at least twice.
       const firsts = forward.map((stop, i) => ({ stop, i })).filter(({ stop }) => skip.test(stop));

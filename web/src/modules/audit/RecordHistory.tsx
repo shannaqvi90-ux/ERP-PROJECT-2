@@ -3,7 +3,7 @@ import { extensions, type HistoryChild, type RecordPanelProps } from "../../kern
 import { useI18n } from "../../kernel/i18n";
 import { Link } from "../../kernel/router";
 import { useSession } from "../../kernel/session";
-import { actorText, fieldDecimals, fieldLabel, logAddress, readHistory, shownChanges, valueText, type AuditEvent, type AuditHistory, type ValueFormat } from "./model";
+import { actorText, calendarDate, fieldDecimals, fieldLabel, logAddress, readHistory, shownChanges, valueText, type AuditEvent, type AuditHistory, type ValueFormat } from "./model";
 import "./audit.css";
 
 /** The words for who made a change: "Created by …", "Changed by …", "Deleted by …". */
@@ -13,7 +13,7 @@ export function actionKey(action: AuditEvent["action"]): string {
 
 function useValueFormat(names: AuditHistory["names"] | undefined, fields?: AuditHistory["fields"], recordType?: string | null): ValueFormat {
   const { t, formatDateTime, formatNumber, language, format } = useI18n();
-  return useMemo(() => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, language, names, fields, recordType }), [t, formatDateTime, formatNumber, format, language, names, fields, recordType]);
+  return useMemo(() => ({ t, formatDateTime, formatNumber, formatDecimal: format.decimal, formatDate: calendarDate(format), language, names, fields, recordType }), [t, formatDateTime, formatNumber, format, language, names, fields, recordType]);
 }
 
 /** One change's field as a line: "E-mail: from old to new" (a creation's "E-mail: value"). */

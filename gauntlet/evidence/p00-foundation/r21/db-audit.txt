@@ -1,0 +1,7 @@
+== audit rows for the Read-only role permission change by revoke-live, newest 2
+2026-11-20 09:15:24.160522+00|insert|identity.roles||{"id": {"new": "01a1f83d-3795-7754-9690-7c80cb6f0e7c"}, "name_ar": {"new": "مدير النظام"}, "name_en": {"new": "Administrator"}, "is_system": {"new": true}, "system_key": {"new": "administrator"}, "permissions": {"new": ["audit.log.read", "contacts.co
+2026-11-20 09:14:08.705504+00|update|identity.roles|admin@alnoor.example|{"permissions": {"new": ["audit.log.read", "contacts.contacts.read", "currency.currencies.read", "currency.rates.read", "customfields.fields.read", "identity.profile.update", "identity.roles.read", "identity.users.read", "jobs.jobs.read", "jobs.sched
+== audit columns
+id,tenant_id,occurred_at,actor_id,actor_kind,table_schema,table_name,record_id,action,changes,transaction_id,correlation_id,record_branch_id,record_code,record_company_id,record_label,record_label_ar,uid,fields,record_type,field_list
+== tenant tables without the audit capture trigger
+identity.sign_in_attempts

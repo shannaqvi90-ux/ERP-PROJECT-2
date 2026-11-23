@@ -1,0 +1,38 @@
+{
+  "task": "import-5000",
+  "verdict": "ours invalid",
+  "rule": "Ours is judged on one whole path (one of its expert paths, every metric from that path) against the reference at its best on each metric, and must be strictly lower on every metric; a tie is a loss. A count metric (steps, keystrokes) on which both score exactly 0 is left out, neither a tie nor a win (owner, 2026-10-08, needs-human #11); a time metric never is. When every metric ties, or nothing is left to compare, the task is a loss.",
+  "ours_path": null,
+  "metrics": {
+    "steps": {
+      "ours": 5,
+      "odoo": 7,
+      "outcome": "not_comparable"
+    },
+    "keystrokes": {
+      "ours": 0,
+      "odoo": 0,
+      "outcome": "not_comparable"
+    },
+    "machine_seconds": {
+      "ours": 5.437,
+      "odoo": 13.402,
+      "outcome": "not_comparable"
+    },
+    "human_seconds": {
+      "ours": 12.1,
+      "odoo": 17.4,
+      "outcome": "not_comparable"
+    },
+    "human_plus_wait_seconds": {
+      "ours": 16.558,
+      "odoo": 29.216,
+      "outcome": "not_comparable"
+    }
+  },
+  "left_out": [],
+  "runs": {
+    "ours": "../../evidence-staging/p14-import-export/r1/compare/results/import-5000-20261121T004026-104e.json",
+    "odoo": "../../evidence-staging/p14-import-export/r1/compare/results/import-5000-20261121T004043-49da.json"
+  }
+}

@@ -1,0 +1,60 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+warning: job_runs (ir.cron.progress) falls below 100,000 rows about 2026-11-21T13:14:51.000Z (Odoo vacuums them after 7 days).
+top the rig up, from the repository root:
+    tools/odoo-reference/up.sh                      (the shared rig on port 8069: idempotent, adds only what is missing, restarts nothing;
+                                                     the lead or the owner runs it there, needs-human #13: never stop, recreate or reset the shared rig)
+    ODOO_REF_PROJECT=<yours>-odoo ODOO_REF_PORT=<port> tools/odoo-reference/up.sh   (a private rig, for a builder or critic; then COMPARE_ODOO_URL=http://localhost:<port>)
+    tools/odoo-reference/up.sh --status             (what is running and the recorded volume; changes nothing)
+Odoo deletes job-run rows (ir.cron.progress) a week after they were made, so a rig falls short a week after its last top-up; see tools/odoo-reference/README.md ("Keeping the rig at the bar").
+switch-company           ours  verified  steps 1  keys 0  machine 0.116s  human 2.65s  human+wait 2.704s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/switch-company-20261120T091218-bf58.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.483s  human 5.3s  human+wait 5.613s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/switch-company-20261120T091229-0453.json
+switch-company           verdict win (ours judged on its whole path 'pointer')
+switch-company           left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+edit-and-save            ours  verified  steps 2  keys 9  machine 0.188s  human 5.57s  human+wait 5.624s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/edit-and-save-20261120T091250-e89f.json
+edit-and-save            odoo  verified  steps 3  keys 12  machine 0.364s  human 8.72s  human+wait 8.909s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/edit-and-save-20261120T091315-20b3.json
+edit-and-save            verdict win (ours judged on its whole path 'national')
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.459s  human 15.28s  human+wait 16.654s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/switch-to-arabic-20261120T091403-74a2.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.387s  human 2.65s  human+wait 2.651s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/switch-to-arabic-20261120T091439-ab50.json
+switch-to-arabic         verdict win
+keyboard-navigation      ours  not_built  (not built yet: waits for p04 (English/Arabic app shell) with p16 (contacts))  -> ../../evidence-staging/p18-visual-design/r1/compare/results/keyboard-navigation-20261120T091449-0874.json
+keyboard-navigation      odoo  verified  steps 9  keys 10  machine 1.322s  human 7.25s  human+wait 8.414s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/keyboard-navigation-20261120T091449-dec7.json
+keyboard-navigation      verdict not_built
+reach-screen-keyboard    ours  verified  steps 2  keys 2  machine 0.161s  human 3.66s  human+wait 3.768s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/reach-screen-keyboard-20261120T091513-63f7.json
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 0.861s  human 3.99s  human+wait 4.788s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/reach-screen-keyboard-20261120T091532-f207.json
+reach-screen-keyboard    verdict win (ours judged on its whole path 'goTo')
+find-record              odoo  verified  steps 5  keys 30  machine 1.839s  human 17.91s  human+wait 19.14s  -> ../../evidence-staging/p18-visual-design/r1/compare/results/find-record-20261120T091555-6c32.json
+find-record              ours  error     steps undefined  keys undefined  machine undefineds  human undefineds  human+wait undefineds  (palette: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database)  -> ../../evidence-staging/p18-visual-design/r1/compare/results/find-record-20261120T091646-5aa1.json
+    palette: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database
+        (in the driver process)
+        at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)
+        at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)
+    palette-shortest: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database
+        (in the driver process)
+        at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)
+        at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)
+    menu: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database
+        (in the driver process)
+        at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)
+        at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)
+    goto: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database
+        (in the driver process)
+        at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)
+        at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)
+    shortest: error Error: our product does not hold the dataset contact Shamma Waleed Al Romaithi; start it with ERP_SEED_CONTACTS_CSV=gauntlet/compare/data/out/contacts.csv on a fresh database
+        (in the driver process)
+        at Object.setup (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/drivers/ours/find-record.mjs:96:18)
+        at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async hook (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:379:7)
+        at async process.<anonymous> (file:///home/shan/critic/p18-visual-design-r1-plant/gauntlet/compare/lib/sandbox/host.mjs:406:21)
+    page: {"palette":{"url":"blank","ready_state":"complete","title":"","focused":null,"navigation":false,"busy":[],"messages":[]},"palette-shortest":{"url":"blank","ready_state":"complete","title":"","focused":null,"navigation":false,"busy":[],"messages":[]},"menu":{"url":"blank","ready_state":"complete","title":"","focused":null,"navigation":false,"busy":[],"messages":[]},"goto":{"url":"blank","ready_state":"complete","title":"","focused":null,"navigation":false,"busy":[],"messages":[]},"shortest":{"url":"blank","ready_state":"complete","title":"","focused":null,"navigation":false,"busy":[],"messages":[]}}
+find-record              verdict ours error
+blind review page: ../../../../evidence-staging/p18-visual-design/r1/compare/blind/review.html
+output: ../../../../evidence-staging/p18-visual-design/r1/compare

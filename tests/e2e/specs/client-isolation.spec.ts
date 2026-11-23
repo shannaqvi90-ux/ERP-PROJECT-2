@@ -524,6 +524,8 @@ test.describe("G1 in the browser: one tab, tenant B then tenant A", () => {
       "erp.language": "en",
       "erp.numerals": "latn",
       "erp.navOpen": "1",
+      "erp.theme": "dark",
+      "erp.density": "compact",
       "erp.passkeyOffer": "0",
       "erp.signInDomains": '{"salt":"0123456789abcdef0123456789abcdef","hashes":["0123456789abcdef"]}',
     };

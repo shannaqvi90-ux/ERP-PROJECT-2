@@ -7,3 +7,10 @@ import { createContext } from "react";
  * only once chosen. Null outside a list.
  */
 export const FilterByFieldContext = createContext<((column: string, value: string) => void) | null>(null);
+
+/**
+ * Offered by a list to the cells it draws: "list the records whose column contains this word". A cell that shows words of its own
+ * (a contact's tags) draws each as a button that calls it; the list keeps its other filters, replaces the column's own and filters.
+ * Null outside a list.
+ */
+export const FilterByWordContext = createContext<((column: string, word: string) => void) | null>(null);

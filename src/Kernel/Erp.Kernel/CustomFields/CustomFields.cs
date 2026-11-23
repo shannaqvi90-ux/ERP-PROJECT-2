@@ -122,6 +122,12 @@ public interface ICustomFields
     /// <c>customFields.&lt;key&gt;</c>; nothing is written while the validator has any.</summary>
     Task SaveAsync(string recordType, Guid recordId, bool isNew, IReadOnlyDictionary<string, JsonElement>? values, Validator validator, CancellationToken cancellationToken);
 
+    /// <summary>Check and write the values of many new records at once (an import, p14), as <see cref="SaveAsync"/> does for each with
+    /// <c>isNew</c> true: a field left out starts at its default, a required field without one is refused. Returns the problems by the
+    /// caller's own number for the record (field key to problem code); nothing is written while there is any. The records must already
+    /// exist (saved earlier in the same unit of work).</summary>
+    Task<IReadOnlyDictionary<int, IReadOnlyDictionary<string, string>>> SaveNewAsync(string recordType, IReadOnlyList<(int Number, Guid RecordId, IReadOnlyDictionary<string, JsonElement> Values)> records, CancellationToken cancellationToken);
+
     /// <summary>The values of many records for list pages, as plain values by field key (null for a
     /// record that holds none).</summary>
     Task<IReadOnlyDictionary<Guid, IDictionary<string, object?>>> ValuesAsync(string recordType, IReadOnlyCollection<Guid> recordIds, CancellationToken cancellationToken);

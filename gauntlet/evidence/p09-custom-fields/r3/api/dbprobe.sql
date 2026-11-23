@@ -1,16 +1,22 @@
--- as erp_app with tenant A set: read tenant B's canary through tables and every value_* function
+\set A '0190a000-0000-7000-8000-000000000001'
+\set B '0190a000-0000-7000-8000-000000000002'
 BEGIN;
-SELECT set_config('app.tenant_id','0190a000-0000-7000-8000-000000000001',true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
-SELECT 'value_text(B field,B record)=' || coalesce(customfields.value_text('01a1ec21-edc3-7770-85c3-2b285af49f16','01a1ec21-eedc-714a-9fd8-4e0930e68813'),'<null>');
-SELECT 'value_date_trunc(B date field,B record)=' || coalesce(customfields.value_date_trunc('01a1ec21-eebb-78c2-8752-74ae7eca6fb4','01a1ec21-eedc-714a-9fd8-4e0930e68813','year')::text,'<null>');
-SELECT 'field_values rows with CANARY=' || count(*) FROM customfields.field_values WHERE text_value LIKE '%CANARYB1794963008929%';
-SELECT 'B definitions visible=' || count(*) FROM customfields.definitions WHERE tenant_id='0190a000-0000-7000-8000-000000000002';
-SELECT 'all definitions visible=' || count(*) FROM customfields.definitions;
-SELECT 'B record values visible=' || count(*) FROM customfields.field_values v WHERE v.record_id='01a1ec21-eedc-714a-9fd8-4e0930e68813';
-SAVEPOINT s; INSERT INTO customfields.field_values (id, record_type, record_id, field_id, code, tenant_id, text_value, created_at) VALUES (gen_random_uuid(),'contacts.contacts','01a1ec21-eedc-714a-9fd8-4e0930e68813','01a1ec21-edc3-7770-85c3-2b285af49f16','x','0190a000-0000-7000-8000-000000000002','x', now()); ROLLBACK TO s;
-SELECT 'update of B values rows=' || (WITH u AS (UPDATE customfields.field_values SET text_value='pwn' WHERE tenant_id='0190a000-0000-7000-8000-000000000002' RETURNING 1) SELECT count(*) FROM u);
+SET LOCAL ROLE erp_app;
+SELECT set_config('app.tenant_id', :'A', true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
+SELECT 'bound tenant', erp.current_tenant_id();
+SELECT 'A sees own definitions', count(*) FROM customfields.definitions;
+SELECT 'A sees B definitions', count(*) FROM customfields.definitions WHERE tenant_id = :'B';
+SELECT 'A sees B values', count(*) FROM customfields.field_values WHERE tenant_id = :'B';
+SELECT 'value_text on B rows (as A)', count(customfields.value_text(v.field_id, v.record_id)) FROM (SELECT field_id, record_id FROM customfields.field_values WHERE false) v;
+WITH u AS (UPDATE customfields.field_values SET text_value = 'pwn' WHERE tenant_id = :'B' RETURNING 1) SELECT 'update B values rows', count(*) FROM u;
+WITH d AS (DELETE FROM customfields.definitions WHERE tenant_id = :'B' RETURNING 1) SELECT 'delete B definitions rows', count(*) FROM d;
+SAVEPOINT s;
+INSERT INTO customfields.definitions (id, tenant_id, record_type, code, name_en, name_ar, field_type, decimals, sort_order, searchable) VALUES (gen_random_uuid(), :'B', 'contacts.contacts', 'cfPwn', 'pwn', 'pwn', 1, 0, 1, false);
+ROLLBACK TO s;
 ROLLBACK;
 BEGIN;
-SELECT set_config('app.tenant_id','0190a000-0000-7000-8000-000000000002',true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
-SELECT 'control as B: value_text=' || coalesce(customfields.value_text('01a1ec21-edc3-7770-85c3-2b285af49f16','01a1ec21-eedc-714a-9fd8-4e0930e68813'),'<null>') || ' date_trunc=' || coalesce(customfields.value_date_trunc('01a1ec21-eebb-78c2-8752-74ae7eca6fb4','01a1ec21-eedc-714a-9fd8-4e0930e68813','year')::text,'<null>');
+SET LOCAL ROLE erp_app;
+SELECT set_config('app.tenant_id', :'B', true), set_config('app.tenant_tx', extract(epoch from now())::text, true);
+SELECT 'control B sees own definitions', count(*) FROM customfields.definitions;
+SELECT 'control B sees own values', count(*) FROM customfields.field_values;
 ROLLBACK;

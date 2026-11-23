@@ -1,0 +1,14 @@
+import { open, shot } from './pw.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await page.keyboard.press('/'); await page.keyboard.type('Gulf Glass'); await page.waitForTimeout(1500);
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(2500);
+await page.focus('input[name="customFields.cfCreditReview"]');
+await page.keyboard.type('15/06/2027');
+console.log('typed 15/06/2027 ->', await page.evaluate(() => document.activeElement.value));
+await page.evaluate(() => document.activeElement.scrollIntoView({ block: 'center' }));
+await page.keyboard.press('Control+s'); await page.waitForTimeout(1500);
+const msg = await page.$$eval('[role=alert], .field-error', els => els.map(e => e.textContent.trim()).filter(Boolean)); console.log('save', msg);
+await shot(page, 's24-en-typed-date-with-slashes');
+console.log('errors', errors);
+await browser.close();

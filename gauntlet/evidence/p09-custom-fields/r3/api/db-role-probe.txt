@@ -1,24 +1,30 @@
 BEGIN
-0190a000-0000-7000-8000-000000000001|1794963280.014862
-value_text(B field,B record)=<null>
-value_date_trunc(B date field,B record)=<null>
-field_values rows with CANARY=0
-ERROR:  new row violates row-level security policy for table "field_values"
-B definitions visible=0
-all definitions visible=7
-B record values visible=0
+SET
+0190a000-0000-7000-8000-000000000001|1795363129.870566
+bound tenant|0190a000-0000-7000-8000-000000000001
+A sees own definitions|16
+A sees B definitions|0
+A sees B values|0
+value_text on B rows (as A)|0
+update B values rows|0
+delete B definitions rows|0
 SAVEPOINT
+ERROR:  new row violates row-level security policy for table "definitions"
 ROLLBACK
-ERROR:  WITH clause containing a data-modifying statement must be at the top level
-LINE 1: SELECT 'update of B values rows=' || (WITH u AS (UPDATE cust...
-                                                   ^
 ROLLBACK
 BEGIN
-0190a000-0000-7000-8000-000000000002|1794963280.145857
-control as B: value_text=CANARYB1794963008929 date_trunc=2031-01-01
+SET
+0190a000-0000-7000-8000-000000000002|1795363129.897530
+control B sees own definitions|8
+control B sees own values|2415
 ROLLBACK
 BEGIN
-0190a000-0000-7000-8000-000000000001|1794963285.827080
-UPDATE 0
-DELETE 0
+SET
+0190a000-0000-7000-8000-000000000001|1795363137.551015
+A calls value_text on a B field/record|<null>
+ROLLBACK
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000002|1795363137.556985
+control B calls value_text|distributor
 ROLLBACK

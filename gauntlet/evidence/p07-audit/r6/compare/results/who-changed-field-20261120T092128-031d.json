@@ -1,0 +1,1096 @@
+{
+  "schema": 1,
+  "run_id": "who-changed-field-20261120T092128-031d",
+  "instrument": 12,
+  "task": "who-changed-field",
+  "task_title": "Who changed this field, and when",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Find out who last changed the e-mail address of the contact Shamma Waleed Al Romaithi, from what to what, and when.",
+  "done_when": "The change is on screen: the old and new e-mail, the person who made it (Noor Editor) and the time.",
+  "started_at": "2026-11-20T09:21:28.873Z",
+  "finished_at": "2026-11-20T09:22:20.487Z",
+  "environment": {
+    "base_url": "http://localhost:20750",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 14,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.661,
+    "system_wait_seconds": 0.368,
+    "human_seconds": 5.67,
+    "human_plus_wait_seconds": 6.038,
+    "klm_operator_counts": {
+      "K": 14,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.063,
+      "chord": "Control+k",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 11,
+      "at": 0.07,
+      "took": 0.159,
+      "text": "sha wal rom",
+      "same_field": false,
+      "screen": "/",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open the contact",
+      "keystrokes": 1,
+      "at": 0.462,
+      "took": 0.056,
+      "chord": "Enter",
+      "screen": "/",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette input focused",
+      "at": 0.065,
+      "seconds": 0.002
+    },
+    {
+      "label": "the contact offered first",
+      "at": 0.231,
+      "seconds": 0.23
+    },
+    {
+      "label": "the latest change on the record",
+      "at": 0.52,
+      "seconds": 0.136
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "92fe05cb815be2f5.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p07-audit/r6/compare/blind/shots/92fe05cb815be2f5.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "29e7217f3fa34281.jpg",
+      "at": 0.661,
+      "path": "../../evidence-staging/p07-audit/r6/compare/blind/shots/29e7217f3fa34281.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "latest_change_on_screen": "Changed by Noor Editor · 20 Nov 2026, 1:20 PM · E-mail: from shamma.al.romaithi.73519@mail.example to shamma.romaithi.new@mail.example"
+    }
+  },
+  "path_notes": "palette: Ctrl+K > the contact's name > Enter: the heading shows the latest change. | palette-shortest: Ctrl+K > the shortest word prefixes that rank the contact first > Enter: the heading shows the latest change. | menu: Contacts (search focused) > the name > Enter: the heading shows the latest change. | goto: G then O (search focused) > the name > Enter: the heading shows the latest change. | shortest: Contacts (search focused) > the shortest word prefixes > Enter: the heading shows the latest change.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/who-changed-field.mjs",
+    "sha256": "4cdf7faa158354a2b4931633a305bfabc68dad4eac4c32bdf841645061e69a14"
+  },
+  "task_notes": "Set-up makes the change as {changedBy} (an ordinary user) through the back end, so it is the latest change; clean-up restores the address.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true,
+      "gap_seconds": 0.092
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "d392911f82ba7d6a",
+    "elements": 646
+  },
+  "screen_after_verify": {
+    "sha256": "d392911f82ba7d6a",
+    "elements": 646,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.009
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 31,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.644,
+      "by_step": 3,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/audit/records/018917b1-0728-701a-ab89-eaf6c33f8bc0 after 0.035 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "finds": {
+    "value": "Shamma Waleed Al Romaithi",
+    "on_start_screen": false,
+    "typed_at_step": 2,
+    "shown_before": false
+  },
+  "set_up_writes": [],
+  "screenshots_path": "palette-shortest",
+  "best_path_per_metric": {
+    "steps": "palette",
+    "keystrokes": "shortest",
+    "machine_seconds": "palette-shortest",
+    "human_seconds": "palette-shortest",
+    "human_plus_wait_seconds": "palette-shortest"
+  },
+  "counts_path": "palette-shortest",
+  "variants": [
+    {
+      "id": "palette",
+      "path": "Ctrl+K > the contact's name > Enter: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 32,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.766,
+        "system_wait_seconds": 0.412,
+        "human_seconds": 10.71,
+        "human_plus_wait_seconds": 11.122,
+        "klm_operator_counts": {
+          "K": 32,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.06,
+          "chord": "Control+k",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.067,
+          "took": 0.232,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the contact",
+          "keystrokes": 1,
+          "at": 0.576,
+          "took": 0.043,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette input focused",
+          "at": 0.062,
+          "seconds": 0.002
+        },
+        {
+          "label": "the contact offered first",
+          "at": 0.301,
+          "seconds": 0.274
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.621,
+          "seconds": 0.136
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 20 Nov 2026, 1:20 PM · E-mail: from shamma.al.romaithi.73519@mail.example to shamma.romaithi.new@mail.example"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true,
+          "gap_seconds": 0.077
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "241b19ab67e7d9df",
+        "elements": 646
+      },
+      "screen_after_verify": {
+        "sha256": "241b19ab67e7d9df",
+        "elements": 646,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.006
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 46,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.746,
+          "by_step": 3,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "palette-shortest",
+      "path": "Ctrl+K > the shortest word prefixes that rank the contact first > Enter: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 14,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.661,
+        "system_wait_seconds": 0.368,
+        "human_seconds": 5.67,
+        "human_plus_wait_seconds": 6.038,
+        "klm_operator_counts": {
+          "K": 14,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.063,
+          "chord": "Control+k",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 11,
+          "at": 0.07,
+          "took": 0.159,
+          "text": "sha wal rom",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the contact",
+          "keystrokes": 1,
+          "at": 0.462,
+          "took": 0.056,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette input focused",
+          "at": 0.065,
+          "seconds": 0.002
+        },
+        {
+          "label": "the contact offered first",
+          "at": 0.231,
+          "seconds": 0.23
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.52,
+          "seconds": 0.136
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 20 Nov 2026, 1:20 PM · E-mail: from shamma.al.romaithi.73519@mail.example to shamma.romaithi.new@mail.example"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.092
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "d392911f82ba7d6a",
+        "elements": 646
+      },
+      "screen_after_verify": {
+        "sha256": "d392911f82ba7d6a",
+        "elements": 646,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.004,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.009
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 31,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.644,
+          "by_step": 3,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/audit/records/018917b1-0728-701a-ab89-eaf6c33f8bc0 after 0.035 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "menu",
+      "path": "Contacts (search focused) > the name > Enter: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 30,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.948,
+        "system_wait_seconds": 0.43,
+        "human_seconds": 12.8,
+        "human_plus_wait_seconds": 13.23,
+        "klm_operator_counts": {
+          "K": 30,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts",
+          "keystrokes": 0,
+          "at": 0.037,
+          "took": 0.096,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.192,
+          "took": 0.294,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.794,
+          "took": 0.032,
+          "chord": "Enter",
+          "screen": "/contacts/contacts",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.136,
+          "seconds": 0.006
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.488,
+          "seconds": 0.306
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.827,
+          "seconds": 0.118
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 20 Nov 2026, 1:20 PM · E-mail: from shamma.al.romaithi.73519@mail.example to shamma.romaithi.new@mail.example"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.006,
+          "verified": true,
+          "gap_seconds": 0.066
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "868346b4be609c0f",
+        "elements": 647
+      },
+      "screen_after_verify": {
+        "sha256": "868346b4be609c0f",
+        "elements": 647,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.005
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 41,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.903,
+          "by_step": 3,
+          "chain": [
+            "the answer to GET /api/audit/records/018917b1-0728-701a-ab89-eaf6c33f8bc0 after 0.028 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "goto",
+      "path": "G then O (search focused) > the name > Enter: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 32,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.856,
+        "system_wait_seconds": 0.444,
+        "human_seconds": 13.41,
+        "human_plus_wait_seconds": 13.854,
+        "klm_operator_counts": {
+          "K": 32,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "go to",
+          "keystrokes": 1,
+          "at": 0.001,
+          "took": 0.017,
+          "chord": "g",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "Contacts",
+          "keystrokes": 1,
+          "at": 0.019,
+          "took": 0.052,
+          "chord": "o",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.102,
+          "took": 0.271,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.694,
+          "took": 0.035,
+          "chord": "Enter",
+          "screen": "/contacts/contacts",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.072,
+          "seconds": 0.007
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.374,
+          "seconds": 0.32
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.735,
+          "seconds": 0.117
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 20 Nov 2026, 1:20 PM · E-mail: from shamma.al.romaithi.73519@mail.example to shamma.romaithi.new@mail.example"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.073
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "f9a17c34d795ad3a",
+        "elements": 647
+      },
+      "screen_after_verify": {
+        "sha256": "f9a17c34d795ad3a",
+        "elements": 647,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.007,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.01
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 39,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.829,
+          "by_step": 4,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/audit/records/018917b1-0728-701a-ab89-eaf6c33f8bc0 after 0.051 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 3,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "shortest",
+      "path": "Contacts (search focused) > the shortest word prefixes > Enter: the heading shows the latest change.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 12,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.812,
+        "system_wait_seconds": 0.433,
+        "human_seconds": 7.76,
+        "human_plus_wait_seconds": 8.193,
+        "klm_operator_counts": {
+          "K": 12,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts",
+          "keystrokes": 0,
+          "at": 0.045,
+          "took": 0.09,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 11,
+          "at": 0.179,
+          "took": 0.191,
+          "text": "sha wal rom",
+          "same_field": false,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.671,
+          "took": 0.026,
+          "chord": "Enter",
+          "screen": "/contacts/contacts",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.136,
+          "seconds": 0.026
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.371,
+          "seconds": 0.3
+        },
+        {
+          "label": "the latest change on the record",
+          "at": 0.703,
+          "seconds": 0.107
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "latest_change_on_screen": "Changed by Noor Editor · 20 Nov 2026, 1:20 PM · E-mail: from shamma.al.romaithi.73519@mail.example to shamma.romaithi.new@mail.example"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.006,
+          "verified": true,
+          "gap_seconds": 0.092
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "a5b167f3b3b88801",
+        "elements": 647
+      },
+      "screen_after_verify": {
+        "sha256": "a5b167f3b3b88801",
+        "elements": 647,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.004
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 26,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.776,
+          "by_step": 3,
+          "chain": [
+            "the answer to GET /api/audit/records/018917b1-0728-701a-ab89-eaf6c33f8bc0 after 0.025 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    }
+  ]
+}

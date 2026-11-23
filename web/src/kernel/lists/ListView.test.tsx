@@ -693,3 +693,51 @@ describe("printing a list", () => {
     expect(document.activeElement).toBe(items[0]);
   });
 });
+
+describe("view tabs", () => {
+  const tabs = () => [...document.querySelectorAll<HTMLElement>('.list-tabs [role="radio"]')];
+
+  it("show the standard view and each built-in view as a tab, the standard one selected, one tab stop", async () => {
+    serve();
+    await show();
+    expect(tabs().map((t) => t.querySelector(".list-tab-label")?.textContent)).toEqual(["Standard", "Active users"]);
+    expect(tabs().map((t) => t.getAttribute("aria-checked"))).toEqual(["true", "false"]);
+    expect(tabs().map((t) => t.tabIndex)).toEqual([0, -1]);
+    expect(document.querySelector('.list-tabs')?.getAttribute("aria-label")).toBe("Views");
+  });
+
+  it("open a view on a click and on the arrow keys, narrowing the list by the view's filter", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    await show();
+    await act(async () => tabs()[1]!.click());
+    await settle();
+    expect(tabs().map((t) => t.getAttribute("aria-checked"))).toEqual(["false", "true"]);
+    const last = calls.filter((c) => c.url.startsWith("/api/identity/users?")).at(-1)!;
+    expect(param(last.url, "filter")).toContain("language eq 'ar'");
+    await key(tabs()[1]!.parentElement!, "ArrowLeft");
+    await settle();
+    expect(tabs().map((t) => t.getAttribute("aria-checked"))).toEqual(["true", "false"]);
+  });
+
+  it("show how many rows each view holds only when the screen asks for counts, one small request per view", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    view = await render(
+      <I18nProvider initial="en">
+        <ListView listKey="identity.users" titleKey="identity.users.title" countKey="identity.users.count" searchPlaceholderKey="identity.users.search" viewCounts />
+      </I18nProvider>,
+    );
+    await settle();
+    await settle();
+    await wait(5);
+    expect(tabs().map((t) => t.querySelector(".list-tab-count")?.textContent)).toEqual(["30", "30"]);
+    const counting = calls.filter((c) => param(c.url, "take") === "1");
+    expect(counting.map((c) => param(c.url, "filter"))).toEqual([null, "language eq 'ar'"]);
+    // Without the flag no counting request is made.
+    view.unmount();
+    calls.length = 0;
+    await show();
+    expect(calls.filter((c) => param(c.url, "take") === "1")).toHaveLength(0);
+  });
+});

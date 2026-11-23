@@ -56,6 +56,9 @@ public sealed class ContactsModule : ErpModule
             Exists: async (services, id, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().AnyAsync(c => c.Id == id, ct),
             FirstIds: async (services, count, ct) => await services.GetRequiredService<ContactsDbContext>().Contacts.AsNoTracking().OrderBy(c => c.NameEn).ThenBy(c => c.Id).Select(c => c.Id).Take(count).ToListAsync(ct),
             ListPath: "/api/contacts/contacts"));
+        // Contacts can be imported from CSV and XLSX files (p14) and are written by the full tenant export.
+        module.ImportRecord(ContactsImport.Type);
+        module.ExportRecord(ContactsImport.ExportType);
         module.Seeder<ContactsSeeder>();
     }
 }

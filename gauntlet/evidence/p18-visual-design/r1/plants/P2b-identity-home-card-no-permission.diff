@@ -1,0 +1,5 @@
+# Plant P2b (NOT caught by web unit tests: kernel/extensions.test.ts, modules/shell/*, modules/identity/*; 265 tests passed)
+--- a/web/src/modules/identity/extensions.ts
++++ b/web/src/modules/identity/extensions.ts
+-  home: [{ key: "identity.home", order: 20, permission: "identity.users.read", component: IdentityHomeCard }],
++  home: [{ key: "identity.home", order: 20, component: IdentityHomeCard }],

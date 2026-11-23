@@ -1,0 +1,14 @@
+Pager usage is off.
+          occurred_at          | actor_kind |             t             | action |                                                                                                                                                     changes                                                              
+-------------------------------+------------+---------------------------+--------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-11-20 09:06:11.640792+00 | user       | contacts.contacts         | update | {"custom_fields.cfCreditReview": {"new": "2026-12-31"}}                                                                                                                                                                  
+ 2026-11-20 09:06:11.639252+00 | user       | customfields.field_values | insert | {"id": {"new": "01a1f834-ca27-751f-96a7-b0ed6064085b"}, "code": {"new": "cfCreditReview"}, "field_id": {"new": "01a1f82e-7b52-7a58-b115-d9c7afcee83e"}, "record_id": {"new": "018917b1-0728-701a-ab89-eaf6c33f8bc0"}, "da
+ 2026-11-20 09:06:11.576264+00 | user       | contacts.contacts         | update | {"job_title": {"new": "Purchasing manager"}}                                                                                                                                                                             
+ 2026-11-20 09:01:36.641429+00 | seed       | customfields.field_values | insert | {"id": {"new": "018d0c22-7000-75e5-b95f-caa14634f621"}, "code": {"new": "cfPreferredPartner"}, "field_id": {"new": "01a1f830-92a1-74e5-adbd-ce38f7f2e84c"}, "record_id": {"new": "018877c2-9970-7c1b-ad34-56c31f289cb5"},
+ 2026-11-20 09:01:36.640985+00 | seed       | customfields.field_values | insert | {"id": {"new": "018d0c22-7000-7939-9d73-072225dbe6d1"}, "code": {"new": "cfAccountManager"}, "field_id": {"new": "01a1f830-92a1-7bdc-a655-ade6906e672c"}, "record_id": {"new": "018877c2-9970-7c1b-ad34-56c31f289cb5"}, "
+ 2026-11-20 09:01:36.640512+00 | seed       | customfields.field_values | insert | {"id": {"new": "018d0c22-7000-7660-b2aa-aa3b4491edfc"}, "code": {"new": "cfCustomerSegment"}, "field_id": {"new": "01a1f830-92a1-714a-9343-6f7ad6fe44cf"}, "record_id": {"new": "018877c2-9970-7c1b-ad34-56c31f289cb5"}, 
+(6 rows)
+
+contacts|update|1008|01a1f828-fcdf-7185-bd9a-83f767bc1e6a
+field_values|insert|1008|01a1f828-fcdf-7185-bd9a-83f767bc1e6a
+contacts|update|1008|01a1f828-fcdf-7185-bd9a-83f767bc1e6a

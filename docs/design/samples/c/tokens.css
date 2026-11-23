@@ -1,0 +1,76 @@
+/* Direction C: "Majlis". Calm, premium, Arabic-first typography, a light touch of UAE (sand, gold, star lattice).
+   Design tokens: the only source of colour, type, spacing, radius, elevation, pattern and motion. */
+@font-face{font-family:"Bz Manrope";src:url("../fonts/manrope-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:block}
+@font-face{font-family:"Bz Fraunces";src:url("../fonts/fraunces-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Kufi";src:url("../fonts/noto-kufi-arabic-arabic-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Bz Naskh";src:url("../fonts/noto-naskh-arabic-arabic-wght-normal.woff2") format("woff2");font-weight:400 700;font-display:block}
+
+:root{
+  --font-ui:"Bz Manrope","Bz Kufi",system-ui,sans-serif;
+  --font-display:"Bz Fraunces","Bz Naskh",Georgia,serif;
+  --fs-xs:11px;--fs-sm:12px;--fs-md:13.5px;--fs-lg:15px;--fs-xl:18px;--fs-2xl:24px;--fs-3xl:36px;
+  --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-display:500;
+  --lh-tight:1.15;--lh-body:1.55;--ls-title:-.01em;--ls-caps:.08em;
+  --sp-1:2px;--sp-2:4px;--sp-3:6px;--sp-4:10px;--sp-5:14px;--sp-6:18px;--sp-7:24px;--sp-8:32px;--sp-9:44px;--sp-10:72px;
+  --radius-1:8px;--radius-2:12px;--radius-3:18px;--radius-4:26px;--radius-pill:999px;
+  --focus-w:2px;
+  --dur-fast:140ms;--dur:260ms;--ease:cubic-bezier(.25,.8,.25,1);
+  --nav-w:232px;--pane-w:340px;--aside-w:320px;
+  /* colour: light (sand, ivory, ink, violet, gold) */
+  --bg:#F4EFE6;--sheet:#FFFDFA;--sheet-2:#FAF6EE;--sunken:#F1EBDF;
+  --nav:#17112E;--nav-hover:rgba(255,255,255,.07);--nav-active:rgba(255,255,255,.12);--fg-nav:#F2ECFF;--fg-nav-muted:#B8AED6;
+  --fg:#241C36;--fg-muted:#665E78;--fg-subtle:#766E87;--fg-disabled:#B9B2C4;
+  --line:#E9E0CE;--line-soft:#F0E9DA;--line-strong:#D2C5A9;
+  --gold:#A8761C;--gold-soft:#F6EBD2;--gold-line:#D8BE85;
+  --hover:#F8F2E6;--selected:#F1EAFB;--selected-edge:#A8761C;--header-bg:#FAF6EE;
+  --accent:#6A00E8;--accent-hover:#5A00C8;--on-accent:#FFFFFF;--accent-soft:#F1EAFB;--accent-text:#5E00D0;
+  --positive:#0B6B5E;--positive-soft:#DDF1EB;--warning:#8F5400;--warning-soft:#FBEBCB;--danger:#A32638;--danger-soft:#F9E1E4;--info:#2A4FA0;--info-soft:#E4EAF8;
+  --neg:#A32638;--focus:#6A00E8;--focus-gap:#FFFDFA;
+  --avatar-company-bg:#EDE3FB;--avatar-company-fg:#53209F;--avatar-person-bg:#F6EBD2;--avatar-person-fg:#7C5210;
+  --scrim:rgba(23,17,46,.35);
+  --shadow-1:0 1px 2px rgba(60,40,10,.06);
+  --shadow-2:0 2px 6px rgba(60,40,10,.05),0 18px 40px -14px rgba(60,40,10,.18);
+  --shadow-3:0 4px 10px rgba(30,18,60,.08),0 28px 60px -16px rgba(30,18,60,.32);
+  --pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 3l5.6 9.6 11-1.7-1.7 11L52 28l-9.9 6 1.7 11-11-1.7L28 53l-5.6-9.6-11 1.7 1.7-11L4 28l9.9-6-1.7-11 11 1.7z' fill='none' stroke='%23A8761C' stroke-opacity='.30' stroke-width='1'/%3E%3Cpath d='M0 0l6 6M56 0l-6 6M0 56l6-6M56 56l-6-6' stroke='%23A8761C' stroke-opacity='.25'/%3E%3C/svg%3E");
+  --pattern-mask:linear-gradient(to left,#000 0%,rgba(0,0,0,.0) 70%);
+  --pattern-mask-rtl:linear-gradient(to right,#000 0%,rgba(0,0,0,.0) 70%);
+  --logo-ink:block;--logo-white:none;
+}
+[data-theme="dark"]{
+  --bg:#0F0B1B;--sheet:#181327;--sheet-2:#1D1730;--sunken:#130F20;
+  --nav:#0A0713;--nav-hover:rgba(255,255,255,.06);--nav-active:rgba(255,255,255,.10);--fg-nav:#F2ECFF;--fg-nav-muted:#A89FC8;
+  --fg:#F2EDF9;--fg-muted:#B5ADCB;--fg-subtle:#A39BBD;--fg-disabled:#5E5878;
+  --line:#2C2542;--line-soft:#231D38;--line-strong:#473E69;
+  --gold:#DDB45F;--gold-soft:#3A2E16;--gold-line:#7C6330;
+  --hover:#201A35;--selected:#2B1E54;--selected-edge:#DDB45F;--header-bg:#1D1730;
+  --accent:#9B5CFF;--accent-hover:#AF7BFF;--on-accent:#0E0B1A;--accent-soft:#2B1E54;--accent-text:#B88CFF;
+  --positive:#5FD9BD;--positive-soft:#0F3029;--warning:#F2B860;--warning-soft:#3A2A10;--danger:#FF92A0;--danger-soft:#411B23;--info:#8EB4FF;--info-soft:#16284E;
+  --neg:#FF92A0;--focus:#B88CFF;--focus-gap:#181327;
+  --avatar-company-bg:#2C2160;--avatar-company-fg:#D4C9FF;--avatar-person-bg:#3A2E16;--avatar-person-fg:#F0CF8A;
+  --scrim:rgba(0,0,0,.55);
+  --shadow-1:0 1px 2px rgba(0,0,0,.45);
+  --shadow-2:0 2px 8px rgba(0,0,0,.4),0 18px 40px -14px rgba(0,0,0,.6);
+  --shadow-3:0 4px 12px rgba(0,0,0,.45),0 28px 60px -16px rgba(0,0,0,.75);
+  --pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 3l5.6 9.6 11-1.7-1.7 11L52 28l-9.9 6 1.7 11-11-1.7L28 53l-5.6-9.6-11 1.7 1.7-11L4 28l9.9-6-1.7-11 11 1.7z' fill='none' stroke='%23DDB45F' stroke-opacity='.26' stroke-width='1'/%3E%3Cpath d='M0 0l6 6M56 0l-6 6M0 56l6-6M56 56l-6-6' stroke='%23DDB45F' stroke-opacity='.22'/%3E%3C/svg%3E");
+  --logo-ink:none;--logo-white:block;
+}
+[data-theme="hc"]{
+  --bg:#000000;--sheet:#000000;--sheet-2:#0B0B0B;--sunken:#000000;
+  --nav:#000000;--nav-hover:#262626;--nav-active:#333333;--fg-nav:#FFFFFF;--fg-nav-muted:#F0F0F0;
+  --fg:#FFFFFF;--fg-muted:#F2F2F2;--fg-subtle:#E2E2E2;--fg-disabled:#A8A8A8;
+  --line:#FFFFFF;--line-soft:#7A7A7A;--line-strong:#FFFFFF;
+  --gold:#FFE600;--gold-soft:#3D3500;--gold-line:#FFE600;
+  --hover:#242424;--selected:#2B1A66;--selected-edge:#FFE600;--header-bg:#141414;
+  --accent:#C9A6FF;--accent-hover:#DFC9FF;--on-accent:#000000;--accent-soft:#1E1240;--accent-text:#DBC2FF;
+  --positive:#5CFFA4;--positive-soft:#003D1B;--warning:#FFE600;--warning-soft:#3D3500;--danger:#FF8F98;--danger-soft:#4A0A12;--info:#9CD7FF;--info-soft:#002B4A;
+  --neg:#FF8F98;--focus:#FFE600;--focus-gap:#000000;
+  --avatar-company-bg:#000000;--avatar-company-fg:#FFFFFF;--avatar-person-bg:#000000;--avatar-person-fg:#FFFFFF;
+  --scrim:rgba(0,0,0,.8);
+  --shadow-1:none;--shadow-2:none;--shadow-3:none;
+  --pattern:none;
+  --logo-ink:none;--logo-white:block;
+}
+[data-density="compact"]{--row-h:36px;--ctl-h:34px;--cell-px:var(--sp-5);--fld-gap:var(--sp-5);--sec-gap:var(--sp-6);--nav-item-h:34px}
+[data-density="comfortable"]{--row-h:54px;--ctl-h:42px;--cell-px:var(--sp-5);--fld-gap:var(--sp-7);--sec-gap:var(--sp-8);--nav-item-h:40px}
+/* Arabic: Naskh display titles, Kufi interface, generous leading */
+:lang(ar){--font-ui:"Bz Manrope","Bz Kufi",system-ui,sans-serif;--font-display:"Bz Naskh","Bz Fraunces",serif;--fs-xs:12px;--fs-sm:13px;--fs-md:14px;--fs-lg:15.5px;--fs-xl:20px;--fs-2xl:27px;--fs-3xl:42px;--lh-body:1.85;--lh-tight:1.5;--ls-title:0;--ls-caps:0;--fw-display:700}

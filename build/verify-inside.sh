@@ -122,7 +122,9 @@ case "$stage" in
     # runs exactly once: the groups' filters partition the tests (checked below, before anything runs).
     #   projects          every test project but the gates
     #   gates-rest        the gate tests that are in none of the groups below
-    #   noninterference   G1NonInterferenceTests
+    #   ni-0 .. ni-2      G1 non-interference, one share of the endpoints each (NonInterferenceShards.GateCount,
+    #                     round 22); each leaves its result in $ERP_GATE_SHARD_DIR
+    #   ni-judge          the verdict on the shares' results, after the three shares are done
     #   listvolume        G1ListVolumeTests
     #   http-0 .. http-3  the G1 HTTP attack, one share of the endpoints each (AttackShard.GateCount);
     #                     each leaves its result in $ERP_GATE_SHARD_DIR
@@ -133,8 +135,9 @@ case "$stage" in
     #                     take turns (they do, in a plain dotnet test); separate processes keep it apart
     gates=tests/Erp.Gates.Tests/Erp.Gates.Tests.csproj
     http_shards=4
+    ni_shards=3
     selftests=(self-http self-company self-noninterference)
-    in_groups="FullyQualifiedName!~G1HttpIsolation&FullyQualifiedName!~G1NonInterferenceTests&FullyQualifiedName!~G1ListVolumeTests"
+    in_groups="FullyQualifiedName!~G1HttpIsolation&FullyQualifiedName!~G1NonInterference&FullyQualifiedName!~G1ListVolumeTests"
     for p in "${selftests[@]}"; do in_groups="$in_groups&Process!=$p"; done
     export ERP_GATE_SHARD_DIR="$out/g1-http-shards"
     rm -rf "$ERP_GATE_SHARD_DIR"
@@ -165,11 +168,16 @@ case "$stage" in
     source /work/build/list-tests.sh
     lt() { list_tests "$@" || { echo "The test listing is broken (see above); that is not a missing or an extra test."; exit 1; }; }
     step ".NET: the test groups are every test exactly once"
-    lt Erp.slnx --filter "Load!=Timing" >"$out/tests-all.txt"
+    # Sorted as a whole like the groups' list: list_tests sorts within each project and follows the
+    # solution's project order, which need not be alphabetical (p14's ImportExport.Tests sits after
+    # Attachments.Tests in Erp.slnx). Sorting keeps duplicates, so "exactly once" is still checked.
+    lt Erp.slnx --filter "Load!=Timing" >"$out/tests-all.raw"
+    sort "$out/tests-all.raw" >"$out/tests-all.txt"
     {
       lt Erp.slnx --filter "Load!=Timing&FullyQualifiedName!~Erp.Gates.Tests"
       lt "$gates" --filter "Load!=Timing&$in_groups"
-      lt "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
+      for ((k = 0; k < ni_shards; k++)); do lt "$gates" --filter "NiShard=$k"; done
+      lt "$gates" --filter "Judge=noninterference"
       lt "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
       for ((k = 0; k < http_shards; k++)); do lt "$gates" --filter "Shard=$k"; done
       lt "$gates" --filter "Judge=http-attack"
@@ -207,7 +215,7 @@ case "$stage" in
     }
     # The longest first.
     for ((k = 0; k < http_shards; k++)); do start "http-$k" "$gates" --filter "Shard=$k"; done
-    start noninterference "$gates" --filter "Load!=Timing&FullyQualifiedName~G1NonInterferenceTests"
+    for ((k = 0; k < ni_shards; k++)); do start "ni-$k" "$gates" --filter "NiShard=$k"; done
     for p in "${selftests[@]}"; do start "$p" "$gates" --filter "Process=$p"; done
     start listvolume "$gates" --filter "Load!=Timing&FullyQualifiedName~G1ListVolumeTests"
     start gates-rest "$gates" --filter "Load!=Timing&$in_groups"
@@ -223,13 +231,15 @@ case "$stage" in
       fi
     done
     # The verdict on the HTTP attack's shares runs when every share has left its result (or failed).
-    names+=(http-judge)
-    if dotnet_test http-judge "$gates" --filter "Judge=http-attack"; then
-      echo "== http-judge: passed"
-    else
-      echo "== http-judge: FAILED"
-      failed=1
-    fi
+    for judge in "http-judge:http-attack" "ni-judge:noninterference"; do
+      names+=("${judge%%:*}")
+      if dotnet_test "${judge%%:*}" "$gates" --filter "Judge=${judge#*:}"; then
+        echo "== ${judge%%:*}: passed"
+      else
+        echo "== ${judge%%:*}: FAILED"
+        failed=1
+      fi
+    done
     for name in "${names[@]}"; do
       printf '\n\033[1m-- .NET tests: %s\033[0m\n' "$name"
       cat "$out/dotnet-$name.log"

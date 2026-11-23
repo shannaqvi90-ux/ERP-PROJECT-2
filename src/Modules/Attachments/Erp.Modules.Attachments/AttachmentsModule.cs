@@ -28,6 +28,8 @@ public sealed class AttachmentsModule : ErpModule
     {
         module.DbContext<AttachmentsDbContext>();
         module.Services.TryAddSingleton<IAttachmentStore, LocalAttachmentStore>();
+        // A full tenant export (p14) reads the workspace's files through this contract.
+        module.Services.AddScoped<IAttachmentExport, AttachmentExport>();
         module.Endpoints(AttachmentEndpoints.Map);
         // The audit trail shows every upload and delete (p07) to whoever reads the whole log; they show in the history of the
         // record the file is attached to (p07, by the parent kind and id columns), and by the owner column the kind's own history

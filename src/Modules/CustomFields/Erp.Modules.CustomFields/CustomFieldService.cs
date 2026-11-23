@@ -143,6 +143,65 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyDictionary<int, IReadOnlyDictionary<string, string>>> SaveNewAsync(
+        string recordType, IReadOnlyList<(int Number, Guid RecordId, IReadOnlyDictionary<string, JsonElement> Values)> records, CancellationToken cancellationToken)
+    {
+        var problems = new Dictionary<int, IReadOnlyDictionary<string, string>>();
+        var fields = await FieldsAsync(recordType, cancellationToken);
+        if (fields.Count == 0 || records.Count == 0)
+        {
+            return problems;
+        }
+        var byKey = fields.ToDictionary(f => f.Key, StringComparer.Ordinal);
+        var keyOf = fields.ToDictionary(f => f.Id, f => f.Key);
+        var rows = new List<FieldValue>();
+        foreach (var (number, recordId, values) in records)
+        {
+            var found = new Dictionary<string, string>(StringComparer.Ordinal);
+            var parsed = new Dictionary<Guid, Parsed>();
+            var validator = new Validator(new Microsoft.AspNetCore.Http.DefaultHttpContext { RequestServices = services });
+            foreach (var (key, json) in values)
+            {
+                if (!byKey.TryGetValue(key, out var field))
+                {
+                    found[key] = "customFieldUnknown";
+                    continue;
+                }
+                parsed[field.Id] = await ParseAsync(field, json, validator, cancellationToken);
+            }
+            foreach (var field in fields.Where(f => !parsed.ContainsKey(f.Id)))
+            {
+                if (field.Default is { } text)
+                {
+                    parsed[field.Id] = await ParseAsync(field, JsonSerializer.SerializeToElement(text), validator, cancellationToken);
+                }
+                else if (field.Required)
+                {
+                    found[field.Key] = "customFieldRequired";
+                }
+            }
+            foreach (var (field, errors) in validator.Errors)
+            {
+                found[field.StartsWith("customFields.", StringComparison.Ordinal) ? field["customFields.".Length..] : field] = errors[0].Code;
+            }
+            if (found.Count > 0)
+            {
+                problems[number] = found;
+                continue;
+            }
+            foreach (var (fieldId, value) in parsed.Where(p => !p.Value.IsEmpty))
+            {
+                rows.Add(new FieldValue { RecordType = recordType, RecordId = recordId, FieldId = fieldId, Code = keyOf[fieldId], TextValue = value.Text, NumberValue = value.Number, DateValue = value.Date, BoolValue = value.Bool, RefValue = value.Ref });
+            }
+        }
+        if (problems.Count == 0)
+        {
+            db.Values.AddRange(rows);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        return problems;
+    }
+
     public async Task<IReadOnlyDictionary<Guid, IDictionary<string, object?>>> ValuesAsync(string recordType, IReadOnlyCollection<Guid> recordIds, CancellationToken cancellationToken)
     {
         var result = new Dictionary<Guid, IDictionary<string, object?>>();
