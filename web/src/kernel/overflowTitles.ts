@@ -8,7 +8,7 @@
  * An element that already has a title of its own keeps it; a title this handler set goes again when
  * the text fits.
  */
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 const candidates = "td, th, [role=gridcell], [role=columnheader], [role=tab], [role=option], [role=menuitem], .list-text, .list-sort-label, .list-headlabel, .badge, label, legend, button, a, h1, h2, h3, dt, dd, li, .truncate, input, select, textarea";
 const marker = "data-overflow-title";
@@ -115,7 +115,9 @@ function titleOne(el: HTMLElement): void {
  * page that writes there looks, to a comparison harness, like a page changing by itself.
  */
 export function useOverflowTitles(): void {
-  useEffect(() => {
+  // A layout effect runs inside the commit of the render that shows the text, in that render's own
+  // task; a passive effect can run in a later scheduler task of no traceable origin.
+  useLayoutEffect(() => {
     sweepOverflowTitles();
   });
 }
