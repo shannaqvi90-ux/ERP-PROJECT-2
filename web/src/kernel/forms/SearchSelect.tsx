@@ -1,3 +1,4 @@
+import { useOverflowTitles } from "../overflowTitles";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useI18n } from "../i18n";
 import { fold } from "../fold";
@@ -36,6 +37,7 @@ export function SearchSelect({
   describedBy?: string;
   onChange: (value: string) => void;
 }) {
+  useOverflowTitles();
   const { t } = useI18n();
   const listId = useId();
   const [text, setText] = useState<string | null>(null);

@@ -1,10 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { installOverflowTitles, sweepOverflowTitles } from "./overflowTitles";
+import { createElement } from "react";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { installOverflowTitles, sweepOverflowTitles, useOverflowTitles } from "./overflowTitles";
 
 function cut(el: HTMLElement, scroll: number, client: number) {
   Object.defineProperty(el, "scrollWidth", { configurable: true, value: scroll });
   Object.defineProperty(el, "clientWidth", { configurable: true, value: client });
 }
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("overflow titles", () => {
   afterEach(() => (document.body.innerHTML = ""));
@@ -39,29 +44,38 @@ describe("overflow titles", () => {
     expect(document.getElementById("i")!.title).toBe("A very long licensing authority name");
   });
 
-  it("titles a cut cell only when it is pointed at or focused, and the page changes by itself never", async () => {
+  it("titles a cut cell in the render that shows it and when it is focused, and the page changes by itself never", async () => {
     const stop = installOverflowTitles();
+    const holder = document.createElement("div");
+    document.body.appendChild(holder);
+    const cell = document.createElement("td");
+    cell.textContent = "Al Noor Electromechanical LLC 15";
+    cut(cell, 300, 120);
+    const row = document.createElement("tr");
+    row.appendChild(cell);
+    const table = document.createElement("table");
+    table.appendChild(row);
+    document.body.appendChild(table);
+    function Screen() {
+      useOverflowTitles();
+      return null;
+    }
     try {
-      const cell = document.createElement("td");
-      cell.textContent = "Al Noor Electromechanical LLC 15";
-      cut(cell, 300, 120);
-      const row = document.createElement("tr");
-      row.appendChild(cell);
-      const table = document.createElement("table");
-      table.appendChild(row);
-      document.body.appendChild(table);
       await new Promise(r => setTimeout(r, 300));
       expect(cell.hasAttribute("title")).toBe(false);
-      cell.dispatchEvent(new Event("pointermove", { bubbles: true }));
-      expect(cell.hasAttribute("title")).toBe(false);
-      cell.dispatchEvent(Object.assign(new Event("pointermove", { bubbles: true }), { movementX: 3, movementY: 1 }));
+      const root = createRoot(holder);
+      await act(async () => root.render(createElement(Screen)));
       expect(cell.title).toBe("Al Noor Electromechanical LLC 15");
       cut(cell, 50, 120);
-      cell.dispatchEvent(Object.assign(new Event("pointermove", { bubbles: true }), { movementX: 3, movementY: 1 }));
+      await act(async () => root.render(createElement(Screen, { key: "again" })));
+      cell.dispatchEvent(new Event("pointermove", { bubbles: true }));
       expect(cell.hasAttribute("title")).toBe(false);
       cut(cell, 300, 120);
+      cell.dispatchEvent(Object.assign(new Event("pointermove", { bubbles: true }), { movementX: 3, movementY: 1 }));
+      expect(cell.hasAttribute("title")).toBe(false);
       cell.dispatchEvent(new Event("focusin", { bubbles: true }));
       expect(cell.title).toBe("Al Noor Electromechanical LLC 15");
+      root.unmount();
     } finally {
       stop();
     }

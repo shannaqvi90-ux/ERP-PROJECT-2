@@ -2,12 +2,14 @@
  * No text is cut without a way to read it. Wherever the screen cuts a value with an ellipsis (list
  * cells, headers, labels, badges, buttons, tabs, input values and placeholders, in either language
  * and at either density), the full text is put in the element's title, so hovering (or focusing)
- * shows it. One handler serves every screen, the kernel's and the modules': the title is worked out
- * only when the person points at or focuses the element, in the task of that pointer or focus event.
- * Nothing runs from a timer, an observer or a sweep of the page, so the page never changes by itself.
+ * shows it. One routine serves every screen, the kernel's and the modules': the title is worked out
+ * in the task of a render or a focus, never from a timer, an observer or a pointer move, so the page
+ * never changes by itself.
  * An element that already has a title of its own keeps it; a title this handler set goes again when
  * the text fits.
  */
+import { useEffect } from "react";
+
 const candidates = "td, th, [role=gridcell], [role=columnheader], [role=tab], [role=option], [role=menuitem], .list-text, .list-sort-label, .list-headlabel, .badge, label, legend, button, a, h1, h2, h3, dt, dd, li, .truncate, input, select, textarea";
 const marker = "data-overflow-title";
 
@@ -106,26 +108,27 @@ function titleOne(el: HTMLElement): void {
 }
 
 /**
- * Start titling for this document; returns a function that stops it. The title of a cut cell is
- * computed when the person points at or focuses it, in the task of that pointer or focus event, and
- * never from a timer, an observer or a sweep that writes to the page. The browser also dispatches
- * pointer events by itself when the page changes under a still pointer (the pointer is "moved" to where
- * it already is); those events carry no movement and are ignored, so the page never changes by itself
- * and a comparison harness sees no change that no step caused.
+ * Titles are worked out in the task that changed the page, never on their own. A screen's component
+ * calls this hook, and after each of its renders (the render a step of the person caused, or the
+ * answer to a request such a step sent) the cut text under the document is titled, in that same task.
+ * Pointer events are not used: the browser delivers pointer moves with the animation frame, and a
+ * page that writes there looks, to a comparison harness, like a page changing by itself.
+ */
+export function useOverflowTitles(): void {
+  useEffect(() => {
+    sweepOverflowTitles();
+  });
+}
+
+/**
+ * Start titling for this document; returns a function that stops it. A focused element is titled in
+ * the task of the key or press that focused it (an input task a step caused), for what no render
+ * touched. Nothing runs from a timer, an observer or a pointer move.
  */
 export function installOverflowTitles(): () => void {
-  const point = (e: Event) => {
-    const m = e as PointerEvent;
-    if ((!m.movementX && !m.movementY)) return;
-    for (const el of around(e.target)) titleOne(el);
-  };
   const focus = (e: Event) => {
     for (const el of around(e.target)) titleOne(el);
   };
-  document.addEventListener("pointermove", point, true);
   document.addEventListener("focusin", focus, true);
-  return () => {
-    document.removeEventListener("pointermove", point, true);
-    document.removeEventListener("focusin", focus, true);
-  };
+  return () => document.removeEventListener("focusin", focus, true);
 }

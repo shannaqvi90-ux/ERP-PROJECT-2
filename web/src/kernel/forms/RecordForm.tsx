@@ -1,3 +1,4 @@
+import { useOverflowTitles } from "../overflowTitles";
 import { createContext, useContext, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { Dialog } from "../dialog";
 import { allowed, extensions, type RecordPanelItem } from "../extensions";
@@ -104,6 +105,7 @@ export function RecordForm<R, D>({
   /** The record panels on offer (the modules' `record` extensions; a test may pass its own). */
   panels?: RecordPanelItem[];
 }) {
+  useOverflowTitles();
   const { t } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);

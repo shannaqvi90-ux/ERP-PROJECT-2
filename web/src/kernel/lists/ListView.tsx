@@ -1,3 +1,4 @@
+import { useOverflowTitles } from "../overflowTitles";
 import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
@@ -118,6 +119,7 @@ const searchDelay = 150;
  * reload opens the same list.
  */
 export function ListView(props: ListViewProps) {
+  useOverflowTitles();
   const { listKey, titleKey, countKey, searchPlaceholderKey } = props;
   const i18n = useI18n();
   const { t } = i18n;

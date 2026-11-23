@@ -1,3 +1,4 @@
+import { useOverflowTitles } from "../../kernel/overflowTitles";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { allowed, extensions, type ModuleAction } from "../../kernel/extensions";
@@ -78,6 +79,7 @@ const other = (language: Language): Language => (language === "ar" ? "en" : "ar"
  * address. Everything is reachable without a mouse (see the shortcut help sheet: ? or Ctrl+/).
  */
 export function AppShell({ session }: { session: Session }) {
+  useOverflowTitles();
   const { t, language, numerals, format } = useI18n();
   const { signOut, can } = useSession();
   const { changeLanguage, changeNumerals } = usePreferenceActions();

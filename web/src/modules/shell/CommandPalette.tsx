@@ -1,3 +1,4 @@
+import { useOverflowTitles } from "../../kernel/overflowTitles";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Dialog } from "../../kernel/dialog";
 import { allowed, extensions, type PaletteItem, type PaletteSource } from "../../kernel/extensions";
@@ -66,6 +67,7 @@ export function CommandPalette({
   onOpenScreen: (path: string) => void;
   onClose: () => void;
 }) {
+  useOverflowTitles();
   const { t, language } = useI18n();
   const { can } = useSession();
   const [query, setQuery] = useState("");
