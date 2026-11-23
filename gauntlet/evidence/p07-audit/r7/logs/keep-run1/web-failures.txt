@@ -1,0 +1,30 @@
+AggregateError: 
+    Error: connect ECONNREFUSED ::1:3000
+    Error: connect ECONNREFUSED 127.0.0.1:3000
+     × companies: where the user's roles only read (a role given in another company), the form offers no change and no branch line, even with every permission (critic p02 round 11) 5054ms
+     × tenant A sees, and the tab keeps, nothing of tenant B after B signs out 30062ms
+     × in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out 548ms
+     × an address someone types or follows is kept, and stamped for the person in the tab 2280ms
+     × signing out forgets every cookie the document can read, whatever its path, and the tab's window name 2200ms
+     × with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B 2205ms
+     × in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B 2088ms
+     × the device-key judge refuses a setting with anything beside it, and signing out drops such a key (CL3b's shape) 2076ms
+     × signing out forgets what the tab stored for the person and keeps only the device's settings 2107ms
+     × a session that ends by itself (401) starts over and forgets the person, keeping only the e-mail 2034ms
+     × another tab signing in as someone else ends this tab's identity too 2042ms
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > tenant A sees, and the tab keeps, nothing of tenant B after B signs out
+Error: Test timed out in 30000ms.
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > in Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out
+AssertionError: expected null not to be null
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > an address someone types or follows is kept, and stamped for the person in the tab
+TypeError: Cannot read properties of null (reading 'type')
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > signing out forgets every cookie the document can read, whatever its path, and the tab's window name
+TypeError: Cannot read properties of null (reading 'type')
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > with B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B
+TypeError: Cannot read properties of null (reading 'type')
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > in Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B
+TypeError: Cannot read properties of null (reading 'type')
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > the device-key judge refuses a setting with anything beside it, and signing out drops such a key (CL3b's shape)
+TypeError: Cannot read properties of null (reading 'type')
+ FAIL  src/modules/shell/clientIsolation.test.tsx > G1 in the browser: one tab, tenant B then tenant A > signing out forgets what the tab stored for the person and keeps only the device's settings
+TypeError: Cannot read properties of null (reading 'type')

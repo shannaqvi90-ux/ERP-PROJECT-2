@@ -1,0 +1,33 @@
+// Critic p14 r2: the duplicate warning and choice on the import screen, by keyboard, in English or Arabic: re-imports the walk file
+// (its valid rows are already contacts), Check only shows the warning, the choice is set to update by keyboard, Import.
+import path from 'node:path';
+import { createRequire } from 'node:module';
+const require = createRequire(path.join(process.cwd(), 'package.json'));
+const { chromium } = require('playwright-core');
+const { findChromium } = await import(path.join(process.cwd(), 'lib/browser.mjs'));
+const BASE = process.env.BASE || 'http://localhost:21450';
+const OUT = process.env.OUT || '.';
+const L = process.env.LANG_RUN || 'en';
+const log = (...a) => console.log(`[${L}]`, ...a);
+const browser = await chromium.launch({ executablePath: findChromium(), headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+page.on('response', r => { if (r.status() >= 500) log('5xx', r.status(), r.url()); });
+await page.goto(BASE + '/');
+await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type(L === 'ar' ? 'admin.ar@alnoor.example' : 'admin@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('nav').first().waitFor(); await page.waitForTimeout(800);
+await page.keyboard.press('g'); await page.keyboard.press('o');
+await page.locator('[data-testid="import-open"]').waitFor();
+await page.keyboard.press('Alt+i');
+await page.locator('[data-testid="import-file"]').setInputFiles(path.join(OUT, `walk-${L}.csv`));
+await page.locator('[data-testid="import-mapping"]').waitFor(); await page.waitForTimeout(600);
+const check = page.locator('[role="dialog"] button, dialog button').filter({ hasText: L === 'ar' ? /^فحص فقط$/ : /^Check only$/ }).first();
+await check.focus(); await page.keyboard.press('Enter');
+await page.locator('[data-testid="import-checked"], [data-testid="import-failed"]').first().waitFor({ timeout: 60000 });
+log('duplicates notice:', (await page.locator('[data-testid="import-duplicates"]').innerText().catch(() => '(none)')).replace(/\s+/g, ' '));
+const sel = page.locator('[data-testid="import-on-duplicate"]');
+log('choices:', (await sel.locator('option').allInnerTexts()).join(' | '));
+await sel.focus(); await page.keyboard.press('End'); await page.waitForTimeout(300);
+log('chosen:', await sel.evaluate(s => s.value));
+await page.screenshot({ path: path.join(OUT, `${L === 'ar' ? '08-ar' : '07-en'}-import-duplicates.jpg`), type: 'jpeg', quality: 60 });
+await browser.close();

@@ -1,0 +1,6 @@
+Run 2 (slot taken 2026-11-22T19:04:08Z, ended 21:58:59Z, kept in .verify-failed/20261122T215859Z-575197):
+dotnet passed in 9227 s: 1198/1198; web vitest 790/790 (clientIsolation passed); e2e 175 passed (stage 10486 s)
+web stage FAILED only on the comparison harness self-test (p01, frozen) test/guard.test.mjs:1133 'plant U5e (round 5): no driver module
+runs in the harness process, and its clock is out of the driver's reach': expected verified, got invalid (causation check: a DevTools
+ScheduleStyleRecalculation 1.801 s before the clock). Harness unit tests 489, 488 passed.
+load: peak 51.47, mean 21.5 (16 threads); processor seconds web 2159.7 dotnet 23258.8 e2e 1230.5 = 26649 (maximum 25,000, busy machine)

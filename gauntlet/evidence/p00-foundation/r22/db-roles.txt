@@ -1,0 +1,14 @@
+role|erp_app|f|f|t
+role|erp_auth|f|f|f
+role|erp_owner|f|f|t
+role|erp_worker|f|f|t
+tenant tables|34
+audit trigger missing|audit.entries
+audit trigger missing|identity.sign_in_attempts
+app tables without tenant_id readable by erp_app|0
+money cols|contacts.contacts.credit_limit_amount|numeric
+money cols|contacts.contacts.credit_limit_base_amount|numeric
+money cols|contacts.contacts.credit_limit_exchange_rate|numeric
+money cols|contacts.contacts.credit_limit_stated|boolean
+money cols|contacts.contacts.credit_limit_base_currency|character
+money cols|contacts.contacts.credit_limit_currency|character

@@ -1,0 +1,399 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ad4114bf-fa51-47d3-af43-913e34b28882" name="@shan 2026-11-22 22:20:44" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T22:20:44.4480287+04:00" queuing="2026-11-22T22:20:44.4480287+04:00" start="2026-11-22T22:20:29.2119817+04:00" finish="2026-11-22T22:26:14.2667309+04:00" />
+  <TestSettings name="default" id="3d522fde-c153-4076-9507-18be807e0fdc">
+    <Deployment runDeploymentRoot="_shan_2026-11-22_22_20_44" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="72b9f137-3f51-4b42-a120-086c3c982eef" testId="a1732faf-0d6b-8fe5-f87e-b0a8fe7617f4" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous" computerName="shan" duration="00:00:00.0075745" startTime="2026-11-22T22:24:46.1955517+04:00" endTime="2026-11-22T22:24:46.2032428+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="72b9f137-3f51-4b42-a120-086c3c982eef" />
+    <UnitTestResult executionId="52f005d9-4efb-40b6-be2d-7aeca6aab072" testId="f4c8d10b-8781-1fa0-299c-110035060068" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing" computerName="shan" duration="00:00:17.5171311" startTime="2026-11-22T22:25:56.4305555+04:00" endTime="2026-11-22T22:26:13.9444376+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="52f005d9-4efb-40b6-be2d-7aeca6aab072">
+      <Output>
+        <StdOut>13 lists, 403 refusals checked on list endpoints, 234 own-view writes (756 with one more field of the view schemas), 39 view listings judged</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="30f2d5d4-5eaa-414f-a05e-1bb4781ec74a" testId="b38b7b44-014a-284a-78f8-69dd6d2c6ce9" testName="Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny" computerName="shan" duration="00:00:00.0008273" startTime="2026-11-22T22:22:50.8130486+04:00" endTime="2026-11-22T22:22:50.8139445+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="30f2d5d4-5eaa-414f-a05e-1bb4781ec74a" />
+    <UnitTestResult executionId="feffaa37-fd30-49cf-9ec2-bdb17af54093" testId="2a650a03-ed98-e3ee-0228-0935becf7adf" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission" computerName="shan" duration="00:00:00.0128273" startTime="2026-11-22T22:20:44.9801148+04:00" endTime="2026-11-22T22:20:44.9930551+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="feffaa37-fd30-49cf-9ec2-bdb17af54093" />
+    <UnitTestResult executionId="843d6dd7-4715-4388-ba8d-4599da76afc5" testId="ae6861bb-7eb3-3815-8406-f9fc883ff33a" testName="Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint" computerName="shan" duration="00:00:00.0814050" startTime="2026-11-22T22:20:46.2813126+04:00" endTime="2026-11-22T22:20:46.3627996+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="843d6dd7-4715-4388-ba8d-4599da76afc5" />
+    <UnitTestResult executionId="edca1327-d8d8-41a4-a945-0e6587bed2a0" testId="cf38cc6f-9718-08a8-d147-aecb4c1dc9e7" testName="Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made" computerName="shan" duration="00:00:51.7779812" startTime="2026-11-22T22:25:04.6282776+04:00" endTime="2026-11-22T22:25:56.4030601+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="edca1327-d8d8-41a4-a945-0e6587bed2a0">
+      <Output>
+        <StdOut>9275 requests named the caller's own ids (33 ids) at 259 endpoints</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="462248d1-bd8b-43e1-ba8e-988d503301f7" testId="bc10ddb9-618a-a03d-a722-ca6ef75371bd" testName="Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it" computerName="shan" duration="00:02:04.3924594" startTime="2026-11-22T22:20:46.3631753+04:00" endTime="2026-11-22T22:22:50.7500922+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="462248d1-bd8b-43e1-ba8e-988d503301f7">
+      <Output>
+        <StdOut>11059 requests named the caller's own ids at endpoints of the held permission's module</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="07cc9fb6-a376-430d-acca-9915319475e2" testId="1b8e503a-d113-60a3-2102-8335901240d5" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view" computerName="shan" duration="00:00:06.5483680" startTime="2026-11-22T22:23:07.0326096+04:00" endTime="2026-11-22T22:23:13.5796754+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="07cc9fb6-a376-430d-acca-9915319475e2" />
+    <UnitTestResult executionId="36449f28-95ff-4658-bd1e-d04f3f584c96" testId="50e2d56b-efb2-ef4f-760f-85831149a5db" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission" computerName="shan" duration="00:00:00.0126412" startTime="2026-11-22T22:22:50.8141875+04:00" endTime="2026-11-22T22:22:50.8268898+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="36449f28-95ff-4658-bd1e-d04f3f584c96" />
+    <UnitTestResult executionId="813caef9-773b-4b5a-a0cf-56a9c2d18767" testId="5959e536-9bed-c870-975d-0b4afd4b2239" testName="Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed" computerName="shan" duration="00:00:00.5517581" startTime="2026-11-22T22:20:42.9283429+04:00" endTime="2026-11-22T22:20:43.4949926+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="813caef9-773b-4b5a-a0cf-56a9c2d18767">
+      <Output>
+        <StdOut>776 types, 215 fields, 23 singleton services inspected, 266 endpoint delegates walked (7559 objects) to 72 closures; 5 framework singletons over product types; 262 roots walked to 3437 objects, 110 product types judged field by field; 36 reviewed findings</StdOut>
+        <ErrorInfo>
+          <Message>static Erp.Modules.ImportExport.Exports.TenantExportEndpoints.PlantedZipCache: a read-only field that holds a mutable ConcurrentDictionary&lt;Guid, Byte[]&gt;. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.</Message>
+          <StackTrace>   at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed() in /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs:line 40
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f97f822b-83dd-45be-9ef1-c5770a230729" testId="ef0beeb6-f61a-6672-96aa-6b00b2e67159" testName="Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client" computerName="shan" duration="00:00:00.1483890" startTime="2026-11-22T22:24:32.5480520+04:00" endTime="2026-11-22T22:24:32.6965106+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f97f822b-83dd-45be-9ef1-c5770a230729" />
+    <UnitTestResult executionId="036979e6-fb25-44a9-85f8-2d3abcc29ad8" testId="0ab4e8f0-2d0c-fc34-4ac1-a2009247113a" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone" computerName="shan" duration="00:00:05.3040921" startTime="2026-11-22T22:24:46.2201548+04:00" endTime="2026-11-22T22:24:51.5243173+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="036979e6-fb25-44a9-85f8-2d3abcc29ad8" />
+    <UnitTestResult executionId="bff0e78f-bb96-4437-ad05-95483e7d20b7" testId="a7a0bfda-62f2-d6dc-fe7f-61f61f028486" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission" computerName="shan" duration="00:00:00.0338240" startTime="2026-11-22T22:20:44.9449083+04:00" endTime="2026-11-22T22:20:44.9794852+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bff0e78f-bb96-4437-ad05-95483e7d20b7" />
+    <UnitTestResult executionId="42b2b7ae-4db5-4469-a297-d9c92fbcd504" testId="d831d0fc-3745-7389-3ff0-ac48646070a7" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view" computerName="shan" duration="00:00:04.6929665" startTime="2026-11-22T22:23:02.3360733+04:00" endTime="2026-11-22T22:23:07.0291181+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="42b2b7ae-4db5-4469-a297-d9c92fbcd504" />
+    <UnitTestResult executionId="4911581a-33de-4b6c-839f-2ac6533bface" testId="ac8bef08-684c-d8a5-7d43-7316f4686c13" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line" computerName="shan" duration="00:00:00.0252117" startTime="2026-11-22T22:25:56.4048088+04:00" endTime="2026-11-22T22:25:56.4301225+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4911581a-33de-4b6c-839f-2ac6533bface" />
+    <UnitTestResult executionId="2cf16952-9160-4cc5-85d9-823a4746dca0" testId="010db7cb-60b3-b235-f271-999a739984f2" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue" computerName="shan" duration="00:00:00.0150346" startTime="2026-11-22T22:20:46.2412696+04:00" endTime="2026-11-22T22:20:46.2563697+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2cf16952-9160-4cc5-85d9-823a4746dca0" />
+    <UnitTestResult executionId="e6166258-bb6b-4c74-9851-c97502a49ac2" testId="343f558e-06ca-d8a8-07a5-301e874550d4" testName="Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu" computerName="shan" duration="00:00:11.1006804" startTime="2026-11-22T22:22:50.8310397+04:00" endTime="2026-11-22T22:23:01.9317649+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e6166258-bb6b-4c74-9851-c97502a49ac2">
+      <Output>
+        <StdOut>3437 requests named the caller's own ids (13 ids) at 259 endpoints</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="179b896a-05fc-4e04-96e8-73ba3b9ef4a6" testId="9a46c2b1-62f1-bafc-fa11-9f16fdac2ee2" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;user&quot;)" computerName="shan" duration="00:00:23.4108787" startTime="2026-11-22T22:23:35.8943549+04:00" endTime="2026-11-22T22:23:59.3027040+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="179b896a-05fc-4e04-96e8-73ba3b9ef4a6" />
+    <UnitTestResult executionId="f6066c85-d2fa-4416-89f8-338e7fb700f0" testId="96ddb67b-d85a-87dc-570a-79dd3a8cfd51" testName="Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds" computerName="shan" duration="00:00:00.8527586" startTime="2026-11-22T22:24:32.6972570+04:00" endTime="2026-11-22T22:24:33.5500981+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f6066c85-d2fa-4416-89f8-338e7fb700f0" />
+    <UnitTestResult executionId="6f7aee0c-68cb-4d34-8a7f-c6b1611fbe0e" testId="45683e9f-b8a2-9618-1578-95567980d3be" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission" computerName="shan" duration="00:00:00.0034053" startTime="2026-11-22T22:22:50.8272023+04:00" endTime="2026-11-22T22:22:50.8307840+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f7aee0c-68cb-4d34-8a7f-c6b1611fbe0e">
+      <Output>
+        <StdOut>114 endpoints compared with 11 reviewed map(s)</StdOut>
+        <ErrorInfo>
+          <Message>POST /api/importexport/tenant-exports/{id:guid}/download declares importexport.exports.read; the reviewed map importexport.txt says importexport.exports.download</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission() in /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 95
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="904508a8-2cbb-46a4-a480-b17631fd3bdc" testId="ce318af4-64e7-7edf-7899-d69f4406f314" testName="Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier" computerName="shan" duration="00:00:00.6628072" startTime="2026-11-22T22:24:45.5312442+04:00" endTime="2026-11-22T22:24:46.1941474+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="904508a8-2cbb-46a4-a480-b17631fd3bdc" />
+    <UnitTestResult executionId="424289d6-a6dd-4f17-b543-3bdec30d17b4" testId="8aff5795-dc3a-3601-9036-d04700decd8e" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers" computerName="shan" duration="00:00:11.9792235" startTime="2026-11-22T22:24:33.5518556+04:00" endTime="2026-11-22T22:24:45.5296079+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="424289d6-a6dd-4f17-b543-3bdec30d17b4" />
+    <UnitTestResult executionId="9bfa0207-6722-484a-8399-ce80be68835d" testId="500de247-4b69-9542-abf1-6499117800d1" testName="Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write" computerName="shan" duration="00:00:00.0151501" startTime="2026-11-22T22:24:46.2043011+04:00" endTime="2026-11-22T22:24:46.2196127+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9bfa0207-6722-484a-8399-ce80be68835d" />
+    <UnitTestResult executionId="dbd55a6b-7310-445c-9b06-e6905e0dfe6a" testId="26a6b1ad-0c03-d89b-788a-3a1614a36915" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;session&quot;)" computerName="shan" duration="00:00:22.3107976" startTime="2026-11-22T22:23:13.5818583+04:00" endTime="2026-11-22T22:23:35.8927406+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dbd55a6b-7310-445c-9b06-e6905e0dfe6a" />
+    <UnitTestResult executionId="0e16cd1c-4630-46dc-8fc6-0a2d21bd366d" testId="ad2572c7-ec03-1007-7ecf-834744ebf2ca" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers" computerName="shan" duration="00:00:00.0207489" startTime="2026-11-22T22:22:50.7512537+04:00" endTime="2026-11-22T22:22:50.7721177+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e16cd1c-4630-46dc-8fc6-0a2d21bd366d" />
+    <UnitTestResult executionId="e109faee-8e07-4029-a374-6af4ba7a6b51" testId="fcaeead9-098e-617a-7f65-6f36f9849498" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list" computerName="shan" duration="00:00:00.0236800" startTime="2026-11-22T22:20:46.2566850+04:00" endTime="2026-11-22T22:20:46.2804365+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e109faee-8e07-4029-a374-6af4ba7a6b51">
+      <Output>
+        <StdOut>259 module endpoints reviewed by a map or derived from their list</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="56a71c22-4eab-4ddb-a6c9-04da74223b3e" testId="899954ed-87d8-3dad-9ada-009a57c888f4" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;holder&quot;)" computerName="shan" duration="00:00:33.2431671" startTime="2026-11-22T22:23:59.3035414+04:00" endTime="2026-11-22T22:24:32.5462476+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="56a71c22-4eab-4ddb-a6c9-04da74223b3e" />
+    <UnitTestResult executionId="db1943b1-e0aa-4b15-bfa6-6a2514395a96" testId="676ab797-16eb-efaf-5f68-983f27f98cf6" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission" computerName="shan" duration="00:00:00.0011042" startTime="2026-11-22T22:22:50.8117057+04:00" endTime="2026-11-22T22:22:50.8128686+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="db1943b1-e0aa-4b15-bfa6-6a2514395a96" />
+    <UnitTestResult executionId="b226752c-8cea-48fd-a3f0-cfcf9a4238b9" testId="ec48f3db-0fbd-587d-7d3e-31c057afa276" testName="Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_check_writes_only_the_files_own_record_and_an_import_writes_only_the_contacts_of_the_file" computerName="shan" duration="00:00:00.4379616" startTime="2026-11-22T22:20:49.8212336+04:00" endTime="2026-11-22T22:20:50.2592620+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b226752c-8cea-48fd-a3f0-cfcf9a4238b9" />
+    <UnitTestResult executionId="46a3e0d5-1f31-4481-9ba4-6b154efe0dda" testId="7dc3bd0d-3a76-8d25-1846-0d23eea11687" testName="Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges" computerName="shan" duration="00:00:01.2434977" startTime="2026-11-22T22:20:44.9934762+04:00" endTime="2026-11-22T22:20:46.2381220+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="46a3e0d5-1f31-4481-9ba4-6b154efe0dda" />
+    <UnitTestResult executionId="20bfe80f-1ef1-4d32-a41c-aca6cdfd284b" testId="23a22b39-784d-b6e2-80ab-9028acef1b55" testName="Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads" computerName="shan" duration="00:00:01.7919397" startTime="2026-11-22T22:20:46.8990006+04:00" endTime="2026-11-22T22:20:48.6919855+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="20bfe80f-1ef1-4d32-a41c-aca6cdfd284b">
+      <Output>
+        <ErrorInfo>
+          <Message>{"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-2d06c9a9f74dcef6ed3c8287668f0ec4-3822a9af1811f287-00"}</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads() in /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/ImportExportWriteSetTests.cs:line 101
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="294cc1b6-f8bf-41fb-80de-d42df7d67758" testId="3c21db55-3fbb-ce54-0efc-8e6b9997cb90" testName="Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used" computerName="shan" duration="00:00:00.0009997" startTime="2026-11-22T22:23:01.9327104+04:00" endTime="2026-11-22T22:23:01.9339336+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="294cc1b6-f8bf-41fb-80de-d42df7d67758">
+      <Output>
+        <ErrorInfo>
+          <Message>Catalogue permissions no endpoint uses (dead permissions confuse role editors): importexport.exports.download</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used() in /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 322
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="af200ee9-ccce-41f3-a9f5-926f8757658e" testId="60b33e1f-1598-acbe-1cc9-016a3d3fda7a" testName="Erp.Gates.Tests.G2.ImportExportWriteSetTests.Only_the_permission_that_creates_contacts_checks_or_imports_a_file" computerName="shan" duration="00:00:01.1203047" startTime="2026-11-22T22:20:48.7002997+04:00" endTime="2026-11-22T22:20:49.8207351+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="af200ee9-ccce-41f3-a9f5-926f8757658e" />
+    <UnitTestResult executionId="31cbbf88-0707-4fd7-a586-47d43b9a3c6d" testId="ed6d8224-4e7d-bf95-d2ea-44cb20d0cd26" testName="Erp.Gates.Tests.G1.G1ImportExportAttackTests.Tenant_A_cannot_reach_tenant_B_s_imports_and_exports_through_the_import_and_export_endpoints" computerName="shan" duration="00:04:38.7743724" startTime="2026-11-22T22:20:50.6073347+04:00" endTime="2026-11-22T22:25:29.3687048+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="31cbbf88-0707-4fd7-a586-47d43b9a3c6d">
+      <Output>
+        <StdOut>routes, tenant headers and guessed queries: 15675 requests so far (1193 by tenant A's Arabic sessions; tenant B 7743, 1727 in Arabic), 12.1 s
+tenant switch inputs: 20 headers, 26 query names, 3 cookies, 28 body names: 17730 requests so far (1193 by tenant A's Arabic sessions; tenant B 7811, 1749 in Arabic), 16.4 s
+write after write: 30 pairs over 10 endpoints, 0 pairs with 0 documented values, 502 tenant A requests: 17730 requests so far (1193 by tenant A's Arabic sessions; tenant B 8228, 1871 in Arabic), 36.2 s
+answer shapes: 0 endpoints, 0 shapes (0 documented values, 0 rows of them together), 0 tenant B and 0 tenant A requests (0 of them tenant B's own requests as sent): 17730 requests so far (1193 by tenant A's Arabic sessions; tenant B 8228, 1871 in Arabic), 36.3 s
+tenant B values in route and query parameters (controls checked against 437600 characters of tenant A's data, 0 longer than their value): 119869 requests so far (31598 by tenant A's Arabic sessions; tenant B 17185, 4110 in Arabic), 184.1 s
+registered lists through their query contract: 5479 attacks, 9921 requests: 129790 requests so far (31598 by tenant A's Arabic sessions; tenant B 19030, 4571 in Arabic), 198.9 s
+list answers judged against each tenant's own rows: 352 queries (0 sorted), 158 with different true answers (0 sorted), 8380 rows walked; process-wide state fingerprinted in 119281 lines from 262 roots: 129790 requests so far (31598 by tenant A's Arabic sessions; tenant B 25184, 6110 in Arabic), 244.9 s
+tenant B values in body fields: 146310 requests so far (31598 by tenant A's Arabic sessions; tenant B 26853, 6527 in Arabic), 260.4 s
+tenant B activity: 32833 requests (18628 concurrent with the attack), 243 successful own writes, 32809 responses judged for tenant A markers: 146310 requests so far (31598 by tenant A's Arabic sessions; tenant B 32833, 7772 in Arabic), 268.1 s
+cost by phase and kind: 2|query:filter|attack-en=7157; 2|query:filter|control-en=5613; 1|Plain|en=5106; 1|TenantQuery|en=4688; 1|TenantHeaders|en=4688; 2|query:search|attack-en=2295; 2|query:id|attack-en=2121; 2|query:userId|attack-en=2121; 2|query:tenant_id|attack-en=2121; 2|query:tenantId|attack-en=2121; 2|query:workspace|attack-en=2121; 2|query:companyId|attack-en=2121; 2|query:q|attack-en=2121; 2|query:name|attack-en=2121; 2|query:code|attack-en=2121; 2|query:tenant|attack-en=2121; 2|query:email|attack-en=2121; 1|Plain|ar=1193; 2|query:search|control-en=1171; 2|query:companyId|attack-ar=1111; 2|query:workspace|attack-ar=1111; 2|query:tenant|attack-ar=1111; 2|query:userId|attack-ar=1111; 2|query:q|attack-ar=1111; 2|query:name|attack-ar=1111; 2|query:search|attack-ar=1111; 2|query:email|attack-ar=1111; 2|query:tenant_id|attack-ar=1111; 2|query:tenantId|attack-ar=1111; 2|query:filter|attack-ar=1111; 2|query:code|attack-ar=1111; 2|query:id|attack-ar=1111; 2|query:id|control-ar=1001; 2|query:id|control-en=1001; 2|query:name|control-en=1001; 2|query:userId|control-ar=1001; 2|query:name|control-ar=1001; 2|query:email|control-en=1001; 2|query:companyId|control-en=1001; 2|query:q|control-en=1001; 2|query:workspace|control-en=1001; 2|query:tenantId|control-ar=1001; 2|query:tenant|control-en=1001; 2|query:filter|control-ar=1001; 2|query:q|control-ar=1001; 2|query:tenantId|control-en=1001; 2|query:email|control-ar=1001; 2|query:code|control-en=1001; 2|query:companyId|control-ar=1001; 2|query:workspace|control-ar=1001; 2|query:search|control-ar=1001; 2|query:code|control-ar=1001; 2|query:tenant_id|control-en=1001; 2|query:tenant_id|control-ar=1001; 2|query:tenant|control-ar=1001; 2|query:userId|control-en=1001; 2|path:id|attack-en=968; 1|other|en=617; 2|path:id|control-ar=484; 2|path:id|attack-ar=484
+cost by endpoint: GET /api/contacts/contacts=17896; GET /api/contacts/contacts/duplicates=9975; GET /api/importexport/contacts.contacts/imports/{id:guid}=6690; GET /api/importexport/contacts.contacts/imports/{id:guid}/errors=6690; GET /api/importexport/tenant-exports/{id:guid}=6690; GET /api/contacts/contacts/{id:guid}=6677; GET /api/importexport/contacts.contacts/fields=5103; GET /api/importexport/contacts.contacts/imports=5103; GET /api/importexport/tenant-exports=5103; GET /api/importexport/contacts.contacts/template=5103; GET /api/contacts/contacts/defaults=5103; POST /api/importexport/tenant-exports/{id:guid}/download=3112; POST /api/importexport/contacts.contacts/imports/{id:guid}/run=3112; PUT /api/importexport/contacts.contacts/imports/{id:guid}/mapping=3112; POST /api/contacts/contacts/{id:guid}/restore=3099; PUT /api/contacts/contacts/{id:guid}=3099; POST /api/contacts/contacts/{id:guid}/archive=3099; DELETE /api/importexport/contacts.contacts/imports/{id:guid}=2681; POST /api/importexport/tenant-exports=1426; POST /api/importexport/contacts.contacts/imports=1426; POST /api/contacts/contacts=1426
+cost by parameter: query:filter=14882; query:search=5578; query:id=5234; query:companyId=5234; query:userId=5234; query:tenant_id=5234; query:tenantId=5234; query:workspace=5234; query:name=5234; query:tenant=5234; query:q=5234; query:email=5234; query:code=5234; path:id=2288; query:sameEmail=748; query:sameTaxNumber=728; query:sameMobile=728; query:sameNameAr=728; query:after=728; query:sort=728; query:sameName=728; query:samePhone=728; query:groupBy=728; query:except=484
+tenant B: 770 ids (121 sampled), 295 text values, 207 extra markers (3 product texts left out), 101 probe values</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="767c4844-6201-4130-8ac0-0036877308ea" testId="932fcd71-40be-8d88-0cab-bdf84d46e3a4" testName="Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission" computerName="shan" duration="00:00:00.4007832" startTime="2026-11-22T22:23:01.9342505+04:00" endTime="2026-11-22T22:23:02.3351103+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="767c4844-6201-4130-8ac0-0036877308ea" />
+    <UnitTestResult executionId="cc28cf51-4bfc-48d0-a4b2-449af59ebe1d" testId="86a5e692-0053-40e4-eaea-7a67104ed4df" testName="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds" computerName="shan" duration="00:00:13.1006503" startTime="2026-11-22T22:24:51.5259908+04:00" endTime="2026-11-22T22:25:04.6267177+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cc28cf51-4bfc-48d0-a4b2-449af59ebe1d" />
+    <UnitTestResult executionId="4e85b421-f9a0-4fcc-b7e0-c1325c184047" testId="ab4be19a-7bca-3df6-59fd-dae107f99fe3" testName="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission" computerName="shan" duration="00:00:00.0027423" startTime="2026-11-22T22:22:50.8084659+04:00" endTime="2026-11-22T22:22:50.8113842+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4e85b421-f9a0-4fcc-b7e0-c1325c184047">
+      <Output>
+        <ErrorInfo>
+          <Message>POST /api/importexport/tenant-exports/{id:guid}/download changes data but declares the read permission importexport.exports.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt</Message>
+          <StackTrace>   at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission() in /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs:line 267
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b971b9f6-e593-4cfb-a2b3-44cdf37eb8e4" testId="cbb51416-bc2b-ae77-f878-6e00fe077bf6" testName="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces" computerName="shan" duration="00:00:00.0345784" startTime="2026-11-22T22:22:50.7728389+04:00" endTime="2026-11-22T22:22:50.8075261+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b971b9f6-e593-4cfb-a2b3-44cdf37eb8e4" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="cbb51416-bc2b-ae77-f878-6e00fe077bf6">
+      <Execution id="b971b9f6-e593-4cfb-a2b3-44cdf37eb8e4" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_a_permission_declared_as_metadata_that_no_policy_enforces" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="bc10ddb9-618a-a03d-a722-ca6ef75371bd">
+      <Execution id="462248d1-bd8b-43e1-ba8e-988d503301f7" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Creating_a_user_cannot_grant_more_than_the_caller_holds" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="96ddb67b-d85a-87dc-570a-79dd3a8cfd51">
+      <Execution id="f6066c85-d2fa-4416-89f8-338e7fb700f0" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Creating_a_user_cannot_grant_more_than_the_caller_holds" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ef0beeb6-f61a-6672-96aa-6b00b2e67159">
+      <Execution id="f97f822b-83dd-45be-9ef1-c5770a230729" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Sessions_are_read_only_through_the_listed_carriers_and_each_has_a_working_test_client" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_grants_more_than_the_caller_holds" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="86a5e692-0053-40e4-eaea-7a67104ed4df">
+      <Execution id="cc28cf51-4bfc-48d0-a4b2-449af59ebe1d" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="No_endpoint_grants_more_than_the_caller_holds" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Undeclared_endpoints_fall_back_to_deny" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="b38b7b44-014a-284a-78f8-69dd6d2c6ce9">
+      <Execution id="30f2d5d4-5eaa-414f-a05e-1bb4781ec74a" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Undeclared_endpoints_fall_back_to_deny" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="010db7cb-60b3-b235-f271-999a739984f2">
+      <Execution id="2cf16952-9160-4cc5-85d9-823a4746dca0" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_to_start_with_an_endpoint_whose_permission_is_not_in_the_catalogue" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_check_writes_only_the_files_own_record_and_an_import_writes_only_the_contacts_of_the_file" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ec48f3db-0fbd-587d-7d3e-31c057afa276">
+      <Execution id="b226752c-8cea-48fd-a3f0-cfcf9a4238b9" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.ImportExportWriteSetTests" name="A_check_writes_only_the_files_own_record_and_an_import_writes_only_the_contacts_of_the_file" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="676ab797-16eb-efaf-5f68-983f27f98cf6">
+      <Execution id="db1943b1-e0aa-4b15-bfa6-6a2514395a96" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_permissioned_endpoint_is_enforced_by_a_policy_requiring_its_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="2a650a03-ed98-e3ee-0228-0935becf7adf">
+      <Execution id="feffaa37-fd30-49cf-9ec2-bdb17af54093" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_to_start_with_an_endpoint_that_declares_no_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ce318af4-64e7-7edf-7899-d69f4406f314">
+      <Execution id="904508a8-2cbb-46a4-a480-b17631fd3bdc" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="932fcd71-40be-8d88-0cab-bdf84d46e3a4">
+      <Execution id="767c4844-6201-4130-8ac0-0036877308ea" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Sharing_a_view_needs_the_share_permission_and_the_lists_own_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="fcaeead9-098e-617a-7f65-6f36f9849498">
+      <Execution id="e109faee-8e07-4029-a374-6af4ba7a6b51" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_module_route_is_under_a_reviewed_map_or_derives_its_permission_from_its_list" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="5959e536-9bed-c870-975d-0b4afd4b2239">
+      <Execution id="813caef9-773b-4b5a-a0cf-56a9c2d18767" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ProcessStateTests" name="Process_wide_state_is_immutable_or_reviewed" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;holder&quot;)" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="899954ed-87d8-3dad-9ada-009a57c888f4">
+      <Execution id="56a71c22-4eab-4ddb-a6c9-04da74223b3e" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="1b8e503a-d113-60a3-2102-8335901240d5">
+      <Execution id="07cc9fb6-a376-430d-acca-9915319475e2" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_list_view_check_catches_any_route_that_lets_a_reader_share_its_own_view" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="8aff5795-dc3a-3601-9036-d04700decd8e">
+      <Execution id="424289d6-a6dd-4f17-b543-3bdec30d17b4" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_carrier_matrices_catch_a_permission_bypass_for_bearer_callers" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="3c21db55-3fbb-ce54-0efc-8e6b9997cb90">
+      <Execution id="294cc1b6-f8bf-41fb-80de-d42df7d67758" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.ImportExportWriteSetTests.Only_the_permission_that_creates_contacts_checks_or_imports_a_file" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="60b33e1f-1598-acbe-1cc9-016a3d3fda7a">
+      <Execution id="af200ee9-ccce-41f3-a9f5-926f8757658e" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.ImportExportWriteSetTests" name="Only_the_permission_that_creates_contacts_checks_or_imports_a_file" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="45683e9f-b8a2-9618-1578-95567980d3be">
+      <Execution id="6f7aee0c-68cb-4d34-8a7f-c6b1611fbe0e" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ab4be19a-7bca-3df6-59fd-dae107f99fe3">
+      <Execution id="4e85b421-f9a0-4fcc-b7e0-c1325c184047" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="No_endpoint_that_changes_data_is_guarded_by_a_read_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Users_cannot_escalate_their_own_privileges" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="7dc3bd0d-3a76-8d25-1846-0d23eea11687">
+      <Execution id="46a3e0d5-1f31-4481-9ba4-6b154efe0dda" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Users_cannot_escalate_their_own_privileges" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Requests_that_only_read_cannot_write" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="500de247-4b69-9542-abf1-6499117800d1">
+      <Execution id="9bfa0207-6722-484a-8399-ce80be68835d" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Requests_that_only_read_cannot_write" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_list_whose_endpoint_declares_another_permission" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a7a0bfda-62f2-d6dc-fe7f-61f61f028486">
+      <Execution id="bff0e78f-bb96-4437-ad05-95483e7d20b7" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_a_list_whose_endpoint_declares_another_permission" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="23a22b39-784d-b6e2-80ab-9028acef1b55">
+      <Execution id="20bfe80f-1ef1-4d32-a41c-aca6cdfd284b" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.ImportExportWriteSetTests" name="A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="343f558e-06ca-d8a8-07a5-301e874550d4">
+      <Execution id="e6166258-bb6b-4c74-9851-c97502a49ac2" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="A_user_whose_roles_grant_nothing_is_denied_everything_and_sees_no_menu" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_registered_list_is_readable_with_its_permission_alone" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="0ab4e8f0-2d0c-fc34-4ac1-a2009247113a">
+      <Execution id="036979e6-fb25-44a9-85f8-2d3abcc29ad8" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_registered_list_is_readable_with_its_permission_alone" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;user&quot;)" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="9a46c2b1-62f1-bafc-fa11-9f16fdac2ee2">
+      <Execution id="179b896a-05fc-4e04-96e8-73ba3b9ef4a6" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G1.G1ImportExportAttackTests.Tenant_A_cannot_reach_tenant_B_s_imports_and_exports_through_the_import_and_export_endpoints" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ed6d8224-4e7d-bf95-d2ea-44cb20d0cd26">
+      <Execution id="31cbbf88-0707-4fd7-a586-47d43b9a3c6d" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G1.G1ImportExportAttackTests" name="Tenant_A_cannot_reach_tenant_B_s_imports_and_exports_through_the_import_and_export_endpoints" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="a1732faf-0d6b-8fe5-f87e-b0a8fe7617f4">
+      <Execution id="72b9f137-3f51-4b42-a120-086c3c982eef" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_endpoint_declares_exactly_one_permission_or_is_reviewed_anonymous" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Anonymous_callers_get_401_from_every_permissioned_endpoint" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ae6861bb-7eb3-3815-8406-f9fc883ff33a">
+      <Execution id="843d6dd7-4715-4388-ba8d-4599da76afc5" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Anonymous_callers_get_401_from_every_permissioned_endpoint" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ac8bef08-684c-d8a5-7d43-7316f4686c13">
+      <Execution id="4911581a-33de-4b6c-839f-2ac6533bface" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_reviewed_permission_map_catches_a_weaker_permission_an_unreviewed_endpoint_and_a_stale_line" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids(mode: &quot;session&quot;)" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="26a6b1ad-0c03-d89b-788a-3a1614a36915">
+      <Execution id="dbd55a6b-7310-445c-9b06-e6905e0dfe6a" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_matrices_catch_a_permission_check_that_passes_requests_naming_the_callers_own_ids" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_list_view_check_catches_a_personal_route_that_shares_a_view" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="d831d0fc-3745-7389-3ff0-ac48646070a7">
+      <Execution id="42b2b7ae-4db5-4469-a297-d9c92fbcd504" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_list_view_check_catches_a_personal_route_that_shares_a_view" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="f4c8d10b-8781-1fa0-299c-110035060068">
+      <Execution id="52f005d9-4efb-40b6-be2d-7aeca6aab072" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="Every_list_endpoint_needs_the_lists_own_permission_and_shared_view_writes_need_sharing" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="ad2572c7-ec03-1007-7ecf-834744ebf2ca">
+      <Execution id="0e16cd1c-4630-46dc-8fc6-0a2d21bd366d" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_host_refuses_a_permissioned_endpoint_that_also_allows_anonymous_callers" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="cf38cc6f-9718-08a8-d147-aecb4c1dc9e7">
+      <Execution id="edca1327-d8d8-41a4-a945-0e6587bed2a0" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="A_user_who_lost_every_role_is_denied_everything_on_the_records_they_made" />
+    </UnitTest>
+    <UnitTest name="Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission" storage="/home/shan/critic/p14-import-export-r2-plant/tests/erp.gates.tests/bin/release/net10.0/erp.gates.tests.dll" id="50e2d56b-efb2-ef4f-760f-85831149a5db">
+      <Execution id="36449f28-95ff-4658-bd1e-d04f3f584c96" />
+      <TestMethod codeBase="/home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Erp.Gates.Tests.G2.G2PermissionTests" name="The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="a1732faf-0d6b-8fe5-f87e-b0a8fe7617f4" executionId="72b9f137-3f51-4b42-a120-086c3c982eef" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f4c8d10b-8781-1fa0-299c-110035060068" executionId="52f005d9-4efb-40b6-be2d-7aeca6aab072" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b38b7b44-014a-284a-78f8-69dd6d2c6ce9" executionId="30f2d5d4-5eaa-414f-a05e-1bb4781ec74a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2a650a03-ed98-e3ee-0228-0935becf7adf" executionId="feffaa37-fd30-49cf-9ec2-bdb17af54093" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae6861bb-7eb3-3815-8406-f9fc883ff33a" executionId="843d6dd7-4715-4388-ba8d-4599da76afc5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cf38cc6f-9718-08a8-d147-aecb4c1dc9e7" executionId="edca1327-d8d8-41a4-a945-0e6587bed2a0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bc10ddb9-618a-a03d-a722-ca6ef75371bd" executionId="462248d1-bd8b-43e1-ba8e-988d503301f7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b8e503a-d113-60a3-2102-8335901240d5" executionId="07cc9fb6-a376-430d-acca-9915319475e2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="50e2d56b-efb2-ef4f-760f-85831149a5db" executionId="36449f28-95ff-4658-bd1e-d04f3f584c96" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5959e536-9bed-c870-975d-0b4afd4b2239" executionId="813caef9-773b-4b5a-a0cf-56a9c2d18767" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ef0beeb6-f61a-6672-96aa-6b00b2e67159" executionId="f97f822b-83dd-45be-9ef1-c5770a230729" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0ab4e8f0-2d0c-fc34-4ac1-a2009247113a" executionId="036979e6-fb25-44a9-85f8-2d3abcc29ad8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a7a0bfda-62f2-d6dc-fe7f-61f61f028486" executionId="bff0e78f-bb96-4437-ad05-95483e7d20b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d831d0fc-3745-7389-3ff0-ac48646070a7" executionId="42b2b7ae-4db5-4469-a297-d9c92fbcd504" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ac8bef08-684c-d8a5-7d43-7316f4686c13" executionId="4911581a-33de-4b6c-839f-2ac6533bface" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="010db7cb-60b3-b235-f271-999a739984f2" executionId="2cf16952-9160-4cc5-85d9-823a4746dca0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="343f558e-06ca-d8a8-07a5-301e874550d4" executionId="e6166258-bb6b-4c74-9851-c97502a49ac2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9a46c2b1-62f1-bafc-fa11-9f16fdac2ee2" executionId="179b896a-05fc-4e04-96e8-73ba3b9ef4a6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="96ddb67b-d85a-87dc-570a-79dd3a8cfd51" executionId="f6066c85-d2fa-4416-89f8-338e7fb700f0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="45683e9f-b8a2-9618-1578-95567980d3be" executionId="6f7aee0c-68cb-4d34-8a7f-c6b1611fbe0e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ce318af4-64e7-7edf-7899-d69f4406f314" executionId="904508a8-2cbb-46a4-a480-b17631fd3bdc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8aff5795-dc3a-3601-9036-d04700decd8e" executionId="424289d6-a6dd-4f17-b543-3bdec30d17b4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="500de247-4b69-9542-abf1-6499117800d1" executionId="9bfa0207-6722-484a-8399-ce80be68835d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="26a6b1ad-0c03-d89b-788a-3a1614a36915" executionId="dbd55a6b-7310-445c-9b06-e6905e0dfe6a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ad2572c7-ec03-1007-7ecf-834744ebf2ca" executionId="0e16cd1c-4630-46dc-8fc6-0a2d21bd366d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fcaeead9-098e-617a-7f65-6f36f9849498" executionId="e109faee-8e07-4029-a374-6af4ba7a6b51" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="899954ed-87d8-3dad-9ada-009a57c888f4" executionId="56a71c22-4eab-4ddb-a6c9-04da74223b3e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="676ab797-16eb-efaf-5f68-983f27f98cf6" executionId="db1943b1-e0aa-4b15-bfa6-6a2514395a96" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ec48f3db-0fbd-587d-7d3e-31c057afa276" executionId="b226752c-8cea-48fd-a3f0-cfcf9a4238b9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7dc3bd0d-3a76-8d25-1846-0d23eea11687" executionId="46a3e0d5-1f31-4481-9ba4-6b154efe0dda" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="23a22b39-784d-b6e2-80ab-9028acef1b55" executionId="20bfe80f-1ef1-4d32-a41c-aca6cdfd284b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3c21db55-3fbb-ce54-0efc-8e6b9997cb90" executionId="294cc1b6-f8bf-41fb-80de-d42df7d67758" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="60b33e1f-1598-acbe-1cc9-016a3d3fda7a" executionId="af200ee9-ccce-41f3-a9f5-926f8757658e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ed6d8224-4e7d-bf95-d2ea-44cb20d0cd26" executionId="31cbbf88-0707-4fd7-a586-47d43b9a3c6d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="932fcd71-40be-8d88-0cab-bdf84d46e3a4" executionId="767c4844-6201-4130-8ac0-0036877308ea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="86a5e692-0053-40e4-eaea-7a67104ed4df" executionId="cc28cf51-4bfc-48d0-a4b2-449af59ebe1d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ab4be19a-7bca-3df6-59fd-dae107f99fe3" executionId="4e85b421-f9a0-4fcc-b7e0-c1325c184047" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cbb51416-bc2b-ae77-f878-6e00fe077bf6" executionId="b971b9f6-e593-4cfb-a2b3-44cdf37eb8e4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="38" executed="38" passed="33" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.24]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.56]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.73]   Starting:    Erp.Gates.Tests
+[xUnit.net 00:00:14.03]       static Erp.Modules.ImportExport.Exports.TenantExportEndpoints.PlantedZipCache: a read-only field that holds a mutable ConcurrentDictionary&lt;Guid, Byte[]&gt;. Make it immutable, scope it to the request, key it by tenant, or review it in tests/Gates/process-state-allowlist.txt.
+[xUnit.net 00:00:14.04]       Stack Trace:
+[xUnit.net 00:00:14.04]         /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G1/G1ProcessStateTests.cs(40,0): at Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed()
+[xUnit.net 00:00:14.04]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:14.04]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:14.04]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:14.04]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:14.04]       Output:
+[xUnit.net 00:00:14.04]         776 types, 215 fields, 23 singleton services inspected, 266 endpoint delegates walked (7559 objects) to 72 closures; 5 framework singletons over product types; 262 roots walked to 3437 objects, 110 product types judged field by field; 36 reviewed findings
+[xUnit.net 00:00:19.23]       {"type":"urn:erp:problem:auth.forbidden","title":"You do not have permission to do this.","status":403,"code":"auth.forbidden","traceId":"00-2d06c9a9f74dcef6ed3c8287668f0ec4-3822a9af1811f287-00"}
+[xUnit.net 00:00:19.23]       Stack Trace:
+[xUnit.net 00:00:19.23]         /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/ImportExportWriteSetTests.cs(101,0): at Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads()
+[xUnit.net 00:00:19.23]         --- End of stack trace from previous location ---
+[xUnit.net 00:02:21.35]       POST /api/importexport/tenant-exports/{id:guid}/download changes data but declares the read permission importexport.exports.read: declare the permission for the change (for example .update), mark it .ReadOnlyOperation() if it only reads, or review it in tests/Gates/read-permission-writes.txt
+[xUnit.net 00:02:21.35]       Stack Trace:
+[xUnit.net 00:02:21.35]         /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(267,0): at Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission()
+[xUnit.net 00:02:21.35]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:02:21.35]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:02:21.35]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:02:21.35]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:02:21.37]       POST /api/importexport/tenant-exports/{id:guid}/download declares importexport.exports.read; the reviewed map importexport.txt says importexport.exports.download
+[xUnit.net 00:02:21.37]       Stack Trace:
+[xUnit.net 00:02:21.37]         /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(95,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission()
+[xUnit.net 00:02:21.37]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:02:21.37]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:02:21.37]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:02:21.37]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:02:21.37]       Output:
+[xUnit.net 00:02:21.37]         114 endpoints compared with 11 reviewed map(s)
+[xUnit.net 00:02:32.47]       Catalogue permissions no endpoint uses (dead permissions confuse role editors): importexport.exports.download
+[xUnit.net 00:02:32.47]       Stack Trace:
+[xUnit.net 00:02:32.47]         /home/shan/critic/p14-import-export-r2-plant/tests/Erp.Gates.Tests/G2/G2PermissionTests.cs(322,0): at Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used()
+[xUnit.net 00:02:32.47]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:02:32.47]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:02:32.47]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:02:32.47]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:05:44.54]   Finished:    Erp.Gates.Tests (ID = '3cfb1dea5d6eec21a58fa575ddc50a95593ac8e8eeb01fc2f885c9018ec078b9')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="shan" outcome="Error" timestamp="2026-11-22T22:20:43.5011144+04:00">
+        <Text>[xUnit.net 00:00:14.03]     Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="shan" outcome="Error" timestamp="2026-11-22T22:20:48.7006429+04:00">
+        <Text>[xUnit.net 00:00:19.23]     Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="shan" outcome="Error" timestamp="2026-11-22T22:22:50.8121285+04:00">
+        <Text>[xUnit.net 00:02:21.35]     Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="shan" outcome="Error" timestamp="2026-11-22T22:22:50.8314674+04:00">
+        <Text>[xUnit.net 00:02:21.37]     Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="shan" outcome="Error" timestamp="2026-11-22T22:23:01.9344542+04:00">
+        <Text>[xUnit.net 00:02:32.47]     Erp.Gates.Tests.G2.G2PermissionTests.Every_declared_permission_is_in_the_catalogue_and_every_catalogue_permission_is_used [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

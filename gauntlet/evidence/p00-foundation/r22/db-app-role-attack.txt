@@ -1,0 +1,27 @@
+== connected as erp_app (login), password from the app's own connection string
+whoami|erp_app|erp_app
+no tenant: contacts|0
+no tenant: audit|0
+SET
+session app.tenant_id: contacts|0
+-- SET ROLE erp_owner
+ERROR:  permission denied to set role "erp_owner"
+-- SET ROLE erp_worker
+ERROR:  permission denied to set role "erp_worker"
+-- SET ROLE erp_auth
+ERROR:  permission denied to set role "erp_auth"
+-- SET ROLE postgres
+ERROR:  permission denied to set role "postgres"
+-- SET row_security = off; SELECT count(*) FROM contacts.contacts
+SET
+ERROR:  query would be affected by row-level security policy for table "contacts"
+-- ALTER TABLE contacts.contacts DISABLE ROW LEVEL SECURITY
+ERROR:  must be owner of table contacts
+-- ALTER TABLE contacts.contacts NO FORCE ROW LEVEL SECURITY
+ERROR:  must be owner of table contacts
+-- CREATE TABLE public.x(a int)
+ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.x(a int)
+                     ^
+-- SELECT count(*) FROM pg_authid
+ERROR:  permission denied for table pg_authid

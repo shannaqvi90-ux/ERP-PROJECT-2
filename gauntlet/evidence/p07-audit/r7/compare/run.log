@@ -1,0 +1,9 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+who-changed-field        ours  verified  steps 3  keys 14  machine 0.545s  human 5.67s  human+wait 5.97s  -> ../../evidence-staging/p07-audit/r7/compare/results/who-changed-field-20261122T153659-cce7.json
+who-changed-field        odoo  verified  steps 5  keys 30  machine 2.357s  human 18.5s  human+wait 19.775s  -> ../../evidence-staging/p07-audit/r7/compare/results/who-changed-field-20261122T153745-4981.json
+who-changed-field        verdict win (ours judged on its whole path 'palette-shortest')
+who-renamed-user         ours  verified  steps 3  keys 2  machine 0.942s  human 8.01s  human+wait 8.578s  -> ../../evidence-staging/p07-audit/r7/compare/results/who-renamed-user-20261122T153825-9120.json
+who-renamed-user         odoo  verified  steps 6  keys 4  machine 2.636s  human 10.07s  human+wait 12.392s  -> ../../evidence-staging/p07-audit/r7/compare/results/who-renamed-user-20261122T153910-a9b4.json
+who-renamed-user         verdict win (ours judged on its whole path 'initials')
+blind review page: ../../../../evidence-staging/p07-audit/r7/compare/blind/review.html
+output: ../../../../evidence-staging/p07-audit/r7/compare

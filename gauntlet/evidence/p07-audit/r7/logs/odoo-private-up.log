@@ -1,0 +1,49 @@
+[odoo-reference] generating the shared dataset (deterministic, cached)
+[odoo-reference] starting PostgreSQL (project c-p07-audit-r7-odoo)
+ Network c-p07-audit-r7-odoo_default Creating 
+ Network c-p07-audit-r7-odoo_default Created 
+ Volume c-p07-audit-r7-odoo_db Creating 
+ Volume c-p07-audit-r7-odoo_db Created 
+ Container c-p07-audit-r7-odoo-db-1 Creating 
+ Container c-p07-audit-r7-odoo-db-1 Created 
+ Container c-p07-audit-r7-odoo-db-1 Starting 
+ Container c-p07-audit-r7-odoo-db-1 Started 
+ Container c-p07-audit-r7-odoo-db-1 Waiting 
+ Container c-p07-audit-r7-odoo-db-1 Healthy 
+[odoo-reference] creating database reference and installing base,base_setup,contacts,mail,purchase,base_import with Arabic (first run takes about a minute)
+[odoo-reference] starting Odoo on http://localhost:20770
+ Container c-p07-audit-r7-odoo-db-1 Running 
+ Container c-p07-audit-r7-odoo-odoo-1 Creating 
+ Container c-p07-audit-r7-odoo-odoo-1 Created 
+ Container c-p07-audit-r7-odoo-db-1 Waiting 
+ Container c-p07-audit-r7-odoo-db-1 Healthy 
+ Container c-p07-audit-r7-odoo-odoo-1 Starting 
+ Container c-p07-audit-r7-odoo-odoo-1 Started 
+[odoo-reference] seeding to at least 100000 rows per main list
+  step user-channels (users before set-up): +0 in 0.0s
+  step setup: +0 in 8.1s
+  step contacts: +100000 in 41.4s
+  step users: +100000 in 17.6s
+  step user-channels (bulk users): +100000 in 10.7s
+  step rates: +100000 in 3.2s
+  step audit-messages: +100000 in 3.8s
+  step audit-realism: +100000 in 10.7s
+  step attachments: +100000 in 2.3s
+  step attachment-content: +100001 in 4.9s
+  step job-runs: +99983 in 1.7s
+  step purchase-orders: +100000 in 15.2s
+  step purchase-buyer: +100000 in 3.5s
+[odoo-reference] waiting for the web client
+  contacts             100000  ok
+  contacts_all         200012
+  users                100005  ok
+  currency_rates       100000  ok
+  audit_messages       100007  ok
+  attachments          100046  ok
+  job_runs             100001  ok
+  approvals            100000  ok
+  approvals_pending       200
+  companies                 5
+  roles                    39
+[odoo-reference] volume verified and written to gauntlet/reference/odoo/volume.json
+[odoo-reference] ready: http://localhost:20770  (admin/admin, approver/approver, buyer/buyer)

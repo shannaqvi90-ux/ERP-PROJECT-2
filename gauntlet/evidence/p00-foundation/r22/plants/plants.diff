@@ -1,0 +1,82 @@
+diff --git a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+index 9529936f..b66c6f85 100644
+--- a/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
++++ b/src/Kernel/Erp.Kernel/Hosting/ErpPlatform.cs
+@@ -209,6 +209,41 @@ public static class ErpPlatform
+         });
+         app.UseRateLimiter();
+         app.UseAuthorization();
++        // CRITIC PLANT L22: list answers cached for 30 s by path and query only (not by tenant).
++        var plantCache = new System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime At, string? Type, byte[] Body)>();
++        app.Use(async (context, next) =>
++        {
++            if (!(Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Contains("L22") || !HttpMethods.IsGet(context.Request.Method) || !context.Request.Path.StartsWithSegments("/api") || !context.Request.Query.ContainsKey("take"))
++            {
++                await next(context);
++                return;
++            }
++            var key = context.Request.Path + context.Request.QueryString;
++            if (plantCache.TryGetValue(key, out var hit) && DateTime.UtcNow - hit.At < TimeSpan.FromSeconds(30))
++            {
++                context.Response.StatusCode = 200;
++                context.Response.ContentType = hit.Type;
++                await context.Response.Body.WriteAsync(hit.Body);
++                return;
++            }
++            var original = context.Response.Body;
++            using var buffer = new MemoryStream();
++            context.Response.Body = buffer;
++            try
++            {
++                await next(context);
++            }
++            finally
++            {
++                context.Response.Body = original;
++            }
++            var bytes = buffer.ToArray();
++            if (context.Response.StatusCode == 200)
++            {
++                plantCache[key] = (DateTime.UtcNow, context.Response.ContentType, bytes);
++            }
++            await original.WriteAsync(bytes);
++        });
+ 
+         var catalog = app.Services.GetRequiredService<ModuleCatalog>();
+         var api = app.MapGroup("/api").AddEndpointFilter<UnitOfWorkFilter>();
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..56ea246b 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -69,7 +69,11 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+ {
+     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+     {
+-        if (context.User.Identity?.IsAuthenticated == true && context.User.HasPermission(requirement.Permission))
++        // CRITIC PLANT Q22 (inert unless CRITIC_PLANT names it): whoever may read a module's exports or jobs may also download them.
++        var p22b = (Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Contains("Q22")
++            && (requirement.Permission.EndsWith(".download", StringComparison.Ordinal) || requirement.Permission.EndsWith(".output", StringComparison.Ordinal))
++            && context.User.HasPermission(requirement.Permission[..requirement.Permission.LastIndexOf('.')] + ".read");
++        if (context.User.Identity?.IsAuthenticated == true && (context.User.HasPermission(requirement.Permission) || p22b))
+         {
+             context.Succeed(requirement);
+         }
+@@ -89,10 +93,14 @@ public static class PermissionEndpointExtensions
+             throw new ArgumentException($"Invalid permission key '{permission}'.", nameof(permission));
+         }
+         builder.WithMetadata(new RequiresPermissionAttribute(permission));
+-        builder.RequireAuthorization(new AuthorizationPolicyBuilder(SessionAuthenticationDefaults.Scheme)
+-            .RequireAuthenticatedUser()
+-            .AddRequirements(new PermissionRequirement(permission))
+-            .Build());
++        // CRITIC PLANT P22 (inert unless CRITIC_PLANT names it): export downloads and job outputs only need a signed-in user.
++        var policy = new AuthorizationPolicyBuilder(SessionAuthenticationDefaults.Scheme).RequireAuthenticatedUser();
++        if (!(Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Contains("P22")
++            || (!permission.EndsWith(".download", StringComparison.Ordinal) && !permission.EndsWith(".output", StringComparison.Ordinal)))
++        {
++            policy.AddRequirements(new PermissionRequirement(permission));
++        }
++        builder.RequireAuthorization(policy.Build());
+         builder.ProducesProblem(StatusCodes.Status401Unauthorized);
+         builder.ProducesProblem(StatusCodes.Status403Forbidden);
+         return builder;

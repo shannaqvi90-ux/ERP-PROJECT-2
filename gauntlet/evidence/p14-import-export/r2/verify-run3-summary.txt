@@ -1,0 +1,9 @@
+Run 3 (slot taken 2026-11-22T22:00:02Z, ended 2026-11-23T00:56:07Z, 10565 s; kept in .verify-failed/20261123T005607Z-646546):
+stage web passed (vitest 790/790, build tests 22/22, comparison harness 489/489); stage dotnet passed in 8857 s (1198/1198);
+stage e2e passed in 10097 s (175 passed); stage timing FAILED: 12 timing tests, 11 passed, 1 failed:
+  Erp.Modules.Contacts.Tests.ContactsListVolumeTests.Sorted_filtered_grouped_broad_and_deep_keyset_pages_stay_within_budget
+  (ContactsListVolumeTests.cs:135): /api/contacts/contacts?take=100&search=محمد median 403 ms, slowest 424 ms, against a 400 ms median budget.
+load: peak 45.1; 23-27 while the timing stage ran (other agents' verifies on the machine)
+totals: 2686 tests, 2685 passed, 1 failed, 0 skipped
+processor seconds: web 2735.9 dotnet 23369.0 e2e 1150.2 timing 137.3 = 27392 (maximum 25,000, busy machine)
+The timing stage runs only after every other stage passes, so runs 1 and 2 never reached it.

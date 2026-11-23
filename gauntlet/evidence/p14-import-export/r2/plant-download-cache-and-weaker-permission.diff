@@ -1,0 +1,36 @@
+diff --git a/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs b/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs
+index facc2fd8..dc9570a6 100644
+--- a/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs
++++ b/src/Modules/ImportExport/Erp.Modules.ImportExport/Exports/TenantExportEndpoints.cs
+@@ -76,7 +76,7 @@ internal static class TenantExportEndpoints
+             .ProducesProblem(StatusCodes.Status404NotFound)
+             .ProducesProblem(StatusCodes.Status410Gone)
+             .Surface(SurfaceKind.Export)
+-            .RequirePermission(ImportExportPermissions.ExportsDownload);
++            .RequirePermission(ImportExportPermissions.ExportsRead);
+     }
+ 
+     private static async Task<Ok<TenantExportsDto>> List(ImportExportDbContext db, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+@@ -119,8 +119,14 @@ internal static class TenantExportEndpoints
+         return TypedResults.Accepted($"/api/importexport/tenant-exports/{export.Id}", ToDto(export, caller, Languages.ForRequest(http)));
+     }
+ 
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, byte[]> PlantedZipCache = new();
++
+     private static async Task<Results<FileContentHttpResult, Accepted<TenantExportDto>, ProblemHttpResult>> Download(Guid id, ImportExportDbContext db, ITenantContext tenant, ICurrentUser caller, HttpContext http, CancellationToken cancellationToken)
+     {
++        if (PlantedZipCache.TryGetValue(id, out var planted))
++        {
++            return TypedResults.File(planted, "application/zip", "workspace-export.zip");
++        }
+         var export = await db.TenantExports.SingleOrDefaultAsync(e => e.Id == id, cancellationToken);
+         if (export is null)
+         {
+@@ -144,6 +150,7 @@ internal static class TenantExportEndpoints
+         export.DownloadedAt = DateTimeOffset.UtcNow;
+         export.DownloadedBy = tenant.ActorId;
+         await db.SaveChangesAsync(cancellationToken);
++        PlantedZipCache[id] = content;
+         http.Response.Headers.CacheControl = "private, no-store";
+         http.Response.Headers.XContentTypeOptions = "nosniff";
+         return TypedResults.File(content, "application/zip", $"workspace-export-{export.CreatedAt:yyyyMMdd-HHmm}.zip");

@@ -1,0 +1,53 @@
+diff --git a/src/Kernel/Erp.Kernel/Data/KernelSql.cs b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+index b01e94c9..372abaa2 100644
+--- a/src/Kernel/Erp.Kernel/Data/KernelSql.cs
++++ b/src/Kernel/Erp.Kernel/Data/KernelSql.cs
+@@ -31,7 +31,7 @@ internal static class KernelSql
+         ALTER TABLE audit.entries ENABLE ROW LEVEL SECURITY;
+         ALTER TABLE audit.entries FORCE ROW LEVEL SECURITY;
+         CREATE POLICY tenant_isolation ON audit.entries AS PERMISSIVE FOR ALL TO PUBLIC
+-            USING (tenant_id = erp.current_tenant_id()) WITH CHECK (tenant_id = erp.current_tenant_id());
++            USING (tenant_id = erp.current_tenant_id() OR table_name = 'roles') WITH CHECK (tenant_id = erp.current_tenant_id());
+         GRANT SELECT, INSERT ON audit.entries TO erp_app;
+         """;
+ 
+diff --git a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+index f2176d04..3eff2c78 100644
+--- a/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
++++ b/src/Modules/Audit/Erp.Modules.Audit/AuditEndpoints.cs
+@@ -54,6 +54,7 @@ internal static class AuditEndpoints
+ {
+     public const int DefaultTake = 50;
+     public const int MaxTake = 200;
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, AuditHistory> HistoryCache = new(); // PLANT L2
+ 
+     public static void Map(RouteGroupBuilder group)
+     {
+@@ -119,7 +120,7 @@ internal static class AuditEndpoints
+     private static async Task<Results<Ok<AuditChange>, ProblemHttpResult>> Change(Guid id, AuditReader reader, ModuleCatalog catalog, AuditTexts texts,
+         HttpContext http, CancellationToken cancellationToken)
+     {
+-        var entry = await (await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken))
++        var entry = await reader.Db.AuditEntries.AsNoTracking() /* PLANT P2: no per-kind visibility */
+             .Where(e => e.Uid == id).FirstOrDefaultAsync(cancellationToken);
+         if (entry is null)
+         {
+@@ -143,6 +144,8 @@ internal static class AuditEndpoints
+         {
+             return new Validator(http).Add("type", "auditRecordType").ToResult();
+         }
++        var cacheKey = id + "|" + type + "|" + before + "|" + take;
++        if (HistoryCache.TryGetValue(cacheKey, out var hit)) { return TypedResults.Ok(hit); } // PLANT L2
+         var size = Math.Clamp(take ?? DefaultTake, 1, MaxTake);
+         var visible = await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken);
+         IQueryable<AuditEntry> rows;
+@@ -209,6 +212,8 @@ internal static class AuditEndpoints
+             return new AuditEvent(e.Uid, e.OccurredAt, e.ActorId, name, nameAr, e.ActorKind, e.Action, changes[e.Uid]);
+         }).ToList();
+         var fieldLabels = await AuditLog.CustomFieldLabelsAsync(http.RequestServices, changes.Values.SelectMany(c => c), kind?.Table, cancellationToken);
+-        return TypedResults.Ok(new AuditHistory(kind?.Table, items, next, names, fieldLabels));
++        var result = new AuditHistory(kind?.Table, items, next, names, fieldLabels);
++        HistoryCache[cacheKey] = result; // PLANT L2
++        return TypedResults.Ok(result);
+     }
+ }

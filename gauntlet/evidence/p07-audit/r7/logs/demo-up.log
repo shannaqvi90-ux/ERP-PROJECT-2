@@ -1,0 +1,204 @@
+[1mBuilding the application image[0m
+ Image erp-app:c-p07-audit-r7 Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 640B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.35kB done
+#2 DONE 0.1s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 0.4s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
+#4 resolve docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#5 DONE 0.2s
+
+#6 [internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 0.3s
+
+#7 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#7 DONE 0.2s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.1s
+
+#9 [internal] load build context
+#9 DONE 0.0s
+
+#10 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:bef136a371963aaa46ec97882845ef6f54dec15728bb4b128b1c2a400ffbc9b4
+#10 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:bef136a371963aaa46ec97882845ef6f54dec15728bb4b128b1c2a400ffbc9b4 0.1s done
+#10 DONE 0.1s
+
+#11 [stage-3 1/5] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:12b1135f5f8b3c0a214f2a680ff2033dff4f684f445d6c697d9524ceeb303586
+#11 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:12b1135f5f8b3c0a214f2a680ff2033dff4f684f445d6c697d9524ceeb303586 0.1s done
+#11 DONE 0.1s
+
+#12 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+#12 resolve docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a 0.1s done
+#12 DONE 0.1s
+
+#9 [internal] load build context
+#9 transferring context: 6.33MB 0.2s done
+#9 DONE 0.3s
+
+#13 [web 5/6] COPY web/ ./
+#13 CACHED
+
+#14 [build 4/7] COPY src/ src/
+#14 CACHED
+
+#15 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#15 CACHED
+
+#16 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#16 CACHED
+
+#17 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#17 CACHED
+
+#18 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#18 CACHED
+
+#19 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#19 CACHED
+
+#20 [web 3/6] COPY web/package.json web/package-lock.json ./
+#20 CACHED
+
+#21 [stage-3 2/5] WORKDIR /app
+#21 CACHED
+
+#22 [web 2/6] WORKDIR /web
+#22 CACHED
+
+#23 [web 6/6] RUN npm run check && npm run build
+#23 CACHED
+
+#24 [build 2/7] WORKDIR /src
+#24 CACHED
+
+#25 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#25 CACHED
+
+#26 [strings 2/3] COPY web/src/modules/ /modules/
+#26 CACHED
+
+#27 [stage-3 4/5] COPY --from=web /web/dist ./wwwroot
+#27 CACHED
+
+#28 [stage-3 3/5] COPY --from=build /app ./
+#28 CACHED
+
+#29 [stage-3 5/5] RUN mkdir -p /data/attachments && chown app:app /data/attachments
+#29 CACHED
+
+#30 exporting to image
+#30 exporting layers done
+#30 exporting manifest sha256:1926be70208882c14c350713934a437dedceff8bc02ea7eaa3fef8403a0adc89 0.0s done
+#30 exporting config sha256:ce50cec5ef1676412fbbfd3995b8315b01556dab24de2909305439b0f49875f3 0.0s done
+#30 exporting attestation manifest sha256:68f67d145235f90b14d994256a26a3019ea2fc33dd3bba792c463e0a9f8a6212 0.1s done
+#30 exporting manifest list sha256:c05e7e843c49e185f56121ecc92f137ec14f04fd01e0f9b745979300846e5a24
+#30 exporting manifest list sha256:c05e7e843c49e185f56121ecc92f137ec14f04fd01e0f9b745979300846e5a24 0.0s done
+#30 naming to docker.io/library/erp-app:c-p07-audit-r7 done
+#30 unpacking to docker.io/library/erp-app:c-p07-audit-r7
+#30 unpacking to docker.io/library/erp-app:c-p07-audit-r7 1.2s done
+#30 DONE 1.6s
+
+#31 resolving provenance for metadata file
+#31 DONE 0.0s
+ Image erp-app:c-p07-audit-r7 Built 
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 100000 users) and serving[0m
+ Network c-p07-audit-r7_default Creating 
+ Network c-p07-audit-r7_default Created 
+ Volume c-p07-audit-r7_db-data Creating 
+ Volume c-p07-audit-r7_db-data Created 
+ Container c-p07-audit-r7-db-1 Creating 
+ Container c-p07-audit-r7-db-1 Created 
+ Container c-p07-audit-r7-db-1 Starting 
+ Container c-p07-audit-r7-db-1 Started 
+ Container c-p07-audit-r7-db-1 Waiting 
+ Container c-p07-audit-r7-db-1 Healthy 
+ Volume c-p07-audit-r7_attachments-data Creating 
+ Volume c-p07-audit-r7_attachments-data Created 
+ Container c-p07-audit-r7-db-1 Running 
+ Container c-p07-audit-r7-setup-1 Creating 
+ Container c-p07-audit-r7-setup-1 Created 
+Attaching to setup-1
+ Container c-p07-audit-r7-db-1 Waiting 
+ Container c-p07-audit-r7-db-1 Healthy 
+ Container c-p07-audit-r7-setup-1 Starting 
+ Container c-p07-audit-r7-setup-1 Started 
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 8 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 9 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 15 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating NumberingDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CurrencyDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating JobsDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ContactsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CustomFieldsDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating AttachmentsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ImportExportDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 515196 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 6668 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 5433 ms
+[Ksetup-1 exited with code 0
+ Compose Stopping Aborting on container exit...
+ Container c-p07-audit-r7-setup-1 Stopping 
+ Container c-p07-audit-r7-setup-1 Stopped 
+ Container c-p07-audit-r7-db-1 Running 
+ Container c-p07-audit-r7-worker-1 Creating 
+ Container c-p07-audit-r7-app-1 Creating 
+ Container c-p07-audit-r7-app-1 Created 
+ Container c-p07-audit-r7-worker-1 Created 
+ Container c-p07-audit-r7-db-1 Waiting 
+ Container c-p07-audit-r7-db-1 Healthy 
+ Container c-p07-audit-r7-setup-1 Starting 
+ Container c-p07-audit-r7-setup-1 Started 
+ Container c-p07-audit-r7-setup-1 Waiting 
+ Container c-p07-audit-r7-setup-1 Waiting 
+ Container c-p07-audit-r7-setup-1 Exited 
+ Container c-p07-audit-r7-app-1 Starting 
+ Container c-p07-audit-r7-setup-1 Exited 
+ Container c-p07-audit-r7-worker-1 Starting 
+ Container c-p07-audit-r7-worker-1 Started 
+ Container c-p07-audit-r7-app-1 Started 
+
+[1mThe demo is running (571 s): http://localhost:20750[0m
+
+  Sign in (password for every demo user: Demo-Pass-2026)
+    admin@alnoor.example       Administrator, English
+    admin.ar@alnoor.example    Administrator, Arabic
+    viewer@alnoor.example      Read-only role
+    noaccess@alnoor.example    No roles (sees nothing)
+    admin@gulfsteel.example    Administrator of the second workspace
+
+  Team sign-in addresses (the e-mail domain is filled in: type the part before "@", Enter, password, Enter)
+    http://localhost:20750/?domain=alnoor.example
+    http://localhost:20750/?domain=gulfsteel.example
+
+  API description: http://localhost:20750/api/openapi/v1.json
+  Database:        localhost:20751 (./erp psql)
+  Stop:            ./erp down        (add --volumes to delete the data)
