@@ -131,7 +131,7 @@ const without = (permission: string) => all.filter((p) => p !== permission);
 /** What disappears when one permission is taken away (everything else stays). */
 const needs: Record<string, (c: string) => boolean> = {
   "contacts.contacts.create": (c) => c === "button:New contact" || c === "button:New person here" || c === "button:Import",
-  "contacts.contacts.update": (c) => c === "button:Save" || c === "button:Discard" || c === "button:Add files" || c.startsWith("field:"),
+  "contacts.contacts.update": (c) => c === "button:Save" || c === "button:Discard" || c === "button:Add files" || c === "button:×" || c.startsWith("field:"),
   "contacts.contacts.archive": (c) => c === "button:Archive" || c === "button:Restore",
 };
 

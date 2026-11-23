@@ -78,9 +78,12 @@ test.describe("currencies and exchange rates", () => {
       await page.request.delete(`/api/currency/rates/${row.id}`, { headers: { "X-Erp-Request": "1" } });
     }
     await page.keyboard.press("Alt+KeyN");
-    const currency = page.locator('.record-form select[name="currency"]');
+    // The currency is a drop-down with search now: type the code, Enter chooses it (the same keys as before, no mouse).
+    const currency = page.locator('.record-form [data-field="currency"] input[role="combobox"]');
     await expect(currency).toBeFocused();
-    await currency.selectOption("GBP");
+    await currency.fill("GBP");
+    await page.keyboard.press("Enter");
+    await expect(page.locator('.record-form select[name="currency"]')).toHaveValue("GBP");
     await page.locator('.record-form input[name="rateDate"]').fill("2001-02-03");
     await page.locator('.record-form input[name="rate"]').fill("5.4321");
     await page.locator('.record-form input[name="rate"]').press("Enter");

@@ -38,7 +38,7 @@ function serve(permissions: string[], failedJobs: number, language = "en") {
 
 describe("home dashboard", () => {
   it("counts what waits for the user from the real list endpoints and says how many things need them, in English", async () => {
-    const asked = serve(["contacts.contacts.read", "jobs.jobs.read"], 2);
+    const asked = serve(["contacts.contacts.read", "jobs.jobs.read", "jobs.jobs.run"], 2);
     view = await render(<App language="en" />);
     await settle();
     await settle();
@@ -47,6 +47,26 @@ describe("home dashboard", () => {
     expect(text).toContain("Failed jobs");
     expect(view.container.querySelector('.home-figure[data-attention]')).not.toBeNull();
     expect(asked.some((u) => u.startsWith("/api/jobs/jobs?") && u.includes("take=1") && decodeURIComponent(u.replace(/\+/g, " ")).includes("jobStatus eq 'failed'"))).toBe(true);
+  });
+
+  it("shows a read-only user the counts but does not tell them to fix what they cannot act on, and lists what to do first", async () => {
+    serve(["contacts.contacts.read", "jobs.jobs.read"], 7);
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    expect(view.container.textContent).toContain("Failed jobs");
+    expect(view.container.textContent).toContain("Nothing is waiting for you right now.");
+    expect(view.container.querySelector(".home-first")).toBeNull();
+  });
+
+  it("lists what needs doing first, largest first, for a user who can act", async () => {
+    serve(["contacts.contacts.read", "jobs.jobs.read", "jobs.jobs.run"], 7);
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    const first = view.container.querySelector(".home-first");
+    expect(first?.textContent).toContain("Failed jobs");
+    expect(first?.textContent).toContain("7");
   });
 
   it("says nothing waits when every figure is zero, and in Arabic", async () => {
@@ -65,5 +85,23 @@ describe("home dashboard", () => {
     expect(view.container.textContent).not.toContain("Failed jobs");
     expect(asked.some((u) => u.startsWith("/api/jobs/jobs"))).toBe(false);
     expect(view.container.textContent).toContain("Nothing is waiting for you right now.");
+  });
+
+  it("offers the people-and-access card only to a user who may read users, and asks no users endpoint otherwise (gate backlog: identity home card guard)", async () => {
+    const without = serve(["contacts.contacts.read", "jobs.jobs.read"], 1);
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    expect(view.container.textContent).not.toContain("People and access");
+    expect(without.some((u) => u.startsWith("/api/identity/users"))).toBe(false);
+  });
+
+  it("shows the people-and-access card to a user who may read users", async () => {
+    const asked = serve(["contacts.contacts.read", "identity.users.read"], 1);
+    view = await render(<App language="en" />);
+    await settle();
+    await settle();
+    expect(view.container.textContent).toContain("People and access");
+    expect(asked.some((u) => u.startsWith("/api/identity/users"))).toBe(true);
   });
 });

@@ -12,11 +12,11 @@ describe("theme and density", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("follows the system until a theme is chosen", () => {
+  it("is dark until a theme is chosen (direction G), high contrast when the system asks for it, and never light by the system alone", () => {
     vi.stubGlobal("matchMedia", media(["(prefers-color-scheme: light)"]));
     expect(storedThemeChoice()).toBe("system");
-    expect(applyLook()).toBe("light");
-    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(applyLook()).toBe("dark");
+    expect(document.documentElement.dataset.theme).toBe("dark");
     vi.stubGlobal("matchMedia", media(["(prefers-contrast: more)", "(prefers-color-scheme: light)"]));
     expect(resolveTheme("system")).toBe("hc");
     vi.stubGlobal("matchMedia", media([]));

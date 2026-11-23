@@ -340,21 +340,116 @@
   background: var(--hover);
 }
 
-.date-picker-native {
+/* The product's own calendar (calendar.tsx), under its field, on the tokens of every theme. */
+.calendar-pop {
   position: absolute;
-  inset-inline-end: 0;
-  inset-block-end: 0;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+  inset-block-start: calc(100% + 4px);
+  inset-inline-start: 0;
+  z-index: 40;
+}
+
+.calendar {
+  inline-size: 17.5rem;
+  padding: var(--sp-3);
+  background: var(--surface-3, var(--surface));
+  border: 1px solid var(--line-strong, var(--line));
+  border-radius: var(--radius-3, 6px);
+  box-shadow: var(--shadow-2);
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--sp-2);
+}
+
+.calendar-nav {
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--radius-2);
+  cursor: pointer;
+}
+
+.calendar-nav:hover {
+  background: var(--hover);
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: var(--fs-xs, 0.75rem);
+  color: var(--fg-muted);
+  padding-block: var(--sp-1);
+}
+
+.calendar-day {
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  block-size: 2rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+}
+
+.calendar-day.is-outside {
+  color: var(--fg-muted);
+  opacity: 0.7;
+}
+
+.calendar-day:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.calendar-day:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.calendar-day.is-today {
+  border-color: var(--accent);
+}
+
+.calendar-day.is-in-range {
+  background: var(--accent-soft, var(--hover));
+}
+
+.calendar-day.is-chosen {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: var(--fw-semibold);
+}
+
+.calendar-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-2);
+  font-size: var(--fs-xs, 0.75rem);
+  color: var(--fg-muted);
+}
+
+.calendar-hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Section tabs under the record header (SectionTabs.tsx). */
 .section-tabs {
   display: flex;
-  gap: var(--sp-6);
-  overflow-x: auto;
+  gap: var(--sp-1) var(--sp-6);
+  flex-wrap: wrap;
   border-block-end: 1px solid var(--line);
   margin-block-end: var(--sp-4);
 }
@@ -375,4 +470,113 @@
   color: var(--fg);
   font-weight: var(--fw-semibold);
   border-block-end-color: var(--accent);
+}
+
+/* The drop-down with search (SearchSelect.tsx): the input, its caret, the list and the hidden native select. */
+.search-select {
+  position: relative;
+  display: block;
+}
+
+.search-select > input {
+  width: 100%;
+  padding-inline-end: calc(var(--ctl-h) * 0.7);
+  text-overflow: ellipsis;
+}
+
+.search-select-caret {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block: 0;
+  inline-size: calc(var(--ctl-h) * 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.search-select-options li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-select-options li[data-chosen] {
+  font-weight: var(--fw-semibold);
+}
+
+.search-select-native {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+  inset-block-end: 0;
+}
+
+/* The record command bar: an icon before each action's name (the name stays the button's text). */
+.record-actions .button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.record-actions .button .icon {
+  flex: none;
+}
+
+/* The tag field (TagField in fields.tsx): chips and the box that adds the next one. */
+.tag-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  min-block-size: var(--ctl-h);
+  background: var(--surface);
+  border: 1px solid var(--line-strong, var(--line));
+  border-radius: var(--radius-2);
+}
+
+.tag-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.tag-field > input {
+  flex: 1 1 6rem;
+  min-inline-size: 5rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-inline-size: 14rem;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--accent-line, var(--line));
+  border-radius: 999px;
+  background: var(--accent-soft, var(--hover));
+  color: var(--accent-text, var(--fg));
+  font-size: var(--fs-sm);
+}
+
+.tag-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-chip-remove {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
 }

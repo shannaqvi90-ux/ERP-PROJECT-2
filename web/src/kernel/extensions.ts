@@ -44,7 +44,12 @@ export type PaletteItem = {
   run?: () => void | Promise<void>;
   /** Text written left to right whatever the screen direction (e-mails, codes). */
   ltr?: boolean;
+  /** More things to do with this record (Tab in the palette lists them after "Open" and "Copy"). */
+  actions?: PaletteItemAction[];
 };
+
+/** One thing to do with a record found in the palette: open an address or run something. */
+export type PaletteItemAction = { id: string; title: string; path?: string; run?: () => void | Promise<void> };
 
 export type PaletteSourceContext = { language: Language; signal: AbortSignal };
 
