@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Erp.Kernel.Audit;
 using Erp.Kernel.Data;
 using Erp.Kernel.Hosting;
@@ -446,18 +447,36 @@ internal sealed class UserDirectory(IdentityDbContext db, ModuleCatalog catalog)
             .ToDictionaryAsync(u => u.Id, cancellationToken);
     }
 
-    public async Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken)
+    public async Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken, string? language = null)
     {
         var query = db.Users.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(search))
+        var arabic = string.Equals(language, "ar", StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(search))
         {
-            var pattern = "%" + ListBinding<User>.EscapeLike(search.Trim().ToLowerInvariant()) + "%";
-            query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\")
-                || (u.DisplayNameAr != null && EF.Functions.ILike(u.DisplayNameAr, pattern, "\\")));
+            var all = arabic ? query.OrderBy(u => u.DisplayNameAr ?? u.DisplayName) : query.OrderBy(u => u.DisplayName);
+            return await PageAsync(all.ThenBy(u => u.Id), await query.CountAsync(cancellationToken), skip, take, cancellationToken);
         }
+        var text = search.Trim().ToLowerInvariant();
+        var pattern = "%" + ListBinding<User>.EscapeLike(text) + "%";
+        var startsWith = ListBinding<User>.EscapeLike(text) + "%";
+        var equalTo = ListBinding<User>.EscapeLike(text);
+        var contains = NameMatch.Pattern(text, NameMatch.Position.Anywhere);
+        var starts = NameMatch.Pattern(text, NameMatch.Position.Start);
+        var exact = NameMatch.Pattern(text, NameMatch.Position.Whole);
+        query = query.Where(u => EF.Functions.ILike(u.EmailNormalized, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\")
+            || (u.DisplayNameAr != null && Regex.IsMatch(u.DisplayNameAr, contains)));
         var total = await query.CountAsync(cancellationToken);
-        var items = await query.OrderBy(u => u.DisplayName).ThenBy(u => u.Id)
-            .Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, UserEndpoints.MaxPageSize))
+        var ranked = query.OrderBy(u => EF.Functions.ILike(u.DisplayName, equalTo, "\\") || EF.Functions.ILike(u.EmailNormalized, equalTo, "\\")
+                || (u.DisplayNameAr != null && Regex.IsMatch(u.DisplayNameAr, exact)) ? 0
+            : EF.Functions.ILike(u.DisplayName, startsWith, "\\") || EF.Functions.ILike(u.EmailNormalized, startsWith, "\\")
+                || (u.DisplayNameAr != null && Regex.IsMatch(u.DisplayNameAr, starts)) ? 1 : 2);
+        ranked = arabic ? ranked.ThenBy(u => u.DisplayNameAr ?? u.DisplayName) : ranked.ThenBy(u => u.DisplayName);
+        return await PageAsync(ranked.ThenBy(u => u.Id), total, skip, take, cancellationToken);
+    }
+
+    private static async Task<UserSummaryPage> PageAsync(IOrderedQueryable<User> ordered, int total, int skip, int take, CancellationToken cancellationToken)
+    {
+        var items = await ordered.Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, UserEndpoints.MaxPageSize))
             .Select(u => new UserSummary(u.Id, u.DisplayName, u.Email, u.DisplayNameAr))
             .ToListAsync(cancellationToken);
         return new UserSummaryPage(items, total);
