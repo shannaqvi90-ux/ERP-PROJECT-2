@@ -246,7 +246,11 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.True(order.GetProperty("canUpdate").GetBoolean());
         var invoice = all.First(r => r.GetProperty("documentType").GetString() == "sales.invoice");
         Assert.True(invoice.GetProperty("gapless").GetBoolean());
-        Assert.Equal($"INV-{Year}-00001{Month}", invoice.GetProperty("nextNumber").GetString());
+        // Other tests of this class share the workspace and may have issued invoice numbers, so the next
+        // number is held to its own counter (the pattern filled with the counter's next value), not to 1.
+        var invoiceNext = invoice.GetProperty("nextValue").GetInt64();
+        Assert.True(invoiceNext >= 1);
+        Assert.Equal($"INV-{Year}-{invoiceNext:D5}{Month}", invoice.GetProperty("nextNumber").GetString());
         // Tenant B's own prefixes never appear.
         Assert.DoesNotContain(all, r => r.GetProperty("prefix").GetString() is "BPO7-{YYYY}-" or "BQ73-" or "BDN4-{BRANCH}-");
 
