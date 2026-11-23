@@ -1,0 +1,15 @@
+import { open, shot, focused, BASE } from './pw.mjs';
+const { browser, page, errors } = await open('admin@alnoor.example');
+console.log('url after sign-in', page.url());
+await page.keyboard.press('Control+k'); await page.waitForTimeout(500);
+await page.keyboard.type('Custom fields'); await page.waitForTimeout(800); await page.keyboard.press('Enter');
+await page.waitForTimeout(2500);
+console.log('url', page.url());
+await shot(page, 'tmp-fields-list');
+await page.keyboard.press('Alt+n'); await page.waitForTimeout(1000);
+console.log('focus after Alt+N', await focused(page));
+await shot(page, 'tmp-new-field');
+const labels = await page.$$eval('form label, form [role=group] legend, form .field-label', els => els.map(e => e.textContent.trim().slice(0, 50)));
+console.log(labels);
+console.log('errors', errors);
+await browser.close();

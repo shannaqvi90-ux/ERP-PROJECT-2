@@ -1,0 +1,87 @@
+canary CANARYB1795361299318
+B fields cfSecretCANARYB1795361299318 cfScoreCANARYB1795361299318 cfTierCANARYB1795361299318
+B contact 201 01a203df-5ba0-77cb-a48a-f0caa8a4836d
+B same-key value 200
+A same-label key cfProbe1795361299393 SAME KEY
+A GET /api/customfields/fields/01a203df-5b7a-7725-88ba-3cbae93bdfe9     404 clean
+A GET /api/customfields/fields/01a203df-5b7a-7725-88ba-3cbae93bdfe9 hdr 404 clean
+A PUT /api/customfields/fields/01a203df-5b7a-7725-88ba-3cbae93bdfe9     404 clean
+A PUT /api/customfields/fields/01a203df-5b7a-7725-88ba-3cbae93bdfe9 hdr 404 clean
+A GET /api/customfields/fields?search=CANARYB1795361299318     200 clean
+A GET /api/customfields/fields?search=CANARYB1795361299318 hdr 200 clean
+A GET /api/customfields/fields?pageSize=500     200 clean
+A GET /api/customfields/fields?pageSize=500 hdr 200 clean
+A GET /api/customfields/record-types     200 clean
+A GET /api/customfields/record-types hdr 200 clean
+A GET /api/contacts/contacts/01a203df-5ba0-77cb-a48a-f0caa8a4836d     404 clean
+A GET /api/contacts/contacts/01a203df-5ba0-77cb-a48a-f0caa8a4836d hdr 404 clean
+A PUT /api/contacts/contacts/01a203df-5ba0-77cb-a48a-f0caa8a4836d     400 clean
+A PUT /api/contacts/contacts/01a203df-5ba0-77cb-a48a-f0caa8a4836d hdr 400 clean
+A GET /api/contacts/contacts?filter=cfSecretCANARYB1795361299318%20eq%20'CANARYB1795361299318'     400 clean
+A GET /api/contacts/contacts?filter=cfSecretCANARYB1795361299318%20eq%20'CANARYB1795361299318' hdr 400 clean
+A GET /api/contacts/contacts?filter=cfScoreCANARYB1795361299318%20gt%200&take=5     400 clean
+A GET /api/contacts/contacts?filter=cfScoreCANARYB1795361299318%20gt%200&take=5 hdr 400 clean
+A GET /api/contacts/contacts?sort=-cfScoreCANARYB1795361299318&take=5     400 clean
+A GET /api/contacts/contacts?sort=-cfScoreCANARYB1795361299318&take=5 hdr 400 clean
+A GET /api/contacts/contacts?groupBy=cfTierCANARYB1795361299318     400 clean
+A GET /api/contacts/contacts?groupBy=cfTierCANARYB1795361299318 hdr 400 clean
+A GET /api/contacts/contacts?search=CANARYB1795361299318     200 clean
+A GET /api/contacts/contacts?search=CANARYB1795361299318 hdr 200 clean
+A GET /api/contacts/contacts?filter=cfProbe1795361299393%20contains%20'CANARY'&take=5     200 clean
+A GET /api/contacts/contacts?filter=cfProbe1795361299393%20contains%20'CANARY'&take=5 hdr 200 clean
+A GET /api/contacts/contacts?sort=-cfProbe1795361299393&take=5     200 clean
+A GET /api/contacts/contacts?sort=-cfProbe1795361299393&take=5 hdr 200 clean
+A GET /api/contacts/contacts?groupBy=cfProbe1795361299393     200 clean
+A GET /api/contacts/contacts?groupBy=cfProbe1795361299393 hdr 200 clean
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfSecretCANARYB1795361299318,cfScoreCANARYB1795361299318&filter=cfSecretCANAR     400 clean
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfSecretCANARYB1795361299318,cfScoreCANARYB1795361299318&filter=cfSecretCANAR hdr 400 clean
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfProbe1795361299393&sort=-cfProbe1795361299393&limit=20&language=en&numerals     200 clean
+A GET /api/reports/lists/contacts.contacts?format=csv&columns=nameEn,cfProbe1795361299393&sort=-cfProbe1795361299393&limit=20&language=en&numerals hdr 200 clean
+A GET /api/reports/lists/contacts.contacts?format=xlsx&columns=nameEn,cfProbe1795361299393&groupBy=cfProbe1795361299393&limit=200&language=en&nume     200 clean
+A GET /api/reports/lists/contacts.contacts?format=xlsx&columns=nameEn,cfProbe1795361299393&groupBy=cfProbe1795361299393&limit=200&language=en&nume hdr 200 clean
+A GET /api/lists/contacts.contacts/definition     200 clean
+A GET /api/lists/contacts.contacts/definition hdr 200 clean
+A GET /api/openapi/v1.json     200 clean
+A GET /api/openapi/v1.json hdr 200 clean
+A GET /api/contacts/contacts/01a203df-5ba0-77cb-a48a-f0caa8a4836d/history     404 clean
+A GET /api/contacts/contacts/01a203df-5ba0-77cb-a48a-f0caa8a4836d/history hdr 404 clean
+A GET /api/audit/log?search=CANARYB1795361299318     200 clean
+A GET /api/audit/log?search=CANARYB1795361299318 hdr 200 clean
+A GET /api/audit/log?filter=recordId%20eq%20'01a203df-5ba0-77cb-a48a-f0caa8a4836d'     200 clean
+A GET /api/audit/log?filter=recordId%20eq%20'01a203df-5ba0-77cb-a48a-f0caa8a4836d' hdr 200 clean
+A GET /api/search?q=CANARYB1795361299318     404 clean
+A GET /api/search?q=CANARYB1795361299318 hdr 404 clean
+A GET /api/importexport/contacts.contacts/fields     200 clean
+A GET /api/importexport/contacts.contacts/fields hdr 200 clean
+A GET /api/importexport/contacts.contacts/template     200 clean
+A GET /api/importexport/contacts.contacts/template hdr 200 clean
+A import upload 201 [["Name","name"],["Kind","kind"],["Country","country"],["custom.cfSecretCANARYB17953612",null],["Secret CANARYB1795361299318",null],["custom.cfProbe1795361299393","custom.cfProbe1795361299393"]] LEAK canary
+A map a column to B key 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-0c2afd4a9454cbddfc3d8c788995b160-25410b3725f6db4a-00","errors":{"columns":[{"c clean
+A delete session 204
+A start tenant export 202 {"id":"01a203e2-169c-721e-b5c9-44edd8547e5c","status":"queued","format":"csv","jobId":"01a203e2-16b2-7c65-b342-d282c9e2ab80","fileCount":0,"byteSize":0,"recordC
+A export status 200 queued 
+B reads A export 404
+B downloads A export 404 170
+A contact with lookup to B contact 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-c8dd87da64d387eb4b2fbb569f71bfd9-065e8 clean
+viewer GET /api/customfields/fields 200
+viewer GET /api/customfields/fields/01a203df-5bee-7b62-9731-2eb5358ba8c7 200
+viewer GET /api/customfields/record-types 200
+viewer POST /api/customfields/fields 403
+viewer PUT /api/customfields/fields/01a203eb-42d4-71f4-bc54-3dcad8d70f51 403
+viewer GET /api/reports/lists/customfields.fields?format=csv 200
+viewer GET /api/contacts/contacts?sort=cfProbe1795361299393&take=2 200
+viewer GET /api/importexport/contacts.contacts/fields 403
+noaccess GET /api/customfields/fields 403
+noaccess GET /api/customfields/fields/01a203df-5bee-7b62-9731-2eb5358ba8c7 403
+noaccess GET /api/customfields/record-types 403
+noaccess POST /api/customfields/fields 403
+noaccess PUT /api/customfields/fields/01a203eb-42d4-71f4-bc54-3dcad8d70f51 403
+noaccess GET /api/reports/lists/customfields.fields?format=csv 403
+noaccess GET /api/contacts/contacts?sort=cfProbe1795361299393&take=2 403
+noaccess GET /api/importexport/contacts.contacts/fields 403
+A switch off cfPartnerLink1795362079441 200
+A switch off cfProbe1795361299393 200
+B switch off cfSecretCANARYB1795361299318 200
+B switch off cfScoreCANARYB1795361299318 200
+B switch off cfTierCANARYB1795361299318 200
+B switch off cfProbe1795361299393 200
