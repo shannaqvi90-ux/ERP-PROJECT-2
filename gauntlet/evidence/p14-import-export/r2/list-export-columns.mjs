@@ -1,0 +1,33 @@
+// Critic p14 r2: hide the Tags column and filter by the Emirate column's value (Alt+Shift+F on a 'Dubai' cell is not used; the Filter... popover is),
+// then CSV in English: the file must hold only the visible columns and only the filtered rows.
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+const require = createRequire(path.join(process.cwd(), 'package.json'));
+const { chromium } = require('playwright-core');
+const { findChromium } = await import(path.join(process.cwd(), 'lib/browser.mjs'));
+const BASE = process.env.BASE || 'http://localhost:21450';
+const OUT = process.env.OUT || '.';
+const browser = await chromium.launch({ executablePath: findChromium(), headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1600, height: 900 }, acceptDownloads: true })).newPage();
+await page.goto(BASE + '/');
+await page.locator('input[name="email"]:focus').waitFor();
+await page.keyboard.type('admin@alnoor.example'); await page.keyboard.press('Tab'); await page.keyboard.type('Demo-Pass-2026'); await page.keyboard.press('Enter');
+await page.locator('nav').first().waitFor();
+await page.goto(BASE + '/contacts/contacts'); await page.locator('table[role=grid] tbody tr').first().waitFor(); await page.waitForTimeout(800);
+await page.getByRole('button', { name: 'Options for the column Tags' }).click();
+await page.getByRole('menuitem', { name: 'Hide this column' }).click(); await page.waitForTimeout(500);
+await page.getByRole('button', { name: 'Options for the column City' }).click();
+await page.getByRole('menuitem', { name: 'Filter…' }).click();
+await page.locator('.list-filter select').first().selectOption({ label: 'is' });
+await page.locator('.list-filter input:not([type="checkbox"])').first().fill('Yiwu');
+await page.locator('.list-filter').getByRole('button', { name: 'Apply', exact: true }).click(); await page.waitForTimeout(2500);
+const rc = Number(await page.locator('table[role=grid]').getAttribute('aria-rowcount')) - 1;
+console.log('rows on screen after filter City is Yiwu:', rc);
+await page.getByRole('button', { name: 'Print or export' }).click();
+const dl = page.waitForEvent('download'); await page.getByRole('menuitem', { name: 'CSV in English', exact: true }).click();
+const d = await dl; const p = path.join(OUT, 'list-export-hidden-tags-city-yiwu.csv'); await d.saveAs(p);
+const lines = fs.readFileSync(p, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter(Boolean);
+console.log('file rows', lines.length - 1, 'header', lines[0]);
+console.log('rows not Yiwu:', lines.slice(1).filter(l => !l.includes('Yiwu')).length);
+await browser.close();

@@ -1,0 +1,9 @@
+first import {"status":"completed","rowsChecked":1,"valid":1,"imported":1,"dup":1,"updated":0,"failed":0,"issues":[]}
+same row, check only {"status":"checked","rowsChecked":1,"valid":1,"imported":0,"dup":1,"updated":0,"failed":0,"issues":[]}
+same row, skip {"status":"completed","rowsChecked":1,"valid":1,"imported":0,"dup":1,"updated":0,"failed":0,"issues":[]}
+contacts with tag after skip 1 DUP066374 Trading LLC
+same row, update {"status":"completed","rowsChecked":1,"valid":1,"imported":0,"dup":1,"updated":1,"failed":0,"issues":[]}
+contacts with tag after update 1 [{"name":"DUP066374 Trading LLC","id":"01a203db-cdbf-7d11-bb87-b5171f7503c1"}]
+two with one phone (create) {"status":"completed","rowsChecked":2,"valid":2,"imported":2,"dup":0,"updated":0,"failed":0,"issues":[]}
+third row matching both by phone, update {"status":"completed","rowsChecked":1,"valid":0,"imported":0,"dup":0,"updated":0,"failed":1,"issues":["2 name This row matches more than one contact already there, so it cannot tell which to update."]}
+after ["DUP066374 One LLC","DUP066374 Two LLC","DUP066374 Trading LLC"]

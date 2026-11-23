@@ -1,0 +1,673 @@
+{
+  "schema": 1,
+  "run_id": "export-filtered-list-20261122T154614-01e0",
+  "instrument": 12,
+  "task": "export-filtered-list",
+  "task_title": "Export a filtered list",
+  "product": "ours",
+  "status": "error",
+  "goal": "Export every contact tagged \"Government\" to a spreadsheet with at least their name, e-mail and phone.",
+  "done_when": "The product hands over a spreadsheet file; it holds one row per contact tagged \"Government\" (every one of them, not just the first page) with name, e-mail and phone columns.",
+  "started_at": "2026-11-22T15:46:14.763Z",
+  "finished_at": "2026-11-22T15:48:38.143Z",
+  "environment": {
+    "base_url": "http://localhost:21450",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 8,
+    "keystrokes": 11,
+    "clicks": 7,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.334,
+    "system_wait_seconds": 1.057,
+    "human_seconds": 22.43,
+    "human_plus_wait_seconds": 23.487,
+    "klm_operator_counts": {
+      "K": 11,
+      "P": 7,
+      "B": 14,
+      "H": 2,
+      "M": 7
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Contacts",
+      "keystrokes": 0,
+      "at": 0.045,
+      "took": 0.138,
+      "began": 0.002,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Tags column options",
+      "keystrokes": 0,
+      "at": 0.222,
+      "took": 0.064,
+      "began": 0.192,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "Filter…",
+      "keystrokes": 0,
+      "at": 0.464,
+      "took": 0.057,
+      "began": 0.293,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "value field",
+      "keystrokes": 0,
+      "at": 0.564,
+      "took": 0.042,
+      "began": 0.527,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "tag",
+      "keystrokes": 11,
+      "at": 0.628,
+      "took": 0.056,
+      "text": "Government",
+      "same_field": true,
+      "screen": "/contacts/contacts",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Apply",
+      "keystrokes": 0,
+      "at": 0.736,
+      "took": 0.093,
+      "began": 0.685,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Print or export",
+      "keystrokes": 0,
+      "at": 1.457,
+      "took": 0.056,
+      "began": 1.402,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Excel in English (download)",
+      "keystrokes": 0,
+      "at": 1.564,
+      "took": 0.044,
+      "began": 1.53,
+      "screen": "/contacts/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "contact list",
+      "at": 0.183,
+      "seconds": 0.008
+    },
+    {
+      "label": "column menu",
+      "at": 0.287,
+      "seconds": 0.006
+    },
+    {
+      "label": "filter popover",
+      "at": 0.521,
+      "seconds": 0.005
+    },
+    {
+      "label": "filtered list",
+      "at": 0.835,
+      "seconds": 0.3
+    },
+    {
+      "label": "print menu",
+      "at": 1.514,
+      "seconds": 0.015
+    },
+    {
+      "label": "file received",
+      "at": 1.607,
+      "seconds": 0.723
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "f2778273307528fe.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p14-import-export/r2/compare/blind/shots/f2778273307528fe.jpg"
+    },
+    {
+      "moment": "export options chosen",
+      "file": "6bbd42f55c23d4d5.jpg",
+      "at": 1.136,
+      "path": "../../evidence-staging/p14-import-export/r2/compare/blind/shots/6bbd42f55c23d4d5.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "0c91a0b0e8295297.jpg",
+      "at": 2.334,
+      "path": "../../evidence-staging/p14-import-export/r2/compare/blind/shots/0c91a0b0e8295297.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "Contacts 2026-11-22.xlsx",
+      "header": [
+        "Name",
+        "Type",
+        "Organisation",
+        "E-mail",
+        "Mobile",
+        "Phone",
+        "City",
+        "Emirate",
+        "Tags",
+        "Status"
+      ],
+      "rows": 6581,
+      "expected_rows": 6581
+    }
+  },
+  "path_notes": "tag-button: Builder's path: Contacts > click the tag in a row on the first screen > Print or export > Excel in English | filter-popover: Contacts > Tags column options > Filter... > the value field > type the tag > Apply > Print or export > Excel in English (round 1 path)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/export-filtered-list.mjs",
+    "sha256": "c79a7f4f598e894b39a7f28c4a0e6ed24158e290975db1bf1eeb12b89e5a87b7"
+  },
+  "task_notes": "Thousands of contacts carry the tag, so the export must cover more than the page on screen. The verification reads the file.",
+  "error": "tag-button: error TimeoutError: locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button.ct-tag').filter({ hasText: /^Government$/ }).first().first() to be visible\u001b[22m\n\n    (in the driver process)\nCall log:",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 0,
+      "longest_pause_seconds": 0.084,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.084,
+      "verified": true
+    },
+    {
+      "requests": 0,
+      "longest_pause_seconds": 0.084,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.084,
+      "verified": true,
+      "gap_seconds": 0.174
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "d3aeeea449bf338e",
+    "elements": 909
+  },
+  "screen_after_verify": {
+    "sha256": "d3aeeea449bf338e",
+    "elements": 909,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.001
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 46,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 1.609,
+      "by_step": 8,
+      "chain": [
+        "input of step 8",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [],
+  "screenshots_path": "filter-popover",
+  "error_page": {
+    "tag-button": {
+      "url": "/contacts/contacts",
+      "ready_state": "complete",
+      "title": "Contacts · ERP",
+      "focused": {
+        "tag": "input",
+        "name": null,
+        "type": "search",
+        "label": "Find a contact by name, e-mail, number, reference or TRN"
+      },
+      "navigation": true,
+      "busy": [],
+      "messages": []
+    }
+  },
+  "best_path_per_metric": {
+    "steps": "filter-popover",
+    "keystrokes": "filter-popover",
+    "machine_seconds": "filter-popover",
+    "human_seconds": "filter-popover",
+    "human_plus_wait_seconds": "filter-popover"
+  },
+  "counts_path": "filter-popover",
+  "variants": [
+    {
+      "id": "tag-button",
+      "path": "Builder's path: Contacts > click the tag in a row on the first screen > Print or export > Excel in English",
+      "status": "error",
+      "error": "TimeoutError: locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button.ct-tag').filter({ hasText: /^Government$/ }).first().first() to be visible\u001b[22m\n\n    (in the driver process)\nCall log:",
+      "error_page": {
+        "url": "/contacts/contacts",
+        "ready_state": "complete",
+        "title": "Contacts · ERP",
+        "focused": {
+          "tag": "input",
+          "name": null,
+          "type": "search",
+          "label": "Find a contact by name, e-mail, number, reference or TRN"
+        },
+        "navigation": true,
+        "busy": [],
+        "messages": []
+      },
+      "counts": {
+        "steps": 1,
+        "keystrokes": 0,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 120.143,
+        "system_wait_seconds": 0,
+        "human_seconds": 2.65,
+        "human_plus_wait_seconds": 2.65,
+        "klm_operator_counts": {
+          "K": 0,
+          "P": 1,
+          "B": 2,
+          "H": 0,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts",
+          "keystrokes": 0,
+          "at": 0.037,
+          "took": 0.099,
+          "began": 0.002,
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [],
+      "verification": null,
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": null,
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": null,
+      "screen_at_clock": null,
+      "screen_after_verify": null,
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 0,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.001
+      },
+      "set_up_writes_waited": 0,
+      "set_up_writes": [],
+      "failure_capture": {
+        "url": "http://localhost:21450/contacts/contacts",
+        "console": [
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "error: Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+        ]
+      }
+    },
+    {
+      "id": "filter-popover",
+      "path": "Contacts > Tags column options > Filter... > the value field > type the tag > Apply > Print or export > Excel in English (round 1 path)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 8,
+        "keystrokes": 11,
+        "clicks": 7,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 2.334,
+        "system_wait_seconds": 1.057,
+        "human_seconds": 22.43,
+        "human_plus_wait_seconds": 23.487,
+        "klm_operator_counts": {
+          "K": 11,
+          "P": 7,
+          "B": 14,
+          "H": 2,
+          "M": 7
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts",
+          "keystrokes": 0,
+          "at": 0.045,
+          "took": 0.138,
+          "began": 0.002,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Tags column options",
+          "keystrokes": 0,
+          "at": 0.222,
+          "took": 0.064,
+          "began": 0.192,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Filter…",
+          "keystrokes": 0,
+          "at": 0.464,
+          "took": 0.057,
+          "began": 0.293,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "value field",
+          "keystrokes": 0,
+          "at": 0.564,
+          "took": 0.042,
+          "began": 0.527,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "tag",
+          "keystrokes": 11,
+          "at": 0.628,
+          "took": 0.056,
+          "text": "Government",
+          "same_field": true,
+          "screen": "/contacts/contacts",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "Apply",
+          "keystrokes": 0,
+          "at": 0.736,
+          "took": 0.093,
+          "began": 0.685,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "click",
+          "label": "Print or export",
+          "keystrokes": 0,
+          "at": 1.457,
+          "took": 0.056,
+          "began": 1.402,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Excel in English (download)",
+          "keystrokes": 0,
+          "at": 1.564,
+          "took": 0.044,
+          "began": 1.53,
+          "screen": "/contacts/contacts",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "contact list",
+          "at": 0.183,
+          "seconds": 0.008
+        },
+        {
+          "label": "column menu",
+          "at": 0.287,
+          "seconds": 0.006
+        },
+        {
+          "label": "filter popover",
+          "at": 0.521,
+          "seconds": 0.005
+        },
+        {
+          "label": "filtered list",
+          "at": 0.835,
+          "seconds": 0.3
+        },
+        {
+          "label": "print menu",
+          "at": 1.514,
+          "seconds": 0.015
+        },
+        {
+          "label": "file received",
+          "at": 1.607,
+          "seconds": 0.723
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "file": "Contacts 2026-11-22.xlsx",
+          "header": [
+            "Name",
+            "Type",
+            "Organisation",
+            "E-mail",
+            "Mobile",
+            "Phone",
+            "City",
+            "Emirate",
+            "Tags",
+            "Status"
+          ],
+          "rows": 6581,
+          "expected_rows": 6581
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 0,
+          "longest_pause_seconds": 0.084,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.084,
+          "verified": true
+        },
+        {
+          "requests": 0,
+          "longest_pause_seconds": 0.084,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.084,
+          "verified": true,
+          "gap_seconds": 0.174
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "d3aeeea449bf338e",
+        "elements": 909
+      },
+      "screen_after_verify": {
+        "sha256": "d3aeeea449bf338e",
+        "elements": 909,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 0,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.001
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 46,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 1.609,
+          "by_step": 8,
+          "chain": [
+            "input of step 8",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": []
+    }
+  ]
+}

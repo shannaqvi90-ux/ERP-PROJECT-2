@@ -1,0 +1,7 @@
+B upload 201 01a203d8-5d34-7729-9ce3-e9fd64036d9e
+B reads before 200
+A deletes B import 204
+B reads after A delete 200
+A deletes a made-up id 204
+B deletes its own 204
+B reads after own delete 404

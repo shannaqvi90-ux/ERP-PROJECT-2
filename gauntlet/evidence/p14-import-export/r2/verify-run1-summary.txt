@@ -1,0 +1,17 @@
+Run 1 (slot taken 2026-11-22T15:09:11Z, ended 18:21:42Z, 11551 s wall):
+stage dotnet passed in 10474 s: 1198 tests, 1198 passed (trx)
+stage e2e passed in 11547 s: 175 passed; compare health and unit tests passed
+stage web FAILED: 790 tests, 780 passed, 10 failed, all in src/modules/shell/clientIsolation.test.tsx (first test 'Test timed out in 30000ms', the rest cascade)
+web stage ran 15:09:38-15:11:37Z; load samples in that window: 39.8 55.5 65.2 65.9 59.2 48.5 (16 threads); peak load of the run 78.6
+processor seconds: web 329.5 dotnet 24812.5 e2e 845.0
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mtenant A sees, and the tab keeps, nothing of tenant B after B signs out
+[31m[1mError[22m: Test timed out in 30000ms.
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22min Arabic with Arabic-Indic digits, tenant A sees, and the tab keeps, nothing of tenant B after B signs out
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22man address someone types or follows is kept, and stamped for the person in the tab
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22msigning out forgets every cookie the document can read, whatever its path, and the tab's window name
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mwith B's record open, B switches every device setting and signs out: the device keys hold only their settings and A starts on Home with nothing of B
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22min Arabic with Arabic-Indic digits, the device settings switched on B's record hold only their settings and A starts on Home with nothing of B
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22mthe device-key judge refuses a setting with anything beside it, and signing out drops such a key (CL3b's shape)
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22msigning out forgets what the tab stored for the person and keeps only the device's settings
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22ma session that ends by itself (401) starts over and forgets the person, keeping only the e-mail
+[41m[1m FAIL [22m[49m src/modules/shell/clientIsolation.test.tsx[2m > [22mG1 in the browser: one tab, tenant B then tenant A[2m > [22manother tab signing in as someone else ends this tab's identity too
